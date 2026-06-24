@@ -77,19 +77,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ServiceOS - The AI Operating System for Service Businesses" },
+      { title: "ServiceOS — The AI Operating System for Service Businesses" },
       {
         name: "description",
         content:
-          "ServiceOS is the intelligence layer above every system in a modern service business. Deployment 001 - Drummond Heating.",
+          "ServiceOS is the intelligence layer above every system in a modern service business. Deployment 001 — Drummond Heating.",
       },
-      { property: "og:title", content: "ServiceOS - Intelligent Operations" },
+      { property: "og:title", content: "ServiceOS — The AI Operating System for Service Businesses" },
       {
         property: "og:description",
         content: "From reactive operations to intelligent performance.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "ServiceOS — The AI Operating System for Service Businesses" },
+      { name: "description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
+      { property: "og:description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
+      { name: "twitter:description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
