@@ -11,7 +11,7 @@ export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
       { title: "ServiceOS · Command Centre" },
-      { name: "description", content: "Live operations, calls, finance and intelligence — in one surface." },
+      { name: "description", content: "Live operations, calls, finance and intelligence - in one surface." },
     ],
   }),
   component: AppShell,
@@ -214,7 +214,7 @@ function Operations() {
     { id: "J-3402", customer: "ABC School", engineer: "T. Reid", status: "Urgent", value: "£1,840" },
     { id: "J-3401", customer: "Greenfield Care Home", engineer: "M. Patel", status: "In progress", value: "£640" },
     { id: "J-3400", customer: "12 Marlborough Rd", engineer: "S. Walsh", status: "Scheduled", value: "£320" },
-    { id: "J-3399", customer: "Highbridge Foods Ltd", engineer: "—", status: "Awaiting parts", value: "£2,120" },
+    { id: "J-3399", customer: "Highbridge Foods Ltd", engineer: "-", status: "Awaiting parts", value: "£2,120" },
     { id: "J-3398", customer: "Crestmont Apartments", engineer: "L. Bryan", status: "Completed", value: "£480" },
   ];
   return (
