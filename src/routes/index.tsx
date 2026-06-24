@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ServiceOS — The AI Operating System for Service Businesses" },
-      { name: "description", content: "From reactive operations to intelligent performance. Deployment 001 — Drummond Heating." },
-      { property: "og:title", content: "ServiceOS — Intelligent Operations" },
+      { title: "ServiceOS - The AI Operating System for Service Businesses" },
+      { name: "description", content: "From reactive operations to intelligent performance. Deployment 001 - Drummond Heating." },
+      { property: "og:title", content: "ServiceOS - Intelligent Operations" },
       { property: "og:description", content: "One intelligence layer above every existing system." },
     ],
   }),
@@ -67,7 +67,7 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: EASE }}
         >
-          <Eyebrow className="justify-center"><span>Deployment 001 — Drummond Heating</span></Eyebrow>
+          <Eyebrow className="justify-center"><span>Deployment 001 - Drummond Heating</span></Eyebrow>
         </motion.div>
 
         <motion.h1
@@ -249,7 +249,7 @@ function WhyAINow() {
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-              For the first time, AI can understand calls, workflows, documents, emails, and operational patterns — together.
+              For the first time, AI can understand calls, workflows, documents, emails, and operational patterns - together.
             </p>
           </Reveal>
           <Reveal delay={0.35}>
@@ -293,11 +293,11 @@ function WhyAINow() {
 /* ──────────────── 5. ARCHITECTURE ──────────────── */
 function Architecture() {
   const layers = [
-    { name: "External Systems", desc: "Commusoft, QuickBooks, Slack, supplier portals, telephony, email — kept intact." },
+    { name: "External Systems", desc: "Commusoft, QuickBooks, Slack, supplier portals, telephony, email - kept intact." },
     { name: "Capture Layer", desc: "Listens across calls, workflows, documents and APIs without disrupting the operator." },
     { name: "Intelligence Layer", desc: "Structures, classifies and learns the unique grammar of your operation." },
     { name: "Agent Layer", desc: "Autonomous AI workers that act, route, follow up and approve under policy." },
-    { name: "Command Centre", desc: "A single live surface for the whole business — operations, calls, finance, risk." },
+    { name: "Command Centre", desc: "A single live surface for the whole business - operations, calls, finance, risk." },
   ];
   const [active, setActive] = useState<number | null>(null);
 
@@ -313,7 +313,7 @@ function Architecture() {
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground">
-              ServiceOS does not replace your stack. It listens, learns and orchestrates above it — turning fragmented tools into one coherent operation.
+              ServiceOS does not replace your stack. It listens, learns and orchestrates above it - turning fragmented tools into one coherent operation.
             </p>
           </Reveal>
         </div>
@@ -360,8 +360,8 @@ function CaptureLayer() {
     { icon: Phone, name: "Phone Intelligence", desc: "Every inbound and outbound call transcribed, classified and routed." },
     { icon: MonitorSmartphone, name: "Workflow Intelligence", desc: "Observes how work actually happens across desktops and tools." },
     { icon: Mail, name: "Email Intelligence", desc: "Threads understood, intents extracted, replies drafted under approval." },
-    { icon: Plug, name: "API Intelligence", desc: "Reads from Commusoft, QuickBooks, suppliers — kept in sync, in real time." },
-    { icon: Boxes, name: "Asset Intelligence", desc: "Files, photos, certificates, contracts — searchable, structured, governed." },
+    { icon: Plug, name: "API Intelligence", desc: "Reads from Commusoft, QuickBooks, suppliers - kept in sync, in real time." },
+    { icon: Boxes, name: "Asset Intelligence", desc: "Files, photos, certificates, contracts - searchable, structured, governed." },
   ];
 
   return (
@@ -470,7 +470,7 @@ function VoiceIntelligence() {
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground">
-              From the first ring to the final action — captured, understood and acted upon.
+              From the first ring to the final action - captured, understood and acted upon.
             </p>
           </Reveal>
 
@@ -502,7 +502,7 @@ function VoiceIntelligence() {
                 <Row label="Issue" value="No heating across 3 classrooms" />
                 <div className="rounded-lg border border-accent/30 bg-accent-soft p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-accent">Recommended action</div>
-                  <div className="mt-1 text-base font-medium text-foreground">Escalate immediately — dispatch nearest engineer</div>
+                  <div className="mt-1 text-base font-medium text-foreground">Escalate immediately - dispatch nearest engineer</div>
                 </div>
                 <div className="flex gap-2">
                   <button className="flex-1 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background">Approve & dispatch</button>
@@ -600,7 +600,7 @@ function CommandCentrePreview() {
         </Reveal>
         <Reveal delay={0.2}>
           <p className="mt-8 text-lg text-muted-foreground">
-            Operations, calls, finance, risk — synthesised live. The pulse of your business at a glance.
+            Operations, calls, finance, risk - synthesised live. The pulse of your business at a glance.
           </p>
         </Reveal>
       </div>
@@ -847,7 +847,7 @@ function StrategicFuture() {
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-              This is bigger than internal optimisation. ServiceOS is the future operating model for modern service businesses — built once, deployed everywhere.
+              This is bigger than internal optimisation. ServiceOS is the future operating model for modern service businesses - built once, deployed everywhere.
             </p>
           </Reveal>
         </div>

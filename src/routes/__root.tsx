@@ -77,13 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ServiceOS — The AI Operating System for Service Businesses" },
+      { title: "ServiceOS - The AI Operating System for Service Businesses" },
       {
         name: "description",
         content:
-          "ServiceOS is the intelligence layer above every system in a modern service business. Deployment 001 — Drummond Heating.",
+          "ServiceOS is the intelligence layer above every system in a modern service business. Deployment 001 - Drummond Heating.",
       },
-      { property: "og:title", content: "ServiceOS — Intelligent Operations" },
+      { property: "og:title", content: "ServiceOS - Intelligent Operations" },
       {
         property: "og:description",
         content: "From reactive operations to intelligent performance.",
