@@ -68,7 +68,13 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: EASE }}
         >
-          <Eyebrow className="justify-center"><span>Deployment 001 - Drummond Heating</span></Eyebrow>
+          <div className="flex justify-center">
+            <img
+              src={drummondLogo}
+              alt="Drummond Heating"
+              className="h-16 w-auto md:h-20"
+            />
+          </div>
         </motion.div>
 
         <motion.h1
