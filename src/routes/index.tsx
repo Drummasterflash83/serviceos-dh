@@ -102,7 +102,7 @@ function Hero() {
           transition={{ duration: 1, delay: 0.6 }}
           className="mx-auto mt-8 max-w-xl text-lg text-muted-foreground md:text-xl"
         >
-          Built from weeks of discovery inside your operation — your calls, engineers, systems, suppliers and workflows. Engineered to make all of it work as one.
+          Built from weeks of discovery inside your operation - your calls, engineers, systems, suppliers and workflows. Engineered to make all of it work as one.
         </motion.p>
 
         <motion.div
