@@ -93,7 +93,7 @@ function Hero() {
           className="text-display mt-10 text-3xl font-semibold text-foreground md:text-5xl"
         >
           A bespoke operating system,<br />
-          <span className="text-muted-foreground">designed around how Drummonds runs.</span>
+          <span className="text-muted-foreground">designed around the Drummonds workflow.</span>
         </motion.p>
 
         <motion.p
