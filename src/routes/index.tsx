@@ -14,9 +14,9 @@ import drummondLogo from "@/assets/drummond-logo.png";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ServiceOS - The AI Operating System for Service Businesses" },
-      { name: "description", content: "From reactive operations to intelligent performance. Deployment 001 - Drummond Heating." },
-      { property: "og:title", content: "ServiceOS - Intelligent Operations" },
+      { title: "ServiceOS · Bespoke Operating System for Drummonds" },
+      { name: "description", content: "A bespoke operating system designed around Drummonds' people, systems and workflows. Built from discovery, engineered to operate." },
+      { property: "og:title", content: "ServiceOS · Built for Drummonds" },
       { property: "og:description", content: "One intelligence layer above every existing system." },
     ],
   }),
@@ -92,8 +92,8 @@ function Hero() {
           transition={{ duration: 1, ease: EASE, delay: 0.35 }}
           className="text-display mt-10 text-3xl font-semibold text-foreground md:text-5xl"
         >
-          From Reactive Operations<br />
-          <span className="text-muted-foreground">to Intelligent Performance.</span>
+          A bespoke operating system,<br />
+          <span className="text-muted-foreground">designed around how Drummonds runs.</span>
         </motion.p>
 
         <motion.p
@@ -102,7 +102,7 @@ function Hero() {
           transition={{ duration: 1, delay: 0.6 }}
           className="mx-auto mt-8 max-w-xl text-lg text-muted-foreground md:text-xl"
         >
-          The AI Operating System for modern service businesses.
+          Built from weeks of discovery inside your operation — your calls, engineers, systems, suppliers and workflows. Engineered to make all of it work as one.
         </motion.p>
 
         <motion.div
@@ -112,11 +112,11 @@ function Hero() {
           className="mt-12 flex flex-wrap items-center justify-center gap-3"
         >
           <a href="#problem" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 text-sm font-medium text-background transition hover:bg-foreground/85">
-            Explore the Future
+            See What We Found
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </a>
           <Link to="/app" className="inline-flex items-center gap-2 rounded-full border border-hairline bg-white px-6 py-3.5 text-sm font-medium text-foreground transition hover:border-foreground/30">
-            View Command Centre
+            Preview Your Command Centre
           </Link>
         </motion.div>
       </motion.div>
@@ -151,20 +151,20 @@ function HiddenProblem() {
     <SectionShell id="problem">
       <div className="grid items-center gap-16 md:grid-cols-12">
         <div className="md:col-span-5">
-          <Eyebrow>The Hidden Problem</Eyebrow>
+          <Eyebrow>What Discovery Revealed</Eyebrow>
           <Reveal delay={0.05}>
             <h2 className="text-display mt-6 text-5xl font-bold md:text-6xl">
-              Most service businesses do not suffer from lack of effort.
+              Drummonds doesn't have a people problem. It has a systems problem.
             </h2>
           </Reveal>
           <Reveal delay={0.25}>
             <p className="mt-8 text-2xl text-muted-foreground md:text-3xl">
-              They suffer from <span className="text-foreground">invisible operational friction.</span>
+              The expertise is already there. What's missing is one <span className="text-foreground">connected operating layer</span> across it.
             </p>
           </Reveal>
           <Reveal delay={0.4}>
             <p className="mt-8 max-w-md text-base text-muted-foreground">
-              Each system contains part of the truth. None understand the whole business.
+              Commusoft holds the jobs. QuickBooks holds the money. Calls live on phones. Knowledge lives in heads. Nothing sees the whole picture.
             </p>
           </Reveal>
         </div>
@@ -216,10 +216,10 @@ function CostOfFriction() {
   return (
     <SectionShell alt>
       <div className="max-w-3xl">
-        <Eyebrow>The Cost of Friction</Eyebrow>
+        <Eyebrow>What It's Costing Drummonds</Eyebrow>
         <Reveal>
           <h2 className="text-display mt-6 text-5xl font-bold md:text-6xl">
-            Small inefficiencies compound into major cost.
+            Quiet inefficiencies. Loud impact on margin.
           </h2>
         </Reveal>
       </div>
@@ -300,11 +300,11 @@ function WhyAINow() {
 /* ──────────────── 5. ARCHITECTURE ──────────────── */
 function Architecture() {
   const layers = [
-    { name: "External Systems", desc: "Commusoft, QuickBooks, Slack, supplier portals, telephony, email - kept intact." },
-    { name: "Capture Layer", desc: "Listens across calls, workflows, documents and APIs without disrupting the operator." },
-    { name: "Intelligence Layer", desc: "Structures, classifies and learns the unique grammar of your operation." },
-    { name: "Agent Layer", desc: "Autonomous AI workers that act, route, follow up and approve under policy." },
-    { name: "Command Centre", desc: "A single live surface for the whole business - operations, calls, finance, risk." },
+    { name: "Your Existing Stack", desc: "Commusoft, QuickBooks, Slack, supplier portals, telephony, email - kept intact, nothing ripped out." },
+    { name: "Capture Layer", desc: "Listens across your calls, jobs, documents and APIs without disrupting how engineers and office staff work today." },
+    { name: "Intelligence Layer", desc: "Learns the grammar of Drummonds - your service types, customers, suppliers, seasonal patterns and standards." },
+    { name: "Agent Layer", desc: "Autonomous workers that triage calls, chase quotes, schedule follow-ups and approve actions under your policy." },
+    { name: "Command Centre", desc: "One live surface for Drummonds - operations, calls, finance and risk in a single pane of glass." },
   ];
   const [active, setActive] = useState<number | null>(null);
 
@@ -312,15 +312,15 @@ function Architecture() {
     <SectionShell id="architecture" alt>
       <div className="grid gap-16 md:grid-cols-12">
         <div className="md:col-span-5">
-          <Eyebrow>Introducing ServiceOS</Eyebrow>
+          <Eyebrow>The System We're Building You</Eyebrow>
           <Reveal>
             <h2 className="text-display mt-6 text-5xl font-bold md:text-6xl">
-              One intelligence layer above every existing system.
+              One intelligent layer sitting above everything Drummonds already uses.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground">
-              ServiceOS does not replace your stack. It listens, learns and orchestrates above it - turning fragmented tools into one coherent operation.
+              We are not replacing your stack. We are giving it a brain - one that listens, learns and orchestrates across every system you already rely on.
             </p>
           </Reveal>
         </div>
@@ -846,15 +846,15 @@ function StrategicFuture() {
     <SectionShell>
       <div className="grid items-center gap-16 md:grid-cols-12">
         <div className="md:col-span-6">
-          <Eyebrow>Strategic Future</Eyebrow>
+          <Eyebrow>Built For Drummonds, Not Off The Shelf</Eyebrow>
           <Reveal>
-            <h2 className="text-display mt-6 text-5xl font-bold md:text-7xl">
-              Drummond is <span className="text-accent">deployment 001</span>.
+            <h2 className="text-display mt-6 text-5xl font-bold md:text-6xl md:text-7xl">
+              Shaped by your operation. Tuned to your standards.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-              This is bigger than internal optimisation. ServiceOS is the future operating model for modern service businesses - built once, deployed everywhere.
+              Every workflow, agent, model and screen has been mapped to the way Drummonds actually works - from how calls come in, to how engineers report back, to how invoices clear. This is your operating system, not a template.
             </p>
           </Reveal>
         </div>
@@ -886,7 +886,7 @@ function StrategicFuture() {
               <circle cx={120} cy={110} r={5} className="fill-accent" />
               <circle cx={120} cy={110} r={14} className="fill-accent/20 animate-ping" />
               <text x={140} y={114} className="fill-foreground" fontSize="11" fontFamily="Inter Tight">
-                Drummond · 001
+                Drummonds · HQ
               </text>
             </svg>
           </div>
@@ -910,7 +910,7 @@ function Closing() {
           transition={{ duration: 1.2, ease: EASE }}
           className="text-display text-5xl font-bold leading-[1.05] md:text-7xl"
         >
-          Drummond already has the expertise.
+          Drummonds already has the expertise.
         </motion.h2>
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
@@ -919,16 +919,16 @@ function Closing() {
           transition={{ duration: 1.2, delay: 0.5, ease: EASE }}
           className="text-display mt-8 text-5xl font-bold leading-[1.05] text-background/60 md:text-7xl"
         >
-          ServiceOS unlocks the intelligence.
+          We're building the system that unlocks it.
         </motion.h2>
 
         <Reveal delay={0.8} className="mt-16 flex flex-wrap items-center justify-center gap-3">
           <a href="mailto:hello@serviceos.app" className="group inline-flex items-center gap-2 rounded-full bg-background px-8 py-4 text-base font-medium text-foreground transition hover:bg-background/90">
-            Begin Deployment 001
+            Approve Build · Phase 1
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </a>
           <a href="mailto:hello@serviceos.app" className="inline-flex items-center gap-2 rounded-full border border-background/20 px-8 py-4 text-base font-medium text-background transition hover:bg-background/10">
-            Book Phase 0 Discovery
+            Review Discovery Findings
           </a>
         </Reveal>
       </div>
@@ -940,8 +940,8 @@ function Footer() {
   return (
     <footer className="border-t border-background/10 bg-foreground px-6 py-10 text-background/60">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 text-xs md:flex-row">
-        <span>© {new Date().getFullYear()} ServiceOS · Deployment 001</span>
-        <span className="font-mono">v0.1 · Drummond Heating</span>
+        <span>© {new Date().getFullYear()} ServiceOS · Built bespoke for Drummonds</span>
+        <span className="font-mono">v0.1 · Drummonds Operating System</span>
       </div>
     </footer>
   );

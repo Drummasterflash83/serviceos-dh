@@ -77,23 +77,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ServiceOS — The AI Operating System for Service Businesses" },
+      { title: "ServiceOS · Bespoke Operating System for Drummonds" },
       {
         name: "description",
         content:
-          "ServiceOS is the intelligence layer above every system in a modern service business. Deployment 001 — Drummond Heating.",
+          "A bespoke operating system designed around Drummonds' people, systems and workflows - built from discovery, engineered to operate.",
       },
-      { property: "og:title", content: "ServiceOS — The AI Operating System for Service Businesses" },
+      { property: "og:title", content: "ServiceOS · Built for Drummonds" },
       {
         property: "og:description",
-        content: "From reactive operations to intelligent performance.",
+        content:
+          "The intelligence layer above every system Drummonds already uses - shaped by discovery, tuned to your standards.",
       },
-      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "ServiceOS — The AI Operating System for Service Businesses" },
-      { name: "description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
-      { property: "og:description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
-      { name: "twitter:description", content: "ServiceOS is an AI-powered operating system for service businesses, transforming operations from reactive to intelligent." },
+      { name: "twitter:title", content: "ServiceOS · Built for Drummonds" },
+      { name: "description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
+      { property: "og:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
+      { name: "twitter:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
     ],
