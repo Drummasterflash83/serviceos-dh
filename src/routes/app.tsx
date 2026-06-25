@@ -1131,425 +1131,411 @@ function Learn() {
 }
 
 
+
 /* ────── INTELLIGENCE ────── */
+type Pillar = "ops" | "finance" | "customer" | "compliance";
+
+type Upgrade = {
+  id: string;
+  pillar: Pillar;
+  title: string;
+  insight: string;            // what we observed
+  recommendation: string;     // what to do
+  via: "Automation" | "AI Agent" | "ServiceOS Workflow" | "Voice AI" | "Process Change";
+  effort: "Low" | "Med" | "High";
+  confidence: number;         // 0-100
+  uplift: {
+    timeSaved?: string;
+    profit?: string;
+    turnover?: string;
+    csat?: string;
+    risk?: string;
+  };
+  sources: string[];
+  status: "ready" | "draft" | "review";
+};
+
+const PILLARS: { key: Pillar; label: string; icon: typeof Brain; tone: string; desc: string }[] = [
+  { key: "ops", label: "Operations", icon: Workflow, tone: "accent", desc: "Time, throughput, engineer utilisation" },
+  { key: "finance", label: "Finance", icon: Banknote, tone: "success", desc: "Cash, margin, debt, forecasting" },
+  { key: "customer", label: "Customer", icon: Brain, tone: "warning", desc: "Sentiment, retention, CSAT, NPS" },
+  { key: "compliance", label: "Compliance", icon: ShieldCheck, tone: "muted", desc: "Certifications, audit, safety" },
+];
+
+const PILLAR_HEALTH: Record<Pillar, { score: number; trend: string; openUpgrades: number; potential: string }> = {
+  ops:        { score: 81, trend: "+3 vs last wk", openUpgrades: 6, potential: "~32 hrs/wk saved" },
+  finance:    { score: 88, trend: "+2 vs last wk", openUpgrades: 4, potential: "£48k cash unlocked" },
+  customer:   { score: 76, trend: "−2 vs last wk", openUpgrades: 5, potential: "+8pt CSAT" },
+  compliance: { score: 94, trend: "stable",         openUpgrades: 3, potential: "0 audit gaps" },
+};
+
+const UPGRADES: Upgrade[] = [
+  {
+    id: "u1", pillar: "ops",
+    title: "Auto-triage Monday voicemail before 09:00",
+    insight: "34% of Monday jobs overran > 30 mins · correlates with untriaged weekend voicemail",
+    recommendation: "Reception Agent classifies + drafts callbacks at 07:30 Monday so dispatch starts from a clean board",
+    via: "AI Agent", effort: "Low", confidence: 88,
+    uplift: { timeSaved: "9 hrs/wk", profit: "+£4.2k/mo", csat: "+4pt" },
+    sources: ["Phone Calls", "Calendar", "Commusoft"], status: "ready",
+  },
+  {
+    id: "u2", pillar: "ops",
+    title: "Procurement Agent for supplier quote prep",
+    insight: "22 mins avg across 184 obs · 74% deterministic steps across 3 apps",
+    recommendation: "Spin up Procurement Agent in draft mode · gather pricing, normalise SKUs, pre-fill quote",
+    via: "AI Agent", effort: "Med", confidence: 91,
+    uplift: { timeSaved: "14 hrs/wk", profit: "+£2.8k/mo", turnover: "+6% quote velocity" },
+    sources: ["Desktop Workflow", "Email", "Drive"], status: "ready",
+  },
+  {
+    id: "u3", pillar: "ops",
+    title: "One-click 'job → invoice' across Commusoft + QuickBooks",
+    insight: "Path crosses 4 apps and 11 clicks · runs 412×/month per engineer cohort",
+    recommendation: "ServiceOS workflow stitches the path; engineer signs off, invoice issues automatically",
+    via: "ServiceOS Workflow", effort: "Low", confidence: 95,
+    uplift: { timeSaved: "11 hrs/wk", profit: "+£1.9k/mo", turnover: "Invoice day −2.4d" },
+    sources: ["Commusoft", "QuickBooks", "Desktop Workflow"], status: "draft",
+  },
+  {
+    id: "u4", pillar: "finance",
+    title: "Tone-aware aged debt chase",
+    insight: "Top 3 debtors = 54% of >60d debt · two unanswered chases > 14 days",
+    recommendation: "Finance Agent runs personalised chase cadence; escalates after 2 ignored steps",
+    via: "AI Agent", effort: "Low", confidence: 96,
+    uplift: { profit: "+£26.1k cash", turnover: "DSO −9 days" },
+    sources: ["QuickBooks", "Email"], status: "ready",
+  },
+  {
+    id: "u5", pillar: "finance",
+    title: "Shift invoice-send to Tue/Wed",
+    insight: "Friday invoices paid 4.2d slower on average",
+    recommendation: "Workflow change: schedule invoice send mid-week unless customer explicitly prefers Friday",
+    via: "Process Change", effort: "Low", confidence: 84,
+    uplift: { profit: "+£3.4k/mo cashflow", turnover: "DSO −2 days" },
+    sources: ["QuickBooks"], status: "ready",
+  },
+  {
+    id: "u6", pillar: "finance",
+    title: "Daily 30/60/90 cash forecast",
+    insight: "No live cash position · finance reviews weekly",
+    recommendation: "ServiceOS auto-publishes morning cash + pipeline-weighted forecast to leadership",
+    via: "ServiceOS Workflow", effort: "Low", confidence: 92,
+    uplift: { profit: "Earlier decisions", risk: "−1 surprise/qtr" },
+    sources: ["QuickBooks", "Commusoft"], status: "draft",
+  },
+  {
+    id: "u7", pillar: "customer",
+    title: "30-min post-visit summary SMS + email",
+    insight: "37% of complaint calls in 14d involve delayed post-visit comms",
+    recommendation: "Voice AI summarises engineer notes + sends visit summary within 30 mins of job close",
+    via: "Voice AI", effort: "Low", confidence: 92,
+    uplift: { csat: "+9pt", timeSaved: "4 hrs/wk", risk: "−40% complaint volume" },
+    sources: ["Phone Calls", "Commusoft"], status: "ready",
+  },
+  {
+    id: "u8", pillar: "customer",
+    title: "Account-risk alerts for sentiment drift",
+    insight: "ABC School · 4 frustrated calls in 6 wks · tone score 0.62→0.21",
+    recommendation: "Customer Care Agent flags accounts on 2+ negative signals in 14d · books review call",
+    via: "AI Agent", effort: "Low", confidence: 84,
+    uplift: { turnover: "Protect £18k contract", csat: "+5pt" },
+    sources: ["Phone Calls", "Email", "Commusoft"], status: "ready",
+  },
+  {
+    id: "u9", pillar: "customer",
+    title: "Sub-60s acknowledge for web enquiries",
+    insight: "Avg first-response 4h 12m · mobile converts 28% better when replied < 30 mins",
+    recommendation: "Inbox Agent auto-acknowledges + qualifies enquiry within 60s · routes to right owner",
+    via: "AI Agent", effort: "Low", confidence: 90,
+    uplift: { turnover: "+12% web conversion", csat: "+6pt" },
+    sources: ["Website Forms", "Email"], status: "ready",
+  },
+  {
+    id: "u10", pillar: "customer",
+    title: "Missed callback recovery SLA",
+    insight: "11 callbacks last wk never converted · est. £7,840 value",
+    recommendation: "Auto-create callback task with 4-hour SLA + reminder · escalates after breach",
+    via: "Automation", effort: "Low", confidence: 82,
+    uplift: { turnover: "+£7.8k/wk recovered", csat: "+3pt" },
+    sources: ["Phone Calls", "Commusoft"], status: "ready",
+  },
+  {
+    id: "u11", pillar: "compliance",
+    title: "Certification expiry → auto-scheduled renewals",
+    insight: "27 customer certs expire in 60d across 19 sites · none surfaced in Commusoft",
+    recommendation: "Compliance Agent watches expiry · auto-books renewal visit + notifies customer",
+    via: "AI Agent", effort: "Low", confidence: 98,
+    uplift: { turnover: "Renewal revenue captured", risk: "0 audit gaps" },
+    sources: ["Google Drive", "Commusoft"], status: "ready",
+  },
+  {
+    id: "u12", pillar: "compliance",
+    title: "Block job-close on missing signatures",
+    insight: "6% of cert PDFs missing engineer signature at close",
+    recommendation: "Workflow: job cannot be marked complete until required cert + sig present",
+    via: "ServiceOS Workflow", effort: "Low", confidence: 95,
+    uplift: { risk: "−100% missing-sig defect", csat: "+2pt" },
+    sources: ["Documents", "Commusoft"], status: "draft",
+  },
+  {
+    id: "u13", pillar: "ops",
+    title: "PPM scheduling smoothing across the month",
+    insight: "PPM clusters in last week of month · capacity strain + travel reschedules",
+    recommendation: "Scheduling Agent reflows PPM evenly using engineer capacity model",
+    via: "AI Agent", effort: "Med", confidence: 78,
+    uplift: { timeSaved: "6 hrs/wk", profit: "+£1.6k/mo utilisation", csat: "+3pt" },
+    sources: ["Calendar", "Commusoft"], status: "review",
+  },
+];
+
 function Intelligence() {
-  const [tab, setTab] = useState<"all" | "ops" | "finance" | "customer" | "compliance">("all");
+  const [pillar, setPillar] = useState<"all" | Pillar>("all");
+  const [via, setVia] = useState<"all" | Upgrade["via"]>("all");
 
-  const pipeline = [
-    { label: "Raw signal", icon: Radio, count: "63,290", sub: "ingested 30d" },
-    { label: "Normalise", icon: Filter, count: "62,914", sub: "99.4% parsed" },
-    { label: "Classify", icon: Layers, count: "61,802", sub: "412 categories" },
-    { label: "Enrich", icon: Sparkles, count: "58,440", sub: "entity + context" },
-    { label: "Link to entity", icon: Network, count: "57,118", sub: "98% match rate" },
-    { label: "Insight", icon: Brain, count: "1,284", sub: "candidates surfaced" },
-    { label: "Recommend", icon: Target, count: "186", sub: "actionable" },
-  ];
+  const filtered = UPGRADES.filter(
+    (u) => (pillar === "all" || u.pillar === pillar) && (via === "all" || u.via === via),
+  ).sort((a, b) => b.confidence - a.confidence);
 
-  const kpis = [
-    { l: "Active insights", v: "186", delta: "+24 this week", tone: "accent" as const, icon: Sparkles },
-    { l: "Open anomalies", v: "11", delta: "3 high severity", tone: "warning" as const, icon: AlertTriangle },
-    { l: "Automation candidates", v: "12", delta: "ROI > 60%", tone: "success" as const, icon: Zap },
-    { l: "Avg time-to-insight", v: "1m 42s", delta: "-38% vs last month", tone: "muted" as const, icon: Clock },
-  ];
+  const totals = {
+    upgrades: UPGRADES.length,
+    time: "44 hrs/wk",
+    profit: "+£14.2k/mo",
+    turnover: "+£42k/qtr",
+    csat: "+8pt",
+  };
 
-  const insights = [
-    {
-      cat: "ops", severity: "high", score: 92, icon: AlertTriangle,
-      title: "Engineer day overruns clustering on Mondays",
-      body: "Across the last 6 Mondays, 34% of dispatched jobs overran by > 30 mins. Pattern correlates with weekend voicemail volume not triaged before 09:00.",
-      sources: ["Calendar", "Phone Calls", "Commusoft"],
-      confidence: 88, impact: "£4.2k/mo lost capacity", action: "Auto-triage Monday voicemail at 08:00",
-    },
-    {
-      cat: "finance", severity: "high", score: 90, icon: Banknote,
-      title: "Top 3 debtors hold 54% of aged debt > 60d",
-      body: "Three commercial customers carry £26.1k of the £48.2k aged debt > 60d. Two have unanswered email chases > 14 days old.",
-      sources: ["QuickBooks", "Email"],
-      confidence: 96, impact: "£26.1k cash unlocked", action: "Escalate to account manager chase",
-    },
-    {
-      cat: "customer", severity: "medium", score: 86, icon: Brain,
-      title: "ABC School sentiment trending down",
-      body: "4 frustrated calls in 6 weeks. Email tone score dropped from 0.62 to 0.21. PPM visit feedback flagged 'engineer time pressure' twice.",
-      sources: ["Phone Calls", "Email", "Commusoft"],
-      confidence: 84, impact: "£18k contract at risk", action: "Schedule account review call",
-    },
-    {
-      cat: "ops", severity: "medium", score: 81, icon: TrendingUp,
-      title: "Quote → approval bottleneck (supplier path)",
-      body: "Supplier quote prep averages 22 mins across 184 observations. 74% of steps are deterministic and repeatable across 3 apps.",
-      sources: ["Desktop Workflow", "Email", "Drive"],
-      confidence: 91, impact: "~14 hrs/week", action: "Deploy Procurement Agent (draft mode)",
-    },
-    {
-      cat: "compliance", severity: "high", score: 89, icon: ShieldCheck,
-      title: "27 customer certifications expire in 60 days",
-      body: "F-gas, gas safe and PAT certificates expiring across 19 customer sites. None currently surfaced inside Commusoft visit planning.",
-      sources: ["Google Drive", "Commusoft"],
-      confidence: 98, impact: "Renewal revenue + compliance risk",
-      action: "Auto-schedule renewal visits + customer notice",
-    },
-    {
-      cat: "ops", severity: "low", score: 74, icon: CheckCircle2,
-      title: "Missed callback revenue detected",
-      body: "11 callbacks logged last week never converted to a follow-up job. Estimated value £7,840 based on average job size for caller type.",
-      sources: ["Phone Calls", "Commusoft"],
-      confidence: 82, impact: "£7.8k/wk recoverable", action: "Add callback SLA + reminder",
-    },
-  ];
-
-  const anomalies = [
-    { t: "Spike in 'parts shortage' mentions across Slack channels", when: "2h ago", sev: "warning" as const },
-    { t: "Supplier ACME lead time jumped from 3d → 11d", when: "5h ago", sev: "warning" as const },
-    { t: "QuickBooks payment-matching confidence dropped 7%", when: "yesterday", sev: "muted" as const },
-    { t: "Engineer #4 calendar gap pattern · 3 weeks running", when: "yesterday", sev: "accent" as const },
-  ];
-
-  const automations = [
-    { name: "Supplier quote preparation", freq: 184, dur: "22m", risk: "low", score: 92, status: "ready" },
-    { name: "Engineer job sheet → invoice", freq: 412, dur: "8m", risk: "low", score: 88, status: "ready" },
-    { name: "Customer follow-up", freq: 246, dur: "6m", risk: "low", score: 86, status: "draft" },
-    { name: "PPM scheduling smoothing", freq: 96, dur: "31m", risk: "med", score: 78, status: "review" },
-    { name: "Aged debt chase sequence", freq: 64, dur: "9m", risk: "med", score: 74, status: "review" },
-  ];
-
-  const forecasts = [
-    { l: "Revenue · next 30d", v: "£182.4k", trend: "+4.1%", tone: "success" as const },
-    { l: "Cash position · 60d", v: "£94.6k", trend: "+£12.8k", tone: "success" as const },
-    { l: "Engineer utilisation", v: "76%", trend: "+5pt", tone: "accent" as const },
-    { l: "Customer churn risk", v: "3 accounts", trend: "+1 vs last wk", tone: "warning" as const },
-  ];
-
-  const models = [
-    { name: "Fast classify", use: "Message + call intent · entity extraction · urgency", load: 64, tone: "success" as const },
-    { name: "Deep reasoning", use: "Workflow analysis · SOP gen · automation planning", load: 28, tone: "accent" as const },
-    { name: "Vision / OCR", use: "Screenshots · PDFs · supplier docs · forms", load: 41, tone: "success" as const },
-    { name: "Embeddings", use: "Semantic search · similar-issue · SOP match", load: 72, tone: "accent" as const },
-  ];
-
-  const stream = [
-    { icon: Phone, t: "Call classified · 'boiler not firing' · urgency HIGH", who: "Reception Agent", ago: "just now" },
-    { icon: Mail, t: "Quote chase drafted for Greenfield Schools (£4,180)", who: "Inbox Agent", ago: "12s" },
-    { icon: Database, t: "Job #J-10421 enriched with engineer history + 3 prior visits", who: "Pipeline", ago: "28s" },
-    { icon: FileText, t: "Supplier invoice OCR'd · 14 line items · matched to PO-882", who: "Pipeline", ago: "1m" },
-    { icon: AlertTriangle, t: "Anomaly: ACME lead time changed 3d → 11d", who: "Procurement Agent", ago: "5m" },
-    { icon: Brain, t: "Pattern detected: Monday voicemail → engineer overrun", who: "Insight engine", ago: "12m" },
-    { icon: ShieldCheck, t: "Certification expiry · 4 customers flagged for renewal", who: "Compliance Agent", ago: "22m" },
-  ];
-
-  const filtered = tab === "all" ? insights : insights.filter((i) => i.cat === tab);
+  const viaOptions: ("all" | Upgrade["via"])[] = ["all", "AI Agent", "Automation", "ServiceOS Workflow", "Voice AI", "Process Change"];
 
   return (
     <div className="space-y-6">
-      {/* Header strip */}
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      {/* Hero · projected uplift */}
+      <div className="rounded-2xl border border-hairline bg-foreground p-6 text-background">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-background/60">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-background text-foreground">
                 <Brain className="h-3 w-3" />
               </span>
-              Intelligence layer · always listening, always learning
+              Intelligence · active recommendations
             </div>
             <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
-              The business, observing itself.
+              Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Every signal from the capture layer is normalised, classified, enriched, linked to a customer, job or asset, and turned into an insight or a recommended action. This view is live.
+            <p className="mt-2 text-sm text-background/70">
+              Each card below is an upgrade ServiceOS can ship — via automation, an AI agent, or a workflow change — with projected impact on time, profit, turnover, customer satisfaction and risk.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
+          <div className="flex items-center gap-2 rounded-full bg-background/10 px-3 py-1.5 text-[11px] font-medium">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-            Live · 1,284 insights generated · 186 awaiting action
+            Always listening · always learning
           </div>
         </div>
 
-        {/* KPI row */}
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {kpis.map((k) => (
-            <div key={k.l} className="rounded-xl border border-hairline p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{k.l}</div>
-                <div className={cn(
-                  "grid h-7 w-7 place-items-center rounded-lg",
-                  k.tone === "accent" && "bg-accent/10 text-accent",
-                  k.tone === "warning" && "bg-warning/10 text-warning",
-                  k.tone === "success" && "bg-success/10 text-success",
-                  k.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
-                  <k.icon className="h-3.5 w-3.5" />
-                </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {[
+            { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
+            { l: "Time saved", v: totals.time, sub: "if all shipped", icon: Clock },
+            { l: "Profit uplift", v: totals.profit, sub: "monthly run-rate", icon: TrendingUp },
+            { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
+            { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
+          ].map((k) => (
+            <div key={k.l} className="rounded-xl border border-background/15 bg-background/5 p-4">
+              <div className="flex items-center justify-between text-background/70">
+                <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-2 text-2xl font-bold tabular">{k.v}</div>
-              <div className="mt-0.5 text-[11px] text-muted-foreground">{k.delta}</div>
+              <div className="text-display mt-1.5 text-xl font-bold tabular text-background">{k.v}</div>
+              <div className="text-[10px] text-background/60">{k.sub}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Pipeline */}
-      <div className="rounded-2xl border border-hairline bg-white p-5">
-        <div className="flex items-baseline justify-between">
-          <div className="text-sm font-semibold">Intelligence pipeline · last 30 days</div>
-          <div className="text-[11px] text-muted-foreground">Raw → Recommend</div>
-        </div>
-        <div className="mt-4 grid gap-2 md:grid-cols-7">
-          {pipeline.map((s, i) => (
-            <div key={s.label} className="relative rounded-xl border border-hairline bg-surface-alt p-3">
-              <div className="flex items-center gap-2">
-                <span className="grid h-6 w-6 place-items-center rounded-md bg-foreground text-background">
-                  <s.icon className="h-3 w-3" />
-                </span>
-                <div className="text-[11px] font-medium">{s.label}</div>
-              </div>
-              <div className="text-display mt-2 text-base font-bold tabular">{s.count}</div>
-              <div className="text-[10px] text-muted-foreground">{s.sub}</div>
-              {i < pipeline.length - 1 && (
-                <ChevronRight className="absolute -right-2 top-1/2 hidden h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground md:block" />
+      {/* Pillar health */}
+      <div className="grid gap-3 md:grid-cols-4">
+        {PILLARS.map((p) => {
+          const h = PILLAR_HEALTH[p.key];
+          const active = pillar === p.key;
+          return (
+            <button
+              key={p.key}
+              onClick={() => setPillar(active ? "all" : p.key)}
+              className={cn(
+                "rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
+                active ? "border-foreground" : "border-hairline",
               )}
-            </div>
-          ))}
-        </div>
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "grid h-7 w-7 place-items-center rounded-lg",
+                    p.tone === "accent" && "bg-accent/10 text-accent",
+                    p.tone === "success" && "bg-success/10 text-success",
+                    p.tone === "warning" && "bg-warning/10 text-warning",
+                    p.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}>
+                    <p.icon className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="text-sm font-semibold">{p.label}</div>
+                </div>
+                <div className="text-display text-xl font-bold tabular">{h.score}</div>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">{p.desc}</div>
+              <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[11px]">
+                <span className="text-muted-foreground">{h.openUpgrades} upgrades</span>
+                <span className="font-medium">{h.potential}</span>
+              </div>
+              <div className="mt-1 text-[10px] text-muted-foreground">{h.trend}</div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Insights + Live stream */}
-      <div className="grid gap-3 md:grid-cols-12">
-        <div className="md:col-span-8">
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <div className="text-display text-lg font-semibold">Active insights</div>
-              <div className="text-xs text-muted-foreground">Synthesised from every input, scored by confidence and impact</div>
-            </div>
-            <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
-              {(["all", "ops", "finance", "customer", "compliance"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={cn(
-                    "rounded-full px-2.5 py-1 capitalize transition",
-                    tab === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-display text-lg font-semibold">Recommended performance upgrades</div>
+          <div className="text-xs text-muted-foreground">
+            Ranked by confidence · {filtered.length} matching {pillar === "all" ? "all pillars" : pillar}{via !== "all" && ` · ${via}`}
           </div>
-
-          <div className="space-y-3">
-            {filtered.map((i) => (
-              <div key={i.title} className="rounded-2xl border border-hairline bg-white p-5">
-                <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-                    i.severity === "high" && "bg-warning/10 text-warning",
-                    i.severity === "medium" && "bg-accent/10 text-accent",
-                    i.severity === "low" && "bg-success/10 text-success",
-                  )}>
-                    <i.icon className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <div className="text-sm font-semibold">{i.title}</div>
-                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
-                        <span className={cn(
-                          "rounded-full px-2 py-0.5 font-medium",
-                          i.severity === "high" && "bg-warning/10 text-warning",
-                          i.severity === "medium" && "bg-accent/10 text-accent",
-                          i.severity === "low" && "bg-success/10 text-success",
-                        )}>{i.severity}</span>
-                        <span className="text-muted-foreground">Score</span>
-                        <span className="font-mono tabular text-foreground">{i.score}</span>
-                      </div>
-                    </div>
-                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{i.body}</p>
-
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                        <div className="mt-1 flex items-center gap-2">
-                          <div className="h-1 flex-1 rounded-full bg-hairline">
-                            <div className="h-full rounded-full bg-foreground" style={{ width: `${i.confidence}%` }} />
-                          </div>
-                          <span className="font-mono text-[11px] tabular">{i.confidence}%</span>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Impact</div>
-                        <div className="mt-1 text-xs font-medium">{i.impact}</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-hairline pt-3">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {i.sources.map((s) => (
-                          <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] text-muted-foreground">{s}</span>
-                        ))}
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium">
-                        <Sparkles className="h-3 w-3 text-accent" />
-                        {i.action}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
+            {(["all", "ops", "finance", "customer", "compliance"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setPillar(t)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 capitalize transition",
+                  pillar === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
+            {viaOptions.map((v) => (
+              <button
+                key={v}
+                onClick={() => setVia(v)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 transition",
+                  via === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {v === "all" ? "All delivery" : v}
+              </button>
             ))}
           </div>
         </div>
-
-        {/* Live stream */}
-        <div className="md:col-span-4">
-          <div className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="flex items-center justify-between">
-              <div className="text-display text-sm font-semibold">Live signal stream</div>
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> live
-              </span>
-            </div>
-            <ul className="mt-4 space-y-3">
-              {stream.map((s, idx) => (
-                <li key={idx} className="flex items-start gap-3 border-b border-hairline pb-3 last:border-0">
-                  <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-surface-alt">
-                    <s.icon className="h-3.5 w-3.5 text-foreground" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[12px] leading-snug">{s.t}</div>
-                    <div className="mt-0.5 text-[10px] text-muted-foreground">{s.who} · {s.ago}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Anomalies */}
-          <div className="mt-3 rounded-2xl border border-hairline bg-white p-5">
-            <div className="flex items-center gap-2 text-display text-sm font-semibold">
-              <AlertTriangle className="h-4 w-4 text-warning" /> Anomalies
-            </div>
-            <ul className="mt-3 space-y-2.5">
-              {anomalies.map((a) => (
-                <li key={a.t} className="flex items-start gap-2 text-xs">
-                  <span className={cn(
-                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                    a.sev === "warning" && "bg-warning",
-                    a.sev === "accent" && "bg-accent",
-                    a.sev === "muted" && "bg-muted-foreground/40",
-                  )} />
-                  <div className="flex-1">
-                    <div className="leading-snug">{a.t}</div>
-                    <div className="mt-0.5 text-[10px] text-muted-foreground">{a.when}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
       </div>
 
-      {/* Process mining + forecasts */}
-      <div className="grid gap-3 md:grid-cols-12">
-        <div className="md:col-span-7 rounded-2xl border border-hairline bg-white p-5">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <div className="text-display text-sm font-semibold">Process mining · automation candidates</div>
-              <div className="text-[11px] text-muted-foreground">Scored on frequency, duration, risk and feasibility</div>
-            </div>
-            <Gauge className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="mt-4 overflow-hidden rounded-xl border border-hairline">
-            <table className="w-full text-xs">
-              <thead className="bg-surface-alt text-[10px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left font-medium">Workflow</th>
-                  <th className="px-3 py-2 text-right font-medium">Frequency</th>
-                  <th className="px-3 py-2 text-right font-medium">Avg time</th>
-                  <th className="px-3 py-2 text-right font-medium">Risk</th>
-                  <th className="px-3 py-2 text-right font-medium">Score</th>
-                  <th className="px-3 py-2 text-right font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {automations.map((a) => (
-                  <tr key={a.name} className="border-t border-hairline">
-                    <td className="px-3 py-2.5 font-medium">{a.name}</td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular">{a.freq}</td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular">{a.dur}</td>
-                    <td className="px-3 py-2.5 text-right">
-                      <span className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                        a.risk === "low" && "bg-success/10 text-success",
-                        a.risk === "med" && "bg-warning/10 text-warning",
-                      )}>{a.risk}</span>
-                    </td>
-                    <td className="px-3 py-2.5 text-right">
-                      <div className="ml-auto flex items-center justify-end gap-2">
-                        <div className="h-1 w-16 rounded-full bg-hairline">
-                          <div className="h-full rounded-full bg-accent" style={{ width: `${a.score}%` }} />
-                        </div>
-                        <span className="font-mono tabular">{a.score}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2.5 text-right">
-                      <span className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                        a.status === "ready" && "bg-success/10 text-success",
-                        a.status === "draft" && "bg-accent/10 text-accent",
-                        a.status === "review" && "bg-surface-alt text-muted-foreground",
-                      )}>{a.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="md:col-span-5 space-y-3">
-          <div className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="flex items-center gap-2 text-display text-sm font-semibold">
-              <TrendingUp className="h-4 w-4 text-accent" /> Forecasts
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {forecasts.map((f) => (
-                <div key={f.l} className="rounded-xl border border-hairline p-3">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{f.l}</div>
-                  <div className="text-display mt-1 text-lg font-bold tabular">{f.v}</div>
-                  <div className={cn(
-                    "mt-0.5 text-[10px]",
-                    f.tone === "success" && "text-success",
-                    f.tone === "accent" && "text-accent",
-                    f.tone === "warning" && "text-warning",
-                  )}>{f.trend}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="flex items-center gap-2 text-display text-sm font-semibold">
-              <Eye className="h-4 w-4 text-muted-foreground" /> Model routing
-            </div>
-            <div className="mt-3 space-y-3">
-              {models.map((m) => (
-                <div key={m.name}>
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-xs font-medium">{m.name}</div>
-                    <div className="font-mono text-[11px] tabular text-muted-foreground">{m.load}%</div>
-                  </div>
-                  <div className="mt-0.5 text-[10px] text-muted-foreground">{m.use}</div>
-                  <div className="mt-1 h-1 rounded-full bg-hairline">
-                    <div className={cn(
-                      "h-full rounded-full",
-                      m.tone === "success" && "bg-success",
-                      m.tone === "accent" && "bg-accent",
-                    )} style={{ width: `${m.load}%` }} />
+      {/* Upgrade cards */}
+      <div className="grid gap-3 md:grid-cols-2">
+        {filtered.map((u) => {
+          const pillarMeta = PILLARS.find((p) => p.key === u.pillar)!;
+          return (
+            <div key={u.id} className="flex flex-col rounded-2xl border border-hairline bg-white p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "grid h-8 w-8 place-items-center rounded-lg",
+                    pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                    pillarMeta.tone === "success" && "bg-success/10 text-success",
+                    pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                    pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}>
+                    <pillarMeta.icon className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{pillarMeta.label}</div>
+                    <div className="text-sm font-semibold leading-tight">{u.title}</div>
                   </div>
                 </div>
-              ))}
+                <span className={cn(
+                  "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                  u.status === "ready" && "bg-success/10 text-success",
+                  u.status === "draft" && "bg-accent/10 text-accent",
+                  u.status === "review" && "bg-surface-alt text-muted-foreground",
+                )}>{u.status}</span>
+              </div>
+
+              <div className="mt-4 space-y-2 text-xs">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
+                  <div className="mt-0.5 leading-relaxed text-foreground/80">{u.insight}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
+                  <div className="mt-0.5 leading-relaxed">{u.recommendation}</div>
+                </div>
+              </div>
+
+              {/* Uplift chips */}
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {u.uplift.timeSaved && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[10px]">
+                    <Clock className="h-3 w-3" /> {u.uplift.timeSaved}
+                  </span>
+                )}
+                {u.uplift.profit && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] text-success">
+                    <Banknote className="h-3 w-3" /> Profit {u.uplift.profit}
+                  </span>
+                )}
+                {u.uplift.turnover && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">
+                    <TrendingUp className="h-3 w-3" /> Turnover {u.uplift.turnover}
+                  </span>
+                )}
+                {u.uplift.csat && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] text-warning">
+                    <Brain className="h-3 w-3" /> CSAT {u.uplift.csat}
+                  </span>
+                )}
+                {u.uplift.risk && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[10px] text-muted-foreground">
+                    <ShieldCheck className="h-3 w-3" /> Risk {u.uplift.risk}
+                  </span>
+                )}
+              </div>
+
+              {/* Meta row */}
+              <div className="mt-4 grid grid-cols-3 gap-3 border-t border-hairline pt-3 text-[11px]">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Delivered via</div>
+                  <div className="mt-0.5 font-medium">{u.via}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Effort</div>
+                  <div className="mt-0.5 font-medium">{u.effort}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <div className="h-1 flex-1 rounded-full bg-hairline">
+                      <div className="h-full rounded-full bg-foreground" style={{ width: `${u.confidence}%` }} />
+                    </div>
+                    <span className="font-mono tabular">{u.confidence}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-1">
+                  {u.sources.map((s) => (
+                    <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] text-muted-foreground">{s}</span>
+                  ))}
+                </div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
+                  <Sparkles className="h-3 w-3" /> Ship upgrade
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
