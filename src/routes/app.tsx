@@ -107,6 +107,8 @@ function AppShell() {
         <main className="flex-1 p-6">
           {view === "dashboard" && <Dashboard />}
           {view === "learn" && <Learn />}
+          {view === "intelligence" && <Intelligence />}
+
           {view === "operations" && <Operations />}
           {view === "calls" && <Calls />}
           {view === "workflow" && <WorkflowView />}
