@@ -427,17 +427,25 @@ function Dashboard() {
           {PILLARS.map((p) => {
             const h = PILLAR_HEALTH[p.key];
             return (
-              <div key={p.key} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <button
+                key={p.key}
+                onClick={() => setDetail(`pillar:${p.key}`)}
+                className="group rounded-xl border border-hairline bg-surface-alt p-4 text-left transition hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[var(--shadow-soft)]"
+              >
                 <div className="flex h-5 items-center justify-between text-muted-foreground">
                   <div className="text-[10px] font-medium uppercase tracking-wider">{p.label}</div>
                   <p.icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{h.score}</div>
-                <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{h.trend}</div>
-              </div>
+                <div className="mt-2 flex h-4 items-center justify-between text-[10px] leading-none text-muted-foreground">
+                  <span>{h.trend}</span>
+                  <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
+                </div>
+              </button>
             );
           })}
         </div>
+
       </div>
 
       {/* Company Health + insights */}
