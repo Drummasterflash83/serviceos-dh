@@ -379,19 +379,19 @@ function InboxRouting() {
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Mailbox health</div>
         <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <div className="col-span-4">Address</div>
+          <div className="col-span-5">Address</div>
           <div className="col-span-2">Owner</div>
           <div className="col-span-1 text-right">Unread</div>
-          <div className="col-span-2 text-right">Oldest</div>
-          <div className="col-span-2 text-right">Avg response</div>
-          <div className="col-span-1 text-right">Routed ✓</div>
+          <div className="col-span-1 text-right">Oldest</div>
+          <div className="col-span-2 text-right">Avg resp</div>
+          <div className="col-span-1 text-right">Routed</div>
         </div>
         {mailboxes.map((m) => (
           <div key={m.addr} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
-            <div className="col-span-4 font-medium">{m.addr}</div>
-            <div className="col-span-2 text-xs text-muted-foreground">{m.owner}</div>
+            <div className="col-span-5 min-w-0 truncate font-medium">{m.addr}</div>
+            <div className="col-span-2 min-w-0 truncate text-xs text-muted-foreground">{m.owner}</div>
             <div className="col-span-1 text-right font-mono text-xs tabular">{m.unread}</div>
-            <div className="col-span-2 text-right font-mono text-xs tabular text-muted-foreground">{m.oldest}</div>
+            <div className="col-span-1 text-right font-mono text-xs tabular text-muted-foreground">{m.oldest}</div>
             <div className="col-span-2 text-right font-mono text-xs tabular">{m.avg}</div>
             <div className="col-span-1 text-right font-mono text-xs tabular text-success">{m.routed}%</div>
           </div>
