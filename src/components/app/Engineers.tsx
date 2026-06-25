@@ -23,7 +23,7 @@ type Engineer = {
   tone: string; // avatar tint
   yearsAtDH: number;
 
-  // Composite "Super Ted" score 0-100
+  // Composite "Super Tony" score 0-100
   superTed: number;
   superTedTrend: Trend;
   rank: number;
@@ -61,7 +61,7 @@ type Engineer = {
   wins: { date: string; what: string }[];
   flags: { tone: "warning" | "destructive" | "success"; text: string }[];
 
-  // Sparkline for Super Ted
+  // Sparkline for Super Tony
   spark: number[];
 };
 
@@ -314,13 +314,13 @@ function EngineerCard({ e, onOpen }: { e: Engineer; onOpen: () => void }) {
         </div>
       </div>
 
-      {/* Super Ted score + trend + spark */}
+      {/* Super Tony score + trend + spark */}
       <div className="mt-4 grid grid-cols-5 items-center gap-3">
         <div className="col-span-2 flex items-center gap-3">
           <Ring value={e.superTed} size={56} />
           <div className="min-w-0">
             <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-              Super Ted <TrendIcon t={e.superTedTrend} />
+              Super Tony <TrendIcon t={e.superTedTrend} />
             </div>
             <div className="text-[10px] text-muted-foreground">
               {e.streak > 0 ? `${e.streak}w streak` : "no streak"}
@@ -416,7 +416,7 @@ function EngineerDetail({ e }: { e: Engineer }) {
           </div>
           <div className="flex items-end gap-4">
             <div className="text-right">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Super Ted</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Super Tony</div>
               <div className={cn("text-display text-3xl font-bold tabular", scoreText(e.superTed))}>{e.superTed}</div>
               <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
                 <TrendIcon t={e.superTedTrend} /> last 9 weeks
@@ -608,7 +608,7 @@ function EngineerDetail({ e }: { e: Engineer }) {
             <Trophy className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold">Super Ted · monthly bonus pool</div>
+            <div className="text-sm font-semibold">Super Tony · monthly bonus pool</div>
             <p className="text-[11px] text-muted-foreground">
               Data-driven, rotating, peer-validated. £200 pool — pays itself back in chases avoided.
             </p>
@@ -616,7 +616,7 @@ function EngineerDetail({ e }: { e: Engineer }) {
         </div>
         <div className="flex items-center gap-2">
           <button className="rounded-md border border-hairline bg-white px-3 py-1.5 text-xs hover:bg-surface-alt">Send to #engineer-wins</button>
-          <button className="rounded-md bg-foreground px-3 py-1.5 text-xs text-background">Nominate for Super Ted</button>
+          <button className="rounded-md bg-foreground px-3 py-1.5 text-xs text-background">Nominate for Super Tony</button>
         </div>
       </div>
     </div>
@@ -665,12 +665,12 @@ export function EngineersView() {
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               One card per engineer · job-sheet quality, first-time-fix, callback latency, customer tone, certifications,
-              morale and recognition — all on the same surface. Super Ted ranks shift live so the bonus pool is data-driven, not gut-feel.
+              morale and recognition — all on the same surface. Super Tony ranks shift live so the bonus pool is data-driven, not gut-feel.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { l: "Team Super Ted",  v: avg("superTed"),     tone: scoreText(avg("superTed")) },
+              { l: "Team Super Tony",  v: avg("superTed"),     tone: scoreText(avg("superTed")) },
               { l: "Avg data input",  v: avg("dataInput"),    tone: scoreText(avg("dataInput")) },
               { l: "Chases this wk",  v: totalChases,         tone: totalChases <= 8 ? "text-success" : totalChases <= 20 ? "text-warning" : "text-destructive" },
               { l: "Certs expiring",  v: expiringCerts,       tone: expiringCerts === 0 ? "text-success" : expiringCerts <= 3 ? "text-warning" : "text-destructive" },
@@ -688,7 +688,7 @@ export function EngineersView() {
       <div className="rounded-2xl border border-hairline bg-white p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Super Ted · this week</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Super Tony · this week</div>
             <div className="text-display mt-1 text-sm font-semibold">Live leaderboard · rotating monthly bonus</div>
           </div>
           <div className="text-[11px] text-muted-foreground">Weighted: data input 35% · first-time fix 25% · chases (inv) 20% · customer tone 20%</div>
@@ -777,7 +777,7 @@ export function EngineersView() {
           <DialogHeader>
             <DialogTitle className="text-display">{open?.name}</DialogTitle>
             <DialogDescription>
-              Full performance card · weighted Super Ted, data-input quality, comms responsiveness, wellbeing and recognition.
+              Full performance card · weighted Super Tony, data-input quality, comms responsiveness, wellbeing and recognition.
             </DialogDescription>
           </DialogHeader>
           {open && <EngineerDetail e={open} />}
