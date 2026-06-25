@@ -325,91 +325,60 @@ function RoleSwitcher({ role, setRole }: { role: RoleKey; setRole: (r: RoleKey) 
 }
 
 /* ──────────── JOB CARD (compact) ──────────── */
-function JobCardCompact({ job, role, onOpen }: { job: Job; role: RoleKey; onOpen: () => void }) {
-  // Role-specific "primary metric" surfaced on the card face
-  const primary = (() => {
-    switch (role) {
-      case "engineer": return { l: "Access", v: job.access.split(" · ")[0], icon: MapPin };
-      case "office":   return { l: "Last touch", v: job.lastTouch, icon: MessageSquare };
-      case "quotes":   return { l: "Quote", v: `${job.quoteStatus} · d${job.quoteAge}`, icon: FileSignature };
-      case "ops":      return { l: "Engineer", v: job.engineer, icon: Wrench };
-      case "md":       return { l: "Margin", v: job.margin, icon: TrendingUp };
-    }
-  })();
-
-  const showValue = role === "md" || role === "quotes";
-  const showRisk = role === "office" || role === "md";
+/* Fixed layout: every card has the same slots in the same place.
+   Empty slots stay as blank space so nothing jumps between cards. */
+function JobCardCompact({ job, onOpen }: { job: Job; role: RoleKey; onOpen: () => void }) {
+  // Up to two critical flags surface on the face; rest live in detail view
+  const flags: { icon: typeof AlertTriangle; label: string; tone: string }[] = [];
+  if (job.missingSerial)        flags.push({ icon: AlertTriangle, label: "Serial missing",  tone: "bg-destructive/10 text-destructive" });
+  if (!job.ramsAttached)        flags.push({ icon: ShieldCheck,   label: "RAMS missing",    tone: "bg-destructive/10 text-destructive" });
+  if (job.travelChargedTwice)   flags.push({ icon: Car,           label: "Travel × 2 risk", tone: "bg-warning/10 text-warning" });
+  if (job.customerSentiment === "Frustrated") flags.push({ icon: HeartPulse, label: "Customer frustrated", tone: "bg-warning/10 text-warning" });
 
   return (
     <button
       onClick={onOpen}
-      className="group relative w-full overflow-hidden rounded-2xl border border-hairline bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
+      className="group relative flex h-[200px] w-full flex-col overflow-hidden rounded-2xl border border-hairline bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
     >
-      {/* top row */}
+      {/* Slot 1: id + schedule + urgency (fixed) */}
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-            <span>{job.id}</span>
-            <span>·</span>
-            <span className="truncate">{job.scheduled}</span>
-          </div>
-          <div className="text-display mt-1 truncate text-sm font-semibold">{job.title}</div>
-          <div className="mt-0.5 truncate text-xs text-muted-foreground">{job.customer}</div>
+        <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+          <span>{job.id}</span>
+          <span>·</span>
+          <span className="truncate">{job.scheduled}</span>
         </div>
         <UrgencyPill u={job.urgency} />
       </div>
 
-      {/* tag strip */}
-      <div className="mt-3 flex flex-wrap gap-1">
-        {job.tags.map((t) => <TagChip key={t} tag={t} />)}
+      {/* Slot 2: title + customer (fixed two-line block) */}
+      <div className="mt-2 min-h-[44px]">
+        <div className="text-display truncate text-sm font-semibold">{job.title}</div>
+        <div className="mt-0.5 truncate text-xs text-muted-foreground">{job.customer}</div>
       </div>
 
-      {/* role-specific primary metric */}
-      <div className="mt-4 rounded-lg border border-hairline bg-surface-alt p-2.5">
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <primary.icon className="h-3 w-3" /> {primary.l}
-        </div>
-        <div className="mt-1 line-clamp-2 text-xs font-medium">{primary.v}</div>
-      </div>
-
-      {/* health + signals */}
-      <div className="mt-3 space-y-2">
-        <HealthBar value={job.health} label="Job health" />
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1"><Camera className="h-3 w-3" /> {job.photoCount}</span>
-            <span className="inline-flex items-center gap-1">
-              {job.ramsAttached ? <CheckCircle2 className="h-3 w-3 text-success" /> : <XCircle className="h-3 w-3 text-destructive" />} RAMS
-            </span>
-            {showRisk && (
-              <span className="inline-flex items-center gap-1">
-                <SentimentDot s={job.customerSentiment} /> {job.customerSentiment}
+      {/* Slot 3: at-a-glance flags (fixed height, blank if none) */}
+      <div className="mt-auto min-h-[22px]">
+        {flags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {flags.slice(0, 2).map((f) => (
+              <span key={f.label} className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium", f.tone)}>
+                <f.icon className="h-3 w-3" /> {f.label}
               </span>
-            )}
+            ))}
           </div>
-          {showValue && <span className="font-mono tabular text-foreground">{job.value}</span>}
-        </div>
+        )}
       </div>
 
-      {/* missing-data warnings (Larne / Mary) */}
-      {(job.missingSerial || job.travelChargedTwice) && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {job.missingSerial && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
-              <AlertTriangle className="h-3 w-3" /> Serial missing
-            </span>
-          )}
-          {job.travelChargedTwice && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
-              <Car className="h-3 w-3" /> Travel × 2 risk
-            </span>
-          )}
-        </div>
-      )}
-
-      <span className="pointer-events-none absolute right-3 top-3 opacity-0 transition group-hover:opacity-100">
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </span>
+      {/* Slot 4: open affordance (fixed) */}
+      <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[10px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          <SentimentDot s={job.customerSentiment} />
+          <span>{job.tags.length} tag{job.tags.length === 1 ? "" : "s"}</span>
+        </span>
+        <span className="inline-flex items-center gap-1 font-medium text-foreground">
+          Open card <ChevronRight className="h-3 w-3" />
+        </span>
+      </div>
     </button>
   );
 }
