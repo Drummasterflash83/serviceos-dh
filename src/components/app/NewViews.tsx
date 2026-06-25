@@ -729,91 +729,309 @@ function PartsStock() {
   );
 }
 
-/* ────── SUPPLIER NORMALISER ────── */
+/* ────── SUPPLIER HUB ────── */
 function SupplierNormaliser() {
-  const rows = [
+  const [tab, setTab] = useState<"overview" | "directory" | "compare" | "jobs" | "conflicts">("overview");
+
+  // Supplier directory - port of truth
+  const suppliers = [
     {
-      canon: "22mm copper pipe (3m length)",
-      variants: [
-        { sup: "Wolseley", name: "Copper Pipe 22mm 3M", price: "£18.40", best: true },
-        { sup: "City Plumbing", name: "22MM Copper Tube 3m", price: "£19.20" },
-        { sup: "Plumbase", name: "Cu pipe 22 x 3000", price: "£19.95" },
+      name: "Wolseley", tier: "Primary", rating: 4.6, onTime: 96, accountMgr: "Dan Wright",
+      phone: "0345 762 4321", email: "trade.romford@wolseley.co.uk",
+      bestFor: ["Copper & fittings", "Flue components", "TRVs"],
+      spend30d: "£4,820", openPOs: 2, lastDelivery: "today",
+    },
+    {
+      name: "City Plumbing", tier: "Primary", rating: 4.4, onTime: 94, accountMgr: "Asha Patel",
+      phone: "0203 818 1100", email: "romford@cityplumbing.co.uk",
+      bestFor: ["Heat exchangers", "Vaillant spares", "Cylinders"],
+      spend30d: "£3,140", openPOs: 1, lastDelivery: "yesterday",
+    },
+    {
+      name: "Plumbase", tier: "Secondary", rating: 4.1, onTime: 89, accountMgr: "Mark Ellis",
+      phone: "0208 553 9090", email: "trade@plumbase.com",
+      bestFor: ["Magnetic filters", "Pump cartridges", "LPG fittings"],
+      spend30d: "£1,960", openPOs: 0, lastDelivery: "3d ago",
+    },
+    {
+      name: "BSS", tier: "Specialist", rating: 4.7, onTime: 92, accountMgr: "Karen Doyle",
+      phone: "0345 070 2425", email: "ilford@bssgroup.com",
+      bestFor: ["Commercial valves", "Expansion vessels", "Plant parts"],
+      spend30d: "£2,440", openPOs: 1, lastDelivery: "2d ago",
+    },
+  ];
+
+  // Cross-supplier price matrix per canonical part (best highlighted)
+  const matrix = [
+    {
+      canon: "22mm copper pipe (3m)", sku: "CU-22-3M", inStock: 48, min: 30,
+      quotes: [
+        { sup: "Wolseley",      name: "Copper Pipe 22mm 3M",   price: 18.40, lead: "Same-day" },
+        { sup: "City Plumbing", name: "22MM Copper Tube 3m",   price: 19.20, lead: "Next-day" },
+        { sup: "Plumbase",      name: "Cu pipe 22 x 3000",     price: 19.95, lead: "Next-day" },
       ],
     },
     {
-      canon: "Worcester 30kW heat exchanger",
-      variants: [
-        { sup: "Wolseley", name: "Worcester HX 30CDi", price: "£284.00" },
-        { sup: "City Plumbing", name: "Heat exchanger Worcester 30kW", price: "£268.50", best: true },
+      canon: "Worcester 30kW PCB", sku: "WB-30-PCB", inStock: 4, min: 5,
+      quotes: [
+        { sup: "Wolseley",      name: "Worcester 30CDi PCB",   price: 312.00, lead: "Next-day" },
+        { sup: "City Plumbing", name: "PCB Worcester 30kW",    price: 298.50, lead: "Next-day" },
+        { sup: "Plumb Base",    name: "Worcester PCB 30",      price: 306.00, lead: "2 days" },
       ],
     },
     {
-      canon: "Magnetic filter (1\" BSP)",
-      variants: [
-        { sup: "Wolseley", name: "MagnaClean Professional 1\"", price: "£82.00" },
-        { sup: "Plumbase", name: "Magnetic Filter 1in", price: "£78.00", best: true },
+      canon: "Magnetic filter MF1 (1\" BSP)", sku: "MF-1-BSP", inStock: 7, min: 6,
+      quotes: [
+        { sup: "Wolseley",      name: "MagnaClean Professional 1\"", price: 82.00, lead: "Same-day" },
+        { sup: "Plumbase",      name: "Magnetic Filter 1in",         price: 78.00, lead: "Next-day" },
+        { sup: "City Plumbing", name: "Magnetic filter 1 BSP",       price: 84.50, lead: "Same-day" },
+      ],
+    },
+    {
+      canon: "Expansion vessel 12L", sku: "EV-12L", inStock: 2, min: 4,
+      quotes: [
+        { sup: "BSS",      name: "Zilmet 12L vessel",  price: 91.00, lead: "Next-day" },
+        { sup: "Wolseley", name: "Reliance 12L EV",    price: 95.40, lead: "Same-day" },
       ],
     },
   ];
 
+  // Parts required by upcoming jobs - matched to stock + best supplier
+  const jobsNeeds = [
+    { job: "J-3402", cust: "Highbridge Foods",  when: "Tomorrow 08:30", part: "Worcester 30kW PCB",   need: 1, inStock: 4, status: "ok" as const },
+    { job: "J-3404", cust: "Greenfield Care",   when: "Tomorrow 11:00", part: "Magnetic filter MF1",  need: 2, inStock: 7, status: "ok" as const },
+    { job: "J-3407", cust: "Crestmont Apts",    when: "Thu 09:00",      part: "Expansion vessel 12L", need: 2, inStock: 2, status: "short" as const,  bestSup: "BSS",      bestPrice: "£91.00" },
+    { job: "J-3411", cust: "ABC School",        when: "Thu 13:30",      part: "Worcester 30kW PCB",   need: 2, inStock: 4, status: "watch" as const,  bestSup: "City Plumbing", bestPrice: "£298.50" },
+    { job: "J-3415", cust: "Riverside Hotel",   when: "Fri 08:00",      part: "22mm copper (3m) x8",  need: 8, inStock: 48, status: "ok" as const },
+    { job: "J-3418", cust: "Northgate Flats",   when: "Fri 14:00",      part: "Pump cart. UPS2",      need: 3, inStock: 12, status: "ok" as const },
+  ];
+
+  // Conflict queue (price-list normalisation)
   const conflicts = [
     { items: ["Boiler thermostat WR-30", "Thermostat Worcester 30"], conf: 78 },
     { items: ["Flue 60/100 1m", "Concentric flue 60/100 1000mm"], conf: 64 },
   ];
 
+  // Overview KPIs
+  const kpis = [
+    { l: "Active suppliers", v: String(suppliers.length), sub: "incl. 2 primary",       icon: Truck },
+    { l: "Spend · 30d",      v: "£12.4k",                  sub: "across all suppliers",  icon: Receipt },
+    { l: "On-time average",  v: "93%",                     sub: "rolling 30d",           icon: CheckCircle2 },
+    { l: "Open POs",         v: String(suppliers.reduce((a, s) => a + s.openPOs, 0)), sub: "arriving this week", icon: ArrowDownToLine },
+    { l: "Parts short for jobs", v: String(jobsNeeds.filter(j => j.status === "short").length), sub: "needs ordering now", icon: AlertTriangle, tone: "warning" as const },
+  ];
+
   return (
     <div className="space-y-5">
       <Hero
-        eyebrow="Supplier price normaliser"
-        title="One part name across every supplier."
-        sub={`The "22mm copper pipe" vs "copper pipe 22mm" problem, solved. Drop a price list, the AI maps it onto canonical part names and surfaces the best price. Anything it isn't sure about lands in the conflict queue for a human to merge.`}
-        icon={PackageSearch}
+        eyebrow="Supplier hub · port of truth"
+        title="Every supplier, every part, every price - linked to stock and jobs."
+        sub="Who's best for what, who to ring, latest prices side-by-side, what each upcoming job needs and whether the store can cover it. Drop a price file to refresh everything."
+        icon={Truck}
+        pill="Synced with Parts & Vans"
       />
 
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {kpis.map((k) => (
+          <div key={k.l} className="flex flex-col rounded-2xl border border-hairline bg-white p-4">
+            <div className="flex items-start justify-between gap-2 text-muted-foreground">
+              <div className="text-[10px] font-medium uppercase tracking-wider leading-tight">{k.l}</div>
+              <k.icon className={cn("h-3.5 w-3.5 shrink-0", k.tone === "warning" && "text-warning")} />
+            </div>
+            <div className={cn("text-display mt-3 text-xl font-bold leading-tight tabular", k.tone === "warning" ? "text-warning" : "text-foreground")}>{k.v}</div>
+            <div className="mt-2 text-[10px] leading-tight text-muted-foreground">{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Drop zone */}
       <div className="rounded-2xl border border-dashed border-hairline bg-white p-6 text-center">
         <PackageSearch className="mx-auto h-6 w-6 text-muted-foreground" />
         <div className="mt-3 text-sm font-medium">Drop a supplier price file here</div>
         <div className="mt-1 text-xs text-muted-foreground">CSV, XLSX, PDF, DOCX, TXT or images · or click to browse</div>
-        <div className="mt-1 text-[11px] text-muted-foreground">Last upload: Wolseley · 14 Jun</div>
+        <div className="mt-1 text-[11px] text-muted-foreground">Last upload: Wolseley · 14 Jun · 412 SKUs matched, 6 conflicts</div>
       </div>
 
-      <div className="rounded-2xl border border-hairline bg-white">
-        <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Normalised parts</div>
-        {rows.map((r) => (
-          <div key={r.canon} className="border-b border-hairline px-5 py-4 last:border-0">
-            <div className="text-display text-sm font-semibold">{r.canon}</div>
-            <div className="mt-3 divide-y divide-hairline rounded-lg border border-hairline">
-              {r.variants.map((v, i) => (
-                <div key={i} className={cn("grid grid-cols-12 gap-x-3 items-center px-3 py-2 text-xs", v.best && "bg-success/5")}>
-                  <div className="col-span-3 font-medium min-w-0">{v.sup}</div>
-                  <div className="col-span-6 text-muted-foreground min-w-0">{v.name}</div>
-                  <div className="col-span-2 text-right font-mono tabular min-w-0">{v.price}</div>
-                  <div className="col-span-1 text-right min-w-0">{v.best && <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">Best</span>}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-2xl border border-hairline bg-white">
-        <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Conflict queue</div>
-            <div className="text-display mt-0.5 text-sm font-semibold">AI isn't confident · needs a human</div>
-          </div>
-          <span className="rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-[10px] font-medium text-warning">{conflicts.length} pending</span>
+      {/* Tabs */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="flex flex-wrap gap-1">
+          {(["overview", "directory", "compare", "jobs", "conflicts"] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={cn("rounded-full px-3 py-1.5 text-xs font-medium", tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:bg-surface-alt")}
+            >
+              {k === "overview" ? "Best for what" :
+               k === "directory" ? "Directory & contacts" :
+               k === "compare" ? "Price comparison" :
+               k === "jobs" ? "Job needs" :
+               `Conflicts · ${conflicts.length}`}
+            </button>
+          ))}
         </div>
-        {conflicts.map((c, i) => (
-          <div key={i} className="grid grid-cols-12 gap-x-3 items-center gap-3 border-b border-hairline px-5 py-3 text-sm last:border-0">
-            <div className="col-span-8 text-xs min-w-0"><span className="font-mono">{c.items[0]}</span> <span className="text-muted-foreground">vs</span> <span className="font-mono">{c.items[1]}</span></div>
-            <div className="col-span-2 font-mono text-xs tabular text-muted-foreground min-w-0">{c.conf}% conf.</div>
-            <div className="col-span-2 flex justify-end gap-1.5 min-w-0">
-              <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px]">Keep separate</button>
-              <button className="rounded-full bg-foreground px-2.5 py-1 text-[11px] text-background">Merge</button>
-            </div>
+
+        {/* OVERVIEW - best-for matrix */}
+        {tab === "overview" && (
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {suppliers.map((s) => (
+              <div key={s.name} className="rounded-xl border border-hairline bg-surface-alt p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-display text-sm font-semibold truncate">{s.name}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">{s.tier}</div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-mono tabular text-muted-foreground shrink-0">
+                    <Star className="h-3 w-3 fill-warning text-warning" /> {s.rating}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {s.bestFor.map((b) => (
+                    <span key={b} className="rounded-full bg-white border border-hairline px-2 py-0.5 text-[10px] font-medium">{b}</span>
+                  ))}
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 border-t border-hairline pt-3 text-[10px] text-muted-foreground">
+                  <div><div className="font-mono tabular text-sm text-foreground">{s.onTime}%</div>on-time</div>
+                  <div><div className="font-mono tabular text-sm text-foreground">{s.spend30d}</div>spend 30d</div>
+                  <div><div className="font-mono tabular text-sm text-foreground">{s.openPOs}</div>open POs</div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+
+        {/* DIRECTORY */}
+        {tab === "directory" && (
+          <div className="mt-5 divide-y divide-hairline">
+            <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="col-span-3 min-w-0">Supplier</div>
+              <div className="col-span-3 min-w-0">Account manager</div>
+              <div className="col-span-4 min-w-0">Contact</div>
+              <div className="col-span-2 text-right min-w-0">Last delivery</div>
+            </div>
+            {suppliers.map((s) => (
+              <div key={s.name} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
+                <div className="col-span-3 min-w-0">
+                  <div className="font-medium truncate">{s.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{s.tier} · {s.rating}★</div>
+                </div>
+                <div className="col-span-3 text-xs min-w-0 truncate">{s.accountMgr}</div>
+                <div className="col-span-4 min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                    <Phone className="h-3 w-3 shrink-0" /><span className="font-mono">{s.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                    <Mail className="h-3 w-3 shrink-0" /><span className="truncate">{s.email}</span>
+                  </div>
+                </div>
+                <div className="col-span-2 text-right text-[11px] text-muted-foreground">{s.lastDelivery}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* PRICE COMPARISON */}
+        {tab === "compare" && (
+          <div className="mt-5 space-y-4">
+            {matrix.map((m) => {
+              const best = Math.min(...m.quotes.map((q) => q.price));
+              const lowStock = m.inStock < m.min;
+              return (
+                <div key={m.sku} className="rounded-xl border border-hairline overflow-hidden">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline bg-surface-alt px-4 py-2.5">
+                    <div className="min-w-0">
+                      <div className="text-display text-sm font-semibold truncate">{m.canon}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground">{m.sku}</div>
+                    </div>
+                    <span className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                      lowStock ? "bg-warning/10 text-warning border border-warning/20" : "bg-success/10 text-success border border-success/20"
+                    )}>
+                      Stock {m.inStock} / min {m.min}{lowStock ? " · reorder" : ""}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-hairline">
+                    {m.quotes.map((q, i) => (
+                      <div key={i} className={cn("grid grid-cols-12 gap-x-3 items-center px-4 py-2 text-xs", q.price === best && "bg-success/5")}>
+                        <div className="col-span-3 font-medium min-w-0 truncate">{q.sup}</div>
+                        <div className="col-span-4 text-muted-foreground min-w-0 truncate">{q.name}</div>
+                        <div className="col-span-2 text-[11px] text-muted-foreground min-w-0">{q.lead}</div>
+                        <div className="col-span-2 text-right font-mono tabular">£{q.price.toFixed(2)}</div>
+                        <div className="col-span-1 text-right min-w-0">
+                          {q.price === best && <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">Best</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* JOB NEEDS */}
+        {tab === "jobs" && (
+          <div className="mt-5 divide-y divide-hairline">
+            <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="col-span-1 min-w-0">Job</div>
+              <div className="col-span-3 min-w-0">Customer · when</div>
+              <div className="col-span-3 min-w-0">Part required</div>
+              <div className="col-span-1 text-right min-w-0">Need</div>
+              <div className="col-span-1 text-right min-w-0">Stock</div>
+              <div className="col-span-2 min-w-0">Best supplier</div>
+              <div className="col-span-1 text-right min-w-0">Action</div>
+            </div>
+            {jobsNeeds.map((j) => (
+              <div key={j.job} className={cn("grid grid-cols-12 gap-x-3 items-center py-3 text-sm", j.status === "short" && "bg-warning/5")}>
+                <div className="col-span-1 font-mono text-xs text-muted-foreground min-w-0 truncate">{j.job}</div>
+                <div className="col-span-3 min-w-0">
+                  <div className="font-medium truncate">{j.cust}</div>
+                  <div className="text-[10px] text-muted-foreground">{j.when}</div>
+                </div>
+                <div className="col-span-3 min-w-0 truncate text-xs">{j.part}</div>
+                <div className="col-span-1 text-right font-mono tabular">{j.need}</div>
+                <div className={cn(
+                  "col-span-1 text-right font-mono tabular",
+                  j.status === "short" ? "text-warning font-semibold" : j.status === "watch" ? "text-warning" : "text-muted-foreground"
+                )}>{j.inStock}</div>
+                <div className="col-span-2 min-w-0 text-[11px]">
+                  {j.bestSup ? (
+                    <><span className="font-medium">{j.bestSup}</span><span className="text-muted-foreground"> · {j.bestPrice}</span></>
+                  ) : (
+                    <span className="text-muted-foreground">Covered by store</span>
+                  )}
+                </div>
+                <div className="col-span-1 flex justify-end min-w-0">
+                  {j.status === "short" ? (
+                    <button className="rounded-full bg-foreground px-2.5 py-1 text-[10px] font-medium text-background hover:opacity-90">Raise PO</button>
+                  ) : (
+                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">OK</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CONFLICTS */}
+        {tab === "conflicts" && (
+          <div className="mt-5 divide-y divide-hairline">
+            {conflicts.map((c, i) => (
+              <div key={i} className="grid grid-cols-12 gap-x-3 items-center gap-3 py-3 text-sm">
+                <div className="col-span-8 text-xs min-w-0">
+                  <span className="font-mono">{c.items[0]}</span>
+                  <span className="text-muted-foreground"> vs </span>
+                  <span className="font-mono">{c.items[1]}</span>
+                </div>
+                <div className="col-span-2 font-mono text-xs tabular text-muted-foreground min-w-0">{c.conf}% conf.</div>
+                <div className="col-span-2 flex justify-end gap-1.5 min-w-0">
+                  <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px] hover:bg-surface-alt">Keep separate</button>
+                  <button className="rounded-full bg-foreground px-2.5 py-1 text-[11px] text-background hover:opacity-90">Merge</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
