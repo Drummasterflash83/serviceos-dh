@@ -424,108 +424,302 @@ function InboxRouting() {
 
 /* ────── PARTS & VAN STOCK ────── */
 function PartsStock() {
-  const [tab, setTab] = useState<"store" | "vans" | "moves">("store");
-  const parts = [
-    { name: "22mm copper pipe (3m)", stock: 48, reserved: 6, counted: "2d ago", min: 30 },
-    { name: "Worcester 30kW PCB", stock: 4, reserved: 1, counted: "1w ago", min: 5 },
-    { name: "Pump cartridge (Grundfos UPS2)", stock: 12, reserved: 2, counted: "3d ago", min: 8 },
-    { name: "Flue extension 1m", stock: 22, reserved: 0, counted: "2d ago", min: 10 },
-    { name: "Magnetic filter MF1", stock: 7, reserved: 3, counted: "yesterday", min: 6 },
+  const [tab, setTab] = useState<"store" | "vans" | "reorder" | "moves">("store");
+
+  // Store / warehouse inventory
+  const store = [
+    { sku: "CU-22-3M",   name: "22mm copper pipe (3m)",        bin: "A1-04", onHand: 48, reserved: 6, min: 30, max: 80, value: "£820",   counted: "2d ago",      supplier: "Wolseley" },
+    { sku: "WB-30-PCB",  name: "Worcester 30kW PCB",           bin: "C3-12", onHand: 4,  reserved: 1, min: 5,  max: 10, value: "£612",   counted: "1w ago",      supplier: "Plumb Base" },
+    { sku: "GR-UPS2-CT", name: "Pump cartridge (Grundfos UPS2)", bin: "B2-08", onHand: 12, reserved: 2, min: 8,  max: 20, value: "£348",   counted: "3d ago",      supplier: "BSS" },
+    { sku: "FL-EXT-1M",  name: "Flue extension 1m",            bin: "D1-02", onHand: 22, reserved: 0, min: 10, max: 30, value: "£264",   counted: "2d ago",      supplier: "Wolseley" },
+    { sku: "MF-1-BSP",   name: "Magnetic filter MF1 (1\" BSP)", bin: "B4-01", onHand: 7,  reserved: 3, min: 6,  max: 15, value: "£546",   counted: "yesterday",   supplier: "Plumbase" },
+    { sku: "EV-12L",     name: "Expansion vessel 12L",         bin: "A3-06", onHand: 2,  reserved: 1, min: 4,  max: 8,  value: "£190",   counted: "4d ago",      supplier: "BSS" },
+    { sku: "TRV-15",     name: "TRV 15mm angled",              bin: "B1-03", onHand: 36, reserved: 4, min: 20, max: 60, value: "£198",   counted: "today",       supplier: "City Plumbing" },
   ];
+
+  // Each van: fixed target stock list per vehicle, current on-van counts
   const vans = [
-    { reg: "BD21 PRX", driver: "Tony", fill: 78, top: ["22mm copper", "PCB x2"], restock: false },
-    { reg: "BG22 ZTM", driver: "M. Patel", fill: 41, top: ["Magnetic filter", "Pump cart."], restock: true },
-    { reg: "BV21 WHK", driver: "S. Walsh", fill: 64, top: ["Flue ext.", "PCB"], restock: false },
-    { reg: "BJ23 LDM", driver: "L. Bryan", fill: 22, top: ["-"], restock: true },
+    {
+      reg: "BD21 PRX", driver: "Tony Reid", role: "Senior engineer", lastSync: "12m ago",
+      stock: [
+        { name: "22mm copper (3m)",     have: 6, target: 6, unit: "lengths" },
+        { name: "PCB (Worcester 30kW)", have: 2, target: 2, unit: "units" },
+        { name: "Magnetic filter MF1",  have: 1, target: 2, unit: "units" },
+        { name: "Pump cartridge UPS2",  have: 1, target: 1, unit: "units" },
+        { name: "TRV 15mm",             have: 8, target: 8, unit: "units" },
+      ],
+    },
+    {
+      reg: "BG22 ZTM", driver: "M. Patel", role: "Engineer", lastSync: "1h ago",
+      stock: [
+        { name: "22mm copper (3m)",     have: 2, target: 6, unit: "lengths" },
+        { name: "PCB (Worcester 30kW)", have: 0, target: 1, unit: "units" },
+        { name: "Magnetic filter MF1",  have: 0, target: 2, unit: "units" },
+        { name: "Pump cartridge UPS2",  have: 1, target: 1, unit: "units" },
+        { name: "TRV 15mm",             have: 3, target: 8, unit: "units" },
+      ],
+    },
+    {
+      reg: "BV21 WHK", driver: "S. Walsh", role: "Engineer", lastSync: "28m ago",
+      stock: [
+        { name: "22mm copper (3m)",     have: 5, target: 6, unit: "lengths" },
+        { name: "PCB (Worcester 30kW)", have: 1, target: 1, unit: "units" },
+        { name: "Flue extension 1m",    have: 2, target: 2, unit: "units" },
+        { name: "Pump cartridge UPS2",  have: 1, target: 1, unit: "units" },
+        { name: "TRV 15mm",             have: 6, target: 8, unit: "units" },
+      ],
+    },
+    {
+      reg: "BJ23 LDM", driver: "L. Bryan", role: "Apprentice", lastSync: "yesterday",
+      stock: [
+        { name: "22mm copper (3m)",     have: 1, target: 4, unit: "lengths" },
+        { name: "PCB (Worcester 30kW)", have: 0, target: 0, unit: "units" },
+        { name: "Magnetic filter MF1",  have: 0, target: 1, unit: "units" },
+        { name: "Pump cartridge UPS2",  have: 0, target: 1, unit: "units" },
+        { name: "TRV 15mm",             have: 2, target: 6, unit: "units" },
+      ],
+    },
   ];
+
+  const vanFill = (s: { have: number; target: number }[]) => {
+    const have = s.reduce((a, b) => a + b.have, 0);
+    const target = s.reduce((a, b) => a + b.target, 0) || 1;
+    return Math.round((have / target) * 100);
+  };
+  const vanShorts = (s: { have: number; target: number }[]) => s.filter((p) => p.have < p.target).length;
+
+  // Replenishment suggestions (auto-built from store min/max + van gaps)
+  const reorder = [
+    { part: "Worcester 30kW PCB",       from: "Plumb Base",    qty: 6, reason: "Store below min (4 < 5) + 1 van empty", eta: "Tomorrow am", cost: "£1,836" },
+    { part: "Expansion vessel 12L",     from: "BSS",           qty: 6, reason: "Store below min (2 < 4)",               eta: "2 days",     cost: "£570" },
+    { part: "Magnetic filter MF1",      from: "Plumbase",      qty: 5, reason: "Two vans empty + reserved 3 of 7",      eta: "Tomorrow am", cost: "£390" },
+    { part: "22mm copper (3m)",         from: "Wolseley",      qty: 12,reason: "BG22 + BJ23 vans below target",         eta: "Same-day",   cost: "£221" },
+  ];
+
+  // Movements ledger
   const moves = [
-    { t: "14:08", who: "Tony", part: "PCB x1", dir: "out", job: "J-3402" },
-    { t: "13:51", who: "Store · Heidi", part: "22mm copper x12", dir: "in", job: "PO-882" },
-    { t: "12:30", who: "M. Patel", part: "Magnetic filter x2", dir: "out", job: "J-3401" },
-    { t: "11:14", who: "L. Bryan", part: "Pump cart. x1", dir: "out", job: "J-3399" },
+    { t: "14:08", who: "Tony Reid",      part: "PCB x1",                dir: "out" as const, from: "Van BD21 PRX",  to: "Job J-3402",     job: "J-3402" },
+    { t: "13:51", who: "Heidi (store)",  part: "22mm copper x12",       dir: "in"  as const, from: "PO-882 Wolseley", to: "Store A1-04",   job: "PO-882" },
+    { t: "13:22", who: "Auto restock",   part: "Magnetic filter x2",    dir: "transfer" as const, from: "Store B4-01",    to: "Van BG22 ZTM",  job: "RST-104" },
+    { t: "12:30", who: "M. Patel",       part: "Magnetic filter x1",    dir: "out" as const, from: "Van BG22 ZTM",  to: "Job J-3401",     job: "J-3401" },
+    { t: "11:14", who: "L. Bryan",       part: "Pump cart. x1",         dir: "out" as const, from: "Van BJ23 LDM",  to: "Job J-3399",     job: "J-3399" },
+    { t: "10:02", who: "Heidi (store)",  part: "TRV 15mm x20",          dir: "in"  as const, from: "PO-881 City Plumbing", to: "Store B1-03", job: "PO-881" },
+  ];
+
+  // Top KPIs
+  const totalSkus = store.length;
+  const storeValue = "£2,978";
+  const belowMin = store.filter((s) => s.onHand < s.min).length;
+  const vansNeedingRestock = vans.filter((v) => vanFill(v.stock) < 80).length;
+  const openPOs = 3;
+
+  const kpis = [
+    { l: "SKUs tracked",        v: String(totalSkus),         sub: "store + vans",        icon: PackageSearch },
+    { l: "Store value",         v: storeValue,                sub: "at cost",             icon: Warehouse },
+    { l: "Below min",           v: String(belowMin),          sub: "needs reorder",       icon: AlertTriangle, tone: "warning" as const },
+    { l: "Vans to restock",     v: `${vansNeedingRestock}/${vans.length}`, sub: "< 80% of target", icon: Truck,    tone: "warning" as const },
+    { l: "Open POs",            v: String(openPOs),           sub: "arriving this week",  icon: ArrowDownToLine },
   ];
 
   return (
     <div className="space-y-5">
       <Hero
-        eyebrow="Parts & van stock"
-        title="Stop running out mid-job."
-        sub="One source of truth across the store and every van. Restock chips fire when a van drops below threshold; every check-in and check-out lands here."
-        icon={Truck}
+        eyebrow="Stock control · store + vans"
+        title="One ledger across the store and every engineer's van."
+        sub="Set min/max in the store, set per-van target kit, and let restock chips fire when any location drops below threshold. Every scan, fit and transfer lands here."
+        icon={Warehouse}
+        pill={`${belowMin + vansNeedingRestock} alerts open`}
       />
 
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {kpis.map((k) => (
+          <div key={k.l} className="flex flex-col rounded-2xl border border-hairline bg-white p-4">
+            <div className="flex items-start justify-between gap-2 text-muted-foreground">
+              <div className="text-[10px] font-medium uppercase tracking-wider leading-tight">{k.l}</div>
+              <k.icon className={cn("h-3.5 w-3.5 shrink-0", k.tone === "warning" && "text-warning")} />
+            </div>
+            <div className={cn("text-display mt-3 text-xl font-bold leading-tight tabular", k.tone === "warning" ? "text-warning" : "text-foreground")}>{k.v}</div>
+            <div className="mt-2 text-[10px] leading-tight text-muted-foreground">{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="rounded-2xl border border-hairline bg-white p-5">
-        <div className="flex gap-1">
-          {(["store", "vans", "moves"] as const).map((k) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={cn("rounded-full px-3 py-1.5 text-xs font-medium", tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:bg-surface-alt")}
-            >
-              {k === "store" ? "Store" : k === "vans" ? "Vans" : "Movements"}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1">
+            {(["store", "vans", "reorder", "moves"] as const).map((k) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={cn("rounded-full px-3 py-1.5 text-xs font-medium", tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:bg-surface-alt")}
+              >
+                {k === "store" ? "Store (warehouse)" : k === "vans" ? "Engineer vans" : k === "reorder" ? "Reorder queue" : "Movements"}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-[11px] font-medium hover:bg-surface-alt">
+              <ScanLine className="h-3.5 w-3.5" /> Scan barcode
             </button>
-          ))}
+            <button className="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-[11px] font-medium hover:bg-surface-alt">
+              <RefreshCw className="h-3.5 w-3.5" /> Sync vans
+            </button>
+          </div>
         </div>
 
+        {/* STORE */}
         {tab === "store" && (
           <div className="mt-5 divide-y divide-hairline">
             <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <div className="col-span-5 min-w-0">Part</div>
-              <div className="col-span-2 text-right min-w-0">Stock</div>
-              <div className="col-span-2 text-right min-w-0">Reserved</div>
-              <div className="col-span-2 text-right min-w-0">Min</div>
+              <div className="col-span-4 min-w-0">Part</div>
+              <div className="col-span-2 min-w-0">Bin / supplier</div>
+              <div className="col-span-1 text-right min-w-0">On hand</div>
+              <div className="col-span-1 text-right min-w-0">Reserved</div>
+              <div className="col-span-2 text-right min-w-0">Min / max</div>
+              <div className="col-span-1 text-right min-w-0">Value</div>
               <div className="col-span-1 text-right min-w-0">Counted</div>
             </div>
-            {parts.map((p) => (
-              <div key={p.name} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
-                <div className="col-span-5 font-medium min-w-0">{p.name}</div>
-                <div className={cn("col-span-2 text-right font-mono tabular", p.stock < p.min && "text-warning")}>{p.stock}</div>
-                <div className="col-span-2 text-right font-mono text-xs tabular text-muted-foreground min-w-0">{p.reserved}</div>
-                <div className="col-span-2 text-right font-mono text-xs tabular text-muted-foreground min-w-0">{p.min}</div>
-                <div className="col-span-1 text-right text-[11px] text-muted-foreground min-w-0">{p.counted}</div>
-              </div>
-            ))}
+            {store.map((p) => {
+              const low = p.onHand < p.min;
+              return (
+                <div key={p.sku} className={cn("grid grid-cols-12 gap-x-3 items-center py-3 text-sm", low && "bg-warning/5")}>
+                  <div className="col-span-4 min-w-0">
+                    <div className="font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] font-mono text-muted-foreground">{p.sku}</div>
+                  </div>
+                  <div className="col-span-2 min-w-0">
+                    <div className="font-mono text-xs">{p.bin}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{p.supplier}</div>
+                  </div>
+                  <div className={cn("col-span-1 text-right font-mono tabular", low && "text-warning font-semibold")}>{p.onHand}</div>
+                  <div className="col-span-1 text-right font-mono text-xs tabular text-muted-foreground">{p.reserved}</div>
+                  <div className="col-span-2 text-right font-mono text-[11px] tabular text-muted-foreground">{p.min} / {p.max}</div>
+                  <div className="col-span-1 text-right font-mono text-[11px] tabular text-muted-foreground">{p.value}</div>
+                  <div className="col-span-1 text-right text-[10px] text-muted-foreground truncate">{p.counted}</div>
+                </div>
+              );
+            })}
           </div>
         )}
 
+        {/* VANS */}
         {tab === "vans" && (
           <div className="mt-5 grid gap-3 md:grid-cols-2">
-            {vans.map((v) => (
-              <div key={v.reg} className="rounded-xl border border-hairline bg-surface-alt p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-mono text-xs text-muted-foreground">{v.reg}</div>
-                    <div className="text-display text-sm font-semibold">{v.driver}</div>
+            {vans.map((v) => {
+              const fill = vanFill(v.stock);
+              const shorts = vanShorts(v.stock);
+              return (
+                <div key={v.reg} className="rounded-xl border border-hairline bg-surface-alt p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-mono text-xs text-muted-foreground">{v.reg}</span>
+                      </div>
+                      <div className="text-display mt-1 text-sm font-semibold truncate">{v.driver}</div>
+                      <div className="text-[10px] text-muted-foreground">{v.role} · synced {v.lastSync}</div>
+                    </div>
+                    {shorts > 0 ? (
+                      <span className="rounded-full border border-warning/20 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning shrink-0">
+                        {shorts} short
+                      </span>
+                    ) : (
+                      <span className="rounded-full border border-success/20 bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success shrink-0">
+                        Fully kitted
+                      </span>
+                    )}
                   </div>
-                  {v.restock && <span className="rounded-full border border-warning/20 bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">Needs restock</span>}
+
+                  <div className="mt-3 h-1.5 rounded-full bg-white">
+                    <div className={cn("h-full rounded-full", fill < 60 ? "bg-warning" : fill < 90 ? "bg-foreground/60" : "bg-success")} style={{ width: `${fill}%` }} />
+                  </div>
+                  <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground">
+                    <span>Kit completeness</span><span className="font-mono tabular">{fill}%</span>
+                  </div>
+
+                  <div className="mt-3 divide-y divide-hairline border-t border-hairline">
+                    {v.stock.map((p) => {
+                      const short = p.have < p.target;
+                      return (
+                        <div key={p.name} className="flex items-center justify-between py-1.5 text-[11px]">
+                          <span className={cn("truncate", short && "text-warning font-medium")}>{p.name}</span>
+                          <span className={cn("font-mono tabular shrink-0 ml-2", short ? "text-warning" : "text-muted-foreground")}>
+                            {p.have}/{p.target} {p.unit}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {shorts > 0 && (
+                    <button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-[11px] font-medium text-background hover:opacity-90">
+                      <ArrowUpFromLine className="h-3 w-3" /> Build restock list from store
+                    </button>
+                  )}
                 </div>
-                <div className="mt-4 h-1.5 rounded-full bg-white">
-                  <div className={cn("h-full rounded-full", v.fill < 35 ? "bg-warning" : "bg-foreground")} style={{ width: `${v.fill}%` }} />
-                </div>
-                <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-                  <span>Fill</span><span className="font-mono tabular">{v.fill}%</span>
-                </div>
-                <div className="mt-3 border-t border-hairline pt-3 text-[11px] text-muted-foreground">
-                  Top parts · {v.top.join(", ")}
+              );
+            })}
+          </div>
+        )}
+
+        {/* REORDER */}
+        {tab === "reorder" && (
+          <div className="mt-5 divide-y divide-hairline">
+            <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="col-span-3 min-w-0">Part</div>
+              <div className="col-span-2 min-w-0">Supplier</div>
+              <div className="col-span-1 text-right min-w-0">Qty</div>
+              <div className="col-span-3 min-w-0">Why</div>
+              <div className="col-span-1 text-right min-w-0">Cost</div>
+              <div className="col-span-2 text-right min-w-0">Action</div>
+            </div>
+            {reorder.map((r) => (
+              <div key={r.part} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
+                <div className="col-span-3 font-medium min-w-0 truncate">{r.part}</div>
+                <div className="col-span-2 text-xs text-muted-foreground min-w-0 truncate">{r.from}</div>
+                <div className="col-span-1 text-right font-mono tabular">{r.qty}</div>
+                <div className="col-span-3 text-[11px] text-muted-foreground min-w-0 truncate">{r.reason} · ETA {r.eta}</div>
+                <div className="col-span-1 text-right font-mono text-xs tabular">{r.cost}</div>
+                <div className="col-span-2 flex justify-end gap-1.5 min-w-0">
+                  <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px] hover:bg-surface-alt">Edit</button>
+                  <button className="rounded-full bg-foreground px-2.5 py-1 text-[11px] text-background hover:opacity-90">Raise PO</button>
                 </div>
               </div>
             ))}
           </div>
         )}
 
+        {/* MOVEMENTS */}
         {tab === "moves" && (
           <div className="mt-5 divide-y divide-hairline">
+            <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="col-span-1 min-w-0">Time</div>
+              <div className="col-span-2 min-w-0">Who</div>
+              <div className="col-span-3 min-w-0">Part</div>
+              <div className="col-span-2 min-w-0">From</div>
+              <div className="col-span-2 min-w-0">To</div>
+              <div className="col-span-1 min-w-0">Type</div>
+              <div className="col-span-1 text-right min-w-0">Ref</div>
+            </div>
             {moves.map((m, i) => (
               <div key={i} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
-                <div className="col-span-2 font-mono text-xs text-muted-foreground min-w-0">{m.t}</div>
-                <div className="col-span-3 font-medium min-w-0">{m.who}</div>
-                <div className="col-span-4 min-w-0">{m.part}</div>
-                <div className="col-span-2 min-w-0">
-                  <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", m.dir === "in" ? "bg-success/10 text-success" : "bg-accent/10 text-accent")}>
-                    {m.dir === "in" ? "Check-in" : "Check-out"}
+                <div className="col-span-1 font-mono text-xs text-muted-foreground min-w-0">{m.t}</div>
+                <div className="col-span-2 font-medium min-w-0 truncate">{m.who}</div>
+                <div className="col-span-3 min-w-0 truncate">{m.part}</div>
+                <div className="col-span-2 text-[11px] text-muted-foreground min-w-0 truncate">{m.from}</div>
+                <div className="col-span-2 text-[11px] text-muted-foreground min-w-0 truncate">{m.to}</div>
+                <div className="col-span-1 min-w-0">
+                  <span className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                    m.dir === "in" ? "bg-success/10 text-success" :
+                    m.dir === "out" ? "bg-accent/10 text-accent" :
+                    "bg-foreground/10 text-foreground"
+                  )}>
+                    {m.dir === "in" ? "In" : m.dir === "out" ? "Fitted" : "Transfer"}
                   </span>
                 </div>
-                <div className="col-span-1 text-right font-mono text-xs text-muted-foreground min-w-0">{m.job}</div>
+                <div className="col-span-1 text-right font-mono text-[11px] text-muted-foreground min-w-0 truncate">{m.job}</div>
               </div>
             ))}
           </div>
