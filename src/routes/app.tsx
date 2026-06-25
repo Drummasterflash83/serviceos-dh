@@ -1130,3 +1130,427 @@ function Learn() {
   );
 }
 
+
+/* ────── INTELLIGENCE ────── */
+function Intelligence() {
+  const [tab, setTab] = useState<"all" | "ops" | "finance" | "customer" | "compliance">("all");
+
+  const pipeline = [
+    { label: "Raw signal", icon: Radio, count: "63,290", sub: "ingested 30d" },
+    { label: "Normalise", icon: Filter, count: "62,914", sub: "99.4% parsed" },
+    { label: "Classify", icon: Layers, count: "61,802", sub: "412 categories" },
+    { label: "Enrich", icon: Sparkles, count: "58,440", sub: "entity + context" },
+    { label: "Link to entity", icon: Network, count: "57,118", sub: "98% match rate" },
+    { label: "Insight", icon: Brain, count: "1,284", sub: "candidates surfaced" },
+    { label: "Recommend", icon: Target, count: "186", sub: "actionable" },
+  ];
+
+  const kpis = [
+    { l: "Active insights", v: "186", delta: "+24 this week", tone: "accent" as const, icon: Sparkles },
+    { l: "Open anomalies", v: "11", delta: "3 high severity", tone: "warning" as const, icon: AlertTriangle },
+    { l: "Automation candidates", v: "12", delta: "ROI > 60%", tone: "success" as const, icon: Zap },
+    { l: "Avg time-to-insight", v: "1m 42s", delta: "-38% vs last month", tone: "muted" as const, icon: Clock },
+  ];
+
+  const insights = [
+    {
+      cat: "ops", severity: "high", score: 92, icon: AlertTriangle,
+      title: "Engineer day overruns clustering on Mondays",
+      body: "Across the last 6 Mondays, 34% of dispatched jobs overran by > 30 mins. Pattern correlates with weekend voicemail volume not triaged before 09:00.",
+      sources: ["Calendar", "Phone Calls", "Commusoft"],
+      confidence: 88, impact: "£4.2k/mo lost capacity", action: "Auto-triage Monday voicemail at 08:00",
+    },
+    {
+      cat: "finance", severity: "high", score: 90, icon: Banknote,
+      title: "Top 3 debtors hold 54% of aged debt > 60d",
+      body: "Three commercial customers carry £26.1k of the £48.2k aged debt > 60d. Two have unanswered email chases > 14 days old.",
+      sources: ["QuickBooks", "Email"],
+      confidence: 96, impact: "£26.1k cash unlocked", action: "Escalate to account manager chase",
+    },
+    {
+      cat: "customer", severity: "medium", score: 86, icon: Brain,
+      title: "ABC School sentiment trending down",
+      body: "4 frustrated calls in 6 weeks. Email tone score dropped from 0.62 to 0.21. PPM visit feedback flagged 'engineer time pressure' twice.",
+      sources: ["Phone Calls", "Email", "Commusoft"],
+      confidence: 84, impact: "£18k contract at risk", action: "Schedule account review call",
+    },
+    {
+      cat: "ops", severity: "medium", score: 81, icon: TrendingUp,
+      title: "Quote → approval bottleneck (supplier path)",
+      body: "Supplier quote prep averages 22 mins across 184 observations. 74% of steps are deterministic and repeatable across 3 apps.",
+      sources: ["Desktop Workflow", "Email", "Drive"],
+      confidence: 91, impact: "~14 hrs/week", action: "Deploy Procurement Agent (draft mode)",
+    },
+    {
+      cat: "compliance", severity: "high", score: 89, icon: ShieldCheck,
+      title: "27 customer certifications expire in 60 days",
+      body: "F-gas, gas safe and PAT certificates expiring across 19 customer sites. None currently surfaced inside Commusoft visit planning.",
+      sources: ["Google Drive", "Commusoft"],
+      confidence: 98, impact: "Renewal revenue + compliance risk",
+      action: "Auto-schedule renewal visits + customer notice",
+    },
+    {
+      cat: "ops", severity: "low", score: 74, icon: CheckCircle2,
+      title: "Missed callback revenue detected",
+      body: "11 callbacks logged last week never converted to a follow-up job. Estimated value £7,840 based on average job size for caller type.",
+      sources: ["Phone Calls", "Commusoft"],
+      confidence: 82, impact: "£7.8k/wk recoverable", action: "Add callback SLA + reminder",
+    },
+  ];
+
+  const anomalies = [
+    { t: "Spike in 'parts shortage' mentions across Slack channels", when: "2h ago", sev: "warning" as const },
+    { t: "Supplier ACME lead time jumped from 3d → 11d", when: "5h ago", sev: "warning" as const },
+    { t: "QuickBooks payment-matching confidence dropped 7%", when: "yesterday", sev: "muted" as const },
+    { t: "Engineer #4 calendar gap pattern · 3 weeks running", when: "yesterday", sev: "accent" as const },
+  ];
+
+  const automations = [
+    { name: "Supplier quote preparation", freq: 184, dur: "22m", risk: "low", score: 92, status: "ready" },
+    { name: "Engineer job sheet → invoice", freq: 412, dur: "8m", risk: "low", score: 88, status: "ready" },
+    { name: "Customer follow-up", freq: 246, dur: "6m", risk: "low", score: 86, status: "draft" },
+    { name: "PPM scheduling smoothing", freq: 96, dur: "31m", risk: "med", score: 78, status: "review" },
+    { name: "Aged debt chase sequence", freq: 64, dur: "9m", risk: "med", score: 74, status: "review" },
+  ];
+
+  const forecasts = [
+    { l: "Revenue · next 30d", v: "£182.4k", trend: "+4.1%", tone: "success" as const },
+    { l: "Cash position · 60d", v: "£94.6k", trend: "+£12.8k", tone: "success" as const },
+    { l: "Engineer utilisation", v: "76%", trend: "+5pt", tone: "accent" as const },
+    { l: "Customer churn risk", v: "3 accounts", trend: "+1 vs last wk", tone: "warning" as const },
+  ];
+
+  const models = [
+    { name: "Fast classify", use: "Message + call intent · entity extraction · urgency", load: 64, tone: "success" as const },
+    { name: "Deep reasoning", use: "Workflow analysis · SOP gen · automation planning", load: 28, tone: "accent" as const },
+    { name: "Vision / OCR", use: "Screenshots · PDFs · supplier docs · forms", load: 41, tone: "success" as const },
+    { name: "Embeddings", use: "Semantic search · similar-issue · SOP match", load: 72, tone: "accent" as const },
+  ];
+
+  const stream = [
+    { icon: Phone, t: "Call classified · 'boiler not firing' · urgency HIGH", who: "Reception Agent", ago: "just now" },
+    { icon: Mail, t: "Quote chase drafted for Greenfield Schools (£4,180)", who: "Inbox Agent", ago: "12s" },
+    { icon: Database, t: "Job #J-10421 enriched with engineer history + 3 prior visits", who: "Pipeline", ago: "28s" },
+    { icon: FileText, t: "Supplier invoice OCR'd · 14 line items · matched to PO-882", who: "Pipeline", ago: "1m" },
+    { icon: AlertTriangle, t: "Anomaly: ACME lead time changed 3d → 11d", who: "Procurement Agent", ago: "5m" },
+    { icon: Brain, t: "Pattern detected: Monday voicemail → engineer overrun", who: "Insight engine", ago: "12m" },
+    { icon: ShieldCheck, t: "Certification expiry · 4 customers flagged for renewal", who: "Compliance Agent", ago: "22m" },
+  ];
+
+  const filtered = tab === "all" ? insights : insights.filter((i) => i.cat === tab);
+
+  return (
+    <div className="space-y-6">
+      {/* Header strip */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+                <Brain className="h-3 w-3" />
+              </span>
+              Intelligence layer · always listening, always learning
+            </div>
+            <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
+              The business, observing itself.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Every signal from the capture layer is normalised, classified, enriched, linked to a customer, job or asset, and turned into an insight or a recommended action. This view is live.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+            Live · 1,284 insights generated · 186 awaiting action
+          </div>
+        </div>
+
+        {/* KPI row */}
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {kpis.map((k) => (
+            <div key={k.l} className="rounded-xl border border-hairline p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{k.l}</div>
+                <div className={cn(
+                  "grid h-7 w-7 place-items-center rounded-lg",
+                  k.tone === "accent" && "bg-accent/10 text-accent",
+                  k.tone === "warning" && "bg-warning/10 text-warning",
+                  k.tone === "success" && "bg-success/10 text-success",
+                  k.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <k.icon className="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <div className="text-display mt-2 text-2xl font-bold tabular">{k.v}</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">{k.delta}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pipeline */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="flex items-baseline justify-between">
+          <div className="text-sm font-semibold">Intelligence pipeline · last 30 days</div>
+          <div className="text-[11px] text-muted-foreground">Raw → Recommend</div>
+        </div>
+        <div className="mt-4 grid gap-2 md:grid-cols-7">
+          {pipeline.map((s, i) => (
+            <div key={s.label} className="relative rounded-xl border border-hairline bg-surface-alt p-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-foreground text-background">
+                  <s.icon className="h-3 w-3" />
+                </span>
+                <div className="text-[11px] font-medium">{s.label}</div>
+              </div>
+              <div className="text-display mt-2 text-base font-bold tabular">{s.count}</div>
+              <div className="text-[10px] text-muted-foreground">{s.sub}</div>
+              {i < pipeline.length - 1 && (
+                <ChevronRight className="absolute -right-2 top-1/2 hidden h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground md:block" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Insights + Live stream */}
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="md:col-span-8">
+          <div className="mb-3 flex items-end justify-between">
+            <div>
+              <div className="text-display text-lg font-semibold">Active insights</div>
+              <div className="text-xs text-muted-foreground">Synthesised from every input, scored by confidence and impact</div>
+            </div>
+            <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
+              {(["all", "ops", "finance", "customer", "compliance"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 capitalize transition",
+                    tab === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {filtered.map((i) => (
+              <div key={i.title} className="rounded-2xl border border-hairline bg-white p-5">
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                    i.severity === "high" && "bg-warning/10 text-warning",
+                    i.severity === "medium" && "bg-accent/10 text-accent",
+                    i.severity === "low" && "bg-success/10 text-success",
+                  )}>
+                    <i.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <div className="text-sm font-semibold">{i.title}</div>
+                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+                        <span className={cn(
+                          "rounded-full px-2 py-0.5 font-medium",
+                          i.severity === "high" && "bg-warning/10 text-warning",
+                          i.severity === "medium" && "bg-accent/10 text-accent",
+                          i.severity === "low" && "bg-success/10 text-success",
+                        )}>{i.severity}</span>
+                        <span className="text-muted-foreground">Score</span>
+                        <span className="font-mono tabular text-foreground">{i.score}</span>
+                      </div>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{i.body}</p>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <div className="h-1 flex-1 rounded-full bg-hairline">
+                            <div className="h-full rounded-full bg-foreground" style={{ width: `${i.confidence}%` }} />
+                          </div>
+                          <span className="font-mono text-[11px] tabular">{i.confidence}%</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Impact</div>
+                        <div className="mt-1 text-xs font-medium">{i.impact}</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-hairline pt-3">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {i.sources.map((s) => (
+                          <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] text-muted-foreground">{s}</span>
+                        ))}
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium">
+                        <Sparkles className="h-3 w-3 text-accent" />
+                        {i.action}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Live stream */}
+        <div className="md:col-span-4">
+          <div className="rounded-2xl border border-hairline bg-white p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-display text-sm font-semibold">Live signal stream</div>
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> live
+              </span>
+            </div>
+            <ul className="mt-4 space-y-3">
+              {stream.map((s, idx) => (
+                <li key={idx} className="flex items-start gap-3 border-b border-hairline pb-3 last:border-0">
+                  <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-surface-alt">
+                    <s.icon className="h-3.5 w-3.5 text-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[12px] leading-snug">{s.t}</div>
+                    <div className="mt-0.5 text-[10px] text-muted-foreground">{s.who} · {s.ago}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Anomalies */}
+          <div className="mt-3 rounded-2xl border border-hairline bg-white p-5">
+            <div className="flex items-center gap-2 text-display text-sm font-semibold">
+              <AlertTriangle className="h-4 w-4 text-warning" /> Anomalies
+            </div>
+            <ul className="mt-3 space-y-2.5">
+              {anomalies.map((a) => (
+                <li key={a.t} className="flex items-start gap-2 text-xs">
+                  <span className={cn(
+                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                    a.sev === "warning" && "bg-warning",
+                    a.sev === "accent" && "bg-accent",
+                    a.sev === "muted" && "bg-muted-foreground/40",
+                  )} />
+                  <div className="flex-1">
+                    <div className="leading-snug">{a.t}</div>
+                    <div className="mt-0.5 text-[10px] text-muted-foreground">{a.when}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Process mining + forecasts */}
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="md:col-span-7 rounded-2xl border border-hairline bg-white p-5">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <div className="text-display text-sm font-semibold">Process mining · automation candidates</div>
+              <div className="text-[11px] text-muted-foreground">Scored on frequency, duration, risk and feasibility</div>
+            </div>
+            <Gauge className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="mt-4 overflow-hidden rounded-xl border border-hairline">
+            <table className="w-full text-xs">
+              <thead className="bg-surface-alt text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium">Workflow</th>
+                  <th className="px-3 py-2 text-right font-medium">Frequency</th>
+                  <th className="px-3 py-2 text-right font-medium">Avg time</th>
+                  <th className="px-3 py-2 text-right font-medium">Risk</th>
+                  <th className="px-3 py-2 text-right font-medium">Score</th>
+                  <th className="px-3 py-2 text-right font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {automations.map((a) => (
+                  <tr key={a.name} className="border-t border-hairline">
+                    <td className="px-3 py-2.5 font-medium">{a.name}</td>
+                    <td className="px-3 py-2.5 text-right font-mono tabular">{a.freq}</td>
+                    <td className="px-3 py-2.5 text-right font-mono tabular">{a.dur}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <span className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                        a.risk === "low" && "bg-success/10 text-success",
+                        a.risk === "med" && "bg-warning/10 text-warning",
+                      )}>{a.risk}</span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="ml-auto flex items-center justify-end gap-2">
+                        <div className="h-1 w-16 rounded-full bg-hairline">
+                          <div className="h-full rounded-full bg-accent" style={{ width: `${a.score}%` }} />
+                        </div>
+                        <span className="font-mono tabular">{a.score}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <span className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                        a.status === "ready" && "bg-success/10 text-success",
+                        a.status === "draft" && "bg-accent/10 text-accent",
+                        a.status === "review" && "bg-surface-alt text-muted-foreground",
+                      )}>{a.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="md:col-span-5 space-y-3">
+          <div className="rounded-2xl border border-hairline bg-white p-5">
+            <div className="flex items-center gap-2 text-display text-sm font-semibold">
+              <TrendingUp className="h-4 w-4 text-accent" /> Forecasts
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {forecasts.map((f) => (
+                <div key={f.l} className="rounded-xl border border-hairline p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{f.l}</div>
+                  <div className="text-display mt-1 text-lg font-bold tabular">{f.v}</div>
+                  <div className={cn(
+                    "mt-0.5 text-[10px]",
+                    f.tone === "success" && "text-success",
+                    f.tone === "accent" && "text-accent",
+                    f.tone === "warning" && "text-warning",
+                  )}>{f.trend}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-hairline bg-white p-5">
+            <div className="flex items-center gap-2 text-display text-sm font-semibold">
+              <Eye className="h-4 w-4 text-muted-foreground" /> Model routing
+            </div>
+            <div className="mt-3 space-y-3">
+              {models.map((m) => (
+                <div key={m.name}>
+                  <div className="flex items-baseline justify-between">
+                    <div className="text-xs font-medium">{m.name}</div>
+                    <div className="font-mono text-[11px] tabular text-muted-foreground">{m.load}%</div>
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-muted-foreground">{m.use}</div>
+                  <div className="mt-1 h-1 rounded-full bg-hairline">
+                    <div className={cn(
+                      "h-full rounded-full",
+                      m.tone === "success" && "bg-success",
+                      m.tone === "accent" && "bg-accent",
+                    )} style={{ width: `${m.load}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
