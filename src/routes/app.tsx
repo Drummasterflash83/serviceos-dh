@@ -175,7 +175,7 @@ function Dashboard() {
     { tone: "accent",      pillar: "Quoting",    text: "Quote follow-up overdue ×7",      detail: "Day-20 nudge ready to send. ~70% reply rate on spam-drift line." },
     { tone: "destructive", pillar: "Customer",   text: "Complaint risk · ABC School",     detail: "Frustrated sentiment + no callback in 2 days. Mary owns the response." },
     { tone: "warning",     pillar: "Comms",      text: "office@ unread climbing",         detail: "Oldest 47m. 3 likely routable to scheduling — auto-route ready." },
-    { tone: "success",     pillar: "Money",      text: "Margin tracking +3.4% vs week",   detail: "Procurement agent saved £214 across 3 supplier comparisons today." },
+    { tone: "success",     pillar: "Cashflow",      text: "Margin tracking +3.4% vs week",   detail: "Procurement agent saved £214 across 3 supplier comparisons today." },
   ] as const;
 
 
