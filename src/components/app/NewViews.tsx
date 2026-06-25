@@ -4,7 +4,8 @@ import {
   Truck, PackageSearch, Receipt, CalendarClock, Workflow, Sparkles,
   ArrowUpRight, ChevronRight, Users, HardDrive, Activity, Filter,
   FileText, Network, Briefcase, MessageSquare, Star, Wrench, Gauge,
-  TrendingUp, Layers,
+  TrendingUp, Layers, Package, Warehouse, ArrowDownToLine, ArrowUpFromLine,
+  ScanLine, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
