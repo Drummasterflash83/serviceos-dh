@@ -341,29 +341,32 @@ function Calls() {
     { time: "12:48", caller: "Crestmont Apts.", urgency: "High", sentiment: "Frustrated", intent: "Leak" },
   ];
   return (
-    <div className="grid gap-3 md:grid-cols-12">
-      <div className="rounded-2xl border border-hairline bg-white md:col-span-7">
-        <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">Recent calls</div>
-        {calls.map((c, i) => (
-          <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
-            <div className="col-span-2 font-mono text-xs text-muted-foreground">{c.time}</div>
-            <div className="col-span-4 font-medium">{c.caller}</div>
-            <div className="col-span-2 text-xs">{c.urgency}</div>
-            <div className="col-span-2 text-xs text-muted-foreground">{c.sentiment}</div>
-            <div className="col-span-2 text-xs text-muted-foreground">{c.intent}</div>
-          </div>
-        ))}
-      </div>
-      <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-5">
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live transcript</div>
-        <div className="mt-3 text-sm font-semibold">ABC School · 14:22</div>
-        <div className="mt-4 space-y-3 text-sm">
-          <p><span className="font-mono text-xs text-muted-foreground">caller</span><br />Our heating's been out since this morning, three classrooms…</p>
-          <p><span className="font-mono text-xs text-accent">agent</span><br />Understood. I'm escalating now and dispatching the nearest engineer.</p>
+    <div className="space-y-5">
+      <RecurringIssuesPanel />
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="rounded-2xl border border-hairline bg-white md:col-span-7">
+          <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">Recent calls</div>
+          {calls.map((c, i) => (
+            <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
+              <div className="col-span-2 font-mono text-xs text-muted-foreground">{c.time}</div>
+              <div className="col-span-4 font-medium">{c.caller}</div>
+              <div className="col-span-2 text-xs">{c.urgency}</div>
+              <div className="col-span-2 text-xs text-muted-foreground">{c.sentiment}</div>
+              <div className="col-span-2 text-xs text-muted-foreground">{c.intent}</div>
+            </div>
+          ))}
         </div>
-        <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
-          <div className="font-semibold text-accent">Recommended action</div>
-          <div className="mt-1 text-foreground">Escalate · dispatch T. Reid (12 min away)</div>
+        <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-5">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live transcript</div>
+          <div className="mt-3 text-sm font-semibold">ABC School · 14:22</div>
+          <div className="mt-4 space-y-3 text-sm">
+            <p><span className="font-mono text-xs text-muted-foreground">caller</span><br />Our heating's been out since this morning, three classrooms…</p>
+            <p><span className="font-mono text-xs text-accent">agent</span><br />Understood. I'm escalating now and dispatching the nearest engineer.</p>
+          </div>
+          <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
+            <div className="font-semibold text-accent">Recommended action</div>
+            <div className="mt-1 text-foreground">Escalate · dispatch T. Reid (12 min away)</div>
+          </div>
         </div>
       </div>
     </div>
