@@ -77,7 +77,7 @@ function AppShell() {
               <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
               All systems live
             </div>
-            <div className="mt-2 text-xs text-muted-foreground">Deployment 001 · Drummond Heating</div>
+            <div className="mt-2 text-xs text-muted-foreground">Drummond Heating</div>
           </div>
         </div>
       </aside>
