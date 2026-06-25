@@ -1323,7 +1323,69 @@ function Intelligence() {
       </div>
 
 
+      {/* Pillar score infographic */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-xl">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">How the pillar score works</div>
+            <div className="text-display mt-1 text-lg font-semibold">A 0–100 health rating per pillar, recalculated hourly.</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              ServiceOS blends live signals — throughput, cash flow, sentiment, audit gaps — into one score so you can see, at a glance, where the business is strong and where upgrades will have the biggest impact.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { band: "0–49", label: "At risk", tone: "bg-destructive/10 text-destructive border-destructive/20" },
+              { band: "50–69", label: "Needs work", tone: "bg-warning/10 text-warning border-warning/20" },
+              { band: "70–84", label: "Healthy", tone: "bg-accent/10 text-accent border-accent/20" },
+              { band: "85–100", label: "Excellent", tone: "bg-success/10 text-success border-success/20" },
+            ].map((b) => (
+              <div key={b.band} className={cn("rounded-lg border px-3 py-2", b.tone)}>
+                <div className="text-display text-sm font-bold tabular">{b.band}</div>
+                <div className="text-[10px] uppercase tracking-wider opacity-80">{b.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Spectrum bar with pillar markers */}
+        <div className="mt-5">
+          <div className="relative h-2 w-full rounded-full bg-gradient-to-r from-destructive/40 via-warning/40 via-accent/40 to-success/60">
+            {PILLARS.map((p) => {
+              const score = PILLAR_HEALTH[p.key].score;
+              return (
+                <div
+                  key={p.key}
+                  className="absolute -top-1.5 -translate-x-1/2"
+                  style={{ left: `${score}%` }}
+                  title={`${p.label} · ${score}`}
+                >
+                  <div className="h-5 w-0.5 bg-foreground" />
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+            {PILLARS.map((p) => (
+              <div key={p.key} className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-foreground" />
+                <span className="font-medium text-foreground">{p.label}</span>
+                <span className="tabular">{PILLAR_HEALTH[p.key].score}</span>
+              </div>
+            ))}
+            <div className="ml-auto flex items-center gap-3">
+              <span>Inputs:</span>
+              <span>· Live telemetry</span>
+              <span>· Job + finance data</span>
+              <span>· Customer signals</span>
+              <span>· Compliance feeds</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Pillar health */}
+
       <div className="grid gap-3 md:grid-cols-4">
         {PILLARS.map((p) => {
           const h = PILLAR_HEALTH[p.key];
