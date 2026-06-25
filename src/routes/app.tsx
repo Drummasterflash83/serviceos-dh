@@ -7,7 +7,7 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox,
+  Users, Inbox, IdCard,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import {
   Protocol, OperationsHub, Customers,
   ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
 } from "@/components/app/NewViews";
+import { CardsView } from "@/components/app/Cards";
 
 
 export const Route = createFileRoute("/app")({
@@ -29,10 +30,11 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "finance" | "settings";
+type ViewKey = "dashboard" | "cards" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "cards", label: "Cards", icon: IdCard },
   { key: "learn", label: "Learn", icon: GraduationCap },
   { key: "intelligence", label: "Intelligence", icon: Brain },
   { key: "automations", label: "Automations", icon: Zap },
@@ -115,6 +117,7 @@ function AppShell() {
 
         <main className="flex-1 p-6">
           {view === "dashboard" && <Dashboard />}
+          {view === "cards" && <CardsView />}
           {view === "learn" && <Learn />}
           {view === "intelligence" && <Intelligence />}
           {view === "automations" && <Automations />}
