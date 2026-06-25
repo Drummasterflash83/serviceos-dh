@@ -6,7 +6,9 @@ import {
   Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
+  Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
