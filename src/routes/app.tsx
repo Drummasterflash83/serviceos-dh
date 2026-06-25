@@ -946,7 +946,7 @@ function Finance() {
       </div>
 
       {/* Wins summary */}
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {wins.map((w) => (
           <div key={w.l} className="rounded-2xl border border-hairline bg-white p-5">
             <div className="text-display text-3xl font-bold tabular text-foreground">{w.v}</div>
