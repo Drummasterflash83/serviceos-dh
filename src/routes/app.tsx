@@ -1280,11 +1280,11 @@ function Intelligence() {
   return (
     <div className="space-y-6">
       {/* Hero · projected uplift */}
-      <div className="rounded-2xl border border-hairline bg-foreground p-6 text-background">
+      <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-background/60">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-background text-foreground">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
                 <Brain className="h-3 w-3" />
               </span>
               Intelligence · active recommendations
@@ -1292,11 +1292,11 @@ function Intelligence() {
             <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
               Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
-            <p className="mt-2 text-sm text-background/70">
+            <p className="mt-2 text-sm text-muted-foreground">
               Each card below is an upgrade ServiceOS can ship — via automation, an AI agent, or a workflow change — with projected impact on time, profit, turnover, customer satisfaction and risk.
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-full bg-background/10 px-3 py-1.5 text-[11px] font-medium">
+          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
             Always listening · always learning
           </div>
@@ -1310,17 +1310,18 @@ function Intelligence() {
             { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
             { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
           ].map((k) => (
-            <div key={k.l} className="rounded-xl border border-background/15 bg-background/5 p-4">
-              <div className="flex items-center justify-between text-background/70">
+            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex items-center justify-between text-muted-foreground">
                 <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-1.5 text-xl font-bold tabular text-background">{k.v}</div>
-              <div className="text-[10px] text-background/60">{k.sub}</div>
+              <div className="text-display mt-1.5 text-xl font-bold tabular text-foreground">{k.v}</div>
+              <div className="text-[10px] text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
       </div>
+
 
       {/* Pillar health */}
       <div className="grid gap-3 md:grid-cols-4">
