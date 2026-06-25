@@ -497,7 +497,7 @@ const SOURCES: SourceDetail[] = [
       { label: "#leadership", pct: 12 },
     ],
     insights: [
-      "63 escalations in #ops-dispatch last 30d — 22% lacked owner assignment",
+      "63 escalations in #ops-dispatch last 30d - 22% lacked owner assignment",
       "Recurring 'parts shortage' theme across 3 channels",
       "Decisions made in Slack rarely propagated to Commusoft notes",
     ],
@@ -528,8 +528,8 @@ const SOURCES: SourceDetail[] = [
     ],
     insights: [
       "Job notes consistently miss parts-used field on 22% of completed jobs",
-      "PPM scheduling clusters in last week of month — capacity strain",
-      "Engineer utilisation 71% — 14% lost to travel reschedules",
+      "PPM scheduling clusters in last week of month - capacity strain",
+      "Engineer utilisation 71% - 14% lost to travel reschedules",
     ],
     automations: [
       "Auto-fill parts used from engineer voice note at job close",
@@ -559,7 +559,7 @@ const SOURCES: SourceDetail[] = [
     insights: [
       "Top 3 debtors account for 54% of aged debt > 60d",
       "Invoices sent on Friday paid 4.2 days slower on average",
-      "PPM customers pay 11 days faster than reactive — bias mix upward",
+      "PPM customers pay 11 days faster than reactive - bias mix upward",
     ],
     automations: [
       "Auto-chase aged debt with tone tuned to customer history",
@@ -589,7 +589,7 @@ const SOURCES: SourceDetail[] = [
     insights: [
       "23% of engineer calendar slots overrun by > 30 mins",
       "Customer site visits without prep doc → 2.1× callback rate",
-      "Internal meeting load peaked Wed 10–12 — automation candidates",
+      "Internal meeting load peaked Wed 10-12 - automation candidates",
     ],
     automations: [
       "Auto-attach job brief + customer history to dispatch events",
@@ -617,7 +617,7 @@ const SOURCES: SourceDetail[] = [
       { label: "Internal SOPs", pct: 20 },
     ],
     insights: [
-      "27 customer certificates expire within 60 days — none currently surfaced",
+      "27 customer certificates expire within 60 days - none currently surfaced",
       "Supplier price lists out of sync with quoting templates",
       "Folder sprawl: 190 near-duplicate quote files identified",
     ],
@@ -647,7 +647,7 @@ const SOURCES: SourceDetail[] = [
       { label: "Market & pricing", pct: 16 },
     ],
     insights: [
-      "Upcoming F-gas guidance change — affects 14 PPM contracts",
+      "Upcoming F-gas guidance change - affects 14 PPM contracts",
       "Two supplier price increases announced this week",
       "Competitor expanding into West London commercial segment",
     ],
@@ -677,7 +677,7 @@ const SOURCES: SourceDetail[] = [
       { label: "Other", pct: 16 },
     ],
     insights: [
-      "Avg time-to-first-response from form submit: 4h 12m — target 1h",
+      "Avg time-to-first-response from form submit: 4h 12m - target 1h",
       "Mobile submissions convert 28% better when reply within 30 mins",
       "Commercial enquiries under-served vs domestic by 2.4× response time",
     ],
@@ -750,9 +750,9 @@ const SOURCES: SourceDetail[] = [
     privacy: ["OCR on-platform", "No third-party doc AI by default"],
   },
   {
-    name: "IoT Telemetry", icon: Radio, status: "Planned", events: "—", tone: "muted",
+    name: "IoT Telemetry", icon: Radio, status: "Planned", events: "-", tone: "muted",
     desc: "Boilers · sensors · fault codes · energy",
-    connection: "Not yet connected", lastSync: "—",
+    connection: "Not yet connected", lastSync: "-",
     retention: "Planned: 365d telemetry · fault events permanent",
     coverage: 0, accuracy: 0,
     signals: [
@@ -769,7 +769,7 @@ const SOURCES: SourceDetail[] = [
     ],
     insights: [
       "Predictive maintenance candidate: 92 boilers across 14 sites",
-      "Expected 18–25% reduction in reactive callouts once live",
+      "Expected 18-25% reduction in reactive callouts once live",
       "Energy benchmarking unlocks ESG reporting for commercial clients",
     ],
     automations: [
@@ -1293,7 +1293,7 @@ function Intelligence() {
               Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Each card below is an upgrade ServiceOS can ship — via automation, an AI agent, or a workflow change — with projected impact on time, profit, turnover, customer satisfaction and risk.
+              Each card below is an upgrade ServiceOS can ship - via automation, an AI agent, or a workflow change - with projected impact on time, profit, turnover, customer satisfaction and risk.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -1328,17 +1328,17 @@ function Intelligence() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-xl">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">How the pillar score works</div>
-            <div className="text-display mt-1 text-lg font-semibold">A 0–100 health rating per pillar, recalculated hourly.</div>
+            <div className="text-display mt-1 text-lg font-semibold">A 0-100 health rating per pillar, recalculated hourly.</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              ServiceOS blends live signals — throughput, cash flow, sentiment, audit gaps — into one score so you can see, at a glance, where the business is strong and where upgrades will have the biggest impact.
+              ServiceOS blends live signals - throughput, cash flow, sentiment, audit gaps - into one score so you can see, at a glance, where the business is strong and where upgrades will have the biggest impact.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { band: "0–49", label: "At risk", tone: "bg-destructive/10 text-destructive border-destructive/20" },
-              { band: "50–69", label: "Needs work", tone: "bg-warning/10 text-warning border-warning/20" },
-              { band: "70–84", label: "Healthy", tone: "bg-accent/10 text-accent border-accent/20" },
-              { band: "85–100", label: "Excellent", tone: "bg-success/10 text-success border-success/20" },
+              { band: "0-49", label: "At risk", tone: "bg-destructive/10 text-destructive border-destructive/20" },
+              { band: "50-69", label: "Needs work", tone: "bg-warning/10 text-warning border-warning/20" },
+              { band: "70-84", label: "Healthy", tone: "bg-accent/10 text-accent border-accent/20" },
+              { band: "85-100", label: "Excellent", tone: "bg-success/10 text-success border-success/20" },
             ].map((b) => (
               <div key={b.band} className={cn("rounded-lg border px-3 py-2", b.tone)}>
                 <div className="text-display text-sm font-bold tabular">{b.band}</div>
