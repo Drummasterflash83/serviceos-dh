@@ -879,18 +879,8 @@ function Learn() {
         </div>
       </div>
 
-      {/* Pipeline */}
-      <div className="rounded-2xl border border-hairline bg-white p-5">
-        <div className="text-sm font-semibold">Intelligence pipeline</div>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {pipeline.map((step, i) => (
-            <div key={step} className="flex items-center gap-2">
-              <div className="rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-xs font-medium">{step}</div>
-              {i < pipeline.length - 1 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
-            </div>
-          ))}
-        </div>
-      </div>
+
+
 
       {/* Inputs grid */}
       <div>
