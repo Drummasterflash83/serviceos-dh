@@ -7,6 +7,7 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
+  Users, Inbox,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
