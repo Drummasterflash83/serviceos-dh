@@ -250,25 +250,100 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Risk windows + insights */}
+      {/* Company Health + insights */}
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Complaint risk</div>
-              <div className="text-display mt-1 text-sm font-semibold">Last 24 windows</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Company health</div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <div className="text-display text-2xl font-bold tabular leading-none">{overall}</div>
+                <div className="text-xs text-muted-foreground">/ 100 · last 24h</div>
+                <div className={cn(
+                  "ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                  trend >= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
+                )}>
+                  {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)} pts
+                </div>
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                Composite of Operations · Quoting · Comms · Customer · Money
+              </div>
             </div>
-            <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[10px] font-medium text-success">Low</span>
+            <span className={cn(
+              "rounded-full border px-2.5 py-1 text-[10px] font-medium",
+              overall >= 85 ? "border-success/20 bg-success/10 text-success" :
+              overall >= 70 ? "border-warning/20 bg-warning/10 text-warning" :
+                              "border-destructive/20 bg-destructive/10 text-destructive",
+            )}>
+              {overall >= 85 ? "Healthy" : overall >= 70 ? "Watching" : "Attention"}
+            </span>
           </div>
-          <div className="mt-5 flex h-20 items-end gap-1">
-            {Array.from({ length: 24 }).map((_, i) => {
-              const h = 20 + ((i * 13) % 60);
-              const tone = i < 18 ? "bg-success/40" : i < 22 ? "bg-warning/50" : "bg-destructive/50";
-              return <div key={i} className={cn("flex-1 rounded-sm", tone)} style={{ height: `${h}px` }} />;
-            })}
+
+          {/* Bars · hover for what's going on */}
+          <div className="group/chart relative mt-5">
+            <div className="flex h-24 items-end gap-1">
+              {health.map((p, i) => {
+                const tone =
+                  p.score >= 85 ? "bg-success/60 hover:bg-success" :
+                  p.score >= 70 ? "bg-warning/60 hover:bg-warning" :
+                                  "bg-destructive/60 hover:bg-destructive";
+                const hPct = Math.max(8, p.score); // visual floor
+                const last = i === health.length - 1;
+                return (
+                  <div key={p.hour} className="group/bar relative flex flex-1 flex-col items-center justify-end">
+                    <div
+                      className={cn("w-full rounded-sm transition-all", tone, last && "ring-2 ring-offset-1 ring-foreground/20")}
+                      style={{ height: `${hPct}%` }}
+                    />
+                    {/* Tooltip */}
+                    <div className="pointer-events-none absolute bottom-full z-10 mb-2 hidden w-52 -translate-x-1/2 left-1/2 rounded-lg border border-hairline bg-white p-2.5 text-left shadow-[var(--shadow-soft)] group-hover/bar:block">
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span className="font-mono">{p.hour}</span>
+                        <span className={cn(
+                          "rounded-full px-1.5 py-0.5 font-medium",
+                          p.score >= 85 ? "bg-success/10 text-success" :
+                          p.score >= 70 ? "bg-warning/10 text-warning" :
+                                          "bg-destructive/10 text-destructive",
+                        )}>{p.score}</span>
+                      </div>
+                      {p.reason ? (
+                        <>
+                          <div className="mt-1 text-[11px] font-semibold">{p.pillar}</div>
+                          <div className="text-[11px] leading-snug text-muted-foreground">{p.reason}</div>
+                        </>
+                      ) : (
+                        <div className="mt-1 text-[11px] leading-snug text-muted-foreground">All pillars green</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 flex justify-between font-mono text-[10px] text-muted-foreground">
+              <span>00:00</span><span>12:00</span><span>now</span>
+            </div>
           </div>
-          <div className="mt-3 flex justify-between font-mono text-[10px] text-muted-foreground">
-            <span>00:00</span><span>12:00</span><span>now</span>
+
+          {/* Pillar mini-legend */}
+          <div className="mt-4 grid grid-cols-5 gap-2 border-t border-hairline pt-3 text-center">
+            {[
+              { l: "Operations", v: 78, icon: Workflow },
+              { l: "Quoting",    v: 71, icon: FileText },
+              { l: "Comms",      v: 62, icon: MessageSquare },
+              { l: "Customer",   v: 58, icon: Users },
+              { l: "Money",      v: 92, icon: Banknote },
+            ].map((p) => (
+              <div key={p.l} className="rounded-md bg-surface-alt p-2">
+                <div className="flex items-center justify-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground">
+                  <p.icon className="h-2.5 w-2.5" /> {p.l}
+                </div>
+                <div className={cn(
+                  "text-display mt-1 text-sm font-bold tabular",
+                  p.v >= 85 ? "text-success" : p.v >= 70 ? "text-warning" : "text-destructive",
+                )}>{p.v}</div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -276,25 +351,35 @@ function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground">AI insights</div>
-              <div className="text-display mt-1 text-sm font-semibold">Needs attention</div>
+              <div className="text-display mt-1 text-sm font-semibold">What's moving the score</div>
             </div>
             <Sparkles className="h-4 w-4 text-accent" />
           </div>
           <div className="mt-4 space-y-2">
             {insights.map((x) => (
-              <div key={x.text} className="flex items-start gap-2 rounded-lg border border-hairline p-2.5">
-                <span className={cn(
-                  "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                  x.tone === "warning" && "bg-warning",
-                  x.tone === "accent" && "bg-accent",
-                  x.tone === "destructive" && "bg-destructive",
-                )} />
-                <span className="text-xs leading-snug">{x.text}</span>
+              <div key={x.text} className="group/insight rounded-lg border border-hairline p-2.5 transition hover:border-foreground/20 hover:bg-surface-alt">
+                <div className="flex items-start gap-2">
+                  <span className={cn(
+                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                    x.tone === "warning" && "bg-warning",
+                    x.tone === "accent" && "bg-accent",
+                    x.tone === "destructive" && "bg-destructive",
+                    x.tone === "success" && "bg-success",
+                  )} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-medium leading-snug">{x.text}</span>
+                      <span className="shrink-0 rounded-full bg-surface-alt px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">{x.pillar}</span>
+                    </div>
+                    <div className="mt-1 text-[11px] leading-snug text-muted-foreground">{x.detail}</div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
+
 
       {/* Live activity */}
       <div className="rounded-2xl border border-hairline bg-white">
