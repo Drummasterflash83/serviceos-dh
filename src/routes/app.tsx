@@ -190,6 +190,190 @@ function Dashboard() {
     { t: "14:04", who: "Workflow Intelligence", what: "New automation candidate detected (74% time saving)" },
   ];
 
+  /* ── Click-to-open detail modals ── */
+  const [detail, setDetail] = useState<string | null>(null);
+
+  type Tone = "success" | "warning" | "destructive" | "accent" | "muted";
+  type DetailBlock = {
+    title: string;
+    subtitle: string;
+    score?: string;
+    tone: Tone;
+    metrics: { l: string; v: string }[];
+    drivers: { label: string; reason: string; weight?: number }[];
+    actions: { label: string; detail: string; owner?: string }[];
+  };
+
+  const toneClass = (t: Tone) =>
+    t === "success" ? "bg-success/10 text-success border-success/20" :
+    t === "warning" ? "bg-warning/10 text-warning border-warning/20" :
+    t === "destructive" ? "bg-destructive/10 text-destructive border-destructive/20" :
+    t === "accent" ? "bg-accent/10 text-accent border-accent/20" :
+                     "bg-surface-alt text-foreground border-hairline";
+
+  const DETAILS: Record<string, DetailBlock> = {
+    "pillar:ops": {
+      title: "Operations · 81 / 100", subtitle: "Time, throughput, engineer utilisation", tone: "warning", score: "81 · +3 vs last wk",
+      metrics: [
+        { l: "Jobs in flight", v: "42" }, { l: "First-time fix", v: "89%" },
+        { l: "Avg over-run", v: "12 min" }, { l: "Utilisation", v: "84%" },
+      ],
+      drivers: [
+        { label: "Engineer 04 over-running", reason: "28 min behind on Greenfield service · knock-on to 14:30 slot", weight: 18 },
+        { label: "Parts not verified at goods-in", reason: "Two part-numbers flagged · pending Mary's check", weight: 9 },
+        { label: "Supplier swap resolved 3 jobs", reason: "Plumb Base subbed in · 2 days reclaimed", weight: -12 },
+      ],
+      actions: [
+        { label: "Re-route 14:30 slot", detail: "Scheduling Agent ready · swap Engineer 04 → Engineer 02", owner: "Rudi" },
+        { label: "Open Operations board", detail: "All active jobs with live ETAs and exception flags" },
+      ],
+    },
+    "pillar:finance": {
+      title: "Finance · 88 / 100", subtitle: "Cash, margin, debt, forecasting", tone: "success", score: "88 · +2 vs last wk",
+      metrics: [
+        { l: "Revenue today", v: "£18.4k" }, { l: "Margin (rolling 7d)", v: "31.2%" },
+        { l: "AR > 30 days", v: "£6.4k" }, { l: "Forecast variance", v: "±2.1%" },
+      ],
+      drivers: [
+        { label: "Procurement savings", reason: "£214 saved across 3 quote comparisons today", weight: -6 },
+        { label: "Two late payers chased", reason: "ABC School · Greenfield · auto-nudge in queue", weight: 4 },
+      ],
+      actions: [
+        { label: "Approve auto-nudge wave", detail: "5 invoices · day-7 reminder template · est. £4.2k recovered" },
+        { label: "Open Numbers view", detail: "Full cashflow, P&L and AR ageing" },
+      ],
+    },
+    "pillar:customer": {
+      title: "Customer · 76 / 100", subtitle: "Sentiment, retention, CSAT, NPS", tone: "warning", score: "76 · −2 vs last wk",
+      metrics: [
+        { l: "CSAT (7d)", v: "4.4 / 5" }, { l: "NPS", v: "+48" },
+        { l: "Active complaints", v: "1" }, { l: "Lapsed plans", v: "3" },
+      ],
+      drivers: [
+        { label: "ABC School sentiment", reason: "Frustrated · no callback in 2 days · 1 unresolved complaint", weight: 14 },
+        { label: "Quote→book gap (3 wks)", reason: "No touchpoint in window · risks slipping to competitor", weight: 8 },
+      ],
+      actions: [
+        { label: "Trigger recovery sequence", detail: "Mary owns response · call + email + £50 goodwill", owner: "Mary" },
+        { label: "Open Customers view", detail: "Cards ranked by recall count, sentiment, plant-room health" },
+      ],
+    },
+    "pillar:compliance": {
+      title: "Compliance · 94 / 100", subtitle: "Certifications, audit, safety", tone: "success", score: "94 · stable",
+      metrics: [
+        { l: "Certs valid", v: "26 / 27" }, { l: "RAMS coverage", v: "92%" },
+        { l: "Audit gaps", v: "0" }, { l: "Open NCRs", v: "1" },
+      ],
+      drivers: [
+        { label: "1 Unvented HW cert expiring", reason: "S. Walsh · expires in 21 days · reminder scheduled", weight: 4 },
+        { label: "RAMS missing on J-3402", reason: "Prison wing job · blocker until paperwork lands", weight: 2 },
+      ],
+      actions: [
+        { label: "Send cert renewal pack", detail: "Pre-filled application · S. Walsh · ready to dispatch" },
+        { label: "Chase RAMS on J-3402", detail: "Auto-DM Larne · sample RAMS attached" },
+      ],
+    },
+    "health:Operations": {
+      title: "Operations · 78", subtitle: "Engineer 04 over-running · 28 min behind", tone: "warning",
+      metrics: [{ l: "Score", v: "78" }, { l: "Trend 24h", v: "▲ 4 pts" }, { l: "Open issues", v: "2" }],
+      drivers: [
+        { label: "Engineer 04 over-run", reason: "Knock-on impact on 14:30 Marlborough Rd slot" },
+        { label: "Goods-in verification", reason: "2 part-numbers awaiting Mary's check" },
+      ],
+      actions: [{ label: "Re-route slot", detail: "Scheduling Agent ready · 1 click" }],
+    },
+    "health:Quoting": {
+      title: "Quoting · 71", subtitle: "Follow-ups overdue ×7 · Alan queue 4", tone: "warning",
+      metrics: [{ l: "Score", v: "71" }, { l: "Quotes out", v: "23" }, { l: "Win rate (30d)", v: "42%" }],
+      drivers: [
+        { label: "Day-20 nudge waiting", reason: "7 quotes past 20-day threshold · ~70% reply rate historically" },
+        { label: "Alan approval queue", reason: "4 quotes parked > £5k · drained from 8 this morning" },
+      ],
+      actions: [{ label: "Send nudge wave", detail: "One-click · uses spam-drift line" }],
+    },
+    "health:Comms": {
+      title: "Comms · 62", subtitle: "office@ unread climbing · oldest 47m", tone: "destructive",
+      metrics: [{ l: "Score", v: "62" }, { l: "Oldest unread", v: "47 min" }, { l: "Unrouted today", v: "8" }],
+      drivers: [
+        { label: "3 routable to scheduling", reason: "Reception Agent can auto-classify if enabled" },
+        { label: "Rudi callbacks owed ×3", reason: "Falling on Mary's plate · ack-flow ready" },
+      ],
+      actions: [{ label: "Enable auto-route", detail: "Inbox classifier · draft mode ready" }],
+    },
+    "health:Customer": {
+      title: "Customer · 58", subtitle: "ABC School sentiment turned frustrated", tone: "destructive",
+      metrics: [{ l: "Score", v: "58" }, { l: "At-risk accounts", v: "1" }, { l: "Days since touch", v: "2" }],
+      drivers: [
+        { label: "ABC School · unresolved complaint", reason: "Frustrated tone + cert renewal due" },
+        { label: "Quote→book gap", reason: "3 weeks without contact on £12.8k boiler swap" },
+      ],
+      actions: [{ label: "Recovery sequence", detail: "Mary owns · template + £50 goodwill", owner: "Mary" }],
+    },
+    "health:Cashflow": {
+      title: "Cashflow · 92", subtitle: "Margin +3.4% vs week · £214 saved today", tone: "success",
+      metrics: [{ l: "Score", v: "92" }, { l: "Cash on hand", v: "£127k" }, { l: "AR > 30d", v: "£6.4k" }],
+      drivers: [
+        { label: "Procurement saves", reason: "3 supplier comparisons · £214 captured" },
+        { label: "Margin tracking", reason: "+3.4% vs trailing week · driven by labour fit" },
+      ],
+      actions: [{ label: "Auto-nudge late payers", detail: "5 invoices · est. £4.2k recovered" }],
+    },
+    "insight:0": {
+      title: "Supplier delay affecting 3 jobs", subtitle: "Operations · open", tone: "warning",
+      metrics: [{ l: "Jobs blocked", v: "3" }, { l: "Reorder window", v: "closes 16:00" }, { l: "Switch cost", v: "+£0" }],
+      drivers: [
+        { label: "Heaton Spares lead time", reason: "5 days vs Plumb Base's 2 — knock-on to 3 confirmed jobs" },
+        { label: "Procurement Agent ready", reason: "Substitution comparison built and waiting on approval" },
+      ],
+      actions: [
+        { label: "Switch to Plumb Base", detail: "Confirm substitution · ETA pulls in by 2 days", owner: "Rudi" },
+        { label: "Notify affected customers", detail: "Mary template · 3 personalised emails drafted" },
+      ],
+    },
+    "insight:1": {
+      title: "Quote follow-up overdue ×7", subtitle: "Quoting · ready", tone: "accent",
+      metrics: [{ l: "Quotes overdue", v: "7" }, { l: "Avg age", v: "22 days" }, { l: "Reply rate", v: "~70%" }],
+      drivers: [
+        { label: "Day-20 threshold crossed", reason: "Historic data shows day-20 nudge converts best" },
+        { label: "Spam-drift line warm", reason: "From-address rotation healthy · no deliverability issues" },
+      ],
+      actions: [{ label: "Send nudge wave", detail: "7 personalised follow-ups · ~£18k pipeline", owner: "Larne" }],
+    },
+    "insight:2": {
+      title: "Complaint risk · ABC School", subtitle: "Customer · urgent", tone: "destructive",
+      metrics: [{ l: "Sentiment", v: "Frustrated" }, { l: "Days since callback", v: "2" }, { l: "LTV at risk", v: "£84.2k" }],
+      drivers: [
+        { label: "No callback in 2 days", reason: "Mary's queue · slipped past the 24h protocol" },
+        { label: "Janet (Estates) tone", reason: "Last 3 emails flagged frustrated by sentiment model" },
+      ],
+      actions: [
+        { label: "Trigger recovery sequence", detail: "Call + email + goodwill credit · template ready", owner: "Mary" },
+        { label: "Escalate to Heidi", detail: "MD touch-base · history of high-value account" },
+      ],
+    },
+    "insight:3": {
+      title: "office@ unread climbing", subtitle: "Comms · routable", tone: "warning",
+      metrics: [{ l: "Unread", v: "11" }, { l: "Oldest", v: "47 min" }, { l: "Auto-route candidates", v: "3" }],
+      drivers: [
+        { label: "3 routable to scheduling", reason: "Reception Agent confident classifications" },
+        { label: "Mary capacity", reason: "Cover load building · Rudi callbacks falling here too" },
+      ],
+      actions: [{ label: "Enable auto-route", detail: "Inbox classifier · draft mode · 1-click promote" }],
+    },
+    "insight:4": {
+      title: "Margin tracking +3.4% vs week", subtitle: "Cashflow · healthy", tone: "success",
+      metrics: [{ l: "Saved today", v: "£214" }, { l: "Comparisons", v: "3" }, { l: "Margin lift", v: "+3.4%" }],
+      drivers: [
+        { label: "Procurement Agent", reason: "Normalised SKUs across 3 suppliers · picked best price" },
+        { label: "Labour fit on services", reason: "Avg 0.94 ratio actual vs quoted on plant rooms" },
+      ],
+      actions: [{ label: "Promote agent to live", detail: "Currently in draft · sign-off pending" }],
+    },
+  };
+
+  const active = detail ? DETAILS[detail] : null;
+
+
   return (
     <div className="space-y-6">
       {/* Hero · today snapshot */}
