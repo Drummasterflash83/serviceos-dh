@@ -144,11 +144,37 @@ function Dashboard() {
     { l: "Revenue today", v: "£18.4k", sub: "+12% vs wk avg", icon: Banknote },
   ];
 
-  const insights = [
-    { tone: "warning", text: "Supplier delay affecting 3 jobs" },
-    { tone: "accent", text: "Quote follow-up overdue ×7" },
-    { tone: "destructive", text: "Complaint risk · ABC School" },
+  // Company Health · hourly composite (jobs on track, comms answered, sentiment, money flowing)
+  // score 0-100, higher = healthier. Reasons drive hover tooltips and the insights panel.
+  type HealthPoint = { hour: string; score: number; reason?: string; pillar?: string };
+  const health: HealthPoint[] = [
+    { hour: "00:00", score: 96 }, { hour: "01:00", score: 97 }, { hour: "02:00", score: 98 },
+    { hour: "03:00", score: 98 }, { hour: "04:00", score: 97 }, { hour: "05:00", score: 95 },
+    { hour: "06:00", score: 92 }, { hour: "07:00", score: 90 }, { hour: "08:00", score: 88 },
+    { hour: "09:00", score: 91 }, { hour: "10:00", score: 89 }, { hour: "11:00", score: 86 },
+    { hour: "12:00", score: 84 }, { hour: "13:00", score: 82 },
+    { hour: "14:00", score: 78, pillar: "Operations", reason: "Supplier delay affecting 3 jobs" },
+    { hour: "15:00", score: 74, pillar: "Operations", reason: "Engineer 04 over-running · 28 min behind" },
+    { hour: "16:00", score: 71, pillar: "Quoting",    reason: "Quote follow-ups overdue ×7" },
+    { hour: "17:00", score: 68, pillar: "Quoting",    reason: "Alan's review queue building (4 quotes)" },
+    { hour: "18:00", score: 62, pillar: "Comms",      reason: "office@ unread climbing · 47m oldest" },
+    { hour: "19:00", score: 58, pillar: "Customer",   reason: "ABC School sentiment turned frustrated" },
+    { hour: "20:00", score: 54, pillar: "Customer",   reason: "Complaint risk · ABC School (unresolved)" },
+    { hour: "21:00", score: 51, pillar: "Customer",   reason: "No touchpoint in quote→book gap (3 wks)" },
+    { hour: "22:00", score: 49, pillar: "Comms",      reason: "Rudy callbacks owed ×3 · landing on Mary" },
+    { hour: "23:00", score: 47, pillar: "Operations", reason: "Parts not verified at goods-in (×2)" },
   ];
+  const overall = Math.round(health.reduce((a, b) => a + b.score, 0) / health.length);
+  const trend = health[health.length - 1].score - health[0].score; // negative = declining
+
+  const insights = [
+    { tone: "warning",     pillar: "Operations", text: "Supplier delay affecting 3 jobs", detail: "Reorder window closes 16:00 — switch to Plumb Base saves 2 days." },
+    { tone: "accent",      pillar: "Quoting",    text: "Quote follow-up overdue ×7",      detail: "Day-20 nudge ready to send. ~70% reply rate on spam-drift line." },
+    { tone: "destructive", pillar: "Customer",   text: "Complaint risk · ABC School",     detail: "Frustrated sentiment + no callback in 2 days. Mary owns the response." },
+    { tone: "warning",     pillar: "Comms",      text: "office@ unread climbing",         detail: "Oldest 47m. 3 likely routable to scheduling — auto-route ready." },
+    { tone: "success",     pillar: "Money",      text: "Margin tracking +3.4% vs week",   detail: "Procurement agent saved £214 across 3 supplier comparisons today." },
+  ] as const;
+
 
   const activity = [
     { t: "14:22", who: "Reception Agent", what: "Inbound call · ABC School routed to dispatch" },
