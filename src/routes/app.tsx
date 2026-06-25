@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import {
   LayoutDashboard, Workflow, Phone, Bot, Banknote, Settings, Briefcase,
   Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
+  GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
+  Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
@@ -18,10 +20,11 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "operations" | "calls" | "workflow" | "agents" | "finance" | "settings";
+type ViewKey = "dashboard" | "learn" | "operations" | "calls" | "workflow" | "agents" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "learn", label: "Learn", icon: GraduationCap },
   { key: "operations", label: "Operations", icon: Briefcase },
   { key: "calls", label: "Calls", icon: Phone },
   { key: "workflow", label: "Workflow Intelligence", icon: Workflow },
@@ -99,6 +102,7 @@ function AppShell() {
 
         <main className="flex-1 p-6">
           {view === "dashboard" && <Dashboard />}
+          {view === "learn" && <Learn />}
           {view === "operations" && <Operations />}
           {view === "calls" && <Calls />}
           {view === "workflow" && <WorkflowView />}
@@ -407,6 +411,212 @@ function SettingsView() {
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ────── LEARN ────── */
+function Learn() {
+  const sources = [
+    { name: "Phone Calls", icon: Phone, status: "Live", events: "1,284", desc: "Inbound · outbound · voicemail · transcripts", tone: "success" as const },
+    { name: "Email", icon: Mail, status: "Live", events: "8,412", desc: "office@ · invoicing@ · scheduling@", tone: "success" as const },
+    { name: "Slack", icon: MessageSquare, status: "Live", events: "3,902", desc: "Operational channels · DMs · escalations", tone: "success" as const },
+    { name: "Commusoft", icon: Database, status: "Syncing", events: "12,640", desc: "Jobs · estimates · invoices · assets · PPM", tone: "success" as const },
+    { name: "QuickBooks", icon: Banknote, status: "Live", events: "4,118", desc: "Invoices · payments · debt · cash flow", tone: "success" as const },
+    { name: "Google Workspace", icon: Mail, status: "Live", events: "6,221", desc: "Calendar · contacts · shared drives", tone: "success" as const },
+    { name: "Google Drive", icon: HardDrive, status: "Indexing", events: "2,847", desc: "Documents · supplier files · certificates", tone: "warning" as const },
+    { name: "Perplexity", icon: Brain, status: "Live", events: "184", desc: "Market · supplier · regulatory research", tone: "success" as const },
+    { name: "Website Forms", icon: Globe, status: "Live", events: "342", desc: "Enquiries · booking · quote requests", tone: "success" as const },
+    { name: "Desktop Workflow", icon: Monitor, status: "Learning", events: "21,408", desc: "App usage · sequences · copy/paste · forms", tone: "accent" as const },
+    { name: "Documents & PDFs", icon: FileText, status: "Live", events: "1,920", desc: "Quotes · job sheets · certifications · OCR", tone: "success" as const },
+    { name: "IoT Telemetry", icon: Radio, status: "Planned", events: "—", desc: "Boilers · sensors · fault codes · energy", tone: "muted" as const },
+  ];
+
+  const pipeline = ["Capture", "Normalise", "Classify", "Enrich", "Link to Entity", "Insight", "Recommend"];
+
+  const insights = [
+    { icon: AlertTriangle, tone: "warning", title: "Delayed post-visit comms", body: "37% of complaint calls in the last 14 days involve delayed communication after engineer visits.", action: "Auto-send visit summary within 30 mins" },
+    { icon: TrendingUp, tone: "accent", title: "Quote → Approval bottleneck", body: "Supplier quote prep takes ~22 mins on average across 184 observations. 74% of steps are repeatable.", action: "Spin up Procurement Agent" },
+    { icon: CheckCircle2, tone: "success", title: "Missed revenue detection", body: "11 callbacks last week never converted to a follow-up job. Estimated value £7,840.", action: "Add callback SLA + reminder" },
+    { icon: Brain, tone: "accent", title: "Customer risk pattern", body: "ABC School · 4 frustrated calls in 6 weeks. Sentiment trending down.", action: "Flag for account manager review" },
+  ];
+
+  const workflows = [
+    { name: "Supplier quote preparation", obs: 184, save: 74 },
+    { name: "Engineer job sheet → invoice", obs: 412, save: 58 },
+    { name: "Customer follow-up", obs: 246, save: 82 },
+    { name: "PPM scheduling", obs: 96, save: 67 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Hero / Company health */}
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="rounded-2xl border border-hairline bg-foreground p-6 text-background md:col-span-7">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-background/60">
+            <Sparkles className="h-3.5 w-3.5" /> Company Health · synthesised from all inputs
+          </div>
+          <div className="text-display mt-4 flex items-baseline gap-3 text-5xl font-bold tabular">
+            87<span className="text-xl font-medium text-background/60">/ 100</span>
+          </div>
+          <div className="mt-2 text-sm text-background/70">Strong operational signal · 3 risks tracked · 12 automation candidates</div>
+          <div className="mt-5 grid grid-cols-4 gap-3 text-xs">
+            {[
+              { l: "Ops", v: 92 },
+              { l: "Finance", v: 88 },
+              { l: "Customer", v: 81 },
+              { l: "Compliance", v: 94 },
+            ].map((x) => (
+              <div key={x.l}>
+                <div className="text-background/60">{x.l}</div>
+                <div className="mt-1 h-1 rounded-full bg-background/20">
+                  <div className="h-full rounded-full bg-background" style={{ width: `${x.v}%` }} />
+                </div>
+                <div className="mt-1 font-mono tabular">{x.v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-hairline bg-white p-6 md:col-span-5">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Learning state</div>
+          <div className="text-display mt-3 text-2xl font-semibold">Actively learning</div>
+          <div className="mt-1 text-xs text-muted-foreground">Week 3 of 4 · desktop + voice + comms active</div>
+          <div className="mt-5 space-y-3">
+            {[
+              { l: "Signals captured", v: "63,290", sub: "last 30 days" },
+              { l: "Workflows reconstructed", v: "412", sub: "across 11 staff" },
+              { l: "Automation candidates", v: "12", sub: "ROI > 60%" },
+            ].map((x) => (
+              <div key={x.l} className="flex items-baseline justify-between border-b border-hairline pb-2 last:border-0">
+                <div>
+                  <div className="text-sm font-medium">{x.l}</div>
+                  <div className="text-[11px] text-muted-foreground">{x.sub}</div>
+                </div>
+                <div className="text-display text-xl font-bold tabular">{x.v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Pipeline */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="text-sm font-semibold">Intelligence pipeline</div>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {pipeline.map((step, i) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className="rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-xs font-medium">{step}</div>
+              {i < pipeline.length - 1 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Inputs grid */}
+      <div>
+        <div className="mb-3 flex items-end justify-between">
+          <div>
+            <div className="text-display text-lg font-semibold">Capture Layer · learning inputs</div>
+            <div className="text-xs text-muted-foreground">Every operational signal flowing into ServiceOS</div>
+          </div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{sources.length} sources</div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {sources.map((s) => (
+            <div key={s.name} className="rounded-2xl border border-hairline bg-white p-4">
+              <div className="flex items-start justify-between">
+                <div className={cn(
+                  "grid h-9 w-9 place-items-center rounded-lg",
+                  s.tone === "muted" ? "bg-surface-alt text-muted-foreground" : "bg-foreground text-background",
+                )}>
+                  <s.icon className="h-4 w-4" />
+                </div>
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                  s.tone === "success" && "bg-success/10 text-success",
+                  s.tone === "warning" && "bg-warning/10 text-warning",
+                  s.tone === "accent" && "bg-accent/10 text-accent",
+                  s.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  {s.tone !== "muted" && <span className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    s.tone === "success" && "bg-success animate-pulse",
+                    s.tone === "warning" && "bg-warning",
+                    s.tone === "accent" && "bg-accent animate-pulse",
+                  )} />}
+                  {s.status}
+                </span>
+              </div>
+              <div className="text-display mt-4 text-sm font-semibold">{s.name}</div>
+              <div className="mt-1 text-[11px] leading-snug text-muted-foreground">{s.desc}</div>
+              <div className="mt-3 flex items-baseline justify-between border-t border-hairline pt-3">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Events 30d</span>
+                <span className="font-mono text-sm tabular">{s.events}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Insights + workflows */}
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="md:col-span-7">
+          <div className="mb-3 text-display text-lg font-semibold">What the system has learned</div>
+          <div className="space-y-3">
+            {insights.map((i) => (
+              <div key={i.title} className="rounded-2xl border border-hairline bg-white p-5">
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                    i.tone === "warning" && "bg-warning/10 text-warning",
+                    i.tone === "accent" && "bg-accent/10 text-accent",
+                    i.tone === "success" && "bg-success/10 text-success",
+                  )}>
+                    <i.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold">{i.title}</div>
+                    <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{i.body}</div>
+                    <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium">
+                      <Sparkles className="h-3 w-3 text-accent" />
+                      {i.action}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="md:col-span-5">
+          <div className="mb-3 text-display text-lg font-semibold">Reconstructed workflows</div>
+          <div className="space-y-3">
+            {workflows.map((w) => (
+              <div key={w.name} className="rounded-2xl border border-hairline bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">{w.name}</div>
+                  <span className="text-display text-lg font-bold tabular text-accent">{w.save}%</span>
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">{w.obs} observations · automatable</div>
+                <div className="mt-3 h-1.5 rounded-full bg-surface-alt">
+                  <div className="h-full rounded-full bg-accent" style={{ width: `${w.save}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 rounded-2xl border border-hairline bg-surface-alt p-4">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Privacy posture</div>
+            <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Metadata-first capture</li>
+              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Screenshots deleted after OCR</li>
+              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> No keystroke logging</li>
+              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Learning mode · pausable</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
