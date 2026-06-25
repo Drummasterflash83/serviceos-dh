@@ -767,7 +767,7 @@ export function EngineersView() {
       {/* Footer note */}
       <div className="rounded-2xl border border-dashed border-hairline bg-white p-4 text-xs text-muted-foreground">
         Built from Heidi, Mary and Larne's discovery: engineer data input is the single biggest blind spot.
-        This surface gives every engineer a mirror — and gives Larne, Rudy and Heidi the data to coach,
+        This surface gives every engineer a mirror — and gives Larne, Rudi and Heidi the data to coach,
         recognise and reward without it feeling like surveillance.
       </div>
 
