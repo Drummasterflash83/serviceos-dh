@@ -1575,3 +1575,358 @@ function Intelligence() {
     </div>
   );
 }
+
+
+/* ────── AUTOMATIONS ────── */
+type AutoCat = "ops" | "finance" | "customer" | "compliance" | "cross";
+type AutoStatus = "live" | "draft" | "paused" | "review";
+type AutoSource = "Intelligence" | "User-built" | "ServiceOS template";
+
+type AutomationItem = {
+  id: string;
+  name: string;
+  cat: AutoCat;
+  status: AutoStatus;
+  source: AutoSource;
+  desc: string;
+  trigger: string;
+  actions: string[];
+  health: number;          // 0-100
+  runs7d: number;
+  successRate: number;     // 0-100
+  lastRun: string;
+  impact: string;
+  owner: string;
+};
+
+const AUTO_CATS: { key: AutoCat; label: string; icon: typeof Brain; tone: string }[] = [
+  { key: "ops",        label: "Operations", icon: Workflow,    tone: "accent" },
+  { key: "finance",    label: "Finance",    icon: Banknote,    tone: "success" },
+  { key: "customer",   label: "Customer",   icon: MessageSquare, tone: "warning" },
+  { key: "compliance", label: "Compliance", icon: ShieldCheck, tone: "muted" },
+  { key: "cross",      label: "Cross-cutting", icon: Network,   tone: "muted" },
+];
+
+const AUTOMATIONS: AutomationItem[] = [
+  { id: "a1", name: "Monday voicemail auto-triage", cat: "ops", status: "live", source: "Intelligence",
+    desc: "Classify weekend voicemails, draft callbacks, hand dispatch a clean board by 08:00.",
+    trigger: "Mon 07:30 · new voicemails", actions: ["Transcribe", "Classify", "Draft callback", "Assign to dispatch"],
+    health: 96, runs7d: 18, successRate: 98, lastRun: "2h ago", impact: "9 hrs/wk saved", owner: "Reception Agent" },
+  { id: "a2", name: "Job → invoice stitch (Commusoft + QuickBooks)", cat: "ops", status: "live", source: "Intelligence",
+    desc: "Engineer signs off; ServiceOS issues invoice across both systems in one click.",
+    trigger: "Job marked complete", actions: ["Pull line items", "Match SKU", "Issue invoice", "Notify customer"],
+    health: 92, runs7d: 412, successRate: 99, lastRun: "9m ago", impact: "11 hrs/wk · DSO −2.4d", owner: "ServiceOS Workflow" },
+  { id: "a3", name: "PPM month-end smoothing", cat: "ops", status: "review", source: "Intelligence",
+    desc: "Reflow PPM bookings across the month using engineer capacity model.",
+    trigger: "Daily 02:00", actions: ["Read PPM queue", "Score capacity", "Propose reflow", "Await approval"],
+    health: 78, runs7d: 7, successRate: 86, lastRun: "yesterday", impact: "6 hrs/wk", owner: "Scheduling Agent" },
+  { id: "a4", name: "Stock low → supplier RFQ", cat: "ops", status: "draft", source: "User-built",
+    desc: "When part stock falls below threshold, send pre-filled RFQ to top 3 suppliers.",
+    trigger: "Stock < min level", actions: ["Compose RFQ", "Email suppliers", "Log responses"],
+    health: 70, runs7d: 0, successRate: 0, lastRun: "never", impact: "Pending first run", owner: "Chris D." },
+
+  { id: "a5", name: "Aged debt tone-aware chase", cat: "finance", status: "live", source: "Intelligence",
+    desc: "Personalised chase cadence on >30d invoices; escalates after 2 ignored steps.",
+    trigger: "Invoice age > 30d", actions: ["Pick tone", "Send email", "Log reply", "Escalate"],
+    health: 94, runs7d: 64, successRate: 91, lastRun: "23m ago", impact: "+£26.1k cash · DSO −9d", owner: "Finance Agent" },
+  { id: "a6", name: "Mid-week invoice send", cat: "finance", status: "live", source: "Intelligence",
+    desc: "Hold Friday invoices, batch send Tue/Wed for 4.2d faster payment.",
+    trigger: "Invoice ready", actions: ["Defer", "Send Tue/Wed"],
+    health: 90, runs7d: 38, successRate: 100, lastRun: "1h ago", impact: "+£3.4k/mo cashflow", owner: "ServiceOS Workflow" },
+  { id: "a7", name: "Daily cash + 30/60/90 forecast", cat: "finance", status: "live", source: "Intelligence",
+    desc: "Morning cash position + pipeline-weighted forecast published to leadership.",
+    trigger: "Daily 07:00", actions: ["Pull QB", "Weight pipeline", "Publish brief"],
+    health: 99, runs7d: 7, successRate: 100, lastRun: "today 07:00", impact: "Earlier decisions", owner: "ServiceOS Workflow" },
+  { id: "a8", name: "Margin drift alert", cat: "finance", status: "paused", source: "User-built",
+    desc: "Notify when job margin falls below 18% on 3 jobs in 7 days.",
+    trigger: "Job closed", actions: ["Compute margin", "Notify ops"],
+    health: 60, runs7d: 0, successRate: 0, lastRun: "8d ago", impact: "Paused by owner", owner: "Chris D." },
+
+  { id: "a9", name: "30-min post-visit summary", cat: "customer", status: "live", source: "Intelligence",
+    desc: "Voice AI summarises engineer notes, sends SMS + email within 30 mins of job close.",
+    trigger: "Job complete", actions: ["Summarise notes", "Send SMS", "Send email", "Log to CRM"],
+    health: 95, runs7d: 188, successRate: 97, lastRun: "12m ago", impact: "+9 CSAT · −40% complaints", owner: "Voice AI" },
+  { id: "a10", name: "Sub-60s enquiry acknowledgement", cat: "customer", status: "live", source: "Intelligence",
+    desc: "Inbox Agent qualifies + acknowledges web enquiries in under a minute.",
+    trigger: "Web form submitted", actions: ["Qualify", "Reply", "Route to owner"],
+    health: 91, runs7d: 73, successRate: 96, lastRun: "4m ago", impact: "+12% web conversion", owner: "Inbox Agent" },
+  { id: "a11", name: "Account sentiment drift alert", cat: "customer", status: "live", source: "Intelligence",
+    desc: "Flag accounts on 2+ negative signals in 14 days, book review call.",
+    trigger: "Sentiment score change", actions: ["Score account", "Flag risk", "Book call"],
+    health: 84, runs7d: 11, successRate: 90, lastRun: "5h ago", impact: "Protects £18k contract", owner: "Customer Care Agent" },
+  { id: "a12", name: "Missed callback recovery SLA", cat: "customer", status: "draft", source: "User-built",
+    desc: "Auto-create callback task with 4h SLA, escalate on breach.",
+    trigger: "Missed call", actions: ["Create task", "Set SLA", "Escalate"],
+    health: 72, runs7d: 0, successRate: 0, lastRun: "never", impact: "+£7.8k/wk recoverable", owner: "Chris D." },
+
+  { id: "a13", name: "Certification expiry auto-renewal", cat: "compliance", status: "live", source: "Intelligence",
+    desc: "Watch cert expiry; auto-book renewal visit + notify customer.",
+    trigger: "Cert expires < 60d", actions: ["Detect expiry", "Book visit", "Notify customer"],
+    health: 98, runs7d: 9, successRate: 100, lastRun: "yesterday", impact: "0 audit gaps", owner: "Compliance Agent" },
+  { id: "a14", name: "Block job-close on missing signature", cat: "compliance", status: "live", source: "ServiceOS template",
+    desc: "Prevent job completion until required cert + engineer signature are present.",
+    trigger: "Engineer marks complete", actions: ["Check cert", "Check signature", "Hold or release"],
+    health: 96, runs7d: 121, successRate: 99, lastRun: "18m ago", impact: "−100% missing-sig defect", owner: "ServiceOS Workflow" },
+  { id: "a15", name: "RAMS auto-attach on PPM", cat: "compliance", status: "review", source: "ServiceOS template",
+    desc: "Attach correct RAMS to PPM visits based on site profile.",
+    trigger: "PPM scheduled", actions: ["Match site", "Attach RAMS", "Notify engineer"],
+    health: 80, runs7d: 22, successRate: 92, lastRun: "3h ago", impact: "Audit-ready packs", owner: "Compliance Agent" },
+
+  { id: "a16", name: "End-of-day operations brief", cat: "cross", status: "live", source: "ServiceOS template",
+    desc: "Compose a single brief: jobs done, calls handled, cash in, risks open.",
+    trigger: "Daily 18:00", actions: ["Aggregate", "Summarise", "Publish"],
+    health: 99, runs7d: 7, successRate: 100, lastRun: "today 18:00", impact: "1 view of the day", owner: "ServiceOS Workflow" },
+];
+
+function Automations() {
+  const [cat, setCat] = useState<"all" | AutoCat>("all");
+  const [status, setStatus] = useState<"all" | AutoStatus>("all");
+  const [source, setSource] = useState<"all" | AutoSource>("all");
+
+  const filtered = AUTOMATIONS.filter(
+    (a) =>
+      (cat === "all" || a.cat === cat) &&
+      (status === "all" || a.status === status) &&
+      (source === "all" || a.source === source),
+  );
+
+  const totals = {
+    total: AUTOMATIONS.length,
+    live: AUTOMATIONS.filter((a) => a.status === "live").length,
+    runs7d: AUTOMATIONS.reduce((s, a) => s + a.runs7d, 0),
+    avgHealth: Math.round(AUTOMATIONS.reduce((s, a) => s + a.health, 0) / AUTOMATIONS.length),
+    fromIntel: AUTOMATIONS.filter((a) => a.source === "Intelligence").length,
+  };
+
+  const statusTone = (s: AutoStatus) =>
+    s === "live" ? "bg-success/10 text-success border-success/20"
+    : s === "draft" ? "bg-surface-alt text-muted-foreground border-hairline"
+    : s === "paused" ? "bg-warning/10 text-warning border-warning/20"
+    : "bg-accent/10 text-accent border-accent/20";
+
+  const healthTone = (h: number) =>
+    h >= 90 ? "text-success" : h >= 75 ? "text-accent" : h >= 60 ? "text-warning" : "text-destructive";
+
+  const catMeta = (k: AutoCat) => AUTO_CATS.find((c) => c.key === k)!;
+
+  return (
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+                <Zap className="h-3 w-3" />
+              </span>
+              Automations · live across the business
+            </div>
+            <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
+              Every automation in one place - shipped from Intelligence or built by your team.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Grouped by Operations, Finance, Customer, Compliance and cross-cutting flows. Each card shows health, recent activity and impact - so you can pause, tune or promote them in one move.
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background">
+            <Sparkles className="h-3.5 w-3.5" /> Build an automation
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {[
+            { l: "Total automations", v: String(totals.total), sub: "across 5 categories", icon: Layers },
+            { l: "Live", v: String(totals.live), sub: "running on schedule", icon: Activity },
+            { l: "Runs · last 7d", v: totals.runs7d.toLocaleString(), sub: "executions", icon: Zap },
+            { l: "Average health", v: `${totals.avgHealth}`, sub: "0-100 across fleet", icon: Gauge },
+            { l: "From Intelligence", v: String(totals.fromIntel), sub: "recommended + shipped", icon: Brain },
+          ].map((k) => (
+            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="text-display mt-1.5 text-xl font-bold tabular text-foreground">{k.v}</div>
+              <div className="text-[10px] text-muted-foreground">{k.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Category overview */}
+      <div className="grid gap-3 md:grid-cols-5">
+        {AUTO_CATS.map((c) => {
+          const items = AUTOMATIONS.filter((a) => a.cat === c.key);
+          const live = items.filter((a) => a.status === "live").length;
+          const avg = items.length ? Math.round(items.reduce((s, a) => s + a.health, 0) / items.length) : 0;
+          const active = cat === c.key;
+          return (
+            <button
+              key={c.key}
+              onClick={() => setCat(active ? "all" : c.key)}
+              className={cn(
+                "rounded-2xl border bg-white p-4 text-left transition hover:border-foreground/30 hover:shadow-sm",
+                active ? "border-foreground" : "border-hairline",
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "grid h-7 w-7 place-items-center rounded-lg",
+                    c.tone === "accent" && "bg-accent/10 text-accent",
+                    c.tone === "success" && "bg-success/10 text-success",
+                    c.tone === "warning" && "bg-warning/10 text-warning",
+                    c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}>
+                    <c.icon className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="text-sm font-semibold">{c.label}</div>
+                </div>
+                <div className={cn("text-display text-xl font-bold tabular", healthTone(avg))}>{avg || "-"}</div>
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[11px] text-muted-foreground">
+                <span>{items.length} automations</span>
+                <span><span className="font-medium text-success">{live}</span> live</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-display text-lg font-semibold">Automation fleet</div>
+          <div className="text-xs text-muted-foreground">
+            {filtered.length} matching {cat === "all" ? "all categories" : catMeta(cat as AutoCat).label}
+            {status !== "all" && ` · ${status}`}{source !== "all" && ` · ${source}`}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
+            {(["all", "live", "review", "draft", "paused"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatus(s)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 capitalize transition",
+                  status === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 rounded-full border border-hairline bg-white p-1 text-[11px]">
+            {(["all", "Intelligence", "User-built", "ServiceOS template"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSource(s)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 transition",
+                  source === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Automation cards */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {filtered.map((a) => {
+          const c = catMeta(a.cat);
+          return (
+            <div key={a.id} className="rounded-2xl border border-hairline bg-white p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <span className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
+                      c.tone === "accent" && "bg-accent/10 text-accent",
+                      c.tone === "success" && "bg-success/10 text-success",
+                      c.tone === "warning" && "bg-warning/10 text-warning",
+                      c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                    )}>
+                      <c.icon className="h-3 w-3" /> {c.label}
+                    </span>
+                    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 capitalize", statusTone(a.status))}>
+                      <span className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        a.status === "live" && "bg-success animate-pulse",
+                        a.status === "draft" && "bg-muted-foreground",
+                        a.status === "paused" && "bg-warning",
+                        a.status === "review" && "bg-accent",
+                      )} />
+                      {a.status}
+                    </span>
+                    <span className="rounded-full bg-surface-alt px-2 py-0.5 text-muted-foreground">{a.source}</span>
+                  </div>
+                  <div className="text-display mt-2 text-base font-semibold leading-snug">{a.name}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{a.desc}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</div>
+                  <div className={cn("text-display text-2xl font-bold tabular", healthTone(a.health))}>{a.health}</div>
+                </div>
+              </div>
+
+              {/* Trigger → actions chain */}
+              <div className="mt-4 rounded-xl bg-surface-alt p-3">
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <Radio className="h-3 w-3" /> Trigger
+                </div>
+                <div className="mt-1 text-xs font-medium">{a.trigger}</div>
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  {a.actions.map((act, i) => (
+                    <span key={act} className="flex items-center gap-1.5">
+                      <span className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]">{act}</span>
+                      {i < a.actions.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Activity row */}
+              <div className="mt-4 grid grid-cols-4 gap-2 border-t border-hairline pt-3 text-[11px]">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
+                  <div className="font-mono tabular text-sm font-semibold">{a.runs7d}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Success</div>
+                  <div className="font-mono tabular text-sm font-semibold">{a.successRate}%</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Last run</div>
+                  <div className="text-sm font-semibold">{a.lastRun}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Owner</div>
+                  <div className="truncate text-sm font-semibold">{a.owner}</div>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <TrendingUp className="h-3 w-3" /> {a.impact}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button className="rounded-full border border-hairline px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground">
+                    {a.status === "paused" ? "Resume" : a.status === "draft" || a.status === "review" ? "Activate" : "Pause"}
+                  </button>
+                  <button className="rounded-full border border-hairline px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground">Tune</button>
+                  <button className="inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
+                    <Eye className="h-3 w-3" /> Inspect
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
