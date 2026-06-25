@@ -88,7 +88,7 @@ function Hero() {
             src={dhIcon.url}
             alt=""
             aria-hidden
-            className="h-[0.85em] w-auto"
+            className="h-[0.72em] w-auto rounded-[0.12em]"
           />
           <span>ServiceOS</span>
         </motion.h1>
