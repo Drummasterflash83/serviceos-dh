@@ -785,7 +785,6 @@ function Agents() {
 function Finance() {
   // 12 months: M1-M3 pre-ServiceOS, M4 onwards post-deployment
   const revenue = [184, 192, 188, 214, 232, 248, 271, 286, 298, 312, 328, 344];
-  const margin  = [22, 23, 22, 25, 27, 29, 31, 32, 33, 34, 35, 36];
   const deployIdx = 3; // ServiceOS goes live at month 4
 
   const headline = [
