@@ -416,21 +416,396 @@ function SettingsView() {
 }
 
 /* ────── LEARN ────── */
+type SourceTone = "success" | "warning" | "accent" | "muted";
+type SourceDetail = {
+  name: string;
+  icon: typeof Phone;
+  status: string;
+  events: string;
+  desc: string;
+  tone: SourceTone;
+  connection: string;
+  lastSync: string;
+  retention: string;
+  coverage: number; // 0-100
+  accuracy: number; // 0-100
+  signals: { l: string; v: string; sub?: string }[];
+  topics: { label: string; pct: number }[];
+  insights: string[];
+  automations: string[];
+  privacy: string[];
+};
+
+const SOURCES: SourceDetail[] = [
+  {
+    name: "Phone Calls", icon: Phone, status: "Live", events: "1,284", tone: "success",
+    desc: "Inbound · outbound · voicemail · transcripts",
+    connection: "Twilio + ServiceOS Voice · 4 numbers", lastSync: "live · 12s ago",
+    retention: "Transcripts 180d · audio 30d",
+    coverage: 96, accuracy: 92,
+    signals: [
+      { l: "Calls captured (30d)", v: "1,284", sub: "↑ 14% vs prior" },
+      { l: "Avg handle time", v: "4m 12s" },
+      { l: "Voicemails transcribed", v: "318" },
+      { l: "Sentiment flagged ↓", v: "47" },
+    ],
+    topics: [
+      { label: "Booking / scheduling", pct: 38 },
+      { label: "Quote follow-up", pct: 22 },
+      { label: "Complaint / chase", pct: 17 },
+      { label: "Engineer dispatch", pct: 14 },
+      { label: "Account / billing", pct: 9 },
+    ],
+    insights: [
+      "37% of complaint calls involve delayed post-visit comms",
+      "11 callbacks last week never converted to a follow-up job (~£7,840)",
+      "ABC School: 4 frustrated calls in 6 weeks · sentiment trending down",
+    ],
+    automations: [
+      "Auto-draft visit summary SMS within 30 mins of engineer leaving site",
+      "Trigger callback-SLA timer when caller leaves voicemail",
+      "Escalate to account manager on 2+ negative-sentiment calls in 14d",
+    ],
+    privacy: ["PII redacted from transcripts", "Audio purged after 30 days", "Caller opt-out honoured"],
+  },
+  {
+    name: "Email", icon: Mail, status: "Live", events: "8,412", tone: "success",
+    desc: "office@ · invoicing@ · scheduling@",
+    connection: "Google Workspace · 6 shared mailboxes", lastSync: "live · 4s ago",
+    retention: "Bodies 365d · attachments referenced not stored",
+    coverage: 99, accuracy: 94,
+    signals: [
+      { l: "Threads ingested (30d)", v: "8,412" },
+      { l: "Avg first response", v: "1h 48m" },
+      { l: "Quotes sent", v: "612" },
+      { l: "Invoices emailed", v: "1,104" },
+    ],
+    topics: [
+      { label: "Quotes & estimates", pct: 31 },
+      { label: "Scheduling", pct: 24 },
+      { label: "Invoice & payment", pct: 19 },
+      { label: "Supplier comms", pct: 14 },
+      { label: "Compliance docs", pct: 12 },
+    ],
+    insights: [
+      "Quote → approval cycle averages 3.2 days; 41% slip past day 5",
+      "18% of customer threads include a missed action by us",
+      "Supplier ACME has 6 unanswered chase emails this month",
+    ],
+    automations: [
+      "Auto-classify and route to correct queue (quote, invoice, support)",
+      "Draft follow-up if customer hasn't replied to a quote in 72h",
+      "Extract PO numbers + line items into Commusoft automatically",
+    ],
+    privacy: ["Mailbox-scoped access", "No personal inboxes ingested", "Attachments scanned in-place"],
+  },
+  {
+    name: "Slack", icon: MessageSquare, status: "Live", events: "3,902", tone: "success",
+    desc: "Operational channels · DMs · escalations",
+    connection: "Slack workspace · 14 channels indexed", lastSync: "live · 2s ago",
+    retention: "Messages 180d · files referenced",
+    coverage: 88, accuracy: 90,
+    signals: [
+      { l: "Messages ingested", v: "3,902" },
+      { l: "Escalations detected", v: "63" },
+      { l: "Decisions captured", v: "118" },
+      { l: "Action items extracted", v: "274" },
+    ],
+    topics: [
+      { label: "#ops-dispatch", pct: 34 },
+      { label: "#engineers", pct: 22 },
+      { label: "#sales-pipeline", pct: 18 },
+      { label: "#finance", pct: 14 },
+      { label: "#leadership", pct: 12 },
+    ],
+    insights: [
+      "63 escalations in #ops-dispatch last 30d — 22% lacked owner assignment",
+      "Recurring 'parts shortage' theme across 3 channels",
+      "Decisions made in Slack rarely propagated to Commusoft notes",
+    ],
+    automations: [
+      "Auto-create Commusoft task from :rotating_light: emoji + mention",
+      "Mirror Slack decisions into the relevant job/customer record",
+      "Daily digest of unresolved escalations to ops lead",
+    ],
+    privacy: ["DMs excluded unless user opts in", "Bot messages filtered", "Channel-level allowlist"],
+  },
+  {
+    name: "Commusoft", icon: Database, status: "Syncing", events: "12,640", tone: "success",
+    desc: "Jobs · estimates · invoices · assets · PPM",
+    connection: "Commusoft API · bi-directional", lastSync: "3m ago",
+    retention: "Live mirror · change history 2y",
+    coverage: 100, accuracy: 97,
+    signals: [
+      { l: "Records mirrored", v: "12,640" },
+      { l: "Open jobs", v: "184" },
+      { l: "PPM contracts", v: "92" },
+      { l: "Assets tracked", v: "1,406" },
+    ],
+    topics: [
+      { label: "Reactive jobs", pct: 46 },
+      { label: "PPM visits", pct: 28 },
+      { label: "Installs", pct: 14 },
+      { label: "Quotes", pct: 12 },
+    ],
+    insights: [
+      "Job notes consistently miss parts-used field on 22% of completed jobs",
+      "PPM scheduling clusters in last week of month — capacity strain",
+      "Engineer utilisation 71% — 14% lost to travel reschedules",
+    ],
+    automations: [
+      "Auto-fill parts used from engineer voice note at job close",
+      "Smooth PPM scheduling across the month using capacity model",
+      "Flag stale 'awaiting parts' jobs after 5 days",
+    ],
+    privacy: ["Role-scoped reads", "PII never leaves Commusoft + ServiceOS", "Audit log on every write"],
+  },
+  {
+    name: "QuickBooks", icon: Banknote, status: "Live", events: "4,118", tone: "success",
+    desc: "Invoices · payments · debt · cash flow",
+    connection: "QuickBooks Online · OAuth", lastSync: "8m ago",
+    retention: "Live mirror · ledger snapshots daily",
+    coverage: 100, accuracy: 99,
+    signals: [
+      { l: "Invoices (30d)", v: "1,104" },
+      { l: "Overdue value", v: "£48.2k" },
+      { l: "Avg days to pay", v: "31" },
+      { l: "Credit notes", v: "12" },
+    ],
+    topics: [
+      { label: "Invoiced revenue", pct: 62 },
+      { label: "Aged debt 30+", pct: 18 },
+      { label: "Supplier bills", pct: 14 },
+      { label: "Credits / refunds", pct: 6 },
+    ],
+    insights: [
+      "Top 3 debtors account for 54% of aged debt > 60d",
+      "Invoices sent on Friday paid 4.2 days slower on average",
+      "PPM customers pay 11 days faster than reactive — bias mix upward",
+    ],
+    automations: [
+      "Auto-chase aged debt with tone tuned to customer history",
+      "Match payments to invoices via reference + amount + customer",
+      "Forecast 30/60/90 cash position daily",
+    ],
+    privacy: ["Read-only by default", "Writes require approval", "Books reconciled, never overwritten"],
+  },
+  {
+    name: "Google Workspace", icon: Mail, status: "Live", events: "6,221", tone: "success",
+    desc: "Calendar · contacts · shared drives",
+    connection: "Google Workspace · domain-wide delegation", lastSync: "live",
+    retention: "Calendar 365d · contacts mirrored",
+    coverage: 97, accuracy: 95,
+    signals: [
+      { l: "Events captured", v: "4,118" },
+      { l: "Engineers tracked", v: "11" },
+      { l: "Contacts unified", v: "2,103" },
+      { l: "Meeting summaries", v: "318" },
+    ],
+    topics: [
+      { label: "Engineer dispatch", pct: 48 },
+      { label: "Internal meetings", pct: 22 },
+      { label: "Customer site visits", pct: 18 },
+      { label: "Supplier calls", pct: 12 },
+    ],
+    insights: [
+      "23% of engineer calendar slots overrun by > 30 mins",
+      "Customer site visits without prep doc → 2.1× callback rate",
+      "Internal meeting load peaked Wed 10–12 — automation candidates",
+    ],
+    automations: [
+      "Auto-attach job brief + customer history to dispatch events",
+      "Reflow engineer day when a visit overruns by 20+ mins",
+      "Deduplicate contacts across Workspace + Commusoft",
+    ],
+    privacy: ["Calendar metadata only by default", "Personal events ignored", "Per-user opt-in for body capture"],
+  },
+  {
+    name: "Google Drive", icon: HardDrive, status: "Indexing", events: "2,847", tone: "warning",
+    desc: "Documents · supplier files · certificates",
+    connection: "Shared drives · 6 root folders", lastSync: "indexing · 64% complete",
+    retention: "Metadata + embeddings · file bodies fetched on demand",
+    coverage: 64, accuracy: 88,
+    signals: [
+      { l: "Files indexed", v: "2,847" },
+      { l: "Certificates extracted", v: "412" },
+      { l: "Supplier price lists", v: "38" },
+      { l: "Duplicates flagged", v: "190" },
+    ],
+    topics: [
+      { label: "Certifications", pct: 32 },
+      { label: "Supplier docs", pct: 26 },
+      { label: "Customer quotes", pct: 22 },
+      { label: "Internal SOPs", pct: 20 },
+    ],
+    insights: [
+      "27 customer certificates expire within 60 days — none currently surfaced",
+      "Supplier price lists out of sync with quoting templates",
+      "Folder sprawl: 190 near-duplicate quote files identified",
+    ],
+    automations: [
+      "Watch certificate expiry and auto-schedule renewals",
+      "Sync supplier price list updates into quote builder",
+      "Suggest canonical file when a near-duplicate is opened",
+    ],
+    privacy: ["Per-folder scope", "No personal Drive access", "Embeddings stored, file bodies not retained"],
+  },
+  {
+    name: "Perplexity", icon: Brain, status: "Live", events: "184", tone: "success",
+    desc: "Market · supplier · regulatory research",
+    connection: "Perplexity API · scheduled + on-demand", lastSync: "today 06:00",
+    retention: "Research briefs 365d · sources cited",
+    coverage: 100, accuracy: 90,
+    signals: [
+      { l: "Briefs generated", v: "184" },
+      { l: "Reg / standards watch", v: "12 topics" },
+      { l: "Supplier scans", v: "46" },
+      { l: "Market signals", v: "126" },
+    ],
+    topics: [
+      { label: "Regulatory & compliance", pct: 34 },
+      { label: "Supplier intelligence", pct: 28 },
+      { label: "Competitor signals", pct: 22 },
+      { label: "Market & pricing", pct: 16 },
+    ],
+    insights: [
+      "Upcoming F-gas guidance change — affects 14 PPM contracts",
+      "Two supplier price increases announced this week",
+      "Competitor expanding into West London commercial segment",
+    ],
+    automations: [
+      "Weekly compliance digest tailored to active service lines",
+      "Alert when a tracked supplier publishes price / lead-time changes",
+      "Brief the sales team on competitor moves in our patch",
+    ],
+    privacy: ["Outbound queries scrubbed of customer data", "Sources logged with every brief"],
+  },
+  {
+    name: "Website Forms", icon: Globe, status: "Live", events: "342", tone: "success",
+    desc: "Enquiries · booking · quote requests",
+    connection: "drummonds.co.uk · 4 forms", lastSync: "live",
+    retention: "Submissions 2y",
+    coverage: 100, accuracy: 96,
+    signals: [
+      { l: "Submissions (30d)", v: "342" },
+      { l: "Quote requests", v: "188" },
+      { l: "Service bookings", v: "97" },
+      { l: "Spam filtered", v: "1,204" },
+    ],
+    topics: [
+      { label: "Boiler service", pct: 38 },
+      { label: "Bathroom design", pct: 24 },
+      { label: "Commercial enquiry", pct: 22 },
+      { label: "Other", pct: 16 },
+    ],
+    insights: [
+      "Avg time-to-first-response from form submit: 4h 12m — target 1h",
+      "Mobile submissions convert 28% better when reply within 30 mins",
+      "Commercial enquiries under-served vs domestic by 2.4× response time",
+    ],
+    automations: [
+      "Auto-acknowledge + qualify enquiry within 60 seconds",
+      "Route commercial enquiries to dedicated owner",
+      "Pre-fill Commusoft lead from form fields",
+    ],
+    privacy: ["GDPR consent enforced", "Marketing tracking opt-in only"],
+  },
+  {
+    name: "Desktop Workflow", icon: Monitor, status: "Learning", events: "21,408", tone: "accent",
+    desc: "App usage · sequences · copy/paste · forms",
+    connection: "ServiceOS Desktop Agent · 11 installs", lastSync: "live",
+    retention: "Event metadata 90d · screenshots OCR'd then deleted",
+    coverage: 78, accuracy: 86,
+    signals: [
+      { l: "Events captured", v: "21,408" },
+      { l: "Distinct workflows", v: "412" },
+      { l: "Repeatable sequences", v: "186" },
+      { l: "Automation candidates", v: "12" },
+    ],
+    topics: [
+      { label: "Commusoft data entry", pct: 36 },
+      { label: "Quote prep (PDF + sheets)", pct: 24 },
+      { label: "Email triage", pct: 18 },
+      { label: "QuickBooks reconciliation", pct: 12 },
+      { label: "File hunting in Drive", pct: 10 },
+    ],
+    insights: [
+      "Supplier quote prep takes ~22 mins · 74% of steps repeatable",
+      "Engineer job sheet → invoice path crosses 4 apps and 11 clicks",
+      "Avg 38 mins/day/person spent searching for files",
+    ],
+    automations: [
+      "Spin up Procurement Agent for supplier quote prep",
+      "One-click 'job → invoice' macro across Commusoft + QuickBooks",
+      "Suggest the right file based on the active customer context",
+    ],
+    privacy: ["Metadata-first", "Screenshots deleted post-OCR", "No keystroke logging", "Pause anytime"],
+  },
+  {
+    name: "Documents & PDFs", icon: FileText, status: "Live", events: "1,920", tone: "success",
+    desc: "Quotes · job sheets · certifications · OCR",
+    connection: "Drive + email attachments + uploads", lastSync: "live",
+    retention: "Extracted fields kept · originals referenced",
+    coverage: 92, accuracy: 91,
+    signals: [
+      { l: "Docs processed", v: "1,920" },
+      { l: "OCR pages", v: "8,140" },
+      { l: "Fields extracted", v: "46,210" },
+      { l: "Anomalies flagged", v: "84" },
+    ],
+    topics: [
+      { label: "Job sheets", pct: 34 },
+      { label: "Supplier invoices", pct: 26 },
+      { label: "Certifications", pct: 22 },
+      { label: "Customer quotes", pct: 18 },
+    ],
+    insights: [
+      "Supplier invoices vary line-item formatting in 38% of cases",
+      "Certification PDFs missing engineer signature in 6% of files",
+      "Quote templates drifted across 4 variants this quarter",
+    ],
+    automations: [
+      "Auto-extract line items from supplier invoices into QuickBooks",
+      "Block job-close if certification doc is unsigned",
+      "Consolidate quote templates to single canonical version",
+    ],
+    privacy: ["OCR on-platform", "No third-party doc AI by default"],
+  },
+  {
+    name: "IoT Telemetry", icon: Radio, status: "Planned", events: "—", tone: "muted",
+    desc: "Boilers · sensors · fault codes · energy",
+    connection: "Not yet connected", lastSync: "—",
+    retention: "Planned: 365d telemetry · fault events permanent",
+    coverage: 0, accuracy: 0,
+    signals: [
+      { l: "Assets eligible", v: "412" },
+      { l: "Vendor protocols", v: "BACnet · Modbus · OEM cloud" },
+      { l: "Pilot sites", v: "0" },
+      { l: "Go-live target", v: "Q3" },
+    ],
+    topics: [
+      { label: "Boiler fault codes", pct: 45 },
+      { label: "Energy / efficiency", pct: 30 },
+      { label: "Occupancy / usage", pct: 15 },
+      { label: "Water / leak", pct: 10 },
+    ],
+    insights: [
+      "Predictive maintenance candidate: 92 boilers across 14 sites",
+      "Expected 18–25% reduction in reactive callouts once live",
+      "Energy benchmarking unlocks ESG reporting for commercial clients",
+    ],
+    automations: [
+      "Open job automatically on fault code with engineer match",
+      "Suppress nuisance alarms via learned thresholds",
+      "Surface efficiency trend in customer review pack",
+    ],
+    privacy: ["Customer opt-in per site", "Data minimisation by default"],
+  },
+];
+
 function Learn() {
-  const sources = [
-    { name: "Phone Calls", icon: Phone, status: "Live", events: "1,284", desc: "Inbound · outbound · voicemail · transcripts", tone: "success" as const },
-    { name: "Email", icon: Mail, status: "Live", events: "8,412", desc: "office@ · invoicing@ · scheduling@", tone: "success" as const },
-    { name: "Slack", icon: MessageSquare, status: "Live", events: "3,902", desc: "Operational channels · DMs · escalations", tone: "success" as const },
-    { name: "Commusoft", icon: Database, status: "Syncing", events: "12,640", desc: "Jobs · estimates · invoices · assets · PPM", tone: "success" as const },
-    { name: "QuickBooks", icon: Banknote, status: "Live", events: "4,118", desc: "Invoices · payments · debt · cash flow", tone: "success" as const },
-    { name: "Google Workspace", icon: Mail, status: "Live", events: "6,221", desc: "Calendar · contacts · shared drives", tone: "success" as const },
-    { name: "Google Drive", icon: HardDrive, status: "Indexing", events: "2,847", desc: "Documents · supplier files · certificates", tone: "warning" as const },
-    { name: "Perplexity", icon: Brain, status: "Live", events: "184", desc: "Market · supplier · regulatory research", tone: "success" as const },
-    { name: "Website Forms", icon: Globe, status: "Live", events: "342", desc: "Enquiries · booking · quote requests", tone: "success" as const },
-    { name: "Desktop Workflow", icon: Monitor, status: "Learning", events: "21,408", desc: "App usage · sequences · copy/paste · forms", tone: "accent" as const },
-    { name: "Documents & PDFs", icon: FileText, status: "Live", events: "1,920", desc: "Quotes · job sheets · certifications · OCR", tone: "success" as const },
-    { name: "IoT Telemetry", icon: Radio, status: "Planned", events: "—", desc: "Boilers · sensors · fault codes · energy", tone: "muted" as const },
-  ];
+  const [openSource, setOpenSource] = useState<SourceDetail | null>(null);
+  const sources = SOURCES;
 
   const pipeline = ["Capture", "Normalise", "Classify", "Enrich", "Link to Entity", "Insight", "Recommend"];
 
@@ -447,6 +822,7 @@ function Learn() {
     { name: "Customer follow-up", obs: 246, save: 82 },
     { name: "PPM scheduling", obs: 96, save: 67 },
   ];
+
 
   return (
     <div className="space-y-6">
