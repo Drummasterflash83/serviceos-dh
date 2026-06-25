@@ -570,8 +570,12 @@ function Dashboard() {
             <Sparkles className="h-4 w-4 text-accent" />
           </div>
           <div className="mt-4 space-y-2">
-            {insights.map((x) => (
-              <div key={x.text} className="group/insight rounded-lg border border-hairline p-2.5 transition hover:border-foreground/20 hover:bg-surface-alt">
+            {insights.map((x, i) => (
+              <button
+                key={x.text}
+                onClick={() => setDetail(`insight:${i}`)}
+                className="group/insight w-full rounded-lg border border-hairline p-2.5 text-left transition hover:border-foreground/30 hover:bg-surface-alt"
+              >
                 <div className="flex items-start gap-2">
                   <span className={cn(
                     "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
@@ -588,7 +592,7 @@ function Dashboard() {
                     <div className="mt-1 text-[11px] leading-snug text-muted-foreground">{x.detail}</div>
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
