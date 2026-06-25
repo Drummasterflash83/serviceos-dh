@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import {
   LayoutDashboard, Workflow, Phone, Bot, Banknote, Settings, Briefcase,
   Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
+  GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
+  Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
