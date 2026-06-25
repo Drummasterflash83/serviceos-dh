@@ -135,10 +135,10 @@ function AppShell() {
 function Dashboard() {
   const statTiles = [
     { l: "Live jobs", v: "42", sub: "+6 vs yesterday", icon: Workflow },
-    { l: "Calls waiting", v: "8", sub: "−2 vs yesterday", icon: Phone },
-    { l: "Engineers on shift", v: "11", sub: "+1 vs roster", icon: Briefcase },
+    { l: "Inside protocol", v: "94%", sub: "16 of 17 threads", icon: ShieldCheck },
+    { l: "On-call tonight", v: "T. Reid", sub: "+2 backups armed", icon: Clock },
+    { l: "Mailbox health", v: "47m", sub: "oldest unread · office@", icon: Inbox },
     { l: "Revenue today", v: "£18.4k", sub: "+12% vs wk avg", icon: Banknote },
-    { l: "Fleet health", v: "85", sub: "across 4 pillars", icon: Brain },
   ];
 
   const insights = [
