@@ -70,7 +70,7 @@ const NAV: NavItem[] = [
 
 
 function AppShell() {
-  const [view, setView] = useState<ViewKey>("dashboard");
+  const [view, setView] = useState<ViewKey>("northstar");
 
   return (
     <div className="flex min-h-screen bg-surface-alt text-foreground">
@@ -81,22 +81,29 @@ function AppShell() {
           ServiceOS
         </Link>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {NAV.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setView(item.key)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-                view === item.key
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
-            </button>
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+          {(["Spine", "Surfaces", "Intelligence"] as const).map((group) => (
+            <div key={group} className="pt-2 first:pt-0">
+              <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group}
+              </div>
+              {NAV.filter((n) => n.group === group).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setView(item.key)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                    view === item.key
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -137,19 +144,28 @@ function AppShell() {
         </header>
 
         <main className="flex-1 p-6">
-          {view === "dashboard" && <Dashboard />}
-          {view === "cards" && <CardsView />}
-          {view === "learn" && <Learn />}
+          {/* Spine */}
+          {view === "northstar"    && <NorthStar />}
+          {view === "arr"          && <ARRGrowth />}
+          {view === "furtherworks" && <FurtherWorks />}
+          {view === "quote"        && <QuoteEngine />}
+          {view === "coordinator"  && <CoordinatorCockpit />}
+          {view === "assets"       && <Assets />}
+          {/* Surfaces */}
+          {view === "cards"        && <CardsView />}
+          {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
+          {view === "comms"        && <CommsHub />}
+          {view === "customers"    && <Customers />}
+          {view === "engineers"    && <EngineersView />}
+          {/* Intelligence */}
+          {view === "learn"        && <Learn />}
           {view === "intelligence" && <Intelligence />}
-          {view === "automations" && <Automations />}
-          {view === "agents" && <Agents />}
-          {view === "protocol" && <Protocol />}
-          {view === "operations" && <OperationsHub jobsSlot={<Operations />} />}
-          {view === "calls" && <Calls />}
-          {view === "customers" && <Customers />}
-          {view === "engineers" && <EngineersView />}
-          {view === "finance" && <Finance />}
-          {view === "settings" && <SettingsView />}
+          {view === "automations"  && <Automations />}
+          {view === "agents"       && <Agents />}
+          {view === "protocol"     && <Protocol />}
+          {view === "compliance"   && <ComplianceRoadmap />}
+          {view === "finance"      && <Finance />}
+          {view === "settings"     && <SettingsView />}
         </main>
       </div>
     </div>
