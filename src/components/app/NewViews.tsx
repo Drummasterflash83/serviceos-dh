@@ -136,7 +136,7 @@ export function Protocol() {
             <Activity className="h-3.5 w-3.5" /> streaming
           </div>
         </div>
-        <div className="grid grid-cols-12 border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">
           <div className="col-span-3">Caller</div>
           <div className="col-span-2">Channel</div>
           <div className="col-span-3">Parameter</div>
@@ -148,7 +148,7 @@ export function Protocol() {
           <button
             key={t.id}
             onClick={() => setOpen(t)}
-            className="grid w-full grid-cols-12 items-center border-b border-hairline px-5 py-4 text-left text-sm last:border-0 hover:bg-surface-alt"
+            className="grid w-full grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-4 text-left text-sm last:border-0 hover:bg-surface-alt"
           >
             <div className="col-span-3 font-medium">{t.caller}</div>
             <div className="col-span-2 text-xs text-muted-foreground">{t.channel}</div>
@@ -378,7 +378,7 @@ function InboxRouting() {
 
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Mailbox health</div>
-        <div className="grid grid-cols-12 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
           <div className="col-span-4">Address</div>
           <div className="col-span-2">Owner</div>
           <div className="col-span-1 text-right">Unread</div>
@@ -387,7 +387,7 @@ function InboxRouting() {
           <div className="col-span-1 text-right">Routed ✓</div>
         </div>
         {mailboxes.map((m) => (
-          <div key={m.addr} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div key={m.addr} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
             <div className="col-span-4 font-medium">{m.addr}</div>
             <div className="col-span-2 text-xs text-muted-foreground">{m.owner}</div>
             <div className="col-span-1 text-right font-mono text-xs tabular">{m.unread}</div>
@@ -407,7 +407,7 @@ function InboxRouting() {
           <span className="rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-[10px] font-medium text-warning">Needs attention</span>
         </div>
         {mis.map((m, i) => (
-          <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
             <div className="col-span-3 font-medium">{m.from}</div>
             <div className="col-span-5 text-xs text-muted-foreground truncate">{m.subj}</div>
             <div className="col-span-3 text-xs"><span className="font-mono text-muted-foreground">{m.landed}</span> → <span className="font-mono text-accent">{m.should}</span></div>
@@ -468,7 +468,7 @@ function PartsStock() {
 
         {tab === "store" && (
           <div className="mt-5 divide-y divide-hairline">
-            <div className="grid grid-cols-12 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-12 gap-x-3 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
               <div className="col-span-5">Part</div>
               <div className="col-span-2 text-right">Stock</div>
               <div className="col-span-2 text-right">Reserved</div>
@@ -476,7 +476,7 @@ function PartsStock() {
               <div className="col-span-1 text-right">Counted</div>
             </div>
             {parts.map((p) => (
-              <div key={p.name} className="grid grid-cols-12 items-center py-3 text-sm">
+              <div key={p.name} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
                 <div className="col-span-5 font-medium">{p.name}</div>
                 <div className={cn("col-span-2 text-right font-mono tabular", p.stock < p.min && "text-warning")}>{p.stock}</div>
                 <div className="col-span-2 text-right font-mono text-xs tabular text-muted-foreground">{p.reserved}</div>
@@ -515,7 +515,7 @@ function PartsStock() {
         {tab === "moves" && (
           <div className="mt-5 divide-y divide-hairline">
             {moves.map((m, i) => (
-              <div key={i} className="grid grid-cols-12 items-center py-3 text-sm">
+              <div key={i} className="grid grid-cols-12 gap-x-3 items-center py-3 text-sm">
                 <div className="col-span-2 font-mono text-xs text-muted-foreground">{m.t}</div>
                 <div className="col-span-3 font-medium">{m.who}</div>
                 <div className="col-span-4">{m.part}</div>
@@ -588,7 +588,7 @@ function SupplierNormaliser() {
             <div className="text-display text-sm font-semibold">{r.canon}</div>
             <div className="mt-3 divide-y divide-hairline rounded-lg border border-hairline">
               {r.variants.map((v, i) => (
-                <div key={i} className={cn("grid grid-cols-12 items-center px-3 py-2 text-xs", v.best && "bg-success/5")}>
+                <div key={i} className={cn("grid grid-cols-12 gap-x-3 items-center px-3 py-2 text-xs", v.best && "bg-success/5")}>
                   <div className="col-span-3 font-medium">{v.sup}</div>
                   <div className="col-span-6 text-muted-foreground">{v.name}</div>
                   <div className="col-span-2 text-right font-mono tabular">{v.price}</div>
@@ -609,7 +609,7 @@ function SupplierNormaliser() {
           <span className="rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-[10px] font-medium text-warning">{conflicts.length} pending</span>
         </div>
         {conflicts.map((c, i) => (
-          <div key={i} className="grid grid-cols-12 items-center gap-3 border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div key={i} className="grid grid-cols-12 gap-x-3 items-center gap-3 border-b border-hairline px-5 py-3 text-sm last:border-0">
             <div className="col-span-8 text-xs"><span className="font-mono">{c.items[0]}</span> <span className="text-muted-foreground">vs</span> <span className="font-mono">{c.items[1]}</span></div>
             <div className="col-span-2 font-mono text-xs tabular text-muted-foreground">{c.conf}% conf.</div>
             <div className="col-span-2 flex justify-end gap-1.5">
@@ -652,7 +652,7 @@ function WarrantyTracker() {
       ]} />
 
       <div className="rounded-2xl border border-hairline bg-white">
-        <div className="grid grid-cols-12 border-b border-hairline px-5 py-3 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-3 text-[10px] uppercase tracking-wider text-muted-foreground">
           <div className="col-span-3">Customer</div>
           <div className="col-span-3">Asset</div>
           <div className="col-span-2">Installed</div>
@@ -661,7 +661,7 @@ function WarrantyTracker() {
           <div className="col-span-1 text-right">Status</div>
         </div>
         {assets.map((a) => (
-          <div key={a.id} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0 hover:bg-surface-alt">
+          <div key={a.id} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0 hover:bg-surface-alt">
             <div className="col-span-3 font-medium">{a.cust}</div>
             <div className="col-span-3 text-xs">{a.asset}</div>
             <div className="col-span-2 font-mono text-xs text-muted-foreground">{a.install}</div>
@@ -721,7 +721,7 @@ function PPM() {
 
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Contracts</div>
-        <div className="grid grid-cols-12 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
           <div className="col-span-4">Customer</div>
           <div className="col-span-2 text-right">Assets</div>
           <div className="col-span-3">Renews</div>
@@ -729,7 +729,7 @@ function PPM() {
           <div className="col-span-1 text-right">Status</div>
         </div>
         {contracts.map((c) => (
-          <div key={c.cust} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div key={c.cust} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
             <div className="col-span-4 font-medium">{c.cust}</div>
             <div className="col-span-2 text-right font-mono text-xs tabular">{c.assets}</div>
             <div className="col-span-3 font-mono text-xs">{c.renews}</div>
@@ -754,7 +754,7 @@ function PPM() {
           <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[10px] font-medium text-accent">{prompts.length} ready</span>
         </div>
         {prompts.map((p, i) => (
-          <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
             <div className="col-span-4 font-medium">{p.cust}</div>
             <div className="col-span-4 text-xs text-muted-foreground">{p.asset}</div>
             <div className="col-span-2 font-mono text-xs">{p.due}</div>
@@ -851,7 +851,7 @@ export function Customers() {
         <div className="rounded-2xl border border-hairline bg-white">
           <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Completed jobs · review status</div>
           {reviews.map((r, i) => (
-            <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+            <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
               <div className="col-span-3 font-medium">{r.cust}</div>
               <div className="col-span-4 text-xs text-muted-foreground">{r.job}</div>
               <div className="col-span-2">
@@ -938,7 +938,7 @@ export function ApprovalQueuePanel() {
         <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[10px] font-medium text-accent">{queue.length} pending</span>
       </div>
       {queue.map((q, i) => (
-        <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+        <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
           <div className="col-span-3 font-medium">{q.agent}</div>
           <div className="col-span-3 text-xs">{q.action}</div>
           <div className="col-span-3 text-xs text-muted-foreground truncate">{q.target}</div>
@@ -973,7 +973,7 @@ export function RecurringIssuesPanel() {
         <span className="rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-[10px] font-medium text-warning">Top 5</span>
       </div>
       {issues.map((x, i) => (
-        <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0 hover:bg-surface-alt">
+        <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0 hover:bg-surface-alt">
           <div className="col-span-1 text-display text-lg font-bold tabular text-muted-foreground">{i + 1}</div>
           <div className="col-span-7 font-medium">{x.issue}</div>
           <div className="col-span-2 font-mono text-xs tabular">{x.count} calls</div>
@@ -1001,14 +1001,14 @@ export function SystemsInventoryPanel() {
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Systems inventory</div>
         <div className="text-display mt-0.5 text-sm font-semibold">What we actually use, who owns it, why it exists</div>
       </div>
-      <div className="grid grid-cols-12 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
         <div className="col-span-3">System</div>
         <div className="col-span-2">Owner</div>
         <div className="col-span-5">Purpose</div>
         <div className="col-span-2 text-right">Status</div>
       </div>
       {rows.map((r) => (
-        <div key={r.sys} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
+        <div key={r.sys} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
           <div className="col-span-3 font-medium">{r.sys}</div>
           <div className="col-span-2 text-xs text-muted-foreground">{r.owner}</div>
           <div className="col-span-5 text-xs">{r.purpose}</div>
