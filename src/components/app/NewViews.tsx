@@ -938,15 +938,17 @@ export function ApprovalQueuePanel() {
         <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-[10px] font-medium text-accent">{queue.length} pending</span>
       </div>
       {queue.map((q, i) => (
-        <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
-          <div className="col-span-3 font-medium min-w-0">{q.agent}</div>
-          <div className="col-span-3 text-xs min-w-0">{q.action}</div>
-          <div className="col-span-3 text-xs text-muted-foreground truncate min-w-0">{q.target}</div>
-          <div className="col-span-1 font-mono text-xs tabular text-muted-foreground min-w-0">{q.conf}%</div>
-          <div className="col-span-2 flex justify-end gap-1.5 min-w-0">
-            <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px]">Reject</button>
-            <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px]">Edit</button>
-            <button className="rounded-full bg-foreground px-2.5 py-1 text-[11px] text-background">Approve</button>
+        <div key={i} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hairline px-5 py-3 text-sm last:border-0">
+          <div className="flex min-w-0 flex-1 basis-[180px] items-center gap-2">
+            <span className="truncate font-medium">{q.agent}</span>
+          </div>
+          <div className="min-w-0 flex-1 basis-[160px] truncate text-xs">{q.action}</div>
+          <div className="min-w-0 flex-1 basis-[180px] truncate text-xs text-muted-foreground">{q.target}</div>
+          <div className="shrink-0 rounded-full border border-hairline bg-surface-alt px-2 py-0.5 font-mono text-[11px] tabular text-muted-foreground">{q.conf}%</div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px] hover:bg-surface-alt">Reject</button>
+            <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px] hover:bg-surface-alt">Edit</button>
+            <button className="rounded-full bg-foreground px-2.5 py-1 text-[11px] text-background hover:opacity-90">Approve</button>
           </div>
         </div>
       ))}
