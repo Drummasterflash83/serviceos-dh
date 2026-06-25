@@ -620,6 +620,85 @@ function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* Detail modal · shared across pillar tiles, health rows, and insights */}
+      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="max-w-2xl">
+          {active && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <DialogTitle className="text-display text-lg font-semibold">{active.title}</DialogTitle>
+                  {active.score && (
+                    <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-medium", toneClass(active.tone))}>
+                      {active.score}
+                    </span>
+                  )}
+                </div>
+                <DialogDescription>{active.subtitle}</DialogDescription>
+              </DialogHeader>
+
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {active.metrics.map((m) => (
+                  <div key={m.l} className="rounded-lg border border-hairline bg-surface-alt p-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{m.l}</div>
+                    <div className="text-display mt-1 text-base font-bold tabular">{m.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What's driving the score</div>
+                <div className="mt-2 space-y-2">
+                  {active.drivers.map((d) => (
+                    <div key={d.label} className="rounded-lg border border-hairline p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-sm font-semibold">{d.label}</div>
+                        {typeof d.weight === "number" && (
+                          <span className={cn(
+                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                            d.weight > 0 ? "bg-destructive/10 text-destructive" :
+                            d.weight < 0 ? "bg-success/10 text-success" :
+                                           "bg-surface-alt text-muted-foreground",
+                          )}>
+                            {d.weight > 0 ? `−${d.weight}` : `+${Math.abs(d.weight)}`} pts
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">{d.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Next best actions</div>
+                <div className="mt-2 space-y-2">
+                  {active.actions.map((a) => (
+                    <div key={a.label} className="flex items-start gap-3 rounded-lg border border-hairline bg-surface-alt p-3">
+                      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-sm font-semibold">{a.label}</div>
+                          {a.owner && (
+                            <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {a.owner}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted-foreground">{a.detail}</div>
+                      </div>
+                      <button className="shrink-0 rounded-md bg-foreground px-2.5 py-1 text-[11px] font-medium text-background">
+                        Run
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
