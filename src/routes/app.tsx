@@ -24,16 +24,18 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "learn" | "intelligence" | "automations" | "operations" | "calls" | "agents" | "finance" | "settings";
+type ViewKey = "dashboard" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "learn", label: "Learn", icon: GraduationCap },
   { key: "intelligence", label: "Intelligence", icon: Brain },
   { key: "automations", label: "Automations", icon: Zap },
-  
-  
   { key: "agents", label: "Agents", icon: Bot },
+  { key: "protocol", label: "Protocol", icon: ShieldCheck },
+  { key: "operations", label: "Operations", icon: Briefcase },
+  { key: "calls", label: "Calls", icon: Phone },
+  { key: "customers", label: "Customers", icon: Users },
   { key: "finance", label: "Numbers", icon: TrendingUp },
   { key: "settings", label: "Settings", icon: Settings },
 ];
