@@ -34,7 +34,7 @@ const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   
   
   { key: "agents", label: "Agents", icon: Bot },
-  { key: "finance", label: "Finance", icon: Banknote },
+  { key: "finance", label: "Numbers", icon: TrendingUp },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
