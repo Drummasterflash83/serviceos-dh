@@ -571,7 +571,7 @@ function SupplierNormaliser() {
       <Hero
         eyebrow="Supplier price normaliser"
         title="One part name across every supplier."
-        sub='The "22mm copper pipe" vs "copper pipe 22mm" problem, solved. Drop a price list, the AI maps it onto canonical part names and surfaces the best price. Anything it isn\'t sure about lands in the conflict queue for a human to merge.'
+        sub={`The "22mm copper pipe" vs "copper pipe 22mm" problem, solved. Drop a price list, the AI maps it onto canonical part names and surfaces the best price. Anything it isn't sure about lands in the conflict queue for a human to merge.`}
         icon={PackageSearch}
       />
 
