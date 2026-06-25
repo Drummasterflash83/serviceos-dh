@@ -6,6 +6,7 @@ import {
   Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import dhIcon from "@/assets/dh-icon.png.asset.json";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -37,7 +38,9 @@ function AppShell() {
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:flex">
         <Link to="/" className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold">
-          <span className="grid h-6 w-6 place-items-center rounded-md bg-foreground text-background text-[10px] font-bold">S</span>
+          <span className="grid h-6 w-6 place-items-center rounded-md bg-foreground p-1">
+            <img src={dhIcon.url} alt="Drummonds" className="h-full w-full object-contain" />
+          </span>
           ServiceOS
         </Link>
 
