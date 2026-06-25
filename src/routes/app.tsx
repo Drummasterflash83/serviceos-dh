@@ -24,7 +24,7 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "learn" | "intelligence" | "operations" | "calls" | "workflow" | "agents" | "finance" | "settings";
+type ViewKey = "dashboard" | "learn" | "intelligence" | "operations" | "calls" | "agents" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
