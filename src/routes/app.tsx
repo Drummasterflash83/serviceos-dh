@@ -1328,7 +1328,7 @@ function Intelligence() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-xl">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">How the pillar score works</div>
-            <div className="text-display mt-1 text-lg font-semibold">A 0-100 health rating per pillar, recalculated hourly.</div>
+            <div className="text-display mt-1 text-lg font-semibold">0-100 health rating, recalculated hourly.</div>
             <p className="mt-1 text-xs text-muted-foreground">
               ServiceOS blends live signals - throughput, cash flow, sentiment, audit gaps - into one score so you can see, at a glance, where the business is strong and where upgrades will have the biggest impact.
             </p>
