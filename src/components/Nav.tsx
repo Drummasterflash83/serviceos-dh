@@ -6,9 +6,7 @@ export function Nav() {
     <header className="fixed top-0 z-50 w-full">
       <div className="mx-auto mt-4 flex w-[min(1200px,calc(100%-2rem))] items-center justify-between rounded-full border border-hairline bg-white/70 px-5 py-2.5 backdrop-blur-xl shadow-[var(--shadow-soft)]">
         <Link to="/" className="flex items-center gap-2 text-display text-[15px] font-bold tracking-tight">
-          <span className="grid h-6 w-6 place-items-center rounded-md bg-foreground p-1">
-            <img src={dhIcon.url} alt="Drummonds" className="h-full w-full object-contain" />
-          </span>
+          <img src={dhIcon.url} alt="Drummonds" className="h-6 w-6 rounded-md object-contain" />
           ServiceOS
         </Link>
         <nav className="hidden gap-7 text-[13px] text-muted-foreground md:flex">
