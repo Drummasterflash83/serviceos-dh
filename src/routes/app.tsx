@@ -6,7 +6,7 @@ import {
   Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import dhIcon from "@/assets/dh-icon-solid.png.asset.json";
+import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
 
 export const Route = createFileRoute("/app")({
   head: () => ({

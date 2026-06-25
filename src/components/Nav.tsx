@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import dhIcon from "@/assets/dh-icon-solid.png.asset.json";
+import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
 
 export function Nav() {
   return (
