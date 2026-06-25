@@ -118,11 +118,11 @@ function AppShell() {
           {view === "learn" && <Learn />}
           {view === "intelligence" && <Intelligence />}
           {view === "automations" && <Automations />}
-
-          {view === "operations" && <Operations />}
-          {view === "calls" && <Calls />}
-          
           {view === "agents" && <Agents />}
+          {view === "protocol" && <Protocol />}
+          {view === "operations" && <OperationsHub jobsSlot={<Operations />} />}
+          {view === "calls" && <Calls />}
+          {view === "customers" && <Customers />}
           {view === "finance" && <Finance />}
           {view === "settings" && <SettingsView />}
         </main>
