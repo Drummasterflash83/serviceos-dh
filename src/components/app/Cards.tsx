@@ -305,16 +305,18 @@ function RoleSwitcher({ role, setRole }: { role: RoleKey; setRole: (r: RoleKey) 
               key={r.key}
               onClick={() => setRole(r.key)}
               className={cn(
-                "group flex items-center gap-3 rounded-xl border p-3 text-left transition",
-                active ? "border-foreground bg-foreground text-background" : "border-hairline bg-surface-alt hover:border-foreground/30",
+                "group flex items-center gap-3 rounded-xl border bg-white p-3 text-left transition",
+                active
+                  ? "border-foreground ring-2 ring-foreground/15 shadow-[var(--shadow-soft)]"
+                  : "border-hairline hover:border-foreground/30 hover:bg-surface-alt",
               )}
             >
-              <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg text-white", r.tint, active && "ring-2 ring-background/30")}>
+              <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg text-white", r.tint, active && "ring-2 ring-foreground/20")}>
                 <r.icon className="h-4 w-4" />
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold">{r.person}</span>
-                <span className={cn("block truncate text-[10px]", active ? "text-background/70" : "text-muted-foreground")}>{r.label}</span>
+                <span className="block truncate text-[10px] text-muted-foreground">{r.label}</span>
               </span>
             </button>
           );
