@@ -22,11 +22,12 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "learn" | "operations" | "calls" | "workflow" | "agents" | "finance" | "settings";
+type ViewKey = "dashboard" | "learn" | "intelligence" | "operations" | "calls" | "workflow" | "agents" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "learn", label: "Learn", icon: GraduationCap },
+  { key: "intelligence", label: "Intelligence", icon: Brain },
   { key: "operations", label: "Operations", icon: Briefcase },
   { key: "calls", label: "Calls", icon: Phone },
   { key: "workflow", label: "Workflow Intelligence", icon: Workflow },
@@ -34,6 +35,7 @@ const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "finance", label: "Finance", icon: Banknote },
   { key: "settings", label: "Settings", icon: Settings },
 ];
+
 
 function AppShell() {
   const [view, setView] = useState<ViewKey>("dashboard");
