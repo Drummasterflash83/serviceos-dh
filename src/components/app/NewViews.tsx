@@ -772,8 +772,9 @@ function SupplierNormaliser() {
 
       <div className="rounded-2xl border border-dashed border-hairline bg-white p-6 text-center">
         <PackageSearch className="mx-auto h-6 w-6 text-muted-foreground" />
-        <div className="mt-3 text-sm font-medium">Drop a supplier CSV here</div>
-        <div className="mt-1 text-xs text-muted-foreground">or click to browse · last upload: Wolseley · 14 Jun</div>
+        <div className="mt-3 text-sm font-medium">Drop a supplier price file here</div>
+        <div className="mt-1 text-xs text-muted-foreground">CSV, XLSX, PDF, DOCX, TXT or images · or click to browse</div>
+        <div className="mt-1 text-[11px] text-muted-foreground">Last upload: Wolseley · 14 Jun</div>
       </div>
 
       <div className="rounded-2xl border border-hairline bg-white">
