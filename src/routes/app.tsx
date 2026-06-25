@@ -818,8 +818,10 @@ function Finance() {
 
   const wins = [
     { v: "£214k", l: "Cash unlocked", sub: "faster invoicing + chase automation" },
-    { v: "1,840", l: "Hours saved", sub: "across reception, ops and finance" },
+    { v: "1,840", l: "Hours recovered", sub: "from reactivity · back to proactive work" },
     { v: "£68k", l: "Procurement savings", sub: "via supplier comparison agent" },
+    { v: "£18.4k", l: "Warranty £ recovered", sub: "claimed back from manufacturers" },
+    { v: "£148k", l: "PPM value secured", sub: "renewals booked on schedule" },
     { v: "27", l: "Automations live", sub: "running every day, every job" },
   ];
 
