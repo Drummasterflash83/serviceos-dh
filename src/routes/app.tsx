@@ -452,14 +452,14 @@ function Learn() {
     <div className="space-y-6">
       {/* Hero / Company health */}
       <div className="grid gap-3 md:grid-cols-12">
-        <div className="rounded-2xl border border-hairline bg-foreground p-6 text-background md:col-span-7">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-background/60">
+        <div className="rounded-2xl border border-hairline bg-white p-6 md:col-span-7">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5" /> Company Health · synthesised from all inputs
           </div>
           <div className="text-display mt-4 flex items-baseline gap-3 text-5xl font-bold tabular">
-            87<span className="text-xl font-medium text-background/60">/ 100</span>
+            87<span className="text-xl font-medium text-muted-foreground">/ 100</span>
           </div>
-          <div className="mt-2 text-sm text-background/70">Strong operational signal · 3 risks tracked · 12 automation candidates</div>
+          <div className="mt-2 text-sm text-muted-foreground">Strong operational signal · 3 risks tracked · 12 automation candidates</div>
           <div className="mt-5 grid grid-cols-4 gap-3 text-xs">
             {[
               { l: "Ops", v: 92 },
@@ -468,15 +468,16 @@ function Learn() {
               { l: "Compliance", v: 94 },
             ].map((x) => (
               <div key={x.l}>
-                <div className="text-background/60">{x.l}</div>
-                <div className="mt-1 h-1 rounded-full bg-background/20">
-                  <div className="h-full rounded-full bg-background" style={{ width: `${x.v}%` }} />
+                <div className="text-muted-foreground">{x.l}</div>
+                <div className="mt-1 h-1 rounded-full bg-hairline">
+                  <div className="h-full rounded-full bg-foreground" style={{ width: `${x.v}%` }} />
                 </div>
                 <div className="mt-1 font-mono tabular">{x.v}</div>
               </div>
             ))}
           </div>
         </div>
+
 
         <div className="rounded-2xl border border-hairline bg-white p-6 md:col-span-5">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Learning state</div>
