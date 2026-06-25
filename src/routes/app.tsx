@@ -13,6 +13,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
+import {
+  Protocol, OperationsHub, Customers,
+  ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
+} from "@/components/app/NewViews";
 
 
 export const Route = createFileRoute("/app")({
