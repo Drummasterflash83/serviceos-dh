@@ -653,6 +653,8 @@ function Agents() {
         </div>
       </div>
 
+      <ApprovalQueuePanel />
+
       {/* Agent grid */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((a) => {
