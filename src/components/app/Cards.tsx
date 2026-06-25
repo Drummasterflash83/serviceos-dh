@@ -329,7 +329,7 @@ function RoleSwitcher({ role, setRole }: { role: RoleKey; setRole: (r: RoleKey) 
 /* ──────────── JOB CARD (compact) ──────────── */
 /* Fixed layout: every card has the same slots in the same place.
    Empty slots stay as blank space so nothing jumps between cards. */
-function JobCardCompact({ job, onOpen }: { job: Job; role: RoleKey; onOpen: () => void }) {
+function JobCardCompact({ job, role, onOpen }: { job: Job; role: RoleKey; onOpen: () => void }) {
   // Up to two critical flags surface on the face; rest live in detail view
   const flags: { icon: typeof AlertTriangle; label: string; tone: string }[] = [];
   if (job.missingSerial)        flags.push({ icon: AlertTriangle, label: "Serial missing",  tone: "bg-destructive/10 text-destructive" });
@@ -337,10 +337,51 @@ function JobCardCompact({ job, onOpen }: { job: Job; role: RoleKey; onOpen: () =
   if (job.travelChargedTwice)   flags.push({ icon: Car,           label: "Travel × 2 risk", tone: "bg-warning/10 text-warning" });
   if (job.customerSentiment === "Frustrated") flags.push({ icon: HeartPulse, label: "Customer frustrated", tone: "bg-warning/10 text-warning" });
 
+  // Role-specific lens: each role sees a different one-line "what matters to me"
+  const lens = (() => {
+    switch (role) {
+      case "engineer":
+        return {
+          icon: MapPin,
+          label: "On-site",
+          value: job.access.split(" · ")[0],
+          accent: "text-orange-700 bg-orange-50 border-orange-100",
+        };
+      case "office":
+        return {
+          icon: MessageSquare,
+          label: "Last touch",
+          value: job.lastTouch,
+          accent: "text-sky-700 bg-sky-50 border-sky-100",
+        };
+      case "quotes":
+        return {
+          icon: FileSignature,
+          label: "Quote",
+          value: `${job.quoteStatus} · day ${job.quoteAge}${job.alanApproved ? "" : " · Alan ⛔"}`,
+          accent: "text-violet-700 bg-violet-50 border-violet-100",
+        };
+      case "ops":
+        return {
+          icon: Wrench,
+          label: "Crew",
+          value: `${job.engineer} · ${job.scheduled.split(" · ")[1] ?? job.scheduled}`,
+          accent: "text-emerald-700 bg-emerald-50 border-emerald-100",
+        };
+      case "md":
+        return {
+          icon: TrendingUp,
+          label: "Value · margin",
+          value: `${job.value} · ${job.margin}`,
+          accent: "text-foreground bg-surface-alt border-hairline",
+        };
+    }
+  })();
+
   return (
     <button
       onClick={onOpen}
-      className="group relative flex h-[200px] w-full flex-col overflow-hidden rounded-2xl border border-hairline bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
+      className="group relative flex h-[230px] w-full flex-col overflow-hidden rounded-2xl border border-hairline bg-white p-4 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
     >
       {/* Slot 1: id + schedule + urgency (fixed) */}
       <div className="flex items-start justify-between gap-3">
@@ -358,7 +399,15 @@ function JobCardCompact({ job, onOpen }: { job: Job; role: RoleKey; onOpen: () =
         <div className="mt-0.5 truncate text-xs text-muted-foreground">{job.customer}</div>
       </div>
 
-      {/* Slot 3: at-a-glance flags (fixed height, blank if none) */}
+      {/* Slot 3: ROLE LENS · the one thing this role cares about (fixed height) */}
+      <div className={cn("mt-3 rounded-lg border px-2.5 py-2 min-h-[48px]", lens.accent)}>
+        <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider opacity-80">
+          <lens.icon className="h-3 w-3" /> {lens.label}
+        </div>
+        <div className="mt-0.5 line-clamp-1 text-xs font-semibold">{lens.value}</div>
+      </div>
+
+      {/* Slot 4: at-a-glance flags (fixed height, blank if none) */}
       <div className="mt-auto min-h-[22px]">
         {flags.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -371,7 +420,7 @@ function JobCardCompact({ job, onOpen }: { job: Job; role: RoleKey; onOpen: () =
         )}
       </div>
 
-      {/* Slot 4: open affordance (fixed) */}
+      {/* Slot 5: open affordance (fixed) */}
       <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[10px] text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <SentimentDot s={job.customerSentiment} />
