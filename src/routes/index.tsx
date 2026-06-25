@@ -71,9 +71,9 @@ function Hero() {
         >
           <div className="flex justify-center">
             <img
-              src={drummondLogo}
-              alt="Drummond Heating"
-              className="h-16 w-auto md:h-20"
+              src={drummondLogo.url}
+              alt="Drummond Heating - Established 1978"
+              className="h-20 w-auto md:h-28"
             />
           </div>
         </motion.div>
@@ -82,9 +82,15 @@ function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, ease: EASE, delay: 0.1 }}
-          className="text-display mt-8 text-[18vw] font-extrabold leading-[0.9] md:text-[160px]"
+          className="text-display mt-8 flex items-center justify-center gap-[0.05em] text-[18vw] font-extrabold leading-[0.9] md:text-[160px]"
         >
-          ServiceOS
+          <img
+            src={dhIcon.url}
+            alt=""
+            aria-hidden
+            className="h-[0.85em] w-auto"
+          />
+          <span>ServiceOS</span>
         </motion.h1>
 
         <motion.p
