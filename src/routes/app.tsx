@@ -937,8 +937,9 @@ function Learn() {
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Events 30d</span>
                 <span className="font-mono text-sm tabular">{s.events}</span>
               </div>
-            </div>
+            </button>
           ))}
+
         </div>
       </div>
 
