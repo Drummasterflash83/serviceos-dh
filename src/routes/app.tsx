@@ -7,11 +7,16 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
+  Users, Inbox,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
+import {
+  Protocol, OperationsHub, Customers,
+  ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
+} from "@/components/app/NewViews";
 
 
 export const Route = createFileRoute("/app")({
@@ -24,16 +29,18 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "learn" | "intelligence" | "automations" | "operations" | "calls" | "agents" | "finance" | "settings";
+type ViewKey = "dashboard" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "learn", label: "Learn", icon: GraduationCap },
   { key: "intelligence", label: "Intelligence", icon: Brain },
   { key: "automations", label: "Automations", icon: Zap },
-  
-  
   { key: "agents", label: "Agents", icon: Bot },
+  { key: "protocol", label: "Protocol", icon: ShieldCheck },
+  { key: "operations", label: "Operations", icon: Briefcase },
+  { key: "calls", label: "Calls", icon: Phone },
+  { key: "customers", label: "Customers", icon: Users },
   { key: "finance", label: "Numbers", icon: TrendingUp },
   { key: "settings", label: "Settings", icon: Settings },
 ];
@@ -111,11 +118,11 @@ function AppShell() {
           {view === "learn" && <Learn />}
           {view === "intelligence" && <Intelligence />}
           {view === "automations" && <Automations />}
-
-          {view === "operations" && <Operations />}
-          {view === "calls" && <Calls />}
-          
           {view === "agents" && <Agents />}
+          {view === "protocol" && <Protocol />}
+          {view === "operations" && <OperationsHub jobsSlot={<Operations />} />}
+          {view === "calls" && <Calls />}
+          {view === "customers" && <Customers />}
           {view === "finance" && <Finance />}
           {view === "settings" && <SettingsView />}
         </main>
@@ -128,10 +135,10 @@ function AppShell() {
 function Dashboard() {
   const statTiles = [
     { l: "Live jobs", v: "42", sub: "+6 vs yesterday", icon: Workflow },
-    { l: "Calls waiting", v: "8", sub: "−2 vs yesterday", icon: Phone },
-    { l: "Engineers on shift", v: "11", sub: "+1 vs roster", icon: Briefcase },
+    { l: "Inside protocol", v: "94%", sub: "16 of 17 threads", icon: ShieldCheck },
+    { l: "On-call tonight", v: "T. Reid", sub: "+2 backups armed", icon: Clock },
+    { l: "Mailbox health", v: "47m", sub: "oldest unread · office@", icon: Inbox },
     { l: "Revenue today", v: "£18.4k", sub: "+12% vs wk avg", icon: Banknote },
-    { l: "Fleet health", v: "85", sub: "across 4 pillars", icon: Brain },
   ];
 
   const insights = [
@@ -334,29 +341,32 @@ function Calls() {
     { time: "12:48", caller: "Crestmont Apts.", urgency: "High", sentiment: "Frustrated", intent: "Leak" },
   ];
   return (
-    <div className="grid gap-3 md:grid-cols-12">
-      <div className="rounded-2xl border border-hairline bg-white md:col-span-7">
-        <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">Recent calls</div>
-        {calls.map((c, i) => (
-          <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
-            <div className="col-span-2 font-mono text-xs text-muted-foreground">{c.time}</div>
-            <div className="col-span-4 font-medium">{c.caller}</div>
-            <div className="col-span-2 text-xs">{c.urgency}</div>
-            <div className="col-span-2 text-xs text-muted-foreground">{c.sentiment}</div>
-            <div className="col-span-2 text-xs text-muted-foreground">{c.intent}</div>
-          </div>
-        ))}
-      </div>
-      <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-5">
-        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live transcript</div>
-        <div className="mt-3 text-sm font-semibold">ABC School · 14:22</div>
-        <div className="mt-4 space-y-3 text-sm">
-          <p><span className="font-mono text-xs text-muted-foreground">caller</span><br />Our heating's been out since this morning, three classrooms…</p>
-          <p><span className="font-mono text-xs text-accent">agent</span><br />Understood. I'm escalating now and dispatching the nearest engineer.</p>
+    <div className="space-y-5">
+      <RecurringIssuesPanel />
+      <div className="grid gap-3 md:grid-cols-12">
+        <div className="rounded-2xl border border-hairline bg-white md:col-span-7">
+          <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">Recent calls</div>
+          {calls.map((c, i) => (
+            <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
+              <div className="col-span-2 font-mono text-xs text-muted-foreground">{c.time}</div>
+              <div className="col-span-4 font-medium">{c.caller}</div>
+              <div className="col-span-2 text-xs">{c.urgency}</div>
+              <div className="col-span-2 text-xs text-muted-foreground">{c.sentiment}</div>
+              <div className="col-span-2 text-xs text-muted-foreground">{c.intent}</div>
+            </div>
+          ))}
         </div>
-        <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
-          <div className="font-semibold text-accent">Recommended action</div>
-          <div className="mt-1 text-foreground">Escalate · dispatch T. Reid (12 min away)</div>
+        <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-5">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live transcript</div>
+          <div className="mt-3 text-sm font-semibold">ABC School · 14:22</div>
+          <div className="mt-4 space-y-3 text-sm">
+            <p><span className="font-mono text-xs text-muted-foreground">caller</span><br />Our heating's been out since this morning, three classrooms…</p>
+            <p><span className="font-mono text-xs text-accent">agent</span><br />Understood. I'm escalating now and dispatching the nearest engineer.</p>
+          </div>
+          <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
+            <div className="font-semibold text-accent">Recommended action</div>
+            <div className="mt-1 text-foreground">Escalate · dispatch T. Reid (12 min away)</div>
+          </div>
         </div>
       </div>
     </div>
@@ -643,6 +653,8 @@ function Agents() {
         </div>
       </div>
 
+      <ApprovalQueuePanel />
+
       {/* Agent grid */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((a) => {
@@ -806,8 +818,10 @@ function Finance() {
 
   const wins = [
     { v: "£214k", l: "Cash unlocked", sub: "faster invoicing + chase automation" },
-    { v: "1,840", l: "Hours saved", sub: "across reception, ops and finance" },
+    { v: "1,840", l: "Hours recovered", sub: "from reactivity · back to proactive work" },
     { v: "£68k", l: "Procurement savings", sub: "via supplier comparison agent" },
+    { v: "£18.4k", l: "Warranty £ recovered", sub: "claimed back from manufacturers" },
+    { v: "£148k", l: "PPM value secured", sub: "renewals booked on schedule" },
     { v: "27", l: "Automations live", sub: "running every day, every job" },
   ];
 
@@ -932,7 +946,7 @@ function Finance() {
       </div>
 
       {/* Wins summary */}
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {wins.map((w) => (
           <div key={w.l} className="rounded-2xl border border-hairline bg-white p-5">
             <div className="text-display text-3xl font-bold tabular text-foreground">{w.v}</div>
@@ -948,13 +962,16 @@ function Finance() {
 /* ────── SETTINGS ────── */
 function SettingsView() {
   return (
-    <div className="max-w-2xl space-y-3">
-      {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map((s) => (
-        <div key={s} className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt">
-          <div className="text-sm font-medium">{s}</div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      ))}
+    <div className="space-y-5">
+      <SystemsInventoryPanel />
+      <div className="max-w-2xl space-y-3">
+        {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map((s) => (
+          <div key={s} className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt">
+            <div className="text-sm font-medium">{s}</div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
