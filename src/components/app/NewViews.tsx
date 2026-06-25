@@ -91,7 +91,7 @@ export function Protocol() {
       <Hero
         eyebrow="Response Protocol · live"
         title={`Inside protocol · ${inside} of ${THREADS.length} active threads.`}
-        sub="The parameters Heidi set in our discovery call — every inbound thread is timed against them. Anything drifting outside its window surfaces here, with the owner and what to do next."
+        sub="The parameters Heidi set in our discovery call - every inbound thread is timed against them. Anything drifting outside its window surfaces here, with the owner and what to do next."
         icon={ShieldCheck}
         pill="Live · streaming"
       />
@@ -360,7 +360,7 @@ function InboxRouting() {
     { addr: "invoicing@drummondheating.co.uk", owner: "Heidi", unread: 4, oldest: "31m", avg: "22m", routed: 99 },
     { addr: "scheduling@drummondheating.co.uk", owner: "Sam", unread: 7, oldest: "1h 12m", avg: "33m", routed: 92 },
     { addr: "Website quote form", owner: "Quote Agent", unread: 3, oldest: "18m", avg: "12m", routed: 100 },
-    { addr: "Main phone line", owner: "Reception Agent", unread: 0, oldest: "—", avg: "9s", routed: 98 },
+    { addr: "Main phone line", owner: "Reception Agent", unread: 0, oldest: "-", avg: "9s", routed: 98 },
   ];
   const mis = [
     { from: "Greenfield Care Home", landed: "office@", should: "scheduling@", subj: "Re: visit Thursday?" },
@@ -372,7 +372,7 @@ function InboxRouting() {
       <Hero
         eyebrow="Inbox & comms routing"
         title="Every channel, mapped to an owner."
-        sub="Five inboxes, one rule: every message has a named owner and an SLA. The routing map makes drift visible — misrouted items get one-click re-routed below."
+        sub="Five inboxes, one rule: every message has a named owner and an SLA. The routing map makes drift visible - misrouted items get one-click re-routed below."
         icon={Inbox}
       />
 
@@ -435,7 +435,7 @@ function PartsStock() {
     { reg: "BD21 PRX", driver: "Tony", fill: 78, top: ["22mm copper", "PCB x2"], restock: false },
     { reg: "BG22 ZTM", driver: "M. Patel", fill: 41, top: ["Magnetic filter", "Pump cart."], restock: true },
     { reg: "BV21 WHK", driver: "S. Walsh", fill: 64, top: ["Flue ext.", "PCB"], restock: false },
-    { reg: "BJ23 LDM", driver: "L. Bryan", fill: 22, top: ["—"], restock: true },
+    { reg: "BJ23 LDM", driver: "L. Bryan", fill: 22, top: ["-"], restock: true },
   ];
   const moves = [
     { t: "14:08", who: "Tony", part: "PCB x1", dir: "out", job: "J-3402" },
@@ -788,7 +788,7 @@ export function Customers() {
   const reviews = [
     { cust: "ABC School", job: "J-3390 · emergency call-out", status: "Received", rating: 5 },
     { cust: "Greenfield Care", job: "J-3388 · annual service", status: "Sent", rating: null },
-    { cust: "12 Marlborough Rd", job: "J-3385 · install", status: "Not sent", rating: null, flag: "Big job — Mary to send" },
+    { cust: "12 Marlborough Rd", job: "J-3385 · install", status: "Not sent", rating: null, flag: "Big job - Mary to send" },
     { cust: "Highbridge Foods", job: "J-3380 · plant room", status: "Flagged", rating: 2, flag: "Sentiment risk" },
   ];
 

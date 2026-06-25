@@ -30,7 +30,7 @@ type Engineer = {
   streak: number; // weeks above threshold
 
   // Job-sheet & data-input quality (the biggest discovery gap)
-  dataInput: number;          // 0-100 — Heidi/Mary/Larne's biggest pain
+  dataInput: number;          // 0-100 - Heidi/Mary/Larne's biggest pain
   photosPerJob: number;       // avg
   serialsCaptured: number;    // %
   ramsAttached: number;       // %
@@ -175,9 +175,9 @@ const ENGINEERS: Engineer[] = [
       { name: "Gas Safe · Commercial", expires: "Jan 2027", status: "valid" },
       { name: "ACS Core",              expires: "Jan 2027", status: "valid" },
     ],
-    wins: [{ date: "Mon", what: "Diagnosed boiler fault in 8 minutes — apprentice gold" }],
+    wins: [{ date: "Mon", what: "Diagnosed boiler fault in 8 minutes - apprentice gold" }],
     flags: [
-      { tone: "warning", text: "Hates Commusoft — voice-to-card onboarding pending" },
+      { tone: "warning", text: "Hates Commusoft - voice-to-card onboarding pending" },
       { tone: "warning", text: "Slack reply 90m avg · prefers phone" },
     ],
     spark: [58, 60, 61, 62, 63, 64, 65, 66, 66],
@@ -194,7 +194,7 @@ const ENGINEERS: Engineer[] = [
       { name: "Gas Safe · Commercial", expires: "Apr 2026", status: "valid" },
       { name: "LPG",                   expires: "Aug 2024", status: "expired" },
     ],
-    wins: [{ date: "—", what: "Big technical brain when engaged" }],
+    wins: [{ date: "-", what: "Big technical brain when engaged" }],
     flags: [
       { tone: "destructive", text: "LPG cert expired · book Portchester" },
       { tone: "destructive", text: "11 chases this week (Mary + Larne)" },
@@ -211,7 +211,7 @@ const ENGINEERS: Engineer[] = [
     firstTimeFix: 71, returnRate: 11, hoursVsQuoted: 1.14, jobsThisWeek: 5, partsAccuracy: 80,
     chasesThisWeek: 1, avgCallbackMins: 18, slackReplyMins: 9, callsSentiment: "Positive", customerTone: 84,
     morale: 86, workload: "Light",
-    certs: [{ name: "ACS Core (in progress)", expires: "—", status: "soon" }],
+    certs: [{ name: "ACS Core (in progress)", expires: "-", status: "soon" }],
     wins: [{ date: "Tue", what: "Asked the right question on a Vaillant fault" }],
     flags: [],
     spark: [42, 46, 50, 53, 55, 57, 59, 60, 61],
@@ -566,7 +566,7 @@ function EngineerDetail({ e }: { e: Engineer }) {
 
         <Section title="Recent wins" icon={Award}>
           {e.wins.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No wins logged this fortnight — prompt apprentice/peer recognition.</p>
+            <p className="text-xs text-muted-foreground">No wins logged this fortnight - prompt apprentice/peer recognition.</p>
           ) : (
             <ul className="space-y-2 text-xs">
               {e.wins.map((w) => (
@@ -610,7 +610,7 @@ function EngineerDetail({ e }: { e: Engineer }) {
           <div>
             <div className="text-sm font-semibold">Super Tony · monthly bonus pool</div>
             <p className="text-[11px] text-muted-foreground">
-              Data-driven, rotating, peer-validated. £200 pool — pays itself back in chases avoided.
+              Data-driven, rotating, peer-validated. £200 pool - pays itself back in chases avoided.
             </p>
           </div>
         </div>
@@ -665,7 +665,7 @@ export function EngineersView() {
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               One card per engineer · job-sheet quality, first-time-fix, callback latency, customer tone, certifications,
-              morale and recognition — all on the same surface. Super Tony ranks shift live so the bonus pool is data-driven, not gut-feel.
+              morale and recognition - all on the same surface. Super Tony ranks shift live so the bonus pool is data-driven, not gut-feel.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -767,7 +767,7 @@ export function EngineersView() {
       {/* Footer note */}
       <div className="rounded-2xl border border-dashed border-hairline bg-white p-4 text-xs text-muted-foreground">
         Built from Heidi, Mary and Larne's discovery: engineer data input is the single biggest blind spot.
-        This surface gives every engineer a mirror — and gives Larne, Rudi and Heidi the data to coach,
+        This surface gives every engineer a mirror - and gives Larne, Rudi and Heidi the data to coach,
         recognise and reward without it feeling like surveillance.
       </div>
 

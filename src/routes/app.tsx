@@ -174,10 +174,10 @@ function Dashboard() {
   const trend = health[health.length - 1].score - health[0].score; // negative = declining
 
   const insights = [
-    { tone: "warning",     pillar: "Operations", text: "Supplier delay affecting 3 jobs", detail: "Reorder window closes 16:00 — switch to Plumb Base saves 2 days." },
+    { tone: "warning",     pillar: "Operations", text: "Supplier delay affecting 3 jobs", detail: "Reorder window closes 16:00 - switch to Plumb Base saves 2 days." },
     { tone: "accent",      pillar: "Quoting",    text: "Quote follow-up overdue ×7",      detail: "Day-20 nudge ready to send. ~70% reply rate on spam-drift line." },
     { tone: "destructive", pillar: "Customer",   text: "Complaint risk · ABC School",     detail: "Frustrated sentiment + no callback in 2 days. Mary owns the response." },
-    { tone: "warning",     pillar: "Comms",      text: "office@ unread climbing",         detail: "Oldest 47m. 3 likely routable to scheduling — auto-route ready." },
+    { tone: "warning",     pillar: "Comms",      text: "office@ unread climbing",         detail: "Oldest 47m. 3 likely routable to scheduling - auto-route ready." },
     { tone: "success",     pillar: "Cashflow",      text: "Margin tracking +3.4% vs week",   detail: "Procurement agent saved £214 across 3 supplier comparisons today." },
   ] as const;
 
@@ -322,7 +322,7 @@ function Dashboard() {
       title: "Supplier delay affecting 3 jobs", subtitle: "Operations · open", tone: "warning",
       metrics: [{ l: "Jobs blocked", v: "3" }, { l: "Reorder window", v: "closes 16:00" }, { l: "Switch cost", v: "+£0" }],
       drivers: [
-        { label: "Heaton Spares lead time", reason: "5 days vs Plumb Base's 2 — knock-on to 3 confirmed jobs" },
+        { label: "Heaton Spares lead time", reason: "5 days vs Plumb Base's 2 - knock-on to 3 confirmed jobs" },
         { label: "Procurement Agent ready", reason: "Substitution comparison built and waiting on approval" },
       ],
       actions: [
@@ -923,7 +923,7 @@ const AGENTS: AgentItem[] = [
     id: "a11", name: "Workflow Intelligence", cat: "cross", icon: Brain,
     purpose: "Watch how work actually flows and surface new automation candidates.",
     task: "Tracking 38 workflows · 4 new candidates today",
-    mode: "Advisory", status: "Active", confidence: 93, runs7d: "—", saved: "12 upgrades shipped",
+    mode: "Advisory", status: "Active", confidence: 93, runs7d: "-", saved: "12 upgrades shipped",
     tools: ["Event stream", "Audit log", "Pattern miner"],
     allowed: ["Detect repeat patterns", "Score automation impact", "Propose to Intelligence layer"],
     forbidden: ["Deploy automations on its own"],
