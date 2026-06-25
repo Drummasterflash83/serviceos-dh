@@ -10,7 +10,7 @@ import { Nav } from "@/components/Nav";
 import { SectionShell, Reveal, Eyebrow, CountUp, GlassCard } from "@/components/pitch/primitives";
 import { cn } from "@/lib/utils";
 import drummondLogo from "@/assets/drummond-heading-logo.png.asset.json";
-import dhIcon from "@/assets/dh-icon-fg.png.asset.json";
+import dhIcon from "@/assets/dh-icon-dark.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
