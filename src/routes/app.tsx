@@ -1264,6 +1264,7 @@ const UPGRADES: Upgrade[] = [
 function Intelligence() {
   const [pillar, setPillar] = useState<"all" | Pillar>("all");
   const [via, setVia] = useState<"all" | Upgrade["via"]>("all");
+  const [open, setOpen] = useState<Upgrade | null>(null);
 
   const filtered = UPGRADES.filter(
     (u) => (pillar === "all" || u.pillar === pillar) && (via === "all" || u.via === via),
@@ -1278,6 +1279,14 @@ function Intelligence() {
   };
 
   const viaOptions: ("all" | Upgrade["via"])[] = ["all", "AI Agent", "Automation", "ServiceOS Workflow", "Voice AI", "Process Change"];
+
+  const statTiles = [
+    { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
+    { l: "Time saved", v: totals.time, sub: "if all shipped", icon: Clock },
+    { l: "Profit uplift", v: totals.profit, sub: "monthly run-rate", icon: TrendingUp },
+    { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
+    { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
+  ];
 
   return (
     <div className="space-y-6">
@@ -1295,7 +1304,7 @@ function Intelligence() {
               Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Each card below is an upgrade ServiceOS can ship - via automation, an AI agent, or a workflow change - with projected impact on time, profit, turnover, customer satisfaction and risk.
+              Click any upgrade to see the full recommendation, projected impact and the path to shipping it.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -1304,21 +1313,16 @@ function Intelligence() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
-            { l: "Time saved", v: totals.time, sub: "if all shipped", icon: Clock },
-            { l: "Profit uplift", v: totals.profit, sub: "monthly run-rate", icon: TrendingUp },
-            { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
-            { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
-          ].map((k) => (
+        {/* Aligned stat row · labels, numbers and subs sit on the same baselines */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {statTiles.map((k) => (
             <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-1.5 text-xl font-bold tabular text-foreground">{k.v}</div>
-              <div className="text-[10px] text-muted-foreground">{k.sub}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
@@ -1386,9 +1390,8 @@ function Intelligence() {
         </div>
       </div>
 
-      {/* Pillar health */}
-
-      <div className="grid gap-3 md:grid-cols-4">
+      {/* Pillar health · breathing room, consistent baselines */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {PILLARS.map((p) => {
           const h = PILLAR_HEALTH[p.key];
           const active = pillar === p.key;
@@ -1397,31 +1400,28 @@ function Intelligence() {
               key={p.key}
               onClick={() => setPillar(active ? "all" : p.key)}
               className={cn(
-                "rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
+                "flex flex-col rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
                 active ? "border-foreground" : "border-hairline",
               )}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "grid h-7 w-7 place-items-center rounded-lg",
-                    p.tone === "accent" && "bg-accent/10 text-accent",
-                    p.tone === "success" && "bg-success/10 text-success",
-                    p.tone === "warning" && "bg-warning/10 text-warning",
-                    p.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                  )}>
-                    <p.icon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="text-sm font-semibold">{p.label}</div>
-                </div>
-                <div className="text-display text-xl font-bold tabular">{h.score}</div>
+              <div className="flex items-start justify-between gap-3">
+                <span className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                  p.tone === "accent" && "bg-accent/10 text-accent",
+                  p.tone === "success" && "bg-success/10 text-success",
+                  p.tone === "warning" && "bg-warning/10 text-warning",
+                  p.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <p.icon className="h-4 w-4" />
+                </span>
+                <div className="text-display text-2xl font-bold leading-none tabular">{h.score}</div>
               </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">{p.desc}</div>
-              <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[11px]">
+              <div className="mt-4 text-sm font-semibold">{p.label}</div>
+              <div className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.desc}</div>
+              <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px]">
                 <span className="text-muted-foreground">{h.openUpgrades} upgrades</span>
                 <span className="font-medium">{h.potential}</span>
               </div>
-              <div className="mt-1 text-[10px] text-muted-foreground">{h.trend}</div>
             </button>
           );
         })}
@@ -1467,28 +1467,35 @@ function Intelligence() {
         </div>
       </div>
 
-      {/* Upgrade cards */}
-      <div className="grid gap-3 md:grid-cols-2">
+      {/* Upgrade cards · compact summary, click for full detail */}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((u) => {
           const pillarMeta = PILLARS.find((p) => p.key === u.pillar)!;
+          const headline = u.uplift.profit
+            ? { label: "Profit", value: u.uplift.profit, tone: "text-success" }
+            : u.uplift.turnover
+            ? { label: "Turnover", value: u.uplift.turnover, tone: "text-accent" }
+            : u.uplift.timeSaved
+            ? { label: "Time saved", value: u.uplift.timeSaved, tone: "text-foreground" }
+            : u.uplift.csat
+            ? { label: "CSAT", value: u.uplift.csat, tone: "text-warning" }
+            : { label: "Risk", value: u.uplift.risk ?? "-", tone: "text-muted-foreground" };
           return (
-            <div key={u.id} className="flex flex-col rounded-2xl border border-hairline bg-white p-5">
+            <button
+              key={u.id}
+              onClick={() => setOpen(u)}
+              className="group flex flex-col rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm"
+            >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "grid h-8 w-8 place-items-center rounded-lg",
-                    pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
-                    pillarMeta.tone === "success" && "bg-success/10 text-success",
-                    pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
-                    pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                  )}>
-                    <pillarMeta.icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{pillarMeta.label}</div>
-                    <div className="text-sm font-semibold leading-tight">{u.title}</div>
-                  </div>
-                </div>
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                  pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                  pillarMeta.tone === "success" && "bg-success/10 text-success",
+                  pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                  pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
+                </span>
                 <span className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
                   u.status === "ready" && "bg-success/10 text-success",
@@ -1497,81 +1504,131 @@ function Intelligence() {
                 )}>{u.status}</span>
               </div>
 
-              <div className="mt-4 space-y-2 text-xs">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
-                  <div className="mt-0.5 leading-relaxed text-foreground/80">{u.insight}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
-                  <div className="mt-0.5 leading-relaxed">{u.recommendation}</div>
-                </div>
-              </div>
+              <div className="text-display mt-4 text-base font-semibold leading-snug">{u.title}</div>
+              <div className="mt-1 text-xs text-muted-foreground">via {u.via}</div>
 
-              {/* Uplift chips */}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {u.uplift.timeSaved && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[10px]">
-                    <Clock className="h-3 w-3" /> {u.uplift.timeSaved}
-                  </span>
-                )}
-                {u.uplift.profit && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] text-success">
-                    <Banknote className="h-3 w-3" /> Profit {u.uplift.profit}
-                  </span>
-                )}
-                {u.uplift.turnover && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">
-                    <TrendingUp className="h-3 w-3" /> Turnover {u.uplift.turnover}
-                  </span>
-                )}
-                {u.uplift.csat && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] text-warning">
-                    <Brain className="h-3 w-3" /> CSAT {u.uplift.csat}
-                  </span>
-                )}
-                {u.uplift.risk && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[10px] text-muted-foreground">
-                    <ShieldCheck className="h-3 w-3" /> Risk {u.uplift.risk}
-                  </span>
-                )}
-              </div>
-
-              {/* Meta row */}
-              <div className="mt-4 grid grid-cols-3 gap-3 border-t border-hairline pt-3 text-[11px]">
+              <div className="mt-5 flex items-end justify-between border-t border-hairline pt-3">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Delivered via</div>
-                  <div className="mt-0.5 font-medium">{u.via}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{headline.label}</div>
+                  <div className={cn("text-display text-lg font-bold tabular leading-none", headline.tone)}>{headline.value}</div>
                 </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Effort</div>
-                  <div className="mt-0.5 font-medium">{u.effort}</div>
-                </div>
-                <div>
+                <div className="text-right">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <div className="h-1 flex-1 rounded-full bg-hairline">
-                      <div className="h-full rounded-full bg-foreground" style={{ width: `${u.confidence}%` }} />
-                    </div>
-                    <span className="font-mono tabular">{u.confidence}%</span>
-                  </div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">{u.confidence}%</div>
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap gap-1">
-                  {u.sources.map((s) => (
-                    <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] text-muted-foreground">{s}</span>
-                  ))}
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
-                  <Sparkles className="h-3 w-3" /> Ship upgrade
-                </div>
+              <div className="mt-4 inline-flex items-center gap-1 text-[11px] font-medium text-foreground/70 group-hover:text-foreground">
+                Open full recommendation <ChevronRight className="h-3 w-3" />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
+
+      {/* Upgrade detail modal */}
+      <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
+        <DialogContent className="max-w-2xl">
+          {open && (() => {
+            const pillarMeta = PILLARS.find((p) => p.key === open.pillar)!;
+            return (
+              <div>
+                <DialogHeader>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                      pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                      pillarMeta.tone === "success" && "bg-success/10 text-success",
+                      pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                      pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                    )}>
+                      <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
+                    </span>
+                    <span className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                      open.status === "ready" && "bg-success/10 text-success",
+                      open.status === "draft" && "bg-accent/10 text-accent",
+                      open.status === "review" && "bg-surface-alt text-muted-foreground",
+                    )}>{open.status}</span>
+                  </div>
+                  <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">{open.title}</DialogTitle>
+                  <DialogDescription className="text-xs">Delivered via {open.via} · effort {open.effort} · confidence {open.confidence}%</DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-4 space-y-4 text-sm">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
+                    <p className="mt-1 leading-relaxed text-foreground/80">{open.insight}</p>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
+                    <p className="mt-1 leading-relaxed">{open.recommendation}</p>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Projected uplift</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {open.uplift.timeSaved && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[11px]">
+                          <Clock className="h-3 w-3" /> {open.uplift.timeSaved}
+                        </span>
+                      )}
+                      {open.uplift.profit && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
+                          <Banknote className="h-3 w-3" /> Profit {open.uplift.profit}
+                        </span>
+                      )}
+                      {open.uplift.turnover && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+                          <TrendingUp className="h-3 w-3" /> Turnover {open.uplift.turnover}
+                        </span>
+                      )}
+                      {open.uplift.csat && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
+                          <Brain className="h-3 w-3" /> CSAT {open.uplift.csat}
+                        </span>
+                      )}
+                      {open.uplift.risk && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[11px] text-muted-foreground">
+                          <ShieldCheck className="h-3 w-3" /> Risk {open.uplift.risk}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-full bg-hairline">
+                        <div className="h-full rounded-full bg-foreground" style={{ width: `${open.confidence}%` }} />
+                      </div>
+                      <span className="font-mono text-xs tabular">{open.confidence}%</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Signal sources</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {open.sources.map((s) => (
+                        <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[11px] text-muted-foreground">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
+                  <button onClick={() => setOpen(null)} className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                    Close
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
+                    <Sparkles className="h-3 w-3" /> Ship upgrade
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1682,6 +1739,7 @@ function Automations() {
   const [cat, setCat] = useState<"all" | AutoCat>("all");
   const [status, setStatus] = useState<"all" | AutoStatus>("all");
   const [source, setSource] = useState<"all" | AutoSource>("all");
+  const [open, setOpen] = useState<AutomationItem | null>(null);
 
   const filtered = AUTOMATIONS.filter(
     (a) =>
@@ -1709,6 +1767,14 @@ function Automations() {
 
   const catMeta = (k: AutoCat) => AUTO_CATS.find((c) => c.key === k)!;
 
+  const statTiles = [
+    { l: "Total automations", v: String(totals.total), sub: "across 5 categories", icon: Layers },
+    { l: "Live", v: String(totals.live), sub: "running on schedule", icon: Activity },
+    { l: "Runs · last 7d", v: totals.runs7d.toLocaleString(), sub: "executions", icon: Zap },
+    { l: "Average health", v: `${totals.avgHealth}`, sub: "0-100 across fleet", icon: Gauge },
+    { l: "From Intelligence", v: String(totals.fromIntel), sub: "recommended + shipped", icon: Brain },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Hero */}
@@ -1725,7 +1791,7 @@ function Automations() {
               Every automation in one place - shipped from Intelligence or built by your team.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Grouped by Operations, Finance, Customer, Compliance and cross-cutting flows. Each card shows health, recent activity and impact - so you can pause, tune or promote them in one move.
+              Click any automation to inspect its trigger, actions and impact, then pause, tune or promote it.
             </p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background">
@@ -1733,28 +1799,23 @@ function Automations() {
           </button>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { l: "Total automations", v: String(totals.total), sub: "across 5 categories", icon: Layers },
-            { l: "Live", v: String(totals.live), sub: "running on schedule", icon: Activity },
-            { l: "Runs · last 7d", v: totals.runs7d.toLocaleString(), sub: "executions", icon: Zap },
-            { l: "Average health", v: `${totals.avgHealth}`, sub: "0-100 across fleet", icon: Gauge },
-            { l: "From Intelligence", v: String(totals.fromIntel), sub: "recommended + shipped", icon: Brain },
-          ].map((k) => (
+        {/* Aligned stat row */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {statTiles.map((k) => (
             <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-1.5 text-xl font-bold tabular text-foreground">{k.v}</div>
-              <div className="text-[10px] text-muted-foreground">{k.sub}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Category overview */}
-      <div className="grid gap-3 md:grid-cols-5">
+      {/* Category overview · breathing room, no overflow */}
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {AUTO_CATS.map((c) => {
           const items = AUTOMATIONS.filter((a) => a.cat === c.key);
           const live = items.filter((a) => a.status === "live").length;
@@ -1765,27 +1826,25 @@ function Automations() {
               key={c.key}
               onClick={() => setCat(active ? "all" : c.key)}
               className={cn(
-                "rounded-2xl border bg-white p-4 text-left transition hover:border-foreground/30 hover:shadow-sm",
+                "flex flex-col rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
                 active ? "border-foreground" : "border-hairline",
               )}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "grid h-7 w-7 place-items-center rounded-lg",
-                    c.tone === "accent" && "bg-accent/10 text-accent",
-                    c.tone === "success" && "bg-success/10 text-success",
-                    c.tone === "warning" && "bg-warning/10 text-warning",
-                    c.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                  )}>
-                    <c.icon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="text-sm font-semibold">{c.label}</div>
-                </div>
-                <div className={cn("text-display text-xl font-bold tabular", healthTone(avg))}>{avg || "-"}</div>
+              <div className="flex items-start justify-between gap-2">
+                <span className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                  c.tone === "accent" && "bg-accent/10 text-accent",
+                  c.tone === "success" && "bg-success/10 text-success",
+                  c.tone === "warning" && "bg-warning/10 text-warning",
+                  c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <c.icon className="h-4 w-4" />
+                </span>
+                <div className={cn("text-display text-2xl font-bold leading-none tabular", healthTone(avg))}>{avg || "-"}</div>
               </div>
-              <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[11px] text-muted-foreground">
-                <span>{items.length} automations</span>
+              <div className="mt-4 text-sm font-semibold leading-tight">{c.label}</div>
+              <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px] text-muted-foreground">
+                <span>{items.length} total</span>
                 <span><span className="font-medium text-success">{live}</span> live</span>
               </div>
             </button>
@@ -1834,17 +1893,75 @@ function Automations() {
         </div>
       </div>
 
-      {/* Automation cards */}
-      <div className="grid gap-3 lg:grid-cols-2">
+      {/* Automation cards · compact summary, click for detail */}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((a) => {
           const c = catMeta(a.cat);
           return (
-            <div key={a.id} className="rounded-2xl border border-hairline bg-white p-5">
+            <button
+              key={a.id}
+              onClick={() => setOpen(a)}
+              className="group flex flex-col rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm"
+            >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                  c.tone === "accent" && "bg-accent/10 text-accent",
+                  c.tone === "success" && "bg-success/10 text-success",
+                  c.tone === "warning" && "bg-warning/10 text-warning",
+                  c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <c.icon className="h-3 w-3" /> {c.label}
+                </span>
+                <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize", statusTone(a.status))}>
+                  <span className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    a.status === "live" && "bg-success animate-pulse",
+                    a.status === "draft" && "bg-muted-foreground",
+                    a.status === "paused" && "bg-warning",
+                    a.status === "review" && "bg-accent",
+                  )} />
+                  {a.status}
+                </span>
+              </div>
+
+              <div className="text-display mt-4 text-base font-semibold leading-snug">{a.name}</div>
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{a.desc}</p>
+
+              <div className="mt-5 flex items-end justify-between border-t border-hairline pt-3">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</div>
+                  <div className={cn("text-display text-lg font-bold tabular leading-none", healthTone(a.health))}>{a.health}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">{a.runs7d}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Success</div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">{a.successRate}%</div>
+                </div>
+              </div>
+
+              <div className="mt-4 inline-flex items-center gap-1 text-[11px] font-medium text-foreground/70 group-hover:text-foreground">
+                Open automation <ChevronRight className="h-3 w-3" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Automation detail modal */}
+      <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
+        <DialogContent className="max-w-2xl">
+          {open && (() => {
+            const c = catMeta(open.cat);
+            return (
+              <div>
+                <DialogHeader>
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
+                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
                       c.tone === "accent" && "bg-accent/10 text-accent",
                       c.tone === "success" && "bg-success/10 text-success",
                       c.tone === "warning" && "bg-warning/10 text-warning",
@@ -1852,81 +1969,73 @@ function Automations() {
                     )}>
                       <c.icon className="h-3 w-3" /> {c.label}
                     </span>
-                    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 capitalize", statusTone(a.status))}>
-                      <span className={cn(
-                        "h-1.5 w-1.5 rounded-full",
-                        a.status === "live" && "bg-success animate-pulse",
-                        a.status === "draft" && "bg-muted-foreground",
-                        a.status === "paused" && "bg-warning",
-                        a.status === "review" && "bg-accent",
-                      )} />
-                      {a.status}
+                    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize", statusTone(open.status))}>
+                      {open.status}
                     </span>
-                    <span className="rounded-full bg-surface-alt px-2 py-0.5 text-muted-foreground">{a.source}</span>
+                    <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">{open.source}</span>
                   </div>
-                  <div className="text-display mt-2 text-base font-semibold leading-snug">{a.name}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{a.desc}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</div>
-                  <div className={cn("text-display text-2xl font-bold tabular", healthTone(a.health))}>{a.health}</div>
-                </div>
-              </div>
+                  <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">{open.name}</DialogTitle>
+                  <DialogDescription className="text-xs">{open.desc}</DialogDescription>
+                </DialogHeader>
 
-              {/* Trigger → actions chain */}
-              <div className="mt-4 rounded-xl bg-surface-alt p-3">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                  <Radio className="h-3 w-3" /> Trigger
-                </div>
-                <div className="mt-1 text-xs font-medium">{a.trigger}</div>
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  {a.actions.map((act, i) => (
-                    <span key={act} className="flex items-center gap-1.5">
-                      <span className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]">{act}</span>
-                      {i < a.actions.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                <div className="mt-4 space-y-4 text-sm">
+                  {/* Trigger → actions chain */}
+                  <div className="rounded-xl border border-hairline bg-surface-alt p-3">
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <Radio className="h-3 w-3" /> Trigger
+                    </div>
+                    <div className="mt-1 text-xs font-medium">{open.trigger}</div>
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                      {open.actions.map((act, i) => (
+                        <span key={act} className="flex items-center gap-1.5">
+                          <span className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]">{act}</span>
+                          {i < open.actions.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Activity row */}
-              <div className="mt-4 grid grid-cols-4 gap-2 border-t border-hairline pt-3 text-[11px]">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
-                  <div className="font-mono tabular text-sm font-semibold">{a.runs7d}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Success</div>
-                  <div className="font-mono tabular text-sm font-semibold">{a.successRate}%</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Last run</div>
-                  <div className="text-sm font-semibold">{a.lastRun}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Owner</div>
-                  <div className="truncate text-sm font-semibold">{a.owner}</div>
-                </div>
-              </div>
+                  {/* Activity stats */}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      { l: "Health", v: String(open.health), tone: healthTone(open.health) },
+                      { l: "Runs · 7d", v: String(open.runs7d), tone: "text-foreground" },
+                      { l: "Success", v: `${open.successRate}%`, tone: "text-foreground" },
+                      { l: "Last run", v: open.lastRun, tone: "text-foreground" },
+                    ].map((s) => (
+                      <div key={s.l} className="rounded-lg border border-hairline bg-surface-alt p-3">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.l}</div>
+                        <div className={cn("text-display mt-1 text-base font-bold tabular leading-none", s.tone)}>{s.v}</div>
+                      </div>
+                    ))}
+                  </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <TrendingUp className="h-3 w-3" /> {a.impact}
+                  <div className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      <TrendingUp className="h-3.5 w-3.5 text-success" />
+                      <span className="font-medium">{open.impact}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Owner · {open.owner}</div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button className="rounded-full border border-hairline px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground">
-                    {a.status === "paused" ? "Resume" : a.status === "draft" || a.status === "review" ? "Activate" : "Pause"}
+
+                <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
+                  <button onClick={() => setOpen(null)} className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                    Close
                   </button>
-                  <button className="rounded-full border border-hairline px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground">Tune</button>
-                  <button className="inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
-                    <Eye className="h-3 w-3" /> Inspect
+                  <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">
+                    {open.status === "paused" ? "Resume" : open.status === "draft" || open.status === "review" ? "Activate" : "Pause"}
+                  </button>
+                  <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">Tune</button>
+                  <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
+                    <Eye className="h-3 w-3" /> Edit automation
                   </button>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
