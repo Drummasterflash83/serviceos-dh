@@ -126,39 +126,105 @@ function AppShell() {
 
 /* ────── DASHBOARD ────── */
 function Dashboard() {
-  const stats = [
-    { label: "Live Jobs", value: "42", sub: "Active", trend: "+6" },
-    { label: "Calls Waiting", value: "8", sub: "Pending", tone: "warning" as const, trend: "−2" },
-    { label: "Engineers Available", value: "11", sub: "On shift", trend: "+1" },
-    { label: "Revenue Today", value: "£18,400", sub: "+12% vs wk avg", tone: "accent" as const },
+  const statTiles = [
+    { l: "Live jobs", v: "42", sub: "+6 vs yesterday", icon: Workflow },
+    { l: "Calls waiting", v: "8", sub: "−2 vs yesterday", icon: Phone },
+    { l: "Engineers on shift", v: "11", sub: "+1 vs roster", icon: Briefcase },
+    { l: "Revenue today", v: "£18.4k", sub: "+12% vs wk avg", icon: Banknote },
+    { l: "Fleet health", v: "85", sub: "across 4 pillars", icon: Brain },
+  ];
+
+  const insights = [
+    { tone: "warning", text: "Supplier delay affecting 3 jobs" },
+    { tone: "accent", text: "Quote follow-up overdue ×7" },
+    { tone: "destructive", text: "Complaint risk · ABC School" },
+  ];
+
+  const activity = [
+    { t: "14:22", who: "Reception Agent", what: "Inbound call · ABC School routed to dispatch" },
+    { t: "14:19", who: "Procurement Agent", what: "Compared 3 supplier quotes · saved £214" },
+    { t: "14:15", who: "Scheduling Agent", what: "Re-routed Engineer 04 · saved 28 mins" },
+    { t: "14:11", who: "Finance Agent", what: "Reconciled invoice INV-3387 · matched" },
+    { t: "14:04", who: "Workflow Intelligence", what: "New automation candidate detected (74% time saving)" },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 md:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-              <span>{s.label}</span>
-              {s.trend && <span className="font-mono text-success">{s.trend}</span>}
+      {/* Hero · today snapshot */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+                <LayoutDashboard className="h-3 w-3" />
+              </span>
+              Dashboard · today
             </div>
-            <div className={cn(
-              "text-display mt-4 text-3xl font-bold tabular",
-              s.tone === "accent" && "text-accent",
-              s.tone === "warning" && "text-warning",
-            )}>{s.value}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{s.sub}</div>
+            <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
+              Drummond Heating, at a glance.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              One clean snapshot of the business · jobs in flight, money on the move, and where attention is needed next.
+            </p>
           </div>
-        ))}
+          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+            Live · streaming
+          </div>
+        </div>
+
+        {/* Aligned stat row */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {statTiles.map((k) => (
+            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
+      {/* Pillar snapshot */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Pillar health · live</div>
+            <div className="text-display mt-1 text-lg font-semibold">Where the business stands right now.</div>
+          </div>
+          <div className="text-[11px] text-muted-foreground">Recalculated hourly</div>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {PILLARS.map((p) => {
+            const h = PILLAR_HEALTH[p.key];
+            return (
+              <div key={p.key} className="rounded-xl border border-hairline bg-surface-alt p-4">
+                <div className="flex h-5 items-center justify-between text-muted-foreground">
+                  <div className="text-[10px] font-medium uppercase tracking-wider">{p.label}</div>
+                  <p.icon className="h-3.5 w-3.5" />
+                </div>
+                <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{h.score}</div>
+                <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{h.trend}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Risk windows + insights */}
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-2">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">Complaint Risk · last 24 windows</div>
-            <span className="text-xs font-medium text-success">Low</span>
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Complaint risk</div>
+              <div className="text-display mt-1 text-sm font-semibold">Last 24 windows</div>
+            </div>
+            <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[10px] font-medium text-success">Low</span>
           </div>
-          <div className="mt-4 flex gap-1">
+          <div className="mt-5 flex h-20 items-end gap-1">
             {Array.from({ length: 24 }).map((_, i) => {
               const h = 20 + ((i * 13) % 60);
               const tone = i < 18 ? "bg-success/40" : i < 22 ? "bg-warning/50" : "bg-destructive/50";
@@ -172,15 +238,14 @@ function Dashboard() {
 
         <div className="rounded-2xl border border-hairline bg-white p-5">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">AI Insights</div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">AI insights</div>
+              <div className="text-display mt-1 text-sm font-semibold">Needs attention</div>
+            </div>
             <Sparkles className="h-4 w-4 text-accent" />
           </div>
           <div className="mt-4 space-y-2">
-            {[
-              { tone: "warning", text: "Supplier delay affecting 3 jobs" },
-              { tone: "accent", text: "Quote follow-up overdue ×7" },
-              { tone: "destructive", text: "Complaint risk · ABC School" },
-            ].map((x) => (
+            {insights.map((x) => (
               <div key={x.text} className="flex items-start gap-2 rounded-lg border border-hairline p-2.5">
                 <span className={cn(
                   "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
@@ -195,21 +260,19 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Live activity */}
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
-          <div className="text-sm font-semibold">Live activity</div>
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live activity</div>
+            <div className="text-display mt-0.5 text-sm font-semibold">Agents and automations, in real time</div>
+          </div>
           <div className="flex items-center gap-1.5 text-[11px] text-success">
             <Activity className="h-3.5 w-3.5" /> streaming
           </div>
         </div>
         <div className="divide-y divide-hairline">
-          {[
-            { t: "14:22", who: "Reception Agent", what: "Inbound call · ABC School routed to dispatch" },
-            { t: "14:19", who: "Procurement Agent", what: "Compared 3 supplier quotes · saved £214" },
-            { t: "14:15", who: "Scheduling Agent", what: "Re-routed Engineer 04 · saved 28 mins" },
-            { t: "14:11", who: "Finance Agent", what: "Reconciled invoice INV-3387 · matched" },
-            { t: "14:04", who: "Workflow Intelligence", what: "New automation candidate detected (74% time saving)" },
-          ].map((row) => (
+          {activity.map((row) => (
             <div key={row.t} className="grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm">
               <div className="col-span-2 font-mono text-xs text-muted-foreground">{row.t}</div>
               <div className="col-span-3 font-medium">{row.who}</div>
