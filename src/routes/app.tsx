@@ -113,7 +113,7 @@ function AppShell() {
 
           {view === "operations" && <Operations />}
           {view === "calls" && <Calls />}
-          {view === "workflow" && <WorkflowView />}
+          
           {view === "agents" && <Agents />}
           {view === "finance" && <Finance />}
           {view === "settings" && <SettingsView />}
