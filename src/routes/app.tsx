@@ -367,34 +367,416 @@ function Calls() {
 
 
 /* ────── AGENTS ────── */
+type AgentCat = "ops" | "finance" | "customer" | "compliance" | "cross";
+type AgentMode = "Advisory" | "Draft" | "Execute" | "Escalate";
+type AgentStatus = "Active" | "Idle" | "Paused" | "Training";
+
+type AgentItem = {
+  id: string;
+  name: string;
+  cat: AgentCat;
+  icon: typeof Phone;
+  purpose: string;
+  task: string;
+  mode: AgentMode;
+  status: AgentStatus;
+  confidence: number;
+  runs7d: string;
+  saved: string;
+  tools: string[];
+  allowed: string[];
+  forbidden: string[];
+  escalate: string;
+};
+
+const AGENT_CATS: { key: AgentCat; label: string; tone: string }[] = [
+  { key: "ops", label: "Operations", tone: "accent" },
+  { key: "finance", label: "Finance", tone: "success" },
+  { key: "customer", label: "Customer", tone: "warning" },
+  { key: "compliance", label: "Compliance", tone: "muted" },
+  { key: "cross", label: "Cross-cutting", tone: "accent" },
+];
+
+const AGENTS: AgentItem[] = [
+  {
+    id: "a1", name: "Reception Agent", cat: "ops", icon: Phone,
+    purpose: "Triage every inbound call, route to the right queue, summarise for dispatch.",
+    task: "Handling 2 live calls · routing to dispatch",
+    mode: "Execute", status: "Active", confidence: 96, runs7d: "1,284", saved: "31 hrs/wk",
+    tools: ["Voice AI", "Commusoft", "Calendar"],
+    allowed: ["Classify intent", "Draft callback notes", "Route to engineer queue"],
+    forbidden: ["Confirm pricing", "Promise SLAs to customers"],
+    escalate: "Hands off to duty manager on complaint sentiment > 0.7 or contract VIP flag.",
+  },
+  {
+    id: "a2", name: "Inbox Agent", cat: "ops", icon: Mail,
+    purpose: "Classify inbound email, draft replies, attach to the right job.",
+    task: "Sorting 41 unread · 12 drafts ready",
+    mode: "Draft", status: "Active", confidence: 91, runs7d: "612", saved: "14 hrs/wk",
+    tools: ["Gmail", "Commusoft", "Templates"],
+    allowed: ["Classify and label", "Draft replies for approval", "Link to job record"],
+    forbidden: ["Send without approval", "Edit invoices"],
+    escalate: "Escalates anything tagged dispute, refund or legal.",
+  },
+  {
+    id: "a3", name: "Scheduling Agent", cat: "ops", icon: Workflow,
+    purpose: "Optimise the daily board by skill, location, urgency and SLA.",
+    task: "Optimising 11 routes · saving 2h 18m today",
+    mode: "Execute", status: "Active", confidence: 92, runs7d: "318", saved: "9 hrs/wk",
+    tools: ["Calendar", "Maps", "Commusoft"],
+    allowed: ["Re-sequence non-VIP jobs", "Suggest engineer swaps", "Auto-confirm under 30 min slips"],
+    forbidden: ["Cancel a job", "Move a contract SLA job without approval"],
+    escalate: "Asks dispatcher when a move breaks a contract SLA window.",
+  },
+  {
+    id: "a4", name: "Quote Agent", cat: "finance", icon: FileText,
+    purpose: "Prepare quote drafts, chase missing info, check supplier pricing.",
+    task: "Preparing 7 quote drafts · 2 awaiting parts",
+    mode: "Draft", status: "Active", confidence: 87, runs7d: "94", saved: "11 hrs/wk",
+    tools: ["Commusoft", "Supplier APIs", "PDF builder"],
+    allowed: ["Pull part pricing", "Draft quote PDF", "Send chase emails for missing info"],
+    forbidden: ["Send the quote", "Apply discount over 5%"],
+    escalate: "Owner approval required on quotes > £5,000.",
+  },
+  {
+    id: "a5", name: "Procurement Agent", cat: "finance", icon: Network,
+    purpose: "Compare supplier pricing across catalogues, normalise parts, flag savings.",
+    task: "Comparing 3 supplier quotes · saved £214 today",
+    mode: "Execute", status: "Active", confidence: 91, runs7d: "212", saved: "£6.4k/mo",
+    tools: ["Wolseley", "City Plumbing", "Plumbase"],
+    allowed: ["Place orders < £400", "Switch supplier on >5% saving", "Consolidate weekly orders"],
+    forbidden: ["Open new supplier accounts", "Pay invoices"],
+    escalate: "Escalates stock-outs that put a same-day job at risk.",
+  },
+  {
+    id: "a6", name: "Finance Agent", cat: "finance", icon: Banknote,
+    purpose: "Track overdue invoices, reconcile payments, prepare chase workflows.",
+    task: "Reconciling 47 invoices · 6 chases queued",
+    mode: "Draft", status: "Active", confidence: 88, runs7d: "188", saved: "£12k cash unlocked",
+    tools: ["Xero", "Stripe", "Commusoft"],
+    allowed: ["Match payments to invoices", "Draft chase letters", "Tag disputed invoices"],
+    forbidden: ["Write-off debt", "Refund a customer"],
+    escalate: "Hands off chases > 60 days to the owner.",
+  },
+  {
+    id: "a7", name: "Customer Care Agent", cat: "customer", icon: Sparkles,
+    purpose: "Post-job follow-ups, review requests, sentiment monitoring.",
+    task: "Sending 14 post-job follow-ups · 3 risk alerts",
+    mode: "Execute", status: "Active", confidence: 84, runs7d: "402", saved: "+8pt CSAT",
+    tools: ["SMS", "Email", "Reviews.io"],
+    allowed: ["Send follow-up SMS / email", "Request reviews on 5-star jobs", "Open care ticket"],
+    forbidden: ["Issue refunds", "Promise rebooking"],
+    escalate: "Escalates sentiment < 0.4 or any mention of 'complaint'.",
+  },
+  {
+    id: "a8", name: "Compliance Agent", cat: "compliance", icon: ShieldCheck,
+    purpose: "Flag missing certs, RAMS, photos and audit gaps before they bite.",
+    task: "Checking 22 job records · 4 gaps flagged",
+    mode: "Advisory", status: "Active", confidence: 95, runs7d: "146", saved: "0 audit gaps",
+    tools: ["Commusoft", "Drive", "Gas Safe register"],
+    allowed: ["Open gap tickets", "Notify engineer of missing doc", "Block invoice on missing cert"],
+    forbidden: ["Sign off compliance documents"],
+    escalate: "Escalates expiring Gas Safe ID to office manager 30 days out.",
+  },
+  {
+    id: "a9", name: "Job Health Agent", cat: "ops", icon: Gauge,
+    purpose: "Score every live job by risk, delay, sentiment and financial exposure.",
+    task: "Scoring 42 live jobs · 3 amber, 1 red",
+    mode: "Advisory", status: "Active", confidence: 89, runs7d: "1,012", saved: "−18% overruns",
+    tools: ["Commusoft", "Calls", "Email"],
+    allowed: ["Surface job risk score", "Notify owner of red jobs", "Suggest interventions"],
+    forbidden: ["Cancel or reschedule jobs"],
+    escalate: "Pings owner the moment a job turns red.",
+  },
+  {
+    id: "a10", name: "Asset Health Agent", cat: "compliance", icon: HardDrive,
+    purpose: "Predictive view of customer assets, service due dates and failure risk.",
+    task: "Watching 1,840 assets · 42 due in 30 days",
+    mode: "Draft", status: "Active", confidence: 86, runs7d: "204", saved: "+£18k recurring",
+    tools: ["Commusoft", "IoT feeds", "Service history"],
+    allowed: ["Draft service-due reminders", "Flag failing assets", "Suggest contract upsell"],
+    forbidden: ["Book service slots directly"],
+    escalate: "Escalates assets with two faults in 90 days.",
+  },
+  {
+    id: "a11", name: "Workflow Intelligence", cat: "cross", icon: Brain,
+    purpose: "Watch how work actually flows and surface new automation candidates.",
+    task: "Tracking 38 workflows · 4 new candidates today",
+    mode: "Advisory", status: "Active", confidence: 93, runs7d: "—", saved: "12 upgrades shipped",
+    tools: ["Event stream", "Audit log", "Pattern miner"],
+    allowed: ["Detect repeat patterns", "Score automation impact", "Propose to Intelligence layer"],
+    forbidden: ["Deploy automations on its own"],
+    escalate: "Sends every candidate to the Intelligence review queue.",
+  },
+  {
+    id: "a12", name: "Voice Analytics", cat: "customer", icon: Radio,
+    purpose: "Listen to every call, extract intent, sentiment and coaching moments.",
+    task: "Analysed 84 calls today · 6 coaching clips",
+    mode: "Advisory", status: "Training", confidence: 81, runs7d: "598", saved: "+11pt first-call resolution",
+    tools: ["Voice AI", "Transcripts", "CRM"],
+    allowed: ["Score sentiment", "Tag call intent", "Flag coaching moments"],
+    forbidden: ["Action on calls directly", "Share recordings externally"],
+    escalate: "Notifies owner of any threat or safeguarding language.",
+  },
+];
+
+const MODE_TONE: Record<AgentMode, string> = {
+  Advisory: "bg-muted/40 text-muted-foreground border-hairline",
+  Draft: "bg-accent/10 text-accent border-accent/20",
+  Execute: "bg-success/10 text-success border-success/20",
+  Escalate: "bg-warning/10 text-warning border-warning/20",
+};
+
+const STATUS_TONE: Record<AgentStatus, string> = {
+  Active: "text-success",
+  Idle: "text-muted-foreground",
+  Paused: "text-warning",
+  Training: "text-accent",
+};
+
 function Agents() {
-  const list = [
-    { name: "Reception Agent", task: "Handling 2 calls", confidence: 96 },
-    { name: "Scheduling Agent", task: "Optimising 11 routes", confidence: 92 },
-    { name: "Finance Agent", task: "Reconciling 47 invoices", confidence: 88 },
-    { name: "Procurement Agent", task: "Comparing 3 quotes", confidence: 91 },
+  const [cat, setCat] = useState<"all" | AgentCat>("all");
+  const [mode, setMode] = useState<"all" | AgentMode>("all");
+  const [open, setOpen] = useState<AgentItem | null>(null);
+
+  const filtered = AGENTS.filter(
+    (a) => (cat === "all" || a.cat === cat) && (mode === "all" || a.mode === mode),
+  );
+
+  const avgConfidence = Math.round(AGENTS.reduce((s, a) => s + a.confidence, 0) / AGENTS.length);
+  const liveCount = AGENTS.filter((a) => a.status === "Active").length;
+
+  const statTiles = [
+    { l: "Agents deployed", v: String(AGENTS.length), sub: "across 5 categories", icon: Bot },
+    { l: "Live now", v: String(liveCount), sub: "actively working", icon: Activity },
+    { l: "Runs · 7 days", v: "5.4k", sub: "auditable actions", icon: Workflow },
+    { l: "Avg confidence", v: `${avgConfidence}%`, sub: "fleet wide", icon: Gauge },
+    { l: "Owner reviews", v: "9", sub: "queued for approval", icon: CheckCircle2 },
   ];
+
+  const modeOptions: ("all" | AgentMode)[] = ["all", "Advisory", "Draft", "Execute", "Escalate"];
+
   return (
-    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-      {list.map((a, i) => (
-        <div key={a.name} className="rounded-2xl border border-hairline bg-white p-5">
-          <div className="flex items-center justify-between">
-            <Sparkles className="h-5 w-5 text-accent" />
-            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> active
-            </span>
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+                <Bot className="h-3 w-3" />
+              </span>
+              Agents · the workforce inside ServiceOS
+            </div>
+            <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
+              AI workers with a role, a policy and an audit trail.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Every agent has scoped permissions, clear escalation rules and a full run log. Click any agent to inspect its policy and recent work.
+            </p>
           </div>
-          <div className="text-display mt-8 text-base font-semibold">{a.name}</div>
-          <div className="mt-1 text-xs text-muted-foreground">{a.task}</div>
-          <div className="mt-5 flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Confidence</span>
-            <span className="font-mono tabular">{a.confidence}%</span>
-          </div>
-          <div className="mt-1.5 h-1 rounded-full bg-surface-alt">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${a.confidence}%` }} transition={{ duration: 1, delay: i * 0.1 }} className="h-full rounded-full bg-accent" />
+          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+            No silent automation
           </div>
         </div>
-      ))}
+
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {statTiles.map((k) => (
+            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Category filter row */}
+      <div className="rounded-2xl border border-hairline bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Filter by category</div>
+            <div className="text-display mt-1 text-sm font-semibold">Pick a slice of the workforce.</div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(["all", ...AGENT_CATS.map((c) => c.key)] as ("all" | AgentCat)[]).map((k) => {
+              const label = k === "all" ? "All" : AGENT_CATS.find((c) => c.key === k)!.label;
+              const count = k === "all" ? AGENTS.length : AGENTS.filter((a) => a.cat === k).length;
+              return (
+                <button
+                  key={k}
+                  onClick={() => setCat(k)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                    cat === k
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-hairline bg-white text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label} <span className="ml-1 tabular opacity-70">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-hairline pt-4">
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Approval mode</span>
+          {modeOptions.map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-[11px] font-medium transition",
+                mode === m
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-hairline bg-white text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {m === "all" ? "All modes" : m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Agent grid */}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((a) => {
+          const catMeta = AGENT_CATS.find((c) => c.key === a.cat)!;
+          return (
+            <button
+              key={a.id}
+              onClick={() => setOpen(a)}
+              className="group rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/40 hover:shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl border border-hairline bg-surface-alt">
+                    <a.icon className="h-4 w-4 text-foreground" />
+                  </span>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{catMeta.label}</div>
+                    <div className="text-display text-sm font-semibold leading-tight">{a.name}</div>
+                  </div>
+                </div>
+                <span className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-wider", STATUS_TONE[a.status])}>
+                  <span className={cn("h-1.5 w-1.5 rounded-full", a.status === "Active" ? "bg-success animate-pulse" : a.status === "Training" ? "bg-accent" : a.status === "Paused" ? "bg-warning" : "bg-muted-foreground")} />
+                  {a.status}
+                </span>
+              </div>
+
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground line-clamp-2">{a.task}</p>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider", MODE_TONE[a.mode])}>
+                  {a.mode}
+                </span>
+                <span className="font-mono text-[11px] tabular text-muted-foreground">{a.confidence}% conf.</span>
+              </div>
+
+              <div className="mt-3 h-1 rounded-full bg-surface-alt">
+                <div className="h-full rounded-full bg-foreground" style={{ width: `${a.confidence}%` }} />
+              </div>
+
+              <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px]">
+                <span className="text-muted-foreground">Runs · 7d <span className="font-mono tabular text-foreground">{a.runs7d}</span></span>
+                <span className="text-muted-foreground">Impact <span className="font-mono tabular text-foreground">{a.saved}</span></span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <Dialog open={!!open} onOpenChange={(v) => !v && setOpen(null)}>
+        <DialogContent className="max-w-2xl">
+          {open && (() => {
+            const catMeta = AGENT_CATS.find((c) => c.key === open.cat)!;
+            return (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <open.icon className="h-3.5 w-3.5" />
+                    {catMeta.label} · {open.mode}
+                  </div>
+                  <DialogTitle className="text-display text-xl font-semibold">{open.name}</DialogTitle>
+                  <DialogDescription className="text-sm">{open.purpose}</DialogDescription>
+                </DialogHeader>
+
+                <div className="grid grid-cols-3 gap-3 border-y border-hairline py-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+                    <div className="text-display mt-1 text-lg font-bold tabular">{open.confidence}%</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
+                    <div className="text-display mt-1 text-lg font-bold tabular">{open.runs7d}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Impact</div>
+                    <div className="text-display mt-1 text-lg font-bold tabular">{open.saved}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Right now</div>
+                    <div className="mt-1 rounded-lg border border-hairline bg-surface-alt p-3 text-xs">{open.task}</div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Tools</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {open.tools.map((t) => (
+                        <span key={t} className="rounded-full border border-hairline bg-surface-alt px-2.5 py-1 text-[11px] font-medium">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-success">Allowed</div>
+                      <ul className="mt-2 space-y-1.5">
+                        {open.allowed.map((x) => (
+                          <li key={x} className="flex items-start gap-2 text-xs">
+                            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                            <span>{x}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-destructive">Forbidden</div>
+                      <ul className="mt-2 space-y-1.5">
+                        {open.forbidden.map((x) => (
+                          <li key={x} className="flex items-start gap-2 text-xs">
+                            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                            <span>{x}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-warning/20 bg-warning/5 p-3">
+                    <div className="text-[11px] uppercase tracking-wider text-warning">Escalation policy</div>
+                    <p className="mt-1 text-xs text-foreground">{open.escalate}</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 border-t border-hairline pt-4">
+                  <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">Inspect run log</button>
+                  <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">Adjust policy</button>
+                  <button className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90">{open.status === "Paused" ? "Activate" : "Pause"}</button>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
