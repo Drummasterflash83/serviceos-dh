@@ -18,6 +18,7 @@ import {
   ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
 } from "@/components/app/NewViews";
 import { CardsView } from "@/components/app/Cards";
+import { EngineersView } from "@/components/app/Engineers";
 
 
 export const Route = createFileRoute("/app")({
