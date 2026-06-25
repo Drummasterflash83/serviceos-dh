@@ -152,7 +152,7 @@ function Dashboard() {
   type HealthPoint = { hour: string; score: number; reason?: string; pillar?: string };
   const health: HealthPoint[] = [
     { hour: "00:00", score: 47, pillar: "Operations", reason: "Parts not verified at goods-in (×2)" },
-    { hour: "01:00", score: 49, pillar: "Comms",      reason: "Rudy callbacks owed ×3 · landing on Mary" },
+    { hour: "01:00", score: 49, pillar: "Comms",      reason: "Rudi callbacks owed ×3 · landing on Mary" },
     { hour: "02:00", score: 51, pillar: "Customer",   reason: "No touchpoint in quote→book gap (3 wks)" },
     { hour: "03:00", score: 54, pillar: "Customer",   reason: "Complaint risk · ABC School (unresolved)" },
     { hour: "04:00", score: 58, pillar: "Customer",   reason: "ABC School sentiment recovering" },

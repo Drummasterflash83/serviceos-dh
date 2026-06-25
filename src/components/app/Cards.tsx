@@ -19,7 +19,7 @@ const ROLES: { key: RoleKey; label: string; person: string; icon: typeof User; t
   { key: "engineer", label: "Engineer · on-site", person: "Tony",  icon: Wrench,      tint: "bg-orange-500" },
   { key: "office",   label: "Office Manager",      person: "Mary",    icon: Mail,        tint: "bg-sky-500" },
   { key: "quotes",   label: "Quotations",          person: "Larne",   icon: FileSignature, tint: "bg-violet-500" },
-  { key: "ops",      label: "Operations / Sched.", person: "Rudy",    icon: Calendar,    tint: "bg-emerald-600" },
+  { key: "ops",      label: "Operations / Sched.", person: "Rudi",    icon: Calendar,    tint: "bg-emerald-600" },
   { key: "md",       label: "MD / Exec",           person: "Heidi",   icon: TrendingUp,  tint: "bg-foreground" },
 ];
 
@@ -883,7 +883,7 @@ export function CardsView() {
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Mary sees confirmation pricing and RAMS. Larne sees supplier quotes and Alan's approval. Engineers see access, parking, and the photo checklist.
-              Rudy sees the second-pair-of-hands flag. Heidi sees margin and complaint risk. Same source of truth — different lens.
+              Rudi sees the second-pair-of-hands flag. Heidi sees margin and complaint risk. Same source of truth — different lens.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
