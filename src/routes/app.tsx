@@ -962,13 +962,16 @@ function Finance() {
 /* ────── SETTINGS ────── */
 function SettingsView() {
   return (
-    <div className="max-w-2xl space-y-3">
-      {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map((s) => (
-        <div key={s} className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt">
-          <div className="text-sm font-medium">{s}</div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      ))}
+    <div className="space-y-5">
+      <SystemsInventoryPanel />
+      <div className="max-w-2xl space-y-3">
+        {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map((s) => (
+          <div key={s} className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt">
+            <div className="text-sm font-medium">{s}</div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
