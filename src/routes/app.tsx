@@ -34,7 +34,7 @@ const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   
   
   { key: "agents", label: "Agents", icon: Bot },
-  { key: "finance", label: "Finance", icon: Banknote },
+  { key: "finance", label: "Numbers", icon: TrendingUp },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -781,45 +781,165 @@ function Agents() {
   );
 }
 
-/* ────── FINANCE ────── */
+/* ────── NUMBERS ────── */
 function Finance() {
-  const pts = [12, 18, 14, 22, 19, 28, 24, 31, 27, 35, 32, 40, 36, 44];
-  const max = Math.max(...pts);
-  const path = pts
+  // 12 months: M1-M3 pre-ServiceOS, M4 onwards post-deployment
+  const revenue = [184, 192, 188, 214, 232, 248, 271, 286, 298, 312, 328, 344];
+  const deployIdx = 3; // ServiceOS goes live at month 4
+
+  const headline = [
+    { l: "Revenue · monthly", before: "£188k", after: "£344k", delta: "+83%", icon: Banknote },
+    { l: "Gross margin", before: "22%", after: "36%", delta: "+14pp", icon: TrendingUp },
+    { l: "Admin hours / wk", before: "142", after: "58", delta: "−59%", icon: Clock },
+    { l: "Avg job cycle", before: "6.4 days", after: "3.1 days", delta: "−52%", icon: Workflow },
+    { l: "CSAT", before: "78", after: "92", delta: "+14pt", icon: Sparkles },
+  ];
+
+  const operational = [
+    { l: "First-call resolution", before: "61%", after: "84%", tone: "success" as const },
+    { l: "Quotes sent in 24h", before: "38%", after: "91%", tone: "success" as const },
+    { l: "Overdue invoices > 30d", before: "£62k", after: "£18k", tone: "success" as const },
+    { l: "Engineer utilisation", before: "64%", after: "82%", tone: "success" as const },
+    { l: "Compliance gaps", before: "11", after: "0", tone: "success" as const },
+    { l: "Repeat customer rate", before: "44%", after: "67%", tone: "success" as const },
+  ];
+
+  const wins = [
+    { v: "£214k", l: "Cash unlocked", sub: "faster invoicing + chase automation" },
+    { v: "1,840", l: "Hours saved", sub: "across reception, ops and finance" },
+    { v: "£68k", l: "Procurement savings", sub: "via supplier comparison agent" },
+    { v: "27", l: "Automations live", sub: "running every day, every job" },
+  ];
+
+  const w = 600, h = 200, pad = 8;
+  const max = Math.max(...revenue);
+  const linePath = revenue
     .map((p, i) => {
-      const x = (i / (pts.length - 1)) * 600;
-      const y = 200 - (p / max) * 180;
+      const x = pad + (i / (revenue.length - 1)) * (w - pad * 2);
+      const y = h - pad - (p / max) * (h - pad * 2);
       return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
+  const deployX = pad + (deployIdx / (revenue.length - 1)) * (w - pad * 2);
+
   return (
-    <div className="space-y-3">
-      <div className="grid gap-3 md:grid-cols-4">
-        {[
-          { l: "Revenue MTD", v: "£312k", t: "+18%" },
-          { l: "Margin", v: "34.2%", t: "+2.1pp" },
-          { l: "Outstanding", v: "£48k", t: "−£6k" },
-          { l: "Avg invoice", v: "£642", t: "+£44" },
-        ].map((x) => (
-          <div key={x.l} className="rounded-2xl border border-hairline bg-white p-5">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{x.l}</div>
-            <div className="text-display mt-3 text-2xl font-bold tabular">{x.v}</div>
-            <div className="mt-1 font-mono text-xs text-success flex items-center gap-1"><ArrowUpRight className="h-3 w-3" /> {x.t}</div>
+    <div className="space-y-6">
+      {/* Hero */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-foreground text-background">
+                <TrendingUp className="h-3 w-3" />
+              </span>
+              Numbers · 12 months with ServiceOS
+            </div>
+            <h2 className="text-display mt-3 text-2xl font-semibold tracking-tight">
+              The business, before and after.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Every metric below is a like-for-like comparison · the three months before ServiceOS went live, against the latest run-rate today.
+            </p>
           </div>
-        ))}
+          <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
+            Live · refreshed hourly
+          </div>
+        </div>
+
+        {/* Headline tiles */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {headline.map((k) => (
+            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.after}</div>
+              <div className="mt-2 flex h-4 items-center justify-between text-[10px] leading-none">
+                <span className="text-muted-foreground line-through">{k.before}</span>
+                <span className="font-mono tabular text-success">{k.delta}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Trend chart */}
       <div className="rounded-2xl border border-hairline bg-white p-5">
-        <div className="text-sm font-semibold">Revenue · last 14 days</div>
-        <svg viewBox="0 0 600 220" className="mt-4 w-full">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Revenue trajectory</div>
+            <div className="text-display mt-1 text-lg font-semibold">From £188k/mo to £344k/mo.</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Margin climbed in lockstep · from 22% to 36% · as automation cut admin and procurement leakage.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-foreground" /> Revenue
+            </span>
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="h-2 w-0.5 bg-accent" /> ServiceOS live
+            </span>
+          </div>
+        </div>
+
+        <svg viewBox={`0 0 ${w} ${h}`} className="mt-5 w-full">
           <defs>
-            <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+            <linearGradient id="numbers-grad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
             </linearGradient>
           </defs>
-          <path d={`${path} L600,200 L0,200 Z`} fill="url(#g)" />
-          <path d={path} fill="none" stroke="#2563eb" strokeWidth="2" />
+          <g className="text-foreground">
+            <path d={`${linePath} L${w - pad},${h - pad} L${pad},${h - pad} Z`} fill="url(#numbers-grad)" />
+            <path d={linePath} fill="none" stroke="currentColor" strokeWidth="1.75" />
+          </g>
+          {/* deploy marker */}
+          <line x1={deployX} x2={deployX} y1={pad} y2={h - pad} strokeDasharray="3 3" strokeWidth="1" className="text-accent" stroke="currentColor" />
+          <circle cx={deployX} cy={pad + 4} r="3" className="fill-accent" />
         </svg>
+
+        <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
+          <span>M1</span><span>M3 · go-live</span><span>M6</span><span>M9</span><span>M12 · today</span>
+        </div>
+      </div>
+
+      {/* Before / after table */}
+      <div className="rounded-2xl border border-hairline bg-white">
+        <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Operational gains</div>
+            <div className="text-display mt-0.5 text-sm font-semibold">Where the lift actually came from</div>
+          </div>
+          <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[10px] font-medium text-success">All metrics improved</span>
+        </div>
+        <div className="divide-y divide-hairline">
+          {operational.map((o) => {
+            return (
+              <div key={o.l} className="grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm">
+                <div className="col-span-5 font-medium">{o.l}</div>
+                <div className="col-span-3 font-mono text-xs tabular text-muted-foreground line-through">{o.before}</div>
+                <div className="col-span-3 font-mono text-sm tabular font-semibold">{o.after}</div>
+                <div className="col-span-1 flex justify-end">
+                  <ArrowUpRight className={cn("h-4 w-4", o.tone === "success" ? "text-success" : "text-muted-foreground")} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Wins summary */}
+      <div className="grid gap-3 md:grid-cols-4">
+        {wins.map((w) => (
+          <div key={w.l} className="rounded-2xl border border-hairline bg-white p-5">
+            <div className="text-display text-3xl font-bold tabular text-foreground">{w.v}</div>
+            <div className="mt-2 text-sm font-semibold">{w.l}</div>
+            <div className="mt-1 text-xs leading-snug text-muted-foreground">{w.sub}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
