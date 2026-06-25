@@ -256,21 +256,19 @@ function Dashboard() {
       {/* Company Health + insights */}
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-2">
+          {/* Header row: score · trend · status */}
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Company health</div>
+            <div className="min-w-0">
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Company health · snapshot</div>
               <div className="mt-1 flex items-baseline gap-2">
-                <div className="text-display text-2xl font-bold tabular leading-none">{overall}</div>
+                <div className="text-display text-3xl font-bold tabular leading-none">{overall}</div>
                 <div className="text-xs text-muted-foreground">/ 100 · last 24h</div>
                 <div className={cn(
-                  "ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                  "ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
                   trend >= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
                 )}>
                   {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)} pts
                 </div>
-              </div>
-              <div className="mt-1 text-xs text-muted-foreground">
-                Composite of Operations · Quoting · Comms · Customer · Money
               </div>
             </div>
             <span className={cn(
@@ -283,72 +281,86 @@ function Dashboard() {
             </span>
           </div>
 
-          {/* Bars · hover for what's going on */}
-          <div className="group/chart relative mt-5">
-            <div className="flex h-24 items-end gap-1">
-              {health.map((p, i) => {
-                const tone =
-                  p.score >= 85 ? "bg-success/60 hover:bg-success" :
-                  p.score >= 70 ? "bg-warning/60 hover:bg-warning" :
-                                  "bg-destructive/60 hover:bg-destructive";
-                const hPct = Math.max(8, p.score); // visual floor
-                const last = i === health.length - 1;
-                return (
-                  <div key={p.hour} className="group/bar relative flex flex-1 flex-col items-center justify-end">
-                    <div
-                      className={cn("w-full rounded-sm transition-all", tone, last && "ring-2 ring-offset-1 ring-foreground/20")}
-                      style={{ height: `${hPct}%` }}
-                    />
-                    {/* Tooltip */}
-                    <div className="pointer-events-none absolute bottom-full z-10 mb-2 hidden w-52 -translate-x-1/2 left-1/2 rounded-lg border border-hairline bg-white p-2.5 text-left shadow-[var(--shadow-soft)] group-hover/bar:block">
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span className="font-mono">{p.hour}</span>
-                        <span className={cn(
-                          "rounded-full px-1.5 py-0.5 font-medium",
-                          p.score >= 85 ? "bg-success/10 text-success" :
-                          p.score >= 70 ? "bg-warning/10 text-warning" :
-                                          "bg-destructive/10 text-destructive",
-                        )}>{p.score}</span>
-                      </div>
-                      {p.reason ? (
-                        <>
-                          <div className="mt-1 text-[11px] font-semibold">{p.pillar}</div>
-                          <div className="text-[11px] leading-snug text-muted-foreground">{p.reason}</div>
-                        </>
-                      ) : (
-                        <div className="mt-1 text-[11px] leading-snug text-muted-foreground">All pillars green</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Compact 24h sparkline · single SVG, not a giant bar chart */}
+          <div className="mt-4 rounded-xl border border-hairline bg-surface-alt/40 p-3">
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span>24h trend</span>
+              <span className="font-mono normal-case tracking-normal">{health[0].score} → {health[health.length - 1].score}</span>
             </div>
-            <div className="mt-3 flex justify-between font-mono text-[10px] text-muted-foreground">
+            <svg viewBox="0 0 240 48" preserveAspectRatio="none" className="mt-2 h-12 w-full">
+              <defs>
+                <linearGradient id="healthFill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-foreground)" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="var(--color-foreground)" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {(() => {
+                const pts = health.map((p, i) => {
+                  const x = (i / (health.length - 1)) * 240;
+                  const y = 48 - (p.score / 100) * 44 - 2;
+                  return { x, y, p };
+                });
+                const line = pts.map((q, i) => `${i === 0 ? "M" : "L"} ${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join(" ");
+                const area = `${line} L 240 48 L 0 48 Z`;
+                return (
+                  <>
+                    <path d={area} fill="url(#healthFill)" />
+                    <path d={line} fill="none" stroke="var(--color-foreground)" strokeWidth="1.5" strokeLinejoin="round" />
+                    {pts.map((q, i) => (
+                      <circle
+                        key={i}
+                        cx={q.x}
+                        cy={q.y}
+                        r={i === pts.length - 1 ? 3 : 1.5}
+                        fill={
+                          q.p.score >= 85 ? "var(--color-success)" :
+                          q.p.score >= 70 ? "var(--color-warning)" :
+                                            "var(--color-destructive)"
+                        }
+                      />
+                    ))}
+                  </>
+                );
+              })()}
+            </svg>
+            <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
               <span>00:00</span><span>12:00</span><span>now</span>
             </div>
           </div>
 
-          {/* Pillar mini-legend */}
-          <div className="mt-4 grid grid-cols-5 gap-2 border-t border-hairline pt-3 text-center">
+          {/* Pillar snapshot · the actual story, with reasons inline */}
+          <div className="mt-4 space-y-2">
             {[
-              { l: "Operations", v: 78, icon: Workflow },
-              { l: "Quoting",    v: 71, icon: FileText },
-              { l: "Comms",      v: 62, icon: MessageSquare },
-              { l: "Customer",   v: 58, icon: Users },
-              { l: "Money",      v: 92, icon: Banknote },
-            ].map((p) => (
-              <div key={p.l} className="rounded-md bg-surface-alt p-2">
-                <div className="flex items-center justify-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground">
-                  <p.icon className="h-2.5 w-2.5" /> {p.l}
+              { l: "Operations", v: 78, icon: Workflow,       reason: "Engineer 04 over-running · 28 min behind" },
+              { l: "Quoting",    v: 71, icon: FileText,       reason: "Follow-ups overdue ×7 · Alan queue 4" },
+              { l: "Comms",      v: 62, icon: MessageSquare,  reason: "office@ unread climbing · oldest 47m" },
+              { l: "Customer",   v: 58, icon: Users,          reason: "ABC School sentiment turned frustrated" },
+              { l: "Cashflow",   v: 92, icon: Banknote,       reason: "Margin +3.4% vs week · £214 saved today" },
+            ].map((p) => {
+              const tone =
+                p.v >= 85 ? { text: "text-success", bar: "bg-success" } :
+                p.v >= 70 ? { text: "text-warning", bar: "bg-warning" } :
+                            { text: "text-destructive", bar: "bg-destructive" };
+              return (
+                <div key={p.l} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-hairline px-3 py-2 transition hover:bg-surface-alt">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p.icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <span className="text-xs font-semibold">{p.l}</span>
+                      <span className={cn("text-display text-sm font-bold tabular", tone.text)}>{p.v}</span>
+                    </div>
+                    <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-alt">
+                      <div className={cn("h-full rounded-full", tone.bar)} style={{ width: `${p.v}%` }} />
+                    </div>
+                    <div className="mt-1 truncate text-[11px] text-muted-foreground">{p.reason}</div>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 </div>
-                <div className={cn(
-                  "text-display mt-1 text-sm font-bold tabular",
-                  p.v >= 85 ? "text-success" : p.v >= 70 ? "text-warning" : "text-destructive",
-                )}>{p.v}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
 
         <div className="rounded-2xl border border-hairline bg-white p-5">
           <div className="flex items-center justify-between">
