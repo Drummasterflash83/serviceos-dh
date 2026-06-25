@@ -99,7 +99,7 @@ const JOBS: Job[] = [
     quoteStatus: "With Alan", quoteAge: 4, alanApproved: false,
     missingSerial: true,
     customerSentiment: "Frustrated", lastTouch: "2d ago · no callback",
-    notes: ["Engineer mentioned plant-room access tight — confirm trolley route", "RAMS not yet copied back into Commusoft"],
+    notes: ["Engineer mentioned plant-room access tight - confirm trolley route", "RAMS not yet copied back into Commusoft"],
   },
   {
     id: "J-3401", title: "Annual service · plant room", customer: "Greenfield Care Home", site: "Greenfield, Eastleigh",
@@ -107,7 +107,7 @@ const JOBS: Job[] = [
     complaintRisk: "low", value: "£640", margin: "41%",
     tags: ["commercial", "two-hands"],
     boiler: "Worcester GB162 50kW · S/N: WB2-77A013",
-    access: "Reception · ask for Janet", parking: "On-street free 1–4pm",
+    access: "Reception · ask for Janet", parking: "On-street free 1-4pm",
     ramsAttached: true, photoCount: 14,
     parts: [
       { name: "Service kit", supplier: "BSS", price: "£42", status: "won" },
@@ -115,7 +115,7 @@ const JOBS: Job[] = [
     ],
     quoteStatus: "Accepted", quoteAge: 12, alanApproved: true,
     customerSentiment: "Positive", lastTouch: "Confirmation sent · pricing pulled through",
-    notes: ["Plant room serviced 2 months ago — Ryan, 3.2h actual"],
+    notes: ["Plant room serviced 2 months ago - Ryan, 3.2h actual"],
   },
   {
     id: "J-3400", title: "Combi swap · domestic", customer: "12 Marlborough Rd", site: "Southampton SO15",
@@ -131,7 +131,7 @@ const JOBS: Job[] = [
     ],
     quoteStatus: "Sent · waiting", quoteAge: 18, alanApproved: true,
     customerSentiment: "Neutral", lastTouch: "Day 18 · nudge due day 20",
-    notes: ["Customer hates Thursdays — diary tag added"],
+    notes: ["Customer hates Thursdays - diary tag added"],
   },
   {
     id: "J-3399", title: "LPG flue rework · prison wing", customer: "HMP Winchester", site: "HMP Winchester · C wing",
@@ -139,7 +139,7 @@ const JOBS: Job[] = [
     complaintRisk: "high", value: "£8,420", margin: "19%",
     tags: ["prison", "lpg", "three-person", "rams", "stayaway", "parking"],
     boiler: "Remeha P520 · LPG · S/N: pending",
-    access: "Gatehouse, no phones, no iPad — paper job sheet only",
+    access: "Gatehouse, no phones, no iPad - paper job sheet only",
     parking: "Staff car park C · permit on dash",
     ramsAttached: false, photoCount: 0,
     parts: [
@@ -149,7 +149,7 @@ const JOBS: Job[] = [
     quoteStatus: "Draft", quoteAge: 2, alanApproved: false,
     missingSerial: true,
     customerSentiment: "Neutral", lastTouch: "Waiting on Rob to call back · 3 chases",
-    notes: ["No photos on file — engineer had no iPad", "Airbnb booked: 2 nights · Lance's account"],
+    notes: ["No photos on file - engineer had no iPad", "Airbnb booked: 2 nights · Lance's account"],
   },
   {
     id: "J-3398", title: "Cylinder replacement", customer: "Crestmont Apartments", site: "Crestmont, Winchester",
@@ -163,7 +163,7 @@ const JOBS: Job[] = [
     parts: [{ name: "Megaflo HE 250L", supplier: "BSS", price: "£820", status: "won" }],
     quoteStatus: "Accepted", quoteAge: 6, alanApproved: true,
     customerSentiment: "Positive", lastTouch: "Wraparound review sent",
-    notes: ["Back-to-back job at same address tomorrow — don't double-charge travel"],
+    notes: ["Back-to-back job at same address tomorrow - don't double-charge travel"],
     travelChargedTwice: true,
   },
 ];
@@ -218,7 +218,7 @@ const CUSTOMERS: Customer[] = [
       { name: "Worcester GB162 50kW", age: "3y", condition: "Good" },
       { name: "Indirect cyl 200L",    age: "3y", condition: "Good" },
     ],
-    notes: ["Reception · ask for Janet", "Parking free 1–4pm"],
+    notes: ["Reception · ask for Janet", "Parking free 1-4pm"],
   },
   {
     id: "C-201", name: "Peter Simmons Estate", type: "Commercial",
@@ -232,7 +232,7 @@ const CUSTOMERS: Customer[] = [
       { name: "Plant room · 4× cascade boilers", age: "5y", condition: "Watch" },
       { name: "Cylinder bank 3×500L",            age: "5y", condition: "Good" },
     ],
-    notes: ["London parking — undercharged historically", "Service-plan rate sits in Larne's head"],
+    notes: ["London parking - undercharged historically", "Service-plan rate sits in Larne's head"],
   },
   {
     id: "C-310", name: "HMP Winchester", type: "Public sector",
@@ -293,7 +293,7 @@ function RoleSwitcher({ role, setRole }: { role: RoleKey; setRole: (r: RoleKey) 
             Same card · different lens · zero retraining
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Every team member sees the data they need — and none of the data they don't. Switch a role to demo.
+            Every team member sees the data they need - and none of the data they don't. Switch a role to demo.
           </p>
         </div>
       </div>
@@ -434,7 +434,7 @@ function JobCardCompact({ job, role, onOpen }: { job: Job; role: RoleKey; onOpen
   );
 }
 
-/* ──────────── JOB CARD (open) — role-aware body ──────────── */
+/* ──────────── JOB CARD (open) - role-aware body ──────────── */
 function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
   const Section = ({ title, icon: Icon, children }: { title: string; icon: typeof User; children: React.ReactNode }) => (
     <div className="rounded-xl border border-hairline bg-white p-4">
@@ -508,7 +508,7 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
         <Section title="Voice-to-card" icon={MessageSquare}>
           <div className="rounded-md border border-dashed border-hairline p-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-2 font-medium text-foreground"><Activity className="h-3.5 w-3.5 text-success" /> Recording clip armed</div>
-            <p className="mt-1">Talk through findings — it'll match to job by GPS + time, even if you don't finish the sheet on site.</p>
+            <p className="mt-1">Talk through findings - it'll match to job by GPS + time, even if you don't finish the sheet on site.</p>
           </div>
         </Section>
       </div>
@@ -518,7 +518,7 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
         <Section title="Confirmation email (auto-priced)" icon={Mail}>
           <div className="rounded-md border border-hairline bg-surface-alt p-3 text-xs">
             <div className="text-muted-foreground">To: {job.customer}</div>
-            <div className="mt-2 font-medium">Following up our call — booking confirmed.</div>
+            <div className="mt-2 font-medium">Following up our call - booking confirmed.</div>
             <div className="mt-1">Date: {job.scheduled}</div>
             <div className="mt-1">Price: <span className="font-mono font-semibold text-foreground">{job.value}</span> <span className="text-success">· pulled through ✓</span></div>
             {job.tags.includes("prison") && <div className="mt-2 text-warning">RAMS attached automatically (prison)</div>}
@@ -542,7 +542,7 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
         </Section>
         <Section title="Reminders Mary normally chases" icon={BellRing}>
           <ul className="space-y-1.5 text-xs text-muted-foreground">
-            <li>• Boiler registration (Julie) — hashtag created</li>
+            <li>• Boiler registration (Julie) - hashtag created</li>
             <li>• Confirmation 24h before visit</li>
             <li>• Annual service reminder · {job.tags.includes("commercial") ? "Nov 2025" : "next April"}</li>
           </ul>
@@ -575,7 +575,7 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
             <div className="flex items-center justify-between"><span>Age</span><span className="font-mono">day {job.quoteAge} of 30</span></div>
             <div className="flex items-center justify-between"><span>Alan approved</span>{job.alanApproved ? <CheckCircle2 className="h-3.5 w-3.5 text-success" /> : <XCircle className="h-3.5 w-3.5 text-warning" />}</div>
             <div className="flex items-center justify-between"><span>Markup applied</span><span>+25% parts · +30% London labour</span></div>
-            <div className="flex items-center justify-between"><span>Nudge at</span><span>day 20 — automated</span></div>
+            <div className="flex items-center justify-between"><span>Nudge at</span><span>day 20 - automated</span></div>
           </div>
         </Section>
         <Section title="Good / Better / Best" icon={Sparkles}>
@@ -609,10 +609,10 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
         </Section>
         <Section title="Scheduling intelligence" icon={Calendar}>
           <ul className="space-y-1.5 text-xs">
-            {job.tags.includes("two-hands") && <li className="flex items-center gap-2"><Users2 className="h-3.5 w-3.5 text-warning" /> 2nd pair of hands flagged — placeholder auto-paired</li>}
+            {job.tags.includes("two-hands") && <li className="flex items-center gap-2"><Users2 className="h-3.5 w-3.5 text-warning" /> 2nd pair of hands flagged - placeholder auto-paired</li>}
             {job.tags.includes("three-person") && <li className="flex items-center gap-2"><Users2 className="h-3.5 w-3.5 text-warning" /> 3 engineers required</li>}
             {job.tags.includes("not-thursday") && <li className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-rose-600" /> Customer rule: not Thursdays</li>}
-            {job.travelChargedTwice && <li className="flex items-center gap-2"><Car className="h-3.5 w-3.5 text-warning" /> Same address tomorrow — single travel charge</li>}
+            {job.travelChargedTwice && <li className="flex items-center gap-2"><Car className="h-3.5 w-3.5 text-warning" /> Same address tomorrow - single travel charge</li>}
             <li className="flex items-center gap-2"><Activity className="h-3.5 w-3.5 text-success" /> Diary ↔ Job description in two-way sync</li>
           </ul>
         </Section>
@@ -666,7 +666,7 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
         <Section title="Pattern recognition" icon={Sparkles}>
           <p className="text-xs text-muted-foreground">
             Similar jobs run a median <span className="text-foreground">8.4h</span> at <span className="text-foreground">31% margin</span>.
-            This one is tracking <span className={cn(parseInt(job.margin) < 30 ? "text-warning" : "text-success", "font-medium")}>{job.margin}</span> — adjust for next quote of this shape.
+            This one is tracking <span className={cn(parseInt(job.margin) < 30 ? "text-warning" : "text-success", "font-medium")}>{job.margin}</span> - adjust for next quote of this shape.
           </p>
         </Section>
       </div>
@@ -691,9 +691,9 @@ function JobDetail({ job, role }: { job: Job; role: RoleKey }) {
 function CustomerCardCompact({ c, role, onOpen }: { c: Customer; role: RoleKey; onOpen: () => void }) {
   const primary = (() => {
     switch (role) {
-      case "engineer": return { l: "Site access", v: c.notes[0] ?? "—", icon: MapPin };
+      case "engineer": return { l: "Site access", v: c.notes[0] ?? "-", icon: MapPin };
       case "office":   return { l: "Open / Recall", v: `${c.openJobs} open · ${c.recallCount} recalls`, icon: History };
-      case "quotes":   return { l: "Plan rate", v: c.servicePlanRate ?? "—", icon: PoundSterling };
+      case "quotes":   return { l: "Plan rate", v: c.servicePlanRate ?? "-", icon: PoundSterling };
       case "ops":      return { l: "Next service", v: c.nextService, icon: Calendar };
       case "md":       return { l: "Lifetime value", v: c.lifetimeValue, icon: TrendingUp };
     }
@@ -769,7 +769,7 @@ function CustomerDetail({ c, role }: { c: Customer; role: RoleKey }) {
         <div className="rounded-xl border border-hairline bg-white p-4">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Lifetime value</div>
           <div className="text-display mt-1 text-lg font-bold tabular">{c.lifetimeValue}</div>
-          <div className="mt-1 text-[10px] text-muted-foreground">Plan rate: {c.servicePlanRate ?? "—"}</div>
+          <div className="mt-1 text-[10px] text-muted-foreground">Plan rate: {c.servicePlanRate ?? "-"}</div>
         </div>
         <div className="rounded-xl border border-hairline bg-white p-4">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recall · Complaints</div>
@@ -815,10 +815,10 @@ function CustomerDetail({ c, role }: { c: Customer; role: RoleKey }) {
           <ul className="mt-3 space-y-2 text-xs">
             {role === "office" && (
               <>
-                <li>• Confirmation email template — auto-prices ✓</li>
+                <li>• Confirmation email template - auto-prices ✓</li>
                 <li>• RAMS auto-attach for prison visits</li>
                 <li>• Service-reminder schedule rebuilt (no longer "never correct")</li>
-                <li>• No threads — comms surface on the card</li>
+                <li>• No threads - comms surface on the card</li>
               </>
             )}
             {role === "engineer" && c.notes.map((n) => <li key={n}>• {n}</li>)}
@@ -883,7 +883,7 @@ export function CardsView() {
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Mary sees confirmation pricing and RAMS. Larne sees supplier quotes and Alan's approval. Engineers see access, parking, and the photo checklist.
-              Rudi sees the second-pair-of-hands flag. Heidi sees margin and complaint risk. Same source of truth — different lens.
+              Rudi sees the second-pair-of-hands flag. Heidi sees margin and complaint risk. Same source of truth - different lens.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
