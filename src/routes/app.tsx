@@ -7,7 +7,7 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox, IdCard,
+  Users, Inbox, IdCard, HardHat,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import {
   ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
 } from "@/components/app/NewViews";
 import { CardsView } from "@/components/app/Cards";
+import { EngineersView } from "@/components/app/Engineers";
 
 
 export const Route = createFileRoute("/app")({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/app")({
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "cards" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "finance" | "settings";
+type ViewKey = "dashboard" | "cards" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "engineers" | "finance" | "settings";
 
 const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +44,7 @@ const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: "operations", label: "Operations", icon: Briefcase },
   { key: "calls", label: "Calls", icon: Phone },
   { key: "customers", label: "Customers", icon: Users },
+  { key: "engineers", label: "Engineers", icon: HardHat },
   { key: "finance", label: "Numbers", icon: TrendingUp },
   { key: "settings", label: "Settings", icon: Settings },
 ];
@@ -126,6 +128,7 @@ function AppShell() {
           {view === "operations" && <OperationsHub jobsSlot={<Operations />} />}
           {view === "calls" && <Calls />}
           {view === "customers" && <Customers />}
+          {view === "engineers" && <EngineersView />}
           {view === "finance" && <Finance />}
           {view === "settings" && <SettingsView />}
         </main>
