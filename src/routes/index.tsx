@@ -10,7 +10,7 @@ import { Nav } from "@/components/Nav";
 import { SectionShell, Reveal, Eyebrow, CountUp, GlassCard } from "@/components/pitch/primitives";
 import { cn } from "@/lib/utils";
 import drummondLogo from "@/assets/drummond-heading-logo.png.asset.json";
-import dhIcon from "@/assets/dh-icon.png.asset.json";
+import dhIcon from "@/assets/dh-icon-fg.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -73,7 +73,7 @@ function Hero() {
             <img
               src={drummondLogo.url}
               alt="Drummond Heating - Established 1978"
-              className="h-20 w-auto md:h-28"
+              className="h-10 w-auto md:h-14"
             />
           </div>
         </motion.div>
