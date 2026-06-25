@@ -299,38 +299,8 @@ function Calls() {
   );
 }
 
-/* ────── WORKFLOW ────── */
-function WorkflowView() {
-  const flows = [
-    { name: "Quote → Approval", obs: 184, save: "74%" },
-    { name: "Supplier Reconciliation", obs: 92, save: "61%" },
-    { name: "Engineer Job Sheet → Invoice", obs: 412, save: "58%" },
-    { name: "Customer Follow-up", obs: 246, save: "82%" },
-  ];
-  return (
-    <div className="space-y-3">
-      {flows.map((f) => (
-        <div key={f.name} className="rounded-2xl border border-hairline bg-white p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-display text-lg font-semibold">{f.name}</div>
-              <div className="text-xs text-muted-foreground">{f.obs} observations · last 30 days</div>
-            </div>
-            <div className="text-right">
-              <div className="text-display text-3xl font-bold tabular text-accent">{f.save}</div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Automatable</div>
-            </div>
-          </div>
-          <div className="mt-4 flex gap-1">
-            {Array.from({ length: 40 }).map((_, i) => (
-              <div key={i} className={cn("h-1.5 flex-1 rounded-full", i < parseInt(f.save) / 2.5 ? "bg-accent" : "bg-surface-alt")} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+
+
 
 /* ────── AGENTS ────── */
 function Agents() {
