@@ -111,6 +111,7 @@ function AppShell() {
           {view === "dashboard" && <Dashboard />}
           {view === "learn" && <Learn />}
           {view === "intelligence" && <Intelligence />}
+          {view === "automations" && <Automations />}
 
           {view === "operations" && <Operations />}
           {view === "calls" && <Calls />}
