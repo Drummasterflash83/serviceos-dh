@@ -1264,6 +1264,7 @@ const UPGRADES: Upgrade[] = [
 function Intelligence() {
   const [pillar, setPillar] = useState<"all" | Pillar>("all");
   const [via, setVia] = useState<"all" | Upgrade["via"]>("all");
+  const [open, setOpen] = useState<Upgrade | null>(null);
 
   const filtered = UPGRADES.filter(
     (u) => (pillar === "all" || u.pillar === pillar) && (via === "all" || u.via === via),
@@ -1278,6 +1279,14 @@ function Intelligence() {
   };
 
   const viaOptions: ("all" | Upgrade["via"])[] = ["all", "AI Agent", "Automation", "ServiceOS Workflow", "Voice AI", "Process Change"];
+
+  const statTiles = [
+    { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
+    { l: "Time saved", v: totals.time, sub: "if all shipped", icon: Clock },
+    { l: "Profit uplift", v: totals.profit, sub: "monthly run-rate", icon: TrendingUp },
+    { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
+    { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
+  ];
 
   return (
     <div className="space-y-6">
@@ -1295,7 +1304,7 @@ function Intelligence() {
               Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Each card below is an upgrade ServiceOS can ship - via automation, an AI agent, or a workflow change - with projected impact on time, profit, turnover, customer satisfaction and risk.
+              Click any upgrade to see the full recommendation, projected impact and the path to shipping it.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -1304,21 +1313,16 @@ function Intelligence() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
-            { l: "Time saved", v: totals.time, sub: "if all shipped", icon: Clock },
-            { l: "Profit uplift", v: totals.profit, sub: "monthly run-rate", icon: TrendingUp },
-            { l: "Turnover uplift", v: totals.turnover, sub: "quarterly", icon: ArrowUpRight },
-            { l: "CSAT uplift", v: totals.csat, sub: "rolling 60d", icon: Brain },
-          ].map((k) => (
+        {/* Aligned stat row · labels, numbers and subs sit on the same baselines */}
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {statTiles.map((k) => (
             <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <div className="text-[10px] uppercase tracking-wider">{k.l}</div>
+              <div className="flex h-5 items-center justify-between text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-1.5 text-xl font-bold tabular text-foreground">{k.v}</div>
-              <div className="text-[10px] text-muted-foreground">{k.sub}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
@@ -1386,9 +1390,8 @@ function Intelligence() {
         </div>
       </div>
 
-      {/* Pillar health */}
-
-      <div className="grid gap-3 md:grid-cols-4">
+      {/* Pillar health · breathing room, consistent baselines */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {PILLARS.map((p) => {
           const h = PILLAR_HEALTH[p.key];
           const active = pillar === p.key;
@@ -1397,31 +1400,28 @@ function Intelligence() {
               key={p.key}
               onClick={() => setPillar(active ? "all" : p.key)}
               className={cn(
-                "rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
+                "flex flex-col rounded-2xl border bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm",
                 active ? "border-foreground" : "border-hairline",
               )}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "grid h-7 w-7 place-items-center rounded-lg",
-                    p.tone === "accent" && "bg-accent/10 text-accent",
-                    p.tone === "success" && "bg-success/10 text-success",
-                    p.tone === "warning" && "bg-warning/10 text-warning",
-                    p.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                  )}>
-                    <p.icon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="text-sm font-semibold">{p.label}</div>
-                </div>
-                <div className="text-display text-xl font-bold tabular">{h.score}</div>
+              <div className="flex items-start justify-between gap-3">
+                <span className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                  p.tone === "accent" && "bg-accent/10 text-accent",
+                  p.tone === "success" && "bg-success/10 text-success",
+                  p.tone === "warning" && "bg-warning/10 text-warning",
+                  p.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <p.icon className="h-4 w-4" />
+                </span>
+                <div className="text-display text-2xl font-bold leading-none tabular">{h.score}</div>
               </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">{p.desc}</div>
-              <div className="mt-3 flex items-center justify-between border-t border-hairline pt-2 text-[11px]">
+              <div className="mt-4 text-sm font-semibold">{p.label}</div>
+              <div className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.desc}</div>
+              <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px]">
                 <span className="text-muted-foreground">{h.openUpgrades} upgrades</span>
                 <span className="font-medium">{h.potential}</span>
               </div>
-              <div className="mt-1 text-[10px] text-muted-foreground">{h.trend}</div>
             </button>
           );
         })}
@@ -1467,28 +1467,35 @@ function Intelligence() {
         </div>
       </div>
 
-      {/* Upgrade cards */}
-      <div className="grid gap-3 md:grid-cols-2">
+      {/* Upgrade cards · compact summary, click for full detail */}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((u) => {
           const pillarMeta = PILLARS.find((p) => p.key === u.pillar)!;
+          const headline = u.uplift.profit
+            ? { label: "Profit", value: u.uplift.profit, tone: "text-success" }
+            : u.uplift.turnover
+            ? { label: "Turnover", value: u.uplift.turnover, tone: "text-accent" }
+            : u.uplift.timeSaved
+            ? { label: "Time saved", value: u.uplift.timeSaved, tone: "text-foreground" }
+            : u.uplift.csat
+            ? { label: "CSAT", value: u.uplift.csat, tone: "text-warning" }
+            : { label: "Risk", value: u.uplift.risk ?? "-", tone: "text-muted-foreground" };
           return (
-            <div key={u.id} className="flex flex-col rounded-2xl border border-hairline bg-white p-5">
+            <button
+              key={u.id}
+              onClick={() => setOpen(u)}
+              className="group flex flex-col rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm"
+            >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "grid h-8 w-8 place-items-center rounded-lg",
-                    pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
-                    pillarMeta.tone === "success" && "bg-success/10 text-success",
-                    pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
-                    pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                  )}>
-                    <pillarMeta.icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{pillarMeta.label}</div>
-                    <div className="text-sm font-semibold leading-tight">{u.title}</div>
-                  </div>
-                </div>
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                  pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                  pillarMeta.tone === "success" && "bg-success/10 text-success",
+                  pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                  pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                )}>
+                  <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
+                </span>
                 <span className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
                   u.status === "ready" && "bg-success/10 text-success",
@@ -1497,81 +1504,131 @@ function Intelligence() {
                 )}>{u.status}</span>
               </div>
 
-              <div className="mt-4 space-y-2 text-xs">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
-                  <div className="mt-0.5 leading-relaxed text-foreground/80">{u.insight}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
-                  <div className="mt-0.5 leading-relaxed">{u.recommendation}</div>
-                </div>
-              </div>
+              <div className="text-display mt-4 text-base font-semibold leading-snug">{u.title}</div>
+              <div className="mt-1 text-xs text-muted-foreground">via {u.via}</div>
 
-              {/* Uplift chips */}
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {u.uplift.timeSaved && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[10px]">
-                    <Clock className="h-3 w-3" /> {u.uplift.timeSaved}
-                  </span>
-                )}
-                {u.uplift.profit && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] text-success">
-                    <Banknote className="h-3 w-3" /> Profit {u.uplift.profit}
-                  </span>
-                )}
-                {u.uplift.turnover && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">
-                    <TrendingUp className="h-3 w-3" /> Turnover {u.uplift.turnover}
-                  </span>
-                )}
-                {u.uplift.csat && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] text-warning">
-                    <Brain className="h-3 w-3" /> CSAT {u.uplift.csat}
-                  </span>
-                )}
-                {u.uplift.risk && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[10px] text-muted-foreground">
-                    <ShieldCheck className="h-3 w-3" /> Risk {u.uplift.risk}
-                  </span>
-                )}
-              </div>
-
-              {/* Meta row */}
-              <div className="mt-4 grid grid-cols-3 gap-3 border-t border-hairline pt-3 text-[11px]">
+              <div className="mt-5 flex items-end justify-between border-t border-hairline pt-3">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Delivered via</div>
-                  <div className="mt-0.5 font-medium">{u.via}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{headline.label}</div>
+                  <div className={cn("text-display text-lg font-bold tabular leading-none", headline.tone)}>{headline.value}</div>
                 </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Effort</div>
-                  <div className="mt-0.5 font-medium">{u.effort}</div>
-                </div>
-                <div>
+                <div className="text-right">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <div className="h-1 flex-1 rounded-full bg-hairline">
-                      <div className="h-full rounded-full bg-foreground" style={{ width: `${u.confidence}%` }} />
-                    </div>
-                    <span className="font-mono tabular">{u.confidence}%</span>
-                  </div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">{u.confidence}%</div>
                 </div>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap gap-1">
-                  {u.sources.map((s) => (
-                    <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] text-muted-foreground">{s}</span>
-                  ))}
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
-                  <Sparkles className="h-3 w-3" /> Ship upgrade
-                </div>
+              <div className="mt-4 inline-flex items-center gap-1 text-[11px] font-medium text-foreground/70 group-hover:text-foreground">
+                Open full recommendation <ChevronRight className="h-3 w-3" />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
+
+      {/* Upgrade detail modal */}
+      <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
+        <DialogContent className="max-w-2xl">
+          {open && (() => {
+            const pillarMeta = PILLARS.find((p) => p.key === open.pillar)!;
+            return (
+              <div>
+                <DialogHeader>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                      pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                      pillarMeta.tone === "success" && "bg-success/10 text-success",
+                      pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                      pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                    )}>
+                      <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
+                    </span>
+                    <span className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                      open.status === "ready" && "bg-success/10 text-success",
+                      open.status === "draft" && "bg-accent/10 text-accent",
+                      open.status === "review" && "bg-surface-alt text-muted-foreground",
+                    )}>{open.status}</span>
+                  </div>
+                  <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">{open.title}</DialogTitle>
+                  <DialogDescription className="text-xs">Delivered via {open.via} · effort {open.effort} · confidence {open.confidence}%</DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-4 space-y-4 text-sm">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
+                    <p className="mt-1 leading-relaxed text-foreground/80">{open.insight}</p>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
+                    <p className="mt-1 leading-relaxed">{open.recommendation}</p>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Projected uplift</div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {open.uplift.timeSaved && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[11px]">
+                          <Clock className="h-3 w-3" /> {open.uplift.timeSaved}
+                        </span>
+                      )}
+                      {open.uplift.profit && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
+                          <Banknote className="h-3 w-3" /> Profit {open.uplift.profit}
+                        </span>
+                      )}
+                      {open.uplift.turnover && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+                          <TrendingUp className="h-3 w-3" /> Turnover {open.uplift.turnover}
+                        </span>
+                      )}
+                      {open.uplift.csat && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
+                          <Brain className="h-3 w-3" /> CSAT {open.uplift.csat}
+                        </span>
+                      )}
+                      {open.uplift.risk && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[11px] text-muted-foreground">
+                          <ShieldCheck className="h-3 w-3" /> Risk {open.uplift.risk}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 rounded-full bg-hairline">
+                        <div className="h-full rounded-full bg-foreground" style={{ width: `${open.confidence}%` }} />
+                      </div>
+                      <span className="font-mono text-xs tabular">{open.confidence}%</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Signal sources</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {open.sources.map((s) => (
+                        <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[11px] text-muted-foreground">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
+                  <button onClick={() => setOpen(null)} className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                    Close
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
+                    <Sparkles className="h-3 w-3" /> Ship upgrade
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
