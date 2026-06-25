@@ -537,7 +537,11 @@ function Dashboard() {
                 p.v >= 70 ? { text: "text-warning", bar: "bg-warning" } :
                             { text: "text-destructive", bar: "bg-destructive" };
               return (
-                <div key={p.l} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-hairline px-3 py-2 transition hover:bg-surface-alt">
+                <button
+                  key={p.l}
+                  onClick={() => setDetail(`health:${p.l}`)}
+                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-hairline px-3 py-2 text-left transition hover:border-foreground/30 hover:bg-surface-alt"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p.icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -550,7 +554,7 @@ function Dashboard() {
                     <div className="mt-1 truncate text-[11px] text-muted-foreground">{p.reason}</div>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                </div>
+                </button>
               );
             })}
           </div>
