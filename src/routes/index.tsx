@@ -73,7 +73,7 @@ function Hero() {
             <img
               src={drummondLogo.url}
               alt="Drummond Heating - Established 1978"
-              className="h-10 w-auto md:h-14"
+              className="h-8 w-auto md:h-14"
             />
           </div>
         </motion.div>
@@ -82,7 +82,7 @@ function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, ease: EASE, delay: 0.1 }}
-          className="text-display mt-8 flex items-center justify-center gap-[0.05em] text-[18vw] font-extrabold leading-[0.9] md:text-[160px]"
+          className="text-display mt-8 flex items-center justify-center gap-[0.05em] text-[16.2vw] font-extrabold leading-[0.9] md:text-[160px]"
         >
           <img
             src={dhIcon.url}
