@@ -1003,6 +1003,134 @@ function Learn() {
           </div>
         </div>
       </div>
+
+      {/* Source detail modal */}
+      <Dialog open={!!openSource} onOpenChange={(o) => !o && setOpenSource(null)}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto bg-white">
+          {openSource && (
+            <>
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    "grid h-11 w-11 place-items-center rounded-xl",
+                    openSource.tone === "muted" ? "bg-surface-alt text-muted-foreground" : "bg-foreground text-background",
+                  )}>
+                    <openSource.icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <DialogTitle className="text-display text-xl font-semibold">{openSource.name}</DialogTitle>
+                    <DialogDescription className="mt-1 text-xs">{openSource.desc}</DialogDescription>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium uppercase tracking-wider",
+                        openSource.tone === "success" && "bg-success/10 text-success",
+                        openSource.tone === "warning" && "bg-warning/10 text-warning",
+                        openSource.tone === "accent" && "bg-accent/10 text-accent",
+                        openSource.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                      )}>{openSource.status}</span>
+                      <span className="text-muted-foreground">· {openSource.connection}</span>
+                      <span className="text-muted-foreground">· Last sync {openSource.lastSync}</span>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {/* Signal grid */}
+              <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {openSource.signals.map((sig) => (
+                  <div key={sig.l} className="rounded-xl border border-hairline bg-surface-alt p-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{sig.l}</div>
+                    <div className="text-display mt-1 text-lg font-bold tabular">{sig.v}</div>
+                    {sig.sub && <div className="text-[10px] text-muted-foreground">{sig.sub}</div>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Coverage + accuracy */}
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {[
+                  { l: "Coverage", v: openSource.coverage },
+                  { l: "Extraction accuracy", v: openSource.accuracy },
+                ].map((m) => (
+                  <div key={m.l} className="rounded-xl border border-hairline p-3">
+                    <div className="flex items-baseline justify-between">
+                      <div className="text-xs font-medium">{m.l}</div>
+                      <div className="font-mono text-sm tabular">{m.v}%</div>
+                    </div>
+                    <div className="mt-2 h-1.5 rounded-full bg-hairline">
+                      <div className="h-full rounded-full bg-foreground" style={{ width: `${m.v}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Topics */}
+              <div className="mt-4 rounded-xl border border-hairline p-4">
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">What we're seeing</div>
+                <div className="mt-3 space-y-2">
+                  {openSource.topics.map((t) => (
+                    <div key={t.label}>
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="font-medium">{t.label}</span>
+                        <span className="font-mono tabular text-muted-foreground">{t.pct}%</span>
+                      </div>
+                      <div className="mt-1 h-1 rounded-full bg-hairline">
+                        <div className="h-full rounded-full bg-accent" style={{ width: `${t.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Insights + automations */}
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-hairline p-4">
+                  <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <Brain className="h-3 w-3" /> Intelligence learned
+                  </div>
+                  <ul className="mt-2 space-y-2 text-xs leading-relaxed">
+                    {openSource.insights.map((i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground" />
+                        <span>{i}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-xl border border-hairline bg-surface-alt p-4">
+                  <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                    <Sparkles className="h-3 w-3 text-accent" /> Automation candidates
+                  </div>
+                  <ul className="mt-2 space-y-2 text-xs leading-relaxed">
+                    {openSource.automations.map((a) => (
+                      <li key={a} className="flex gap-2">
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                        <span>{a}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Privacy + retention */}
+              <div className="mt-4 rounded-xl border border-hairline p-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Privacy & retention</div>
+                  <div className="text-[11px] text-muted-foreground">{openSource.retention}</div>
+                </div>
+                <ul className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                  {openSource.privacy.map((p) => (
+                    <li key={p} className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1">
+                      <CheckCircle2 className="h-3 w-3 text-success" /> {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
