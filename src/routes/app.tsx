@@ -7,7 +7,7 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox,
+  Users, Inbox, IdCard,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import {
   Protocol, OperationsHub, Customers,
   ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
 } from "@/components/app/NewViews";
+import { CardsView } from "@/components/app/Cards";
 
 
 export const Route = createFileRoute("/app")({
