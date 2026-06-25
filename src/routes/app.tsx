@@ -2308,13 +2308,13 @@ function Intelligence() {
         {/* Aligned stat row · labels, numbers and subs sit on the same baselines */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {statTiles.map((k) => (
-            <div key={k.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="flex h-5 items-center justify-between text-muted-foreground">
-                <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
-                <k.icon className="h-3.5 w-3.5" />
+            <div key={k.l} className="flex flex-col rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="flex items-start justify-between gap-2 text-muted-foreground">
+                <div className="text-[10px] font-medium uppercase tracking-wider leading-tight">{k.l}</div>
+                <k.icon className="h-3.5 w-3.5 shrink-0" />
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
-              <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
+              <div className="text-display mt-3 text-xl font-bold leading-tight tabular text-foreground break-words">{k.v}</div>
+              <div className="mt-2 text-[10px] leading-tight text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
