@@ -200,7 +200,7 @@ export function Protocol() {
 
                 <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
                   <div className="font-semibold text-accent">Suggested next action</div>
-                  <div className="mt-1 text-foreground">Confirm T. Reid ETA and send customer update to bring thread back inside protocol.</div>
+                  <div className="mt-1 text-foreground">Confirm Tony ETA and send customer update to bring thread back inside protocol.</div>
                 </div>
               </div>
 
@@ -269,13 +269,13 @@ function Rota() {
   const [window, setWindow] = useState<"tonight" | "week" | "next">("tonight");
   const slots = {
     tonight: [
-      { role: "Primary on-call", name: "T. Reid", phone: "07700 900181", ack: "14:02" },
+      { role: "Primary on-call", name: "Tony", phone: "07700 900181", ack: "14:02" },
       { role: "Backup 1", name: "M. Patel", phone: "07700 900244", ack: "13:58" },
       { role: "Backup 2", name: "L. Bryan", phone: "07700 900377", ack: "12:30" },
     ],
     week: [
       { role: "Primary on-call", name: "S. Walsh", phone: "07700 900412", ack: "Mon 08:00" },
-      { role: "Backup 1", name: "T. Reid", phone: "07700 900181", ack: "Mon 08:14" },
+      { role: "Backup 1", name: "Tony", phone: "07700 900181", ack: "Mon 08:14" },
       { role: "Backup 2", name: "M. Patel", phone: "07700 900244", ack: "Mon 09:02" },
     ],
     next: [
@@ -340,7 +340,7 @@ function Rota() {
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
           <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2">Reception Agent triage</div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          <div className="rounded-lg border border-accent/30 bg-accent-soft px-3 py-2 text-accent font-medium">T. Reid · ring 30s</div>
+          <div className="rounded-lg border border-accent/30 bg-accent-soft px-3 py-2 text-accent font-medium">Tony · ring 30s</div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
           <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2">M. Patel · ring 30s</div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -432,13 +432,13 @@ function PartsStock() {
     { name: "Magnetic filter MF1", stock: 7, reserved: 3, counted: "yesterday", min: 6 },
   ];
   const vans = [
-    { reg: "BD21 PRX", driver: "T. Reid", fill: 78, top: ["22mm copper", "PCB x2"], restock: false },
+    { reg: "BD21 PRX", driver: "Tony", fill: 78, top: ["22mm copper", "PCB x2"], restock: false },
     { reg: "BG22 ZTM", driver: "M. Patel", fill: 41, top: ["Magnetic filter", "Pump cart."], restock: true },
     { reg: "BV21 WHK", driver: "S. Walsh", fill: 64, top: ["Flue ext.", "PCB"], restock: false },
     { reg: "BJ23 LDM", driver: "L. Bryan", fill: 22, top: ["—"], restock: true },
   ];
   const moves = [
-    { t: "14:08", who: "T. Reid", part: "PCB x1", dir: "out", job: "J-3402" },
+    { t: "14:08", who: "Tony", part: "PCB x1", dir: "out", job: "J-3402" },
     { t: "13:51", who: "Store · Heidi", part: "22mm copper x12", dir: "in", job: "PO-882" },
     { t: "12:30", who: "M. Patel", part: "Magnetic filter x2", dir: "out", job: "J-3401" },
     { t: "11:14", who: "L. Bryan", part: "Pump cart. x1", dir: "out", job: "J-3399" },

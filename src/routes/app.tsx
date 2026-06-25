@@ -142,7 +142,7 @@ function Dashboard() {
   const statTiles = [
     { l: "Live jobs", v: "42", sub: "+6 vs yesterday", icon: Workflow },
     { l: "Inside protocol", v: "94%", sub: "16 of 17 threads", icon: ShieldCheck },
-    { l: "On-call tonight", v: "T. Reid", sub: "+2 backups armed", icon: Clock },
+    { l: "On-call tonight", v: "Tony", sub: "+2 backups armed", icon: Clock },
     { l: "Mailbox health", v: "47m", sub: "oldest unread · office@", icon: Inbox },
     { l: "Revenue today", v: "£18.4k", sub: "+12% vs wk avg", icon: Banknote },
   ];
@@ -424,7 +424,7 @@ function Dashboard() {
 /* ────── OPERATIONS ────── */
 function Operations() {
   const jobs = [
-    { id: "J-3402", customer: "ABC School", engineer: "T. Reid", status: "Urgent", value: "£1,840" },
+    { id: "J-3402", customer: "ABC School", engineer: "Tony", status: "Urgent", value: "£1,840" },
     { id: "J-3401", customer: "Greenfield Care Home", engineer: "M. Patel", status: "In progress", value: "£640" },
     { id: "J-3400", customer: "12 Marlborough Rd", engineer: "S. Walsh", status: "Scheduled", value: "£320" },
     { id: "J-3399", customer: "Highbridge Foods Ltd", engineer: "-", status: "Awaiting parts", value: "£2,120" },
@@ -494,7 +494,7 @@ function Calls() {
           </div>
           <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
             <div className="font-semibold text-accent">Recommended action</div>
-            <div className="mt-1 text-foreground">Escalate · dispatch T. Reid (12 min away)</div>
+            <div className="mt-1 text-foreground">Escalate · dispatch Tony (12 min away)</div>
           </div>
         </div>
       </div>

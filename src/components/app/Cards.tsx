@@ -16,7 +16,7 @@ import {
 type RoleKey = "engineer" | "office" | "quotes" | "ops" | "md";
 
 const ROLES: { key: RoleKey; label: string; person: string; icon: typeof User; tint: string }[] = [
-  { key: "engineer", label: "Engineer · on-site", person: "T. Reid",  icon: Wrench,      tint: "bg-orange-500" },
+  { key: "engineer", label: "Engineer · on-site", person: "Tony",  icon: Wrench,      tint: "bg-orange-500" },
   { key: "office",   label: "Office Manager",      person: "Mary",    icon: Mail,        tint: "bg-sky-500" },
   { key: "quotes",   label: "Quotations",          person: "Larne",   icon: FileSignature, tint: "bg-violet-500" },
   { key: "ops",      label: "Operations / Sched.", person: "Rudy",    icon: Calendar,    tint: "bg-emerald-600" },
@@ -84,7 +84,7 @@ type Job = {
 const JOBS: Job[] = [
   {
     id: "J-3402", title: "Boiler replacement · 60kW", customer: "ABC School", site: "ABC School, Romsey SO51",
-    engineer: "T. Reid", scheduled: "Wed 26 Jun · 08:00", urgency: "Urgent", health: 62,
+    engineer: "Tony", scheduled: "Wed 26 Jun · 08:00", urgency: "Urgent", health: 62,
     complaintRisk: "high", value: "£12,840", margin: "27%",
     tags: ["two-hands", "commercial", "scaffolding"],
     boiler: "Vaillant ecoTEC plus 615 · S/N: missing",
