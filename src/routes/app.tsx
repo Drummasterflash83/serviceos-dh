@@ -809,7 +809,7 @@ function Learn() {
   const [openSource, setOpenSource] = useState<SourceDetail | null>(null);
   const sources = SOURCES;
 
-  const pipeline = ["Capture", "Normalise", "Classify", "Enrich", "Link to Entity", "Insight", "Recommend"];
+  
 
   const insights = [
     { icon: AlertTriangle, tone: "warning", title: "Delayed post-visit comms", body: "37% of complaint calls in the last 14 days involve delayed communication after engineer visits.", action: "Auto-send visit summary within 30 mins" },
