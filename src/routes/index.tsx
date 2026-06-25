@@ -458,7 +458,7 @@ function WorkflowIntelligence() {
               </div>
               <div className="mt-6 rounded-lg bg-accent-soft p-4 text-sm">
                 <span className="font-semibold text-accent">Insight ·</span>{" "}
-                <span className="text-foreground">Steps 2–4 take 22 minutes on average. Automatable to under 90 seconds.</span>
+                <span className="text-foreground">Steps 2-4 take 22 minutes on average. Automatable to under 90 seconds.</span>
               </div>
             </GlassCard>
           </Reveal>
