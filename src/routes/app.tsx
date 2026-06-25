@@ -901,7 +901,13 @@ function Learn() {
         </div>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sources.map((s) => (
-            <div key={s.name} className="rounded-2xl border border-hairline bg-white p-4">
+            <button
+              type="button"
+              key={s.name}
+              onClick={() => setOpenSource(s)}
+              className="rounded-2xl border border-hairline bg-white p-4 text-left transition hover:border-foreground/30 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+            >
+
               <div className="flex items-start justify-between">
                 <div className={cn(
                   "grid h-9 w-9 place-items-center rounded-lg",
