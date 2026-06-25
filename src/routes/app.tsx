@@ -7,7 +7,7 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox, IdCard, HardHat,
+  Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +17,10 @@ import {
   Protocol, OperationsHub, Customers,
   ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
 } from "@/components/app/NewViews";
+import {
+  NorthStar, ARRGrowth, FurtherWorks, QuoteEngine,
+  CoordinatorCockpit, Assets, ComplianceRoadmap, CommsHub,
+} from "@/components/app/NorthStar";
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
 
@@ -25,33 +29,48 @@ export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
       { title: "ServiceOS · Command Centre" },
-      { name: "description", content: "Live operations, calls, finance and intelligence - in one surface." },
+      { name: "description", content: "Live operations, calls, finance and intelligence in one surface." },
     ],
   }),
   component: AppShell,
 });
 
-type ViewKey = "dashboard" | "cards" | "learn" | "intelligence" | "automations" | "agents" | "protocol" | "operations" | "calls" | "customers" | "engineers" | "finance" | "settings";
+type ViewKey =
+  | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
+  | "cards" | "operations" | "comms" | "customers" | "engineers"
+  | "learn" | "intelligence" | "automations" | "agents" | "protocol"
+  | "compliance" | "finance" | "settings";
 
-const NAV: { key: ViewKey; label: string; icon: typeof LayoutDashboard }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "cards", label: "Cards", icon: IdCard },
-  { key: "learn", label: "Learn", icon: GraduationCap },
-  { key: "intelligence", label: "Intelligence", icon: Brain },
-  { key: "automations", label: "Automations", icon: Zap },
-  { key: "agents", label: "Agents", icon: Bot },
-  { key: "protocol", label: "Protocol", icon: ShieldCheck },
-  { key: "operations", label: "Operations", icon: Briefcase },
-  { key: "calls", label: "Calls", icon: Phone },
-  { key: "customers", label: "Customers", icon: Users },
-  { key: "engineers", label: "Engineers", icon: HardHat },
-  { key: "finance", label: "Numbers", icon: TrendingUp },
-  { key: "settings", label: "Settings", icon: Settings },
+type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; group?: string };
+
+const NAV: NavItem[] = [
+  // Spine · the New Dawn engine
+  { key: "northstar",    label: "North Star",     icon: Target,          group: "Spine" },
+  { key: "arr",          label: "ARR Growth",     icon: TrendingUp,      group: "Spine" },
+  { key: "furtherworks", label: "Further Works",  icon: Timer,           group: "Spine" },
+  { key: "quote",        label: "Quote Engine",   icon: Calculator,      group: "Spine" },
+  { key: "coordinator",  label: "Coordinator",    icon: Users,           group: "Spine" },
+  { key: "assets",       label: "Assets",         icon: Layers,          group: "Spine" },
+  // Surfaces · role-aware execution
+  { key: "cards",        label: "Cards",          icon: IdCard,          group: "Surfaces" },
+  { key: "operations",   label: "Operations",     icon: Briefcase,       group: "Surfaces" },
+  { key: "comms",        label: "Calls & Comms",  icon: Phone,           group: "Surfaces" },
+  { key: "customers",    label: "Customers",      icon: Compass,         group: "Surfaces" },
+  { key: "engineers",    label: "Engineers",      icon: HardHat,         group: "Surfaces" },
+  // Intelligence · the why behind the engine
+  { key: "learn",        label: "Learn",          icon: GraduationCap,   group: "Intelligence" },
+  { key: "intelligence", label: "Intelligence",   icon: Brain,           group: "Intelligence" },
+  { key: "automations",  label: "Automations",    icon: Zap,             group: "Intelligence" },
+  { key: "agents",       label: "Agents",         icon: Bot,             group: "Intelligence" },
+  { key: "protocol",     label: "Protocol",       icon: ShieldCheck,     group: "Intelligence" },
+  { key: "compliance",   label: "Compliance",     icon: ShieldCheck,     group: "Intelligence" },
+  { key: "finance",      label: "Numbers",        icon: Banknote,        group: "Intelligence" },
+  { key: "settings",     label: "Settings",       icon: Settings,        group: "Intelligence" },
 ];
 
 
 function AppShell() {
-  const [view, setView] = useState<ViewKey>("dashboard");
+  const [view, setView] = useState<ViewKey>("northstar");
 
   return (
     <div className="flex min-h-screen bg-surface-alt text-foreground">
@@ -62,22 +81,29 @@ function AppShell() {
           ServiceOS
         </Link>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {NAV.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setView(item.key)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-                view === item.key
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
-            </button>
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+          {(["Spine", "Surfaces", "Intelligence"] as const).map((group) => (
+            <div key={group} className="pt-2 first:pt-0">
+              <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group}
+              </div>
+              {NAV.filter((n) => n.group === group).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setView(item.key)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                    view === item.key
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -118,19 +144,28 @@ function AppShell() {
         </header>
 
         <main className="flex-1 p-6">
-          {view === "dashboard" && <Dashboard />}
-          {view === "cards" && <CardsView />}
-          {view === "learn" && <Learn />}
+          {/* Spine */}
+          {view === "northstar"    && <NorthStar />}
+          {view === "arr"          && <ARRGrowth />}
+          {view === "furtherworks" && <FurtherWorks />}
+          {view === "quote"        && <QuoteEngine />}
+          {view === "coordinator"  && <CoordinatorCockpit />}
+          {view === "assets"       && <Assets />}
+          {/* Surfaces */}
+          {view === "cards"        && <CardsView />}
+          {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
+          {view === "comms"        && <CommsHub />}
+          {view === "customers"    && <Customers />}
+          {view === "engineers"    && <EngineersView />}
+          {/* Intelligence */}
+          {view === "learn"        && <Learn />}
           {view === "intelligence" && <Intelligence />}
-          {view === "automations" && <Automations />}
-          {view === "agents" && <Agents />}
-          {view === "protocol" && <Protocol />}
-          {view === "operations" && <OperationsHub jobsSlot={<Operations />} />}
-          {view === "calls" && <Calls />}
-          {view === "customers" && <Customers />}
-          {view === "engineers" && <EngineersView />}
-          {view === "finance" && <Finance />}
-          {view === "settings" && <SettingsView />}
+          {view === "automations"  && <Automations />}
+          {view === "agents"       && <Agents />}
+          {view === "protocol"     && <Protocol />}
+          {view === "compliance"   && <ComplianceRoadmap />}
+          {view === "finance"      && <Finance />}
+          {view === "settings"     && <SettingsView />}
         </main>
       </div>
     </div>
