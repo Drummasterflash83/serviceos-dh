@@ -73,3 +73,31 @@ export interface SimwoodSyncCallsResult {
   customer_id: string | null;
   sync_run_id: string | null;
 }
+
+/** Input to the `simwood-sync-recordings` Edge Function (Phase-2 metadata sync). */
+export interface SimwoodSyncRecordingsInput {
+  tenantId: string;
+  /** Simwood customer id; discovered server-side when omitted. */
+  providerCustomerId?: string;
+  /** ISO date — start of the sync window. Defaults server-side to now-24h. */
+  from?: string;
+  /** ISO date — end of the sync window. Defaults server-side to now. */
+  to?: string;
+  /** Filter to a single provider call id (API `callId`). */
+  callId?: string;
+  /** Filter to a single linked id (API `linkedId`). */
+  linkedId?: string;
+  /** Max records to process this run. */
+  limit?: number;
+}
+
+/** Safe summary returned by `simwood-sync-recordings`. */
+export interface SimwoodSyncRecordingsResult {
+  success: boolean;
+  provider: string;
+  records_processed: number;
+  from: string;
+  to: string;
+  customer_id: string | null;
+  sync_run_id: string | null;
+}

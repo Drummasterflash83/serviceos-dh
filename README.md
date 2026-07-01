@@ -192,3 +192,65 @@ if (result.ok) {
   console.error(result.error.code, result.error.message);
 }
 ```
+
+### Phase Phone-2 — recording metadata sync
+
+Ingests recording **metadata** from Simwood into the `phone_recordings` table.
+Idempotent (upsert on `tenant_id + provider + provider_recording_id`), so
+re-running never duplicates a recording. Every attempt is logged to
+`phone_sync_runs` and `audit_logs`.
+
+**Metadata only — it does not download WAV audio, transcribe, or run AI.**
+Recordings store `provider_call_id` / `linked_id` so they join to `phone_calls`
+later; the sync also reports (best-effort) how many referenced calls already
+exist, without failing if a matching call is absent.
+
+Uses the same `SIMWOOD_USERNAME` / `SIMWOOD_PASSWORD` secrets and the shared
+helpers in `supabase/functions/_shared/simwood.ts`.
+
+Deploy:
+
+```bash
+supabase functions deploy simwood-sync-recordings
+```
+
+Invoke (defaults to the last 24 hours if `from`/`to` are omitted):
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/simwood-sync-recordings \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "from": "2026-06-30T00:00:00Z",
+    "to": "2026-07-01T00:00:00Z",
+    "limit": 200
+  }'
+```
+
+Request fields (all optional except `tenant_id`):
+
+| Field | Meaning |
+| --- | --- |
+| `tenant_id` | Tenant UUID (required) |
+| `provider_customer_id` | Simwood customer id; auto-discovered if omitted |
+| `from` / `to` | ISO **date window** → mapped to the API's `startedAfter` / `startedBefore`. Defaults to now-24h → now |
+| `call_id` | Filter to a single provider call id (API `callId`) |
+| `linked_id` | Filter to a single linked id (API `linkedId`) |
+| `limit` | Max records to process this run |
+
+The success response matches the call sync shape (`success`, `provider`,
+`records_processed`, `from`, `to`, `customer_id`, `sync_run_id`).
+
+Typed helper (not wired to UI):
+
+```ts
+import { syncSimwoodRecordings } from "@/lib/api";
+
+const result = await syncSimwoodRecordings({ tenantId, from, to });
+if (result.ok) {
+  console.log(result.data.records_processed, "recordings synced");
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```

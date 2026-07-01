@@ -17,6 +17,8 @@ import type {
   SimwoodConnectionResult,
   SimwoodSyncCallsInput,
   SimwoodSyncCallsResult,
+  SimwoodSyncRecordingsInput,
+  SimwoodSyncRecordingsResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -216,6 +218,85 @@ export async function syncSimwoodCalls(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Simwood call sync failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Trigger a Simwood/Sipcentric recording-METADATA sync via the
+ * `simwood-sync-recordings` Edge Function (Phase-2). Metadata only — no audio
+ * download. Credentials are read server-side; idempotent on the server.
+ *
+ * Not wired to the UI yet. camelCase input is mapped to the function's
+ * snake_case body; the flat `{ success, ... }` response is normalised to
+ * `ApiResult`.
+ */
+export async function syncSimwoodRecordings(
+  input: SimwoodSyncRecordingsInput,
+): Promise<ApiResult<SimwoodSyncRecordingsResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (input.limit !== undefined && (!Number.isFinite(input.limit) || input.limit <= 0)) {
+    return { ok: false, error: toApiError("invalid_limit", "limit must be a positive number") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = { tenant_id: input.tenantId };
+  if (input.providerCustomerId !== undefined)
+    payload.provider_customer_id = input.providerCustomerId;
+  if (input.from !== undefined) payload.from = input.from;
+  if (input.to !== undefined) payload.to = input.to;
+  if (input.callId !== undefined) payload.call_id = input.callId;
+  if (input.linkedId !== undefined) payload.linked_id = input.linkedId;
+  if (input.limit !== undefined) payload.limit = input.limit;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/simwood-sync-recordings`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<SimwoodSyncRecordingsResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as SimwoodSyncRecordingsResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Simwood recording sync failed",
       response.status,
     ),
   };
