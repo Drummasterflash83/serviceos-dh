@@ -9,7 +9,8 @@
 
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
-export const SIMWOOD_API_BASE = "https://pbx.sipcentric.com/api/v1";
+export const SIMWOOD_ORIGIN = "https://pbx.sipcentric.com";
+export const SIMWOOD_API_BASE = `${SIMWOOD_ORIGIN}/api/v1`;
 export const PROVIDER = "simwood";
 
 export const corsHeaders = {
@@ -171,4 +172,109 @@ export async function discoverCustomerId(
     };
   }
   return { ok: true, customerId: String(id) };
+}
+
+/**
+ * Resolve a recording uri/path to an absolute Simwood URL, or null if it does
+ * not point at the Simwood host. This is an SSRF guard: we send Basic-Auth
+ * credentials, so a stored uri must never be able to redirect that request to
+ * another origin.
+ */
+export function resolveSimwoodUrl(uriOrPath: unknown): string | null {
+  if (typeof uriOrPath !== "string" || uriOrPath.trim() === "") return null;
+  try {
+    const url = /^https?:\/\//i.test(uriOrPath)
+      ? new URL(uriOrPath)
+      : new URL(uriOrPath.startsWith("/") ? uriOrPath : `/${uriOrPath}`, SIMWOOD_ORIGIN);
+    if (url.protocol !== "https:") return null;
+    if (url.hostname !== new URL(SIMWOOD_ORIGIN).hostname) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export type SimwoodBinaryResult =
+  | { ok: true; bytes: Uint8Array; contentType: string | null }
+  | {
+      ok: false;
+      code: string;
+      message: string;
+      httpStatus: number;
+      extra?: Record<string, unknown>;
+    };
+
+/**
+ * GET binary content (e.g. WAV audio) from an absolute Simwood URL with Basic
+ * Auth and the given Accept header. Classifies the same failure modes as
+ * `simwoodGet`, plus `not_found` (404). The caller MUST pass a URL already
+ * validated via `resolveSimwoodUrl`.
+ */
+export async function simwoodGetBinary(
+  url: string,
+  creds: SimwoodCredentials,
+  accept = "audio/wav",
+): Promise<SimwoodBinaryResult> {
+  let resp: Response;
+  try {
+    resp = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: basicAuthHeader(creds), Accept: accept },
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "network failure";
+    return {
+      ok: false,
+      code: "network_error",
+      message: `Could not reach the Simwood API: ${message}`,
+      httpStatus: 502,
+    };
+  }
+
+  if (resp.status === 429) {
+    const reset = resp.headers.get("X-RateLimit-Reset");
+    return {
+      ok: false,
+      code: "rate_limited",
+      message: "Simwood API rate limit reached",
+      httpStatus: 429,
+      extra: { retryAfter: reset },
+    };
+  }
+  if (resp.status === 401 || resp.status === 403) {
+    return {
+      ok: false,
+      code: "auth_failed",
+      message: "Simwood authentication failed — check credentials",
+      httpStatus: 401,
+    };
+  }
+  if (resp.status === 404) {
+    return {
+      ok: false,
+      code: "not_found",
+      message: "Recording not found on Simwood",
+      httpStatus: 404,
+    };
+  }
+  if (!resp.ok) {
+    return {
+      ok: false,
+      code: "upstream_error",
+      message: `Simwood API returned an error (${resp.status})`,
+      httpStatus: 502,
+    };
+  }
+
+  try {
+    const buf = await resp.arrayBuffer();
+    return { ok: true, bytes: new Uint8Array(buf), contentType: resp.headers.get("content-type") };
+  } catch {
+    return {
+      ok: false,
+      code: "download_error",
+      message: "Failed to read audio from Simwood",
+      httpStatus: 502,
+    };
+  }
 }

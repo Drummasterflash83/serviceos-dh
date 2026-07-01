@@ -254,3 +254,96 @@ if (result.ok) {
   console.error(result.error.code, result.error.message);
 }
 ```
+
+### Phase Phone-3 — recording audio download & secure storage
+
+Downloads a single recording's **WAV audio** from Simwood (server-side only) and
+stores it in the **private** Supabase Storage bucket `phone-recordings`. Every
+attempt is logged to `phone_sync_runs` (`sync_type = "recording_download"`) and
+`audit_logs`.
+
+Still **no transcription and no AI enrichment.** The raw Simwood recording URL
+and credentials are never returned to the client — only ids, the internal
+`storage_path`, and flags.
+
+**Idempotent:** the storage path is deterministic —
+`{tenant_id}/simwood/recordings/{provider_recording_id}.wav`. If a recording
+already has a `storage_path`, the function returns `already_downloaded: true`
+without re-downloading, unless `force: true` is passed.
+
+#### Storage bucket
+
+Migration `supabase/migrations/20260701130000_phone_recordings_storage.sql`
+creates the private bucket idempotently:
+
+```sql
+insert into storage.buckets (id, name, public)
+values ('phone-recordings', 'phone-recordings', false)
+on conflict (id) do nothing;
+```
+
+If your environment blocks direct inserts into `storage.buckets`, create it
+manually instead (the migration then no-ops):
+
+```bash
+# CLI
+supabase storage create phone-recordings   # then ensure it is PRIVATE
+```
+
+Or in the Supabase Dashboard → Storage → New bucket → name `phone-recordings`,
+**Public = off**. The download function uses the service-role key and bypasses
+storage RLS, so no storage policies are needed yet. **Do not** make the bucket
+public or create public URLs — future playback will use short-lived **signed
+URLs** (not implemented here).
+
+#### Deploy & invoke
+
+```bash
+supabase functions deploy simwood-download-recording
+```
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/simwood-download-recording \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "recording_id": "<phone_recordings.id UUID>",
+    "force": false
+  }'
+```
+
+Request fields:
+
+| Field | Meaning |
+| --- | --- |
+| `tenant_id` | Tenant UUID (required) |
+| `recording_id` | `phone_recordings.id` UUID (required) |
+| `force` | Re-download and overwrite even if already stored (optional) |
+
+Successful response:
+
+```json
+{
+  "success": true,
+  "provider": "simwood",
+  "recording_id": "…",
+  "provider_recording_id": "…",
+  "storage_path": "…/simwood/recordings/….wav",
+  "already_downloaded": false,
+  "sync_run_id": "…"
+}
+```
+
+Typed helper (not wired to UI):
+
+```ts
+import { downloadSimwoodRecording } from "@/lib/api";
+
+const result = await downloadSimwoodRecording({ tenantId, recordingId });
+if (result.ok) {
+  console.log(result.data.already_downloaded ? "already stored" : "downloaded", result.data.storage_path);
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```

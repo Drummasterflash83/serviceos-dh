@@ -19,6 +19,8 @@ import type {
   SimwoodSyncCallsResult,
   SimwoodSyncRecordingsInput,
   SimwoodSyncRecordingsResult,
+  SimwoodDownloadRecordingInput,
+  SimwoodDownloadRecordingResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -297,6 +299,82 @@ export async function syncSimwoodRecordings(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Simwood recording sync failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Download a single recording's audio via the `simwood-download-recording`
+ * Edge Function (Phase-3). The audio is fetched server-side and stored in a
+ * private Supabase Storage bucket; this only passes the tenant + recording id.
+ * The raw Simwood URL and credentials are never exposed to the client.
+ *
+ * Idempotent server-side: an already-stored recording returns
+ * `already_downloaded: true` unless `force` is set. Not wired to the UI yet.
+ */
+export async function downloadSimwoodRecording(
+  input: SimwoodDownloadRecordingInput,
+): Promise<ApiResult<SimwoodDownloadRecordingResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = {
+    tenant_id: input.tenantId,
+    recording_id: input.recordingId,
+  };
+  if (input.force !== undefined) payload.force = input.force;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/simwood-download-recording`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<SimwoodDownloadRecordingResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as SimwoodDownloadRecordingResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Simwood recording download failed",
       response.status,
     ),
   };

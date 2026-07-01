@@ -101,3 +101,23 @@ export interface SimwoodSyncRecordingsResult {
   customer_id: string | null;
   sync_run_id: string | null;
 }
+
+/** Input to the `simwood-download-recording` Edge Function (Phase-3 audio download). */
+export interface SimwoodDownloadRecordingInput {
+  tenantId: string;
+  /** phone_recordings.id (a ServiceOS UUID). */
+  recordingId: string;
+  /** Re-download and overwrite even if audio is already stored. */
+  force?: boolean;
+}
+
+/** Safe summary returned by `simwood-download-recording` (no URLs/credentials). */
+export interface SimwoodDownloadRecordingResult {
+  success: boolean;
+  provider: string;
+  recording_id: string;
+  provider_recording_id: string | null;
+  storage_path: string | null;
+  already_downloaded: boolean;
+  sync_run_id: string | null;
+}
