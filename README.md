@@ -47,3 +47,80 @@ keep changes in the stage that owns them to avoid sync conflicts.
 Copy [`.env.example`](.env.example) to `.env.local` (git-ignored) and fill in the
 public values. Only `VITE_`-prefixed, client-safe values belong in `.env.local`;
 backend secrets go in the server-side secret store, never in the client bundle.
+
+## Phone Input (Simwood / Sipcentric) — Phase Phone-0
+
+The first real backend input. Phase Phone-0 provides the schema, a
+connection-test Edge Function, and a typed frontend helper — **no call sync,
+recording download, or transcription yet**. Design basis:
+[docs/PHONE_INPUT_SIMWOOD_SPEC.md](docs/PHONE_INPUT_SIMWOOD_SPEC.md).
+
+### Required Supabase secrets (server-side only)
+
+These are **secrets**, not frontend env vars — they are never prefixed `VITE_`,
+never placed in `.env.example`/`.env.local`, and never returned to the client.
+
+| Secret | Purpose |
+| --- | --- |
+| `SIMWOOD_USERNAME` | Simwood/Sipcentric portal username (HTTP Basic Auth) |
+| `SIMWOOD_PASSWORD` | Simwood/Sipcentric portal password (HTTP Basic Auth) |
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically into
+Edge Functions by the platform and are used to write audit rows.
+
+Set them with:
+
+```bash
+supabase secrets set SIMWOOD_USERNAME=... SIMWOOD_PASSWORD=...
+```
+
+### Apply the database migration
+
+```bash
+# against the linked Supabase project
+supabase db push
+# or, for local development
+supabase migration up
+```
+
+Migration: `supabase/migrations/20260701120000_phone_input_foundation.sql`.
+Creates the tenant-scoped `phone_*` tables plus `audit_logs`, with Row Level
+Security **enabled and closed by default** (service-role writes bypass RLS;
+tenant read policies arrive with the auth model).
+
+### Deploy the Edge Function
+
+```bash
+supabase functions deploy simwood-test-connection
+```
+
+### Test the function
+
+Locally (requires the Supabase CLI + Docker):
+
+```bash
+# serve functions with secrets from a local env file (git-ignored)
+supabase functions serve simwood-test-connection --env-file supabase/functions/.env.local
+
+# then, in another shell:
+curl -i -X POST http://localhost:54321/functions/v1/simwood-test-connection \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"tenant_id":"00000000-0000-0000-0000-000000000000"}'
+```
+
+Deployed, or later from the app, via the typed helper (not yet wired to UI):
+
+```ts
+import { testSimwoodConnection } from "@/lib/api";
+
+const result = await testSimwoodConnection(tenantId);
+if (result.ok) {
+  console.log(result.data.customerCount, "account(s) reachable");
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```
+
+A successful call returns credential-free account metadata only and logs the
+outcome to `phone_sync_runs` and `audit_logs`.

@@ -34,3 +34,17 @@ export interface SupabasePublicConfig {
   url: string;
   anonKey: string;
 }
+
+/** Safe, credential-free account summary returned by the Simwood test. */
+export interface SimwoodCustomerSummary {
+  id: string | null;
+  name: string | null;
+  type: string | null;
+}
+
+/** Result of the `simwood-test-connection` Edge Function (no secrets). */
+export interface SimwoodConnectionResult {
+  provider: string;
+  customers: SimwoodCustomerSummary[];
+  customerCount: number;
+}

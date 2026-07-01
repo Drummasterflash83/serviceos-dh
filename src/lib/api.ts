@@ -10,7 +10,8 @@
  * here yet. Not imported by the UI.
  */
 
-import type { ApiError, ApiResult } from "./types";
+import { supabaseConfig } from "./supabase";
+import type { ApiError, ApiResult, SimwoodConnectionResult } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
   /** Base URL to resolve `path` against. Defaults to same-origin. */
@@ -66,4 +67,72 @@ export async function apiFetch<T>(
       error: toApiError("parse", "Failed to parse JSON response", response.status),
     };
   }
+}
+
+/**
+ * Test the Simwood/Sipcentric connection via the `simwood-test-connection`
+ * Supabase Edge Function. The function reads the provider credentials from
+ * server-side secrets and returns credential-free account metadata only.
+ *
+ * Not wired to the UI yet. Validates input and missing config up front so the
+ * caller always gets a normalised `ApiResult` (never a throw). The Edge
+ * Function's own `{ ok, data, error }` envelope is unwrapped here so structured
+ * error codes/messages survive.
+ */
+export async function testSimwoodConnection(
+  tenantId: string,
+): Promise<ApiResult<SimwoodConnectionResult>> {
+  if (typeof tenantId !== "string" || tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/simwood-test-connection`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify({ tenant_id: tenantId }),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: { ok?: boolean; data?: SimwoodConnectionResult; error?: ApiError } | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.ok && body.data) {
+    return { ok: true, data: body.data };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Simwood connection test failed",
+      response.status,
+    ),
+  };
 }
