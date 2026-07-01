@@ -124,3 +124,71 @@ if (result.ok) {
 
 A successful call returns credential-free account metadata only and logs the
 outcome to `phone_sync_runs` and `audit_logs`.
+
+### Phase Phone-1 — call history sync
+
+Ingests call history (CDRs) from Simwood into the `phone_calls` table. Idempotent
+(upsert on `tenant_id + provider + provider_call_id`), so re-running never
+duplicates a call. Every attempt is logged to `phone_sync_runs` and `audit_logs`.
+Still **no recordings, audio, transcription or AI enrichment** — that's later.
+
+Uses the same `SIMWOOD_USERNAME` / `SIMWOOD_PASSWORD` secrets. Shared provider
+helpers live in `supabase/functions/_shared/simwood.ts`.
+
+Deploy:
+
+```bash
+supabase functions deploy simwood-sync-calls
+```
+
+Invoke (defaults to the last 24 hours if `from`/`to` are omitted):
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/simwood-sync-calls \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "from": "2026-06-30T00:00:00Z",
+    "to": "2026-07-01T00:00:00Z",
+    "direction": "inbound",
+    "limit": 200
+  }'
+```
+
+Request fields (all optional except `tenant_id`):
+
+| Field | Meaning |
+| --- | --- |
+| `tenant_id` | Tenant UUID (required) |
+| `provider_customer_id` | Simwood customer id; auto-discovered if omitted |
+| `from` / `to` | ISO **date window** → mapped to the API's `startedAfter` / `startedBefore` (not the API's number filters). Defaults to now-24h → now |
+| `direction` | `inbound` / `outbound` → mapped to the API's `IN` / `OUT` |
+| `limit` | Max records to process this run |
+
+Successful response:
+
+```json
+{
+  "success": true,
+  "provider": "simwood",
+  "records_processed": 12,
+  "from": "2026-06-30T00:00:00.000Z",
+  "to": "2026-07-01T00:00:00.000Z",
+  "customer_id": "1234",
+  "sync_run_id": "…uuid…"
+}
+```
+
+Typed helper (not wired to UI):
+
+```ts
+import { syncSimwoodCalls } from "@/lib/api";
+
+const result = await syncSimwoodCalls({ tenantId, from, to, direction: "inbound" });
+if (result.ok) {
+  console.log(result.data.records_processed, "calls synced");
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```

@@ -48,3 +48,28 @@ export interface SimwoodConnectionResult {
   customers: SimwoodCustomerSummary[];
   customerCount: number;
 }
+
+/** Input to the `simwood-sync-calls` Edge Function (Phase-1 call history sync). */
+export interface SimwoodSyncCallsInput {
+  tenantId: string;
+  /** Simwood customer id; discovered server-side when omitted. */
+  providerCustomerId?: string;
+  /** ISO date — start of the sync window. Defaults server-side to now-24h. */
+  from?: string;
+  /** ISO date — end of the sync window. Defaults server-side to now. */
+  to?: string;
+  direction?: "inbound" | "outbound";
+  /** Max records to process this run. */
+  limit?: number;
+}
+
+/** Safe summary returned by `simwood-sync-calls`. */
+export interface SimwoodSyncCallsResult {
+  success: boolean;
+  provider: string;
+  records_processed: number;
+  from: string;
+  to: string;
+  customer_id: string | null;
+  sync_run_id: string | null;
+}

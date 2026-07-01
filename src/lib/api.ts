@@ -11,7 +11,13 @@
  */
 
 import { supabaseConfig } from "./supabase";
-import type { ApiError, ApiResult, SimwoodConnectionResult } from "./types";
+import type {
+  ApiError,
+  ApiResult,
+  SimwoodConnectionResult,
+  SimwoodSyncCallsInput,
+  SimwoodSyncCallsResult,
+} from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
   /** Base URL to resolve `path` against. Defaults to same-origin. */
@@ -132,6 +138,84 @@ export async function testSimwoodConnection(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Simwood connection test failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Trigger a Simwood/Sipcentric call-history sync via the `simwood-sync-calls`
+ * Edge Function (Phase-1). Credentials are read server-side; this only passes
+ * the tenant, optional window and filters. Idempotent on the server.
+ *
+ * Not wired to the UI yet. camelCase input is mapped to the function's
+ * snake_case body; the flat `{ success, ... }` response is normalised to
+ * `ApiResult` so callers never handle a raw throw.
+ */
+export async function syncSimwoodCalls(
+  input: SimwoodSyncCallsInput,
+): Promise<ApiResult<SimwoodSyncCallsResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (input.limit !== undefined && (!Number.isFinite(input.limit) || input.limit <= 0)) {
+    return { ok: false, error: toApiError("invalid_limit", "limit must be a positive number") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = { tenant_id: input.tenantId };
+  if (input.providerCustomerId !== undefined)
+    payload.provider_customer_id = input.providerCustomerId;
+  if (input.from !== undefined) payload.from = input.from;
+  if (input.to !== undefined) payload.to = input.to;
+  if (input.direction !== undefined) payload.direction = input.direction;
+  if (input.limit !== undefined) payload.limit = input.limit;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/simwood-sync-calls`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<SimwoodSyncCallsResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as SimwoodSyncCallsResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Simwood call sync failed",
       response.status,
     ),
   };
