@@ -663,3 +663,90 @@ Response:
   "sync_run_id": "…"
 }
 ```
+
+## Email Input — Phase Email-0: Gmail ingestion foundation
+
+Email is the **second real communications input**, alongside phone. Phase Email-0
+lays down only the **database schema, RLS model, shared types, and a typed
+frontend feed helper** — the integration _shape_. There is **no UI, no Gmail
+OAuth, no Gmail API calls, and no data yet**. It deliberately mirrors the
+Phone-0 → Security-2 model so email can later join the same **Calls & Comms**
+feed.
+
+### Schema
+
+Migration `supabase/migrations/20260702140000_email_input_foundation.sql`
+(idempotent; reuses `set_updated_at()` from Phone-0 and `current_tenant_id()`
+from Security-2) creates six tenant-scoped tables:
+
+- **`email_accounts`** — one connected mailbox per tenant/provider
+  (`provider` defaults to `gmail`; `status`: pending | active | error | disabled).
+- **`email_threads`** — conversation grouping (`provider_thread_id`, `subject`,
+  `participants` jsonb, `last_message_at`, `raw_payload`).
+- **`email_messages`** — individual messages (`from_email`/`from_name`,
+  `to_emails`/`cc_emails` jsonb, `subject`, `snippet`, `body_text`/`body_html`,
+  `sent_at`/`received_at`, `direction` inbound | outbound, `raw_payload`). Links
+  to a thread by `provider_thread_id` (text), matching the phone model.
+- **`email_attachments`** — attachment metadata + `storage_path` pointer
+  (`null` until downloaded; no blobs in the DB), `on delete cascade` from message.
+- **`email_ai_insights`** — advisory AI enrichment per message and/or thread
+  (`intent`, `urgency`, `sentiment`, `summary`, `action_required`,
+  `suggested_owner`, `confidence`, `raw_payload`).
+- **`email_sync_runs`** — observability/audit of sync + analysis runs
+  (`sync_type`: oauth | messages | threads | ai_analysis | attachment_download;
+  `status`: running | success | failed; `records_processed`, `error_message`,
+  `metadata`).
+
+Feed indexes: `email_messages(tenant_id, received_at desc)`,
+`email_messages(tenant_id, from_email)`,
+`email_threads(tenant_id, last_message_at desc)`, and
+`email_ai_insights` by `(tenant_id, message_id)` and `(tenant_id, thread_id)`.
+
+### RLS model
+
+Same **closed-by-default** posture as the phone tables:
+
+- **SELECT-only** policies scoped to `row.tenant_id = current_tenant_id()`,
+  granted to `authenticated` — any tenant member can read their own tenant's rows.
+- **No INSERT/UPDATE/DELETE policies** — every write stays server-side (future
+  Edge Functions via the service role, which bypasses RLS). **No anon/public
+  reads, no frontend writes.**
+
+### Feed helper
+
+[`src/lib/email-feed.ts`](src/lib/email-feed.ts) exposes two functions that use
+the **browser** Supabase client (the user's session), so RLS filters everything
+to the tenant automatically — no `tenant_id` is ever sent by the client:
+
+- `getEmailFeed({ from?, to?, limit?, direction?, actionRequiredOnly? })` →
+  `EmailFeedItem[]`. Thread-centric: composes `email_threads` + each thread's
+  **latest** `email_messages` row + that message's `email_ai_insights` into one
+  record with a derived `processing_status` (`analysed` | `received`). Bodies are
+  not fetched here.
+- `getEmailThreadDetail(threadId)` → `EmailThreadDetail`. Lazily loads one
+  thread's ordered messages (with `body_text`/`body_html`) and each message's
+  best-effort insight.
+
+Shared row/feed types live in [`src/lib/types.ts`](src/lib/types.ts):
+`EmailAccount`, `EmailThread`, `EmailMessage`, `EmailInsight`, `EmailFeedItem`
+(+ `EmailFeedInput`, `EmailThreadMessage`, `EmailThreadDetail`).
+
+### Planned (not in this phase)
+
+- **OAuth** — a `gmail-connect` Edge Function to run Google OAuth server-side,
+  storing tokens as Supabase secrets (never in the DB or frontend) and upserting
+  an `email_accounts` row. Tracked as `email_sync_runs.sync_type = 'oauth'`.
+- **Sync** — `gmail-sync-threads` / `gmail-sync-messages` Edge Functions that
+  page the Gmail API (service role, tenant-bound like the Simwood syncs),
+  upserting threads/messages/attachments and logging each run.
+- **AI analysis** — a `gmail-analyse-message` (or thread) function mirroring
+  `phone-analyse-transcript`, writing `email_ai_insights`, with an automated
+  pipeline like Phone-5A.
+
+### Link to Calls & Comms
+
+Because email carries the same insight shape (`intent`, `urgency`, `sentiment`,
+`summary`, `action_required`, `suggested_owner`, `confidence`) and `direction` as
+phone, `EmailFeedItem` and `PhoneFeedItem` can be merged into a single unified
+**Calls & Comms** timeline once that surface is built — a shared, RLS-safe read
+of every communications channel.

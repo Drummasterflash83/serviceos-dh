@@ -255,6 +255,144 @@ export interface PhoneFeedItem {
   processing_status: string;
 }
 
+// ---------------------------------------------------------------------------
+// Email Input (Phase-0) — schema/shape only. Mirrors the phone_* model: these
+// row types describe what the RLS-scoped browser client reads; no writes.
+// ---------------------------------------------------------------------------
+
+/** A row from `email_accounts` (one connected mailbox per tenant/provider). */
+export interface EmailAccount {
+  id: string;
+  tenant_id: string;
+  provider: string;
+  email_address: string | null;
+  display_name: string | null;
+  /** pending | active | error | disabled */
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A row from `email_threads` (conversation grouping). */
+export interface EmailThread {
+  id: string;
+  tenant_id: string;
+  provider: string;
+  provider_thread_id: string | null;
+  subject: string | null;
+  participants: string[];
+  last_message_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A row from `email_messages` (one individual message). */
+export interface EmailMessage {
+  id: string;
+  tenant_id: string;
+  provider: string;
+  provider_message_id: string | null;
+  provider_thread_id: string | null;
+  from_email: string | null;
+  from_name: string | null;
+  to_emails: string[];
+  cc_emails: string[];
+  subject: string | null;
+  snippet: string | null;
+  body_text: string | null;
+  body_html: string | null;
+  sent_at: string | null;
+  received_at: string | null;
+  /** inbound | outbound */
+  direction: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A row from `email_ai_insights` (advisory AI enrichment per message/thread). */
+export interface EmailInsight {
+  id: string;
+  tenant_id: string;
+  message_id: string | null;
+  thread_id: string | null;
+  intent: string | null;
+  urgency: string | null;
+  sentiment: string | null;
+  summary: string | null;
+  action_required: boolean | null;
+  suggested_owner: string | null;
+  confidence: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Filters for the tenant-scoped email feed (client-side RLS reads). */
+export interface EmailFeedInput {
+  /** ISO date — inclusive lower bound on the thread's last message. */
+  from?: string;
+  /** ISO date — inclusive upper bound on the thread's last message. */
+  to?: string;
+  /** Max threads to return (clamped inside the helper). */
+  limit?: number;
+  /** Filter by the latest message's direction. */
+  direction?: "inbound" | "outbound" | "ALL";
+  /** Only threads whose latest message's AI insight flags action_required. */
+  actionRequiredOnly?: boolean;
+}
+
+/** One composed feed record (thread + its latest message + that message's insight). */
+export interface EmailFeedItem {
+  thread_id: string;
+  provider_thread_id: string | null;
+  subject: string | null;
+  participants: string[];
+  last_message_at: string | null;
+  /** The most recent message in the thread. */
+  latest_message_id: string | null;
+  from_email: string | null;
+  from_name: string | null;
+  snippet: string | null;
+  direction: string | null;
+  insight_id: string | null;
+  summary: string | null;
+  intent: string | null;
+  urgency: string | null;
+  sentiment: string | null;
+  action_required: boolean | null;
+  suggested_owner: string | null;
+  confidence: number | null;
+  /** Derived: analysed | received. */
+  processing_status: string;
+}
+
+/** One message within a thread detail (includes bodies + best-effort insight). */
+export interface EmailThreadMessage {
+  message_id: string;
+  provider_message_id: string | null;
+  from_email: string | null;
+  from_name: string | null;
+  to_emails: string[];
+  cc_emails: string[];
+  subject: string | null;
+  snippet: string | null;
+  body_text: string | null;
+  body_html: string | null;
+  sent_at: string | null;
+  received_at: string | null;
+  direction: string | null;
+  insight: EmailInsight | null;
+}
+
+/** Lazily-loaded detail for one thread (meta + ordered messages with bodies). */
+export interface EmailThreadDetail {
+  thread_id: string;
+  provider_thread_id: string | null;
+  subject: string | null;
+  participants: string[];
+  last_message_at: string | null;
+  messages: EmailThreadMessage[];
+}
+
 /** Structured fields extracted from an insight's raw_payload (best-effort). */
 export interface PhoneCallDetailRaw {
   customer_name: string | null;
