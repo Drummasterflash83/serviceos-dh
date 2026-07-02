@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Plug,
   Phone,
   Mail,
   MessageSquare,
   Briefcase,
+  FileText,
   PlayCircle,
   Loader2,
   CheckCircle2,
@@ -13,12 +14,19 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { testSimwoodConnection, syncSimwoodCalls, syncSimwoodRecordings } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import {
+  testSimwoodConnection,
+  syncSimwoodCalls,
+  syncSimwoodRecordings,
+  transcribePhoneRecording,
+} from "@/lib/api";
 import type {
   ApiResult,
   SimwoodConnectionResult,
   SimwoodSyncCallsResult,
   SimwoodSyncRecordingsResult,
+  PhoneTranscribeRecordingResult,
 } from "@/lib/types";
 
 // TODO(auth): replace this hardcoded test tenant with the authenticated user's
@@ -38,10 +46,12 @@ function StatusPanel<T>({
   running,
   result,
   renderOk,
+  renderExtra,
 }: {
   running: boolean;
   result: ApiResult<T> | null;
   renderOk: (data: T) => Row[];
+  renderExtra?: (data: T) => ReactNode;
 }) {
   let tone: "idle" | "running" | "ok" | "error" = "idle";
   if (running) tone = "running";
@@ -101,6 +111,8 @@ function StatusPanel<T>({
         </dl>
       )}
 
+      {result && result.ok && renderExtra && <div className="mt-2">{renderExtra(result.data)}</div>}
+
       {result && !result.ok && (
         <div className="mt-2 space-y-1">
           <div className="font-mono text-xs text-destructive">{result.error.code}</div>
@@ -140,6 +152,20 @@ export function AdminView() {
       }),
     );
     setRunning(null);
+  }
+
+  const [recordingId, setRecordingId] = useState("");
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcript, setTranscript] = useState<ApiResult<PhoneTranscribeRecordingResult> | null>(
+    null,
+  );
+
+  async function runTranscribe() {
+    const id = recordingId.trim();
+    if (!id) return;
+    setTranscribing(true);
+    setTranscript(await transcribePhoneRecording({ tenantId: TENANT_ID, recordingId: id }));
+    setTranscribing(false);
   }
 
   return (
@@ -267,6 +293,72 @@ export function AdminView() {
               ]}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Transcription — OpenAI (Phase-4A) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex items-center justify-between border-b border-hairline pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+              <FileText className="h-4 w-4 text-foreground" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold">Transcription · OpenAI</div>
+              <div className="text-xs text-muted-foreground">
+                Speech-to-text from a stored recording
+              </div>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+            Voice intelligence
+          </span>
+        </div>
+
+        <div className="mt-5 max-w-xl">
+          <label
+            htmlFor="rec-id"
+            className="text-[11px] uppercase tracking-wider text-muted-foreground"
+          >
+            Recording UUID
+          </label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <Input
+              id="rec-id"
+              value={recordingId}
+              onChange={(e) => setRecordingId(e.target.value)}
+              placeholder="294014bf-0e25-4904-8ad7-81c8526e2025"
+              disabled={transcribing}
+              className="font-mono"
+            />
+            <Button onClick={runTranscribe} disabled={transcribing || recordingId.trim() === ""}>
+              {transcribing ? "Transcribing…" : "Transcribe recording"}
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-warning">
+            Transcripts are machine-generated and may need human review.
+          </p>
+
+          <StatusPanel
+            running={transcribing}
+            result={transcript}
+            renderOk={(d) => [
+              { label: "Status", value: d.status },
+              { label: "Language", value: d.language ?? "—" },
+              { label: "Model", value: d.model ?? "—" },
+              { label: "Transcript", value: d.transcript_id ?? "—" },
+            ]}
+            renderExtra={(d) => (
+              <div className="rounded-lg border border-hairline bg-surface-alt/50 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Preview
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-xs text-foreground">
+                  {d.text_preview || "—"}
+                </p>
+              </div>
+            )}
+          />
         </div>
       </div>
 

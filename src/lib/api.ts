@@ -21,6 +21,8 @@ import type {
   SimwoodSyncRecordingsResult,
   SimwoodDownloadRecordingInput,
   SimwoodDownloadRecordingResult,
+  PhoneTranscribeRecordingInput,
+  PhoneTranscribeRecordingResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -379,6 +381,82 @@ export async function downloadSimwoodRecording(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Simwood recording download failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Transcribe a stored recording's audio via the `phone-transcribe-recording`
+ * Edge Function (Phase-4A). Audio is read from private storage and sent to
+ * OpenAI server-side; this only passes the tenant + recording id. Neither the
+ * audio URL nor the OpenAI key is exposed to the client.
+ *
+ * Idempotent server-side: a completed transcript returns as-is unless `force`.
+ * Not wired to product UI — used by the Admin console only.
+ */
+export async function transcribePhoneRecording(
+  input: PhoneTranscribeRecordingInput,
+): Promise<ApiResult<PhoneTranscribeRecordingResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = {
+    tenant_id: input.tenantId,
+    recording_id: input.recordingId,
+  };
+  if (input.force !== undefined) payload.force = input.force;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/phone-transcribe-recording`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<PhoneTranscribeRecordingResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as PhoneTranscribeRecordingResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Transcription failed",
       response.status,
     ),
   };

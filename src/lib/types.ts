@@ -135,3 +135,26 @@ export interface SimwoodDownloadRecordingResult {
   already_downloaded: boolean;
   sync_run_id: string | null;
 }
+
+/** Input to the `phone-transcribe-recording` Edge Function (Phase-4A transcription). */
+export interface PhoneTranscribeRecordingInput {
+  tenantId: string;
+  /** phone_recordings.id (a ServiceOS UUID). */
+  recordingId: string;
+  /** Re-transcribe even if a completed transcript already exists. */
+  force?: boolean;
+}
+
+/** Safe summary returned by `phone-transcribe-recording` (no audio URL / key). */
+export interface PhoneTranscribeRecordingResult {
+  success: boolean;
+  provider: string;
+  recording_id: string;
+  transcript_id: string | null;
+  status: string;
+  language: string | null;
+  model: string | null;
+  /** First 240 characters of the transcript only. */
+  text_preview: string;
+  sync_run_id: string | null;
+}

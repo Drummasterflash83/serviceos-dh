@@ -386,3 +386,79 @@ if (result.ok) {
   console.error(result.error.code, result.error.message);
 }
 ```
+
+## Phone Input — Phase Phone-4A: call transcription (OpenAI)
+
+The first Voice Intelligence layer. Reads a recording's WAV from private storage
+(service role) and transcribes it via **OpenAI**, writing the text to
+`phone_transcripts`. Audio and the OpenAI key stay **server-side only** — the
+client never sees the audio URL or the key.
+
+Still **no AI summary/insight extraction, no diarization, no playback UI.** The
+provider is isolated in `supabase/functions/_shared/openai.ts` so a specialist
+(e.g. Deepgram) can be added later.
+
+> ⚠️ Transcripts are **machine-generated and may need human review** before being
+> relied on operationally (accents, telephony audio, overlapping speech).
+
+### Required secret / env
+
+| Name | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | **Required.** OpenAI API key (server-side only; never `VITE_`-prefixed) |
+| `OPENAI_TRANSCRIPTION_MODEL` | Optional. Transcription model. Default `gpt-4o-transcribe`; a documented fallback is `whisper-1`. |
+
+```bash
+supabase secrets set OPENAI_API_KEY=<value>
+# optional:
+supabase secrets set OPENAI_TRANSCRIPTION_MODEL=gpt-4o-transcribe
+```
+
+### Deploy & invoke
+
+```bash
+supabase functions deploy phone-transcribe-recording
+```
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/phone-transcribe-recording \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "recording_id": "294014bf-0e25-4904-8ad7-81c8526e2025",
+    "force": false
+  }'
+```
+
+Request fields: `tenant_id` (required UUID), `recording_id` (required — a
+`phone_recordings.id`), `force` (optional — re-transcribe even if a completed
+transcript exists). Requires the recording to already have a `storage_path`
+(Phase-3). Successful response returns a **240-char `text_preview` only**:
+
+```json
+{
+  "success": true,
+  "provider": "openai",
+  "recording_id": "…",
+  "transcript_id": "…",
+  "status": "completed",
+  "language": "en",
+  "model": "gpt-4o-transcribe",
+  "text_preview": "first 240 chars…",
+  "sync_run_id": "…"
+}
+```
+
+Typed helper (used by the Admin console, not the product UI):
+
+```ts
+import { transcribePhoneRecording } from "@/lib/api";
+
+const result = await transcribePhoneRecording({ tenantId, recordingId });
+if (result.ok) {
+  console.log(result.data.status, result.data.text_preview);
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```
