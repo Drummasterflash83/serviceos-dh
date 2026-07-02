@@ -750,3 +750,101 @@ Because email carries the same insight shape (`intent`, `urgency`, `sentiment`,
 phone, `EmailFeedItem` and `PhoneFeedItem` can be merged into a single unified
 **Calls & Comms** timeline once that surface is built — a shared, RLS-safe read
 of every communications channel.
+
+## Email Input — Phase Email-1: Gmail OAuth connection
+
+Lets an **owner/admin/ops** user securely connect a Gmail / Google Workspace
+mailbox so ServiceOS can sync email **later**. This phase is **connection only**
+— it obtains and stores OAuth tokens. **No mail is read; no Gmail message API is
+called.**
+
+### Flow
+
+1. **Admin → Email · Gmail → “Connect Gmail”** calls `startGmailOAuth()`
+   ([`src/lib/api.ts`](src/lib/api.ts)) → the `gmail-oauth-start` Edge Function.
+2. The function verifies the caller's JWT, **binds tenant + user from their
+   profile** (never a client-supplied `tenant_id`), and returns a Google consent
+   URL. The browser redirects to it.
+3. Google redirects back to `gmail-oauth-callback` with `code` + `state`. The
+   callback verifies the **HMAC-signed `state`** (which binds the initiating
+   tenant/user/return-origin), exchanges the code for tokens server-side, reads
+   the mailbox address, upserts `email_accounts` (status `active`) and
+   `email_oauth_tokens`, logs to `email_sync_runs` + `audit_logs`, then 302s back
+   to `/app?gmail=connected`.
+
+The `state` is stateless and signed with the platform-injected service-role key
+(server-only, never exposed, never logged) — so it can't be forged to point at
+another tenant. The callback runs with **`verify_jwt = false`** (Google's
+redirect carries no Supabase JWT); trust comes entirely from the signed state.
+
+### Token storage
+
+Migration `supabase/migrations/20260702150000_email_oauth_tokens.sql` adds
+**`email_oauth_tokens`** (`access_token`, `refresh_token`, `expires_at`, `scope`,
+`token_type`, …). **RLS is enabled with NO policies** → the frontend can never
+read or write it; only the service role (the Edge Functions) touches tokens.
+Tokens are **never returned to the client and never logged**.
+
+### Scopes
+
+Minimum for a future read-only sync: `gmail.readonly` and `userinfo.email`, with
+`access_type=offline` + `prompt=consent` so Google returns a `refresh_token`.
+
+### Google Cloud setup
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) → **APIs &
+   Services**: enable the **Gmail API**.
+2. **OAuth consent screen**: configure (Internal for a single Workspace, or
+   External + test users), and add the two scopes above.
+3. **Credentials → Create OAuth client ID → Web application**. Under
+   **Authorized redirect URIs** add your callback URL:
+
+   ```
+   https://<PROJECT_REF>.supabase.co/functions/v1/gmail-oauth-callback
+   ```
+
+   This exact value must also be the `GOOGLE_REDIRECT_URI` secret.
+
+### Required Supabase secrets (server-side only)
+
+Never prefixed `VITE_`, never returned to the client:
+
+| Secret                 | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| `GOOGLE_CLIENT_ID`     | OAuth client id (Web application)                   |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret                                 |
+| `GOOGLE_REDIRECT_URI`  | The `gmail-oauth-callback` URL registered in Google |
+
+State signing reuses the injected `SUPABASE_SERVICE_ROLE_KEY` — **no additional
+secret is required** (optionally override with `GMAIL_OAUTH_STATE_SECRET`).
+
+```bash
+supabase secrets set GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... \
+  GOOGLE_REDIRECT_URI=https://<PROJECT_REF>.supabase.co/functions/v1/gmail-oauth-callback
+```
+
+### Apply migration & deploy
+
+```bash
+supabase db push
+supabase functions deploy gmail-oauth-start
+supabase functions deploy gmail-oauth-callback   # verify_jwt=false via config.toml
+```
+
+`supabase/config.toml` sets `verify_jwt = false` for the **callback** only; the
+**start** function keeps JWT verification on. (Equivalent without config.toml:
+`supabase functions deploy gmail-oauth-callback --no-verify-jwt`.)
+
+### Testing
+
+1. Sign in as an owner/admin/ops user, open **Admin**, click **Connect Gmail**.
+2. Approve on Google's consent screen → you're redirected back to
+   `/app?gmail=connected`.
+3. Verify (service-role / SQL, since RLS hides tokens): a row exists in
+   `email_accounts` (status `active`) and one in `email_oauth_tokens`
+   (`has_refresh_token` reflected in the `email_sync_runs` `oauth` row's
+   metadata). Tokens must **not** be visible to the anon/authenticated client.
+4. A `viewer` calling `gmail-oauth-start` receives `forbidden`.
+
+**No email sync yet** — Phase Email-2 will use these tokens (service-role, with
+refresh) to page the Gmail API into `email_threads` / `email_messages`.

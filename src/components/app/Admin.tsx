@@ -23,6 +23,7 @@ import {
   syncSimwoodRecordings,
   processPhonePipeline,
   getPhonePipelineStatus,
+  startGmailOAuth,
 } from "@/lib/api";
 import type {
   ApiResult,
@@ -192,6 +193,23 @@ export function AdminView() {
     void loadStatus();
   }
 
+  // Gmail OAuth connect (Email Phase-1). On success the browser is redirected
+  // to Google's consent screen; no email is synced yet.
+  const [connectingGmail, setConnectingGmail] = useState(false);
+  const [gmailError, setGmailError] = useState<string | null>(null);
+
+  async function connectGmail() {
+    setConnectingGmail(true);
+    setGmailError(null);
+    const res = await startGmailOAuth();
+    if (res.ok) {
+      window.location.href = res.data.auth_url; // leaves the app for Google
+      return;
+    }
+    setGmailError(`${res.error.code}: ${res.error.message}`);
+    setConnectingGmail(false);
+  }
+
   // Access control: only owner/admin/ops may use the Admin console. The Edge
   // Functions enforce this too — this is the UI-side gate.
   if (!allowed) {
@@ -331,6 +349,46 @@ export function AdminView() {
         </div>
       </div>
 
+      {/* Email — Gmail (OAuth connection only) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex items-center justify-between border-b border-hairline pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+              <Mail className="h-4 w-4 text-foreground" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold">Email · Gmail</div>
+              <div className="text-xs text-muted-foreground">
+                Connect a Google Workspace mailbox via OAuth
+              </div>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface-alt px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+            Setup
+          </span>
+        </div>
+
+        <div className="mt-5 max-w-xl">
+          <p className="text-xs text-muted-foreground">
+            Grants read-only access so ServiceOS can sync email later. You will be redirected to
+            Google to approve the connection.
+          </p>
+          <Button size="sm" className="mt-3" onClick={connectGmail} disabled={connectingGmail}>
+            {connectingGmail ? "Connecting…" : "Connect Gmail"}
+          </Button>
+
+          {gmailError && (
+            <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {gmailError}
+            </div>
+          )}
+
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            OAuth connection only. Email sync comes next.
+          </p>
+        </div>
+      </div>
+
       {/* Pipeline diagnostics (read-only) */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex items-center justify-between border-b border-hairline pb-4">
@@ -462,11 +520,6 @@ const STATUS_TILES: {
 ];
 
 const PLACEHOLDERS: { name: string; detail: string; icon: LucideIcon }[] = [
-  {
-    name: "Gmail input",
-    detail: "Inbound email capture, classification and threading.",
-    icon: Mail,
-  },
   {
     name: "Slack input",
     detail: "Team messages and alerts routed into ServiceOS.",

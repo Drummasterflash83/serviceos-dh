@@ -1,0 +1,15 @@
+# ServiceOS — Supabase project config.
+#
+# Only per-function JWT settings are declared here; every other setting uses the
+# CLI defaults. Functions not listed keep the default (verify_jwt = true), so the
+# existing phone/simwood functions are unaffected.
+
+# Gmail OAuth start — authenticated (owner/admin/ops). Keep JWT verification ON.
+[functions.gmail-oauth-start]
+verify_jwt = true
+
+# Gmail OAuth callback — Google redirects the browser here with NO Supabase JWT,
+# so gateway JWT verification MUST be off. Trust comes from the HMAC-signed
+# `state` verified inside the function (see _shared/gmail_oauth.ts).
+[functions.gmail-oauth-callback]
+verify_jwt = false

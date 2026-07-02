@@ -326,6 +326,13 @@ export interface EmailInsight {
   updated_at: string;
 }
 
+/** Result of the `gmail-oauth-start` Edge Function (Email Phase-1). */
+export interface GmailOAuthStartResult {
+  success: boolean;
+  /** Google consent URL the browser should be redirected to. */
+  auth_url: string;
+}
+
 /** Filters for the tenant-scoped email feed (client-side RLS reads). */
 export interface EmailFeedInput {
   /** ISO date — inclusive lower bound on the thread's last message. */

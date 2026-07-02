@@ -28,6 +28,7 @@ import type {
   ProcessPhonePipelineInput,
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
+  GmailOAuthStartResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -607,6 +608,55 @@ export async function getPhonePipelineStatus(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Status fetch failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Begin the Gmail OAuth connection flow via the `gmail-oauth-start` Edge
+ * Function (Email Phase-1). The function derives the tenant/user from the
+ * signed-in JWT (never a client-supplied tenant_id) and returns a Google
+ * consent URL. The caller should redirect the browser to `auth_url`.
+ *
+ * Connection only — no email is synced. No secrets touch the client; the
+ * function reads GOOGLE_* server-side.
+ */
+export async function startGmailOAuth(): Promise<ApiResult<GmailOAuthStartResult>> {
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/gmail-oauth-start`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      // No tenant_id — the function binds the tenant from the caller's profile.
+      body: JSON.stringify({}),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GmailOAuthStartResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success && body.auth_url) {
+    return { ok: true, data: body as GmailOAuthStartResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Could not start Gmail connection",
       response.status,
     ),
   };
