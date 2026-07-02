@@ -22,6 +22,7 @@ import {
   ensureRecordingTranscribed,
   ensureTranscriptAnalysed,
 } from "../_shared/phone_pipeline.ts";
+import { assertSameTenant, getBearerToken, requireTenantUser } from "../_shared/authz.ts";
 
 const PROVIDER = "pipeline";
 
@@ -38,10 +39,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
 
-  const tenantId = body.tenant_id;
-  if (!isUuid(tenantId)) {
-    return failResponse("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
   const recordingId = body.recording_id;
   if (!isUuid(recordingId)) {
     return failResponse("invalid_recording_id", "recording_id is required and must be a UUID", 400);
@@ -56,6 +53,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!supabase) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+
+  // --- authz: bind tenant server-side (force ⇒ owner/admin only) -----------
+  const auth = await requireTenantUser(
+    req,
+    supabase,
+    force ? ["owner", "admin"] : ["owner", "admin", "ops"],
+  );
+  if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
+  // Forward the caller's JWT to the step functions so they enforce the same user.
+  const authToken = getBearerToken(req) ?? "";
 
   const baseMetadata: Record<string, unknown> = { recording_id: recordingId, force };
 
@@ -158,7 +168,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // --- Step 2: download (idempotent) --------------------------------------
-  const d = await ensureRecordingDownloaded({ tenantId, recordingId, force });
+  const d = await ensureRecordingDownloaded({ tenantId, recordingId, force, authToken });
   if (!d.ok) {
     return await finishFailed(d.code, d.message, d.httpStatus, {
       downloaded: false,
@@ -168,7 +178,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // --- Step 3: transcribe (idempotent) ------------------------------------
-  const t = await ensureRecordingTranscribed({ tenantId, recordingId, force });
+  const t = await ensureRecordingTranscribed({ tenantId, recordingId, force, authToken });
   if (!t.ok) {
     return await finishFailed(t.code, t.message, t.httpStatus, {
       downloaded: true,
@@ -186,7 +196,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // --- Step 4: analyse (idempotent) ---------------------------------------
-  const a = await ensureTranscriptAnalysed({ tenantId, transcriptId, force });
+  const a = await ensureTranscriptAnalysed({ tenantId, transcriptId, force, authToken });
   if (!a.ok) {
     return await finishFailed(
       a.code,

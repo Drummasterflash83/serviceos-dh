@@ -30,6 +30,7 @@ import {
   simwoodGetBinary,
   corsHeaders,
 } from "../_shared/simwood.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const STORAGE_BUCKET = "phone-recordings";
 
@@ -51,10 +52,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
 
-  const tenantId = body.tenant_id;
-  if (!isUuid(tenantId)) {
-    return failResponse("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
   const recordingId = body.recording_id;
   if (!isUuid(recordingId)) {
     return failResponse("invalid_recording_id", "recording_id is required and must be a UUID", 400);
@@ -69,6 +66,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!supabase) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+
+  // --- authz: bind tenant server-side (force ⇒ owner/admin only) -----------
+  const auth = await requireTenantUser(
+    req,
+    supabase,
+    force ? ["owner", "admin"] : ["owner", "admin", "ops"],
+  );
+  if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
 
   const baseMetadata: Record<string, unknown> = { recording_id: recordingId, force };
 

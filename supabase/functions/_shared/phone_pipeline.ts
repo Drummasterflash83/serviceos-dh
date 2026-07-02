@@ -23,20 +23,29 @@ function functionsBase(): string | null {
   return url ? `${url}/functions/v1` : null;
 }
 
-/** Invoke a sibling Edge Function with the service-role key. */
+/**
+ * Invoke a sibling Edge Function, forwarding the CALLER'S user JWT so the target
+ * enforces the same tenant/role. `apikey` uses the service-role key only to pass
+ * the platform gateway; user authorization is the forwarded bearer token.
+ */
 export async function invokeFunction(
   name: string,
   body: Record<string, unknown>,
+  authToken: string,
 ): Promise<{ status: number; json: Record<string, unknown> | null }> {
   const base = functionsBase();
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!base || !key) return { status: 0, json: null };
+  if (!base || !key || !authToken) return { status: 0, json: null };
 
   let resp: Response;
   try {
     resp = await fetch(`${base}/${name}`, {
       method: "POST",
-      headers: { "content-type": "application/json", Authorization: `Bearer ${key}`, apikey: key },
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+        apikey: key,
+      },
       body: JSON.stringify(body),
     });
   } catch {
@@ -70,12 +79,13 @@ export async function ensureRecordingDownloaded(opts: {
   tenantId: string;
   recordingId: string;
   force: boolean;
+  authToken: string;
 }): Promise<StepResult> {
-  const { status, json } = await invokeFunction("simwood-download-recording", {
-    tenant_id: opts.tenantId,
-    recording_id: opts.recordingId,
-    force: opts.force,
-  });
+  const { status, json } = await invokeFunction(
+    "simwood-download-recording",
+    { tenant_id: opts.tenantId, recording_id: opts.recordingId, force: opts.force },
+    opts.authToken,
+  );
   if (json?.success) return { ok: true, data: json };
   return toStepError("download", status, json);
 }
@@ -85,12 +95,13 @@ export async function ensureRecordingTranscribed(opts: {
   tenantId: string;
   recordingId: string;
   force: boolean;
+  authToken: string;
 }): Promise<StepResult> {
-  const { status, json } = await invokeFunction("phone-transcribe-recording", {
-    tenant_id: opts.tenantId,
-    recording_id: opts.recordingId,
-    force: opts.force,
-  });
+  const { status, json } = await invokeFunction(
+    "phone-transcribe-recording",
+    { tenant_id: opts.tenantId, recording_id: opts.recordingId, force: opts.force },
+    opts.authToken,
+  );
   if (json?.success) return { ok: true, data: json };
   return toStepError("transcribe", status, json);
 }
@@ -100,30 +111,36 @@ export async function ensureTranscriptAnalysed(opts: {
   tenantId: string;
   transcriptId: string;
   force: boolean;
+  authToken: string;
 }): Promise<StepResult> {
-  const { status, json } = await invokeFunction("phone-analyse-transcript", {
-    tenant_id: opts.tenantId,
-    transcript_id: opts.transcriptId,
-    force: opts.force,
-  });
+  const { status, json } = await invokeFunction(
+    "phone-analyse-transcript",
+    { tenant_id: opts.tenantId, transcript_id: opts.transcriptId, force: opts.force },
+    opts.authToken,
+  );
   if (json?.success) return { ok: true, data: json };
   return toStepError("analyse", status, json);
 }
 
 /**
- * Fire-and-forget pipeline runs for newly-inserted recordings. Each invocation
- * is failure-isolated; when the runtime supports it, they continue after the
- * response is sent via EdgeRuntime.waitUntil.
+ * Fire-and-forget pipeline runs for newly-inserted recordings, forwarding the
+ * caller's user JWT so the pipeline enforces tenant/role. Each invocation is
+ * failure-isolated; when supported, they continue after the response is sent via
+ * EdgeRuntime.waitUntil.
  */
-export function triggerPipelineBackground(tenantId: string, recordingIds: string[]): void {
+export function triggerPipelineBackground(
+  tenantId: string,
+  recordingIds: string[],
+  authToken: string,
+): void {
   const er = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
     .EdgeRuntime;
   for (const recordingId of recordingIds) {
-    const p = invokeFunction("phone-process-pipeline", {
-      tenant_id: tenantId,
-      recording_id: recordingId,
-      force: false,
-    })
+    const p = invokeFunction(
+      "phone-process-pipeline",
+      { tenant_id: tenantId, recording_id: recordingId, force: false },
+      authToken,
+    )
       .then(() => {})
       .catch(() => {});
     if (er?.waitUntil) er.waitUntil(p);

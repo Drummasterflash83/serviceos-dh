@@ -34,6 +34,7 @@ import {
   simwoodGet,
   corsHeaders,
 } from "../_shared/simwood.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const PAGE_SIZE_MAX = 200; // Simwood cap
 const HARD_PAGE_CAP = 50; // safety bound: at most 50 pages (~10k rows) per run
@@ -76,11 +77,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
 
-  const tenantId = body.tenant_id;
-  if (!isUuid(tenantId)) {
-    return failResponse("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
-
   const direction = apiDirection(body.direction);
   if (!direction.ok) {
     return failResponse("invalid_direction", "direction must be 'inbound' or 'outbound'", 400);
@@ -104,6 +100,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!supabase) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+
+  // --- authz: bind tenant server-side (sync ⇒ owner/admin/ops) -------------
+  const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
+  if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
 
   const suppliedCustomerId =
     typeof body.provider_customer_id === "string" && body.provider_customer_id.trim() !== ""

@@ -10,7 +10,7 @@
  * here yet. Not imported by the UI.
  */
 
-import { supabaseConfig } from "./supabase";
+import { supabaseConfig, getAccessToken } from "./supabase";
 import type {
   ApiError,
   ApiResult,
@@ -39,6 +39,36 @@ export interface ApiRequestOptions extends RequestInit {
 
 function toApiError(code: string, message: string, status?: number): ApiError {
   return { code, message, status };
+}
+
+type FunctionAuth = { ok: true; token: string } | { ok: false; error: ApiError };
+
+/**
+ * Resolve config + the current user's access token for an Edge Function call.
+ * Functions verify this JWT and bind the tenant server-side, so the token — not
+ * the anon key — must be the bearer.
+ */
+async function functionAuth(): Promise<FunctionAuth> {
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+  const token = await getAccessToken();
+  if (!token) return { ok: false, error: toApiError("missing_auth", "You must be signed in") };
+  return { ok: true, token };
+}
+
+function functionHeaders(token: string): Record<string, string> {
+  return {
+    "content-type": "application/json",
+    apikey: supabaseConfig.anonKey,
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 /**
@@ -103,15 +133,8 @@ export async function testSimwoodConnection(
   if (typeof tenantId !== "string" || tenantId.trim() === "") {
     return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const endpoint = `${supabaseConfig.url}/functions/v1/simwood-test-connection`;
 
@@ -122,11 +145,7 @@ export async function testSimwoodConnection(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -176,15 +195,8 @@ export async function syncSimwoodCalls(
   if (input.limit !== undefined && (!Number.isFinite(input.limit) || input.limit <= 0)) {
     return { ok: false, error: toApiError("invalid_limit", "limit must be a positive number") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = { tenant_id: input.tenantId };
   if (input.providerCustomerId !== undefined)
@@ -200,11 +212,7 @@ export async function syncSimwoodCalls(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -254,15 +262,8 @@ export async function syncSimwoodRecordings(
   if (input.limit !== undefined && (!Number.isFinite(input.limit) || input.limit <= 0)) {
     return { ok: false, error: toApiError("invalid_limit", "limit must be a positive number") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = { tenant_id: input.tenantId };
   if (input.providerCustomerId !== undefined)
@@ -279,11 +280,7 @@ export async function syncSimwoodRecordings(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -333,15 +330,8 @@ export async function downloadSimwoodRecording(
   if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
     return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = {
     tenant_id: input.tenantId,
@@ -355,11 +345,7 @@ export async function downloadSimwoodRecording(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -409,15 +395,8 @@ export async function transcribePhoneRecording(
   if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
     return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = {
     tenant_id: input.tenantId,
@@ -431,11 +410,7 @@ export async function transcribePhoneRecording(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -484,15 +459,8 @@ export async function analysePhoneTranscript(
   if (typeof input.transcriptId !== "string" || input.transcriptId.trim() === "") {
     return { ok: false, error: toApiError("invalid_transcript_id", "transcriptId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = {
     tenant_id: input.tenantId,
@@ -506,11 +474,7 @@ export async function analysePhoneTranscript(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -556,15 +520,8 @@ export async function processPhonePipeline(
   if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
     return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const payload: Record<string, unknown> = {
     tenant_id: input.tenantId,
@@ -578,11 +535,7 @@ export async function processPhonePipeline(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify(payload),
     });
   } catch (cause) {
@@ -621,15 +574,8 @@ export async function getPhonePipelineStatus(
   if (typeof tenantId !== "string" || tenantId.trim() === "") {
     return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
   }
-  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
-    return {
-      ok: false,
-      error: toApiError(
-        "config_error",
-        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
-      ),
-    };
-  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
 
   const endpoint = `${supabaseConfig.url}/functions/v1/phone-pipeline-status`;
 
@@ -637,11 +583,7 @@ export async function getPhonePipelineStatus(
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-      },
+      headers: functionHeaders(authz.token),
       body: JSON.stringify({ tenant_id: tenantId }),
     });
   } catch (cause) {

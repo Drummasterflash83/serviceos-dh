@@ -37,6 +37,7 @@ import {
   corsHeaders,
 } from "../_shared/simwood.ts";
 import { triggerPipelineBackground } from "../_shared/phone_pipeline.ts";
+import { assertSameTenant, getBearerToken, requireTenantUser } from "../_shared/authz.ts";
 
 // Safety cap: at most this many newly-inserted recordings auto-trigger the
 // pipeline per sync run (backstop against a large backfill flooding OpenAI).
@@ -81,11 +82,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
 
-  const tenantId = body.tenant_id;
-  if (!isUuid(tenantId)) {
-    return failResponse("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
-
   const limit = toInt(body.limit);
   if (body.limit !== undefined && (limit === null || limit <= 0)) {
     return failResponse("invalid_limit", "limit must be a positive number", 400);
@@ -107,6 +103,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!supabase) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+
+  // --- authz: bind tenant server-side (sync ⇒ owner/admin/ops) -------------
+  const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
+  if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
+  const authToken = getBearerToken(req) ?? "";
 
   const suppliedCustomerId = optionalString(body.provider_customer_id);
 
@@ -323,7 +327,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // --- auto-process newly inserted recordings (background, isolated) -------
   const toTrigger = newRecordingIds.slice(0, MAX_AUTO_PIPELINE);
-  if (toTrigger.length > 0) triggerPipelineBackground(tenantId, toTrigger);
+  if (toTrigger.length > 0) triggerPipelineBackground(tenantId, toTrigger, authToken);
 
   // --- success -------------------------------------------------------------
   const metadata = {

@@ -16,6 +16,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
 import {
   testSimwoodConnection,
   syncSimwoodCalls,
@@ -32,13 +33,13 @@ import type {
   PhonePipelineStatusResult,
 } from "@/lib/types";
 
-// TODO(auth): replace this hardcoded test tenant with the authenticated user's
-// profile.tenant_id (from useAuth().profile) once profiles carry a tenant.
-const TENANT_ID = "00000000-0000-0000-0000-000000000001";
-
 // TODO(integration): replace this hardcoded Simwood customer id with the
 // tenant's integration config once provider connections are stored per tenant.
 const PROVIDER_CUSTOMER_ID = "3950";
+
+// Roles allowed to see/use the Admin console. The Edge Functions enforce this
+// server-side too — this only controls what the UI offers.
+const ADMIN_ROLES = ["owner", "admin", "ops"] as const;
 
 type ActionKey = "test" | "calls" | "recordings";
 
@@ -127,6 +128,11 @@ function StatusPanel<T>({
 }
 
 export function AdminView() {
+  const { profile } = useAuth();
+  const role = profile?.role ?? null;
+  const tenantId = profile?.tenant_id ?? "";
+  const allowed = role !== null && (ADMIN_ROLES as readonly string[]).includes(role);
+
   const [running, setRunning] = useState<ActionKey | null>(null);
   const [test, setTest] = useState<ApiResult<SimwoodConnectionResult> | null>(null);
   const [calls, setCalls] = useState<ApiResult<SimwoodSyncCallsResult> | null>(null);
@@ -134,15 +140,13 @@ export function AdminView() {
 
   async function runTest() {
     setRunning("test");
-    setTest(await testSimwoodConnection(TENANT_ID, PROVIDER_CUSTOMER_ID));
+    setTest(await testSimwoodConnection(tenantId, PROVIDER_CUSTOMER_ID));
     setRunning(null);
   }
   async function runCalls() {
     setRunning("calls");
     // No from/to → the function defaults to the last 24 hours.
-    setCalls(
-      await syncSimwoodCalls({ tenantId: TENANT_ID, providerCustomerId: PROVIDER_CUSTOMER_ID }),
-    );
+    setCalls(await syncSimwoodCalls({ tenantId, providerCustomerId: PROVIDER_CUSTOMER_ID }));
     setRunning(null);
   }
   async function runRecordings() {
@@ -150,7 +154,7 @@ export function AdminView() {
     // No from/to → the function defaults to the last 24 hours.
     setRecordings(
       await syncSimwoodRecordings({
-        tenantId: TENANT_ID,
+        tenantId,
         providerCustomerId: PROVIDER_CUSTOMER_ID,
       }),
     );
@@ -162,10 +166,11 @@ export function AdminView() {
   const [status, setStatus] = useState<ApiResult<PhonePipelineStatusResult> | null>(null);
 
   const loadStatus = useCallback(async () => {
+    if (!tenantId) return;
     setStatusLoading(true);
-    setStatus(await getPhonePipelineStatus(TENANT_ID));
+    setStatus(await getPhonePipelineStatus(tenantId));
     setStatusLoading(false);
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     void loadStatus();
@@ -182,9 +187,23 @@ export function AdminView() {
     const id = retryId.trim();
     if (!id) return;
     setRetrying(true);
-    setRetryResult(await processPhonePipeline({ tenantId: TENANT_ID, recordingId: id }));
+    setRetryResult(await processPhonePipeline({ tenantId, recordingId: id }));
     setRetrying(false);
     void loadStatus();
+  }
+
+  // Access control: only owner/admin/ops may use the Admin console. The Edge
+  // Functions enforce this too — this is the UI-side gate.
+  if (!allowed) {
+    return (
+      <div className="rounded-2xl border border-hairline bg-white p-8 text-center">
+        <div className="text-display text-lg font-semibold">Restricted</div>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          The Admin console is available to owner, admin and ops roles only.
+          {role ? ` Your role is "${role}".` : " Your account has no role assigned."}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -208,13 +227,10 @@ export function AdminView() {
             </p>
           </div>
           <div className="rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-            Tenant · <span className="font-mono">{TENANT_ID}</span>
+            Tenant · <span className="font-mono">{tenantId || "—"}</span>
+            {role ? <span className="ml-2 text-muted-foreground/70">· {role}</span> : null}
           </div>
         </div>
-        <p className="mt-3 text-[11px] text-warning">
-          Using a temporary hardcoded tenant id for testing — replace with the authenticated profile
-          tenant_id.
-        </p>
       </div>
 
       {/* Phone / VoIP — Simwood (active) */}

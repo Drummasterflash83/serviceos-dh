@@ -17,6 +17,7 @@
 //     network failure with distinct, safe error codes.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const SIMWOOD_API_BASE = "https://pbx.sipcentric.com/api/v1";
 
@@ -57,10 +58,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } catch {
     return fail("invalid_json", "Request body must be valid JSON", 400);
   }
-  const tenantId = (parsed as { tenant_id?: unknown } | null)?.tenant_id;
-  if (typeof tenantId !== "string" || !UUID_RE.test(tenantId)) {
-    return fail("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
   // Optional: when supplied, verify a specific account (/customers/{id});
   // otherwise fall back to the /customers collection for discovery.
   const rawCustomerId = (parsed as { provider_customer_id?: unknown } | null)?.provider_customer_id;
@@ -74,6 +71,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
+  if (!supabase) {
+    return fail("config_error", "Supabase admin client is not configured", 500);
+  }
+
+  // --- authz: bind tenant server-side (owner/admin/ops) --------------------
+  const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
+  if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(
+    auth.ctx,
+    (parsed as { tenant_id?: unknown } | null)?.tenant_id,
+  );
+  if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
 
   // Best-effort logging to phone_sync_runs + audit_logs. Never throws.
   async function logOutcome(

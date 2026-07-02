@@ -47,3 +47,14 @@ export function getSupabaseClient(): SupabaseClient {
   }
   return client;
 }
+
+/**
+ * The current user's access token (JWT), or null when not configured / signed
+ * out. Edge Function calls send this as the bearer so functions can verify the
+ * user and bind the tenant server-side.
+ */
+export async function getAccessToken(): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  const { data } = await getSupabaseClient().auth.getSession();
+  return data.session?.access_token ?? null;
+}

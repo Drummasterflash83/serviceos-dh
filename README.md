@@ -81,9 +81,36 @@ is public; **`/app` is protected** — unauthenticated users are redirected to
 3. Reload `/app` while signed in → stays on `/app` (session persists).
 4. The landing page `/` remains reachable without a session.
 
-> Not yet built: invite flow UI, role-based UI gating, and tenant-scoped RLS on
-> the `phone_*` tables (those still deny-by-default; see
+> Not yet built: invite flow UI, and tenant-scoped RLS on the `phone_*` tables
+> (those still deny-by-default; see
 > [docs/DEPLOYMENT_AND_TEST_CHECKLIST.md](docs/DEPLOYMENT_AND_TEST_CHECKLIST.md)).
+
+### Edge Function authorization (Security-1)
+
+All phone Edge Functions authenticate the caller and **bind the tenant
+server-side** — they do **not** trust a client-supplied `tenant_id`.
+
+- **Auth:** the frontend sends the signed-in user's **access token** (JWT) as the
+  bearer (not the anon key). The shared helper
+  `supabase/functions/_shared/authz.ts` verifies it, loads the caller's
+  `profiles` row, and returns `{ user_id, email, tenant_id, role }`.
+- **Tenant binding:** functions use `profile.tenant_id` for every write. If the
+  request body also includes `tenant_id`, it must equal the profile's — otherwise
+  `tenant_mismatch`.
+- **Roles:**
+  - `owner` / `admin` / `ops` — may run sync, diagnostics, transcription,
+    analysis and the pipeline.
+  - **`force`/destructive retries** require `owner` / `admin`.
+  - `viewer` — cannot run sync / retry / pipeline; the Admin console is hidden.
+- **Internal calls** (pipeline → step functions, and the recordings-sync
+  auto-trigger) **forward the caller's JWT**, so the same tenant/role is enforced
+  end-to-end.
+- **Error codes:** `missing_auth`, `invalid_auth`, `profile_not_found`,
+  `tenant_mismatch`, `forbidden`.
+
+The Admin console is available only to `owner`/`admin`/`ops`; other roles see a
+"Restricted" state. Assign a user's tenant and role in the `profiles` table
+(service-role / SQL) — end users cannot change their own role or tenant.
 
 ## Phone Input (Simwood / Sipcentric) — Phase Phone-0
 

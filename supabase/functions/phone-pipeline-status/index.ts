@@ -17,9 +17,9 @@ import {
   corsHeaders,
   createSupabaseAdmin,
   failResponse,
-  isUuid,
   jsonResponse,
 } from "../_shared/simwood.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -31,15 +31,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } catch {
     return failResponse("invalid_json", "Request body must be valid JSON", 400);
   }
-  const tenantId = (parsed as { tenant_id?: unknown } | null)?.tenant_id;
-  if (!isUuid(tenantId)) {
-    return failResponse("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
-  }
+  const body = (parsed ?? {}) as Record<string, unknown>;
 
   const supabase = createSupabaseAdmin();
   if (!supabase) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+
+  // --- authz: bind tenant server-side (diagnostics ⇒ owner/admin/ops) ------
+  const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
+  if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
+  const tenantId = auth.ctx.tenantId;
 
   async function countRecordings(): Promise<number> {
     const { count } = await supabase
