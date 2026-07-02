@@ -24,6 +24,7 @@ import {
 } from "@/components/app/NorthStar";
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
+import { AdminView } from "@/components/app/Admin";
 
 
 export const Route = createFileRoute("/app")({
@@ -50,7 +51,7 @@ type ViewKey =
   | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
   | "cards" | "operations" | "comms" | "customers" | "engineers"
   | "learn" | "intelligence" | "automations" | "agents" | "protocol"
-  | "compliance" | "finance" | "settings";
+  | "compliance" | "finance" | "admin" | "settings";
 
 type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; group?: string };
 
@@ -76,6 +77,7 @@ const NAV: NavItem[] = [
   { key: "protocol",     label: "Protocol",       icon: ShieldCheck,     group: "Intelligence" },
   { key: "compliance",   label: "Compliance",     icon: ShieldCheck,     group: "Intelligence" },
   { key: "finance",      label: "Numbers",        icon: Banknote,        group: "Intelligence" },
+  { key: "admin",        label: "Admin",          icon: Network,         group: "Intelligence" },
   { key: "settings",     label: "Settings",       icon: Settings,        group: "Intelligence" },
 ];
 
@@ -176,6 +178,7 @@ function AppShell() {
           {view === "protocol"     && <Protocol />}
           {view === "compliance"   && <ComplianceRoadmap />}
           {view === "finance"      && <Finance />}
+          {view === "admin"        && <AdminView />}
           {view === "settings"     && <SettingsView />}
         </main>
       </div>
