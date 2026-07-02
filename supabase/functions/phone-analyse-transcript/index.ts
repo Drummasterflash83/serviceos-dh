@@ -362,6 +362,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const insight = {
     tenant_id: tenantId,
     recording_id: recordingId,
+    transcript_id: transcriptId,
     call_id: null,
     intent: n.intent,
     urgency: n.urgency,
@@ -382,6 +383,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { error: updErr } = await supabase
       .from("phone_ai_insights")
       .update({
+        transcript_id: insight.transcript_id,
         intent: insight.intent,
         urgency: insight.urgency,
         sentiment: insight.sentiment,

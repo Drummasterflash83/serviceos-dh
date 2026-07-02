@@ -1,0 +1,154 @@
+/**
+ * Tenant-scoped call feed — client-side reads under RLS (Security-2).
+ *
+ * Uses the browser Supabase client (the signed-in user's session), so every
+ * query is filtered to the caller's tenant by the RLS SELECT policies added in
+ * the Security-2 migration. NO service role, NO tenant_id passed by the client.
+ *
+ * The feed is composed in two RLS-scoped reads (calls, then their recordings +
+ * embedded transcripts/insights) because phone_recordings links to phone_calls
+ * by provider_call_id (text), which PostgREST cannot auto-embed.
+ */
+
+import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
+import type { ApiResult, PhoneFeedInput, PhoneFeedItem } from "./types";
+
+function clampLimit(v: number | undefined): number {
+  const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : 100;
+  return Math.max(1, Math.min(500, n));
+}
+
+interface CallRow {
+  id: string;
+  provider_call_id: string | null;
+  linked_id: string | null;
+  direction: string | null;
+  from_number: string | null;
+  to_number: string | null;
+  started_at: string | null;
+  duration_seconds: number | null;
+  outcome: string | null;
+}
+
+interface TranscriptEmbed {
+  id: string;
+  status: string | null;
+}
+
+interface InsightEmbed {
+  id: string;
+  intent: string | null;
+  urgency: string | null;
+  sentiment: string | null;
+  summary: string | null;
+  action_required: boolean | null;
+  suggested_owner: string | null;
+  confidence: number | null;
+}
+
+interface RecordingRow {
+  id: string;
+  provider_recording_id: string | null;
+  provider_call_id: string | null;
+  started_at: string | null;
+  phone_transcripts: TranscriptEmbed[] | null;
+  phone_ai_insights: InsightEmbed[] | null;
+}
+
+/**
+ * Fetch a composed, tenant-scoped call feed. Returns clean feed records; the
+ * heavy transcript text is intentionally not fetched (only ids + insight
+ * summary). Not wired to any UI yet.
+ */
+export async function getPhoneFeed(
+  input: PhoneFeedInput = {},
+): Promise<ApiResult<PhoneFeedItem[]>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const supabase = getSupabaseClient();
+  const limit = clampLimit(input.limit);
+
+  // 1) Calls — RLS scopes to the caller's tenant.
+  let callQuery = supabase
+    .from("phone_calls")
+    .select(
+      "id, provider_call_id, linked_id, direction, from_number, to_number, started_at, duration_seconds, outcome",
+    )
+    .order("started_at", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (input.from) callQuery = callQuery.gte("started_at", input.from);
+  if (input.to) callQuery = callQuery.lte("started_at", input.to);
+  if (input.direction && input.direction !== "ALL") {
+    callQuery = callQuery.eq("direction", input.direction);
+  }
+
+  const { data: calls, error: callErr } = await callQuery;
+  if (callErr) return { ok: false, error: { code: "query_error", message: callErr.message } };
+  const callRows = (calls ?? []) as CallRow[];
+
+  // 2) Recordings (+ transcripts + insights) for those calls, RLS-scoped too.
+  const providerCallIds = Array.from(
+    new Set(callRows.map((c) => c.provider_call_id).filter((x): x is string => Boolean(x))),
+  );
+  const recByCallId = new Map<string, RecordingRow>();
+  if (providerCallIds.length > 0) {
+    const { data: recs, error: recErr } = await supabase
+      .from("phone_recordings")
+      .select(
+        "id, provider_recording_id, provider_call_id, started_at, phone_transcripts(id, status), phone_ai_insights(id, intent, urgency, sentiment, summary, action_required, suggested_owner, confidence)",
+      )
+      .in("provider_call_id", providerCallIds)
+      .order("started_at", { ascending: false, nullsFirst: false });
+    if (recErr) return { ok: false, error: { code: "query_error", message: recErr.message } };
+    for (const r of (recs ?? []) as RecordingRow[]) {
+      // First seen = most recent by started_at (already ordered desc).
+      if (r.provider_call_id && !recByCallId.has(r.provider_call_id)) {
+        recByCallId.set(r.provider_call_id, r);
+      }
+    }
+  }
+
+  // 3) Compose.
+  let items: PhoneFeedItem[] = callRows.map((c) => {
+    const rec = c.provider_call_id ? (recByCallId.get(c.provider_call_id) ?? null) : null;
+    const transcript = rec?.phone_transcripts?.[0] ?? null;
+    const insight = rec?.phone_ai_insights?.[0] ?? null;
+
+    let processing_status = "call_only";
+    if (insight) processing_status = "analysed";
+    else if (transcript?.status === "completed") processing_status = "transcribed";
+    else if (transcript) processing_status = "transcribing";
+    else if (rec) processing_status = "recorded";
+
+    return {
+      call_id: c.id,
+      provider_call_id: c.provider_call_id,
+      linked_id: c.linked_id,
+      direction: c.direction,
+      from_number: c.from_number,
+      to_number: c.to_number,
+      started_at: c.started_at,
+      duration_seconds: c.duration_seconds,
+      outcome: c.outcome,
+      recording_id: rec?.id ?? null,
+      provider_recording_id: rec?.provider_recording_id ?? null,
+      transcript_id: transcript?.id ?? null,
+      insight_id: insight?.id ?? null,
+      summary: insight?.summary ?? null,
+      intent: insight?.intent ?? null,
+      urgency: insight?.urgency ?? null,
+      sentiment: insight?.sentiment ?? null,
+      action_required: insight?.action_required ?? null,
+      suggested_owner: insight?.suggested_owner ?? null,
+      confidence: insight?.confidence ?? null,
+      processing_status,
+    };
+  });
+
+  if (input.actionRequiredOnly) {
+    items = items.filter((i) => i.action_required === true);
+  }
+
+  return { ok: true, data: items };
+}

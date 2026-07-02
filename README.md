@@ -112,6 +112,42 @@ The Admin console is available only to `owner`/`admin`/`ops`; other roles see a
 "Restricted" state. Assign a user's tenant and role in the `profiles` table
 (service-role / SQL) — end users cannot change their own role or tenant.
 
+### Tenant-scoped reads & the call feed (Security-2)
+
+The phone tables are now **safe to read directly from the authenticated
+frontend**. Migration `supabase/migrations/20260702130000_security2_feed_rls.sql`
+adds **SELECT-only** RLS policies scoped to the caller's tenant:
+
+- Read allowed only where `row.tenant_id = current_tenant_id()` (the caller's
+  `profiles.tenant_id`, resolved by a `security definer` helper).
+- `phone_calls`, `phone_recordings`, `phone_transcripts`, `phone_ai_insights`,
+  `phone_sync_runs` — readable by any authenticated tenant member
+  (owner/admin/ops/viewer). `audit_logs` — **owner/admin only**.
+- **No INSERT/UPDATE/DELETE policies** — all writes stay server-side (Edge
+  Functions via the service role, which bypasses RLS). **No anon/public reads.**
+
+Hardening in the same migration (non-destructive): `phone_ai_insights.transcript_id`
+(also mirrored in `raw_payload`), feed indexes
+(`phone_calls(tenant_id, started_at desc)`, `phone_recordings(tenant_id, started_at desc)`,
+transcript/insight-by-recording), and partial unique indexes enforcing one
+completed transcript and one insight per recording.
+
+**Feed helper:** [`src/lib/phone-feed.ts`](src/lib/phone-feed.ts) →
+`getPhoneFeed({ from?, to?, limit?, direction?, actionRequiredOnly? })`. It uses
+the **browser** Supabase client (the user's session), so RLS filters everything
+to the tenant automatically — no `tenant_id` is ever sent by the client. It
+composes `phone_calls` + `phone_recordings` + `phone_transcripts` +
+`phone_ai_insights` into `PhoneFeedItem` records with a derived
+`processing_status`.
+
+Why reads are safe now: the frontend can only ever see its own tenant's rows
+(RLS), cannot write (no write policies), and never handles the service role.
+
+**Remaining limitations:** the feed is composed in two client reads (recordings
+join to calls by `provider_call_id`, which PostgREST can't auto-embed);
+`actionRequiredOnly` is applied after composition (may return fewer than
+`limit`); and the Calls & Comms UI is not built yet.
+
 ## Phone Input (Simwood / Sipcentric) — Phase Phone-0
 
 The first real backend input. Phase Phone-0 provides the schema, a

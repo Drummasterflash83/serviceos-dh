@@ -215,3 +215,42 @@ export interface PhonePipelineStatusResult {
   completed: number;
   recordings_total: number;
 }
+
+/** Filters for the tenant-scoped call feed (client-side RLS reads). */
+export interface PhoneFeedInput {
+  /** ISO date — inclusive lower bound on call start. */
+  from?: string;
+  /** ISO date — inclusive upper bound on call start. */
+  to?: string;
+  /** Max calls to return (clamped server-side of the client). */
+  limit?: number;
+  direction?: "IN" | "OUT" | "ALL";
+  /** Only calls whose AI insight flags action_required. */
+  actionRequiredOnly?: boolean;
+}
+
+/** One composed feed record (call + recording + transcript + insight). */
+export interface PhoneFeedItem {
+  call_id: string;
+  provider_call_id: string | null;
+  linked_id: string | null;
+  direction: string | null;
+  from_number: string | null;
+  to_number: string | null;
+  started_at: string | null;
+  duration_seconds: number | null;
+  outcome: string | null;
+  recording_id: string | null;
+  provider_recording_id: string | null;
+  transcript_id: string | null;
+  insight_id: string | null;
+  summary: string | null;
+  intent: string | null;
+  urgency: string | null;
+  sentiment: string | null;
+  action_required: boolean | null;
+  suggested_owner: string | null;
+  confidence: number | null;
+  /** Derived: analysed | transcribed | transcribing | recorded | call_only. */
+  processing_status: string;
+}
