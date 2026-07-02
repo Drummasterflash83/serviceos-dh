@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
@@ -7,11 +7,11 @@ import {
   GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass,
+  Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass, LogOut,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { RequireAuth } from "@/lib/auth";
+import { RequireAuth, useAuth } from "@/lib/auth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
 import {
@@ -84,6 +84,8 @@ const NAV: NavItem[] = [
 
 function AppShell() {
   const [view, setView] = useState<ViewKey>("northstar");
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-surface-alt text-foreground">
@@ -128,6 +130,16 @@ function AppShell() {
             </div>
             <div className="mt-2 text-xs text-muted-foreground">Drummond Heating</div>
           </div>
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/login" });
+            }}
+            className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-alt hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
         </div>
       </aside>
 
