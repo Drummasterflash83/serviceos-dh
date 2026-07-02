@@ -35,6 +35,20 @@ export interface SupabasePublicConfig {
   anonKey: string;
 }
 
+/** Access-control roles, least → most privileged handled in policy, not order. */
+export type UserRole = "owner" | "admin" | "ops" | "viewer";
+
+/** A row from the `profiles` table (one per auth user). */
+export interface Profile {
+  id: string;
+  tenant_id: string | null;
+  email: string | null;
+  full_name: string | null;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Safe, credential-free account summary returned by the Simwood test. */
 export interface SimwoodCustomerSummary {
   id: string | null;

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { RequireAuth } from "@/lib/auth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
 import {
@@ -32,8 +33,18 @@ export const Route = createFileRoute("/app")({
       { name: "description", content: "Live operations, calls, finance and intelligence in one surface." },
     ],
   }),
-  component: AppShell,
+  component: ProtectedApp,
 });
+
+// Auth-0: /app is gated. Unauthenticated users are redirected to /login.
+// Behaviour-only wrapper — it does not alter the AppShell UI.
+function ProtectedApp() {
+  return (
+    <RequireAuth>
+      <AppShell />
+    </RequireAuth>
+  );
+}
 
 type ViewKey =
   | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"

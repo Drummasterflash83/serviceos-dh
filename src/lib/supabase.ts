@@ -1,19 +1,16 @@
 /**
- * Supabase client — PLACEHOLDER.
+ * Supabase browser client.
  *
- * The `@supabase/supabase-js` SDK is intentionally NOT installed yet (keeping
- * the lockfile untouched for now), so this module does not import it. It only
- * resolves the public config from `VITE_*` env and exposes a stub so the rest
- * of the codebase can start importing a stable path.
+ * Resolves the PUBLIC config from `VITE_*` env and lazily creates a singleton
+ * client using the anon/publishable key. Only client-safe values are read here
+ * — the service-role key must never be referenced from client-importable code.
  *
- * To activate later:
- *   1. `npm install @supabase/supabase-js`
- *   2. Uncomment the wiring below and delete the stub `getSupabaseClient`.
- *   3. Provide VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY in `.env.local`.
- *
- * SECURITY: only the PUBLIC url + anon key are read here (both client-safe).
- * The service-role key must never be referenced from client-importable code.
+ * SSR note: `createClient` is only invoked via `getSupabaseClient()`, which the
+ * auth layer calls inside effects / event handlers (browser only). The client
+ * is configured to persist and auto-refresh the session in the browser.
  */
+
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { SupabasePublicConfig } from "./types";
 
@@ -28,31 +25,25 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(supabaseConfig.url && supabaseConfig.anonKey);
 }
 
-/**
- * Placeholder accessor. Throws until the SDK is installed and wired, so no
- * silent no-op client leaks into feature code.
- */
-export function getSupabaseClient(): never {
-  throw new Error(
-    "Supabase client is not wired yet. Install @supabase/supabase-js and " +
-      "replace the placeholder in src/lib/supabase.ts.",
-  );
-}
+let client: SupabaseClient | undefined;
 
-/*
- * --- Activation stub (kept commented until the SDK is added) ---
- *
- * import { createClient, type SupabaseClient } from "@supabase/supabase-js";
- *
- * let client: SupabaseClient | undefined;
- *
- * export function getSupabaseClient(): SupabaseClient {
- *   if (!isSupabaseConfigured()) {
- *     throw new Error("Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY");
- *   }
- *   if (!client) {
- *     client = createClient(supabaseConfig.url, supabaseConfig.anonKey);
- *   }
- *   return client;
- * }
+/**
+ * Return the singleton Supabase client. Throws if the public env is missing so
+ * callers surface a clear configuration error rather than a silent no-op.
  */
+export function getSupabaseClient(): SupabaseClient {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY");
+  }
+  if (!client) {
+    client = createClient(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        // Password auth only for now — no OAuth/magic-link redirect parsing.
+        detectSessionInUrl: false,
+      },
+    });
+  }
+  return client;
+}

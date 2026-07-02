@@ -48,6 +48,43 @@ Copy [`.env.example`](.env.example) to `.env.local` (git-ignored) and fill in th
 public values. Only `VITE_`-prefixed, client-safe values belong in `.env.local`;
 backend secrets go in the server-side secret store, never in the client bundle.
 
+## Authentication & access control (Auth-0)
+
+The app uses **Supabase Auth** (email/password). The marketing landing page (`/`)
+is public; **`/app` is protected** — unauthenticated users are redirected to
+`/login`. Access is **invite-only**: there is no public sign-up unless
+`VITE_ENABLE_SIGNUP="true"` is set.
+
+- Client wiring: [`src/lib/supabase.ts`](src/lib/supabase.ts) (browser client,
+  anon key only) and [`src/lib/auth.tsx`](src/lib/auth.tsx) (`AuthProvider`,
+  `useAuth`, `RequireAuth`). No secrets in the frontend.
+- Login page: [`src/routes/login.tsx`](src/routes/login.tsx).
+- Roles (prepared in the `profiles` table): **owner**, **admin**, **ops**,
+  **viewer**. Migration `supabase/migrations/20260702120000_profiles_and_roles.sql`
+  creates `profiles` (one row per auth user, auto-provisioned by trigger, RLS:
+  read-your-own only) and the role model. `tenant_id` lives on the profile.
+
+### Setup
+
+1. In Supabase → Auth → Providers, enable **Email**. Keep **"Allow new users to
+   sign up" OFF** (invite-only). Add users via Dashboard → Auth → Add user.
+2. Auth → URL Configuration: set the **Site URL** and add **Redirect URLs** for
+   production and Vercel previews.
+3. Apply migrations (`supabase db push`) so the `profiles` table + trigger exist.
+4. Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (and optionally
+   `VITE_ENABLE_SIGNUP`) in `.env.local` / Vercel.
+
+### Testing
+
+1. `npm run dev`, visit `/app` while signed out → you are redirected to `/login`.
+2. Sign in with an invited user's email/password → you land on `/app`.
+3. Reload `/app` while signed in → stays on `/app` (session persists).
+4. The landing page `/` remains reachable without a session.
+
+> Not yet built: invite flow UI, role-based UI gating, and tenant-scoped RLS on
+> the `phone_*` tables (those still deny-by-default; see
+> [docs/DEPLOYMENT_AND_TEST_CHECKLIST.md](docs/DEPLOYMENT_AND_TEST_CHECKLIST.md)).
+
 ## Phone Input (Simwood / Sipcentric) — Phase Phone-0
 
 The first real backend input. Phase Phone-0 provides the schema, a
