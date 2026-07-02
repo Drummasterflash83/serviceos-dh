@@ -127,7 +127,7 @@ export async function simwoodGet(
     return {
       ok: false,
       code: "auth_failed",
-      message: "Simwood authentication failed — check credentials",
+      message: "Simwood authentication failed — invalid credentials or insufficient API permission",
       httpStatus: 401,
     };
   }
@@ -245,7 +245,7 @@ export async function simwoodGetBinary(
     return {
       ok: false,
       code: "auth_failed",
-      message: "Simwood authentication failed — check credentials",
+      message: "Simwood authentication failed — invalid credentials or insufficient API permission",
       httpStatus: 401,
     };
   }

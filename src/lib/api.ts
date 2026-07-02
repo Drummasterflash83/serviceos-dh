@@ -91,6 +91,7 @@ export async function apiFetch<T>(
  */
 export async function testSimwoodConnection(
   tenantId: string,
+  providerCustomerId?: string,
 ): Promise<ApiResult<SimwoodConnectionResult>> {
   if (typeof tenantId !== "string" || tenantId.trim() === "") {
     return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
@@ -107,6 +108,9 @@ export async function testSimwoodConnection(
 
   const endpoint = `${supabaseConfig.url}/functions/v1/simwood-test-connection`;
 
+  const payload: Record<string, unknown> = { tenant_id: tenantId };
+  if (providerCustomerId !== undefined) payload.provider_customer_id = providerCustomerId;
+
   let response: Response;
   try {
     response = await fetch(endpoint, {
@@ -116,7 +120,7 @@ export async function testSimwoodConnection(
         apikey: supabaseConfig.anonKey,
         Authorization: `Bearer ${supabaseConfig.anonKey}`,
       },
-      body: JSON.stringify({ tenant_id: tenantId }),
+      body: JSON.stringify(payload),
     });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Network request failed";

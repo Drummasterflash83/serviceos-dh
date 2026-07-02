@@ -143,7 +143,7 @@ supabase functions serve simwood-test-connection --env-file supabase/functions/.
 curl -i -X POST http://localhost:54321/functions/v1/simwood-test-connection \
   -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
   -H "Content-Type: application/json" \
-  -d '{"tenant_id":"00000000-0000-0000-0000-000000000000"}'
+  -d '{"tenant_id":"00000000-0000-0000-0000-000000000000","provider_customer_id":"3950"}'
 ```
 
 Deployed, or later from the app, via the typed helper (not yet wired to UI):
@@ -151,7 +151,7 @@ Deployed, or later from the app, via the typed helper (not yet wired to UI):
 ```ts
 import { testSimwoodConnection } from "@/lib/api";
 
-const result = await testSimwoodConnection(tenantId);
+const result = await testSimwoodConnection(tenantId, "3950");
 if (result.ok) {
   console.log(result.data.customerCount, "account(s) reachable");
 } else {
@@ -186,6 +186,7 @@ curl -i -X POST http://localhost:54321/functions/v1/simwood-sync-calls \
   -H "Content-Type: application/json" \
   -d '{
     "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "provider_customer_id": "3950",
     "from": "2026-06-30T00:00:00Z",
     "to": "2026-07-01T00:00:00Z",
     "direction": "inbound",
@@ -259,6 +260,7 @@ curl -i -X POST http://localhost:54321/functions/v1/simwood-sync-recordings \
   -H "Content-Type: application/json" \
   -d '{
     "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "provider_customer_id": "3950",
     "from": "2026-06-30T00:00:00Z",
     "to": "2026-07-01T00:00:00Z",
     "limit": 200

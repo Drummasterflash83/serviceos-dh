@@ -25,6 +25,10 @@ import type {
 // profile.tenant_id (from useAuth().profile) once profiles carry a tenant.
 const TENANT_ID = "00000000-0000-0000-0000-000000000001";
 
+// TODO(integration): replace this hardcoded Simwood customer id with the
+// tenant's integration config once provider connections are stored per tenant.
+const PROVIDER_CUSTOMER_ID = "3950";
+
 type ActionKey = "test" | "calls" | "recordings";
 
 type Row = { label: string; value: string };
@@ -115,19 +119,26 @@ export function AdminView() {
 
   async function runTest() {
     setRunning("test");
-    setTest(await testSimwoodConnection(TENANT_ID));
+    setTest(await testSimwoodConnection(TENANT_ID, PROVIDER_CUSTOMER_ID));
     setRunning(null);
   }
   async function runCalls() {
     setRunning("calls");
     // No from/to → the function defaults to the last 24 hours.
-    setCalls(await syncSimwoodCalls({ tenantId: TENANT_ID }));
+    setCalls(
+      await syncSimwoodCalls({ tenantId: TENANT_ID, providerCustomerId: PROVIDER_CUSTOMER_ID }),
+    );
     setRunning(null);
   }
   async function runRecordings() {
     setRunning("recordings");
     // No from/to → the function defaults to the last 24 hours.
-    setRecordings(await syncSimwoodRecordings({ tenantId: TENANT_ID }));
+    setRecordings(
+      await syncSimwoodRecordings({
+        tenantId: TENANT_ID,
+        providerCustomerId: PROVIDER_CUSTOMER_ID,
+      }),
+    );
     setRunning(null);
   }
 

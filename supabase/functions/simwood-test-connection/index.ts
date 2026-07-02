@@ -61,6 +61,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (typeof tenantId !== "string" || !UUID_RE.test(tenantId)) {
     return fail("invalid_tenant_id", "tenant_id is required and must be a UUID", 400);
   }
+  // Optional: when supplied, verify a specific account (/customers/{id});
+  // otherwise fall back to the /customers collection for discovery.
+  const rawCustomerId = (parsed as { provider_customer_id?: unknown } | null)?.provider_customer_id;
+  const providerCustomerId =
+    typeof rawCustomerId === "string" && rawCustomerId.trim() !== "" ? rawCustomerId.trim() : null;
 
   // --- environment ---------------------------------------------------------
   const username = Deno.env.get("SIMWOOD_USERNAME");
@@ -112,9 +117,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // --- call provider -------------------------------------------------------
   const authHeader = "Basic " + btoa(`${username}:${password}`);
+  const path = providerCustomerId
+    ? `/customers/${encodeURIComponent(providerCustomerId)}`
+    : "/customers";
   let resp: Response;
   try {
-    resp = await fetch(`${SIMWOOD_API_BASE}/customers`, {
+    resp = await fetch(`${SIMWOOD_API_BASE}${path}`, {
       method: "GET",
       headers: { Authorization: authHeader, Accept: "application/json" },
     });
@@ -130,8 +138,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return fail("rate_limited", "Simwood API rate limit reached", 429, { retryAfter: reset });
   }
   if (resp.status === 401 || resp.status === 403) {
-    await logOutcome("failed", 0, `auth ${resp.status}`, { reason: "auth", status: resp.status });
-    return fail("auth_failed", "Simwood authentication failed — check credentials", 401);
+    await logOutcome("failed", 0, `auth ${resp.status}`, {
+      reason: "auth",
+      status: resp.status,
+      provider_customer_id: providerCustomerId,
+    });
+    return fail(
+      "auth_failed",
+      "Simwood authentication failed — invalid credentials or insufficient API permission",
+      401,
+    );
   }
   if (!resp.ok) {
     await logOutcome("failed", 0, `upstream ${resp.status}`, {
