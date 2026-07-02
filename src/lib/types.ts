@@ -254,3 +254,21 @@ export interface PhoneFeedItem {
   /** Derived: analysed | transcribed | transcribing | recorded | call_only. */
   processing_status: string;
 }
+
+/** Structured fields extracted from an insight's raw_payload (best-effort). */
+export interface PhoneCallDetailRaw {
+  customer_name: string | null;
+  phone_number: string | null;
+  address_or_postcode: string | null;
+  appliance_or_system: string | null;
+  fault_or_reason: string | null;
+  promised_action: string | null;
+  risk_flags: string[];
+}
+
+/** Lazily-loaded detail for one call (full transcript + raw insight fields). */
+export interface PhoneCallDetail {
+  transcript_text: string | null;
+  transcript_status: string | null;
+  raw: PhoneCallDetailRaw | null;
+}

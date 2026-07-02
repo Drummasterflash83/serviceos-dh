@@ -11,7 +11,7 @@
  */
 
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
-import type { ApiResult, PhoneFeedInput, PhoneFeedItem } from "./types";
+import type { ApiResult, PhoneCallDetail, PhoneFeedInput, PhoneFeedItem } from "./types";
 
 function clampLimit(v: number | undefined): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : 100;
@@ -151,4 +151,68 @@ export async function getPhoneFeed(
   }
 
   return { ok: true, data: items };
+}
+
+function optStr(v: unknown): string | null {
+  return typeof v === "string" && v.trim() !== "" ? v : null;
+}
+
+/**
+ * Lazily load the heavier detail for one call — full transcript text and the
+ * structured fields from the insight's raw_payload. RLS-scoped (browser client);
+ * keyed by the recording id from a feed item.
+ */
+export async function getPhoneCallDetail(recordingId: string): Promise<ApiResult<PhoneCallDetail>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  if (typeof recordingId !== "string" || recordingId.trim() === "") {
+    return {
+      ok: false,
+      error: { code: "invalid_recording_id", message: "recordingId is required" },
+    };
+  }
+  const supabase = getSupabaseClient();
+
+  const { data: t, error: tErr } = await supabase
+    .from("phone_transcripts")
+    .select("transcript_text, status")
+    .eq("recording_id", recordingId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (tErr) return { ok: false, error: { code: "query_error", message: tErr.message } };
+
+  const { data: ins, error: iErr } = await supabase
+    .from("phone_ai_insights")
+    .select("raw_payload")
+    .eq("recording_id", recordingId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (iErr) return { ok: false, error: { code: "query_error", message: iErr.message } };
+
+  const rp = (ins?.raw_payload ?? null) as Record<string, unknown> | null;
+  const raw = rp
+    ? {
+        customer_name: optStr(rp.customer_name),
+        phone_number: optStr(rp.phone_number),
+        address_or_postcode: optStr(rp.address_or_postcode),
+        appliance_or_system: optStr(rp.appliance_or_system),
+        fault_or_reason: optStr(rp.fault_or_reason),
+        promised_action: optStr(rp.promised_action),
+        risk_flags: Array.isArray(rp.risk_flags)
+          ? (rp.risk_flags.filter((x) => typeof x === "string") as string[])
+          : [],
+      }
+    : null;
+
+  return {
+    ok: true,
+    data: {
+      transcript_text: (t?.transcript_text as string | null) ?? null,
+      transcript_status: (t?.status as string | null) ?? null,
+      raw,
+    },
+  };
 }

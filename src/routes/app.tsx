@@ -20,10 +20,11 @@ import {
 } from "@/components/app/NewViews";
 import {
   NorthStar, ARRGrowth, FurtherWorks, QuoteEngine,
-  CoordinatorCockpit, Assets, ComplianceRoadmap, CommsHub,
+  CoordinatorCockpit, Assets, ComplianceRoadmap,
 } from "@/components/app/NorthStar";
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
+import { CallsCommsView } from "@/components/app/CallsComms";
 import { AdminView } from "@/components/app/Admin";
 
 
@@ -179,7 +180,7 @@ function AppShell() {
           {/* Surfaces */}
           {view === "cards"        && <CardsView />}
           {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
-          {view === "comms"        && <CommsHub />}
+          {view === "comms"        && <CallsCommsView />}
           {view === "customers"    && <Customers />}
           {view === "engineers"    && <EngineersView />}
           {/* Intelligence */}
