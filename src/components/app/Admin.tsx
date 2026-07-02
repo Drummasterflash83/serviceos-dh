@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Briefcase,
   FileText,
+  Brain,
   PlayCircle,
   Loader2,
   CheckCircle2,
@@ -20,6 +21,7 @@ import {
   syncSimwoodCalls,
   syncSimwoodRecordings,
   transcribePhoneRecording,
+  analysePhoneTranscript,
 } from "@/lib/api";
 import type {
   ApiResult,
@@ -27,6 +29,7 @@ import type {
   SimwoodSyncCallsResult,
   SimwoodSyncRecordingsResult,
   PhoneTranscribeRecordingResult,
+  PhoneAnalyseTranscriptResult,
 } from "@/lib/types";
 
 // TODO(auth): replace this hardcoded test tenant with the authenticated user's
@@ -166,6 +169,18 @@ export function AdminView() {
     setTranscribing(true);
     setTranscript(await transcribePhoneRecording({ tenantId: TENANT_ID, recordingId: id }));
     setTranscribing(false);
+  }
+
+  const [transcriptId, setTranscriptId] = useState("");
+  const [analysing, setAnalysing] = useState(false);
+  const [insight, setInsight] = useState<ApiResult<PhoneAnalyseTranscriptResult> | null>(null);
+
+  async function runAnalyse() {
+    const id = transcriptId.trim();
+    if (!id) return;
+    setAnalysing(true);
+    setInsight(await analysePhoneTranscript({ tenantId: TENANT_ID, transcriptId: id }));
+    setAnalysing(false);
   }
 
   return (
@@ -355,6 +370,74 @@ export function AdminView() {
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-xs text-foreground">
                   {d.text_preview || "—"}
+                </p>
+              </div>
+            )}
+          />
+        </div>
+      </div>
+
+      {/* Call intelligence — OpenAI (Phase-4B) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex items-center justify-between border-b border-hairline pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+              <Brain className="h-4 w-4 text-foreground" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold">Call intelligence · OpenAI</div>
+              <div className="text-xs text-muted-foreground">
+                Intent, urgency, sentiment & actions from a transcript
+              </div>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
+            Voice intelligence
+          </span>
+        </div>
+
+        <div className="mt-5 max-w-xl">
+          <label
+            htmlFor="transcript-id"
+            className="text-[11px] uppercase tracking-wider text-muted-foreground"
+          >
+            Transcript UUID
+          </label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <Input
+              id="transcript-id"
+              value={transcriptId}
+              onChange={(e) => setTranscriptId(e.target.value)}
+              placeholder="2d800bc5-063d-4a3e-8eab-52f0637f1aaa"
+              disabled={analysing}
+              className="font-mono"
+            />
+            <Button onClick={runAnalyse} disabled={analysing || transcriptId.trim() === ""}>
+              {analysing ? "Analysing…" : "Analyse transcript"}
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-warning">
+            AI-generated intelligence — advisory only, may need human review.
+          </p>
+
+          <StatusPanel
+            running={analysing}
+            result={insight}
+            renderOk={(d) => [
+              { label: "Intent", value: d.intent ?? "—" },
+              { label: "Urgency", value: d.urgency ?? "—" },
+              { label: "Sentiment", value: d.sentiment ?? "—" },
+              { label: "Action required", value: d.action_required ? "yes" : "no" },
+              { label: "Owner", value: d.suggested_owner ?? "—" },
+              { label: "Confidence", value: d.confidence !== null ? d.confidence.toFixed(2) : "—" },
+            ]}
+            renderExtra={(d) => (
+              <div className="rounded-lg border border-hairline bg-surface-alt/50 p-3">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Summary
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-xs text-foreground">
+                  {d.summary_preview || "—"}
                 </p>
               </div>
             )}

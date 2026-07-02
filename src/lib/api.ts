@@ -23,6 +23,8 @@ import type {
   SimwoodDownloadRecordingResult,
   PhoneTranscribeRecordingInput,
   PhoneTranscribeRecordingResult,
+  PhoneAnalyseTranscriptInput,
+  PhoneAnalyseTranscriptResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -457,6 +459,81 @@ export async function transcribePhoneRecording(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Transcription failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Analyse a completed transcript into structured intelligence via the
+ * `phone-analyse-transcript` Edge Function (Phase-4B). The OpenAI key stays
+ * server-side; this only passes the tenant + transcript id.
+ *
+ * Idempotent server-side: an existing insight returns as-is unless `force`.
+ * Not wired to product UI — used by the Admin console only.
+ */
+export async function analysePhoneTranscript(
+  input: PhoneAnalyseTranscriptInput,
+): Promise<ApiResult<PhoneAnalyseTranscriptResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (typeof input.transcriptId !== "string" || input.transcriptId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_transcript_id", "transcriptId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = {
+    tenant_id: input.tenantId,
+    transcript_id: input.transcriptId,
+  };
+  if (input.force !== undefined) payload.force = input.force;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/phone-analyse-transcript`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<PhoneAnalyseTranscriptResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return {
+      ok: false,
+      error: toApiError("parse", "Failed to parse response", response.status),
+    };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as PhoneAnalyseTranscriptResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Analysis failed",
       response.status,
     ),
   };

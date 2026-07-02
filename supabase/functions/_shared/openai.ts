@@ -23,6 +23,19 @@ export function getTranscriptionModel(): string {
   return model && model.trim() !== "" ? model.trim() : DEFAULT_TRANSCRIPTION_MODEL;
 }
 
+// --- Analysis (chat completions) ----------------------------------------
+
+export const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions";
+
+// Default analysis model. Override with OPENAI_ANALYSIS_MODEL.
+export const DEFAULT_ANALYSIS_MODEL = "gpt-4o-mini";
+
+/** Configured analysis model, or the default. */
+export function getAnalysisModel(): string {
+  const model = Deno.env.get("OPENAI_ANALYSIS_MODEL");
+  return model && model.trim() !== "" ? model.trim() : DEFAULT_ANALYSIS_MODEL;
+}
+
 export type TranscribeResult =
   | { ok: true; text: string; language: string | null; model: string }
   | { ok: false; code: string; message: string; httpStatus: number };
@@ -110,4 +123,128 @@ export async function transcribeAudio(opts: {
   const language = typeof rawLang === "string" ? rawLang : null;
 
   return { ok: true, text, language, model: opts.model };
+}
+
+export type AnalyseResult =
+  | { ok: true; data: Record<string, unknown>; model: string }
+  | { ok: false; code: string; message: string; httpStatus: number };
+
+/**
+ * Analyse a call transcript into structured operational intelligence via the
+ * OpenAI chat completions API with JSON mode. Returns the raw parsed object;
+ * the caller validates/normalises fields. Classifies the same failure modes as
+ * `transcribeAudio`, plus `malformed_response` when the model returns non-JSON.
+ */
+export async function analyseTranscript(opts: {
+  apiKey: string;
+  model: string;
+  transcript: string;
+}): Promise<AnalyseResult> {
+  const system =
+    "You are an operations analyst for a UK heating & plumbing company. " +
+    "Analyse the phone call transcript and return ONLY a JSON object with exactly these fields: " +
+    "intent (string), urgency (one of: low, medium, high, emergency), " +
+    "sentiment (one of: negative, neutral, positive, mixed), summary (short operational summary), " +
+    "action_required (boolean), suggested_owner (one of: office, accounts, engineer, manager, unknown), " +
+    "confidence (number between 0 and 1), customer_name (string or null), phone_number (string or null), " +
+    "address_or_postcode (string or null), appliance_or_system (string or null), " +
+    "fault_or_reason (string or null), promised_action (string or null), risk_flags (array of strings). " +
+    "Base everything only on the transcript; do not invent details. Use null when unknown.";
+
+  const requestBody = {
+    model: opts.model,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: opts.transcript },
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0,
+  };
+
+  let resp: Response;
+  try {
+    resp = await fetch(OPENAI_CHAT_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${opts.apiKey}`, "content-type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "network failure";
+    return {
+      ok: false,
+      code: "network_error",
+      message: `Could not reach OpenAI: ${message}`,
+      httpStatus: 502,
+    };
+  }
+
+  if (resp.status === 401 || resp.status === 403) {
+    return {
+      ok: false,
+      code: "openai_auth_failed",
+      message: "OpenAI authentication failed — check OPENAI_API_KEY",
+      httpStatus: 502,
+    };
+  }
+  if (resp.status === 429) {
+    return {
+      ok: false,
+      code: "openai_rate_limited",
+      message: "OpenAI rate limit reached",
+      httpStatus: 429,
+    };
+  }
+  if (!resp.ok) {
+    return {
+      ok: false,
+      code: "openai_error",
+      message: `OpenAI analysis error (${resp.status})`,
+      httpStatus: 502,
+    };
+  }
+
+  let outer: unknown;
+  try {
+    outer = await resp.json();
+  } catch {
+    return {
+      ok: false,
+      code: "parse_error",
+      message: "Could not parse OpenAI response",
+      httpStatus: 502,
+    };
+  }
+
+  const content = (outer as { choices?: Array<{ message?: { content?: unknown } }> } | null)
+    ?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") {
+    return {
+      ok: false,
+      code: "parse_error",
+      message: "OpenAI response missing content",
+      httpStatus: 502,
+    };
+  }
+
+  let data: unknown;
+  try {
+    data = JSON.parse(content);
+  } catch {
+    return {
+      ok: false,
+      code: "malformed_response",
+      message: "OpenAI returned non-JSON analysis",
+      httpStatus: 502,
+    };
+  }
+  if (!data || typeof data !== "object") {
+    return {
+      ok: false,
+      code: "malformed_response",
+      message: "OpenAI analysis was not an object",
+      httpStatus: 502,
+    };
+  }
+
+  return { ok: true, data: data as Record<string, unknown>, model: opts.model };
 }

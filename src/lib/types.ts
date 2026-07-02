@@ -158,3 +158,29 @@ export interface PhoneTranscribeRecordingResult {
   text_preview: string;
   sync_run_id: string | null;
 }
+
+/** Input to the `phone-analyse-transcript` Edge Function (Phase-4B insight extraction). */
+export interface PhoneAnalyseTranscriptInput {
+  tenantId: string;
+  /** phone_transcripts.id (a ServiceOS UUID). */
+  transcriptId: string;
+  /** Re-analyse even if an insight already exists. */
+  force?: boolean;
+}
+
+/** Safe summary returned by `phone-analyse-transcript`. */
+export interface PhoneAnalyseTranscriptResult {
+  success: boolean;
+  provider: string;
+  transcript_id: string;
+  insight_id: string | null;
+  intent: string | null;
+  urgency: string | null;
+  sentiment: string | null;
+  action_required: boolean;
+  suggested_owner: string | null;
+  confidence: number | null;
+  /** First 240 characters of the operational summary only. */
+  summary_preview: string;
+  sync_run_id: string | null;
+}

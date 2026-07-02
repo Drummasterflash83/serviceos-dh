@@ -462,3 +462,85 @@ if (result.ok) {
   console.error(result.error.code, result.error.message);
 }
 ```
+
+## Phone Input — Phase Phone-4B: AI call intelligence (OpenAI)
+
+Turns a completed transcript into structured operational intelligence in
+`phone_ai_insights` via OpenAI (chat completions, JSON mode). The OpenAI key
+stays **server-side only**. Insights link to `recording_id` (derived from the
+transcript); `transcript_id` and all extra extracted fields live in
+`raw_payload`.
+
+Still **no task creation, no customer matching, no dashboard charts.** Provider
+is isolated in `supabase/functions/_shared/openai.ts`.
+
+> ⚠️ AI-generated intelligence is **advisory only** and may need human review.
+
+### Required / optional env
+
+| Name | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | **Required.** Shared with Phase-4A (server-side only). |
+| `OPENAI_ANALYSIS_MODEL` | Optional. Analysis model. Default `gpt-4o-mini` (alt: `gpt-4.1-mini`). |
+
+```bash
+# key is shared with transcription; set the analysis model only to override:
+supabase secrets set OPENAI_ANALYSIS_MODEL=gpt-4o-mini
+```
+
+### Deploy & invoke
+
+```bash
+supabase functions deploy phone-analyse-transcript
+```
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/phone-analyse-transcript \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "transcript_id": "2d800bc5-063d-4a3e-8eab-52f0637f1aaa",
+    "force": false
+  }'
+```
+
+### Outputs
+
+Stored columns: `intent`, `urgency` (low/medium/high/emergency), `sentiment`
+(negative/neutral/positive/mixed), `summary`, `action_required` (bool),
+`suggested_owner` (office/accounts/engineer/manager/unknown), `confidence`
+(0–1). Extra extracted fields (`customer_name`, `phone_number`,
+`address_or_postcode`, `appliance_or_system`, `fault_or_reason`,
+`promised_action`, `risk_flags`) are kept in `raw_payload` for later phases. The
+response returns a **240-char `summary_preview` only**:
+
+```json
+{
+  "success": true,
+  "provider": "openai",
+  "transcript_id": "…",
+  "insight_id": "…",
+  "intent": "no heating",
+  "urgency": "high",
+  "sentiment": "negative",
+  "action_required": true,
+  "suggested_owner": "engineer",
+  "confidence": 0.87,
+  "summary_preview": "first 240 chars…",
+  "sync_run_id": "…"
+}
+```
+
+Typed helper (used by the Admin console):
+
+```ts
+import { analysePhoneTranscript } from "@/lib/api";
+
+const result = await analysePhoneTranscript({ tenantId, transcriptId });
+if (result.ok) {
+  console.log(result.data.intent, result.data.urgency, result.data.summary_preview);
+} else {
+  console.error(result.error.code, result.error.message);
+}
+```
