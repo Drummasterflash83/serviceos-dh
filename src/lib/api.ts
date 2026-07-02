@@ -25,6 +25,9 @@ import type {
   PhoneTranscribeRecordingResult,
   PhoneAnalyseTranscriptInput,
   PhoneAnalyseTranscriptResult,
+  ProcessPhonePipelineInput,
+  ProcessPhonePipelineResult,
+  PhonePipelineStatusResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -534,6 +537,134 @@ export async function analysePhoneTranscript(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Analysis failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Run the full processing pipeline (download → transcribe → analyse) for one
+ * recording via the `phone-process-pipeline` Edge Function (Phase 5A). Each
+ * step is idempotent server-side. Used by the Admin "Retry Pipeline" control.
+ */
+export async function processPhonePipeline(
+  input: ProcessPhonePipelineInput,
+): Promise<ApiResult<ProcessPhonePipelineResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (typeof input.recordingId !== "string" || input.recordingId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_recording_id", "recordingId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const payload: Record<string, unknown> = {
+    tenant_id: input.tenantId,
+    recording_id: input.recordingId,
+  };
+  if (input.force !== undefined) payload.force = input.force;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/phone-process-pipeline`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<ProcessPhonePipelineResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as ProcessPhonePipelineResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Pipeline failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Fetch pipeline diagnostics counts via the `phone-pipeline-status` Edge
+ * Function (service-role read). Used by the Admin diagnostics panel.
+ */
+export async function getPhonePipelineStatus(
+  tenantId: string,
+): Promise<ApiResult<PhonePipelineStatusResult>> {
+  if (typeof tenantId !== "string" || tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  if (!supabaseConfig.url || !supabaseConfig.anonKey) {
+    return {
+      ok: false,
+      error: toApiError(
+        "config_error",
+        "Supabase is not configured (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)",
+      ),
+    };
+  }
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/phone-pipeline-status`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+      },
+      body: JSON.stringify({ tenant_id: tenantId }),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<PhonePipelineStatusResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as PhonePipelineStatusResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Status fetch failed",
       response.status,
     ),
   };

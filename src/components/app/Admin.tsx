@@ -1,12 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   Plug,
   Phone,
   Mail,
   MessageSquare,
   Briefcase,
-  FileText,
-  Brain,
+  Activity,
+  RotateCcw,
   PlayCircle,
   Loader2,
   CheckCircle2,
@@ -20,16 +20,16 @@ import {
   testSimwoodConnection,
   syncSimwoodCalls,
   syncSimwoodRecordings,
-  transcribePhoneRecording,
-  analysePhoneTranscript,
+  processPhonePipeline,
+  getPhonePipelineStatus,
 } from "@/lib/api";
 import type {
   ApiResult,
   SimwoodConnectionResult,
   SimwoodSyncCallsResult,
   SimwoodSyncRecordingsResult,
-  PhoneTranscribeRecordingResult,
-  PhoneAnalyseTranscriptResult,
+  ProcessPhonePipelineResult,
+  PhonePipelineStatusResult,
 } from "@/lib/types";
 
 // TODO(auth): replace this hardcoded test tenant with the authenticated user's
@@ -157,30 +157,34 @@ export function AdminView() {
     setRunning(null);
   }
 
-  const [recordingId, setRecordingId] = useState("");
-  const [transcribing, setTranscribing] = useState(false);
-  const [transcript, setTranscript] = useState<ApiResult<PhoneTranscribeRecordingResult> | null>(
+  // Pipeline diagnostics (read-only counts).
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [status, setStatus] = useState<ApiResult<PhonePipelineStatusResult> | null>(null);
+
+  const loadStatus = useCallback(async () => {
+    setStatusLoading(true);
+    setStatus(await getPhonePipelineStatus(TENANT_ID));
+    setStatusLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadStatus();
+  }, [loadStatus]);
+
+  // Retry pipeline for one recording.
+  const [retryId, setRetryId] = useState("");
+  const [retrying, setRetrying] = useState(false);
+  const [retryResult, setRetryResult] = useState<ApiResult<ProcessPhonePipelineResult> | null>(
     null,
   );
 
-  async function runTranscribe() {
-    const id = recordingId.trim();
+  async function runRetry() {
+    const id = retryId.trim();
     if (!id) return;
-    setTranscribing(true);
-    setTranscript(await transcribePhoneRecording({ tenantId: TENANT_ID, recordingId: id }));
-    setTranscribing(false);
-  }
-
-  const [transcriptId, setTranscriptId] = useState("");
-  const [analysing, setAnalysing] = useState(false);
-  const [insight, setInsight] = useState<ApiResult<PhoneAnalyseTranscriptResult> | null>(null);
-
-  async function runAnalyse() {
-    const id = transcriptId.trim();
-    if (!id) return;
-    setAnalysing(true);
-    setInsight(await analysePhoneTranscript({ tenantId: TENANT_ID, transcriptId: id }));
-    setAnalysing(false);
+    setRetrying(true);
+    setRetryResult(await processPhonePipeline({ tenantId: TENANT_ID, recordingId: id }));
+    setRetrying(false);
+    void loadStatus();
   }
 
   return (
@@ -311,136 +315,95 @@ export function AdminView() {
         </div>
       </div>
 
-      {/* Transcription — OpenAI (Phase-4A) */}
+      {/* Pipeline diagnostics (read-only) */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex items-center justify-between border-b border-hairline pb-4">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
-              <FileText className="h-4 w-4 text-foreground" />
+              <Activity className="h-4 w-4 text-foreground" />
             </span>
             <div>
-              <div className="text-sm font-semibold">Transcription · OpenAI</div>
+              <div className="text-sm font-semibold">Pipeline diagnostics</div>
               <div className="text-xs text-muted-foreground">
-                Speech-to-text from a stored recording
+                New recordings enrich automatically â this is read-only status
               </div>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
-            Voice intelligence
+          <Button size="sm" variant="outline" onClick={loadStatus} disabled={statusLoading}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            {statusLoading ? "Refreshing…" : "Refresh"}
+          </Button>
+        </div>
+
+        {status && !status.ok && (
+          <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {status.error.code}: {status.error.message}
+          </div>
+        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {STATUS_TILES.map((tile) => {
+            const value = status && status.ok ? status.data[tile.key] : null;
+            return (
+              <div key={tile.key} className="rounded-xl border border-hairline bg-surface-alt p-4">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {tile.label}
+                </div>
+                <div className={`text-display mt-2 text-2xl font-bold tabular ${tile.tone}`}>
+                  {value === null ? "—" : value}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Retry pipeline */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex items-center gap-3 border-b border-hairline pb-4">
+          <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+            <RotateCcw className="h-4 w-4 text-foreground" />
           </span>
+          <div>
+            <div className="text-sm font-semibold">Retry processing</div>
+            <div className="text-xs text-muted-foreground">
+              Re-run download → transcribe → analyse for one recording
+            </div>
+          </div>
         </div>
 
         <div className="mt-5 max-w-xl">
           <label
-            htmlFor="rec-id"
+            htmlFor="retry-rec-id"
             className="text-[11px] uppercase tracking-wider text-muted-foreground"
           >
             Recording UUID
           </label>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
             <Input
-              id="rec-id"
-              value={recordingId}
-              onChange={(e) => setRecordingId(e.target.value)}
+              id="retry-rec-id"
+              value={retryId}
+              onChange={(e) => setRetryId(e.target.value)}
               placeholder="294014bf-0e25-4904-8ad7-81c8526e2025"
-              disabled={transcribing}
+              disabled={retrying}
               className="font-mono"
             />
-            <Button onClick={runTranscribe} disabled={transcribing || recordingId.trim() === ""}>
-              {transcribing ? "Transcribing…" : "Transcribe recording"}
+            <Button onClick={runRetry} disabled={retrying || retryId.trim() === ""}>
+              {retrying ? "Processing…" : "Retry processing"}
             </Button>
           </div>
-          <p className="mt-2 text-[11px] text-warning">
-            Transcripts are machine-generated and may need human review.
-          </p>
 
           <StatusPanel
-            running={transcribing}
-            result={transcript}
+            running={retrying}
+            result={retryResult}
             renderOk={(d) => [
-              { label: "Status", value: d.status },
-              { label: "Language", value: d.language ?? "—" },
-              { label: "Model", value: d.model ?? "—" },
+              { label: "Downloaded", value: d.downloaded ? "yes" : "no" },
+              { label: "Transcribed", value: d.transcribed ? "yes" : "no" },
+              { label: "Analysed", value: d.analysed ? "yes" : "no" },
               { label: "Transcript", value: d.transcript_id ?? "—" },
+              { label: "Insight", value: d.insight_id ?? "—" },
+              { label: "Sync run", value: d.sync_run_id ?? "—" },
             ]}
-            renderExtra={(d) => (
-              <div className="rounded-lg border border-hairline bg-surface-alt/50 p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Preview
-                </div>
-                <p className="mt-1 whitespace-pre-wrap text-xs text-foreground">
-                  {d.text_preview || "—"}
-                </p>
-              </div>
-            )}
-          />
-        </div>
-      </div>
-
-      {/* Call intelligence — OpenAI (Phase-4B) */}
-      <div className="rounded-2xl border border-hairline bg-white p-6">
-        <div className="flex items-center justify-between border-b border-hairline pb-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
-              <Brain className="h-4 w-4 text-foreground" />
-            </span>
-            <div>
-              <div className="text-sm font-semibold">Call intelligence · OpenAI</div>
-              <div className="text-xs text-muted-foreground">
-                Intent, urgency, sentiment & actions from a transcript
-              </div>
-            </div>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
-            Voice intelligence
-          </span>
-        </div>
-
-        <div className="mt-5 max-w-xl">
-          <label
-            htmlFor="transcript-id"
-            className="text-[11px] uppercase tracking-wider text-muted-foreground"
-          >
-            Transcript UUID
-          </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <Input
-              id="transcript-id"
-              value={transcriptId}
-              onChange={(e) => setTranscriptId(e.target.value)}
-              placeholder="2d800bc5-063d-4a3e-8eab-52f0637f1aaa"
-              disabled={analysing}
-              className="font-mono"
-            />
-            <Button onClick={runAnalyse} disabled={analysing || transcriptId.trim() === ""}>
-              {analysing ? "Analysing…" : "Analyse transcript"}
-            </Button>
-          </div>
-          <p className="mt-2 text-[11px] text-warning">
-            AI-generated intelligence — advisory only, may need human review.
-          </p>
-
-          <StatusPanel
-            running={analysing}
-            result={insight}
-            renderOk={(d) => [
-              { label: "Intent", value: d.intent ?? "—" },
-              { label: "Urgency", value: d.urgency ?? "—" },
-              { label: "Sentiment", value: d.sentiment ?? "—" },
-              { label: "Action required", value: d.action_required ? "yes" : "no" },
-              { label: "Owner", value: d.suggested_owner ?? "—" },
-              { label: "Confidence", value: d.confidence !== null ? d.confidence.toFixed(2) : "—" },
-            ]}
-            renderExtra={(d) => (
-              <div className="rounded-lg border border-hairline bg-surface-alt/50 p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Summary
-                </div>
-                <p className="mt-1 whitespace-pre-wrap text-xs text-foreground">
-                  {d.summary_preview || "—"}
-                </p>
-              </div>
-            )}
           />
         </div>
       </div>
@@ -470,6 +433,17 @@ export function AdminView() {
     </div>
   );
 }
+
+const STATUS_TILES: {
+  key: "pending" | "processing" | "failed" | "completed";
+  label: string;
+  tone: string;
+}[] = [
+  { key: "pending", label: "Pending", tone: "text-muted-foreground" },
+  { key: "processing", label: "Processing", tone: "text-accent" },
+  { key: "failed", label: "Failed", tone: "text-destructive" },
+  { key: "completed", label: "Completed", tone: "text-success" },
+];
 
 const PLACEHOLDERS: { name: string; detail: string; icon: LucideIcon }[] = [
   {

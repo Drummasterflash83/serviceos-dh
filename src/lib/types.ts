@@ -184,3 +184,34 @@ export interface PhoneAnalyseTranscriptResult {
   summary_preview: string;
   sync_run_id: string | null;
 }
+
+/** Input to the `phone-process-pipeline` Edge Function (Phase 5A orchestrator). */
+export interface ProcessPhonePipelineInput {
+  tenantId: string;
+  /** phone_recordings.id (a ServiceOS UUID). */
+  recordingId: string;
+  /** Re-run every step even if already done. */
+  force?: boolean;
+}
+
+/** Combined result from `phone-process-pipeline`. */
+export interface ProcessPhonePipelineResult {
+  success: boolean;
+  recording_id: string;
+  downloaded: boolean;
+  transcribed: boolean;
+  analysed: boolean;
+  transcript_id: string | null;
+  insight_id: string | null;
+  sync_run_id: string | null;
+}
+
+/** Diagnostics counts from `phone-pipeline-status`. */
+export interface PhonePipelineStatusResult {
+  success: boolean;
+  pending: number;
+  processing: number;
+  failed: number;
+  completed: number;
+  recordings_total: number;
+}

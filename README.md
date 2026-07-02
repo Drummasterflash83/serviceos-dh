@@ -544,3 +544,59 @@ if (result.ok) {
   console.error(result.error.code, result.error.message);
 }
 ```
+
+## Phone Input — Phase 5A: automated pipeline
+
+New recordings now become AI-enriched **automatically** — no Admin step required.
+`simwood-sync-recordings` detects genuinely-new inserts and background-triggers
+the pipeline for each (historical recordings are never re-processed; capped at
+50 per sync as a backfill backstop).
+
+`phone-process-pipeline` orchestrates one recording end-to-end by **reusing** the
+existing idempotent step functions (`simwood-download-recording` →
+`phone-transcribe-recording` → `phone-analyse-transcript`, via
+`supabase/functions/_shared/phone_pipeline.ts`). It is safe to re-run; `force`
+re-runs every step. A failed step stops only that recording's pipeline — a batch
+of 50 with one failure yields 49 succeeded, 1 logged failed (in `phone_sync_runs`
++ `audit_logs`). No new secrets; uses the platform-injected `SUPABASE_URL` /
+`SUPABASE_SERVICE_ROLE_KEY` for internal invocation.
+
+Admin is now **diagnostics only**: a read-only status panel (counts via
+`phone-pipeline-status`) plus a "Retry processing" control that calls
+`phone-process-pipeline` for a single recording UUID.
+
+### Deploy
+
+```bash
+supabase functions deploy phone-process-pipeline
+supabase functions deploy phone-pipeline-status
+supabase functions deploy simwood-sync-recordings   # updated: auto-trigger
+```
+
+### Invoke the pipeline directly
+
+```bash
+curl -i -X POST http://localhost:54321/functions/v1/phone-process-pipeline \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tenant_id": "00000000-0000-0000-0000-000000000000",
+    "recording_id": "294014bf-0e25-4904-8ad7-81c8526e2025",
+    "force": false
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "recording_id": "…",
+  "downloaded": true,
+  "transcribed": true,
+  "analysed": true,
+  "transcript_id": "…",
+  "insight_id": "…",
+  "sync_run_id": "…"
+}
+```

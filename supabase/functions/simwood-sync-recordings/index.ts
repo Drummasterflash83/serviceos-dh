@@ -36,6 +36,11 @@ import {
   simwoodGet,
   corsHeaders,
 } from "../_shared/simwood.ts";
+import { triggerPipelineBackground } from "../_shared/phone_pipeline.ts";
+
+// Safety cap: at most this many newly-inserted recordings auto-trigger the
+// pipeline per sync run (backstop against a large backfill flooding OpenAI).
+const MAX_AUTO_PIPELINE = 50;
 
 const PAGE_SIZE_MAX = 200; // Simwood cap
 const HARD_PAGE_CAP = 50; // safety bound: at most 50 pages (~10k rows) per run
@@ -203,6 +208,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let skippedNoId = 0;
   let pagesFetched = 0;
   const referencedCallIds = new Set<string>();
+  const newRecordingIds: string[] = [];
 
   for (let page = 1; page <= HARD_PAGE_CAP; page++) {
     const qs = new URLSearchParams({
@@ -262,9 +268,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
 
     if (rows.length > 0) {
-      const { error: upsertErr } = await supabase
+      // Which of these provider_recording_ids already existed? (to trigger the
+      // pipeline for genuinely NEW recordings only — never historical ones).
+      const providerIds = rows.map((r) => r.provider_recording_id);
+      const { data: existingRows } = await supabase
         .from("phone_recordings")
-        .upsert(rows, { onConflict: "tenant_id,provider,provider_recording_id" });
+        .select("provider_recording_id")
+        .eq("tenant_id", tenantId)
+        .eq("provider", PROVIDER)
+        .in("provider_recording_id", providerIds);
+      const existingSet = new Set((existingRows ?? []).map((r) => r.provider_recording_id));
+
+      const { data: upserted, error: upsertErr } = await supabase
+        .from("phone_recordings")
+        .upsert(rows, { onConflict: "tenant_id,provider,provider_recording_id" })
+        .select("id, provider_recording_id");
       if (upsertErr) {
         return await finishFailed(
           "db_error",
@@ -273,6 +291,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
           processed,
           { customer_id: customerId, pages_fetched: pagesFetched },
         );
+      }
+      for (const u of upserted ?? []) {
+        if (!existingSet.has(u.provider_recording_id)) newRecordingIds.push(u.id as string);
       }
       processed += rows.length;
     }
@@ -300,6 +321,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
+  // --- auto-process newly inserted recordings (background, isolated) -------
+  const toTrigger = newRecordingIds.slice(0, MAX_AUTO_PIPELINE);
+  if (toTrigger.length > 0) triggerPipelineBackground(tenantId, toTrigger);
+
   // --- success -------------------------------------------------------------
   const metadata = {
     ...baseMetadata,
@@ -308,6 +333,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     skipped_no_recording_id: skippedNoId,
     call_ids_referenced: referencedCallIds.size,
     linked_calls_matched: linkedCallsMatched,
+    new_recordings: newRecordingIds.length,
+    auto_triggered: toTrigger.length,
   };
   await supabase
     .from("phone_sync_runs")
