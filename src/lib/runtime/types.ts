@@ -8,8 +8,9 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 
-import type { ConnectorDescriptor, ConnectorMetric } from "@/lib/connectors/types";
+import type { ConnectorAction, ConnectorDescriptor, ConnectorMetric } from "@/lib/connectors/types";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
+import type { ConnectorFreshness } from "./freshness";
 
 /** Generic health model (deliverable 5). Every connector maps into these. */
 export type RuntimeHealth =
@@ -102,6 +103,31 @@ export interface DiagnosticGroup {
 }
 
 /**
+ * An actionable operational warning surfaced by a provider (Operational Truth).
+ * `recommendedAction` is a standard card action so the Overview can wire the fix
+ * generically — no vendor branching in the UI.
+ */
+export interface ConnectorWarning {
+  id: string;
+  connector: string;
+  severity: "warning" | "critical";
+  title: string;
+  detail?: string;
+  recommendedAction?: ConnectorAction;
+  actionLabel?: string;
+}
+
+/** One event on a connector's operational timeline (from jobs / sync runs). */
+export interface TimelineEvent {
+  id: string;
+  at: string;
+  title: string;
+  detail?: string;
+  status: "success" | "failed" | "running" | "queued" | "cancelled";
+  records?: number | null;
+}
+
+/**
  * Optional props passed to a settings surface Component when it is opened from
  * the Operations Overview (deep-link handoff). `focus` names a sub-section to
  * open/scroll to; `focusNonce` changes on every navigation so the same target
@@ -133,12 +159,16 @@ export interface ConnectorProvider {
   disconnect(): ConnectorActionSpec | null;
   sync(): ConnectorActionSpec | null;
   status(snapshot: OperationsSnapshot): RuntimeHealth;
+  /** Evidence-based freshness (Operational Truth) — the backbone of health/score. */
+  freshness(snapshot: OperationsSnapshot): ConnectorFreshness;
   health(snapshot: OperationsSnapshot): ConnectorHealthReport;
   metrics(snapshot: OperationsSnapshot): ConnectorMetrics;
   /** Connector-specific labelled tiles for the card (Mailboxes, Calls, …). */
   cardMetrics?(snapshot: OperationsSnapshot): ConnectorMetric[];
   /** Connector-specific Health-panel diagnostics, all from real snapshot data. */
   diagnostics(snapshot: OperationsSnapshot): DiagnosticGroup[];
+  /** Actionable operational warnings (the top-level "what needs attention"). */
+  warnings(snapshot: OperationsSnapshot): ConnectorWarning[];
   logs(snapshot: OperationsSnapshot): ConnectorLog[];
   jobs(snapshot: OperationsSnapshot): ConnectorJob[];
   settings(): ConnectorSettingsSurface;
@@ -150,14 +180,17 @@ export interface RuntimeConnector {
   descriptor: ConnectorDescriptor;
   present: boolean;
   status: RuntimeHealth;
+  freshness: ConnectorFreshness;
   health: ConnectorHealthReport;
   metrics: ConnectorMetrics;
   cardMetrics: ConnectorMetric[];
   diagnostics: DiagnosticGroup[];
+  warnings: ConnectorWarning[];
+  timeline: TimelineEvent[];
   jobs: ConnectorJob[];
   logs: ConnectorLog[];
   actions: ConnectorActionSpec[];
   settings: ConnectorSettingsSurface;
 }
 
-export type { OperationsSnapshot };
+export type { OperationsSnapshot, ConnectorFreshness };

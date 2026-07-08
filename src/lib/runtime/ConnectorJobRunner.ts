@@ -8,7 +8,7 @@
 
 import type { OperationsSnapshot, PlatformJobLite, SyncRunRow } from "@/lib/ops-metrics";
 import { eventLabel, runsForConnector } from "./ConnectorLogs";
-import type { ConnectorJob, JobStatus } from "./types";
+import type { ConnectorJob, JobStatus, TimelineEvent } from "./types";
 
 function jobStatus(status: string): JobStatus {
   if (status === "running") return "running";
@@ -108,4 +108,32 @@ export function countJobs(jobs: ConnectorJob[]): { running: number; queued: numb
     running: jobs.filter((j) => j.status === "running").length,
     queued: jobs.filter((j) => j.status === "queued").length,
   };
+}
+
+function timelineDetail(job: ConnectorJob): string | undefined {
+  if (job.status === "failed") {
+    const err = (job.metadata?.last_error as string | undefined) ?? null;
+    return err ? err.slice(0, 120) : "Failed";
+  }
+  if (job.recordsProcessed > 0) return `${job.recordsProcessed} records`;
+  return undefined;
+}
+
+/**
+ * A connector's recent operational timeline — the same platform-jobs-first (with
+ * sync-run fallback) source as the cards, mapped to display events. No fake
+ * events: everything is a real job/run.
+ */
+export function buildTimeline(connectorId: string, s: OperationsSnapshot): TimelineEvent[] {
+  return jobsForConnector(connectorId, s)
+    .filter((j) => j.startedAt || j.finishedAt)
+    .slice(0, 8)
+    .map((j) => ({
+      id: j.id,
+      at: j.finishedAt ?? j.startedAt ?? "",
+      title: j.type,
+      detail: timelineDetail(j),
+      status: j.status,
+      records: j.recordsProcessed,
+    }));
 }

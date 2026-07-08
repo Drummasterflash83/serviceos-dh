@@ -10,26 +10,22 @@ import { getConnector } from "@/lib/connectors/registry";
 import { PhoneOperations } from "@/components/app/admin/PhoneOperations";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
 import { actionOfKind, actionsFor } from "../ConnectorActions";
-import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
 import { countJobs, jobsForConnector } from "../ConnectorJobRunner";
+import { calculateFreshness, deriveHealth, fmtAge, type ConnectorFreshness } from "../freshness";
 import { ago, latestError, yesNo } from "../diagnostics";
-import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
+import type {
+  ConnectorHealthReport,
+  ConnectorProvider,
+  ConnectorWarning,
+  DiagnosticGroup,
+} from "../types";
 
 const descriptor = getConnector("simwood")!;
 const ID = "simwood";
 
-// Scheduled phone sync runs every ~5 min; if the durable watermark hasn't moved
-// in this long, sync is stale (broken cron / credentials) — not "healthy".
-const STALE_MINUTES = 20;
-
-/** Minutes since an ISO timestamp, or null if absent/unparseable. */
-function minutesSince(iso: string | null): number | null {
-  if (!iso) return null;
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return null;
-  return Math.max(0, (Date.now() - t) / 60000);
-}
+// Phone sync runs on a ~5-minute cron; freshness is measured against that cadence.
+const EXPECTED_INTERVAL_SEC = 5 * 60;
 
 /** True when the most recent failure is newer than the most recent success. */
 function failedAfterSuccess(p: OperationsSnapshot["phone"]): boolean {
@@ -39,20 +35,35 @@ function failedAfterSuccess(p: OperationsSnapshot["phone"]): boolean {
 }
 
 /**
- * Phone status derives from CONFIG + durable sync freshness (Operational Truth):
- * "Connected" requires an enabled connector account; "Healthy" requires a proven
- * recent successful sync within the schedule window and no fresher failure. Never
- * healthy on unproven state.
+ * Single source of operational truth for Phone: freshness (from the durable sync
+ * watermark) + evidence-based health. No auth-failure signal exists for Simwood
+ * beyond failed runs, so authOk stays true and failures surface via freshness /
+ * hasNewerFailure rather than a fake "offline".
  */
-function computeStatus(s: OperationsSnapshot): RuntimeHealth {
+function evaluate(s: OperationsSnapshot): {
+  freshness: ConnectorFreshness;
+  health: ConnectorHealthReport;
+} {
   const p = s.phone;
-  if (!p.configured) return "disconnected"; // no enabled connector account
-  if (failedAfterSuccess(p)) return "warning"; // last run failed
-  if (p.failures24h > 0) return "warning";
-  const mins = minutesSince(p.connectorLastSuccess);
-  if (mins === null || mins > STALE_MINUTES) return "warning"; // stale / never synced
-  if (p.running > 0) return "syncing";
-  return "healthy";
+  const freshness = calculateFreshness({
+    lastSuccess: p.connectorLastSuccess,
+    lastFailure: p.connectorLastFailure,
+    expectedIntervalSec: EXPECTED_INTERVAL_SEC,
+    configured: p.configured,
+    authOk: true,
+  });
+  const extraReasons: string[] = [];
+  if (p.transcriptionsFailed > 0)
+    extraReasons.push(`${p.transcriptionsFailed} failed transcription(s)`);
+  const health = deriveHealth({
+    freshness,
+    configured: p.configured,
+    authOk: true,
+    hasNewerFailure: failedAfterSuccess(p),
+    syncing: p.running > 0,
+    extraReasons,
+  });
+  return { freshness, health };
 }
 
 export const simwoodProvider: ConnectorProvider = {
@@ -62,38 +73,71 @@ export const simwoodProvider: ConnectorProvider = {
   sync: () => actionOfKind(descriptor, "sync"),
   actions: () => actionsFor(descriptor),
   settings: () => ({ surface: "phone", title: "Phone", icon: Phone, Component: PhoneOperations }),
-  status: (s) => computeStatus(s),
-  health: (s) => {
-    const p = s.phone;
-    const status = computeStatus(s);
-    const reasons: string[] = [];
-    if (!p.configured) reasons.push("Simwood not configured");
-    if (p.configured && failedAfterSuccess(p))
-      reasons.push(`Last sync failed${p.connectorLastError ? `: ${p.connectorLastError}` : ""}`);
-    const mins = minutesSince(p.connectorLastSuccess);
-    if (p.configured && !failedAfterSuccess(p)) {
-      if (mins === null) reasons.push("Awaiting first successful sync");
-      else if (mins > STALE_MINUTES)
-        reasons.push(`Sync stale — last success ${Math.round(mins)}m ago`);
-    }
-    if (p.failures24h > 0) reasons.push(`${p.failures24h} failed sync(s) in 24h`);
-    if (p.transcriptionsFailed > 0)
-      reasons.push(`${p.transcriptionsFailed} failed transcription(s)`);
-    return { status, score: scoreOf(status), reasons };
-  },
+  status: (s) => evaluate(s).health.status,
+  freshness: (s) => evaluate(s).freshness,
+  health: (s) => evaluate(s).health,
   metrics: (s) => {
     const jc = countJobs(jobsForConnector(ID, s));
     return {
-      connections: computeStatus(s) === "disconnected" ? 0 : 1,
-      activeAccounts: 0,
-      lastSync: s.phone.lastSuccess,
+      connections: s.phone.configured ? 1 : 0,
+      activeAccounts: s.phone.configured ? 1 : 0,
+      lastSync: s.phone.connectorLastSuccess ?? s.phone.lastSuccess,
       records: s.phone.callsTotal,
       errors24h: s.phone.failures24h,
       runningJobs: jc.running,
       queuedJobs: jc.queued + s.phone.transcriptionsPending,
       averageSyncTime: "—",
-      healthScore: scoreOf(computeStatus(s)),
+      healthScore: evaluate(s).health.score,
     };
+  },
+  warnings: (s): ConnectorWarning[] => {
+    const p = s.phone;
+    const { freshness } = evaluate(s);
+    const w: ConnectorWarning[] = [];
+    if (!p.configured) {
+      w.push({
+        id: "simwood:not_configured",
+        connector: ID,
+        severity: "critical",
+        title: "Phone connector not configured",
+        detail: "No Simwood account for this tenant.",
+        recommendedAction: "settings",
+        actionLabel: "Open settings",
+      });
+      return w;
+    }
+    if (failedAfterSuccess(p)) {
+      w.push({
+        id: "simwood:failing",
+        connector: ID,
+        severity: "warning",
+        title: "Phone sync failing",
+        detail: p.connectorLastError ?? "Last run failed after the last success.",
+        recommendedAction: "reconnect",
+        actionLabel: "Test connection",
+      });
+    } else if (freshness.status === "never_run") {
+      w.push({
+        id: "simwood:never_run",
+        connector: ID,
+        severity: "warning",
+        title: "Phone never synced",
+        detail: "Connector configured but has no successful sync yet.",
+        recommendedAction: "reconnect",
+        actionLabel: "Test connection",
+      });
+    } else if (freshness.status === "stale") {
+      w.push({
+        id: "simwood:stale",
+        connector: ID,
+        severity: "warning",
+        title: "Phone sync stale",
+        detail: `Last successful sync ${fmtAge(freshness.age_seconds)} (expected every 5 min).`,
+        recommendedAction: "sync",
+        actionLabel: "Catch up 24h",
+      });
+    }
+    return w;
   },
   cardMetrics: (s) => {
     const p = s.phone;
@@ -106,7 +150,7 @@ export const simwoodProvider: ConnectorProvider = {
   },
   diagnostics: (s): DiagnosticGroup[] => {
     const p = s.phone;
-    const mins = minutesSince(p.connectorLastSuccess);
+    const { freshness } = evaluate(s);
     return [
       {
         title: "Configuration",
@@ -124,7 +168,7 @@ export const simwoodProvider: ConnectorProvider = {
           {
             label: "Last scheduled sync",
             value: ago(p.connectorLastSuccess),
-            tone: mins !== null && mins <= STALE_MINUTES ? "success" : "warning",
+            tone: freshness.status === "healthy" ? "success" : "warning",
           },
           {
             label: "Last scheduled failure",

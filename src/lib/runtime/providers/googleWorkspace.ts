@@ -10,40 +10,65 @@ import { getConnector } from "@/lib/connectors/registry";
 import { EmailOperations } from "@/components/app/admin/EmailOperations";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
 import { actionOfKind, actionsFor } from "../ConnectorActions";
-import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
 import { countJobs, jobsForConnector } from "../ConnectorJobRunner";
+import { calculateFreshness, deriveHealth, fmtAge, type ConnectorFreshness } from "../freshness";
 import { ago, latestError } from "../diagnostics";
-import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
+import type {
+  ConnectorHealthReport,
+  ConnectorProvider,
+  ConnectorWarning,
+  DiagnosticGroup,
+} from "../types";
 
 const descriptor = getConnector("google_workspace")!;
 const ID = "google_workspace";
 
+// Workspace DWD mailboxes sync on a ~5-minute cron.
+const EXPECTED_INTERVAL_SEC = 5 * 60;
+
 /**
- * Real Workspace status — no fake healthy. A saved-but-unverified connection is
- * NOT "connected"; it stays in setup (disconnected) so it never inflates the
- * platform "connected" count. Connected ⇒ a saved connection with status=active.
- * Healthy ⇒ active AND (a recent successful sync OR active mailboxes) AND no
- * recent failure / backfill error. Otherwise warning.
+ * Workspace truth. "Configured" ⇒ a saved connection that is active OR errored
+ * (a delegation error is still a present, broken connector; a merely pending/
+ * unsaved one stays in setup as disconnected). "Authenticated" ⇒ active (an error
+ * means delegation failed). Healthy needs proof-of-life within the sync window.
  */
-function computeStatus(s: OperationsSnapshot): RuntimeHealth {
+function evaluate(s: OperationsSnapshot): {
+  freshness: ConnectorFreshness;
+  health: ConnectorHealthReport;
+} {
   const e = s.email;
-  const hasConnection = e.connectionStatus !== null;
+  const active = e.connectionStatus === "active";
+  const errored = e.connectionStatus === "error";
+  const configured = active || errored;
+  const authOk = active;
 
-  // Nothing saved and nothing discovered → not present at all.
-  if (!hasConnection && e.workspaceMailboxesTotal === 0) return "disconnected";
-  // Delegation failed → surface it.
-  if (e.connectionStatus === "error") return "critical";
-  // Saved but not yet verified/active → belongs in setup, not "connected".
-  if (e.connectionStatus !== "active") return "disconnected";
+  const freshness = calculateFreshness({
+    lastSuccess: e.workspaceLastSuccess,
+    lastFailure: e.workspaceLastFailure,
+    expectedIntervalSec: EXPECTED_INTERVAL_SEC,
+    configured,
+    authOk,
+  });
+  const hasNewerFailure =
+    !!e.workspaceLastFailure &&
+    (!e.workspaceLastSuccess ||
+      Date.parse(e.workspaceLastFailure) > Date.parse(e.workspaceLastSuccess));
 
-  // Active connection from here.
-  if (e.workspaceFailures24h > 0 || e.backfillErrors > 0) return "warning";
-  if (e.workspaceMailboxesTotal === 0) return "warning"; // active but nothing discovered
-  if (e.backfillRunning > 0) return "backfilling";
-  // Healthy only with proof of life: a recent success OR active mailboxes.
-  if (e.workspaceLastSuccess !== null || e.workspaceMailboxesActive > 0) return "healthy";
-  return "warning"; // active + mailboxes, but none enabled and never synced
+  const extraReasons: string[] = [];
+  if (errored) extraReasons.push("Delegation error — re-authorise DWD");
+
+  const health = deriveHealth({
+    freshness,
+    configured,
+    authOk,
+    hasNewerFailure,
+    runningFailures: e.backfillErrors,
+    configIssue: active && e.workspaceMailboxesTotal === 0 ? "No mailboxes discovered" : null,
+    backfilling: e.backfillRunning > 0,
+    extraReasons,
+  });
+  return { freshness, health };
 }
 
 export const googleWorkspaceProvider: ConnectorProvider = {
@@ -53,25 +78,9 @@ export const googleWorkspaceProvider: ConnectorProvider = {
   sync: () => actionOfKind(descriptor, "sync"),
   actions: () => actionsFor(descriptor),
   settings: () => ({ surface: "email", title: "Email", icon: Mail, Component: EmailOperations }),
-  status: (s) => computeStatus(s),
-  health: (s) => {
-    const e = s.email;
-    const status = computeStatus(s);
-    const reasons: string[] = [];
-    if (e.connectionStatus === "error") reasons.push("Delegation error");
-    if (e.connectionStatus === "active" && e.workspaceMailboxesTotal === 0)
-      reasons.push("No mailboxes discovered");
-    if (e.workspaceFailures24h > 0) reasons.push(`${e.workspaceFailures24h} failed sync(s) in 24h`);
-    if (e.backfillErrors > 0) reasons.push(`${e.backfillErrors} backfill error(s)`);
-    if (
-      e.connectionStatus === "active" &&
-      e.workspaceMailboxesTotal > 0 &&
-      e.workspaceLastSuccess === null &&
-      e.workspaceMailboxesActive === 0
-    )
-      reasons.push("Awaiting first sync");
-    return { status, score: scoreOf(status), reasons };
-  },
+  status: (s) => evaluate(s).health.status,
+  freshness: (s) => evaluate(s).freshness,
+  health: (s) => evaluate(s).health,
   metrics: (s) => {
     const jc = countJobs(jobsForConnector(ID, s));
     return {
@@ -83,8 +92,63 @@ export const googleWorkspaceProvider: ConnectorProvider = {
       runningJobs: jc.running,
       queuedJobs: jc.queued + s.email.backfillRunning,
       averageSyncTime: "—",
-      healthScore: scoreOf(computeStatus(s)),
+      healthScore: evaluate(s).health.score,
     };
+  },
+  warnings: (s): ConnectorWarning[] => {
+    const e = s.email;
+    const { freshness } = evaluate(s);
+    const w: ConnectorWarning[] = [];
+    if (e.connectionStatus === "error") {
+      w.push({
+        id: "google_workspace:delegation",
+        connector: ID,
+        severity: "critical",
+        title: "Workspace delegation failed",
+        detail: e.connectionError ?? "Domain-wide delegation could not authenticate.",
+        recommendedAction: "reconnect",
+        actionLabel: "Re-test delegation",
+      });
+      return w;
+    }
+    if (e.connectionStatus !== "active") return w; // pending/unsaved lives in setup
+    if (e.workspaceMailboxesTotal === 0) {
+      w.push({
+        id: "google_workspace:no_mailboxes",
+        connector: ID,
+        severity: "warning",
+        title: "No mailboxes discovered",
+        detail: "Workspace is connected but no mailboxes have been discovered.",
+        recommendedAction: "settings",
+        actionLabel: "Discover mailboxes",
+      });
+    }
+    if (freshness.status === "stale" || freshness.status === "never_run") {
+      w.push({
+        id: "google_workspace:stale",
+        connector: ID,
+        severity: "warning",
+        title: freshness.status === "never_run" ? "Workspace never synced" : "Workspace sync stale",
+        detail:
+          freshness.status === "never_run"
+            ? "Connected but no successful sync yet."
+            : `Last successful sync ${fmtAge(freshness.age_seconds)} (expected every 5 min).`,
+        recommendedAction: "reconnect",
+        actionLabel: "Re-test delegation",
+      });
+    }
+    if (e.backfillErrors > 0) {
+      w.push({
+        id: "google_workspace:backfill_errors",
+        connector: ID,
+        severity: "warning",
+        title: "Backfill errors",
+        detail: `${e.backfillErrors} mailbox backfill(s) errored.`,
+        recommendedAction: "settings",
+        actionLabel: "Open backfill",
+      });
+    }
+    return w;
   },
   cardMetrics: (s) => {
     const e = s.email;

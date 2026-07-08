@@ -11,6 +11,7 @@ import type { ConnectorCategory, ConnectorView } from "@/lib/connectors/types";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
 import { isPresent, toBadge, toBucket } from "./ConnectorHealth";
 import { toCardMetrics } from "./ConnectorMetrics";
+import { buildTimeline } from "./ConnectorJobRunner";
 import type { ConnectorJob, ConnectorLog, ConnectorProvider, RuntimeConnector } from "./types";
 
 export interface PlatformRollup {
@@ -55,10 +56,13 @@ export class ConnectorRuntime {
       descriptor: provider.descriptor,
       present: isPresent(status),
       status,
+      freshness: provider.freshness(snapshot),
       health: provider.health(snapshot),
       metrics,
       cardMetrics: provider.cardMetrics?.(snapshot) ?? toCardMetrics(metrics),
       diagnostics: provider.diagnostics(snapshot),
+      warnings: provider.warnings(snapshot),
+      timeline: buildTimeline(provider.descriptor.id, snapshot),
       jobs: provider.jobs(snapshot),
       logs: provider.logs(snapshot),
       actions: provider.actions(),

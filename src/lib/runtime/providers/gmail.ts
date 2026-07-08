@@ -10,26 +10,53 @@ import { getConnector } from "@/lib/connectors/registry";
 import { EmailOperations } from "@/components/app/admin/EmailOperations";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
 import { actionOfKind, actionsFor } from "../ConnectorActions";
-import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
 import { countJobs, jobsForConnector } from "../ConnectorJobRunner";
+import { calculateFreshness, deriveHealth, type ConnectorFreshness } from "../freshness";
 import { ago, latestError } from "../diagnostics";
-import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
+import type {
+  ConnectorHealthReport,
+  ConnectorProvider,
+  ConnectorWarning,
+  DiagnosticGroup,
+} from "../types";
 
 const descriptor = getConnector("gmail")!;
 const ID = "gmail";
 
+// OAuth mailboxes sync on a ~5-minute cron (email-scheduled-sync).
+const EXPECTED_INTERVAL_SEC = 5 * 60;
+
 /**
- * Gmail OAuth is "connected" only when a real OAuth mailbox exists. Healthy needs
- * an ACTIVE OAuth account and no recent failure; an account present but not active
- * (e.g. token error) is a warning, not healthy.
+ * Gmail OAuth truth: "connected" needs a real OAuth mailbox; "authenticated" needs
+ * an ACTIVE token. No active token ⇒ authOk=false ⇒ freshness offline (evidence of
+ * a disconnected mailbox), never a fake healthy.
  */
-function computeStatus(s: OperationsSnapshot): RuntimeHealth {
+function evaluate(s: OperationsSnapshot): {
+  freshness: ConnectorFreshness;
+  health: ConnectorHealthReport;
+} {
   const e = s.email;
-  if (e.gmailOauthAccounts === 0) return "disconnected";
-  if (e.gmailFailures24h > 0) return "warning";
-  if (e.gmailOauthActive === 0) return "warning"; // connected but no active token
-  return "healthy";
+  const configured = e.gmailOauthAccounts > 0;
+  const authOk = e.gmailOauthActive > 0;
+  const freshness = calculateFreshness({
+    lastSuccess: e.gmailLastSuccess,
+    lastFailure: e.gmailLastFailure,
+    expectedIntervalSec: EXPECTED_INTERVAL_SEC,
+    configured,
+    authOk,
+  });
+  const hasNewerFailure =
+    !!e.gmailLastFailure &&
+    (!e.gmailLastSuccess || Date.parse(e.gmailLastFailure) > Date.parse(e.gmailLastSuccess));
+  const health = deriveHealth({
+    freshness,
+    configured,
+    authOk,
+    hasNewerFailure,
+    criticalIssue: configured && !authOk ? "OAuth mailbox has no active token" : null,
+  });
+  return { freshness, health };
 }
 
 export const gmailProvider: ConnectorProvider = {
@@ -39,17 +66,9 @@ export const gmailProvider: ConnectorProvider = {
   sync: () => actionOfKind(descriptor, "sync"),
   actions: () => actionsFor(descriptor),
   settings: () => ({ surface: "email", title: "Email", icon: Mail, Component: EmailOperations }),
-  status: (s) => computeStatus(s),
-  health: (s) => {
-    const e = s.email;
-    const status = computeStatus(s);
-    const reasons: string[] = [];
-    if (e.gmailOauthAccounts === 0) reasons.push("No OAuth mailbox connected");
-    if (e.gmailFailures24h > 0) reasons.push(`${e.gmailFailures24h} failed sync(s) in 24h`);
-    if (e.gmailOauthAccounts > 0 && e.gmailOauthActive === 0)
-      reasons.push("Mailbox has no active token — reconnect");
-    return { status, score: scoreOf(status), reasons };
-  },
+  status: (s) => evaluate(s).health.status,
+  freshness: (s) => evaluate(s).freshness,
+  health: (s) => evaluate(s).health,
   metrics: (s) => {
     const jc = countJobs(jobsForConnector(ID, s));
     return {
@@ -61,8 +80,37 @@ export const gmailProvider: ConnectorProvider = {
       runningJobs: jc.running,
       queuedJobs: jc.queued,
       averageSyncTime: "—",
-      healthScore: scoreOf(computeStatus(s)),
+      healthScore: evaluate(s).health.score,
     };
+  },
+  warnings: (s): ConnectorWarning[] => {
+    const e = s.email;
+    // Not configured is NORMAL for a DWD-primary tenant — not a warning.
+    if (e.gmailOauthAccounts === 0) return [];
+    const w: ConnectorWarning[] = [];
+    if (e.gmailOauthActive === 0) {
+      w.push({
+        id: "gmail:no_token",
+        connector: ID,
+        severity: "warning",
+        title: "OAuth mailbox disconnected",
+        detail: "The connected mailbox has no active token.",
+        recommendedAction: "reconnect",
+        actionLabel: "Reconnect Gmail",
+      });
+    }
+    if (e.gmailFailures24h > 0) {
+      w.push({
+        id: "gmail:failures",
+        connector: ID,
+        severity: "warning",
+        title: "Gmail sync failures",
+        detail: `${e.gmailFailures24h} failed sync(s) in the last 24h.`,
+        recommendedAction: "reconnect",
+        actionLabel: "Reconnect Gmail",
+      });
+    }
+    return w;
   },
   cardMetrics: (s) => {
     const e = s.email;

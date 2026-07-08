@@ -55,6 +55,26 @@ function fmtTime(iso: string | null): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
+/** Seconds-precision "last refreshed" label (now · 3 sec ago · 35 sec ago · 2m ago). */
+function fmtRefreshed(iso: string | null): string {
+  if (!iso) return "never";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const secs = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (secs < 3) return "now";
+  if (secs < 60) return `${secs} sec ago`;
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins} min ago`;
+  return fmtTime(iso);
+}
+
+function fmtDuration(seconds: number | null): string {
+  if (seconds === null) return "—";
+  const s = Math.round(seconds);
+  if (s < 60) return `${s}s`;
+  return `${Math.round(s / 60)}m`;
+}
+
 const connectorName = (id: string): string => getConnector(id)?.name ?? id;
 
 /** Which detail sub-section a connector's Settings action opens. */
@@ -120,14 +140,29 @@ export function OperationsOverview({
     void loadJobs();
   }, [loadJobs]);
 
-  function refreshAll() {
+  const refreshAll = useCallback(() => {
     void refresh();
     void loadJobs();
-  }
+  }, [refresh, loadJobs]);
 
   useEffect(() => {
     if (!loading) setLastRefreshedAt(new Date().toISOString());
   }, [loading]);
+
+  // Live clock so "last refreshed" ticks in real time (1s). Cheap re-render only.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Auto-refresh every 30s, but ONLY while the tab is visible (no background poll).
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") refreshAll();
+    }, 30000);
+    return () => clearInterval(id);
+  }, [refreshAll]);
 
   const present = useMemo(() => connectors.filter((c) => c.present), [connectors]);
 
@@ -192,8 +227,12 @@ export function OperationsOverview({
     completedToday: jobsData?.succeeded_today ?? 0,
     failed: jobsData?.failed_today ?? 0,
     retryQueue: jobsData?.retrying ?? 0,
-    processingRate: "—",
+    processingRate:
+      jobsData && jobsData.avg_duration_seconds !== null
+        ? `${fmtDuration(jobsData.avg_duration_seconds)} avg`
+        : "—",
   };
+  const lastCompleted = jobsData?.last_completed ?? null;
 
   // Health breakdown — one row per present connector (+ honest placeholders).
   const healthItems: HealthBreakdownItem[] = [
@@ -229,24 +268,22 @@ export function OperationsOverview({
     status: "disabled",
   });
 
-  // Actionable alerts — only real warning/critical connectors, each with a fix.
-  const alertAction = (c: RuntimeConnector): AlertItem["action"] => {
-    if (c.descriptor.id === "gmail")
-      return { label: "Reconnect Gmail", onClick: () => void handleAction(c, "reconnect") };
-    if (c.descriptor.id === "simwood")
-      return { label: "Test connection", onClick: () => void handleAction(c, "reconnect") };
-    return { label: "Open Health", onClick: () => setHealthConn(c) };
-  };
-  const alerts: AlertItem[] = present
-    .filter((c) => toBucket(c.status) === "warning" || toBucket(c.status) === "critical")
-    .map((c) => ({
-      id: `alert:${c.descriptor.id}`,
-      title: `${c.descriptor.name} · ${c.health.reasons[0] ?? "needs attention"}`,
-      detail: c.health.reasons.slice(1).join(" · ") || undefined,
-      severity: toBucket(c.status) === "critical" ? "critical" : "warning",
-      at: fmtTime(c.metrics.lastSync),
-      action: alertAction(c),
-    }));
+  // Operational warnings — fully provider-owned (no vendor branching here). Each
+  // warning names its own recommended action, wired generically to handleAction.
+  const warnings: AlertItem[] = connectors.flatMap((c) =>
+    c.warnings.map((w) => ({
+      id: w.id,
+      title: `${c.descriptor.name} · ${w.title}`,
+      detail: w.detail,
+      severity: w.severity,
+      action: w.recommendedAction
+        ? {
+            label: w.actionLabel ?? "Fix",
+            onClick: () => void handleAction(c, w.recommendedAction!),
+          }
+        : { label: "Open details", onClick: () => setHealthConn(c) },
+    })),
+  );
 
   const shownLogs = logFilter ? logs.filter((l) => l.connector === logFilter) : logs;
 
@@ -325,7 +362,7 @@ export function OperationsOverview({
       {/* Title + last refreshed + refresh */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-          Live · connector runtime · updated {fmtTime(lastRefreshedAt)}
+          Live · operations centre · last refreshed {fmtRefreshed(lastRefreshedAt)}
         </div>
         <Button size="sm" variant="outline" onClick={refreshAll} disabled={loading}>
           <RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -355,6 +392,9 @@ export function OperationsOverview({
         </div>
       )}
 
+      {/* Operational warnings — the "what needs attention" surface (provider-owned) */}
+      {warnings.length > 0 && <AlertCard title="Operational warnings" alerts={warnings} />}
+
       {/* Platform KPI row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <MetricCard label="Connected" value={platform.connected} icon={Server} />
@@ -375,7 +415,14 @@ export function OperationsOverview({
             </p>
           </div>
         ) : (
-          <JobsCard jobs={jobs} title="Platform jobs" />
+          <div>
+            <JobsCard jobs={jobs} title="Platform jobs" />
+            <div className="mt-2 px-1 text-[11px] text-muted-foreground">
+              {lastCompleted
+                ? `Last completed · ${lastCompleted.job_type} · ${fmtTime(lastCompleted.completed_at)}`
+                : "No completed jobs yet."}
+            </div>
+          </div>
         )}
         <HealthBreakdownCard items={healthItems} />
       </div>
@@ -407,6 +454,7 @@ export function OperationsOverview({
                 key={c.descriptor.id}
                 connector={toConnectorView(c)}
                 reason={c.health.reasons[0]}
+                score={c.health.score}
                 busy={busy?.id === c.descriptor.id ? busy.action : null}
                 onAction={(a) => void handleAction(c, a)}
               />
@@ -415,11 +463,8 @@ export function OperationsOverview({
         )}
       </div>
 
-      {/* Queues + alerts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <QueueCard queues={queues} />
-        <AlertCard alerts={alerts} />
-      </div>
+      {/* Queues */}
+      <QueueCard queues={queues} />
 
       {/* Recent logs (aggregated across connectors) */}
       <div ref={activityRef}>
@@ -456,6 +501,9 @@ export function OperationsOverview({
         open={healthConn !== null}
         onOpenChange={(o) => {
           if (!o) setHealthConn(null);
+        }}
+        onAction={(a) => {
+          if (healthConn) void handleAction(healthConn, a);
         }}
       />
     </div>

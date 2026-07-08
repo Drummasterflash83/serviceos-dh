@@ -28,6 +28,7 @@ export function ConnectorCard({
   onAction,
   busy,
   reason,
+  score,
   footer,
 }: {
   connector: ConnectorView;
@@ -35,12 +36,22 @@ export function ConnectorCard({
   busy?: ConnectorAction | null;
   /** Short why-line shown when the connector is warning/error/offline. */
   reason?: string;
+  /** Evidence-based 0–100 health score. */
+  score?: number;
   /** Optional extra content (e.g. an expandable settings panel). */
   footer?: ReactNode;
 }) {
   const { descriptor, state } = connector;
   const unhealthy =
     state.health === "warning" || state.health === "critical" || state.status === "offline";
+  const scoreCls =
+    score === undefined
+      ? ""
+      : score >= 90
+        ? "text-success"
+        : score >= 60
+          ? "text-warning"
+          : "text-destructive";
   return (
     <div className="rounded-2xl border border-hairline bg-white p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -57,6 +68,9 @@ export function ConnectorCard({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {score !== undefined && (
+            <span className={`text-display text-sm font-bold tabular ${scoreCls}`}>{score}%</span>
+          )}
           <ConnectorStatusBadge status={state.status} />
           <ConnectorHealthBadge health={state.health} />
         </div>

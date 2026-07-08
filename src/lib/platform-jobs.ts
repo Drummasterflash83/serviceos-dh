@@ -53,8 +53,11 @@ export interface PlatformJobSummary {
   failed_today: number;
   retrying: number;
   cancelled_today: number;
+  /** Mean succeeded-job duration today, in seconds (null if none). */
+  avg_duration_seconds: number | null;
   latest_failed: PlatformJob | null;
   latest_running: PlatformJob | null;
+  last_completed: PlatformJob | null;
 }
 
 const JOB_COLUMNS =
@@ -121,6 +124,8 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
     cancelledToday,
     latestFailed,
     latestRunning,
+    lastCompleted,
+    durationRows,
   ] = await Promise.all([
     count(() => supabase.from("platform_jobs").select("*", head).eq("status", "queued")),
     count(() => supabase.from("platform_jobs").select("*", head).eq("status", "retrying")),
@@ -159,7 +164,28 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
       .order("started_at", { ascending: false, nullsFirst: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("platform_jobs")
+      .select(JOB_COLUMNS)
+      .eq("status", "succeeded")
+      .order("completed_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle(),
+    // Recent succeeded runs (with both timestamps) for a mean duration.
+    supabase
+      .from("platform_jobs")
+      .select("started_at, completed_at")
+      .eq("status", "succeeded")
+      .gte("completed_at", startToday)
+      .not("started_at", "is", null)
+      .limit(50),
   ]);
+
+  const durations = ((durationRows.data ?? []) as { started_at: string; completed_at: string }[])
+    .map((r) => (Date.parse(r.completed_at) - Date.parse(r.started_at)) / 1000)
+    .filter((d) => Number.isFinite(d) && d >= 0);
+  const avgDuration =
+    durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : null;
 
   return {
     ok: true,
@@ -170,8 +196,10 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
       failed_today: failedToday ?? 0,
       retrying: retrying ?? 0,
       cancelled_today: cancelledToday ?? 0,
+      avg_duration_seconds: avgDuration,
       latest_failed: (latestFailed.data as PlatformJob | null) ?? null,
       latest_running: (latestRunning.data as PlatformJob | null) ?? null,
+      last_completed: (lastCompleted.data as PlatformJob | null) ?? null,
     },
   };
 }
