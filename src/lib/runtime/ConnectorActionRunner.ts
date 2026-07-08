@@ -17,11 +17,11 @@ import {
   testSimwoodConnection,
 } from "@/lib/api";
 import { listEmailAccounts } from "@/lib/email-feed";
+import { getSimwoodAccount } from "@/lib/phone-feed";
 import type { ConnectorActionKind } from "./types";
 
-// TODO(integration): source the Simwood customer id from per-tenant integration
-// config once provider connections are stored per tenant (mirrors PhoneOperations).
-const SIMWOOD_CUSTOMER_ID = "3950";
+const SIMWOOD_NOT_CONFIGURED =
+  "Simwood not configured — add a connector account in Phone settings.";
 
 export interface ActionRunContext {
   tenantId: string;
@@ -102,13 +102,31 @@ async function runWorkspaceReconnect(): Promise<ActionRunResult> {
   };
 }
 
-async function runSimwoodSync(ctx: ActionRunContext): Promise<ActionRunResult> {
+/** Resolve the tenant's configured Simwood customer id, or an error result. */
+async function resolveSimwoodCustomerId(
+  ctx: ActionRunContext,
+  title: string,
+): Promise<{ ok: true; customerId: string } | { ok: false; result: ActionRunResult }> {
   if (!ctx.tenantId) {
-    return { ok: false, title: "Call sync", message: "No tenant in session." };
+    return { ok: false, result: { ok: false, title, message: "No tenant in session." } };
   }
+  const acct = await getSimwoodAccount();
+  if (!acct.ok) {
+    return { ok: false, result: { ok: false, title, message: acct.error.message } };
+  }
+  if (!acct.data) {
+    return { ok: false, result: { ok: false, title, message: SIMWOOD_NOT_CONFIGURED } };
+  }
+  return { ok: true, customerId: acct.data.providerCustomerId };
+}
+
+async function runSimwoodSync(ctx: ActionRunContext): Promise<ActionRunResult> {
+  const resolved = await resolveSimwoodCustomerId(ctx, "Call sync");
+  if (!resolved.ok) return resolved.result;
+  // Catch-up sync: the child function defaults to the last 24h when no window given.
   const res = await syncSimwoodCalls({
     tenantId: ctx.tenantId,
-    providerCustomerId: SIMWOOD_CUSTOMER_ID,
+    providerCustomerId: resolved.customerId,
   });
   if (res.ok) {
     return {
@@ -121,10 +139,9 @@ async function runSimwoodSync(ctx: ActionRunContext): Promise<ActionRunResult> {
 }
 
 async function runSimwoodReconnect(ctx: ActionRunContext): Promise<ActionRunResult> {
-  if (!ctx.tenantId) {
-    return { ok: false, title: "Simwood connection", message: "No tenant in session." };
-  }
-  const res = await testSimwoodConnection(ctx.tenantId, SIMWOOD_CUSTOMER_ID);
+  const resolved = await resolveSimwoodCustomerId(ctx, "Simwood connection");
+  if (!resolved.ok) return resolved.result;
+  const res = await testSimwoodConnection(ctx.tenantId, resolved.customerId);
   if (res.ok) {
     return {
       ok: true,

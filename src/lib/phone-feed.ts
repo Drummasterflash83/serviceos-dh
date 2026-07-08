@@ -18,6 +18,84 @@ function clampLimit(v: number | undefined): number {
   return Math.max(1, Math.min(500, n));
 }
 
+/**
+ * The tenant's configured Simwood connector account (RLS-scoped browser read),
+ * or null when the connector isn't configured/enabled. This is the single source
+ * of truth for the Simwood customer id and its durable sync freshness — replacing
+ * the previously-hardcoded `3950`. No secrets: credentials live only in Edge
+ * Function env; this reads config + watermarks from `tenant_connectors` /
+ * `connector_accounts`.
+ */
+export interface SimwoodAccount {
+  tenantConnectorId: string;
+  accountId: string;
+  accountKey: string;
+  providerCustomerId: string;
+  displayName: string | null;
+  status: string;
+  enabled: boolean;
+  connectorStatus: string;
+  connectorHealth: string;
+  lastSuccessfulSyncAt: string | null;
+  lastFailedSyncAt: string | null;
+  lastError: string | null;
+}
+
+export async function getSimwoodAccount(): Promise<ApiResult<SimwoodAccount | null>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const supabase = getSupabaseClient();
+
+  // 1) The tenant's Simwood connector (RLS scopes to the caller's tenant).
+  const { data: tc, error: tcErr } = await supabase
+    .from("tenant_connectors")
+    .select("id, enabled, status, health_status")
+    .eq("connector_id", "simwood")
+    .maybeSingle();
+  if (tcErr) return { ok: false, error: { code: "query_error", message: tcErr.message } };
+  if (!tc || tc.enabled !== true) return { ok: true, data: null };
+
+  // 2) Its first active account (the customer id + freshness watermarks).
+  const { data: acct, error: acctErr } = await supabase
+    .from("connector_accounts")
+    .select(
+      "id, account_key, display_name, status, settings, last_successful_sync_at, last_failed_sync_at, last_error",
+    )
+    .eq("tenant_connector_id", tc.id as string)
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (acctErr) return { ok: false, error: { code: "query_error", message: acctErr.message } };
+  if (!acct) return { ok: true, data: null };
+
+  const settings = (acct.settings ?? {}) as Record<string, unknown>;
+  const customerFromSettings = settings.provider_customer_id;
+  const providerCustomerId =
+    typeof customerFromSettings === "string" && customerFromSettings.trim() !== ""
+      ? customerFromSettings
+      : (acct.account_key as string);
+
+  return {
+    ok: true,
+    data: {
+      tenantConnectorId: tc.id as string,
+      accountId: acct.id as string,
+      accountKey: acct.account_key as string,
+      providerCustomerId,
+      displayName: (acct.display_name as string | null) ?? null,
+      status: acct.status as string,
+      enabled: true,
+      connectorStatus: (tc.status as string) ?? "unknown",
+      connectorHealth: (tc.health_status as string) ?? "unknown",
+      lastSuccessfulSyncAt: (acct.last_successful_sync_at as string | null) ?? null,
+      lastFailedSyncAt: (acct.last_failed_sync_at as string | null) ?? null,
+      lastError: (acct.last_error as string | null) ?? null,
+    },
+  };
+}
+
 interface CallRow {
   id: string;
   provider_call_id: string | null;

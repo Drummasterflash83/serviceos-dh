@@ -30,11 +30,8 @@ import type {
 import { ConnectorStatusBadge } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
 import type { ConnectorSurfaceProps } from "@/lib/runtime/types";
+import { getSimwoodAccount, type SimwoodAccount } from "@/lib/phone-feed";
 import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
-
-// TODO(integration): replace this hardcoded Simwood customer id with the
-// tenant's integration config once provider connections are stored per tenant.
-const PROVIDER_CUSTOMER_ID = "3950";
 
 type ActionKey = "test" | "calls" | "recordings";
 
@@ -60,23 +57,42 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   const [calls, setCalls] = useState<ApiResult<SimwoodSyncCallsResult> | null>(null);
   const [recordings, setRecordings] = useState<ApiResult<SimwoodSyncRecordingsResult> | null>(null);
 
+  // Configured Simwood connector account (customer id from config, not hardcoded).
+  const [account, setAccount] = useState<SimwoodAccount | null>(null);
+  const [accountLoaded, setAccountLoaded] = useState(false);
+
+  const loadAccount = useCallback(async () => {
+    const res = await getSimwoodAccount();
+    if (res.ok) setAccount(res.data);
+    setAccountLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (allowed) void loadAccount();
+  }, [allowed, loadAccount]);
+
+  const customerId = account?.providerCustomerId ?? "";
+  const configured = account !== null;
+
   async function runTest() {
+    if (!configured) return;
     setRunning("test");
-    setTest(await testSimwoodConnection(tenantId, PROVIDER_CUSTOMER_ID));
+    setTest(await testSimwoodConnection(tenantId, customerId));
     setRunning(null);
   }
   async function runCalls() {
+    if (!configured) return;
     setRunning("calls");
-    // No from/to → the function defaults to the last 24 hours.
-    setCalls(await syncSimwoodCalls({ tenantId, providerCustomerId: PROVIDER_CUSTOMER_ID }));
+    // No from/to → the function defaults to the last 24 hours (safe catch-up).
+    setCalls(await syncSimwoodCalls({ tenantId, providerCustomerId: customerId }));
     setRunning(null);
+    void loadAccount(); // refresh watermarks after a sync
   }
   async function runRecordings() {
+    if (!configured) return;
     setRunning("recordings");
     // No from/to → the function defaults to the last 24 hours.
-    setRecordings(
-      await syncSimwoodRecordings({ tenantId, providerCustomerId: PROVIDER_CUSTOMER_ID }),
-    );
+    setRecordings(await syncSimwoodRecordings({ tenantId, providerCustomerId: customerId }));
     setRunning(null);
   }
 
@@ -126,18 +142,21 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
 
-  // Honest header status derived from the real pipeline read — never hard-coded.
+  // Honest header status: not-configured never reads as connected.
   const pipelineTotal =
     status && status.ok
       ? status.data.pending + status.data.processing + status.data.failed + status.data.completed
       : 0;
-  const headerStatus: ConnectorStatus = statusLoading
-    ? "syncing"
-    : status && !status.ok
-      ? "error"
-      : status && status.ok && pipelineTotal > 0
-        ? "connected"
-        : "warning";
+  const headerStatus: ConnectorStatus =
+    accountLoaded && !configured
+      ? "warning"
+      : statusLoading
+        ? "syncing"
+        : status && !status.ok
+          ? "error"
+          : status && status.ok && pipelineTotal > 0
+            ? "connected"
+            : "warning";
 
   if (!allowed) return <RestrictedNotice role={role} />;
 
@@ -153,22 +172,43 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             <div>
               <div className="text-sm font-semibold">Phone / VoIP · Simwood</div>
               <div className="text-xs text-muted-foreground">
-                Automatic sync every 5 minutes · call history, recordings &amp; transcription
+                {configured
+                  ? `Customer ${customerId} · automatic sync every 5 minutes`
+                  : accountLoaded
+                    ? "Not configured — no Simwood connector account for this tenant"
+                    : "Loading connector configuration…"}
               </div>
             </div>
           </div>
           <ConnectorStatusBadge status={headerStatus} />
         </div>
 
-        <div className="mt-5 flex items-center justify-between">
+        {accountLoaded && !configured && (
+          <div className="mt-4 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+            Simwood is not configured for this tenant. Add a connector account to enable sync.
+          </div>
+        )}
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Activity className="h-4 w-4 text-muted-foreground" />
             Processing pipeline
           </div>
-          <Button size="sm" variant="outline" onClick={loadStatus} disabled={statusLoading}>
-            <RotateCcw className="h-3.5 w-3.5" />
-            {statusLoading ? "Refreshing…" : "Refresh"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={runCalls}
+              disabled={!configured || running !== null}
+              title="Catch up: re-sync the last 24 hours of calls"
+            >
+              {running === "calls" ? "Catching up…" : "Catch up 24h"}
+            </Button>
+            <Button size="sm" variant="outline" onClick={loadStatus} disabled={statusLoading}>
+              <RotateCcw className="h-3.5 w-3.5" />
+              {statusLoading ? "Refreshing…" : "Refresh"}
+            </Button>
+          </div>
         </div>
 
         {status && !status.ok && (
@@ -228,7 +268,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   variant="outline"
                   className="mt-3 w-full"
                   onClick={runTest}
-                  disabled={running !== null}
+                  disabled={!configured || running !== null}
                 >
                   {running === "test" ? "Testing…" : "Test connection"}
                 </Button>
@@ -252,7 +292,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   size="sm"
                   className="mt-3 w-full"
                   onClick={runCalls}
-                  disabled={running !== null}
+                  disabled={!configured || running !== null}
                 >
                   {running === "calls" ? "Syncing…" : "Sync last 24h"}
                 </Button>
@@ -278,7 +318,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   size="sm"
                   className="mt-3 w-full"
                   onClick={runRecordings}
-                  disabled={running !== null}
+                  disabled={!configured || running !== null}
                 >
                   {running === "recordings" ? "Syncing…" : "Sync last 24h"}
                 </Button>

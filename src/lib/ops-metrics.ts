@@ -12,6 +12,7 @@
 
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import { getWorkspaceConnection } from "./email-feed";
+import { getSimwoodAccount } from "./phone-feed";
 
 /** A row from either sync-runs table (email_sync_runs | phone_sync_runs). */
 export interface SyncRunRow {
@@ -64,6 +65,13 @@ export interface OperationsSnapshot {
     testedOk: boolean;
     failures24h: number;
     running: number;
+    /** Connector config (Operational Truth): proves the connector is set up. */
+    configured: boolean;
+    customerId: string | null;
+    /** Durable per-account sync watermarks — the source of freshness/staleness. */
+    connectorLastSuccess: string | null;
+    connectorLastFailure: string | null;
+    connectorLastError: string | null;
   };
   global: {
     completedToday: number;
@@ -111,6 +119,11 @@ export const EMPTY_SNAPSHOT: OperationsSnapshot = {
     testedOk: false,
     failures24h: 0,
     running: 0,
+    configured: false,
+    customerId: null,
+    connectorLastSuccess: null,
+    connectorLastFailure: null,
+    connectorLastError: null,
   },
   global: { completedToday: 0, failedToday: 0 },
   syncRuns: [],
@@ -203,6 +216,7 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     phoneLast,
     phoneFail,
     wsConnRes,
+    simwoodAcctRes,
     emailRuns,
     phoneRuns,
   ] = await Promise.all([
@@ -319,11 +333,13 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     lastRun("phone_sync_runs", "success"),
     lastRun("phone_sync_runs", "failed"),
     getWorkspaceConnection(),
+    getSimwoodAccount(),
     recentRuns("email_sync_runs"),
     recentRuns("phone_sync_runs"),
   ]);
 
   const wsConn = wsConnRes.ok ? wsConnRes.data : null;
+  const simwood = simwoodAcctRes.ok ? simwoodAcctRes.data : null;
   const syncRuns = [...emailRuns, ...phoneRuns]
     .filter((r) => r.started_at)
     .sort((a, b) => ((a.started_at ?? "") < (b.started_at ?? "") ? 1 : -1))
@@ -367,6 +383,11 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
       testedOk: phoneTested > 0,
       failures24h: phoneFail24,
       running: phoneRunning,
+      configured: simwood !== null,
+      customerId: simwood?.providerCustomerId ?? null,
+      connectorLastSuccess: simwood?.lastSuccessfulSyncAt ?? null,
+      connectorLastFailure: simwood?.lastFailedSyncAt ?? null,
+      connectorLastError: simwood?.lastError ?? null,
     },
     global: {
       completedToday: emailSuccessToday + phoneSuccessToday,

@@ -19,15 +19,38 @@ import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types
 const descriptor = getConnector("simwood")!;
 const ID = "simwood";
 
+// Scheduled phone sync runs every ~5 min; if the durable watermark hasn't moved
+// in this long, sync is stale (broken cron / credentials) — not "healthy".
+const STALE_MINUTES = 20;
+
+/** Minutes since an ISO timestamp, or null if absent/unparseable. */
+function minutesSince(iso: string | null): number | null {
+  if (!iso) return null;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return null;
+  return Math.max(0, (Date.now() - t) / 60000);
+}
+
+/** True when the most recent failure is newer than the most recent success. */
+function failedAfterSuccess(p: OperationsSnapshot["phone"]): boolean {
+  if (!p.connectorLastFailure) return false;
+  if (!p.connectorLastSuccess) return true;
+  return Date.parse(p.connectorLastFailure) > Date.parse(p.connectorLastSuccess);
+}
+
 /**
- * Phone is "connected" only with proof: a successful test, a successful call sync,
- * or ingested call/recording data. Otherwise disconnected — never assumed.
+ * Phone status derives from CONFIG + durable sync freshness (Operational Truth):
+ * "Connected" requires an enabled connector account; "Healthy" requires a proven
+ * recent successful sync within the schedule window and no fresher failure. Never
+ * healthy on unproven state.
  */
 function computeStatus(s: OperationsSnapshot): RuntimeHealth {
   const p = s.phone;
-  const present = p.callsTotal > 0 || p.recordingsTotal > 0 || p.lastSuccess !== null || p.testedOk;
-  if (!present) return "disconnected";
+  if (!p.configured) return "disconnected"; // no enabled connector account
+  if (failedAfterSuccess(p)) return "warning"; // last run failed
   if (p.failures24h > 0) return "warning";
+  const mins = minutesSince(p.connectorLastSuccess);
+  if (mins === null || mins > STALE_MINUTES) return "warning"; // stale / never synced
   if (p.running > 0) return "syncing";
   return "healthy";
 }
@@ -44,7 +67,15 @@ export const simwoodProvider: ConnectorProvider = {
     const p = s.phone;
     const status = computeStatus(s);
     const reasons: string[] = [];
-    if (status === "disconnected") reasons.push("No successful connection test yet");
+    if (!p.configured) reasons.push("Simwood not configured");
+    if (p.configured && failedAfterSuccess(p))
+      reasons.push(`Last sync failed${p.connectorLastError ? `: ${p.connectorLastError}` : ""}`);
+    const mins = minutesSince(p.connectorLastSuccess);
+    if (p.configured && !failedAfterSuccess(p)) {
+      if (mins === null) reasons.push("Awaiting first successful sync");
+      else if (mins > STALE_MINUTES)
+        reasons.push(`Sync stale — last success ${Math.round(mins)}m ago`);
+    }
     if (p.failures24h > 0) reasons.push(`${p.failures24h} failed sync(s) in 24h`);
     if (p.transcriptionsFailed > 0)
       reasons.push(`${p.transcriptionsFailed} failed transcription(s)`);
@@ -75,7 +106,38 @@ export const simwoodProvider: ConnectorProvider = {
   },
   diagnostics: (s): DiagnosticGroup[] => {
     const p = s.phone;
+    const mins = minutesSince(p.connectorLastSuccess);
     return [
+      {
+        title: "Configuration",
+        rows: [
+          {
+            label: "Configured",
+            value: p.configured ? "yes" : "no",
+            tone: p.configured ? "success" : "critical",
+          },
+          {
+            label: "Customer id",
+            value: p.customerId ?? "—",
+            tone: p.customerId ? "default" : "muted",
+          },
+          {
+            label: "Last scheduled sync",
+            value: ago(p.connectorLastSuccess),
+            tone: mins !== null && mins <= STALE_MINUTES ? "success" : "warning",
+          },
+          {
+            label: "Last scheduled failure",
+            value: ago(p.connectorLastFailure),
+            tone: p.connectorLastFailure ? "critical" : "muted",
+          },
+          {
+            label: "Connector error",
+            value: p.connectorLastError ?? "none",
+            tone: p.connectorLastError ? "critical" : "muted",
+          },
+        ],
+      },
       {
         title: "Connection",
         rows: [
