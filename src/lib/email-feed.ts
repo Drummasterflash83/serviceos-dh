@@ -15,12 +15,34 @@
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import type {
   ApiResult,
+  EmailAccount,
   EmailFeedInput,
   EmailFeedItem,
   EmailInsight,
   EmailThreadDetail,
   EmailThreadMessage,
 } from "./types";
+
+/**
+ * List the tenant's connected email accounts (RLS-scoped browser read). Used by
+ * Admin to show/pick a connected mailbox. No tokens are ever exposed here — the
+ * `email_oauth_tokens` table is RLS-closed and never queried from the client.
+ */
+export async function listEmailAccounts(provider?: string): Promise<ApiResult<EmailAccount[]>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const supabase = getSupabaseClient();
+  let query = supabase
+    .from("email_accounts")
+    .select("id, tenant_id, provider, email_address, display_name, status, created_at, updated_at")
+    .order("created_at", { ascending: false });
+  if (provider) query = query.eq("provider", provider);
+
+  const { data, error } = await query;
+  if (error) return { ok: false, error: { code: "query_error", message: error.message } };
+  return { ok: true, data: (data ?? []) as EmailAccount[] };
+}
 
 function clampLimit(v: number | undefined): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : 100;
