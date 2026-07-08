@@ -29,6 +29,12 @@
 
 import { createSupabaseAdmin, PROVIDER } from "../_shared/simwood.ts";
 import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import {
+  completePlatformJob,
+  createPlatformJob,
+  failPlatformJob,
+  startPlatformJob,
+} from "../_shared/platform_jobs.ts";
 
 const CONNECTOR_ID = "simwood";
 // Safety overlap re-synced on every run so a call landing on a window boundary is
@@ -167,6 +173,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
         overlap_minutes: OVERLAP_MINUTES,
       };
 
+      // Durable platform job (supplements phone_sync_runs). Best-effort: a
+      // duplicate active job for this account this minute → don't double-track,
+      // but always run the (idempotent) sync. No secrets in the payload.
+      const created = await createPlatformJob(supabase, {
+        tenantId,
+        connectorId: "simwood",
+        moduleId: "communications.phone",
+        jobType: "phone.scheduled_sync",
+        jobKey: `phone.scheduled_sync:${account.id}:${to.slice(0, 16)}`,
+        payload: { provider_customer_id: customerId, from, to },
+      });
+      const jobId = created.duplicate ? null : created.id;
+      if (jobId) await startPlatformJob(supabase, jobId);
+
       // Open a scheduled_sync run so every tick is auditable even on mid-run failure.
       const { data: runRow } = await supabase
         .from("phone_sync_runs")
@@ -258,6 +278,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
             last_error: errText,
           })
           .eq("id", connector.id);
+      }
+
+      if (jobId) {
+        if (overallOk) {
+          await completePlatformJob(supabase, jobId, {
+            recordsProcessed: callsProcessed + recProcessed,
+            result: { calls_processed: callsProcessed, recordings_processed: recProcessed },
+          });
+        } else {
+          await failPlatformJob(supabase, jobId, JSON.stringify(errors), {
+            calls_processed: callsProcessed,
+            recordings_processed: recProcessed,
+          });
+        }
       }
 
       results.push({

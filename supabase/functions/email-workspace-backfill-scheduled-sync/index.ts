@@ -14,6 +14,12 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { syncGmailMailbox } from "../_shared/email_pipeline.ts";
+import {
+  completePlatformJob,
+  createPlatformJob,
+  failPlatformJob,
+  startPlatformJob,
+} from "../_shared/platform_jobs.ts";
 
 const PROVIDER = "gmail";
 const BACKFILL_FUNCTION = "gmail-workspace-backfill-messages";
@@ -27,7 +33,8 @@ const PAGE_SIZE = 100;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-schedule-secret",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-schedule-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -94,6 +101,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (runErr || !runRow) return fail("db_error", "Could not open a scheduled sync run", 500);
   const syncRunId = runRow.id as string;
 
+  // Durable platform job (supplements email_sync_runs; scheduled-run granularity).
+  // Best-effort. TODO(jobs): per-mailbox jobs inside gmail-workspace-backfill-messages.
+  const created = await createPlatformJob(supabase, {
+    tenantId,
+    connectorId: "google-workspace",
+    moduleId: "communications.email",
+    jobType: "email.workspace_backfill",
+    jobKey: `email.workspace_backfill:${tenantId}:${startedAt.slice(0, 16)}`,
+    payload: { max_mailboxes: MAX_MAILBOXES, page_size: PAGE_SIZE },
+  });
+  const jobId = created.duplicate ? null : created.id;
+  if (jobId) await startPlatformJob(supabase, jobId);
+
   // Continue only IN-PROGRESS ('running') DWD backfills — oldest-touched first,
   // capped at MAX_MAILBOXES. Never auto-starts a new backfill.
   const { data: accounts, error: accErr } = await supabase
@@ -115,6 +135,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         metadata: { ...baseMetadata, error_code: "db_error" },
       })
       .eq("id", syncRunId);
+    if (jobId) await failPlatformJob(supabase, jobId, "db_error: could not list backfill accounts");
     return json({ success: false, sync_run_id: syncRunId, error: { code: "db_error" } }, 500);
   }
   const accountList = accounts ?? [];
@@ -159,6 +180,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
     })
     .eq("id", syncRunId);
+
+  if (jobId) {
+    if (overallOk) {
+      await completePlatformJob(supabase, jobId, {
+        recordsProcessed: messagesProcessed,
+        result: { mailboxes_processed: accountList.length, messages_processed: messagesProcessed },
+      });
+    } else {
+      await failPlatformJob(supabase, jobId, `${failedAccounts} mailbox(es) failed`, {
+        mailboxes_processed: accountList.length,
+        messages_processed: messagesProcessed,
+      });
+    }
+  }
 
   return json({
     success: overallOk,

@@ -14,6 +14,12 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { syncGmailMailbox } from "../_shared/email_pipeline.ts";
+import {
+  completePlatformJob,
+  createPlatformJob,
+  failPlatformJob,
+  startPlatformJob,
+} from "../_shared/platform_jobs.ts";
 
 const PROVIDER = "gmail";
 const SYNC_FUNCTION = "gmail-workspace-sync-messages";
@@ -26,7 +32,8 @@ const MAX_RESULTS = 25;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-schedule-secret",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-schedule-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -89,6 +96,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (runErr || !runRow) return fail("db_error", "Could not open a scheduled sync run", 500);
   const syncRunId = runRow.id as string;
 
+  // Durable platform job (supplements email_sync_runs; scheduled-run granularity).
+  // Best-effort: a duplicate active job this minute → don't double-track. No secrets.
+  // TODO(jobs): per-mailbox jobs inside gmail-workspace-sync-messages.
+  const created = await createPlatformJob(supabase, {
+    tenantId,
+    connectorId: "google-workspace",
+    moduleId: "communications.email",
+    jobType: "email.workspace_sync",
+    jobKey: `email.workspace_sync:${tenantId}:${startedAt.slice(0, 16)}`,
+    payload: { max_results: MAX_RESULTS },
+  });
+  const jobId = created.duplicate ? null : created.id;
+  if (jobId) await startPlatformJob(supabase, jobId);
+
   // --- find enabled DWD mailboxes for the tenant (service role) -------------
   // Only pending_tokenless_dwd / active_dwd — this deliberately SKIPS OAuth
   // 'active' accounts (they sync via email-scheduled-sync) and 'disabled' ones.
@@ -108,6 +129,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         metadata: { ...baseMetadata, error_code: "db_error" },
       })
       .eq("id", syncRunId);
+    if (jobId) await failPlatformJob(supabase, jobId, "db_error: could not list DWD accounts");
     return json({ success: false, sync_run_id: syncRunId, error: { code: "db_error" } }, 500);
   }
   const accountList = accounts ?? [];
@@ -153,6 +175,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
     })
     .eq("id", syncRunId);
+
+  if (jobId) {
+    if (overallOk) {
+      await completePlatformJob(supabase, jobId, {
+        recordsProcessed: messagesProcessed,
+        result: { accounts_processed: accountList.length, messages_processed: messagesProcessed },
+      });
+    } else {
+      await failPlatformJob(supabase, jobId, `${failedAccounts} mailbox(es) failed`, {
+        accounts_processed: accountList.length,
+        messages_processed: messagesProcessed,
+      });
+    }
+  }
 
   return json({
     success: overallOk,

@@ -7,7 +7,7 @@
  * never edits this file.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Bot, Briefcase, Gauge, RotateCcw, Server, X } from "lucide-react";
 
 import { getConnector } from "@/lib/connectors/registry";
@@ -17,6 +17,13 @@ import { useConnectorRuntime, toConnectorView } from "@/lib/runtime";
 import { toBucket } from "@/lib/runtime/ConnectorHealth";
 import { runConnectorAction } from "@/lib/runtime/ConnectorActionRunner";
 import type { RuntimeConnector } from "@/lib/runtime/types";
+import {
+  getPlatformJobSummary,
+  listPlatformJobs,
+  type PlatformJob,
+  type PlatformJobSummary,
+} from "@/lib/platform-jobs";
+import type { ApiResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   ActivityTable,
@@ -96,6 +103,28 @@ export function OperationsOverview({
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const activityRef = useRef<HTMLDivElement>(null);
 
+  // Real Platform Jobs (separate read from the connector snapshot).
+  const [jobsSummary, setJobsSummary] = useState<ApiResult<PlatformJobSummary> | null>(null);
+  const [recentJobs, setRecentJobs] = useState<PlatformJob[]>([]);
+
+  const loadJobs = useCallback(async () => {
+    const [sum, list] = await Promise.all([
+      getPlatformJobSummary(),
+      listPlatformJobs({ limit: 12 }),
+    ]);
+    setJobsSummary(sum);
+    setRecentJobs(list.ok ? list.data : []);
+  }, []);
+
+  useEffect(() => {
+    void loadJobs();
+  }, [loadJobs]);
+
+  function refreshAll() {
+    void refresh();
+    void loadJobs();
+  }
+
   useEffect(() => {
     if (!loading) setLastRefreshedAt(new Date().toISOString());
   }, [loading]);
@@ -135,7 +164,10 @@ export function OperationsOverview({
     const res = await runConnectorAction(id, action, { tenantId });
     setBusy(null);
     setActionResult({ ok: res.ok, title: res.title, message: res.message });
-    if (!res.redirected) void refresh();
+    if (!res.redirected) {
+      void refresh();
+      void loadJobs();
+    }
   }
 
   if (loading && connectors.length === 0) return <LoadingGrid />;
@@ -150,12 +182,16 @@ export function OperationsOverview({
   const runningJobs = connectors.reduce((n, c) => n + c.metrics.runningJobs, 0);
   const queuedJobs = connectors.reduce((n, c) => n + c.metrics.queuedJobs, 0);
 
+  // Jobs widget reads REAL platform_jobs. Unavailable (table unreadable) is shown
+  // honestly, never as zero. Empty-but-readable shows zeros + "No platform jobs".
+  const jobsData = jobsSummary?.ok ? jobsSummary.data : null;
+  const jobsUnavailable = jobsSummary !== null && !jobsSummary.ok;
   const jobs: JobsSummary = {
-    running: runningJobs,
-    queued: queuedJobs,
-    completedToday: snapshot.global.completedToday,
-    failed: snapshot.global.failedToday,
-    retryQueue: 0,
+    running: jobsData?.running ?? 0,
+    queued: jobsData?.queued ?? 0,
+    completedToday: jobsData?.succeeded_today ?? 0,
+    failed: jobsData?.failed_today ?? 0,
+    retryQueue: jobsData?.retrying ?? 0,
     processingRate: "—",
   };
 
@@ -234,6 +270,56 @@ export function OperationsOverview({
     },
   ];
 
+  const jobStatusCls = (s: string): string =>
+    s === "running"
+      ? "text-accent"
+      : s === "succeeded"
+        ? "text-success"
+        : s === "failed"
+          ? "text-destructive"
+          : s === "cancelled" || s === "skipped"
+            ? "text-muted-foreground"
+            : "text-warning"; // queued | retrying
+
+  const jobCols: Column<PlatformJob>[] = [
+    {
+      key: "connector",
+      header: "Connector",
+      render: (j) =>
+        connectorName((j.connector_id ?? "").replace("google-workspace", "google_workspace")),
+    },
+    { key: "job_type", header: "Job", className: "font-mono text-muted-foreground" },
+    {
+      key: "status",
+      header: "Status",
+      render: (j) => <span className={jobStatusCls(j.status)}>{j.status}</span>,
+    },
+    {
+      key: "progress",
+      header: "Progress",
+      className: "tabular text-muted-foreground",
+      render: (j) => (j.progress_total ? `${j.progress_current}/${j.progress_total}` : "—"),
+    },
+    {
+      key: "records",
+      header: "Records",
+      className: "tabular text-muted-foreground",
+      render: (j) => String(j.records_processed),
+    },
+    {
+      key: "when",
+      header: "When",
+      className: "whitespace-nowrap text-muted-foreground",
+      render: (j) => fmtTime(j.completed_at ?? j.failed_at ?? j.started_at ?? j.created_at),
+    },
+    {
+      key: "error",
+      header: "Error",
+      className: "text-destructive",
+      render: (j) => (j.last_error ? j.last_error.slice(0, 60) : ""),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Title + last refreshed + refresh */}
@@ -241,7 +327,7 @@ export function OperationsOverview({
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
           Live · connector runtime · updated {fmtTime(lastRefreshedAt)}
         </div>
-        <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}>
+        <Button size="sm" variant="outline" onClick={refreshAll} disabled={loading}>
           <RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Refreshing…" : "Refresh"}
         </Button>
@@ -281,9 +367,29 @@ export function OperationsOverview({
 
       {/* Jobs + system health breakdown */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <JobsCard jobs={jobs} />
+        {jobsUnavailable ? (
+          <div className="rounded-2xl border border-hairline bg-white p-6">
+            <div className="text-sm font-semibold">Jobs</div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Jobs unavailable — the platform jobs table could not be read.
+            </p>
+          </div>
+        ) : (
+          <JobsCard jobs={jobs} title="Platform jobs" />
+        )}
         <HealthBreakdownCard items={healthItems} />
       </div>
+
+      {/* Recent platform jobs — the durable execution record */}
+      {!jobsUnavailable && (
+        <ActivityTable
+          title="Recent jobs"
+          columns={jobCols}
+          rows={recentJobs}
+          rowKey={(j) => j.id}
+          emptyLabel="No platform jobs yet."
+        />
+      )}
 
       {/* Connected systems — looped from the runtime, every action live */}
       <div>

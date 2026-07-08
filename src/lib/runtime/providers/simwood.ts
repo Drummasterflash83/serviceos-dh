@@ -12,7 +12,7 @@ import type { OperationsSnapshot } from "@/lib/ops-metrics";
 import { actionOfKind, actionsFor } from "../ConnectorActions";
 import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
-import { buildJobs, countJobs } from "../ConnectorJobRunner";
+import { countJobs, jobsForConnector } from "../ConnectorJobRunner";
 import { ago, latestError, yesNo } from "../diagnostics";
 import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
 
@@ -82,7 +82,7 @@ export const simwoodProvider: ConnectorProvider = {
     return { status, score: scoreOf(status), reasons };
   },
   metrics: (s) => {
-    const jc = countJobs(buildJobs(ID, s.syncRuns));
+    const jc = countJobs(jobsForConnector(ID, s));
     return {
       connections: computeStatus(s) === "disconnected" ? 0 : 1,
       activeAccounts: 0,
@@ -195,5 +195,5 @@ export const simwoodProvider: ConnectorProvider = {
     ];
   },
   logs: (s) => buildLogs(ID, s.syncRuns),
-  jobs: (s) => buildJobs(ID, s.syncRuns),
+  jobs: (s) => jobsForConnector(ID, s),
 };

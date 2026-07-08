@@ -26,6 +26,20 @@ export interface SyncRunRow {
   error_message: string | null;
 }
 
+/** A lean platform_jobs row — the runtime prefers these over guessed sync rows. */
+export interface PlatformJobLite {
+  id: string;
+  connector_id: string | null;
+  job_type: string;
+  status: string;
+  progress_current: number;
+  progress_total: number | null;
+  records_processed: number;
+  started_at: string | null;
+  completed_at: string | null;
+  last_error: string | null;
+}
+
 export interface OperationsSnapshot {
   email: {
     connectionStatus: string | null;
@@ -79,6 +93,8 @@ export interface OperationsSnapshot {
   };
   /** Recent runs (email + phone), newest first — the source for logs/jobs. */
   syncRuns: SyncRunRow[];
+  /** Recent platform_jobs (all connectors), newest first — preferred job source. */
+  platformJobs: PlatformJobLite[];
 }
 
 export const EMPTY_SNAPSHOT: OperationsSnapshot = {
@@ -127,6 +143,7 @@ export const EMPTY_SNAPSHOT: OperationsSnapshot = {
   },
   global: { completedToday: 0, failedToday: 0 },
   syncRuns: [],
+  platformJobs: [],
 };
 
 /** A thenable that resolves to a PostgREST count response. */
@@ -181,6 +198,23 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     }
   }
 
+  // Recent platform_jobs (degrades to [] if the table is missing/unreadable, so
+  // the runtime safely falls back to sync-run-derived jobs during migration).
+  async function recentPlatformJobs(): Promise<PlatformJobLite[]> {
+    try {
+      const { data, error } = await supabase
+        .from("platform_jobs")
+        .select(
+          "id, connector_id, job_type, status, progress_current, progress_total, records_processed, started_at, completed_at, last_error",
+        )
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return error ? [] : ((data ?? []) as PlatformJobLite[]);
+    } catch {
+      return [];
+    }
+  }
+
   const [
     gmailOauthAccounts,
     gmailOauthActive,
@@ -219,6 +253,7 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     simwoodAcctRes,
     emailRuns,
     phoneRuns,
+    platformJobs,
   ] = await Promise.all([
     // OAuth accounts = gmail provider, excluding the DWD service statuses.
     cnt(() =>
@@ -336,6 +371,7 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     getSimwoodAccount(),
     recentRuns("email_sync_runs"),
     recentRuns("phone_sync_runs"),
+    recentPlatformJobs(),
   ]);
 
   const wsConn = wsConnRes.ok ? wsConnRes.data : null;
@@ -394,5 +430,6 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
       failedToday: emailFailedToday + phoneFailedToday,
     },
     syncRuns,
+    platformJobs,
   };
 }
