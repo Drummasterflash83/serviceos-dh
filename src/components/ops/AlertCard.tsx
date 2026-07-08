@@ -6,6 +6,7 @@
 import { AlertTriangle, Info, XCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type AlertSeverity = "info" | "warning" | "critical";
 
@@ -16,6 +17,8 @@ export interface AlertItem {
   severity: AlertSeverity;
   /** ISO timestamp or a pre-formatted label. */
   at?: string;
+  /** Optional suggested action (e.g. "Open Health", "Reconnect Gmail"). */
+  action?: { label: string; onClick: () => void };
 }
 
 const SEV: Record<AlertSeverity, { icon: typeof Info; cls: string }> = {
@@ -49,6 +52,16 @@ export function AlertCard({
                   <div className="truncate text-xs font-medium text-foreground">{a.title}</div>
                   {a.detail && (
                     <div className="truncate text-[11px] text-muted-foreground">{a.detail}</div>
+                  )}
+                  {a.action && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1.5 h-7 px-2 text-[11px]"
+                      onClick={a.action.onClick}
+                    >
+                      {a.action.label}
+                    </Button>
                   )}
                 </div>
                 {a.at && (

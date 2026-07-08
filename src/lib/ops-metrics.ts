@@ -28,14 +28,23 @@ export interface SyncRunRow {
 export interface OperationsSnapshot {
   email: {
     connectionStatus: string | null;
+    /** Saved connection detail (RLS read) — powers the Workspace health panel. */
+    connectionDomain: string | null;
+    connectionSubject: string | null;
+    connectionLastVerified: string | null;
+    connectionError: string | null;
     gmailOauthAccounts: number;
+    gmailOauthActive: number;
     gmailLastSuccess: string | null;
+    gmailLastFailure: string | null;
     gmailFailures24h: number;
     workspaceMailboxesTotal: number;
     workspaceMailboxesActive: number;
     workspaceMailboxesDisabled: number;
     workspaceLastSuccess: string | null;
+    workspaceLastFailure: string | null;
     workspaceFailures24h: number;
+    workspaceRunning: number;
     backfillRunning: number;
     backfillCompleted: number;
     backfillErrors: number;
@@ -48,8 +57,11 @@ export interface OperationsSnapshot {
     callsToday: number;
     recordingsTotal: number;
     transcriptionsPending: number;
+    transcriptionsFailed: number;
     aiPending: number;
     lastSuccess: string | null;
+    lastFailure: string | null;
+    testedOk: boolean;
     failures24h: number;
     running: number;
   };
@@ -64,14 +76,22 @@ export interface OperationsSnapshot {
 export const EMPTY_SNAPSHOT: OperationsSnapshot = {
   email: {
     connectionStatus: null,
+    connectionDomain: null,
+    connectionSubject: null,
+    connectionLastVerified: null,
+    connectionError: null,
     gmailOauthAccounts: 0,
+    gmailOauthActive: 0,
     gmailLastSuccess: null,
+    gmailLastFailure: null,
     gmailFailures24h: 0,
     workspaceMailboxesTotal: 0,
     workspaceMailboxesActive: 0,
     workspaceMailboxesDisabled: 0,
     workspaceLastSuccess: null,
+    workspaceLastFailure: null,
     workspaceFailures24h: 0,
+    workspaceRunning: 0,
     backfillRunning: 0,
     backfillCompleted: 0,
     backfillErrors: 0,
@@ -84,8 +104,11 @@ export const EMPTY_SNAPSHOT: OperationsSnapshot = {
     callsToday: 0,
     recordingsTotal: 0,
     transcriptionsPending: 0,
+    transcriptionsFailed: 0,
     aiPending: 0,
     lastSuccess: null,
+    lastFailure: null,
+    testedOk: false,
     failures24h: 0,
     running: 0,
   },
@@ -113,12 +136,13 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
   const startToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
   const headCount = { count: "exact" as const, head: true as const };
 
-  async function lastSuccess(
+  async function lastRun(
     table: "email_sync_runs" | "phone_sync_runs",
+    status: "success" | "failed",
     scope?: "workspace" | "gmail",
   ): Promise<string | null> {
     try {
-      let q = supabase.from(table).select("completed_at, started_at").eq("status", "success");
+      let q = supabase.from(table).select("completed_at, started_at").eq("status", status);
       if (scope === "workspace") q = q.like("sync_type", "workspace%");
       else if (scope === "gmail") q = q.not("sync_type", "like", "workspace%");
       const { data } = await q.order("started_at", { ascending: false }).limit(1).maybeSingle();
@@ -146,6 +170,7 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
 
   const [
     gmailOauthAccounts,
+    gmailOauthActive,
     wsTotal,
     wsActive,
     wsDisabled,
@@ -156,12 +181,15 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     emailThreads,
     wsFail24,
     gmailFail24,
+    wsRunning,
     callsTotal,
     callsToday,
     recTotal,
     transcriptsCompleted,
+    transcriptsFailed,
     aiTotal,
     phoneFail24,
+    phoneTested,
     emailRunning,
     phoneRunning,
     emailSuccessToday,
@@ -169,12 +197,23 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
     emailFailedToday,
     phoneFailedToday,
     wsLast,
+    wsFail,
     gmailLast,
+    gmailFail,
     phoneLast,
+    phoneFail,
     wsConnRes,
     emailRuns,
     phoneRuns,
   ] = await Promise.all([
+    // OAuth accounts = gmail provider, excluding the DWD service statuses.
+    cnt(() =>
+      supabase
+        .from("email_accounts")
+        .select("*", headCount)
+        .eq("provider", "gmail")
+        .not("status", "in", '("active_dwd","pending_tokenless_dwd")'),
+    ),
     cnt(() =>
       supabase
         .from("email_accounts")
@@ -216,10 +255,18 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
         .gte("started_at", since24h)
         .not("sync_type", "like", "workspace%"),
     ),
+    cnt(() =>
+      supabase
+        .from("email_sync_runs")
+        .select("*", headCount)
+        .eq("status", "running")
+        .like("sync_type", "workspace%"),
+    ),
     cnt(() => supabase.from("phone_calls").select("*", headCount)),
     cnt(() => supabase.from("phone_calls").select("*", headCount).gte("started_at", startToday)),
     cnt(() => supabase.from("phone_recordings").select("*", headCount)),
     cnt(() => supabase.from("phone_transcripts").select("*", headCount).eq("status", "completed")),
+    cnt(() => supabase.from("phone_transcripts").select("*", headCount).eq("status", "failed")),
     cnt(() => supabase.from("phone_ai_insights").select("*", headCount)),
     cnt(() =>
       supabase
@@ -227,6 +274,13 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
         .select("*", headCount)
         .eq("status", "failed")
         .gte("started_at", since24h),
+    ),
+    cnt(() =>
+      supabase
+        .from("phone_sync_runs")
+        .select("*", headCount)
+        .eq("status", "success")
+        .eq("sync_type", "test_connection"),
     ),
     cnt(() => supabase.from("email_sync_runs").select("*", headCount).eq("status", "running")),
     cnt(() => supabase.from("phone_sync_runs").select("*", headCount).eq("status", "running")),
@@ -258,9 +312,12 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
         .eq("status", "failed")
         .gte("started_at", startToday),
     ),
-    lastSuccess("email_sync_runs", "workspace"),
-    lastSuccess("email_sync_runs", "gmail"),
-    lastSuccess("phone_sync_runs"),
+    lastRun("email_sync_runs", "success", "workspace"),
+    lastRun("email_sync_runs", "failed", "workspace"),
+    lastRun("email_sync_runs", "success", "gmail"),
+    lastRun("email_sync_runs", "failed", "gmail"),
+    lastRun("phone_sync_runs", "success"),
+    lastRun("phone_sync_runs", "failed"),
     getWorkspaceConnection(),
     recentRuns("email_sync_runs"),
     recentRuns("phone_sync_runs"),
@@ -275,14 +332,22 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
   return {
     email: {
       connectionStatus: wsConn?.status ?? null,
+      connectionDomain: wsConn?.domain ?? null,
+      connectionSubject: wsConn?.impersonation_subject ?? null,
+      connectionLastVerified: wsConn?.last_verified_at ?? null,
+      connectionError: wsConn?.error_message ?? null,
       gmailOauthAccounts,
+      gmailOauthActive,
       gmailLastSuccess: gmailLast,
+      gmailLastFailure: gmailFail,
       gmailFailures24h: gmailFail24,
       workspaceMailboxesTotal: wsTotal,
       workspaceMailboxesActive: wsActive,
       workspaceMailboxesDisabled: wsDisabled,
       workspaceLastSuccess: wsLast,
+      workspaceLastFailure: wsFail,
       workspaceFailures24h: wsFail24,
+      workspaceRunning: wsRunning,
       backfillRunning,
       backfillCompleted,
       backfillErrors,
@@ -295,8 +360,11 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
       callsToday,
       recordingsTotal: recTotal,
       transcriptionsPending: Math.max(0, recTotal - transcriptsCompleted),
+      transcriptionsFailed: transcriptsFailed,
       aiPending: Math.max(0, transcriptsCompleted - aiTotal),
       lastSuccess: phoneLast,
+      lastFailure: phoneFail,
+      testedOk: phoneTested > 0,
       failures24h: phoneFail24,
       running: phoneRunning,
     },

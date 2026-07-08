@@ -27,15 +27,20 @@ export function ConnectorCard({
   connector,
   onAction,
   busy,
+  reason,
   footer,
 }: {
   connector: ConnectorView;
   onAction?: (action: ConnectorAction) => void;
   busy?: ConnectorAction | null;
+  /** Short why-line shown when the connector is warning/error/offline. */
+  reason?: string;
   /** Optional extra content (e.g. an expandable settings panel). */
   footer?: ReactNode;
 }) {
   const { descriptor, state } = connector;
+  const unhealthy =
+    state.health === "warning" || state.health === "critical" || state.status === "offline";
   return (
     <div className="rounded-2xl border border-hairline bg-white p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -56,6 +61,18 @@ export function ConnectorCard({
           <ConnectorHealthBadge health={state.health} />
         </div>
       </div>
+
+      {reason && unhealthy && (
+        <div
+          className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
+            state.health === "critical" || state.status === "offline"
+              ? "border-destructive/20 bg-destructive/10 text-destructive"
+              : "border-warning/20 bg-warning/10 text-warning"
+          }`}
+        >
+          {reason}
+        </div>
+      )}
 
       {state.metrics && state.metrics.length > 0 && (
         <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">

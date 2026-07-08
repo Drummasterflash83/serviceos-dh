@@ -34,17 +34,7 @@ import { OperationsOverview } from "./OperationsOverview";
 import { Communications } from "./Communications";
 import { ModuleSection } from "./ModuleSection";
 import { PlaceholderPanel } from "./PlaceholderPanel";
-
-type SectionKey =
-  | "operations"
-  | "communications"
-  | "business"
-  | "documents"
-  | "calendar"
-  | "ai"
-  | "automations"
-  | "users"
-  | "settings";
+import type { CommsIntent, OpsNavTarget, SectionKey } from "./nav";
 
 const SECTIONS: { key: SectionKey; label: string; icon: LucideIcon }[] = [
   { key: "operations", label: "Operations", icon: Gauge },
@@ -60,6 +50,19 @@ const SECTIONS: { key: SectionKey; label: string; icon: LucideIcon }[] = [
 
 export function OperationsCentre() {
   const [section, setSection] = useState<SectionKey>("operations");
+  const [commsIntent, setCommsIntent] = useState<CommsIntent | null>(null);
+
+  function navigate(target: OpsNavTarget) {
+    setSection(target.section);
+    if (target.surface) {
+      // Bump the nonce so the same deep link re-applies even when repeated.
+      setCommsIntent((prev) => ({
+        surface: target.surface!,
+        focus: target.focus ?? "",
+        nonce: (prev?.nonce ?? 0) + 1,
+      }));
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -82,8 +85,8 @@ export function OperationsCentre() {
         ))}
       </div>
 
-      {section === "operations" && <OperationsOverview />}
-      {section === "communications" && <Communications />}
+      {section === "operations" && <OperationsOverview onNavigate={navigate} />}
+      {section === "communications" && <Communications intent={commsIntent} />}
       {section === "business" && (
         <ModuleSection
           icon={Building2}

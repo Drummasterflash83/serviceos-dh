@@ -8,6 +8,7 @@ export { MetricCard, type MetricTone } from "./MetricCard";
 export { StatusCard } from "./StatusCard";
 export { ActionToolbar } from "./ActionToolbar";
 export { ConnectorCard } from "./ConnectorCard";
+export { ConnectorHealthPanel } from "./ConnectorHealthPanel";
 export { HealthCard } from "./HealthCard";
 export { HealthBreakdownCard, type HealthBreakdownItem } from "./HealthBreakdownCard";
 export { AlertCard, type AlertItem, type AlertSeverity } from "./AlertCard";

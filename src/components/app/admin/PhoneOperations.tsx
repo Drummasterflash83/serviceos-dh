@@ -6,7 +6,7 @@
  * health) is primary and the manual diagnostics/backfill collapse away.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Phone, Activity, RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ import type {
   PhonePipelineStatusResult,
 } from "@/lib/types";
 import { ConnectorStatusBadge } from "@/components/ops";
+import type { ConnectorStatus } from "@/lib/connectors/types";
+import type { ConnectorSurfaceProps } from "@/lib/runtime/types";
 import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
 
 // TODO(integration): replace this hardcoded Simwood customer id with the
@@ -47,7 +49,7 @@ const STATUS_TILES: {
   { key: "completed", label: "Completed", tone: "text-success" },
 ];
 
-export function PhoneOperations() {
+export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {}) {
   const { profile } = useAuth();
   const role = profile?.role ?? null;
   const tenantId = profile?.tenant_id ?? "";
@@ -110,6 +112,32 @@ export function PhoneOperations() {
   }
 
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const diagnosticsRef = useRef<HTMLDivElement>(null);
+
+  // Deep-link handoff from the Operations Overview (Settings action).
+  useEffect(() => {
+    if (focus !== "diagnostics") return;
+    setShowDiagnostics(true);
+    setTimeout(
+      () => diagnosticsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      50,
+    );
+    // Keyed on focusNonce so the same target re-applies when clicked again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
+
+  // Honest header status derived from the real pipeline read — never hard-coded.
+  const pipelineTotal =
+    status && status.ok
+      ? status.data.pending + status.data.processing + status.data.failed + status.data.completed
+      : 0;
+  const headerStatus: ConnectorStatus = statusLoading
+    ? "syncing"
+    : status && !status.ok
+      ? "error"
+      : status && status.ok && pipelineTotal > 0
+        ? "connected"
+        : "warning";
 
   if (!allowed) return <RestrictedNotice role={role} />;
 
@@ -129,7 +157,7 @@ export function PhoneOperations() {
               </div>
             </div>
           </div>
-          <ConnectorStatusBadge status="connected" />
+          <ConnectorStatusBadge status={headerStatus} />
         </div>
 
         <div className="mt-5 flex items-center justify-between">
@@ -167,7 +195,7 @@ export function PhoneOperations() {
       </div>
 
       {/* Diagnostics & manual sync (collapsed by default) */}
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      <div ref={diagnosticsRef} className="rounded-2xl border border-hairline bg-white p-6">
         <button
           onClick={() => setShowDiagnostics((v) => !v)}
           className="flex w-full items-center justify-between text-left"

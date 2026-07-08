@@ -13,15 +13,22 @@ import { actionOfKind, actionsFor } from "../ConnectorActions";
 import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
 import { buildJobs, countJobs } from "../ConnectorJobRunner";
-import type { ConnectorProvider, RuntimeHealth } from "../types";
+import { ago, latestError } from "../diagnostics";
+import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
 
 const descriptor = getConnector("gmail")!;
 const ID = "gmail";
 
+/**
+ * Gmail OAuth is "connected" only when a real OAuth mailbox exists. Healthy needs
+ * an ACTIVE OAuth account and no recent failure; an account present but not active
+ * (e.g. token error) is a warning, not healthy.
+ */
 function computeStatus(s: OperationsSnapshot): RuntimeHealth {
   const e = s.email;
   if (e.gmailOauthAccounts === 0) return "disconnected";
   if (e.gmailFailures24h > 0) return "warning";
+  if (e.gmailOauthActive === 0) return "warning"; // connected but no active token
   return "healthy";
 }
 
@@ -34,16 +41,20 @@ export const gmailProvider: ConnectorProvider = {
   settings: () => ({ surface: "email", title: "Email", icon: Mail, Component: EmailOperations }),
   status: (s) => computeStatus(s),
   health: (s) => {
+    const e = s.email;
     const status = computeStatus(s);
-    const reasons =
-      s.email.gmailFailures24h > 0 ? [`${s.email.gmailFailures24h} failed sync(s) in 24h`] : [];
+    const reasons: string[] = [];
+    if (e.gmailOauthAccounts === 0) reasons.push("No OAuth mailbox connected");
+    if (e.gmailFailures24h > 0) reasons.push(`${e.gmailFailures24h} failed sync(s) in 24h`);
+    if (e.gmailOauthAccounts > 0 && e.gmailOauthActive === 0)
+      reasons.push("Mailbox has no active token — reconnect");
     return { status, score: scoreOf(status), reasons };
   },
   metrics: (s) => {
     const jc = countJobs(buildJobs(ID, s.syncRuns));
     return {
       connections: s.email.gmailOauthAccounts,
-      activeAccounts: s.email.gmailOauthAccounts,
+      activeAccounts: s.email.gmailOauthActive,
       lastSync: s.email.gmailLastSuccess,
       records: s.email.emailMessagesTotal,
       errors24h: s.email.gmailFailures24h,
@@ -52,6 +63,60 @@ export const gmailProvider: ConnectorProvider = {
       averageSyncTime: "—",
       healthScore: scoreOf(computeStatus(s)),
     };
+  },
+  cardMetrics: (s) => {
+    const e = s.email;
+    return [
+      { label: "OAuth mailboxes", value: e.gmailOauthAccounts },
+      { label: "Active", value: e.gmailOauthActive },
+      { label: "Messages", value: e.emailMessagesTotal },
+      { label: "Errors 24h", value: e.gmailFailures24h },
+    ];
+  },
+  diagnostics: (s): DiagnosticGroup[] => {
+    const e = s.email;
+    return [
+      {
+        title: "OAuth accounts",
+        rows: [
+          {
+            label: "Connected accounts",
+            value: String(e.gmailOauthAccounts),
+            tone: e.gmailOauthAccounts > 0 ? "success" : "muted",
+          },
+          {
+            label: "Active accounts",
+            value: String(e.gmailOauthActive),
+            tone: e.gmailOauthActive > 0 ? "success" : "warning",
+          },
+        ],
+      },
+      {
+        title: "Sync",
+        rows: [
+          {
+            label: "Last successful sync",
+            value: ago(e.gmailLastSuccess),
+            tone: e.gmailLastSuccess ? "success" : "muted",
+          },
+          {
+            label: "Last failed sync",
+            value: ago(e.gmailLastFailure),
+            tone: e.gmailLastFailure ? "critical" : "muted",
+          },
+          {
+            label: "Failures (24h)",
+            value: String(e.gmailFailures24h),
+            tone: e.gmailFailures24h > 0 ? "critical" : "success",
+          },
+          {
+            label: "Latest error",
+            value: latestError(ID, s.syncRuns) ?? "none",
+            tone: latestError(ID, s.syncRuns) ? "critical" : "muted",
+          },
+        ],
+      },
+    ];
   },
   logs: (s) => buildLogs(ID, s.syncRuns),
   jobs: (s) => buildJobs(ID, s.syncRuns),

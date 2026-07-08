@@ -50,12 +50,15 @@ export class ConnectorRuntime {
 
   resolve(provider: ConnectorProvider, snapshot: OperationsSnapshot): RuntimeConnector {
     const status = provider.status(snapshot);
+    const metrics = provider.metrics(snapshot);
     return {
       descriptor: provider.descriptor,
       present: isPresent(status),
       status,
       health: provider.health(snapshot),
-      metrics: provider.metrics(snapshot),
+      metrics,
+      cardMetrics: provider.cardMetrics?.(snapshot) ?? toCardMetrics(metrics),
+      diagnostics: provider.diagnostics(snapshot),
       jobs: provider.jobs(snapshot),
       logs: provider.logs(snapshot),
       actions: provider.actions(),
@@ -102,7 +105,7 @@ export function toConnectorView(c: RuntimeConnector): ConnectorView {
       status: badge.status,
       health: badge.health,
       version: c.descriptor.version,
-      metrics: toCardMetrics(c.metrics),
+      metrics: c.cardMetrics,
       lastSyncAt: c.metrics.lastSync,
       errors: c.metrics.errors24h,
     },

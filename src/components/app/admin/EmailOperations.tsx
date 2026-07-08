@@ -8,7 +8,7 @@
  * the connection setup collapses automatically once the Workspace is active.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Mail, Building2, ChevronDown, ChevronRight, RefreshCw, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ import type {
 } from "@/lib/types";
 import { ConnectorStatusBadge, MetricCard } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
+import type { ConnectorSurfaceProps } from "@/lib/runtime/types";
 import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
 
 /** Map a stored connection status to the standard connector badge status. */
@@ -76,7 +77,7 @@ function fmtAgo(iso: string | null): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
-export function EmailOperations() {
+export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {}) {
   const { profile } = useAuth();
   const role = profile?.role ?? null;
   const allowed = role !== null && (ADMIN_ROLES as readonly string[]).includes(role);
@@ -272,6 +273,42 @@ export function EmailOperations() {
   const [showSettings, setShowSettings] = useState<boolean | null>(null);
   const settingsOpen = showSettings ?? wsConn?.status !== "active";
 
+  // Deep-link handoff from the Operations Overview (focus + one-shot nonce).
+  const mailboxesRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const gmailRef = useRef<HTMLDivElement>(null);
+  const [syncBanner, setSyncBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!focus) return;
+    if (focus === "workspace-sync") {
+      const enabled = wsMailboxes.filter((m) => m.sync_enabled).length;
+      setSyncBanner(
+        enabled > 0
+          ? `${enabled} enabled mailbox${enabled === 1 ? "" : "es"} ready to sync — select one and Sync, or Backfill.`
+          : "No enabled mailboxes yet — enable a mailbox to sync.",
+      );
+      setTimeout(
+        () => mailboxesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        50,
+      );
+    } else if (focus === "workspace-settings") {
+      setShowSettings(true);
+      setTimeout(
+        () => settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        50,
+      );
+    } else if (focus === "gmail") {
+      setShowSettings(true);
+      setTimeout(
+        () => gmailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        50,
+      );
+    }
+    // Keyed on focusNonce so the same target re-applies when clicked again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
+
   if (!allowed) return <RestrictedNotice role={role} />;
 
   // Operational summary — derived entirely from already-loaded state (no extra
@@ -368,7 +405,19 @@ export function EmailOperations() {
       </div>
 
       {/* Mailboxes (primary operational surface) */}
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      <div ref={mailboxesRef} className="rounded-2xl border border-hairline bg-white p-6">
+        {syncBanner && (
+          <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-accent/20 bg-accent/10 px-4 py-3 text-xs text-accent">
+            <span>{syncBanner}</span>
+            <button
+              onClick={() => setSyncBanner(null)}
+              className="shrink-0 opacity-70 hover:opacity-100"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-sm font-semibold">Mailboxes</div>
           {/* Discovery is available but not required — mailboxes load automatically. */}
@@ -562,7 +611,7 @@ export function EmailOperations() {
       </div>
 
       {/* Connection settings (collapses once active) */}
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      <div ref={settingsRef} className="rounded-2xl border border-hairline bg-white p-6">
         <button
           onClick={() => setShowSettings(!settingsOpen)}
           className="flex w-full items-center justify-between text-left"
@@ -712,7 +761,7 @@ export function EmailOperations() {
             </div>
 
             {/* Single-mailbox OAuth (Gmail) */}
-            <div className="max-w-xl border-t border-hairline pt-5">
+            <div ref={gmailRef} className="max-w-xl border-t border-hairline pt-5">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Mail className="h-4 w-4 text-muted-foreground" />
                 Single mailbox · Gmail OAuth

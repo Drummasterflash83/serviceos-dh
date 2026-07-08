@@ -7,7 +7,7 @@
  * no switch statements, no edits here.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { useModules } from "@/lib/modules/useModules";
@@ -15,8 +15,9 @@ import { connectorRuntime } from "@/lib/runtime";
 import type { ConnectorSettingsSurface } from "@/lib/runtime/types";
 import { PlaceholderPanel } from "./PlaceholderPanel";
 import { MessageSquare } from "lucide-react";
+import type { CommsIntent } from "./nav";
 
-export function Communications() {
+export function Communications({ intent }: { intent?: CommsIntent | null }) {
   const { isEnabled, byCategory } = useModules();
 
   // Distinct settings surfaces from the enabled communications connectors.
@@ -34,8 +35,20 @@ export function Communications() {
   }, [isEnabled]);
 
   const [active, setActive] = useState<string>(surfaces[0]?.surface ?? "");
+  // A deep-link handoff from the Overview: select the target tab and pass the
+  // focus (+ nonce) into that surface so it opens/scrolls to the right section.
+  const [focus, setFocus] = useState<{ value: string; nonce: number } | null>(null);
+  useEffect(() => {
+    if (!intent) return;
+    setActive(intent.surface);
+    setFocus({ value: intent.focus, nonce: intent.nonce });
+  }, [intent]);
+
   const current = surfaces.find((s) => s.surface === active) ?? surfaces[0] ?? null;
   const Current = current?.Component;
+  // Focus only applies to the surface the intent targeted; clears when the user
+  // switches tabs manually.
+  const appliedFocus = current && intent && current.surface === intent.surface ? focus : null;
 
   // Planned communications channels (not yet available for this tenant).
   const planned = byCategory("communications").filter((m) => !isEnabled(m.id));
@@ -47,7 +60,10 @@ export function Communications() {
           {surfaces.map((s) => (
             <button
               key={s.surface}
-              onClick={() => setActive(s.surface)}
+              onClick={() => {
+                setActive(s.surface);
+                setFocus(null);
+              }}
               className={cn(
                 "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition",
                 (current?.surface ?? "") === s.surface
@@ -63,7 +79,7 @@ export function Communications() {
       )}
 
       {Current ? (
-        <Current />
+        <Current focus={appliedFocus?.value} focusNonce={appliedFocus?.nonce} />
       ) : (
         <PlaceholderPanel
           icon={MessageSquare}

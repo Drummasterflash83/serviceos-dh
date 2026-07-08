@@ -60,7 +60,7 @@ export const CONNECTORS: ConnectorDescriptor[] = [
     licenseTier: "starter",
     version: "1.0.0",
     capabilities: { ...ALL_CAPS },
-    actions: ["sync", "health", "logs", "settings"],
+    actions: ["sync", "reconnect", "health", "logs", "settings"],
     description: "Call history, recordings and transcription pipeline.",
   },
 ];

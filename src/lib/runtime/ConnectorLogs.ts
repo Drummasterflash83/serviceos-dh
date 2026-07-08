@@ -54,6 +54,37 @@ export function severityOf(status: string): LogSeverity {
   return "info";
 }
 
+/** The noun a connector's records represent, for human-readable summaries. */
+function recordNoun(connectorId: string, syncType: string): string {
+  if (connectorId === "simwood") {
+    if (syncType.includes("recording")) return "recordings";
+    if (syncType.includes("transcript")) return "transcripts";
+    if (syncType.includes("insight")) return "insights";
+    return "calls";
+  }
+  if (syncType.includes("discover")) return "mailboxes";
+  return "messages";
+}
+
+/**
+ * Human-readable summary for one sync run (deliverable: better recent activity).
+ * Robust to missing metadata — falls back to the event label + status.
+ */
+function summarise(connectorId: string, r: SyncRunRow): string {
+  const label = eventLabel(r.sync_type);
+  if (r.status === "failed") {
+    return `${label} failed${r.error_message ? `: ${r.error_message}` : ""}`;
+  }
+  if (r.status === "running") return `${label} running…`;
+  const n = r.records_processed ?? 0;
+  const noun = recordNoun(connectorId, r.sync_type);
+  if (r.sync_type.includes("discover")) {
+    return `${label} · ${n} ${noun} found`;
+  }
+  if (n === 0) return `${label} · no new ${noun}`;
+  return `${label} · ${n} ${noun} imported`;
+}
+
 /** Build generic logs for one connector from its recent sync runs. */
 export function buildLogs(connectorId: string, runs: SyncRunRow[]): ConnectorLog[] {
   return runsForConnector(connectorId, runs).map((r) => ({
@@ -61,10 +92,7 @@ export function buildLogs(connectorId: string, runs: SyncRunRow[]): ConnectorLog
     timestamp: r.completed_at ?? r.started_at ?? "",
     connector: connectorId,
     severity: severityOf(r.status),
-    message:
-      r.status === "failed"
-        ? `${eventLabel(r.sync_type)} failed${r.error_message ? `: ${r.error_message}` : ""}`
-        : `${eventLabel(r.sync_type)} · ${r.records_processed ?? 0} processed`,
-    metadata: { sync_type: r.sync_type, status: r.status },
+    message: summarise(connectorId, r),
+    metadata: { sync_type: r.sync_type, status: r.status, records: r.records_processed ?? 0 },
   }));
 }

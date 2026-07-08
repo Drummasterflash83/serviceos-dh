@@ -13,7 +13,8 @@ import { actionOfKind, actionsFor } from "../ConnectorActions";
 import { scoreOf } from "../ConnectorHealth";
 import { buildLogs } from "../ConnectorLogs";
 import { buildJobs, countJobs } from "../ConnectorJobRunner";
-import type { ConnectorProvider, RuntimeHealth } from "../types";
+import { ago, latestError } from "../diagnostics";
+import type { ConnectorProvider, DiagnosticGroup, RuntimeHealth } from "../types";
 
 const descriptor = getConnector("google_workspace")!;
 const ID = "google_workspace";
@@ -84,6 +85,106 @@ export const googleWorkspaceProvider: ConnectorProvider = {
       averageSyncTime: "—",
       healthScore: scoreOf(computeStatus(s)),
     };
+  },
+  cardMetrics: (s) => {
+    const e = s.email;
+    return [
+      { label: "Mailboxes", value: e.workspaceMailboxesTotal },
+      { label: "Sync enabled", value: e.workspaceMailboxesActive },
+      { label: "Messages", value: e.emailMessagesTotal },
+      { label: "Errors 24h", value: e.workspaceFailures24h },
+    ];
+  },
+  diagnostics: (s): DiagnosticGroup[] => {
+    const e = s.email;
+    const saved = e.connectionStatus !== null;
+    return [
+      {
+        title: "Connection",
+        rows: [
+          {
+            label: "Connection saved",
+            value: saved ? "yes" : "no",
+            tone: saved ? "success" : "muted",
+          },
+          {
+            label: "Status",
+            value: e.connectionStatus ?? "not connected",
+            tone:
+              e.connectionStatus === "active"
+                ? "success"
+                : e.connectionStatus === "error"
+                  ? "critical"
+                  : "warning",
+          },
+          { label: "Domain", value: e.connectionDomain ?? "—" },
+          { label: "Impersonation subject", value: e.connectionSubject ?? "—" },
+          { label: "Last verified", value: ago(e.connectionLastVerified) },
+          {
+            label: "DWD validation",
+            value: e.connectionStatus === "active" ? "passed" : "not verified",
+            tone: e.connectionStatus === "active" ? "success" : "warning",
+          },
+        ],
+      },
+      {
+        title: "Mailboxes",
+        rows: [
+          { label: "Discovered", value: String(e.workspaceMailboxesTotal) },
+          {
+            label: "Active DWD (enabled)",
+            value: String(e.workspaceMailboxesActive),
+            tone: e.workspaceMailboxesActive > 0 ? "success" : "muted",
+          },
+          { label: "Disabled", value: String(e.workspaceMailboxesDisabled), tone: "muted" },
+        ],
+      },
+      {
+        title: "Sync & backfill",
+        rows: [
+          {
+            label: "Last successful sync",
+            value: ago(e.workspaceLastSuccess),
+            tone: e.workspaceLastSuccess ? "success" : "muted",
+          },
+          {
+            label: "Last failed sync",
+            value: ago(e.workspaceLastFailure),
+            tone: e.workspaceLastFailure ? "critical" : "muted",
+          },
+          {
+            label: "Failures (24h)",
+            value: String(e.workspaceFailures24h),
+            tone: e.workspaceFailures24h > 0 ? "critical" : "success",
+          },
+          {
+            label: "Running syncs",
+            value: String(e.workspaceRunning),
+            tone: e.workspaceRunning > 0 ? "warning" : "muted",
+          },
+          {
+            label: "Backfill running",
+            value: String(e.backfillRunning),
+            tone: e.backfillRunning > 0 ? "warning" : "muted",
+          },
+          {
+            label: "Backfill completed",
+            value: String(e.backfillCompleted),
+            tone: e.backfillCompleted > 0 ? "success" : "muted",
+          },
+          {
+            label: "Backfill errors",
+            value: String(e.backfillErrors),
+            tone: e.backfillErrors > 0 ? "critical" : "muted",
+          },
+          {
+            label: "Latest error",
+            value: e.connectionError ?? latestError(ID, s.syncRuns) ?? "none",
+            tone: e.connectionError || latestError(ID, s.syncRuns) ? "critical" : "muted",
+          },
+        ],
+      },
+    ];
   },
   logs: (s) => buildLogs(ID, s.syncRuns),
   jobs: (s) => buildJobs(ID, s.syncRuns),

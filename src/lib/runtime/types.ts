@@ -8,7 +8,7 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 
-import type { ConnectorDescriptor } from "@/lib/connectors/types";
+import type { ConnectorDescriptor, ConnectorMetric } from "@/lib/connectors/types";
 import type { OperationsSnapshot } from "@/lib/ops-metrics";
 
 /** Generic health model (deliverable 5). Every connector maps into these. */
@@ -86,13 +86,39 @@ export interface ConnectorHealthReport {
   reasons: string[];
 }
 
+export type DiagnosticTone = "default" | "success" | "warning" | "critical" | "muted";
+
+/** One label/value diagnostic line in a connector's Health panel. */
+export interface DiagnosticRow {
+  label: string;
+  value: string;
+  tone?: DiagnosticTone;
+}
+
+/** A titled group of diagnostics (deliverable: real Health panels per connector). */
+export interface DiagnosticGroup {
+  title: string;
+  rows: DiagnosticRow[];
+}
+
+/**
+ * Optional props passed to a settings surface Component when it is opened from
+ * the Operations Overview (deep-link handoff). `focus` names a sub-section to
+ * open/scroll to; `focusNonce` changes on every navigation so the same target
+ * re-applies even when clicked twice.
+ */
+export interface ConnectorSurfaceProps {
+  focus?: string;
+  focusNonce?: number;
+}
+
 /** Where a connector's management UI renders (Communications tab). */
 export interface ConnectorSettingsSurface {
   /** Surface key — connectors sharing a surface share a tab (e.g. gmail + workspace → "email"). */
   surface: string;
   title: string;
   icon?: LucideIcon;
-  Component: ComponentType;
+  Component: ComponentType<ConnectorSurfaceProps>;
 }
 
 /**
@@ -109,6 +135,10 @@ export interface ConnectorProvider {
   status(snapshot: OperationsSnapshot): RuntimeHealth;
   health(snapshot: OperationsSnapshot): ConnectorHealthReport;
   metrics(snapshot: OperationsSnapshot): ConnectorMetrics;
+  /** Connector-specific labelled tiles for the card (Mailboxes, Calls, …). */
+  cardMetrics?(snapshot: OperationsSnapshot): ConnectorMetric[];
+  /** Connector-specific Health-panel diagnostics, all from real snapshot data. */
+  diagnostics(snapshot: OperationsSnapshot): DiagnosticGroup[];
   logs(snapshot: OperationsSnapshot): ConnectorLog[];
   jobs(snapshot: OperationsSnapshot): ConnectorJob[];
   settings(): ConnectorSettingsSurface;
@@ -122,6 +152,8 @@ export interface RuntimeConnector {
   status: RuntimeHealth;
   health: ConnectorHealthReport;
   metrics: ConnectorMetrics;
+  cardMetrics: ConnectorMetric[];
+  diagnostics: DiagnosticGroup[];
   jobs: ConnectorJob[];
   logs: ConnectorLog[];
   actions: ConnectorActionSpec[];
