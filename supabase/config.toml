@@ -19,3 +19,8 @@ verify_jwt = false
 # checked inside the function against PHONE_SCHEDULE_SECRET.
 [functions.phone-scheduled-sync]
 verify_jwt = false
+
+# Scheduled Gmail sync — same model as phone-scheduled-sync, gated by
+# EMAIL_SCHEDULE_SECRET (cron has no Supabase JWT).
+[functions.email-scheduled-sync]
+verify_jwt = false

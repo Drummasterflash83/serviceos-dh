@@ -314,8 +314,7 @@ export function AdminView() {
         </div>
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Automatic phone sync runs every 5 minutes. The buttons below are for manual, on-demand
-          syncs.
+          Phone automatic sync runs every 5 minutes. The buttons below are diagnostics/backfill.
         </p>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -441,7 +440,8 @@ export function AdminView() {
         <div className="mt-5 border-t border-hairline pt-5">
           <div className="text-sm font-semibold">Sync Gmail messages</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Pulls recent INBOX and SENT messages into the email feed. Metadata + body only — no
+            Gmail automatic sync runs every 5 minutes; this button is diagnostics/backfill. Pulls
+            recent INBOX and SENT messages into the email feed. Metadata + body only — no
             attachments or AI analysis yet.
           </p>
 

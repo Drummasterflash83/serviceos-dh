@@ -1124,7 +1124,111 @@ account, an account-id input, and a result panel).
 - **No AI analysis** yet (`email_ai_insights` stays empty).
 - **No attachments** — attachment bytes are not downloaded/stored.
 - **No unified comms timeline** — email and phone feeds are still separate.
-- **No automatic scheduled email sync** — this is manual/diagnostic for now
-  (a scheduled email sync, like `phone-scheduled-sync`, comes later).
 - Incremental sync is "recent `max_results` per label"; there's no Gmail
   `historyId` delta cursor yet.
+
+> Automatic scheduled email sync is now built — see **Connector automation** below.
+> This function remains the diagnostic/backfill entry point.
+
+## Connector automation — scheduled phone + Gmail ingestion
+
+Phone **and** Gmail now ingest automatically on a **5-minute cron**, so ServiceOS
+stays current with no manual clicks. The Admin sync buttons remain
+**diagnostics/backfill** only. Two functions, same pattern (secret-gated, no user
+JWT, they invoke the existing idempotent sync functions via the service-role
+internal path):
+
+- `phone-scheduled-sync` — see "Scheduled phone sync" above (calls + recordings,
+  10-minute rolling window; recordings still auto-trigger Phase-5A enrichment for
+  new recordings only).
+- `email-scheduled-sync` — finds the tenant's **active** Gmail `email_accounts`
+  and invokes `gmail-sync-messages` for each (`max_results = 25` per mailbox). One
+  failing mailbox never aborts the run. Logs one `email_sync_runs` row with
+  `sync_type='scheduled_sync'`. Returns:
+
+```json
+{
+  "success": true,
+  "accounts_processed": 0,
+  "messages_processed": 0,
+  "failed_accounts": 0,
+  "sync_run_id": "…"
+}
+```
+
+Both derive the tenant from a hard-coded `SCHEDULED_TENANT_ID`
+(`00000000-0000-0000-0000-000000000001`) — `TODO(integration)`: move to
+per-tenant integration config.
+
+### Secrets
+
+| Secret                  | Purpose                                               |
+| ----------------------- | ----------------------------------------------------- |
+| `PHONE_SCHEDULE_SECRET` | Sent as `x-schedule-secret` to `phone-scheduled-sync` |
+| `EMAIL_SCHEDULE_SECRET` | Sent as `x-schedule-secret` to `email-scheduled-sync` |
+
+```bash
+supabase secrets set PHONE_SCHEDULE_SECRET="$(openssl rand -hex 32)"
+supabase secrets set EMAIL_SCHEDULE_SECRET="$(openssl rand -hex 32)"
+```
+
+### Deploy
+
+```bash
+supabase functions deploy phone-scheduled-sync   # verify_jwt=false via config.toml
+supabase functions deploy email-scheduled-sync   # verify_jwt=false via config.toml
+```
+
+### Schedule (every 5 minutes)
+
+`config.toml` doesn't schedule Edge Functions; use **pg_cron + pg_net** (SQL
+editor). Suggested cron: `*/5 * * * *`.
+
+```sql
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+select cron.schedule('phone-scheduled-sync-5min', '*/5 * * * *', $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/phone-scheduled-sync',
+    headers := jsonb_build_object('content-type','application/json','x-schedule-secret','<PHONE_SCHEDULE_SECRET>'),
+    body    := '{}'::jsonb);
+$$);
+
+select cron.schedule('email-scheduled-sync-5min', '*/5 * * * *', $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/email-scheduled-sync',
+    headers := jsonb_build_object('content-type','application/json','x-schedule-secret','<EMAIL_SCHEDULE_SECRET>'),
+    body    := '{}'::jsonb);
+$$);
+```
+
+(Or drive them from any external scheduler that can send the `x-schedule-secret`
+header. To deploy without editing `config.toml`, add `--no-verify-jwt`.)
+
+### Test
+
+```bash
+curl -i -X POST https://<PROJECT_REF>.supabase.co/functions/v1/phone-scheduled-sync \
+  -H "x-schedule-secret: <PHONE_SCHEDULE_SECRET>" -H "content-type: application/json" -d '{}'
+
+curl -i -X POST https://<PROJECT_REF>.supabase.co/functions/v1/email-scheduled-sync \
+  -H "x-schedule-secret: <EMAIL_SCHEDULE_SECRET>" -H "content-type: application/json" -d '{}'
+```
+
+Wrong/missing secret → `403`.
+
+### Cost notes
+
+Cheap by design. Phone syncs only a 10-minute window; Gmail pulls only
+`max_results = 25` recent ids per mailbox per label, fetching only messages not
+already stored. Nothing forces re-download/transcription/analysis, and **Gmail AI
+analysis is not run** here. Idempotent upserts make the 5-minute overlap a no-op
+for already-synced rows.
+
+### Limitations
+
+- Single hard-coded tenant/customer for now (the `TODO(integration)` above).
+- Gmail incremental sync has no `historyId` delta cursor yet (recent-window only).
+- No email AI analysis, no unified comms timeline, no Slack, no customer matching
+  (out of scope for this build).
