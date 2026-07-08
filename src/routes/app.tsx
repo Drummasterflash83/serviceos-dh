@@ -25,7 +25,7 @@ import {
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
 import { CallsCommsView } from "@/components/app/CallsComms";
-import { AdminView } from "@/components/app/Admin";
+import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 
 
 export const Route = createFileRoute("/app")({
@@ -78,7 +78,7 @@ const NAV: NavItem[] = [
   { key: "protocol",     label: "Protocol",       icon: ShieldCheck,     group: "Intelligence" },
   { key: "compliance",   label: "Compliance",     icon: ShieldCheck,     group: "Intelligence" },
   { key: "finance",      label: "Numbers",        icon: Banknote,        group: "Intelligence" },
-  { key: "admin",        label: "Admin",          icon: Network,         group: "Intelligence" },
+  { key: "admin",        label: "Operations Centre", icon: Network,      group: "Intelligence" },
   { key: "settings",     label: "Settings",       icon: Settings,        group: "Intelligence" },
 ];
 
@@ -191,7 +191,7 @@ function AppShell() {
           {view === "protocol"     && <Protocol />}
           {view === "compliance"   && <ComplianceRoadmap />}
           {view === "finance"      && <Finance />}
-          {view === "admin"        && <AdminView />}
+          {view === "admin"        && <OperationsCentre />}
           {view === "settings"     && <SettingsView />}
         </main>
       </div>
