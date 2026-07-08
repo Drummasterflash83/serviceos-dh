@@ -11,7 +11,10 @@ import {
 
 import { cn } from "@/lib/utils";
 import { getPhoneFeed, getPhoneCallDetail } from "@/lib/phone-feed";
+import { UnifiedTimeline } from "./UnifiedTimeline";
 import type { ApiResult, PhoneCallDetail, PhoneFeedInput, PhoneFeedItem } from "@/lib/types";
+
+type Tab = "calls" | "timeline";
 
 /* ── formatting helpers ── */
 function fmtTime(iso: string | null): string {
@@ -96,6 +99,7 @@ function counterparty(item: PhoneFeedItem): string {
 const BUCKET_ORDER: Bucket[] = ["Today", "Yesterday", "Earlier"];
 
 export function CallsCommsView() {
+  const [tab, setTab] = useState<Tab>("calls");
   const [range, setRange] = useState<Range>("today");
   const [inboundOnly, setInboundOnly] = useState(false);
   const [actionOnly, setActionOnly] = useState(false);
@@ -138,188 +142,212 @@ export function CallsCommsView() {
 
   return (
     <div className="space-y-4">
-      {/* Header + filters */}
-      <div className="rounded-2xl border border-hairline bg-white p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Calls &amp; Comms
-            </div>
-            <div className="text-display text-lg font-semibold">Every call, enriched.</div>
-          </div>
+      {/* Tabs — additive unified view; the per-channel Calls view is unchanged. */}
+      <div className="flex gap-2">
+        {(["calls", "timeline"] as Tab[]).map((t) => (
           <button
-            onClick={load}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-surface-alt hover:text-foreground disabled:opacity-50"
-          >
-            <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            Refresh
-          </button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {(["today", "7d", "30d"] as Range[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={cn(
-                "rounded-full border px-3 py-1 text-xs font-medium transition",
-                range === r
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-              )}
-            >
-              {r === "today" ? "Today" : r === "7d" ? "7 days" : "30 days"}
-            </button>
-          ))}
-          <button
-            disabled
-            title="Custom date range — coming soon"
-            className="cursor-not-allowed rounded-full border border-dashed border-hairline px-3 py-1 text-xs font-medium text-muted-foreground/60"
-          >
-            Custom…
-          </button>
-
-          <span className="mx-1 hidden h-4 w-px bg-hairline sm:block" />
-
-          <button
-            onClick={() => setInboundOnly((v) => !v)}
+            key={t}
+            onClick={() => setTab(t)}
             className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition",
-              inboundOnly
+              "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+              tab === t
                 ? "border-foreground bg-foreground text-background"
                 : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
             )}
           >
-            Inbound only
+            {t === "calls" ? "Calls" : "All interactions"}
           </button>
-          <button
-            onClick={() => setActionOnly((v) => !v)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition",
-              actionOnly
-                ? "border-warning bg-warning/10 text-warning"
-                : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-            )}
-          >
-            Action required
-          </button>
-        </div>
+        ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* Feed list */}
-        <div className="space-y-4 lg:col-span-7">
-          {loading && (
-            <div className="flex items-center justify-center rounded-2xl border border-hairline bg-white py-16 text-sm text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading calls…
-            </div>
-          )}
+      {tab === "timeline" && <UnifiedTimeline />}
 
-          {!loading && feed && !feed.ok && (
-            <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
-              <div className="flex items-center gap-2 text-sm font-medium text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                Couldn&apos;t load the feed
-              </div>
-              <div className="mt-1 font-mono text-xs text-muted-foreground">
-                {feed.error.code}: {feed.error.message}
-              </div>
-            </div>
-          )}
-
-          {!loading && feed && feed.ok && items.length === 0 && (
-            <div className="rounded-2xl border border-hairline bg-white py-16 text-center">
-              <div className="text-sm font-medium text-foreground">No calls in this range</div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Try a wider range or clear the filters.
-              </p>
-            </div>
-          )}
-
-          {!loading &&
-            feed &&
-            feed.ok &&
-            items.length > 0 &&
-            BUCKET_ORDER.filter((b) => grouped[b].length > 0).map((bucket) => (
-              <div key={bucket}>
-                <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {bucket}
+      {tab === "calls" && (
+        <>
+          {/* Header + filters */}
+          <div className="rounded-2xl border border-hairline bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Calls &amp; Comms
                 </div>
-                <div className="space-y-2">
-                  {grouped[bucket].map((item) => (
-                    <button
-                      key={item.call_id}
-                      onClick={() => openDetail(item)}
-                      className={cn(
-                        "w-full rounded-xl border p-3 text-left transition",
-                        selected?.call_id === item.call_id
-                          ? "border-foreground/40 bg-surface-alt"
-                          : "border-hairline bg-white hover:border-foreground/20 hover:bg-surface-alt",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <DirectionBadge direction={item.direction} />
-                          {item.urgency && (
-                            <span
-                              className={cn(
-                                "rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize",
-                                urgencyTone(item.urgency),
+                <div className="text-display text-lg font-semibold">Every call, enriched.</div>
+              </div>
+              <button
+                onClick={load}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-surface-alt hover:text-foreground disabled:opacity-50"
+              >
+                <RotateCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+                Refresh
+              </button>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {(["today", "7d", "30d"] as Range[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs font-medium transition",
+                    range === r
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                  )}
+                >
+                  {r === "today" ? "Today" : r === "7d" ? "7 days" : "30 days"}
+                </button>
+              ))}
+              <button
+                disabled
+                title="Custom date range — coming soon"
+                className="cursor-not-allowed rounded-full border border-dashed border-hairline px-3 py-1 text-xs font-medium text-muted-foreground/60"
+              >
+                Custom…
+              </button>
+
+              <span className="mx-1 hidden h-4 w-px bg-hairline sm:block" />
+
+              <button
+                onClick={() => setInboundOnly((v) => !v)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition",
+                  inboundOnly
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                )}
+              >
+                Inbound only
+              </button>
+              <button
+                onClick={() => setActionOnly((v) => !v)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition",
+                  actionOnly
+                    ? "border-warning bg-warning/10 text-warning"
+                    : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                )}
+              >
+                Action required
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-12">
+            {/* Feed list */}
+            <div className="space-y-4 lg:col-span-7">
+              {loading && (
+                <div className="flex items-center justify-center rounded-2xl border border-hairline bg-white py-16 text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading calls…
+                </div>
+              )}
+
+              {!loading && feed && !feed.ok && (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
+                  <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    Couldn&apos;t load the feed
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
+                    {feed.error.code}: {feed.error.message}
+                  </div>
+                </div>
+              )}
+
+              {!loading && feed && feed.ok && items.length === 0 && (
+                <div className="rounded-2xl border border-hairline bg-white py-16 text-center">
+                  <div className="text-sm font-medium text-foreground">No calls in this range</div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Try a wider range or clear the filters.
+                  </p>
+                </div>
+              )}
+
+              {!loading &&
+                feed &&
+                feed.ok &&
+                items.length > 0 &&
+                BUCKET_ORDER.filter((b) => grouped[b].length > 0).map((bucket) => (
+                  <div key={bucket}>
+                    <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {bucket}
+                    </div>
+                    <div className="space-y-2">
+                      {grouped[bucket].map((item) => (
+                        <button
+                          key={item.call_id}
+                          onClick={() => openDetail(item)}
+                          className={cn(
+                            "w-full rounded-xl border p-3 text-left transition",
+                            selected?.call_id === item.call_id
+                              ? "border-foreground/40 bg-surface-alt"
+                              : "border-hairline bg-white hover:border-foreground/20 hover:bg-surface-alt",
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <DirectionBadge direction={item.direction} />
+                              {item.urgency && (
+                                <span
+                                  className={cn(
+                                    "rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize",
+                                    urgencyTone(item.urgency),
+                                  )}
+                                >
+                                  {item.urgency}
+                                </span>
                               )}
-                            >
-                              {item.urgency}
+                            </div>
+                            <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                              {fmtTime(item.started_at)}
+                            </span>
+                          </div>
+
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <div className="truncate text-sm font-medium">{counterparty(item)}</div>
+                            <div className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                              {fmtDuration(item.duration_seconds)}
+                            </div>
+                          </div>
+
+                          {item.summary && (
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                              {item.summary}
+                            </p>
+                          )}
+
+                          {item.action_required && (
+                            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+                              <AlertTriangle className="h-3 w-3" />
+                              Action required
                             </span>
                           )}
-                        </div>
-                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                          {fmtTime(item.started_at)}
-                        </span>
-                      </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
 
-                      <div className="mt-2 flex items-center justify-between gap-2">
-                        <div className="truncate text-sm font-medium">{counterparty(item)}</div>
-                        <div className="shrink-0 font-mono text-[11px] text-muted-foreground">
-                          {fmtDuration(item.duration_seconds)}
-                        </div>
-                      </div>
-
-                      {item.summary && (
-                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                          {item.summary}
-                        </p>
-                      )}
-
-                      {item.action_required && (
-                        <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
-                          <AlertTriangle className="h-3 w-3" />
-                          Action required
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+            {/* Detail panel */}
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-20">
+                {!selected ? (
+                  <div className="rounded-2xl border border-hairline bg-white py-16 text-center">
+                    <div className="text-sm font-medium text-foreground">Select a call</div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Pick a call on the left to see its transcript and intelligence.
+                    </p>
+                  </div>
+                ) : (
+                  <CallDetail item={selected} detail={detail} loading={detailLoading} />
+                )}
               </div>
-            ))}
-        </div>
-
-        {/* Detail panel */}
-        <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-20">
-            {!selected ? (
-              <div className="rounded-2xl border border-hairline bg-white py-16 text-center">
-                <div className="text-sm font-medium text-foreground">Select a call</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Pick a call on the left to see its transcript and intelligence.
-                </p>
-              </div>
-            ) : (
-              <CallDetail item={selected} detail={detail} loading={detailLoading} />
-            )}
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

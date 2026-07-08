@@ -23,6 +23,11 @@ import {
   type PlatformJob,
   type PlatformJobSummary,
 } from "@/lib/platform-jobs";
+import {
+  getInteractionSummary,
+  syncInteractions,
+  type InteractionSummary,
+} from "@/lib/interactions";
 import type { ApiResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -123,18 +128,29 @@ export function OperationsOverview({
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const activityRef = useRef<HTMLDivElement>(null);
 
-  // Real Platform Jobs (separate read from the connector snapshot).
+  // Real Platform Jobs + Business Timeline (separate reads from the snapshot).
   const [jobsSummary, setJobsSummary] = useState<ApiResult<PlatformJobSummary> | null>(null);
   const [recentJobs, setRecentJobs] = useState<PlatformJob[]>([]);
+  const [interactions, setInteractions] = useState<ApiResult<InteractionSummary> | null>(null);
+  const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list] = await Promise.all([
+    const [sum, list, inter] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
+      getInteractionSummary(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
+    setInteractions(inter);
   }, []);
+
+  async function buildTimeline() {
+    setBuildingTimeline(true);
+    await syncInteractions("all");
+    setBuildingTimeline(false);
+    void loadJobs();
+  }
 
   useEffect(() => {
     void loadJobs();
@@ -233,6 +249,11 @@ export function OperationsOverview({
         : "—",
   };
   const lastCompleted = jobsData?.last_completed ?? null;
+
+  // Business timeline (canonical interactions) — honest empty/unavailable states.
+  const interData = interactions?.ok ? interactions.data : null;
+  const interUnavailable = interactions !== null && !interactions.ok;
+  const timelineNotBuilt = !!interData && interData.latest_interaction_at === null;
 
   // Health breakdown — one row per present connector (+ honest placeholders).
   const healthItems: HealthBreakdownItem[] = [
@@ -425,6 +446,47 @@ export function OperationsOverview({
           </div>
         )}
         <HealthBreakdownCard items={healthItems} />
+      </div>
+
+      {/* Business timeline — canonical interactions status (honest states) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Business timeline</div>
+            <div className="text-xs text-muted-foreground">
+              Unified interactions across calls &amp; email — the CRM foundation.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void buildTimeline()}
+            disabled={buildingTimeline}
+          >
+            {buildingTimeline ? "Building…" : timelineNotBuilt ? "Build timeline" : "Rebuild"}
+          </Button>
+        </div>
+        {interUnavailable ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Timeline unavailable — the interactions table could not be read.
+          </p>
+        ) : timelineNotBuilt ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Timeline not built yet — build it from existing calls and emails.
+          </p>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <MetricCard label="Interactions today" value={interData?.total_today ?? 0} />
+            <MetricCard label="Calls today" value={interData?.phone_today ?? 0} tone="accent" />
+            <MetricCard label="Emails today" value={interData?.email_today ?? 0} tone="accent" />
+            <MetricCard
+              label="Pending"
+              value={interData?.pending_processing ?? 0}
+              tone={interData && interData.pending_processing > 0 ? "warning" : "default"}
+            />
+            <MetricCard label="Latest" value={fmtTime(interData?.latest_interaction_at ?? null)} />
+          </div>
+        )}
       </div>
 
       {/* Recent platform jobs — the durable execution record */}
