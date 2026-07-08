@@ -9,6 +9,8 @@
  * (real data or stub) and passed to the reusable connector components.
  */
 
+import type { LucideIcon } from "lucide-react";
+
 /** Standardised lifecycle states. Never invent connector-specific ones. */
 export type ConnectorStatus =
   | "connected"
@@ -37,6 +39,23 @@ export interface ConnectorMetric {
   hint?: string;
 }
 
+/** Licence tier that unlocks a connector (OpenFolk decides what a customer gets). */
+export type ConnectorLicenseTier = "starter" | "professional" | "enterprise";
+
+/** Declarative capability flags — the UI adapts to these; it never checks vendor. */
+export interface ConnectorCapabilities {
+  supportsRealtime: boolean;
+  supportsWebhook: boolean;
+  supportsBackfill: boolean;
+  supportsAI: boolean;
+  supportsManualSync: boolean;
+  supportsHealth: boolean;
+  supportsLogs: boolean;
+  supportsSettings: boolean;
+  supportsDisconnect: boolean;
+  supportsMultipleAccounts: boolean;
+}
+
 /** Static description of a connector — lives in the registry, not the backend. */
 export interface ConnectorDescriptor {
   /** Stable id, e.g. "gmail" | "google_workspace" | "simwood". */
@@ -46,8 +65,16 @@ export interface ConnectorDescriptor {
   /** Provider/vendor, e.g. "Google" | "Simwood". */
   provider: string;
   category: ConnectorCategory;
+  /** Optional icon for cards/tabs (lucide). */
+  icon?: LucideIcon;
   /** The module this connector surfaces (see lib/modules). */
   moduleId: string;
+  /** Licence tier that unlocks this connector. */
+  licenseTier: ConnectorLicenseTier;
+  /** Connector implementation version. */
+  version: string;
+  /** Capability flags — what this connector can do. */
+  capabilities: ConnectorCapabilities;
   /** Shared toolbar actions this connector supports. */
   actions: ConnectorAction[];
   description?: string;

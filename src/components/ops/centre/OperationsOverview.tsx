@@ -1,21 +1,16 @@
 /**
- * OperationsOverview — the Operations Centre landing page, now LIVE: every metric
- * is tenant-scoped real data (via RLS) from the existing tables. Composed from
- * the reusable ops component library + the connector registry — no vendor is
- * hardcoded. Handles loading, empty (no accounts / no data / RLS-empty) and
- * error states without crashing.
+ * OperationsOverview — LIVE and fully connector-agnostic. It loops the Connector
+ * Runtime: platform health, per-connector cards, jobs and logs are all derived by
+ * the providers. Adding a connector never edits this file. Handles loading /
+ * empty / error without crashing.
  */
 
-import { Activity, Bot, Briefcase, Gauge, Mail, Phone, RotateCcw, Server } from "lucide-react";
+import { Activity, Bot, Briefcase, Gauge, RotateCcw, Server } from "lucide-react";
 
-import { useModules } from "@/lib/modules/useModules";
 import { getConnector } from "@/lib/connectors/registry";
-import type { ConnectorView, ConnectorAction } from "@/lib/connectors/types";
-import {
-  useOperationsMetrics,
-  type ConnectorMetricSummary,
-  type OperationsMetrics,
-} from "@/lib/ops-metrics";
+import type { ConnectorHealth } from "@/lib/connectors/types";
+import { useConnectorRuntime, toConnectorView } from "@/lib/runtime";
+import { toBucket } from "@/lib/runtime/ConnectorHealth";
 import { Button } from "@/components/ui/button";
 import {
   ActivityTable,
@@ -31,6 +26,7 @@ import {
   type JobsSummary,
   type QueueRow,
 } from "@/components/ops";
+import type { ConnectorLog } from "@/lib/runtime/types";
 
 function fmtTime(iso: string | null): string {
   if (!iso) return "never";
@@ -44,27 +40,7 @@ function fmtTime(iso: string | null): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
-/** Build a ConnectorView (for ConnectorCard) from a live summary + the registry. */
-function toConnectorView(c: ConnectorMetricSummary): ConnectorView {
-  const descriptor = getConnector(c.id) ?? {
-    id: c.id,
-    name: c.name,
-    provider: c.provider,
-    category: "communications" as const,
-    moduleId: "",
-    actions: ["sync", "health", "logs", "settings"] as ConnectorAction[],
-  };
-  return {
-    descriptor: { ...descriptor, name: c.name, provider: c.provider },
-    state: {
-      status: c.status,
-      health: c.health,
-      metrics: c.metrics,
-      lastSyncAt: c.lastSyncAt,
-      errors: c.errors24h,
-    },
-  };
-}
+const connectorName = (id: string): string => getConnector(id)?.name ?? id;
 
 function LoadingGrid() {
   return (
@@ -85,69 +61,40 @@ function LoadingGrid() {
   );
 }
 
-function domainHealth(m: OperationsMetrics): {
-  email: HealthBreakdownItem;
-  phone: HealthBreakdownItem;
-} {
-  const emailPresent = m.email.workspace_mailboxes_total > 0 || m.email.gmail_oauth_accounts > 0;
-  const emailWarn = m.email.recent_email_sync_failures_24h > 0 || m.email.backfill_errors > 0;
-  const phonePresent = m.phone.phone_calls_total > 0 || m.phone.phone_recordings_total > 0;
-  const phoneWarn = m.phone.phone_sync_failures_24h > 0;
-
-  return {
-    email: {
-      label: "Email",
-      icon: Mail,
-      health: !emailPresent ? "unknown" : emailWarn ? "warning" : "healthy",
-      detail: `${m.email.workspace_mailboxes_active} active mailboxes · ${m.email.gmail_oauth_accounts} OAuth · ${m.email.email_messages_total} messages`,
-    },
-    phone: {
-      label: "Phone",
-      icon: Phone,
-      health: !phonePresent ? "unknown" : phoneWarn ? "warning" : "healthy",
-      detail: `${m.phone.phone_calls_today} calls today · ${m.phone.phone_transcriptions_pending} pending transcription`,
-    },
-  };
-}
-
 export function OperationsOverview() {
-  const { isEnabled } = useModules();
-  const { data, loading, error, refresh } = useOperationsMetrics();
+  const { snapshot, connectors, platform, logs, loading, error, refresh } = useConnectorRuntime();
 
-  if (loading && !data) return <LoadingGrid />;
-  const m = data;
-  if (!m) {
+  if (loading && connectors.length === 0) return <LoadingGrid />;
+  if (error && connectors.length === 0) {
     return (
       <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-sm text-destructive">
-        {error ?? "Could not load operations metrics."}
+        {error}
       </div>
     );
   }
 
-  // Only surface connectors whose module is enabled for this tenant.
-  const connectorViews = m.connectors
-    .filter((c) => {
-      const d = getConnector(c.id);
-      return d ? isEnabled(d.moduleId) : true;
-    })
-    .map(toConnectorView);
-  const presentViews = connectorViews.filter(
-    (v) => v.state.status !== "offline" && v.state.status !== "disabled",
-  );
+  const present = connectors.filter((c) => c.present);
+  const runningJobs = connectors.reduce((n, c) => n + c.metrics.runningJobs, 0);
+  const queuedJobs = connectors.reduce((n, c) => n + c.metrics.queuedJobs, 0);
 
   const jobs: JobsSummary = {
-    running: m.jobs.running,
-    queued: m.jobs.queued,
-    completedToday: m.jobs.completed_today,
-    failed: m.jobs.failed_today,
-    retryQueue: m.jobs.retry_placeholder,
+    running: runningJobs,
+    queued: queuedJobs,
+    completedToday: snapshot.global.completedToday,
+    failed: snapshot.global.failedToday,
+    retryQueue: 0,
     processingRate: "—",
   };
 
-  const dh = domainHealth(m);
+  // Health breakdown — one row per present connector (+ planned placeholders).
   const healthItems: HealthBreakdownItem[] = [
-    dh.email,
-    dh.phone,
+    ...present.map((c) => ({
+      label: c.descriptor.name,
+      icon: c.descriptor.icon,
+      health: toBucket(c.status) as ConnectorHealth,
+      detail:
+        c.health.reasons[0] ?? `${c.metrics.records} records · ${c.metrics.errors24h} errors 24h`,
+    })),
     { label: "AI", icon: Bot, health: "unknown", detail: "Module not enabled" },
     {
       label: "Business Systems",
@@ -157,61 +104,48 @@ export function OperationsOverview() {
     },
   ];
 
-  const queues: QueueRow[] = [
-    {
-      id: "backfill",
-      name: "Workspace backfill",
-      depth: m.email.backfill_running,
-      rate: `${m.email.backfill_completed} completed`,
-      status: m.email.backfill_running > 0 ? "syncing" : "connected",
-    },
-    {
-      id: "transcribe",
-      name: "Pending transcription",
-      depth: m.phone.phone_transcriptions_pending,
-      rate: `${m.phone.phone_recordings_total} recordings`,
-      status: m.phone.phone_transcriptions_pending > 0 ? "warning" : "connected",
-    },
-    {
-      id: "ai",
-      name: "AI enrichment (pending)",
-      depth: m.phone.phone_ai_pending,
-      rate: "AI module not enabled",
-      status: "disabled",
-    },
-  ];
-
-  const alerts: AlertItem[] = m.alerts.map((a) => ({
-    id: a.id,
-    title: `${a.system} · ${a.message.split(":")[0]}`,
-    detail: a.message.includes(":") ? a.message.split(":").slice(1).join(":").trim() : undefined,
-    severity: a.severity,
-    at: fmtTime(a.timestamp),
+  // Queues — derived generically from each connector's queued work.
+  const queues: QueueRow[] = present.map((c) => ({
+    id: c.descriptor.id,
+    name: `${c.descriptor.name} queue`,
+    depth: c.metrics.queuedJobs,
+    rate: `${c.metrics.runningJobs} running`,
+    status: c.metrics.queuedJobs > 0 ? "syncing" : "connected",
   }));
+  queues.push({
+    id: "ai",
+    name: "AI enrichment",
+    depth: snapshot.phone.aiPending,
+    rate: "AI module not enabled",
+    status: "disabled",
+  });
 
-  const activityCols: Column<(typeof m.activity)[number]>[] = [
+  const alerts: AlertItem[] = logs
+    .filter((l) => l.severity === "error")
+    .slice(0, 8)
+    .map((l) => ({
+      id: l.id,
+      title: `${connectorName(l.connector)} · ${l.message.split(":")[0]}`,
+      detail: l.message.includes(":") ? l.message.split(":").slice(1).join(":").trim() : undefined,
+      severity: "warning",
+      at: fmtTime(l.timestamp),
+    }));
+
+  const logCols: Column<ConnectorLog>[] = [
     {
       key: "timestamp",
       header: "When",
       className: "font-mono text-muted-foreground whitespace-nowrap",
-      render: (r) => fmtTime(r.timestamp),
+      render: (l) => fmtTime(l.timestamp),
     },
-    { key: "system", header: "System" },
-    { key: "event", header: "Event", className: "text-muted-foreground" },
+    { key: "connector", header: "Connector", render: (l) => connectorName(l.connector) },
+    { key: "message", header: "Event", className: "text-muted-foreground" },
     {
-      key: "status",
-      header: "Status",
-      render: (r) => (
-        <span
-          className={
-            r.status === "failed"
-              ? "text-destructive"
-              : r.status === "success"
-                ? "text-success"
-                : "text-muted-foreground"
-          }
-        >
-          {r.status}
+      key: "severity",
+      header: "Severity",
+      render: (l) => (
+        <span className={l.severity === "error" ? "text-destructive" : "text-muted-foreground"}>
+          {l.severity}
         </span>
       ),
     },
@@ -222,7 +156,7 @@ export function OperationsOverview() {
       {/* Title + refresh */}
       <div className="flex items-center justify-between">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-          Live · tenant-scoped
+          Live · connector runtime
         </div>
         <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}>
           <RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -232,56 +166,51 @@ export function OperationsOverview() {
 
       {/* Platform KPI row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <MetricCard label="Connected" value={m.platform.connected_systems} icon={Server} />
-        <MetricCard
-          label="Healthy"
-          value={m.platform.healthy_systems}
-          tone="success"
-          icon={Gauge}
-        />
-        <MetricCard label="Warnings" value={m.platform.warning_systems} tone="warning" />
-        <MetricCard label="Critical" value={m.platform.critical_systems} tone="critical" />
-        <MetricCard label="Running jobs" value={m.jobs.running} tone="accent" icon={Activity} />
-        <MetricCard label="Failed today" value={m.jobs.failed_today} tone="critical" />
+        <MetricCard label="Connected" value={platform.connected} icon={Server} />
+        <MetricCard label="Healthy" value={platform.healthy} tone="success" icon={Gauge} />
+        <MetricCard label="Warnings" value={platform.warning} tone="warning" />
+        <MetricCard label="Critical" value={platform.critical} tone="critical" />
+        <MetricCard label="Running jobs" value={runningJobs} tone="accent" icon={Activity} />
+        <MetricCard label="Failed today" value={snapshot.global.failedToday} tone="critical" />
       </div>
 
-      {/* Jobs + system health breakdown (replaces the duplicated health panel) */}
+      {/* Jobs + system health breakdown */}
       <div className="grid gap-6 lg:grid-cols-2">
         <JobsCard jobs={jobs} />
         <HealthBreakdownCard items={healthItems} />
       </div>
 
-      {/* Connected systems (real) */}
+      {/* Connected systems — looped from the runtime */}
       <div>
         <div className="mb-3 text-[11px] uppercase tracking-wider text-muted-foreground">
           Connected systems
         </div>
-        {presentViews.length === 0 ? (
+        {present.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-hairline bg-white p-8 text-center text-sm text-muted-foreground">
-            No systems connected yet. Set up Email or Phone in Communications.
+            No systems connected yet. Set up a connector in Communications.
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
-            {presentViews.map((v) => (
-              <ConnectorCard key={v.descriptor.id} connector={v} />
+            {present.map((c) => (
+              <ConnectorCard key={c.descriptor.id} connector={toConnectorView(c)} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Queues + alerts (real) */}
+      {/* Queues + alerts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <QueueCard queues={queues} />
         <AlertCard alerts={alerts} />
       </div>
 
-      {/* Recent activity (real) */}
+      {/* Recent logs (aggregated across connectors) */}
       <ActivityTable
         title="Recent activity"
-        columns={activityCols}
-        rows={m.activity}
-        rowKey={(r) => r.id}
-        emptyLabel="No sync activity yet."
+        columns={logCols}
+        rows={logs}
+        rowKey={(l) => l.id}
+        emptyLabel="No connector activity yet."
       />
     </div>
   );

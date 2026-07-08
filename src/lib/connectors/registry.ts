@@ -1,12 +1,27 @@
 /**
- * Connector registry — the connectors ServiceOS knows about, as pure metadata.
- * The existing, working connectors (Gmail OAuth, Google Workspace DWD, Simwood
- * VoIP) are registered here so the Operations Centre can render them through the
- * shared framework instead of bespoke per-connector screens. Future connectors
- * are added by appending a descriptor — no UI changes.
+ * Connector registry — the connectors ServiceOS knows about, as pure metadata
+ * (capabilities, licence, version, actions). The existing connectors are
+ * registered here; the Connector Runtime turns each into a live provider. Adding
+ * a future connector is one descriptor here + one runtime provider — no UI edits.
  */
 
-import type { ConnectorCategory, ConnectorDescriptor } from "./types";
+import { Building2, Mail, Phone } from "lucide-react";
+
+import type { ConnectorCapabilities, ConnectorCategory, ConnectorDescriptor } from "./types";
+
+/** Everything on = a fully-featured connector; providers narrow as needed. */
+const ALL_CAPS: ConnectorCapabilities = {
+  supportsRealtime: false,
+  supportsWebhook: false,
+  supportsBackfill: false,
+  supportsAI: false,
+  supportsManualSync: true,
+  supportsHealth: true,
+  supportsLogs: true,
+  supportsSettings: true,
+  supportsDisconnect: false,
+  supportsMultipleAccounts: false,
+};
 
 export const CONNECTORS: ConnectorDescriptor[] = [
   {
@@ -14,7 +29,11 @@ export const CONNECTORS: ConnectorDescriptor[] = [
     name: "Gmail",
     provider: "Google",
     category: "communications",
+    icon: Mail,
     moduleId: "comms.gmail",
+    licenseTier: "starter",
+    version: "1.0.0",
+    capabilities: { ...ALL_CAPS, supportsDisconnect: true, supportsMultipleAccounts: true },
     actions: ["sync", "reconnect", "health", "logs", "settings"],
     description: "Per-mailbox Gmail OAuth ingestion.",
   },
@@ -23,7 +42,11 @@ export const CONNECTORS: ConnectorDescriptor[] = [
     name: "Google Workspace",
     provider: "Google",
     category: "communications",
+    icon: Building2,
     moduleId: "comms.google_workspace",
+    licenseTier: "professional",
+    version: "1.0.0",
+    capabilities: { ...ALL_CAPS, supportsBackfill: true, supportsMultipleAccounts: true },
     actions: ["sync", "reconnect", "health", "logs", "settings"],
     description: "Domain-wide delegation across many mailboxes.",
   },
@@ -32,7 +55,11 @@ export const CONNECTORS: ConnectorDescriptor[] = [
     name: "Phone / VoIP",
     provider: "Simwood",
     category: "communications",
+    icon: Phone,
     moduleId: "comms.voip",
+    licenseTier: "starter",
+    version: "1.0.0",
+    capabilities: { ...ALL_CAPS },
     actions: ["sync", "health", "logs", "settings"],
     description: "Call history, recordings and transcription pipeline.",
   },

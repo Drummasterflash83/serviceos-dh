@@ -1,67 +1,101 @@
 /**
- * Communications section — tabs for each communications channel. Email and Phone
- * render the real, unchanged functionality (split out of the former AdminView);
- * SMS and WhatsApp are placeholders whose modules are `planned`.
- *
- * Tabs are driven by module availability so a channel a customer doesn't have
- * simply doesn't appear (OpenFolk-forward).
+ * Communications section — fully data-driven. Tabs are derived from the enabled
+ * communications connectors in the Connector Runtime (deduped by their settings
+ * surface, so Gmail + Google Workspace share one "Email" tab). Each tab renders
+ * that surface's management component — the unchanged EmailOperations /
+ * PhoneOperations UIs. Adding a connector (e.g. Slack) adds a tab automatically;
+ * no switch statements, no edits here.
  */
 
-import { useState } from "react";
-import { Mail, MessageSquare, Phone, Smartphone } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { EmailOperations } from "@/components/app/admin/EmailOperations";
-import { PhoneOperations } from "@/components/app/admin/PhoneOperations";
+import { useModules } from "@/lib/modules/useModules";
+import { connectorRuntime } from "@/lib/runtime";
+import type { ConnectorSettingsSurface } from "@/lib/runtime/types";
 import { PlaceholderPanel } from "./PlaceholderPanel";
-
-type ChannelKey = "email" | "phone" | "sms" | "whatsapp";
-
-const CHANNELS: { key: ChannelKey; label: string; icon: typeof Mail; moduleId: string }[] = [
-  { key: "email", label: "Email", icon: Mail, moduleId: "comms.gmail" },
-  { key: "phone", label: "Phone", icon: Phone, moduleId: "comms.voip" },
-  { key: "sms", label: "SMS", icon: Smartphone, moduleId: "comms.sms" },
-  { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, moduleId: "comms.whatsapp" },
-];
+import { MessageSquare } from "lucide-react";
 
 export function Communications() {
-  const [channel, setChannel] = useState<ChannelKey>("email");
+  const { isEnabled, byCategory } = useModules();
+
+  // Distinct settings surfaces from the enabled communications connectors.
+  const surfaces = useMemo<ConnectorSettingsSurface[]>(() => {
+    const seen = new Set<string>();
+    const out: ConnectorSettingsSurface[] = [];
+    for (const provider of connectorRuntime.enabledByCategory("communications", isEnabled)) {
+      const s = provider.settings();
+      if (!seen.has(s.surface)) {
+        seen.add(s.surface);
+        out.push(s);
+      }
+    }
+    return out;
+  }, [isEnabled]);
+
+  const [active, setActive] = useState<string>(surfaces[0]?.surface ?? "");
+  const current = surfaces.find((s) => s.surface === active) ?? surfaces[0] ?? null;
+  const Current = current?.Component;
+
+  // Planned communications channels (not yet available for this tenant).
+  const planned = byCategory("communications").filter((m) => !isEnabled(m.id));
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap gap-2">
-        {CHANNELS.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => setChannel(c.key)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition",
-              channel === c.key
-                ? "border-foreground bg-foreground text-background"
-                : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-            )}
-          >
-            <c.icon className="h-3.5 w-3.5" />
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {channel === "email" && <EmailOperations />}
-      {channel === "phone" && <PhoneOperations />}
-      {channel === "sms" && (
-        <PlaceholderPanel
-          icon={Smartphone}
-          title="SMS"
-          description="Two-way SMS as a communications channel."
-        />
+      {surfaces.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {surfaces.map((s) => (
+            <button
+              key={s.surface}
+              onClick={() => setActive(s.surface)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition",
+                (current?.surface ?? "") === s.surface
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-hairline text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+              )}
+            >
+              {s.icon && <s.icon className="h-3.5 w-3.5" />}
+              {s.title}
+            </button>
+          ))}
+        </div>
       )}
-      {channel === "whatsapp" && (
+
+      {Current ? (
+        <Current />
+      ) : (
         <PlaceholderPanel
           icon={MessageSquare}
-          title="WhatsApp"
-          description="WhatsApp Business messaging routed into ServiceOS."
+          title="No communications channels"
+          description="No communications connectors are enabled for this tenant."
         />
+      )}
+
+      {planned.length > 0 && (
+        <div>
+          <div className="mb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+            More channels · planned
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {planned.map((m) => (
+              <div key={m.id} className="rounded-2xl border border-hairline bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-surface-alt">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  </span>
+                  <span className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Planned
+                  </span>
+                </div>
+                <div className="mt-3 text-sm font-semibold">{m.name}</div>
+                <div className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {m.license}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
