@@ -143,6 +143,60 @@ export async function listEmailAccounts(provider?: string): Promise<ApiResult<Em
   return { ok: true, data: (data ?? []) as EmailAccount[] };
 }
 
+/**
+ * Recent workspace sync state (RLS-scoped browser read) — last successful run,
+ * last failed run and how many runs are currently in flight, scoped to the
+ * Workspace DWD sync types (`sync_type like 'workspace%'`). Used by the Email
+ * dashboard to show an operational summary without forcing a manual test/sync.
+ * No mutation, no secrets — reads `email_sync_runs` only.
+ */
+export interface WorkspaceSyncState {
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  running: number;
+}
+
+export async function getWorkspaceSyncState(): Promise<ApiResult<WorkspaceSyncState>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const supabase = getSupabaseClient();
+
+  const pick = async (status: "success" | "failed"): Promise<string | null> => {
+    const { data } = await supabase
+      .from("email_sync_runs")
+      .select("completed_at, started_at")
+      .eq("status", status)
+      .like("sync_type", "workspace%")
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const row = data as { completed_at: string | null; started_at: string | null } | null;
+    return row?.completed_at ?? row?.started_at ?? null;
+  };
+
+  const runningQuery = supabase
+    .from("email_sync_runs")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "running")
+    .like("sync_type", "workspace%");
+
+  const [lastSuccessAt, lastFailureAt, runningRes] = await Promise.all([
+    pick("success"),
+    pick("failed"),
+    runningQuery,
+  ]);
+
+  return {
+    ok: true,
+    data: {
+      lastSuccessAt,
+      lastFailureAt,
+      running: runningRes.error ? 0 : (runningRes.count ?? 0),
+    },
+  };
+}
+
 function clampLimit(v: number | undefined): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : 100;
   return Math.max(1, Math.min(500, n));

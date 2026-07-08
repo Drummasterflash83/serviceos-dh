@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { Mail, Building2, ChevronDown, ChevronRight } from "lucide-react";
+import { Mail, Building2, ChevronDown, ChevronRight, RefreshCw, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,8 @@ import {
   listEmailAccounts,
   listWorkspaceMailboxes,
   getWorkspaceConnection,
+  getWorkspaceSyncState,
+  type WorkspaceSyncState,
 } from "@/lib/email-feed";
 import type {
   ApiResult,
@@ -61,6 +63,19 @@ function connStatus(status: string | null | undefined): ConnectorStatus {
   }
 }
 
+/** Compact relative time ("3m ago", "2h ago", "never") for sync timestamps. */
+function fmtAgo(iso: string | null): string {
+  if (!iso) return "never";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
 export function EmailOperations() {
   const { profile } = useAuth();
   const role = profile?.role ?? null;
@@ -88,17 +103,6 @@ export function EmailOperations() {
   const [syncingGmail, setSyncingGmail] = useState(false);
   const [gmailSync, setGmailSync] = useState<ApiResult<GmailSyncMessagesResult> | null>(null);
 
-  useEffect(() => {
-    if (!allowed) return;
-    void (async () => {
-      const res = await listEmailAccounts("gmail");
-      if (res.ok) {
-        setGmailAccounts(res.data);
-        setEmailAccountId((prev) => prev || res.data[0]?.id || "");
-      }
-    })();
-  }, [allowed]);
-
   async function runGmailSync() {
     const id = emailAccountId.trim();
     if (!id) return;
@@ -114,19 +118,6 @@ export function EmailOperations() {
   const [wsSaving, setWsSaving] = useState(false);
   const [wsSave, setWsSave] = useState<ApiResult<GoogleWorkspaceSaveConnectionResult> | null>(null);
 
-  const loadWsConnection = useCallback(async () => {
-    const res = await getWorkspaceConnection();
-    if (res.ok && res.data) {
-      setWsConn(res.data);
-      setWsDomain((prev) => prev || res.data!.domain || "");
-      setWsSubject((prev) => prev || res.data!.impersonation_subject || "");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (allowed) void loadWsConnection();
-  }, [allowed, loadWsConnection]);
-
   async function runSaveConnection() {
     if (!wsDomain.trim() || !wsSubject.trim()) return;
     setWsSaving(true);
@@ -135,7 +126,7 @@ export function EmailOperations() {
       impersonationSubject: wsSubject.trim(),
     });
     setWsSave(res);
-    if (res.ok) await loadWsConnection();
+    if (res.ok) await loadAll();
     setWsSaving(false);
   }
 
@@ -146,7 +137,7 @@ export function EmailOperations() {
     setWsRunning(true);
     setWsResult(await testGoogleWorkspaceConnection());
     setWsRunning(false);
-    void loadWsConnection();
+    void loadAll();
   }
 
   // Workspace mailbox admin: discover, enable/disable, sync, backfill.
@@ -163,13 +154,54 @@ export function EmailOperations() {
   const [wsSyncing, setWsSyncing] = useState(false);
   const [wsSync, setWsSync] = useState<ApiResult<GmailSyncMessagesResult> | null>(null);
 
-  async function loadWsMailboxes(connectionId: string) {
+  // Recent workspace sync state (last success/failure/running) for the summary.
+  const [wsSyncState, setWsSyncState] = useState<WorkspaceSyncState | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadWsMailboxes = useCallback(async (connectionId: string) => {
     const res = await listWorkspaceMailboxes(connectionId);
     if (res.ok) {
       setWsMailboxes(res.data);
       setWsSelected(new Set(res.data.filter((m) => m.sync_enabled).map((m) => m.id)));
     }
-  }
+  }, []);
+
+  /**
+   * Load the full operational state in one pass: saved connection, its already
+   * discovered mailboxes, connected accounts and recent sync state. This makes
+   * an active Workspace + its mailboxes appear automatically — no manual "Test"
+   * or "Discover" step. Read-only; mutates nothing. Also used by Refresh.
+   */
+  const loadAll = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [connRes, acctRes, syncRes] = await Promise.all([
+        getWorkspaceConnection(),
+        listEmailAccounts("gmail"),
+        getWorkspaceSyncState(),
+      ]);
+
+      if (connRes.ok && connRes.data) {
+        const conn = connRes.data;
+        setWsConn(conn);
+        setWsDomain((prev) => prev || conn.domain || "");
+        setWsSubject((prev) => prev || conn.impersonation_subject || "");
+        setWsConnectionId(conn.id);
+        await loadWsMailboxes(conn.id); // auto-load existing mailboxes
+      }
+      if (acctRes.ok) {
+        setGmailAccounts(acctRes.data);
+        setEmailAccountId((prev) => prev || acctRes.data[0]?.id || "");
+      }
+      if (syncRes.ok) setWsSyncState(syncRes.data);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadWsMailboxes]);
+
+  useEffect(() => {
+    if (allowed) void loadAll();
+  }, [allowed, loadAll]);
 
   async function runDiscover() {
     setWsDiscovering(true);
@@ -242,16 +274,29 @@ export function EmailOperations() {
 
   if (!allowed) return <RestrictedNotice role={role} />;
 
-  const activeCount = wsMailboxes.filter(
-    (m) => m.account_status === "active" || m.account_status === "active_dwd",
+  // Operational summary — derived entirely from already-loaded state (no extra
+  // fetch). "Active DWD" counts mailboxes whose email_account is live via DWD.
+  const totalMailboxes = wsMailboxes.length;
+  const activeDwdCount = wsMailboxes.filter((m) => m.account_status === "active_dwd").length;
+  const disabledCount = wsMailboxes.filter((m) => !m.sync_enabled).length;
+  const oauthCount = gmailAccounts.filter((a) => a.status === "active").length;
+  const backfillRunningCount = wsMailboxes.filter(
+    (m) => m.account_backfill_status === "running",
   ).length;
-  const enabledCount = wsMailboxes.filter((m) => m.sync_enabled).length;
+  const backfillCompletedCount = wsMailboxes.filter(
+    (m) => m.account_backfill_status === "completed",
+  ).length;
+  const alertCount =
+    wsMailboxes.filter((m) => m.account_status === "error" || m.account_backfill_status === "error")
+      .length + (wsConn?.status === "error" ? 1 : 0);
+  const lastSuccessAt = wsSyncState?.lastSuccessAt ?? null;
+  const lastFailureAt = wsSyncState?.lastFailureAt ?? null;
 
   return (
     <div className="space-y-6">
-      {/* Operational header */}
+      {/* Operational header + summary */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
-        <div className="flex items-center justify-between border-b border-hairline pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
               <Building2 className="h-4 w-4 text-foreground" />
@@ -261,47 +306,114 @@ export function EmailOperations() {
                 Google Workspace{wsConn?.domain ? ` · ${wsConn.domain}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">
-                Domain-wide delegation · automatic sync every 5 minutes
+                {wsConn
+                  ? "Domain-wide delegation · automatic sync every 5 minutes"
+                  : "Not connected — configure the connection below to begin."}
               </div>
             </div>
           </div>
-          <ConnectorStatusBadge status={connStatus(wsConn?.status)} />
+          <div className="flex items-center gap-2">
+            <ConnectorStatusBadge status={connStatus(wsConn?.status)} />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void loadAll()}
+              disabled={refreshing}
+              title="Reload connection, mailboxes and sync state (no changes)"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </Button>
+          </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <MetricCard label="Mailboxes" value={wsMailboxes.length} />
-          <MetricCard label="Sync enabled" value={enabledCount} tone="accent" />
-          <MetricCard label="Active" value={activeCount} tone="success" />
+        {/* Sync state strip — real timestamps, honest "never" when absent. */}
+        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-foreground">
+          <span>
+            Last successful sync:{" "}
+            <span className={lastSuccessAt ? "text-success" : "text-foreground"}>
+              {fmtAgo(lastSuccessAt)}
+            </span>
+          </span>
+          <span>
+            Last failed sync:{" "}
+            <span className={lastFailureAt ? "text-destructive" : "text-foreground"}>
+              {fmtAgo(lastFailureAt)}
+            </span>
+          </span>
+          <span>Last verified: {fmtAgo(wsConn?.last_verified_at ?? null)}</span>
+          {wsSyncState && wsSyncState.running > 0 && (
+            <span className="text-accent">Sync in flight: {wsSyncState.running}</span>
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <MetricCard label="Mailboxes" value={totalMailboxes} />
+          <MetricCard label="Active DWD" value={activeDwdCount} tone="success" />
+          <MetricCard label="Disabled" value={disabledCount} />
+          <MetricCard label="OAuth mailboxes" value={oauthCount} tone="accent" />
+          <MetricCard label="Backfill running" value={backfillRunningCount} tone="accent" />
+          <MetricCard label="Backfill completed" value={backfillCompletedCount} tone="success" />
           <MetricCard
-            label="Connection"
-            value={wsConn?.status ?? "—"}
-            tone={wsConn?.status === "active" ? "success" : "warning"}
+            label="Last sync"
+            value={fmtAgo(lastSuccessAt)}
+            tone={lastSuccessAt ? "success" : "warning"}
+          />
+          <MetricCard
+            label="Alerts / errors"
+            value={alertCount}
+            tone={alertCount > 0 ? "critical" : "success"}
           />
         </div>
       </div>
 
       {/* Mailboxes (primary operational surface) */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
-        <div className="text-sm font-semibold">Mailboxes</div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="text-sm font-semibold">Mailboxes</div>
+          {/* Discovery is available but not required — mailboxes load automatically. */}
+          {wsMailboxes.length > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={runDiscover}
+              disabled={wsDiscovering}
+              title="Re-scan the domain for new or removed mailboxes"
+            >
+              <Search className="h-3.5 w-3.5" />
+              {wsDiscovering ? "Discovering…" : "Re-discover"}
+            </Button>
+          )}
+        </div>
         <p className="mt-1 text-xs text-muted-foreground">
-          Discover the domain&apos;s mailboxes, then enable/disable DWD sync per mailbox. Disable
-          stops future sync but keeps all historical email. No AI analysis yet.
+          Enable/disable DWD sync per mailbox. Disable stops future sync but keeps all historical
+          email. No AI analysis yet.
         </p>
-        <Button
-          size="sm"
-          variant="outline"
-          className="mt-3"
-          onClick={runDiscover}
-          disabled={wsDiscovering}
-        >
-          {wsDiscovering ? "Discovering…" : "Discover Mailboxes"}
-        </Button>
 
         {wsDiscover && !wsDiscover.ok && (
           <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {wsDiscover.error.code}: {wsDiscover.error.message}
           </div>
         )}
+
+        {/* Empty state — only surface Discover when there is nothing to show. */}
+        {wsMailboxes.length === 0 &&
+          (wsConn ? (
+            <div className="mt-4 rounded-xl border border-dashed border-hairline bg-surface-alt/40 p-6 text-center">
+              <p className="text-xs text-muted-foreground">
+                No mailboxes discovered yet for this Workspace.
+              </p>
+              <Button size="sm" className="mt-3" onClick={runDiscover} disabled={wsDiscovering}>
+                <Search className="h-3.5 w-3.5" />
+                {wsDiscovering ? "Discovering…" : "Discover mailboxes"}
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-dashed border-hairline bg-surface-alt/40 p-6 text-center text-xs text-muted-foreground">
+              Configure the Workspace connection in Connection settings below, then discover
+              mailboxes.
+            </div>
+          ))}
 
         {wsMailboxes.length > 0 && (
           <div className="mt-4">
