@@ -398,6 +398,34 @@ export interface GoogleWorkspaceMailboxWithAccount extends GoogleWorkspaceMailbo
   account_id: string | null;
   /** email_accounts.status (e.g. active | pending_tokenless_dwd | active_dwd | disabled). */
   account_status: string | null;
+  /** email_accounts.backfill_status (idle | running | completed | error). */
+  account_backfill_status: string | null;
+  /** email_accounts.backfill_total_fetched (progress counter). */
+  account_backfill_total: number | null;
+}
+
+/** Input to the `gmail-workspace-backfill-messages` Edge Function. */
+export interface GmailWorkspaceBackfillInput {
+  emailAccountId: string;
+  /** Reset paging + counters and start from the beginning. */
+  restart?: boolean;
+  /** Messages to list per page/run (default 100, clamped 1–500 server-side). */
+  maxResults?: number;
+}
+
+/** Safe summary from `gmail-workspace-backfill-messages`. */
+export interface GmailWorkspaceBackfillResult {
+  success: boolean;
+  provider: string;
+  email_account_id: string;
+  mailbox: string | null;
+  records_processed: number;
+  threads_processed: number;
+  total_fetched: number;
+  /** True while more pages remain (call Continue again). */
+  has_more: boolean;
+  backfill_status: string;
+  sync_run_id: string | null;
 }
 
 /** Input to the `google-workspace-update-mailboxes` Edge Function. */

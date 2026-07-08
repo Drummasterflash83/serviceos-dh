@@ -83,18 +83,26 @@ export async function listWorkspaceMailboxes(
   const addresses = Array.from(
     new Set(mailboxes.map((m) => m.email_address?.toLowerCase()).filter(Boolean)),
   ) as string[];
-  const acctByAddr = new Map<string, { id: string; status: string }>();
+  const acctByAddr = new Map<
+    string,
+    { id: string; status: string; backfillStatus: string | null; backfillTotal: number | null }
+  >();
   if (addresses.length > 0) {
     const { data: accts, error: acctErr } = await supabase
       .from("email_accounts")
-      .select("id, email_address, status")
+      .select("id, email_address, status, backfill_status, backfill_total_fetched")
       .eq("provider", "gmail")
       .in("email_address", addresses);
     if (acctErr) return { ok: false, error: { code: "query_error", message: acctErr.message } };
     for (const a of accts ?? []) {
       const addr = (a.email_address as string | null)?.toLowerCase();
       if (addr && !acctByAddr.has(addr)) {
-        acctByAddr.set(addr, { id: a.id as string, status: a.status as string });
+        acctByAddr.set(addr, {
+          id: a.id as string,
+          status: a.status as string,
+          backfillStatus: (a.backfill_status as string | null) ?? null,
+          backfillTotal: (a.backfill_total_fetched as number | null) ?? null,
+        });
       }
     }
   }
@@ -103,7 +111,13 @@ export async function listWorkspaceMailboxes(
     ok: true,
     data: mailboxes.map((m) => {
       const acct = acctByAddr.get(m.email_address?.toLowerCase() ?? "");
-      return { ...m, account_id: acct?.id ?? null, account_status: acct?.status ?? null };
+      return {
+        ...m,
+        account_id: acct?.id ?? null,
+        account_status: acct?.status ?? null,
+        account_backfill_status: acct?.backfillStatus ?? null,
+        account_backfill_total: acct?.backfillTotal ?? null,
+      };
     }),
   };
 }

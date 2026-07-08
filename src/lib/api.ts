@@ -37,6 +37,8 @@ import type {
   GoogleWorkspaceEnableMailboxesResult,
   GoogleWorkspaceUpdateMailboxesInput,
   GoogleWorkspaceUpdateMailboxesResult,
+  GmailWorkspaceBackfillInput,
+  GmailWorkspaceBackfillResult,
   GmailSyncMessagesInput,
   GmailSyncMessagesResult,
 } from "./types";
@@ -1065,6 +1067,63 @@ export async function syncGmailWorkspaceMessages(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Workspace mailbox sync failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Run one page of historical backfill for a Workspace DWD mailbox via the
+ * `gmail-workspace-backfill-messages` Edge Function (owner/admin/ops). `restart`
+ * resets paging to the beginning; otherwise it continues from the stored page
+ * token. Idempotent server-side; `has_more` indicates whether to call again.
+ */
+export async function backfillGmailWorkspaceMessages(
+  input: GmailWorkspaceBackfillInput,
+): Promise<ApiResult<GmailWorkspaceBackfillResult>> {
+  if (!input || typeof input.emailAccountId !== "string" || input.emailAccountId.trim() === "") {
+    return {
+      ok: false,
+      error: toApiError("invalid_email_account_id", "emailAccountId is required"),
+    };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const payload: Record<string, unknown> = { email_account_id: input.emailAccountId.trim() };
+  if (input.restart !== undefined) payload.restart = input.restart;
+  if (input.maxResults !== undefined) payload.max_results = input.maxResults;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/gmail-workspace-backfill-messages`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GmailWorkspaceBackfillResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GmailWorkspaceBackfillResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Workspace backfill failed",
       response.status,
     ),
   };
