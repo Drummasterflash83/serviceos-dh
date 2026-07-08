@@ -30,6 +30,8 @@ import type {
   PhonePipelineStatusResult,
   GmailOAuthStartResult,
   GoogleWorkspaceTestResult,
+  GmailSyncMessagesInput,
+  GmailSyncMessagesResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -708,6 +710,69 @@ export async function testGoogleWorkspaceConnection(): Promise<
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Workspace connection test failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Sync recent Gmail messages for a connected OAuth mailbox via the
+ * `gmail-sync-messages` Edge Function (Email Phase-2). The OAuth token is
+ * loaded/refreshed server-side and never exposed; this only passes the account
+ * id + options. Idempotent server-side. Admin/diagnostic use for now.
+ */
+export async function syncGmailMessages(
+  input: GmailSyncMessagesInput,
+): Promise<ApiResult<GmailSyncMessagesResult>> {
+  if (!input || typeof input.emailAccountId !== "string" || input.emailAccountId.trim() === "") {
+    return {
+      ok: false,
+      error: toApiError("invalid_email_account_id", "emailAccountId is required"),
+    };
+  }
+  if (
+    input.maxResults !== undefined &&
+    (!Number.isFinite(input.maxResults) || input.maxResults <= 0)
+  ) {
+    return { ok: false, error: toApiError("invalid_max_results", "maxResults must be positive") };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const payload: Record<string, unknown> = { email_account_id: input.emailAccountId.trim() };
+  if (input.force !== undefined) payload.force = input.force;
+  if (input.maxResults !== undefined) payload.max_results = input.maxResults;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/gmail-sync-messages`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GmailSyncMessagesResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GmailSyncMessagesResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Gmail message sync failed",
       response.status,
     ),
   };

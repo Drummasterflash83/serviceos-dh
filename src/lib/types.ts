@@ -344,6 +344,27 @@ export interface GoogleWorkspaceTestResult {
   scopes: string[];
 }
 
+/** Input to the `gmail-sync-messages` Edge Function (Email Phase-2). */
+export interface GmailSyncMessagesInput {
+  /** email_accounts.id (a ServiceOS UUID) for the connected Gmail mailbox. */
+  emailAccountId: string;
+  /** Re-fetch and re-upsert messages even if already stored. */
+  force?: boolean;
+  /** Max message ids to list per label (INBOX, SENT). Clamped 1–100 server-side. */
+  maxResults?: number;
+}
+
+/** Safe summary returned by `gmail-sync-messages` (no tokens, no bodies). */
+export interface GmailSyncMessagesResult {
+  success: boolean;
+  provider: string;
+  email_account_id: string;
+  records_processed: number;
+  threads_processed: number;
+  mailbox: string | null;
+  sync_run_id: string | null;
+}
+
 /** Filters for the tenant-scoped email feed (client-side RLS reads). */
 export interface EmailFeedInput {
   /** ISO date — inclusive lower bound on the thread's last message. */

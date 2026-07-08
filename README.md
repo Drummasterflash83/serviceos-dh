@@ -940,3 +940,191 @@ impersonates each as needed, with no individual OAuth consent screens. Phase
 Email-2 will enumerate mailboxes into `google_workspace_mailboxes` and sync the
 `sync_enabled` ones into the shared `email_*` tables. Per-user OAuth (Phase-1)
 remains available for mailboxes outside the Workspace domain.
+
+## Scheduled phone sync — keeping Calls & Comms current
+
+Previously phone data only updated when an admin clicked **Sync calls** /
+**Sync recordings**. `phone-scheduled-sync` runs those on a **cron (every 5
+minutes)** so the live Calls & Comms feed stays current with no manual action.
+
+### How it works
+
+It owns **no business logic** — it invokes the existing, already-idempotent
+functions server-to-server and lets them do the work:
+
+- `simwood-sync-calls` — recent call history.
+- `simwood-sync-recordings` — recent recording metadata, which itself
+  **auto-triggers the Phase-5A enrichment pipeline for genuinely-new recordings
+  only** (download → transcribe → analyse). Nothing is re-processed.
+
+It syncs a **10-minute rolling window** (5-minute cron ⇒ ~5 minutes overlap);
+overlap is safe because every upsert is idempotent. One `phone_sync_runs` row is
+written per tick with `sync_type = 'scheduled_sync'` (the child `calls` /
+`recordings` runs are logged too). It returns:
+
+```json
+{ "success": true, "calls_processed": 0, "recordings_processed": 0, "sync_run_id": "…" }
+```
+
+The Admin manual sync buttons are unchanged and still work on demand.
+
+### Auth model
+
+The scheduled function is **not** callable by ordinary users. It requires a
+shared secret header and is deployed with `verify_jwt = false` (cron has no
+Supabase JWT):
+
+- Caller must send `x-schedule-secret: <PHONE_SCHEDULE_SECRET>` — else `403`.
+- It invokes the sync functions with the **service-role key** as the bearer plus
+  an `x-internal-tenant-id` header. `_shared/authz.ts` recognises this
+  service-role internal path and binds the tenant server-side. This path **never
+  fires for real users** (the frontend only holds the anon key + a user JWT), so
+  Security-1 authz for user-triggered functions is unchanged.
+
+### Config (TODO: move to per-tenant integration config)
+
+For now the tenant and Simwood customer are hard-coded in
+`phone-scheduled-sync/index.ts`:
+
+- `SCHEDULED_TENANT_ID = "00000000-0000-0000-0000-000000000001"`
+- `PROVIDER_CUSTOMER_ID = "3950"`
+
+### Required secret
+
+| Secret                  | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| `PHONE_SCHEDULE_SECRET` | Shared secret the cron sends as x-schedule-secret |
+
+```bash
+supabase secrets set PHONE_SCHEDULE_SECRET="$(openssl rand -hex 32)"
+```
+
+### Deploy
+
+```bash
+supabase functions deploy phone-scheduled-sync   # verify_jwt=false via config.toml
+```
+
+### Schedule it (every 5 minutes)
+
+Supabase `config.toml` does not schedule Edge Functions, so use **pg_cron +
+pg_net** in the database (SQL editor). This calls the function with the secret
+header on `*/5 * * * *`:
+
+```sql
+-- one-time: enable the extensions
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+select cron.schedule(
+  'phone-scheduled-sync-5min',
+  '*/5 * * * *',
+  $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/phone-scheduled-sync',
+    headers := jsonb_build_object(
+      'content-type', 'application/json',
+      'x-schedule-secret', '<PHONE_SCHEDULE_SECRET>'
+    ),
+    body    := '{}'::jsonb
+  );
+  $$
+);
+```
+
+(Alternatively, drive it from any external scheduler that can send the
+`x-schedule-secret` header. To deploy without editing `config.toml`:
+`supabase functions deploy phone-scheduled-sync --no-verify-jwt`.)
+
+### Cost notes
+
+Cheap by design: each tick only syncs **recent metadata** for a 10-minute window
+and **never forces** re-download, re-transcription or re-analysis. The expensive
+OpenAI steps run **once per new recording** via the Phase-5A pipeline (capped at
+50 auto-triggers per recordings sync). Re-running a tick over the same window
+re-upserts the same rows and enriches nothing new.
+
+## Email Input — Phase Email-2: Gmail OAuth sync engine
+
+Syncs recent Gmail messages from a **connected OAuth mailbox** (Phase-1) into the
+`email_*` tables so they can surface in the email feed. This is the SaaS-friendly
+path (Connect → approve → sync); the Workspace domain-wide-delegation foundation
+(Phase-1B) stays in place but is **not used** here.
+
+### Function
+
+`gmail-sync-messages` — authenticated **owner/admin/ops**; tenant bound from the
+caller's profile.
+
+Input:
+
+```json
+{ "email_account_id": "uuid", "force": false, "max_results": 50 }
+```
+
+What it does:
+
+- Verifies the `email_accounts` row belongs to the caller's tenant.
+- Loads the OAuth token from `email_oauth_tokens` (**service role**), and
+  **refreshes** the `access_token` via the stored `refresh_token` when it's
+  expired/near-expiry. Tokens are **never returned or logged**.
+- Lists recent **INBOX** and **SENT** message ids (`max_results` per label, 1–100)
+  using the Gmail API read-only, then fetches each message. Without `force` it
+  only fetches ids not already stored (incremental; saves API calls).
+- Parses each message → `subject`, `from_email`/`from_name`, `to_emails`,
+  `cc_emails`, `snippet`, `body_text`, `body_html`, `sent_at`/`received_at`
+  (from `internalDate` / `Date`), and `direction` (`outbound` if from the mailbox
+  or labeled `SENT`, else `inbound`). `raw_payload` holds **safe metadata only**
+  (label ids, size estimate, history id, `has_attachments`) — **no body, no
+  attachment bytes, no tokens**.
+- Upserts `email_threads` (by `provider_thread_id`) and `email_messages` (by
+  `provider_message_id`) — both **idempotent**. Logs one `email_sync_runs` row
+  with `sync_type='messages'`.
+
+Returns:
+
+```json
+{
+  "success": true,
+  "provider": "gmail",
+  "email_account_id": "…",
+  "records_processed": 0,
+  "threads_processed": 0,
+  "mailbox": "…",
+  "sync_run_id": "…"
+}
+```
+
+### Required token state
+
+The mailbox must already be connected (Phase-1) so `email_oauth_tokens` has a row
+with a `refresh_token` (Google returns one because the OAuth flow uses
+`access_type=offline` + `prompt=consent`). Uses the same `GOOGLE_CLIENT_ID` /
+`GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` secrets — **no new secrets**.
+
+### Deploy & test
+
+```bash
+supabase functions deploy gmail-sync-messages
+```
+
+```bash
+curl -i -X POST https://<PROJECT_REF>.supabase.co/functions/v1/gmail-sync-messages \
+  -H "Authorization: Bearer <USER_ACCESS_TOKEN>" \
+  -H "apikey: <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{ "email_account_id": "<EMAIL_ACCOUNT_UUID>", "max_results": 50 }'
+```
+
+In the app: **Admin → Email · Gmail → Sync Gmail messages** (shows the connected
+account, an account-id input, and a result panel).
+
+### Limitations (this phase)
+
+- **No AI analysis** yet (`email_ai_insights` stays empty).
+- **No attachments** — attachment bytes are not downloaded/stored.
+- **No unified comms timeline** — email and phone feeds are still separate.
+- **No automatic scheduled email sync** — this is manual/diagnostic for now
+  (a scheduled email sync, like `phone-scheduled-sync`, comes later).
+- Incremental sync is "recent `max_results` per label"; there's no Gmail
+  `historyId` delta cursor yet.

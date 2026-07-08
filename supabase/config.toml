@@ -13,3 +13,9 @@ verify_jwt = true
 # `state` verified inside the function (see _shared/gmail_oauth.ts).
 [functions.gmail-oauth-callback]
 verify_jwt = false
+
+# Scheduled phone sync — invoked by cron with NO Supabase JWT, so gateway JWT
+# verification MUST be off. Trust comes from the `x-schedule-secret` header
+# checked inside the function against PHONE_SCHEDULE_SECRET.
+[functions.phone-scheduled-sync]
+verify_jwt = false

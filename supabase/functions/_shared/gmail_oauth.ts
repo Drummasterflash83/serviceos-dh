@@ -214,3 +214,117 @@ export function safeOrigin(origin: string | null | undefined): string | null {
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Gmail API helpers (Email Phase-2 sync). Read-only usage; tokens never logged.
+// ---------------------------------------------------------------------------
+
+const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
+
+export interface RefreshedToken {
+  accessToken: string;
+  expiresIn: number | null;
+  scope: string | null;
+  tokenType: string | null;
+}
+
+/** Exchange a refresh_token for a fresh access_token (server-side). */
+export async function refreshGmailAccessToken(
+  config: GoogleOAuthConfig,
+  refreshToken: string,
+): Promise<RefreshedToken> {
+  const resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }).toString(),
+  });
+  if (!resp.ok) {
+    throw new Error(`token_refresh_failed_${resp.status}`);
+  }
+  const data = (await resp.json()) as TokenResponse;
+  if (!data.access_token) throw new Error("no_access_token");
+  return {
+    accessToken: data.access_token,
+    expiresIn: typeof data.expires_in === "number" ? data.expires_in : null,
+    scope: data.scope ?? null,
+    tokenType: data.token_type ?? null,
+  };
+}
+
+/** Authorized fetch against the Gmail API (`path` may be absolute or `/…`). */
+export function gmailFetch(accessToken: string, path: string, init: RequestInit = {}): Promise<Response> {
+  const url = path.startsWith("http") ? path : `${GMAIL_API_BASE}${path}`;
+  return fetch(url, {
+    ...init,
+    headers: { ...(init.headers ?? {}), Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export interface GmailProfileFull {
+  emailAddress: string | null;
+  messagesTotal: number | null;
+  historyId: string | null;
+}
+
+/** Read the connected mailbox's Gmail profile (users.getProfile). */
+export async function getGmailProfile(accessToken: string): Promise<GmailProfileFull> {
+  const resp = await gmailFetch(accessToken, "/profile");
+  if (!resp.ok) throw new Error(`gmail_profile_${resp.status}`);
+  const d = (await resp.json()) as {
+    emailAddress?: string;
+    messagesTotal?: number;
+    historyId?: string;
+  };
+  return {
+    emailAddress: d.emailAddress ?? null,
+    messagesTotal: typeof d.messagesTotal === "number" ? d.messagesTotal : null,
+    historyId: d.historyId != null ? String(d.historyId) : null,
+  };
+}
+
+export interface GmailMessageRef {
+  id: string;
+  threadId: string | null;
+}
+
+/** List recent message ids (users.messages.list), filtered by label. */
+export async function listGmailMessages(
+  accessToken: string,
+  opts: { maxResults?: number; labelIds?: string[]; q?: string } = {},
+): Promise<{ messages: GmailMessageRef[]; resultSizeEstimate: number | null }> {
+  const params = new URLSearchParams();
+  if (opts.maxResults) params.set("maxResults", String(opts.maxResults));
+  for (const l of opts.labelIds ?? []) params.append("labelIds", l);
+  if (opts.q) params.set("q", opts.q);
+  const resp = await gmailFetch(accessToken, `/messages?${params.toString()}`);
+  if (!resp.ok) throw new Error(`gmail_list_${resp.status}`);
+  const d = (await resp.json()) as {
+    messages?: Array<{ id?: unknown; threadId?: unknown }>;
+    resultSizeEstimate?: number;
+  };
+  const messages: GmailMessageRef[] = Array.isArray(d.messages)
+    ? d.messages
+        .filter((m) => m?.id != null)
+        .map((m) => ({ id: String(m.id), threadId: m.threadId != null ? String(m.threadId) : null }))
+    : [];
+  return {
+    messages,
+    resultSizeEstimate: typeof d.resultSizeEstimate === "number" ? d.resultSizeEstimate : null,
+  };
+}
+
+/** Fetch one full message resource (users.messages.get). */
+export async function getGmailMessage(
+  accessToken: string,
+  id: string,
+  format = "full",
+): Promise<Record<string, unknown>> {
+  const resp = await gmailFetch(accessToken, `/messages/${encodeURIComponent(id)}?format=${format}`);
+  if (!resp.ok) throw new Error(`gmail_get_${resp.status}`);
+  return (await resp.json()) as Record<string, unknown>;
+}

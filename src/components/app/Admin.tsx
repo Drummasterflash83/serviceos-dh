@@ -26,7 +26,9 @@ import {
   getPhonePipelineStatus,
   startGmailOAuth,
   testGoogleWorkspaceConnection,
+  syncGmailMessages,
 } from "@/lib/api";
+import { listEmailAccounts } from "@/lib/email-feed";
 import type {
   ApiResult,
   SimwoodConnectionResult,
@@ -35,6 +37,8 @@ import type {
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
   GoogleWorkspaceTestResult,
+  GmailSyncMessagesResult,
+  EmailAccount,
 } from "@/lib/types";
 
 // TODO(integration): replace this hardcoded Simwood customer id with the
@@ -213,6 +217,32 @@ export function AdminView() {
     setConnectingGmail(false);
   }
 
+  // Gmail message sync (Email Phase-2). Loads connected Gmail accounts (RLS read)
+  // to show/prefill the mailbox, then syncs recent messages for one account.
+  const [gmailAccounts, setGmailAccounts] = useState<EmailAccount[]>([]);
+  const [emailAccountId, setEmailAccountId] = useState("");
+  const [syncingGmail, setSyncingGmail] = useState(false);
+  const [gmailSync, setGmailSync] = useState<ApiResult<GmailSyncMessagesResult> | null>(null);
+
+  useEffect(() => {
+    if (!allowed) return;
+    void (async () => {
+      const res = await listEmailAccounts("gmail");
+      if (res.ok) {
+        setGmailAccounts(res.data);
+        setEmailAccountId((prev) => prev || res.data[0]?.id || "");
+      }
+    })();
+  }, [allowed]);
+
+  async function runGmailSync() {
+    const id = emailAccountId.trim();
+    if (!id) return;
+    setSyncingGmail(true);
+    setGmailSync(await syncGmailMessages({ emailAccountId: id }));
+    setSyncingGmail(false);
+  }
+
   // Google Workspace Domain-Wide Delegation test (Email Phase-1B). Verifies the
   // service account can impersonate the configured admin mailbox. No sync yet.
   const [wsRunning, setWsRunning] = useState(false);
@@ -282,6 +312,11 @@ export function AdminView() {
             Active
           </span>
         </div>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          Automatic phone sync runs every 5 minutes. The buttons below are for manual, on-demand
+          syncs.
+        </p>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           {/* Test connection */}
@@ -398,8 +433,62 @@ export function AdminView() {
           )}
 
           <p className="mt-3 text-[11px] text-muted-foreground">
-            OAuth connection only. Email sync comes next.
+            OAuth connection only. Connect above, then sync messages below.
           </p>
+        </div>
+
+        {/* Sync messages (Email Phase-2) */}
+        <div className="mt-5 border-t border-hairline pt-5">
+          <div className="text-sm font-semibold">Sync Gmail messages</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Pulls recent INBOX and SENT messages into the email feed. Metadata + body only — no
+            attachments or AI analysis yet.
+          </p>
+
+          {gmailAccounts.length > 0 && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Connected:{" "}
+              <span className="font-mono text-foreground">
+                {gmailAccounts[0].email_address ?? "—"}
+              </span>
+              {gmailAccounts.length > 1 ? ` (+${gmailAccounts.length - 1} more)` : ""}
+            </p>
+          )}
+
+          <div className="mt-3 max-w-xl">
+            <label
+              htmlFor="gmail-account-id"
+              className="text-[11px] uppercase tracking-wider text-muted-foreground"
+            >
+              Email account UUID
+            </label>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <Input
+                id="gmail-account-id"
+                value={emailAccountId}
+                onChange={(e) => setEmailAccountId(e.target.value)}
+                placeholder="email_accounts.id"
+                disabled={syncingGmail}
+                className="font-mono"
+              />
+              <Button
+                onClick={runGmailSync}
+                disabled={syncingGmail || emailAccountId.trim() === ""}
+              >
+                {syncingGmail ? "Syncing…" : "Sync Gmail messages"}
+              </Button>
+            </div>
+            <StatusPanel
+              running={syncingGmail}
+              result={gmailSync}
+              renderOk={(d) => [
+                { label: "Mailbox", value: d.mailbox ?? "—" },
+                { label: "Messages", value: String(d.records_processed) },
+                { label: "Threads", value: String(d.threads_processed) },
+                { label: "Sync run", value: d.sync_run_id ?? "—" },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
