@@ -176,3 +176,58 @@ export async function verifyGmailProfile(accessToken: string): Promise<GmailProf
     messagesTotal: typeof data.messagesTotal === "number" ? data.messagesTotal : null,
   };
 }
+
+const DIRECTORY_USERS_ENDPOINT = "https://admin.googleapis.com/admin/directory/v1/users";
+
+export interface DirectoryUser {
+  email: string;
+  displayName: string | null;
+  suspended: boolean;
+  isAdmin: boolean;
+}
+
+/**
+ * List the domain's users via the Admin Directory API (users.list), paging
+ * through results. Requires a delegated token with admin.directory.user.readonly
+ * impersonating an admin. `maxPages` bounds a runaway (500 users/page).
+ */
+export async function listDirectoryUsers(
+  accessToken: string,
+  domain: string,
+  opts: { maxPages?: number } = {},
+): Promise<DirectoryUser[]> {
+  const users: DirectoryUser[] = [];
+  const maxPages = opts.maxPages ?? 20; // up to ~10k users
+  let pageToken: string | undefined;
+
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({ domain, maxResults: "500", orderBy: "email" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const resp = await fetch(`${DIRECTORY_USERS_ENDPOINT}?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!resp.ok) throw new Error(`directory_users_${resp.status}`);
+    const data = (await resp.json()) as {
+      users?: Array<{
+        primaryEmail?: string;
+        name?: { fullName?: string };
+        suspended?: boolean;
+        isAdmin?: boolean;
+      }>;
+      nextPageToken?: string;
+    };
+    for (const u of data.users ?? []) {
+      const email = typeof u.primaryEmail === "string" ? u.primaryEmail.toLowerCase() : null;
+      if (!email) continue;
+      users.push({
+        email,
+        displayName: u.name?.fullName ?? null,
+        suspended: Boolean(u.suspended),
+        isAdmin: Boolean(u.isAdmin),
+      });
+    }
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
+  }
+  return users;
+}

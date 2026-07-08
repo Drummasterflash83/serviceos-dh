@@ -21,7 +21,37 @@ import type {
   EmailInsight,
   EmailThreadDetail,
   EmailThreadMessage,
+  GoogleWorkspaceMailbox,
 } from "./types";
+
+/**
+ * List discovered Google Workspace mailboxes for a connection (RLS-scoped
+ * browser read). Used by Admin after discovery to render the selectable list.
+ * No tokens/keys are exposed — those live only in Edge Function secrets.
+ */
+export async function listWorkspaceMailboxes(
+  connectionId: string,
+): Promise<ApiResult<GoogleWorkspaceMailbox[]>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  if (typeof connectionId !== "string" || connectionId.trim() === "") {
+    return {
+      ok: false,
+      error: { code: "invalid_connection_id", message: "connectionId required" },
+    };
+  }
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from("google_workspace_mailboxes")
+    .select(
+      "id, tenant_id, connection_id, email_address, display_name, mailbox_type, sync_enabled, status, created_at, updated_at",
+    )
+    .eq("connection_id", connectionId)
+    .order("email_address", { ascending: true });
+  if (error) return { ok: false, error: { code: "query_error", message: error.message } };
+  return { ok: true, data: (data ?? []) as GoogleWorkspaceMailbox[] };
+}
 
 /**
  * List the tenant's connected email accounts (RLS-scoped browser read). Used by

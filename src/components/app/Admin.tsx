@@ -26,9 +26,11 @@ import {
   getPhonePipelineStatus,
   startGmailOAuth,
   testGoogleWorkspaceConnection,
+  discoverGoogleWorkspaceMailboxes,
+  enableGoogleWorkspaceMailboxes,
   syncGmailMessages,
 } from "@/lib/api";
-import { listEmailAccounts } from "@/lib/email-feed";
+import { listEmailAccounts, listWorkspaceMailboxes } from "@/lib/email-feed";
 import type {
   ApiResult,
   SimwoodConnectionResult,
@@ -37,6 +39,9 @@ import type {
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
   GoogleWorkspaceTestResult,
+  GoogleWorkspaceDiscoverMailboxesResult,
+  GoogleWorkspaceEnableMailboxesResult,
+  GoogleWorkspaceMailbox,
   GmailSyncMessagesResult,
   EmailAccount,
 } from "@/lib/types";
@@ -252,6 +257,61 @@ export function AdminView() {
     setWsRunning(true);
     setWsResult(await testGoogleWorkspaceConnection());
     setWsRunning(false);
+  }
+
+  // Workspace mailbox discovery + bulk enable (Workspace v1). Discovers via DWD,
+  // lists mailboxes (RLS read), lets the admin select and enable a subset.
+  const [wsDiscovering, setWsDiscovering] = useState(false);
+  const [wsDiscover, setWsDiscover] =
+    useState<ApiResult<GoogleWorkspaceDiscoverMailboxesResult> | null>(null);
+  const [wsConnectionId, setWsConnectionId] = useState<string | null>(null);
+  const [wsMailboxes, setWsMailboxes] = useState<GoogleWorkspaceMailbox[]>([]);
+  const [wsSelected, setWsSelected] = useState<Set<string>>(new Set());
+  const [wsEnabling, setWsEnabling] = useState(false);
+  const [wsEnable, setWsEnable] = useState<ApiResult<GoogleWorkspaceEnableMailboxesResult> | null>(
+    null,
+  );
+
+  async function loadWsMailboxes(connectionId: string) {
+    const res = await listWorkspaceMailboxes(connectionId);
+    if (res.ok) {
+      setWsMailboxes(res.data);
+      setWsSelected(new Set(res.data.filter((m) => m.sync_enabled).map((m) => m.id)));
+    }
+  }
+
+  async function runDiscover() {
+    setWsDiscovering(true);
+    setWsEnable(null);
+    const res = await discoverGoogleWorkspaceMailboxes();
+    setWsDiscover(res);
+    if (res.ok) {
+      setWsConnectionId(res.data.connection_id);
+      await loadWsMailboxes(res.data.connection_id);
+    }
+    setWsDiscovering(false);
+  }
+
+  function toggleMailbox(id: string) {
+    setWsSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function runEnable() {
+    if (!wsConnectionId || wsSelected.size === 0) return;
+    setWsEnabling(true);
+    const res = await enableGoogleWorkspaceMailboxes({
+      connectionId: wsConnectionId,
+      mailboxIds: Array.from(wsSelected),
+      syncEnabled: true,
+    });
+    setWsEnable(res);
+    if (res.ok) await loadWsMailboxes(wsConnectionId);
+    setWsEnabling(false);
   }
 
   // Access control: only owner/admin/ops may use the Admin console. The Edge
@@ -546,6 +606,91 @@ export function AdminView() {
               </div>
             )}
           />
+        </div>
+
+        {/* Discover + bulk-enable mailboxes (Workspace v1) */}
+        <div className="mt-5 border-t border-hairline pt-5">
+          <div className="text-sm font-semibold">Discover mailboxes</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Lists every mailbox in the Workspace domain via domain-wide delegation, then lets you
+            enable a subset. No email is synced yet.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            onClick={runDiscover}
+            disabled={wsDiscovering}
+          >
+            {wsDiscovering ? "Discovering…" : "Discover Mailboxes"}
+          </Button>
+
+          {wsDiscover && !wsDiscover.ok && (
+            <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {wsDiscover.error.code}: {wsDiscover.error.message}
+            </div>
+          )}
+
+          {wsMailboxes.length > 0 && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {wsMailboxes.length} discovered · {wsSelected.size} selected
+                </span>
+                <Button
+                  size="sm"
+                  onClick={runEnable}
+                  disabled={wsEnabling || wsSelected.size === 0}
+                >
+                  {wsEnabling ? "Enabling…" : "Enable Selected Mailboxes"}
+                </Button>
+              </div>
+
+              <div className="max-h-64 divide-y divide-hairline overflow-y-auto rounded-xl border border-hairline">
+                {wsMailboxes.map((m) => (
+                  <label
+                    key={m.id}
+                    className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-surface-alt"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={wsSelected.has(m.id)}
+                      onChange={() => toggleMailbox(m.id)}
+                      className="h-3.5 w-3.5"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-mono text-xs text-foreground">
+                        {m.email_address}
+                      </div>
+                      {m.display_name && (
+                        <div className="truncate text-[11px] text-muted-foreground">
+                          {m.display_name}
+                        </div>
+                      )}
+                    </div>
+                    <span className="shrink-0 rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {m.sync_enabled ? "enabled" : m.status}
+                    </span>
+                  </label>
+                ))}
+              </div>
+
+              {wsEnable && (
+                <div className="mt-3 text-xs">
+                  {wsEnable.ok ? (
+                    <span className="text-muted-foreground">
+                      Enabled {wsEnable.data.enabled_count} · created{" "}
+                      {wsEnable.data.email_accounts_created} email account(s).
+                    </span>
+                  ) : (
+                    <span className="text-destructive">
+                      {wsEnable.error.code}: {wsEnable.error.message}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

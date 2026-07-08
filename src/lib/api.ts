@@ -30,6 +30,9 @@ import type {
   PhonePipelineStatusResult,
   GmailOAuthStartResult,
   GoogleWorkspaceTestResult,
+  GoogleWorkspaceDiscoverMailboxesResult,
+  GoogleWorkspaceEnableMailboxesInput,
+  GoogleWorkspaceEnableMailboxesResult,
   GmailSyncMessagesInput,
   GmailSyncMessagesResult,
 } from "./types";
@@ -710,6 +713,112 @@ export async function testGoogleWorkspaceConnection(): Promise<
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Workspace connection test failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Discover all mailboxes in the configured Google Workspace domain via the
+ * `google-workspace-discover-mailboxes` Edge Function (owner/admin only). Uses
+ * domain-wide delegation server-side (service-account key never touches the
+ * client) and upserts google_workspace_connections/mailboxes. No message sync.
+ */
+export async function discoverGoogleWorkspaceMailboxes(): Promise<
+  ApiResult<GoogleWorkspaceDiscoverMailboxesResult>
+> {
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/google-workspace-discover-mailboxes`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify({}),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GoogleWorkspaceDiscoverMailboxesResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GoogleWorkspaceDiscoverMailboxesResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Mailbox discovery failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Enable (or disable) selected discovered mailboxes via the
+ * `google-workspace-enable-mailboxes` Edge Function (owner/admin only). Registers
+ * matching email_accounts for enabled mailboxes; creates NO OAuth tokens and
+ * syncs no messages.
+ */
+export async function enableGoogleWorkspaceMailboxes(
+  input: GoogleWorkspaceEnableMailboxesInput,
+): Promise<ApiResult<GoogleWorkspaceEnableMailboxesResult>> {
+  if (!input || typeof input.connectionId !== "string" || input.connectionId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_connection_id", "connectionId is required") };
+  }
+  if (!Array.isArray(input.mailboxIds) || input.mailboxIds.length === 0) {
+    return { ok: false, error: toApiError("invalid_mailbox_ids", "mailboxIds is required") };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const payload: Record<string, unknown> = {
+    connection_id: input.connectionId.trim(),
+    mailbox_ids: input.mailboxIds,
+    sync_enabled: input.syncEnabled !== false,
+  };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/google-workspace-enable-mailboxes`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GoogleWorkspaceEnableMailboxesResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GoogleWorkspaceEnableMailboxesResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Enable mailboxes failed",
       response.status,
     ),
   };

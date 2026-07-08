@@ -344,6 +344,44 @@ export interface GoogleWorkspaceTestResult {
   scopes: string[];
 }
 
+/** A row from `google_workspace_mailboxes` (discovered mailbox). */
+export interface GoogleWorkspaceMailbox {
+  id: string;
+  tenant_id: string;
+  connection_id: string;
+  email_address: string;
+  display_name: string | null;
+  mailbox_type: string | null;
+  sync_enabled: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Safe summary from `google-workspace-discover-mailboxes` (Workspace v1). */
+export interface GoogleWorkspaceDiscoverMailboxesResult {
+  success: boolean;
+  domain: string;
+  mailboxes_discovered: number;
+  connection_id: string;
+  sync_run_id: string | null;
+}
+
+/** Input to the `google-workspace-enable-mailboxes` Edge Function. */
+export interface GoogleWorkspaceEnableMailboxesInput {
+  connectionId: string;
+  mailboxIds: string[];
+  /** Enable (default) or disable the selected mailboxes. */
+  syncEnabled?: boolean;
+}
+
+/** Safe summary from `google-workspace-enable-mailboxes` (Workspace v1). */
+export interface GoogleWorkspaceEnableMailboxesResult {
+  success: boolean;
+  enabled_count: number;
+  email_accounts_created: number;
+}
+
 /** Input to the `gmail-sync-messages` Edge Function (Email Phase-2). */
 export interface GmailSyncMessagesInput {
   /** email_accounts.id (a ServiceOS UUID) for the connected Gmail mailbox. */

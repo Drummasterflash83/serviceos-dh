@@ -1232,3 +1232,73 @@ for already-synced rows.
 - Gmail incremental sync has no `historyId` delta cursor yet (recent-window only).
 - No email AI analysis, no unified comms timeline, no Slack, no customer matching
   (out of scope for this build).
+
+## Google Workspace mailbox discovery + bulk add (v1)
+
+For **all-mailbox** onboarding (a Workspace admin authorises ServiceOS once and we
+sync many mailboxes), per-user Gmail OAuth doesn't work: **normal OAuth only
+grants access to the consenting user's own mailbox.** Reading every user's
+mailbox requires **Domain-Wide Delegation (DWD)** with a **ServiceOS-owned service
+account** — customers do **not** upload a service-account JSON key. Per-user Gmail
+OAuth (Phase-1/2) is unchanged and still available.
+
+### One-time Google Admin authorisation
+
+The ServiceOS service account's **client ID** must be authorised in the customer's
+**Google Admin console → Security → API controls → Domain-wide delegation** with
+these scopes:
+
+```
+https://www.googleapis.com/auth/gmail.readonly
+https://www.googleapis.com/auth/admin.directory.user.readonly
+```
+
+Uses the same Phase-1B secrets (service-account key stays **server-side only**,
+never exposed to the frontend): `GOOGLE_WORKSPACE_CLIENT_EMAIL`,
+`GOOGLE_WORKSPACE_PRIVATE_KEY`, `GOOGLE_WORKSPACE_DOMAIN`,
+`GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT`.
+
+### Functions (owner/admin only, tenant-bound)
+
+- `google-workspace-discover-mailboxes` — impersonates the admin subject, calls
+  the **Admin Directory API `users.list`** for the domain, and upserts
+  `google_workspace_connections` + `google_workspace_mailboxes`.
+  `sync_enabled`/`status` are preserved on re-discovery. Returns
+  `{ success, domain, mailboxes_discovered, connection_id, sync_run_id }`.
+  Logged to `email_sync_runs` (`sync_type='workspace_discover'`).
+- `google-workspace-enable-mailboxes` — input
+  `{ connection_id, mailbox_ids: [...], sync_enabled }`. Verifies the connection
+  belongs to the tenant, flips `sync_enabled`/`status` on the selected mailboxes,
+  and **inserts matching `email_accounts`** (provider `gmail`) for enabled
+  mailboxes that don't already have one. Returns
+  `{ success, enabled_count, email_accounts_created }`.
+
+```bash
+supabase functions deploy google-workspace-discover-mailboxes
+supabase functions deploy google-workspace-enable-mailboxes
+```
+
+In the app: **Admin → Email · Google Workspace** — "Test Workspace Connection"
+(unchanged), then **Discover Mailboxes**, select from the list, **Enable Selected
+Mailboxes**.
+
+### Why enabled mailboxes are `pending_tokenless_dwd`, not `active`
+
+Enabled DWD mailboxes have **no OAuth token**, so the existing token-based
+`gmail-sync-messages` (and `email-scheduled-sync`, which only picks
+`status='active'`) **cannot** sync them — and must not try. So enable creates
+`email_accounts` with `status = 'pending_tokenless_dwd'`, which the token-based
+sync deliberately skips. Existing OAuth-connected accounts are **never
+overwritten** (enable only _inserts_ missing accounts).
+
+> **TODO — DWD message sync (next phase).** Syncing these mailboxes needs either
+> `gmail-sync-messages` extended to mint a **DWD delegated token per mailbox**
+> (impersonating each `email_address`) instead of reading `email_oauth_tokens`,
+> **or** a separate `gmail-workspace-sync-messages` function. Not built in this
+> phase. Until then, `pending_tokenless_dwd` accounts are discovered/enabled but
+> not synced.
+
+### This phase does NOT
+
+Discover/enable only — no message sync for DWD mailboxes, no email AI, no unified
+comms timeline, no Slack, no customer matching.
