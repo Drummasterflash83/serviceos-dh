@@ -35,6 +35,8 @@ import type {
   GoogleWorkspaceDiscoverMailboxesResult,
   GoogleWorkspaceEnableMailboxesInput,
   GoogleWorkspaceEnableMailboxesResult,
+  GoogleWorkspaceUpdateMailboxesInput,
+  GoogleWorkspaceUpdateMailboxesResult,
   GmailSyncMessagesInput,
   GmailSyncMessagesResult,
 } from "./types";
@@ -880,6 +882,68 @@ export async function enableGoogleWorkspaceMailboxes(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Enable mailboxes failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Enable or disable selected discovered Workspace mailboxes via the
+ * `google-workspace-update-mailboxes` Edge Function (owner/admin only). Enable
+ * registers/reactivates DWD email_accounts; disable sets DWD accounts to
+ * 'disabled' (OAuth 'active' accounts and message history are preserved). Creates
+ * no OAuth tokens and syncs no messages.
+ */
+export async function updateGoogleWorkspaceMailboxes(
+  input: GoogleWorkspaceUpdateMailboxesInput,
+): Promise<ApiResult<GoogleWorkspaceUpdateMailboxesResult>> {
+  if (!input || !Array.isArray(input.mailboxIds) || input.mailboxIds.length === 0) {
+    return { ok: false, error: toApiError("invalid_mailbox_ids", "mailboxIds is required") };
+  }
+  if (typeof input.syncEnabled !== "boolean") {
+    return {
+      ok: false,
+      error: toApiError("invalid_sync_enabled", "syncEnabled must be a boolean"),
+    };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const payload: Record<string, unknown> = {
+    mailbox_ids: input.mailboxIds,
+    sync_enabled: input.syncEnabled,
+  };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/google-workspace-update-mailboxes`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GoogleWorkspaceUpdateMailboxesResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GoogleWorkspaceUpdateMailboxesResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Update mailboxes failed",
       response.status,
     ),
   };

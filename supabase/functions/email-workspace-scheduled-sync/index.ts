@@ -90,6 +90,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const syncRunId = runRow.id as string;
 
   // --- find enabled DWD mailboxes for the tenant (service role) -------------
+  // Only pending_tokenless_dwd / active_dwd — this deliberately SKIPS OAuth
+  // 'active' accounts (they sync via email-scheduled-sync) and 'disabled' ones.
   const { data: accounts, error: accErr } = await supabase
     .from("email_accounts")
     .select("id")

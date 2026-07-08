@@ -90,6 +90,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!account) return fail("not_found", "No Gmail account for this tenant with that id", 404);
   const mailbox = ((account.email_address as string | null) ?? "").toLowerCase();
   if (!mailbox) return fail("invalid_account", "The account has no email address", 400);
+  if (account.status === "disabled") {
+    return fail("mailbox_disabled", "This mailbox is disabled; enable it before syncing", 400);
+  }
   if (!DWD_STATUSES.includes(account.status as string)) {
     return fail(
       "not_dwd_account",

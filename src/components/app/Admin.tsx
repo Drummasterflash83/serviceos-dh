@@ -28,7 +28,7 @@ import {
   saveGoogleWorkspaceConnection,
   testGoogleWorkspaceConnection,
   discoverGoogleWorkspaceMailboxes,
-  enableGoogleWorkspaceMailboxes,
+  updateGoogleWorkspaceMailboxes,
   syncGmailMessages,
   syncGmailWorkspaceMessages,
 } from "@/lib/api";
@@ -48,8 +48,8 @@ import type {
   GoogleWorkspaceSaveConnectionResult,
   GoogleWorkspaceConnection,
   GoogleWorkspaceDiscoverMailboxesResult,
-  GoogleWorkspaceEnableMailboxesResult,
-  GoogleWorkspaceMailbox,
+  GoogleWorkspaceUpdateMailboxesResult,
+  GoogleWorkspaceMailboxWithAccount,
   GmailSyncMessagesResult,
   EmailAccount,
 } from "@/lib/types";
@@ -301,18 +301,20 @@ export function AdminView() {
     void loadWsConnection();
   }
 
-  // Workspace mailbox discovery + bulk enable (Workspace v1). Discovers via DWD,
-  // lists mailboxes (RLS read), lets the admin select and enable a subset.
+  // Workspace mailbox admin: discover via DWD, list mailboxes (enriched with the
+  // matching email_account status), then enable/disable/sync a selection.
   const [wsDiscovering, setWsDiscovering] = useState(false);
   const [wsDiscover, setWsDiscover] =
     useState<ApiResult<GoogleWorkspaceDiscoverMailboxesResult> | null>(null);
   const [wsConnectionId, setWsConnectionId] = useState<string | null>(null);
-  const [wsMailboxes, setWsMailboxes] = useState<GoogleWorkspaceMailbox[]>([]);
+  const [wsMailboxes, setWsMailboxes] = useState<GoogleWorkspaceMailboxWithAccount[]>([]);
   const [wsSelected, setWsSelected] = useState<Set<string>>(new Set());
-  const [wsEnabling, setWsEnabling] = useState(false);
-  const [wsEnable, setWsEnable] = useState<ApiResult<GoogleWorkspaceEnableMailboxesResult> | null>(
+  const [wsUpdating, setWsUpdating] = useState(false);
+  const [wsUpdate, setWsUpdate] = useState<ApiResult<GoogleWorkspaceUpdateMailboxesResult> | null>(
     null,
   );
+  const [wsSyncing, setWsSyncing] = useState(false);
+  const [wsSync, setWsSync] = useState<ApiResult<GmailSyncMessagesResult> | null>(null);
 
   async function loadWsMailboxes(connectionId: string) {
     const res = await listWorkspaceMailboxes(connectionId);
@@ -324,7 +326,7 @@ export function AdminView() {
 
   async function runDiscover() {
     setWsDiscovering(true);
-    setWsEnable(null);
+    setWsUpdate(null);
     const res = await discoverGoogleWorkspaceMailboxes();
     setWsDiscover(res);
     if (res.ok) {
@@ -343,35 +345,34 @@ export function AdminView() {
     });
   }
 
-  async function runEnable() {
+  async function runUpdate(syncEnabled: boolean) {
     if (!wsConnectionId || wsSelected.size === 0) return;
-    setWsEnabling(true);
-    const res = await enableGoogleWorkspaceMailboxes({
-      connectionId: wsConnectionId,
+    setWsUpdating(true);
+    const res = await updateGoogleWorkspaceMailboxes({
       mailboxIds: Array.from(wsSelected),
-      syncEnabled: true,
+      syncEnabled,
     });
-    setWsEnable(res);
+    setWsUpdate(res);
     if (res.ok) await loadWsMailboxes(wsConnectionId);
-    setWsEnabling(false);
+    setWsUpdating(false);
   }
 
-  // Workspace DWD message sync (diagnostic). Targets a DWD email_account
-  // (status pending_tokenless_dwd | active_dwd) — reuses gmailAccounts loaded
-  // above, filtered to DWD statuses.
-  const dwdAccounts = gmailAccounts.filter(
-    (a) => a.status === "pending_tokenless_dwd" || a.status === "active_dwd",
-  );
-  const [wsSyncAccountId, setWsSyncAccountId] = useState("");
-  const [wsSyncing, setWsSyncing] = useState(false);
-  const [wsSync, setWsSync] = useState<ApiResult<GmailSyncMessagesResult> | null>(null);
+  // Sync exactly one selected DWD mailbox by its matching email_account_id.
+  const selectedMailboxes = wsMailboxes.filter((m) => wsSelected.has(m.id));
+  const soleSyncable =
+    selectedMailboxes.length === 1 &&
+    selectedMailboxes[0].account_id &&
+    (selectedMailboxes[0].account_status === "pending_tokenless_dwd" ||
+      selectedMailboxes[0].account_status === "active_dwd")
+      ? selectedMailboxes[0]
+      : null;
 
-  async function runWorkspaceSync() {
-    const id = wsSyncAccountId.trim();
-    if (!id) return;
+  async function runSyncSelected() {
+    if (!soleSyncable?.account_id) return;
     setWsSyncing(true);
-    setWsSync(await syncGmailWorkspaceMessages({ emailAccountId: id }));
+    setWsSync(await syncGmailWorkspaceMessages({ emailAccountId: soleSyncable.account_id }));
     setWsSyncing(false);
+    if (wsConnectionId) await loadWsMailboxes(wsConnectionId);
   }
 
   // Access control: only owner/admin/ops may use the Admin console. The Edge
@@ -764,12 +765,12 @@ export function AdminView() {
           />
         </div>
 
-        {/* Discover + bulk-enable mailboxes (Workspace v1) */}
+        {/* Discover + manage mailboxes (enable / disable / sync) */}
         <div className="mt-5 border-t border-hairline pt-5">
-          <div className="text-sm font-semibold">Discover mailboxes</div>
+          <div className="text-sm font-semibold">Mailboxes</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Lists every mailbox in the Workspace domain via domain-wide delegation, then lets you
-            enable a subset. No email is synced yet.
+            Discover the domain&apos;s mailboxes, then enable/disable DWD sync per mailbox. Disable
+            stops future sync but keeps all historical email. No AI analysis yet.
           </p>
           <Button
             size="sm"
@@ -789,17 +790,40 @@ export function AdminView() {
 
           {wsMailboxes.length > 0 && (
             <div className="mt-4">
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs text-muted-foreground">
                   {wsMailboxes.length} discovered · {wsSelected.size} selected
                 </span>
-                <Button
-                  size="sm"
-                  onClick={runEnable}
-                  disabled={wsEnabling || wsSelected.size === 0}
-                >
-                  {wsEnabling ? "Enabling…" : "Enable Selected Mailboxes"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => runUpdate(true)}
+                    disabled={wsUpdating || wsSelected.size === 0}
+                  >
+                    Enable selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => runUpdate(false)}
+                    disabled={wsUpdating || wsSelected.size === 0}
+                  >
+                    Disable selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={runSyncSelected}
+                    disabled={wsSyncing || !soleSyncable}
+                    title={
+                      soleSyncable
+                        ? "Sync this mailbox now"
+                        : "Select exactly one enabled DWD mailbox"
+                    }
+                  >
+                    {wsSyncing ? "Syncing…" : "Sync selected"}
+                  </Button>
+                </div>
               </div>
 
               <div className="max-h-64 divide-y divide-hairline overflow-y-auto rounded-xl border border-hairline">
@@ -824,87 +848,56 @@ export function AdminView() {
                         </div>
                       )}
                     </div>
-                    <span className="shrink-0 rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {m.sync_enabled ? "enabled" : m.status}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {m.sync_enabled ? "enabled" : "disabled"}
+                      </span>
+                      {m.account_status && (
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                            m.account_status === "active"
+                              ? "border-success/20 bg-success/10 text-success"
+                              : m.account_status === "disabled"
+                                ? "border-hairline bg-surface-alt text-muted-foreground"
+                                : "border-accent/20 bg-accent/10 text-accent"
+                          }`}
+                        >
+                          {m.account_status}
+                        </span>
+                      )}
+                    </div>
                   </label>
                 ))}
               </div>
 
-              {wsEnable && (
+              {wsUpdate && (
                 <div className="mt-3 text-xs">
-                  {wsEnable.ok ? (
+                  {wsUpdate.ok ? (
                     <span className="text-muted-foreground">
-                      Enabled {wsEnable.data.enabled_count} · created{" "}
-                      {wsEnable.data.email_accounts_created} email account(s).
+                      Updated {wsUpdate.data.updated_count} · created{" "}
+                      {wsUpdate.data.email_accounts_created} · disabled{" "}
+                      {wsUpdate.data.email_accounts_disabled} account(s).
                     </span>
                   ) : (
                     <span className="text-destructive">
-                      {wsEnable.error.code}: {wsEnable.error.message}
+                      {wsUpdate.error.code}: {wsUpdate.error.message}
                     </span>
                   )}
                 </div>
               )}
-            </div>
-          )}
-        </div>
 
-        {/* Sync a Workspace DWD mailbox (diagnostic) */}
-        <div className="mt-5 border-t border-hairline pt-5">
-          <div className="text-sm font-semibold">Sync Workspace mailbox (DWD)</div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Syncs one enabled Workspace mailbox via domain-wide delegation (no OAuth token).
-            Diagnostic; scheduled sync runs these automatically. No AI analysis yet.
-          </p>
-
-          {dwdAccounts.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {dwdAccounts.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => setWsSyncAccountId(a.id)}
-                  className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground"
-                >
-                  {a.email_address ?? a.id}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-3 max-w-xl">
-            <label
-              htmlFor="ws-sync-account-id"
-              className="text-[11px] uppercase tracking-wider text-muted-foreground"
-            >
-              Email account UUID (DWD)
-            </label>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-              <Input
-                id="ws-sync-account-id"
-                value={wsSyncAccountId}
-                onChange={(e) => setWsSyncAccountId(e.target.value)}
-                placeholder="email_accounts.id"
-                disabled={wsSyncing}
-                className="font-mono"
+              <StatusPanel
+                running={wsSyncing}
+                result={wsSync}
+                renderOk={(d) => [
+                  { label: "Mailbox", value: d.mailbox ?? "—" },
+                  { label: "Messages", value: String(d.records_processed) },
+                  { label: "Threads", value: String(d.threads_processed) },
+                  { label: "Sync run", value: d.sync_run_id ?? "—" },
+                ]}
               />
-              <Button
-                onClick={runWorkspaceSync}
-                disabled={wsSyncing || wsSyncAccountId.trim() === ""}
-              >
-                {wsSyncing ? "Syncing…" : "Sync Workspace mailbox"}
-              </Button>
             </div>
-            <StatusPanel
-              running={wsSyncing}
-              result={wsSync}
-              renderOk={(d) => [
-                { label: "Mailbox", value: d.mailbox ?? "—" },
-                { label: "Messages", value: String(d.records_processed) },
-                { label: "Threads", value: String(d.threads_processed) },
-                { label: "Sync run", value: d.sync_run_id ?? "—" },
-              ]}
-            />
-          </div>
+          )}
         </div>
       </div>
 

@@ -22,7 +22,7 @@ import type {
   EmailThreadDetail,
   EmailThreadMessage,
   GoogleWorkspaceConnection,
-  GoogleWorkspaceMailbox,
+  GoogleWorkspaceMailboxWithAccount,
 } from "./types";
 
 /**
@@ -57,7 +57,7 @@ export async function getWorkspaceConnection(): Promise<
  */
 export async function listWorkspaceMailboxes(
   connectionId: string,
-): Promise<ApiResult<GoogleWorkspaceMailbox[]>> {
+): Promise<ApiResult<GoogleWorkspaceMailboxWithAccount[]>> {
   if (!isSupabaseConfigured()) {
     return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
   }
@@ -76,7 +76,36 @@ export async function listWorkspaceMailboxes(
     .eq("connection_id", connectionId)
     .order("email_address", { ascending: true });
   if (error) return { ok: false, error: { code: "query_error", message: error.message } };
-  return { ok: true, data: (data ?? []) as GoogleWorkspaceMailbox[] };
+  const mailboxes = (data ?? []) as GoogleWorkspaceMailboxWithAccount[];
+
+  // Join the matching gmail email_accounts (by address) so the admin can see
+  // each mailbox's account status/id — both tables are RLS-scoped to the tenant.
+  const addresses = Array.from(
+    new Set(mailboxes.map((m) => m.email_address?.toLowerCase()).filter(Boolean)),
+  ) as string[];
+  const acctByAddr = new Map<string, { id: string; status: string }>();
+  if (addresses.length > 0) {
+    const { data: accts, error: acctErr } = await supabase
+      .from("email_accounts")
+      .select("id, email_address, status")
+      .eq("provider", "gmail")
+      .in("email_address", addresses);
+    if (acctErr) return { ok: false, error: { code: "query_error", message: acctErr.message } };
+    for (const a of accts ?? []) {
+      const addr = (a.email_address as string | null)?.toLowerCase();
+      if (addr && !acctByAddr.has(addr)) {
+        acctByAddr.set(addr, { id: a.id as string, status: a.status as string });
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    data: mailboxes.map((m) => {
+      const acct = acctByAddr.get(m.email_address?.toLowerCase() ?? "");
+      return { ...m, account_id: acct?.id ?? null, account_status: acct?.status ?? null };
+    }),
+  };
 }
 
 /**

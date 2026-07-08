@@ -392,6 +392,28 @@ export interface GoogleWorkspaceMailbox {
   updated_at: string;
 }
 
+/** A discovered mailbox joined to its matching email_account (if any). */
+export interface GoogleWorkspaceMailboxWithAccount extends GoogleWorkspaceMailbox {
+  /** email_accounts.id for this address (null if not registered yet). */
+  account_id: string | null;
+  /** email_accounts.status (e.g. active | pending_tokenless_dwd | active_dwd | disabled). */
+  account_status: string | null;
+}
+
+/** Input to the `google-workspace-update-mailboxes` Edge Function. */
+export interface GoogleWorkspaceUpdateMailboxesInput {
+  mailboxIds: string[];
+  syncEnabled: boolean;
+}
+
+/** Safe summary from `google-workspace-update-mailboxes`. */
+export interface GoogleWorkspaceUpdateMailboxesResult {
+  success: boolean;
+  updated_count: number;
+  email_accounts_created: number;
+  email_accounts_disabled: number;
+}
+
 /** Safe summary from `google-workspace-discover-mailboxes` (Workspace v1). */
 export interface GoogleWorkspaceDiscoverMailboxesResult {
   success: boolean;

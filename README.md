@@ -1451,3 +1451,47 @@ supabase functions deploy gmail-workspace-sync-messages         # updated
 
 The service-account private key is **never** exposed to the frontend or logged;
 only owner/admin can save/test/discover; everything is tenant-bound.
+
+## Workspace mailbox admin (enable / disable / sync)
+
+`google-workspace-update-mailboxes` (owner/admin, tenant-bound) manages which
+discovered mailboxes sync. Input `{ mailbox_ids: [...], sync_enabled }`. Returns
+`{ success, updated_count, email_accounts_created, email_accounts_disabled }`.
+
+**Enable** (`sync_enabled=true`):
+
+- Sets `google_workspace_mailboxes.sync_enabled=true`.
+- **Inserts** a matching `email_accounts` row (`provider='gmail'`,
+  `status='pending_tokenless_dwd'`) for any mailbox that doesn't have one, and
+  **reactivates** previously-`disabled` DWD accounts back to
+  `pending_tokenless_dwd` (so enable is reversible).
+- **Never overwrites an OAuth `active` account** — e.g. `heidi@…` stays on its
+  OAuth token.
+
+**Disable** (`sync_enabled=false`):
+
+- Sets `google_workspace_mailboxes.sync_enabled=false`.
+- Sets matching **DWD** `email_accounts` (`pending_tokenless_dwd` / `active_dwd`)
+  to `status='disabled'`. **OAuth `active` accounts are preserved** (untouched).
+- **No deletes** — `email_messages` / `email_threads` and all history are kept.
+  Disabling only stops _future_ sync.
+
+### How the statuses interact
+
+- **`active`** — OAuth mailbox (Phase-1/2). Synced by `gmail-sync-messages` /
+  `email-scheduled-sync`. Independent of Workspace DWD.
+- **`pending_tokenless_dwd` / `active_dwd`** — Workspace DWD mailbox. Synced by
+  `gmail-workspace-sync-messages` / `email-workspace-scheduled-sync` (a successful
+  sync promotes `pending_tokenless_dwd → active_dwd`).
+- **`disabled`** — excluded from all scheduled sync; `gmail-workspace-sync-messages`
+  rejects it (`mailbox_disabled`) until re-enabled. History is retained.
+
+The **scheduled DWD sync only runs `pending_tokenless_dwd` / `active_dwd`**
+accounts — it never touches OAuth `active` or `disabled` accounts. Manual
+per-mailbox sync (Admin → Google Workspace → **Sync selected**) targets one
+selected DWD mailbox by its `email_account_id`.
+
+```bash
+supabase functions deploy google-workspace-update-mailboxes
+supabase functions deploy gmail-workspace-sync-messages   # explicit disabled reject
+```
