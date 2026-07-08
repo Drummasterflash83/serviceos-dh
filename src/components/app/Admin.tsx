@@ -11,6 +11,7 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Building2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,6 +25,7 @@ import {
   processPhonePipeline,
   getPhonePipelineStatus,
   startGmailOAuth,
+  testGoogleWorkspaceConnection,
 } from "@/lib/api";
 import type {
   ApiResult,
@@ -32,6 +34,7 @@ import type {
   SimwoodSyncRecordingsResult,
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
+  GoogleWorkspaceTestResult,
 } from "@/lib/types";
 
 // TODO(integration): replace this hardcoded Simwood customer id with the
@@ -210,6 +213,17 @@ export function AdminView() {
     setConnectingGmail(false);
   }
 
+  // Google Workspace Domain-Wide Delegation test (Email Phase-1B). Verifies the
+  // service account can impersonate the configured admin mailbox. No sync yet.
+  const [wsRunning, setWsRunning] = useState(false);
+  const [wsResult, setWsResult] = useState<ApiResult<GoogleWorkspaceTestResult> | null>(null);
+
+  async function runWorkspaceTest() {
+    setWsRunning(true);
+    setWsResult(await testGoogleWorkspaceConnection());
+    setWsRunning(false);
+  }
+
   // Access control: only owner/admin/ops may use the Admin console. The Edge
   // Functions enforce this too — this is the UI-side gate.
   if (!allowed) {
@@ -386,6 +400,63 @@ export function AdminView() {
           <p className="mt-3 text-[11px] text-muted-foreground">
             OAuth connection only. Email sync comes next.
           </p>
+        </div>
+      </div>
+
+      {/* Email — Google Workspace (domain-wide delegation) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex items-center justify-between border-b border-hairline pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+              <Building2 className="h-4 w-4 text-foreground" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold">Email · Google Workspace</div>
+              <div className="text-xs text-muted-foreground">
+                Admin-authorised, many-mailbox access via domain-wide delegation
+              </div>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface-alt px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+            Testing
+          </span>
+        </div>
+
+        <div className="mt-5 max-w-xl">
+          <p className="text-xs text-muted-foreground">
+            For Google Workspace admin/domain-wide mailbox access. Verifies the service account can
+            impersonate the configured admin mailbox — no email is synced yet.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            onClick={runWorkspaceTest}
+            disabled={wsRunning}
+          >
+            {wsRunning ? "Testing…" : "Test Workspace Connection"}
+          </Button>
+          <StatusPanel
+            running={wsRunning}
+            result={wsResult}
+            renderOk={(d) => [
+              { label: "Domain", value: d.domain },
+              { label: "Impersonated", value: d.impersonated },
+              { label: "Scopes", value: String(d.scopes.length) },
+            ]}
+            renderExtra={(d) => (
+              <div className="flex flex-wrap gap-1">
+                {d.scopes.map((s) => (
+                  <span
+                    key={s}
+                    className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  >
+                    {s.replace("https://www.googleapis.com/auth/", "")}
+                  </span>
+                ))}
+              </div>
+            )}
+          />
         </div>
       </div>
 

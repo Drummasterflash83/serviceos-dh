@@ -848,3 +848,95 @@ supabase functions deploy gmail-oauth-callback   # verify_jwt=false via config.t
 
 **No email sync yet** — Phase Email-2 will use these tokens (service-role, with
 refresh) to page the Gmail API into `email_threads` / `email_messages`.
+
+## Email Input — Phase Email-1B: Google Workspace domain-wide delegation
+
+Per-user Gmail OAuth (Phase-1) doesn't scale to 20+ mailboxes. **Domain-wide
+delegation (DWD)** lets one Workspace admin authorise a ServiceOS **service
+account** to impersonate many mailboxes across the domain — no per-user consent.
+Phase-1B is **foundation only**: schema + a test-connection function that proves
+delegation works. **No mailbox sync yet.** Per-user OAuth is untouched and still
+works.
+
+### Schema
+
+Migration `supabase/migrations/20260702160000_google_workspace_foundation.sql`
+adds two tenant-scoped tables (SELECT-only RLS for `authenticated`; service-role
+writes only):
+
+- **`google_workspace_connections`** — one delegated connection per
+  `(tenant_id, domain)` (`customer_id`, `service_account_email`, `status`,
+  `delegated_scopes text[]`).
+- **`google_workspace_mailboxes`** — mailboxes under a connection
+  (`email_address`, `display_name`, `mailbox_type`, `sync_enabled`, `status`).
+
+The service-account **private key is never stored in the DB** — it lives only in
+Edge Function secrets.
+
+### Scopes (admin-authorised)
+
+- `https://www.googleapis.com/auth/gmail.readonly`
+- `https://www.googleapis.com/auth/admin.directory.user.readonly`
+
+### Required Supabase secrets (server-side only)
+
+| Secret                                   | Purpose                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| `GOOGLE_WORKSPACE_CLIENT_EMAIL`          | Service account `client_email`                                     |
+| `GOOGLE_WORKSPACE_PRIVATE_KEY`           | Service account private key (PEM; `\n`-escaped is fine)            |
+| `GOOGLE_WORKSPACE_DOMAIN`                | The Workspace domain, e.g. `drummondheating.co.uk`                 |
+| `GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT` | Admin mailbox to impersonate (optional; defaults `admin@<domain>`) |
+
+```bash
+supabase secrets set \
+  GOOGLE_WORKSPACE_CLIENT_EMAIL="svc@project.iam.gserviceaccount.com" \
+  GOOGLE_WORKSPACE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n" \
+  GOOGLE_WORKSPACE_DOMAIN="example.com" \
+  GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT="admin@example.com"
+```
+
+### Google setup
+
+1. **Google Cloud Console** → create a **service account**; create a **JSON key**
+   (its `client_email` + `private_key` become the secrets above). Note the
+   service account's **numeric client ID** (OAuth2 client ID).
+2. Enable the **Gmail API** and **Admin SDK API** on the project.
+3. **Google Admin console** → **Security → Access and data control → API controls
+   → Domain-wide delegation → Add new**: paste the service account's **client ID**
+   and the two scopes above (comma-separated). This is the admin authorisation
+   step that makes impersonation possible.
+4. Ensure `GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT` is a real mailbox (an admin for
+   the directory scope).
+
+### Deploy & test
+
+```bash
+supabase db push
+supabase functions deploy google-workspace-test-connection
+```
+
+Then **Admin → Email · Google Workspace → “Test Workspace Connection”** (owner /
+admin only). The function signs a service-account JWT, exchanges it for a token
+that **impersonates** the admin subject, reads that mailbox's Gmail profile, and
+returns a safe summary:
+
+```json
+{
+  "success": true,
+  "domain": "example.com",
+  "impersonated": "admin@example.com",
+  "scopes": ["https://www.googleapis.com/auth/gmail.readonly", "..."]
+}
+```
+
+The result (and any failure code) is also logged to `email_sync_runs`
+(`sync_type='workspace_test'`) + `audit_logs`. The **private key and access token
+are never returned or logged.**
+
+### Why this over per-user OAuth
+
+One admin authorisation covers **every mailbox in the domain** — ServiceOS
+impersonates each as needed, with no individual OAuth consent screens. Phase
+Email-2 will enumerate mailboxes into `google_workspace_mailboxes` and sync the
+`sync_enabled` ones into the shared `email_*` tables. Per-user OAuth (Phase-1)
+remains available for mailboxes outside the Workspace domain.

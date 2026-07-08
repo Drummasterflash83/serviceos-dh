@@ -29,6 +29,7 @@ import type {
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
   GmailOAuthStartResult,
+  GoogleWorkspaceTestResult,
 } from "./types";
 
 export interface ApiRequestOptions extends RequestInit {
@@ -657,6 +658,56 @@ export async function startGmailOAuth(): Promise<ApiResult<GmailOAuthStartResult
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Could not start Gmail connection",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Verify Google Workspace Domain-Wide Delegation via the
+ * `google-workspace-test-connection` Edge Function (Email Phase-1B). The
+ * function impersonates the configured admin subject using a service account
+ * (key read server-side only) and returns a credential-free summary.
+ *
+ * owner/admin only (enforced server-side). No mailbox is synced.
+ */
+export async function testGoogleWorkspaceConnection(): Promise<
+  ApiResult<GoogleWorkspaceTestResult>
+> {
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/google-workspace-test-connection`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      // No tenant_id — the function binds the tenant from the caller's profile.
+      body: JSON.stringify({}),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GoogleWorkspaceTestResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GoogleWorkspaceTestResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Workspace connection test failed",
       response.status,
     ),
   };

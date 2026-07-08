@@ -333,6 +333,17 @@ export interface GmailOAuthStartResult {
   auth_url: string;
 }
 
+/** Safe summary from `google-workspace-test-connection` (Email Phase-1B). */
+export interface GoogleWorkspaceTestResult {
+  success: boolean;
+  /** The verified Workspace domain. */
+  domain: string;
+  /** The mailbox that was impersonated for the test. */
+  impersonated: string;
+  /** Scopes Google granted to the delegated token. */
+  scopes: string[];
+}
+
 /** Filters for the tenant-scoped email feed (client-side RLS reads). */
 export interface EmailFeedInput {
   /** ISO date — inclusive lower bound on the thread's last message. */
