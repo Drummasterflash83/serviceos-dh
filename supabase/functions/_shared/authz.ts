@@ -55,6 +55,32 @@ export async function requireTenantUser(
     return { ok: false, error: authzError("missing_auth", "Missing bearer token", 401) };
   }
 
+  // Internal service path: a server-to-server caller (e.g. phone-scheduled-sync,
+  // or the pipeline invoking sibling functions) authenticates with the
+  // SERVICE-ROLE KEY as the bearer plus an explicit x-internal-tenant-id header.
+  // This never fires for user-triggered calls — the frontend only ever holds the
+  // anon key and a user JWT, never the service-role key — so Security-1 authz for
+  // real users is unchanged. The service role already bypasses RLS entirely, so
+  // this grants no privilege beyond the existing server trust boundary.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceKey && token === serviceKey) {
+    const internalTenant = req.headers.get("x-internal-tenant-id");
+    if (!internalTenant) {
+      return {
+        ok: false,
+        error: authzError("forbidden", "Internal service call missing x-internal-tenant-id", 403),
+      };
+    }
+    const internalRole: Role = "admin";
+    if (allowedRoles && !allowedRoles.includes(internalRole)) {
+      return { ok: false, error: authzError("forbidden", "Internal role not permitted", 403) };
+    }
+    return {
+      ok: true,
+      ctx: { userId: "service", email: null, tenantId: internalTenant, role: internalRole },
+    };
+  }
+
   let userId: string;
   let email: string | null;
   try {

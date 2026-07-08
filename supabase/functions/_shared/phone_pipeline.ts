@@ -37,15 +37,20 @@ export async function invokeFunction(
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!base || !key || !authToken) return { status: 0, json: null };
 
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    Authorization: `Bearer ${authToken}`,
+    apikey: key,
+  };
+  // Carry the tenant on internal hops so the service-role auth path in authz.ts
+  // can bind it. Harmless for user-JWT calls (that path ignores this header).
+  if (body.tenant_id != null) headers["x-internal-tenant-id"] = String(body.tenant_id);
+
   let resp: Response;
   try {
     resp = await fetch(`${base}/${name}`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        Authorization: `Bearer ${authToken}`,
-        apikey: key,
-      },
+      headers,
       body: JSON.stringify(body),
     });
   } catch {
