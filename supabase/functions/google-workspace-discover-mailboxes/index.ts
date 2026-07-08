@@ -15,9 +15,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import {
   getDelegatedToken,
-  getWorkspaceConfig,
+  getPlatformWorkspaceConfig,
   listDirectoryUsers,
   WORKSPACE_SCOPES,
+  type WorkspaceConfig,
 } from "../_shared/google_workspace.ts";
 
 const corsHeaders = {
@@ -90,34 +91,56 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return runId;
   }
 
-  const cfg = getWorkspaceConfig();
-  if (!cfg.ok) {
-    await logOutcome("failed", "config_incomplete", { missing: cfg.missing });
+  // Load the tenant's saved connection (domain + admin subject from the DB).
+  const { data: connection, error: loadErr } = await supabase
+    .from("google_workspace_connections")
+    .select("id, domain, impersonation_subject")
+    .eq("tenant_id", tenantId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (loadErr) return fail("db_error", "Could not load the Workspace connection", 500);
+  if (!connection || !connection.domain || !connection.impersonation_subject) {
+    await logOutcome("failed", "no_connection", {});
+    return fail("no_connection", "Save the Workspace connection (domain + admin subject) first", 400);
+  }
+  const connectionId = connection.id as string;
+  const domain = connection.domain as string;
+  const subject = connection.impersonation_subject as string;
+
+  const platform = getPlatformWorkspaceConfig();
+  if (!platform.ok) {
+    await logOutcome("failed", "platform_config_incomplete", { missing: platform.missing });
     return fail(
       "config_error",
-      `Google Workspace delegation is not configured (missing: ${cfg.missing.join(", ")})`,
+      `Platform service account is not configured (missing: ${platform.missing.join(", ")})`,
       500,
     );
   }
-  const { config } = cfg;
+  const config: WorkspaceConfig = {
+    clientEmail: platform.config.clientEmail,
+    privateKey: platform.config.privateKey,
+    subject,
+    domain,
+  };
 
-  // 1) Delegated token impersonating the admin subject.
+  // 1) Delegated token impersonating the tenant's admin subject.
   let token;
   try {
     token = await getDelegatedToken(config, WORKSPACE_SCOPES);
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : "delegation_failed";
-    await logOutcome("failed", reason, { domain: config.domain, phase: "token" });
+    await logOutcome("failed", reason, { domain, phase: "token" });
     return fail("delegation_failed", `Domain-wide delegation failed (${reason}).`, 502);
   }
 
   // 2) List the domain's users (Admin Directory API).
   let users;
   try {
-    users = await listDirectoryUsers(token.accessToken, config.domain);
+    users = await listDirectoryUsers(token.accessToken, domain);
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : "directory_failed";
-    await logOutcome("failed", reason, { domain: config.domain, phase: "directory" });
+    await logOutcome("failed", reason, { domain, phase: "directory" });
     return fail(
       "directory_failed",
       `Could not list Workspace users (${reason}). Check the directory scope + admin subject.`,
@@ -125,27 +148,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  // 3) Upsert the connection (one per tenant/domain).
-  const { data: connection, error: connErr } = await supabase
+  // 3) Mark the connection verified (it already exists from save-connection).
+  await supabase
     .from("google_workspace_connections")
-    .upsert(
-      {
-        tenant_id: tenantId,
-        domain: config.domain,
-        service_account_email: config.clientEmail,
-        status: "active",
-        delegated_scopes: WORKSPACE_SCOPES,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "tenant_id,domain" },
-    )
-    .select("id")
-    .maybeSingle();
-  if (connErr || !connection) {
-    await logOutcome("failed", "connection_upsert_failed", { domain: config.domain });
-    return fail("db_error", "Could not upsert the Workspace connection", 500);
-  }
-  const connectionId = connection.id as string;
+    .update({
+      status: "active",
+      service_account_email: platform.config.clientEmail,
+      delegated_scopes: WORKSPACE_SCOPES,
+      last_verified_at: new Date().toISOString(),
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", connectionId);
 
   // 4) Upsert mailboxes. sync_enabled/status are intentionally OMITTED so
   //    re-discovery preserves admin choices (new rows use table defaults).
@@ -161,22 +175,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .from("google_workspace_mailboxes")
       .upsert(rows, { onConflict: "connection_id,email_address" });
     if (mbErr) {
-      await logOutcome("failed", `mailbox_upsert_failed: ${mbErr.message}`, {
-        domain: config.domain,
-      });
+      await logOutcome("failed", `mailbox_upsert_failed: ${mbErr.message}`, { domain });
       return fail("db_error", `Could not upsert mailboxes: ${mbErr.message}`, 500);
     }
   }
 
   const syncRunId = await logOutcome("success", null, {
-    domain: config.domain,
+    domain,
     mailboxes_discovered: users.length,
     connection_id: connectionId,
   });
 
   return json({
     success: true,
-    domain: config.domain,
+    domain,
     mailboxes_discovered: users.length,
     connection_id: connectionId,
     sync_run_id: syncRunId,

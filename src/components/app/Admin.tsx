@@ -25,13 +25,18 @@ import {
   processPhonePipeline,
   getPhonePipelineStatus,
   startGmailOAuth,
+  saveGoogleWorkspaceConnection,
   testGoogleWorkspaceConnection,
   discoverGoogleWorkspaceMailboxes,
   enableGoogleWorkspaceMailboxes,
   syncGmailMessages,
   syncGmailWorkspaceMessages,
 } from "@/lib/api";
-import { listEmailAccounts, listWorkspaceMailboxes } from "@/lib/email-feed";
+import {
+  listEmailAccounts,
+  listWorkspaceMailboxes,
+  getWorkspaceConnection,
+} from "@/lib/email-feed";
 import type {
   ApiResult,
   SimwoodConnectionResult,
@@ -40,6 +45,8 @@ import type {
   ProcessPhonePipelineResult,
   PhonePipelineStatusResult,
   GoogleWorkspaceTestResult,
+  GoogleWorkspaceSaveConnectionResult,
+  GoogleWorkspaceConnection,
   GoogleWorkspaceDiscoverMailboxesResult,
   GoogleWorkspaceEnableMailboxesResult,
   GoogleWorkspaceMailbox,
@@ -249,8 +256,41 @@ export function AdminView() {
     setSyncingGmail(false);
   }
 
-  // Google Workspace Domain-Wide Delegation test (Email Phase-1B). Verifies the
-  // service account can impersonate the configured admin mailbox. No sync yet.
+  // Workspace SaaS connection config (per-tenant domain + admin subject). Loads
+  // any saved connection to prefill + show status / ServiceOS client id.
+  const [wsConn, setWsConn] = useState<GoogleWorkspaceConnection | null>(null);
+  const [wsDomain, setWsDomain] = useState("");
+  const [wsSubject, setWsSubject] = useState("");
+  const [wsSaving, setWsSaving] = useState(false);
+  const [wsSave, setWsSave] = useState<ApiResult<GoogleWorkspaceSaveConnectionResult> | null>(null);
+
+  const loadWsConnection = useCallback(async () => {
+    const res = await getWorkspaceConnection();
+    if (res.ok && res.data) {
+      setWsConn(res.data);
+      setWsDomain((prev) => prev || res.data!.domain || "");
+      setWsSubject((prev) => prev || res.data!.impersonation_subject || "");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (allowed) void loadWsConnection();
+  }, [allowed, loadWsConnection]);
+
+  async function runSaveConnection() {
+    if (!wsDomain.trim() || !wsSubject.trim()) return;
+    setWsSaving(true);
+    const res = await saveGoogleWorkspaceConnection({
+      domain: wsDomain.trim(),
+      impersonationSubject: wsSubject.trim(),
+    });
+    setWsSave(res);
+    if (res.ok) await loadWsConnection();
+    setWsSaving(false);
+  }
+
+  // Google Workspace Domain-Wide Delegation test. Verifies the service account
+  // can impersonate the saved admin subject for the tenant's domain.
   const [wsRunning, setWsRunning] = useState(false);
   const [wsResult, setWsResult] = useState<ApiResult<GoogleWorkspaceTestResult> | null>(null);
 
@@ -258,6 +298,7 @@ export function AdminView() {
     setWsRunning(true);
     setWsResult(await testGoogleWorkspaceConnection());
     setWsRunning(false);
+    void loadWsConnection();
   }
 
   // Workspace mailbox discovery + bulk enable (Workspace v1). Discovers via DWD,
@@ -585,15 +626,111 @@ export function AdminView() {
               </div>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface-alt px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-            Testing
-          </span>
+          {wsConn ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface-alt px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+              {wsConn.status}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface-alt px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+              Not configured
+            </span>
+          )}
         </div>
 
+        {/* Connection config (per-tenant domain + admin subject) */}
         <div className="mt-5 max-w-xl">
+          <div className="text-sm font-semibold">Workspace connection</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Configure this tenant&apos;s Workspace domain and an admin mailbox to impersonate, then
+            authorise the ServiceOS client ID in your Google Admin console.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="ws-domain"
+                className="text-[11px] uppercase tracking-wider text-muted-foreground"
+              >
+                Workspace domain
+              </label>
+              <Input
+                id="ws-domain"
+                value={wsDomain}
+                onChange={(e) => setWsDomain(e.target.value)}
+                placeholder="drummondheating.co.uk"
+                disabled={wsSaving}
+                className="mt-1 font-mono"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="ws-subject"
+                className="text-[11px] uppercase tracking-wider text-muted-foreground"
+              >
+                Admin subject email
+              </label>
+              <Input
+                id="ws-subject"
+                value={wsSubject}
+                onChange={(e) => setWsSubject(e.target.value)}
+                placeholder="heidi@drummondheating.co.uk"
+                disabled={wsSaving}
+                className="mt-1 font-mono"
+              />
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="mt-3"
+            onClick={runSaveConnection}
+            disabled={wsSaving || wsDomain.trim() === "" || wsSubject.trim() === ""}
+          >
+            {wsSaving ? "Saving…" : "Save Workspace Connection"}
+          </Button>
+
+          {wsSave && !wsSave.ok && (
+            <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {wsSave.error.code}: {wsSave.error.message}
+            </div>
+          )}
+
+          {(wsSave?.ok || wsConn) && (
+            <div className="mt-3 rounded-xl border border-hairline bg-surface-alt/50 p-3 text-xs">
+              <div className="font-medium text-foreground">
+                Authorise in Google Admin → Security → API controls → Domain-wide delegation:
+              </div>
+              <dl className="mt-2 space-y-1.5">
+                <div>
+                  <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    ServiceOS client ID
+                  </dt>
+                  <dd className="break-all font-mono text-foreground">
+                    {wsSave?.ok
+                      ? (wsSave.data.client_id ?? "—")
+                      : (wsConn?.service_account_client_id ?? "—")}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Scopes
+                  </dt>
+                  <dd className="font-mono text-foreground">
+                    {(wsSave?.ok ? wsSave.data.scopes : (wsConn?.authorised_scopes ?? []))
+                      .map((s) => s.replace("https://www.googleapis.com/auth/", ""))
+                      .join(", ") || "—"}
+                  </dd>
+                </div>
+              </dl>
+              {wsConn?.error_message && (
+                <div className="mt-2 text-destructive">Last error: {wsConn.error_message}</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-5 max-w-xl border-t border-hairline pt-5">
           <p className="text-xs text-muted-foreground">
-            For Google Workspace admin/domain-wide mailbox access. Verifies the service account can
-            impersonate the configured admin mailbox — no email is synced yet.
+            Verifies the service account can impersonate the saved admin subject for this tenant —
+            no email is synced yet.
           </p>
           <Button
             size="sm"

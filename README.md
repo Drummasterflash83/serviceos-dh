@@ -1384,3 +1384,70 @@ JWT + `{ "email_account_id": "<uuid>" }`.
 
 **No email AI analysis yet** (`email_ai_insights` stays empty); no attachments, no
 unified comms timeline.
+
+## Google Workspace SaaS connector (per-tenant)
+
+The Workspace connector is a **SaaS model**, not per-customer JSON keys:
+
+- **One** ServiceOS-owned Google Cloud **service account**. Its private key +
+  client email are **platform secrets** (`GOOGLE_WORKSPACE_CLIENT_EMAIL`,
+  `GOOGLE_WORKSPACE_PRIVATE_KEY`) and its numeric OAuth2 **client ID** is
+  `GOOGLE_WORKSPACE_CLIENT_ID` (public identifier, shown in setup).
+- Each customer **authorises the same ServiceOS client ID** in their own Google
+  Admin console (domain-wide delegation) with the required scopes. **Customers
+  never upload a JSON key.**
+- Each tenant's **domain + admin subject** are stored **per tenant** in
+  `google_workspace_connections` — no longer global `GOOGLE_WORKSPACE_DOMAIN` /
+  `GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT` secrets. ServiceOS uses the one
+  platform key to impersonate that tenant's admin/mailboxes.
+
+The existing Drummond/Allkin setup simply becomes **one tenant connection row**.
+
+### Migration
+
+`supabase/migrations/20260702170000_google_workspace_saas_connector.sql`
+(non-destructive, `add column if not exists`) adds to
+`google_workspace_connections`: `impersonation_subject`,
+`service_account_client_id`, `authorised_scopes`, `last_verified_at`,
+`error_message` (`domain` / `status` already existed).
+
+### Onboarding flow (Admin → Email · Google Workspace)
+
+1. **Save Workspace Connection** — enter the tenant's **Workspace domain** +
+   **Admin subject email**. `google-workspace-save-connection` stores them
+   (status `pending_authorization`) and returns the **ServiceOS client ID** +
+   **scopes** to authorise.
+2. In **Google Admin → Security → API controls → Domain-wide delegation**, add the
+   ServiceOS client ID with:
+   ```
+   https://www.googleapis.com/auth/gmail.readonly
+   https://www.googleapis.com/auth/admin.directory.user.readonly
+   ```
+3. **Test Workspace Connection** — loads the tenant's saved row, verifies
+   delegation, and sets `status='active'` with `last_verified_at` (or `status='error'`
+   with `error_message`). Reads the tenant's domain/subject from the DB, **not** from
+   global secrets.
+4. **Discover Mailboxes → Enable Selected → Sync** — all use the tenant
+   connection's domain/subject (discovery/sync) and the platform key.
+
+### Platform secrets
+
+```bash
+supabase secrets set \
+  GOOGLE_WORKSPACE_CLIENT_EMAIL="svc@project.iam.gserviceaccount.com" \
+  GOOGLE_WORKSPACE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n" \
+  GOOGLE_WORKSPACE_CLIENT_ID="1234567890"
+```
+
+`GOOGLE_WORKSPACE_DOMAIN` / `GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT` are **no
+longer used** — remove them once every tenant has a saved connection.
+
+```bash
+supabase functions deploy google-workspace-save-connection
+supabase functions deploy google-workspace-test-connection      # updated
+supabase functions deploy google-workspace-discover-mailboxes   # updated
+supabase functions deploy gmail-workspace-sync-messages         # updated
+```
+
+The service-account private key is **never** exposed to the frontend or logged;
+only owner/admin can save/test/discover; everything is tenant-bound.

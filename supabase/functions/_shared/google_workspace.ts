@@ -22,34 +22,39 @@ const JWT_BEARER_GRANT = "urn:ietf:params:oauth:grant-type:jwt-bearer";
 export interface WorkspaceConfig {
   clientEmail: string;
   privateKey: string;
-  /** Admin/user email to impersonate for the test. */
+  /** Admin/user email to impersonate. */
   subject: string;
+  /** Workspace domain (used for Directory listing; not part of the JWT). */
   domain: string;
 }
 
-/** Read the Workspace DWD secrets, or a typed reason when incomplete. */
-export function getWorkspaceConfig():
-  | { ok: true; config: WorkspaceConfig }
+/** PLATFORM (not tenant) service-account config. Domain/subject are per-tenant. */
+export interface PlatformWorkspaceConfig {
+  clientEmail: string;
+  privateKey: string;
+  /** Numeric OAuth2 client ID the customer authorises in their Admin console. */
+  clientId: string | null;
+}
+
+/**
+ * Read the PLATFORM service-account secrets (client email + private key, plus the
+ * optional numeric client id for setup instructions). The tenant's domain and
+ * impersonation subject are NOT read here — they live per-tenant in
+ * google_workspace_connections.
+ */
+export function getPlatformWorkspaceConfig():
+  | { ok: true; config: PlatformWorkspaceConfig }
   | { ok: false; missing: string[] } {
   const clientEmail = Deno.env.get("GOOGLE_WORKSPACE_CLIENT_EMAIL");
   const privateKey = Deno.env.get("GOOGLE_WORKSPACE_PRIVATE_KEY");
-  const domain = Deno.env.get("GOOGLE_WORKSPACE_DOMAIN");
-  // Impersonation subject defaults to admin@<domain> when not set explicitly.
-  const subject =
-    Deno.env.get("GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT") ||
-    (domain ? `admin@${domain}` : "");
+  const clientId = Deno.env.get("GOOGLE_WORKSPACE_CLIENT_ID") ?? null;
 
   const missing: string[] = [];
   if (!clientEmail) missing.push("GOOGLE_WORKSPACE_CLIENT_EMAIL");
   if (!privateKey) missing.push("GOOGLE_WORKSPACE_PRIVATE_KEY");
-  if (!domain) missing.push("GOOGLE_WORKSPACE_DOMAIN");
-  if (!subject) missing.push("GOOGLE_WORKSPACE_IMPERSONATION_SUBJECT");
   if (missing.length > 0) return { ok: false, missing };
 
-  return {
-    ok: true,
-    config: { clientEmail: clientEmail!, privateKey: privateKey!, subject, domain: domain! },
-  };
+  return { ok: true, config: { clientEmail: clientEmail!, privateKey: privateKey!, clientId } };
 }
 
 const encoder = new TextEncoder();
@@ -164,10 +169,16 @@ const GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
  * beyond the access token itself.
  */
 export async function getDelegatedGmailToken(mailboxEmail: string): Promise<DelegatedToken> {
-  const cfg = getWorkspaceConfig();
+  const cfg = getPlatformWorkspaceConfig();
   if (!cfg.ok) throw new Error(`config_incomplete:${cfg.missing.join(",")}`);
-  // Override the impersonation subject to the target mailbox.
-  const config: WorkspaceConfig = { ...cfg.config, subject: mailboxEmail };
+  // Platform key + private key; impersonate the mailbox itself. Domain is not
+  // used for token minting, so no tenant connection lookup is needed here.
+  const config: WorkspaceConfig = {
+    clientEmail: cfg.config.clientEmail,
+    privateKey: cfg.config.privateKey,
+    subject: mailboxEmail,
+    domain: "",
+  };
   return getDelegatedToken(config, [GMAIL_READONLY_SCOPE]);
 }
 

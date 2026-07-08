@@ -30,6 +30,8 @@ import type {
   PhonePipelineStatusResult,
   GmailOAuthStartResult,
   GoogleWorkspaceTestResult,
+  GoogleWorkspaceSaveConnectionInput,
+  GoogleWorkspaceSaveConnectionResult,
   GoogleWorkspaceDiscoverMailboxesResult,
   GoogleWorkspaceEnableMailboxesInput,
   GoogleWorkspaceEnableMailboxesResult,
@@ -713,6 +715,65 @@ export async function testGoogleWorkspaceConnection(): Promise<
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Workspace connection test failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Save the tenant's Google Workspace connection (domain + admin subject) via the
+ * `google-workspace-save-connection` Edge Function (owner/admin only). Returns
+ * the setup instructions (ServiceOS client id + scopes) for the Google Admin
+ * console. No secrets touch the client.
+ */
+export async function saveGoogleWorkspaceConnection(
+  input: GoogleWorkspaceSaveConnectionInput,
+): Promise<ApiResult<GoogleWorkspaceSaveConnectionResult>> {
+  if (!input || typeof input.domain !== "string" || input.domain.trim() === "") {
+    return { ok: false, error: toApiError("invalid_domain", "domain is required") };
+  }
+  if (typeof input.impersonationSubject !== "string" || input.impersonationSubject.trim() === "") {
+    return {
+      ok: false,
+      error: toApiError("invalid_subject", "impersonationSubject is required"),
+    };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/google-workspace-save-connection`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify({
+        domain: input.domain.trim(),
+        impersonation_subject: input.impersonationSubject.trim(),
+      }),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<GoogleWorkspaceSaveConnectionResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as GoogleWorkspaceSaveConnectionResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Could not save the Workspace connection",
       response.status,
     ),
   };

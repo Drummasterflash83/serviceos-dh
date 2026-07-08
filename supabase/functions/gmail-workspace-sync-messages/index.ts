@@ -98,10 +98,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
+  // Resolve the tenant's Workspace connection (for auditing). The delegated
+  // token impersonates the mailbox using the PLATFORM key — no global
+  // domain/subject is used here.
+  const { data: connection } = await supabase
+    .from("google_workspace_connections")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const startedAt = new Date().toISOString();
   const baseMetadata: Record<string, unknown> = {
     email_account_id: accountId,
     mailbox,
+    connection_id: (connection?.id as string | null) ?? null,
     max_results: maxResults,
     labels: LABELS,
     force,

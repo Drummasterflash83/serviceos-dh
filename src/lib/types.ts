@@ -344,6 +344,40 @@ export interface GoogleWorkspaceTestResult {
   scopes: string[];
 }
 
+/** A row from `google_workspace_connections` (per-tenant SaaS connector). */
+export interface GoogleWorkspaceConnection {
+  id: string;
+  tenant_id: string;
+  domain: string;
+  impersonation_subject: string | null;
+  service_account_client_id: string | null;
+  service_account_email: string | null;
+  authorised_scopes: string[];
+  status: string;
+  last_verified_at: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Input to the `google-workspace-save-connection` Edge Function. */
+export interface GoogleWorkspaceSaveConnectionInput {
+  domain: string;
+  impersonationSubject: string;
+}
+
+/** Safe setup instructions from `google-workspace-save-connection`. */
+export interface GoogleWorkspaceSaveConnectionResult {
+  success: boolean;
+  connection_id: string;
+  /** ServiceOS service-account client ID to authorise in Google Admin (public). */
+  client_id: string | null;
+  scopes: string[];
+  domain: string;
+  impersonation_subject: string;
+  status: string;
+}
+
 /** A row from `google_workspace_mailboxes` (discovered mailbox). */
 export interface GoogleWorkspaceMailbox {
   id: string;

@@ -21,8 +21,34 @@ import type {
   EmailInsight,
   EmailThreadDetail,
   EmailThreadMessage,
+  GoogleWorkspaceConnection,
   GoogleWorkspaceMailbox,
 } from "./types";
+
+/**
+ * Read the tenant's most-recent Google Workspace connection (RLS-scoped browser
+ * read), or null if none. Used by Admin to prefill domain/subject and show the
+ * connection status + ServiceOS client id. No secrets are exposed — the
+ * service-account key never lives in this table.
+ */
+export async function getWorkspaceConnection(): Promise<
+  ApiResult<GoogleWorkspaceConnection | null>
+> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from("google_workspace_connections")
+    .select(
+      "id, tenant_id, domain, impersonation_subject, service_account_client_id, service_account_email, authorised_scopes, status, last_verified_at, error_message, created_at, updated_at",
+    )
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return { ok: false, error: { code: "query_error", message: error.message } };
+  return { ok: true, data: (data as GoogleWorkspaceConnection | null) ?? null };
+}
 
 /**
  * List discovered Google Workspace mailboxes for a connection (RLS-scoped

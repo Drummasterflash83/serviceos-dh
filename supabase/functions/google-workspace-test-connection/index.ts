@@ -14,9 +14,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import {
   getDelegatedToken,
-  getWorkspaceConfig,
+  getPlatformWorkspaceConfig,
   verifyGmailProfile,
   WORKSPACE_SCOPES,
+  type WorkspaceConfig,
 } from "../_shared/google_workspace.ts";
 
 const corsHeaders = {
@@ -83,24 +84,66 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
-  const cfg = getWorkspaceConfig();
-  if (!cfg.ok) {
-    await logOutcome("failed", "config_incomplete", { missing: cfg.missing });
+  // Load the tenant's saved connection (domain + admin subject live in the DB
+  // now, NOT in global secrets). Most-recent wins if several domains are saved.
+  const { data: connection, error: connErr } = await supabase
+    .from("google_workspace_connections")
+    .select("id, domain, impersonation_subject")
+    .eq("tenant_id", tenantId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (connErr) return fail("db_error", "Could not load the Workspace connection", 500);
+  if (!connection || !connection.domain || !connection.impersonation_subject) {
+    await logOutcome("failed", "no_connection", {});
+    return fail("no_connection", "Save the Workspace connection (domain + admin subject) first", 400);
+  }
+  const connectionId = connection.id as string;
+  const domain = connection.domain as string;
+  const subject = connection.impersonation_subject as string;
+
+  async function markConnection(status: string, errorMessage: string | null): Promise<void> {
+    try {
+      await supabase!
+        .from("google_workspace_connections")
+        .update({
+          status,
+          error_message: errorMessage,
+          last_verified_at: status === "active" ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", connectionId);
+    } catch (_e) {
+      // never mask the real result
+    }
+  }
+
+  // Platform service-account key (client email + private key from secrets only).
+  const platform = getPlatformWorkspaceConfig();
+  if (!platform.ok) {
+    await logOutcome("failed", "platform_config_incomplete", { missing: platform.missing });
+    await markConnection("error", "platform_config_incomplete");
     return fail(
       "config_error",
-      `Google Workspace delegation is not configured (missing: ${cfg.missing.join(", ")})`,
+      `Platform service account is not configured (missing: ${platform.missing.join(", ")})`,
       500,
     );
   }
-  const { config } = cfg;
+  const config: WorkspaceConfig = {
+    clientEmail: platform.config.clientEmail,
+    privateKey: platform.config.privateKey,
+    subject,
+    domain,
+  };
 
-  // 1) Obtain a delegated token impersonating the admin subject.
+  // 1) Obtain a delegated token impersonating the tenant's admin subject.
   let token;
   try {
     token = await getDelegatedToken(config, WORKSPACE_SCOPES);
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : "delegation_failed";
-    await logOutcome("failed", reason, { domain: config.domain, phase: "token" });
+    await logOutcome("failed", reason, { domain, phase: "token" });
+    await markConnection("error", reason);
     return fail(
       "delegation_failed",
       `Domain-wide delegation failed (${reason}). Check the service account, scopes and admin authorisation.`,
@@ -114,7 +157,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     profile = await verifyGmailProfile(token.accessToken);
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : "profile_failed";
-    await logOutcome("failed", reason, { domain: config.domain, phase: "gmail_profile" });
+    await logOutcome("failed", reason, { domain, phase: "gmail_profile" });
+    await markConnection("error", reason);
     return fail(
       "verification_failed",
       `Delegation token issued but the Gmail profile could not be read (${reason}).`,
@@ -123,10 +167,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const grantedScopes = token.scope ? token.scope.split(" ").filter(Boolean) : WORKSPACE_SCOPES;
-  const impersonated = profile.emailAddress ?? config.subject;
+  const impersonated = profile.emailAddress ?? subject;
 
+  await markConnection("active", null);
   await logOutcome("success", null, {
-    domain: config.domain,
+    domain,
     impersonated,
     scopes: grantedScopes,
     messages_total: profile.messagesTotal,
@@ -135,7 +180,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // Safe summary only — no key, no token, no mailbox contents.
   return json({
     success: true,
-    domain: config.domain,
+    domain,
     impersonated,
     scopes: grantedScopes,
   });
