@@ -13,7 +13,7 @@ export interface Column<Row> {
   className?: string;
 }
 
-export function ActivityTable<Row extends Record<string, unknown>>({
+export function ActivityTable<Row>({
   title,
   columns,
   rows,
@@ -54,7 +54,9 @@ export function ActivityTable<Row extends Record<string, unknown>>({
                       key={c.key}
                       className={`py-2.5 pr-4 text-xs text-foreground ${c.className ?? ""}`}
                     >
-                      {c.render ? c.render(row) : String(row[c.key] ?? "—")}
+                      {c.render
+                        ? c.render(row)
+                        : String((row as Record<string, unknown>)[c.key] ?? "—")}
                     </td>
                   ))}
                 </tr>
