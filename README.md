@@ -1495,3 +1495,65 @@ selected DWD mailbox by its `email_account_id`.
 supabase functions deploy google-workspace-update-mailboxes
 supabase functions deploy gmail-workspace-sync-messages   # explicit disabled reject
 ```
+
+## Gmail Workspace historical backfill
+
+The 5-minute recent sync only pulls the newest messages. **Backfill** imports a
+mailbox's **history** — separately, resumably, and safely over many small runs.
+
+Per-mailbox state lives on `email_accounts` (migration
+`20260702180000_gmail_workspace_backfill.sql`, non-destructive): `backfill_status`
+(idle | running | completed | error), `backfill_started_at`,
+`backfill_completed_at`, `backfill_page_token`, `backfill_total_fetched`,
+`backfill_error`.
+
+### `gmail-workspace-backfill-messages` (owner/admin/ops, tenant-bound)
+
+Input `{ email_account_id, restart?, max_results? }` (default 100 per run). Only
+DWD mailboxes (`pending_tokenless_dwd` / `active_dwd`) — `disabled` and OAuth
+accounts are rejected. Each call:
+
+- lists **one page of all mail** (no label filter → historical; excludes
+  spam/trash) using the stored `backfill_page_token`,
+- **skips ids already stored** and upserts the rest (**idempotent — never
+  duplicates, never deletes**),
+- persists `nextPageToken` → `backfill_page_token` and advances
+  `backfill_total_fetched`,
+- when there's no `nextPageToken`, sets `backfill_status='completed'`.
+
+`restart:true` resets paging/counters and starts from the beginning. Returns
+`{ …, records_processed, threads_processed, total_fetched, has_more, backfill_status, sync_run_id }`.
+It shares the exact same parser/upsert as the recent sync, so backfilled and
+recent messages coexist without duplication.
+
+### Scheduled backfill runner
+
+`email-workspace-backfill-scheduled-sync` (secret `EMAIL_WORKSPACE_BACKFILL_SECRET`,
+`verify_jwt=false`) advances only **in-progress** backfills — up to **3 mailboxes,
+one page each, per run** — to avoid timeouts and rate-limit blowups. It **never
+auto-starts** a backfill (an admin starts a mailbox first) and is **completely
+separate** from the 5-minute recent sync.
+
+```bash
+supabase secrets set EMAIL_WORKSPACE_BACKFILL_SECRET="$(openssl rand -hex 32)"
+supabase functions deploy gmail-workspace-backfill-messages
+supabase functions deploy email-workspace-backfill-scheduled-sync
+```
+
+```sql
+-- run more often than the 5-min sync is fine; each tick does little work
+select cron.schedule('email-workspace-backfill-3min', '*/3 * * * *', $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/email-workspace-backfill-scheduled-sync',
+    headers := jsonb_build_object('content-type','application/json','x-schedule-secret','<EMAIL_WORKSPACE_BACKFILL_SECRET>'),
+    body    := '{}'::jsonb);
+$$);
+```
+
+### Admin
+
+**Admin → Email · Google Workspace → Mailboxes**: select one enabled DWD mailbox,
+then **Start backfill** (from scratch) or **Continue backfill** (next page). Each
+row shows its `backfill: <status> · <total>`; the result panel shows this run's
+count, total fetched, and whether more pages remain. **No AI analysis** —
+`email_ai_insights` stays empty.

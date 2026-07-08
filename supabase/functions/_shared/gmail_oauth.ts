@@ -295,17 +295,23 @@ export interface GmailMessageRef {
 /** List recent message ids (users.messages.list), filtered by label. */
 export async function listGmailMessages(
   accessToken: string,
-  opts: { maxResults?: number; labelIds?: string[]; q?: string } = {},
-): Promise<{ messages: GmailMessageRef[]; resultSizeEstimate: number | null }> {
+  opts: { maxResults?: number; labelIds?: string[]; q?: string; pageToken?: string } = {},
+): Promise<{
+  messages: GmailMessageRef[];
+  resultSizeEstimate: number | null;
+  nextPageToken: string | null;
+}> {
   const params = new URLSearchParams();
   if (opts.maxResults) params.set("maxResults", String(opts.maxResults));
   for (const l of opts.labelIds ?? []) params.append("labelIds", l);
   if (opts.q) params.set("q", opts.q);
+  if (opts.pageToken) params.set("pageToken", opts.pageToken);
   const resp = await gmailFetch(accessToken, `/messages?${params.toString()}`);
   if (!resp.ok) throw new Error(`gmail_list_${resp.status}`);
   const d = (await resp.json()) as {
     messages?: Array<{ id?: unknown; threadId?: unknown }>;
     resultSizeEstimate?: number;
+    nextPageToken?: string;
   };
   const messages: GmailMessageRef[] = Array.isArray(d.messages)
     ? d.messages
@@ -315,6 +321,7 @@ export async function listGmailMessages(
   return {
     messages,
     resultSizeEstimate: typeof d.resultSizeEstimate === "number" ? d.resultSizeEstimate : null,
+    nextPageToken: d.nextPageToken ?? null,
   };
 }
 
