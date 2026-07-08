@@ -1300,5 +1300,87 @@ overwritten** (enable only _inserts_ missing accounts).
 
 ### This phase does NOT
 
-Discover/enable only — no message sync for DWD mailboxes, no email AI, no unified
-comms timeline, no Slack, no customer matching.
+Discover/enable only. **Message sync for DWD mailboxes is built next — see below.**
+No email AI, no unified comms timeline, no Slack, no customer matching.
+
+## Google Workspace DWD message sync (v1)
+
+Two ways to sync Gmail, by design:
+
+- **OAuth mailbox sync** (`gmail-sync-messages`) — an individual mailbox the user
+  connected via OAuth; reads the stored `email_oauth_tokens`. Unchanged.
+- **Workspace DWD sync** (`gmail-workspace-sync-messages`) — a mailbox enabled
+  through Workspace discovery. There is **no OAuth token**: a ServiceOS-owned
+  service account **impersonates the mailbox** via domain-wide delegation to mint
+  a short-lived `gmail.readonly` token per sync. Both paths share the exact same
+  message parsing (`_shared/gmail_message.ts`) and upsert into the same
+  `email_threads` / `email_messages`.
+
+Eligibility is by `email_accounts.status`: DWD sync only touches
+`pending_tokenless_dwd` / `active_dwd`; OAuth sync only touches `active`. So the
+two never collide and the OAuth flow is untouched. On a successful DWD sync the
+account is promoted `pending_tokenless_dwd → active_dwd`.
+
+### Function
+
+`gmail-workspace-sync-messages` — owner/admin/ops; tenant-bound. Input
+`{ email_account_id, force?, max_results? }`. Verifies the account is a DWD
+mailbox, mints a delegated token for its `email_address`, lists recent INBOX/SENT,
+parses, and upserts (idempotent on `provider_message_id`). Logs `email_sync_runs`
+(`sync_type='workspace_messages'`). Returns
+`{ success, provider, email_account_id, records_processed, threads_processed, mailbox, sync_run_id }`.
+Tokens/keys are never returned or logged.
+
+### Required secrets (server-side only)
+
+Same as Phase-1B — the service-account key stays in Edge Function secrets, never
+in the frontend:
+`GOOGLE_WORKSPACE_CLIENT_EMAIL`, `GOOGLE_WORKSPACE_PRIVATE_KEY`,
+`GOOGLE_WORKSPACE_DOMAIN` (impersonation subject is the mailbox itself).
+
+### Google Admin console scopes
+
+The ServiceOS service-account client ID must be authorised (domain-wide
+delegation) with:
+
+```
+https://www.googleapis.com/auth/gmail.readonly
+https://www.googleapis.com/auth/admin.directory.user.readonly
+```
+
+### Deploy
+
+```bash
+supabase functions deploy gmail-workspace-sync-messages
+supabase functions deploy email-workspace-scheduled-sync   # verify_jwt=false via config.toml
+```
+
+### Scheduled sync
+
+`email-workspace-scheduled-sync` finds the tenant's DWD accounts
+(`status in ('pending_tokenless_dwd','active_dwd')`) and runs
+`gmail-workspace-sync-messages` for each (one failure never aborts the run). Gated
+by `EMAIL_WORKSPACE_SCHEDULE_SECRET`; not user-callable. Returns
+`{ success, accounts_processed, messages_processed, failed_accounts, sync_run_id }`.
+
+```bash
+supabase secrets set EMAIL_WORKSPACE_SCHEDULE_SECRET="$(openssl rand -hex 32)"
+```
+
+```sql
+select cron.schedule('email-workspace-scheduled-sync-5min', '*/5 * * * *', $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/email-workspace-scheduled-sync',
+    headers := jsonb_build_object('content-type','application/json','x-schedule-secret','<EMAIL_WORKSPACE_SCHEDULE_SECRET>'),
+    body    := '{}'::jsonb);
+$$);
+```
+
+Test (manual): **Admin → Email · Google Workspace → Sync Workspace mailbox (DWD)**
+(pick a DWD account, sync). Or curl `gmail-workspace-sync-messages` with a user
+JWT + `{ "email_account_id": "<uuid>" }`.
+
+### Limitation
+
+**No email AI analysis yet** (`email_ai_insights` stays empty); no attachments, no
+unified comms timeline.

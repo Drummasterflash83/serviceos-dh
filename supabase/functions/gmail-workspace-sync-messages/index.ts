@@ -1,32 +1,28 @@
-// ServiceOS — Edge Function: gmail-sync-messages (Email Phase-2)
+// ServiceOS — Edge Function: gmail-workspace-sync-messages (Workspace DWD sync)
 //
-// Syncs recent Gmail messages from a connected OAuth mailbox into email_threads
-// and email_messages. Metadata + plain-text/HTML body only — NO attachments, NO
-// AI analysis, NO unified comms graph (later phases).
+// Syncs recent Gmail messages for a Workspace mailbox using DOMAIN-WIDE
+// DELEGATION — a ServiceOS-owned service account impersonates the mailbox (no
+// per-user OAuth token). Metadata + body only; NO attachments, NO AI analysis.
 //
-// authenticated owner/admin/ops; tenant bound from the caller's profile (never
-// the client). The OAuth token is loaded/refreshed with the service role and is
-// NEVER returned or logged. Idempotent: upserts on the unique provider ids, safe
-// to re-run.
+// owner/admin/ops only; tenant bound from the caller's profile. Only mailboxes
+// registered as DWD email_accounts (status pending_tokenless_dwd | active_dwd)
+// are eligible — OAuth accounts (status 'active') are never DWD-synced here, so
+// the existing OAuth flow is untouched. The service-account key is read from
+// secrets and NEVER returned or logged.
 //
 // Input: { email_account_id: uuid, force?: boolean, max_results?: number }
 // Runtime: Supabase Edge Functions (Deno). Requires a valid Supabase Auth JWT.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
-import {
-  getGmailMessage,
-  getGmailProfile,
-  getGoogleOAuthConfig,
-  listGmailMessages,
-  refreshGmailAccessToken,
-} from "../_shared/gmail_oauth.ts";
+import { getGmailMessage, listGmailMessages } from "../_shared/gmail_oauth.ts";
+import { getDelegatedGmailToken } from "../_shared/google_workspace.ts";
 import { parseGmailMessages } from "../_shared/gmail_message.ts";
 
 const PROVIDER = "gmail";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LABELS = ["INBOX", "SENT"];
-const TOKEN_SKEW_MS = 60 * 1000; // refresh if expiring within a minute
+const DWD_STATUSES = ["pending_tokenless_dwd", "active_dwd"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,30 +71,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
   if (!supabase) return fail("config_error", "Supabase admin client is not configured", 500);
 
-  // authz — bind tenant server-side; sync is owner/admin/ops.
+  // authz — bind tenant server-side; DWD sync is owner/admin/ops.
   const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
   if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
-  const config = getGoogleOAuthConfig();
-  if (!config) return fail("config_error", "Google OAuth is not configured", 500);
-
-  // Verify the account belongs to this tenant (never trust the client).
+  // Verify the account belongs to this tenant AND is a DWD mailbox.
   const { data: account, error: accErr } = await supabase
     .from("email_accounts")
-    .select("id, email_address, provider")
+    .select("id, email_address, status")
     .eq("id", accountId)
     .eq("tenant_id", tenantId)
     .eq("provider", PROVIDER)
     .maybeSingle();
   if (accErr) return fail("db_error", "Could not load the email account", 500);
   if (!account) return fail("not_found", "No Gmail account for this tenant with that id", 404);
+  const mailbox = ((account.email_address as string | null) ?? "").toLowerCase();
+  if (!mailbox) return fail("invalid_account", "The account has no email address", 400);
+  if (!DWD_STATUSES.includes(account.status as string)) {
+    return fail(
+      "not_dwd_account",
+      "This account is not a Workspace DWD mailbox (use gmail-sync-messages for OAuth accounts)",
+      400,
+    );
+  }
 
   const startedAt = new Date().toISOString();
   const baseMetadata: Record<string, unknown> = {
     email_account_id: accountId,
+    mailbox,
     max_results: maxResults,
     labels: LABELS,
     force,
@@ -110,7 +113,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .insert({
       tenant_id: tenantId,
       provider: PROVIDER,
-      sync_type: "messages",
+      sync_type: "workspace_messages",
       status: "running",
       started_at: startedAt,
       metadata: baseMetadata,
@@ -138,75 +141,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return json({ success: false, sync_run_id: syncRunId, error: { code, message } }, httpStatus);
   }
 
-  // --- load + refresh the OAuth token (service role; never logged) ----------
-  const { data: token, error: tokErr } = await supabase
-    .from("email_oauth_tokens")
-    .select("access_token, refresh_token, expires_at, scope, token_type")
-    .eq("email_account_id", accountId)
-    .maybeSingle();
-  if (tokErr) return await finishFailed("db_error", "Could not load the OAuth token", 500);
-  if (!token) return await finishFailed("no_token", "This mailbox is not connected (no token)", 400);
-
-  let accessToken = (token.access_token as string | null) ?? "";
-  const expMs = token.expires_at ? Date.parse(token.expires_at as string) : 0;
-  if (!accessToken || !expMs || expMs - Date.now() < TOKEN_SKEW_MS) {
-    const refreshToken = (token.refresh_token as string | null) ?? "";
-    if (!refreshToken) {
-      return await finishFailed("token_expired", "Access token expired and no refresh token", 401);
-    }
-    try {
-      const refreshed = await refreshGmailAccessToken(config, refreshToken);
-      accessToken = refreshed.accessToken;
-      await supabase
-        .from("email_oauth_tokens")
-        .update({
-          access_token: refreshed.accessToken,
-          expires_at: refreshed.expiresIn
-            ? new Date(Date.now() + refreshed.expiresIn * 1000).toISOString()
-            : null,
-          scope: refreshed.scope ?? (token.scope as string | null),
-          token_type: refreshed.tokenType ?? (token.token_type as string | null),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email_account_id", accountId);
-    } catch (_cause) {
-      return await finishFailed("token_refresh_failed", "Could not refresh the access token", 502);
-    }
+  // --- mint a delegated token impersonating the mailbox ---------------------
+  let accessToken: string;
+  try {
+    const token = await getDelegatedGmailToken(mailbox);
+    accessToken = token.accessToken;
+  } catch (cause) {
+    const reason = cause instanceof Error ? cause.message : "delegation_failed";
+    return await finishFailed("delegation_failed", `Domain-wide delegation failed (${reason})`, 502);
   }
 
-  // --- resolve the mailbox address (for direction) --------------------------
-  let mailbox = ((account.email_address as string | null) ?? "").toLowerCase();
-  if (!mailbox) {
-    try {
-      const profile = await getGmailProfile(accessToken);
-      mailbox = (profile.emailAddress ?? "").toLowerCase();
-      if (mailbox) {
-        await supabase
-          .from("email_accounts")
-          .update({ email_address: mailbox, updated_at: new Date().toISOString() })
-          .eq("id", accountId);
-      }
-    } catch (_e) {
-      // non-fatal; direction falls back to the SENT label below.
-    }
-  }
-
-  // --- list recent message ids for INBOX + SENT -----------------------------
-  const refs = new Map<string, string | null>(); // id -> threadId
+  // --- list recent INBOX + SENT ids -----------------------------------------
+  const refs = new Set<string>();
   try {
     for (const label of LABELS) {
       const { messages } = await listGmailMessages(accessToken, {
         maxResults,
         labelIds: [label],
       });
-      for (const m of messages) if (!refs.has(m.id)) refs.set(m.id, m.threadId);
+      for (const m of messages) refs.add(m.id);
     }
   } catch (_cause) {
     return await finishFailed("gmail_list_failed", "Could not list Gmail messages", 502);
   }
 
   // Incremental: without force, only fetch messages we don't already have.
-  const allIds = Array.from(refs.keys());
+  const allIds = Array.from(refs);
   let idsToFetch = allIds;
   if (!force && allIds.length > 0) {
     const { data: existing } = await supabase
@@ -219,13 +179,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     idsToFetch = allIds.filter((id) => !have.has(id));
   }
 
-  // --- fetch full messages, then parse via the shared parser ----------------
+  // --- fetch full messages then parse via the shared parser -----------------
   const rawMessages: Record<string, unknown>[] = [];
   for (const id of idsToFetch) {
     try {
       rawMessages.push(await getGmailMessage(accessToken, id, "full"));
     } catch (_e) {
-      continue; // skip a single unreadable message; keep the run going
+      continue;
     }
   }
   const { messageRows, threadRows } = parseGmailMessages(rawMessages, {
@@ -241,7 +201,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .upsert(threadRows, { onConflict: "tenant_id,provider,provider_thread_id" });
     if (thErr) return await finishFailed("db_error", `Failed to upsert threads: ${thErr.message}`, 500);
   }
-
   if (messageRows.length > 0) {
     const { error: msgErr } = await supabase
       .from("email_messages")
@@ -249,21 +208,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (msgErr) return await finishFailed("db_error", `Failed to upsert messages: ${msgErr.message}`, 500);
   }
 
-  // --- success --------------------------------------------------------------
-  const metadata = {
-    ...baseMetadata,
-    mailbox: mailbox || null,
-    ids_seen: allIds.length,
-    fetched: idsToFetch.length,
-    threads_processed: threadRows.length,
-  };
+  // On success, promote the account to active_dwd (preserve OAuth 'active').
+  await supabase
+    .from("email_accounts")
+    .update({ status: "active_dwd", updated_at: new Date().toISOString() })
+    .eq("id", accountId)
+    .in("status", DWD_STATUSES);
+
   await supabase
     .from("email_sync_runs")
     .update({
       status: "success",
       completed_at: new Date().toISOString(),
       records_processed: messageRows.length,
-      metadata,
+      metadata: {
+        ...baseMetadata,
+        ids_seen: allIds.length,
+        fetched: idsToFetch.length,
+        threads_processed: threadRows.length,
+      },
     })
     .eq("id", syncRunId);
 
@@ -273,7 +236,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     email_account_id: accountId,
     records_processed: messageRows.length,
     threads_processed: threadRows.length,
-    mailbox: mailbox || null,
+    mailbox,
     sync_run_id: syncRunId,
   });
 });

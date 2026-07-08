@@ -154,6 +154,23 @@ export async function getDelegatedToken(
   };
 }
 
+const GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
+
+/**
+ * Mint a delegated Gmail access token that impersonates a SPECIFIC mailbox
+ * (not the admin subject) with gmail.readonly only — for domain-wide-delegation
+ * message sync. Reads the service-account secrets server-side; throws a short,
+ * credential-free Error on failure. The key/token are never returned to callers
+ * beyond the access token itself.
+ */
+export async function getDelegatedGmailToken(mailboxEmail: string): Promise<DelegatedToken> {
+  const cfg = getWorkspaceConfig();
+  if (!cfg.ok) throw new Error(`config_incomplete:${cfg.missing.join(",")}`);
+  // Override the impersonation subject to the target mailbox.
+  const config: WorkspaceConfig = { ...cfg.config, subject: mailboxEmail };
+  return getDelegatedToken(config, [GMAIL_READONLY_SCOPE]);
+}
+
 export interface GmailProfileCheck {
   emailAddress: string | null;
   messagesTotal: number | null;

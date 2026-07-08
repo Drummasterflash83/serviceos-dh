@@ -24,3 +24,8 @@ verify_jwt = false
 # EMAIL_SCHEDULE_SECRET (cron has no Supabase JWT).
 [functions.email-scheduled-sync]
 verify_jwt = false
+
+# Scheduled Workspace DWD email sync — gated by EMAIL_WORKSPACE_SCHEDULE_SECRET
+# (cron has no Supabase JWT).
+[functions.email-workspace-scheduled-sync]
+verify_jwt = false

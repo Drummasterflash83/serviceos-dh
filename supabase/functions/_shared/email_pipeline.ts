@@ -15,18 +15,21 @@ export interface MailboxSyncResult {
 }
 
 /**
- * Sync one connected mailbox by invoking gmail-sync-messages with the
+ * Sync one connected mailbox by invoking a Gmail sync function with the
  * service-role key. `tenant_id` in the body becomes the x-internal-tenant-id
  * header (via invokeFunction) so the internal auth path binds the tenant.
+ * `functionName` selects the OAuth (`gmail-sync-messages`, default) or the
+ * Workspace DWD (`gmail-workspace-sync-messages`) sync.
  */
 export async function syncGmailMailbox(opts: {
   tenantId: string;
   emailAccountId: string;
   maxResults: number;
   serviceKey: string;
+  functionName?: string;
 }): Promise<MailboxSyncResult> {
   const { status, json } = await invokeFunction(
-    "gmail-sync-messages",
+    opts.functionName ?? "gmail-sync-messages",
     {
       tenant_id: opts.tenantId,
       email_account_id: opts.emailAccountId,
