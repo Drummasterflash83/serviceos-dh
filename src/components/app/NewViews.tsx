@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { getCustomerCards, type ProjectedCard } from "@/lib/customer-cards";
+import { listRecommendations, type Recommendation } from "@/lib/recommendations";
 
 /* ───── Shared bits ───── */
 function Hero({
@@ -1218,6 +1219,7 @@ export function Customers() {
   const [cards, setCards] = useState<ProjectedCard[] | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [open, setOpen] = useState<ProjectedCard | null>(null);
+  const [cardRecs, setCardRecs] = useState<Recommendation[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -1234,7 +1236,28 @@ export function Customers() {
     };
   }, []);
 
+  // Load the open card's recommendations (read-only — no execution).
+  useEffect(() => {
+    const cardId = open?.id;
+    if (!cardId) {
+      setCardRecs([]);
+      return;
+    }
+    let active = true;
+    void listRecommendations({ cardId, status: "open", limit: 50 }).then((res) => {
+      if (active) setCardRecs(res.ok ? res.data : []);
+    });
+    return () => {
+      active = false;
+    };
+  }, [open?.id]);
+
   const proj = open?.projection ?? null;
+  const recBadge: Record<string, string> = {
+    critical: "bg-destructive/10 text-destructive",
+    high: "bg-warning/10 text-warning",
+    medium: "bg-accent/10 text-accent",
+  };
 
   return (
     <div className="space-y-5">
@@ -1439,6 +1462,48 @@ export function Customers() {
                               waiting
                             </span>
                             <span className="min-w-0 truncate">{r.title ?? "Action"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {cardRecs.length > 0 && (
+                    <div className="rounded-xl border border-hairline p-3 text-xs">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Recommendations · {cardRecs.length}
+                      </div>
+                      <ul className="mt-2 space-y-2">
+                        {cardRecs.map((r) => (
+                          <li key={r.id} className="rounded-lg border border-hairline p-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="min-w-0 truncate font-medium">{r.title}</span>
+                              <span
+                                className={cn(
+                                  "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize",
+                                  recBadge[r.severity] ?? "bg-muted/40 text-muted-foreground",
+                                )}
+                              >
+                                {r.severity}
+                              </span>
+                            </div>
+                            {r.detail && (
+                              <div className="mt-1 text-muted-foreground">{r.detail}</div>
+                            )}
+                            {r.recommended_action && (
+                              <div className="mt-1">
+                                <span className="text-muted-foreground">Next: </span>
+                                {r.recommended_action}
+                              </div>
+                            )}
+                            {r.impact && (
+                              <div className="mt-1 text-[10px] text-muted-foreground">
+                                If ignored: {r.impact}
+                              </div>
+                            )}
+                            <div className="mt-1 text-[10px] text-muted-foreground">
+                              {r.evidence.length} evidence
+                            </div>
                           </li>
                         ))}
                       </ul>

@@ -68,3 +68,9 @@ verify_jwt = false
 # graph into customer_cards.context. Runs after the graph; the graph never waits.
 [functions.customer-card-scheduled-sync]
 verify_jwt = false
+
+# Scheduled Recommendation Engine — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against RECOMMENDATION_SYNC_SECRET. Applies
+# deterministic rules to customer-card projections. Runs after customer-card sync.
+[functions.recommendation-scheduled-sync]
+verify_jwt = false

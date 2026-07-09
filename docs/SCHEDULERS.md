@@ -36,6 +36,7 @@ the others; a missed tick simply resumes on the next run.
 | `identity-scheduled-sync`                 | `IDENTITY_SYNC_SECRET`            | Run the Identity Engine over ready/pending interactions |
 | `business-graph-scheduled-sync`           | `GRAPH_SYNC_SECRET`               | Project the system of record into the Business Graph    |
 | `customer-card-scheduled-sync`            | `CARD_SYNC_SECRET`                | Project the graph into customer_cards.context           |
+| `recommendation-scheduled-sync`           | `RECOMMENDATION_SYNC_SECRET`      | Generate rule-based recommendations from card state     |
 
 All also require the platform secrets `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`; the phone/email ingest and AI steps additionally
@@ -60,6 +61,7 @@ npx supabase secrets set SIGNAL_SYNC_SECRET="…"
 npx supabase secrets set IDENTITY_SYNC_SECRET="…"
 npx supabase secrets set GRAPH_SYNC_SECRET="…"
 npx supabase secrets set CARD_SYNC_SECRET="…"
+npx supabase secrets set RECOMMENDATION_SYNC_SECRET="…"
 
 # Platform + provider secrets the schedulers rely on (set once)
 npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="…"
@@ -326,6 +328,32 @@ from customer_cards
 where context ? 'projection'
 order by updated_at desc
 limit 20;
+```
+
+## 10. `recommendation-scheduled-sync`
+
+- **Purpose:** for each operational tenant, invoke `recommendation-sync`, which
+  applies deterministic rules to customer-card projections and writes explainable
+  recommendations. Runs AFTER customer-card sync (Graph → Cards → Recommendations
+  → My Day). No AI, no auto-execution. See
+  [RECOMMENDATION_ENGINE.md](RECOMMENDATION_ENGINE.md).
+- **Recommended cadence:** every **5 minutes** (a step behind the card sync).
+- **Secret:** `RECOMMENDATION_SYNC_SECRET`.
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/recommendation-scheduled-sync" \
+  -H "x-schedule-secret: $RECOMMENDATION_SYNC_SECRET" \
+  -H "content-type: application/json" -d '{}'
+```
+
+- **Expected success shape:** `{ "success": true, "tenants": <n>, "results": [ { "tenant_id": "…", "ok": true, "created": <n>, "updated": <n>, "closed": <n>, "failed": 0 } ] }`
+- **Verify (SQL):**
+
+```sql
+select type, priority, status, count(*)
+from (select type, severity as priority, status from recommendations) r
+group by type, priority, status
+order by type, priority, status;
 ```
 
 ## Throughput recommendation (phone processing)

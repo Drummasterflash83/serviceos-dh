@@ -48,6 +48,11 @@ import {
   syncCustomerCards,
   type CustomerCardSummary,
 } from "@/lib/customer-cards";
+import {
+  getRecommendationSummary,
+  syncRecommendations,
+  type RecommendationSummary,
+} from "@/lib/recommendations";
 import type { ApiResult, PhonePipelineStatusResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -181,29 +186,33 @@ export function OperationsOverview({
   const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
   const [customerCards, setCustomerCards] = useState<ApiResult<CustomerCardSummary> | null>(null);
   const [buildingCards, setBuildingCards] = useState(false);
+  const [recs, setRecs] = useState<ApiResult<RecommendationSummary> | null>(null);
+  const [buildingRecs, setBuildingRecs] = useState(false);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live, ident, phone, gr, cc] = await Promise.all([
-      getPlatformJobSummary(),
-      listPlatformJobs({ limit: 12 }),
-      getInteractionSummary(),
-      getCardsSummary(),
-      getMatchSummary(),
-      getSchedulerHealth(),
-      getLiveCallOpsSummary(),
-      getIdentitySummary(),
-      // Business-health summary of the phone pipeline — the SAME single source
-      // Admin › Phone reads for full diagnostics. Skipped until a tenant is known.
-      tenantId
-        ? getPhonePipelineStatus(tenantId)
-        : Promise.resolve<ApiResult<PhonePipelineStatusResult>>({
-            ok: false,
-            error: { code: "no_tenant", message: "No tenant in session" },
-          }),
-      getBusinessGraphSummary(),
-      getCustomerCardSummary(),
-    ]);
+    const [sum, list, inter, card, match, sched, live, ident, phone, gr, cc, rc] =
+      await Promise.all([
+        getPlatformJobSummary(),
+        listPlatformJobs({ limit: 12 }),
+        getInteractionSummary(),
+        getCardsSummary(),
+        getMatchSummary(),
+        getSchedulerHealth(),
+        getLiveCallOpsSummary(),
+        getIdentitySummary(),
+        // Business-health summary of the phone pipeline — the SAME single source
+        // Admin › Phone reads for full diagnostics. Skipped until a tenant is known.
+        tenantId
+          ? getPhonePipelineStatus(tenantId)
+          : Promise.resolve<ApiResult<PhonePipelineStatusResult>>({
+              ok: false,
+              error: { code: "no_tenant", message: "No tenant in session" },
+            }),
+        getBusinessGraphSummary(),
+        getCustomerCardSummary(),
+        getRecommendationSummary(),
+      ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
     setInteractions(inter);
@@ -215,12 +224,20 @@ export function OperationsOverview({
     setPhonePipeline(phone);
     setGraph(gr);
     setCustomerCards(cc);
+    setRecs(rc);
   }, [tenantId]);
 
   async function buildCards() {
     setBuildingCards(true);
     await syncCustomerCards();
     setBuildingCards(false);
+    void loadJobs();
+  }
+
+  async function buildRecs() {
+    setBuildingRecs(true);
+    await syncRecommendations();
+    setBuildingRecs(false);
     void loadJobs();
   }
 
@@ -943,6 +960,58 @@ export function OperationsOverview({
                   {customerCards.data.topWaiting.title ?? "Customer"}
                 </span>{" "}
                 · {customerCards.data.topWaiting.waiting} waiting action(s)
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Recommendations — deterministic next-actions from card/interaction state.
+          "Generate" is a manual override; normal operation is automatic (scheduled
+          after customer cards). No fake data, no auto-execution. */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Recommendations</div>
+            <div className="text-xs text-muted-foreground">
+              Rule-based next-actions — the bridge from cards to My Day. No AI, no auto-execution.
+            </div>
+          </div>
+          <Button size="sm" onClick={buildRecs} disabled={buildingRecs}>
+            {buildingRecs ? "Generating…" : "Generate"}
+          </Button>
+        </div>
+
+        {!recs || !recs.ok ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Recommendations unavailable — the table could not be read.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard label="Open" value={metric(recs.data.open)} />
+              <MetricCard
+                label="Critical"
+                value={metric(recs.data.critical)}
+                tone={recs.data.critical > 0 ? "critical" : "default"}
+              />
+              <MetricCard
+                label="High"
+                value={metric(recs.data.high)}
+                tone={recs.data.high > 0 ? "warning" : "default"}
+              />
+              <MetricCard
+                label="Overdue"
+                value={metric(recs.data.overdue)}
+                tone={recs.data.overdue > 0 ? "critical" : "default"}
+              />
+              <MetricCard label="Generated today" value={metric(recs.data.today)} />
+              <MetricCard label="Closed today" value={metric(recs.data.closedToday)} />
+              <MetricCard label="Latest" value={fmtTime(recs.data.latestGeneratedAt)} />
+            </div>
+            {recs.data.open === 0 && (
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                No open recommendations — nothing needs action right now.
               </p>
             )}
           </>
