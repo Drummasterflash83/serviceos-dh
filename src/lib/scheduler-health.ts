@@ -86,6 +86,42 @@ const SCHEDULERS: SchedulerDef[] = [
     tsColumn: "created_at",
     expectedIntervalSec: 600,
   },
+  {
+    name: "identity-scheduled-sync",
+    label: "Identity engine",
+    table: "platform_jobs",
+    typeColumn: "job_type",
+    typeValue: "identity.resolve",
+    tsColumn: "created_at",
+    expectedIntervalSec: 300,
+  },
+  {
+    name: "business-graph-scheduled-sync",
+    label: "Business graph",
+    table: "platform_jobs",
+    typeColumn: "job_type",
+    typeValue: "graph.sync",
+    tsColumn: "created_at",
+    expectedIntervalSec: 300,
+  },
+  {
+    name: "customer-card-scheduled-sync",
+    label: "Customer cards",
+    table: "platform_jobs",
+    typeColumn: "job_type",
+    typeValue: "customer_card.sync",
+    tsColumn: "created_at",
+    expectedIntervalSec: 300,
+  },
+  {
+    name: "recommendation-scheduled-sync",
+    label: "Recommendations",
+    table: "platform_jobs",
+    typeColumn: "job_type",
+    typeValue: "recommendation.sync",
+    tsColumn: "created_at",
+    expectedIntervalSec: 300,
+  },
 ];
 
 function statusFor(lastRunAt: string | null, expectedIntervalSec: number): SchedulerStatus {
