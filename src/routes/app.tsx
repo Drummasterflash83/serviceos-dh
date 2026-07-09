@@ -27,6 +27,7 @@ import { EngineersView } from "@/components/app/Engineers";
 import { CallsCommsView } from "@/components/app/CallsComms";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 import { LiveCallCard } from "@/components/app/LiveCallCard";
+import { MyDayDashboard } from "@/components/app/MyDay";
 
 
 export const Route = createFileRoute("/app")({
@@ -50,6 +51,7 @@ function ProtectedApp() {
 }
 
 type ViewKey =
+  | "myday"
   | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
   | "cards" | "operations" | "comms" | "customers" | "engineers"
   | "learn" | "intelligence" | "automations" | "agents" | "protocol"
@@ -60,6 +62,7 @@ type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; grou
 
 const NAV: NavItem[] = [
   // OPERATE · run today's business
+  { key: "myday",         label: "My Day",           icon: LayoutDashboard, group: "OPERATE" },
   { key: "northstar",     label: "North Star",       icon: Target,       group: "OPERATE" },
   { key: "cards",         label: "Cards",            icon: IdCard,       group: "OPERATE" },
   { key: "operations",    label: "Operations",       icon: Briefcase,    group: "OPERATE" },
@@ -106,7 +109,7 @@ function ComingSoon({ title }: { title: string }) {
 }
 
 function AppShell() {
-  const [view, setView] = useState<ViewKey>("northstar");
+  const [view, setView] = useState<ViewKey>("myday");
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -195,6 +198,7 @@ function AppShell() {
 
         <main className="flex-1 p-6">
           {/* OPERATE */}
+          {view === "myday"        && <MyDayDashboard />}
           {view === "northstar"    && <NorthStar />}
           {view === "cards"        && <CardsView />}
           {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
