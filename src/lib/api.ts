@@ -27,6 +27,8 @@ import type {
   PhoneAnalyseTranscriptResult,
   ProcessPhonePipelineInput,
   ProcessPhonePipelineResult,
+  ProcessPendingPhoneInput,
+  ProcessPendingPhoneResult,
   PhonePipelineStatusResult,
   GmailOAuthStartResult,
   GoogleWorkspaceTestResult,
@@ -572,6 +574,59 @@ export async function processPhonePipeline(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Pipeline failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Drain the phone-processing backlog for a safe batch via `phone-process-pending`.
+ * User-authenticated (owner/admin/ops); the heavy download/transcribe/analyse work
+ * runs server-side over the internal service path — no user JWT is forwarded, so it
+ * never fails on an expired session. Powers the "Process pending now" control.
+ */
+export async function processPendingPhone(
+  input: ProcessPendingPhoneInput,
+): Promise<ApiResult<ProcessPendingPhoneResult>> {
+  if (!input || typeof input.tenantId !== "string" || input.tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const payload: Record<string, unknown> = { tenant_id: input.tenantId };
+  if (input.limit !== undefined) payload.limit = input.limit;
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/phone-process-pending`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify(payload),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<ProcessPendingPhoneResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success !== undefined) {
+    return { ok: true, data: body as ProcessPendingPhoneResult };
+  }
+
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Process pending failed",
       response.status,
     ),
   };

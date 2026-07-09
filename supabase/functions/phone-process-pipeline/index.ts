@@ -22,7 +22,7 @@ import {
   ensureRecordingTranscribed,
   ensureTranscriptAnalysed,
 } from "../_shared/phone_pipeline.ts";
-import { assertSameTenant, getBearerToken, requireTenantUser } from "../_shared/authz.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const PROVIDER = "pipeline";
 
@@ -64,8 +64,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
-  // Forward the caller's JWT to the step functions so they enforce the same user.
-  const authToken = getBearerToken(req) ?? "";
+
+  // The caller (user OR internal) is now authenticated and the tenant is bound
+  // server-side. The heavy step functions run SERVER-TO-SERVER via the internal
+  // service path (service-role key + x-internal-tenant-id), never a user JWT — so
+  // background/manual processing never fails on an expired session. Each child
+  // still re-validates that the record belongs to this tenant_id.
+  const authToken = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (!authToken) {
+    return failResponse("config_error", "Service role key is not configured", 500);
+  }
 
   const baseMetadata: Record<string, unknown> = { recording_id: recordingId, force };
 

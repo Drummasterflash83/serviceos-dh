@@ -34,3 +34,8 @@ verify_jwt = false
 # EMAIL_WORKSPACE_BACKFILL_SECRET (cron has no Supabase JWT).
 [functions.email-workspace-backfill-scheduled-sync]
 verify_jwt = false
+
+# Scheduled phone-processing backlog drainer — invoked by cron with NO Supabase
+# JWT, gated by the `x-schedule-secret` header checked against PHONE_PROCESSING_SECRET.
+[functions.phone-processing-scheduled-sync]
+verify_jwt = false

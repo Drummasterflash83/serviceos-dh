@@ -37,7 +37,7 @@ import {
   corsHeaders,
 } from "../_shared/simwood.ts";
 import { triggerPipelineBackground } from "../_shared/phone_pipeline.ts";
-import { assertSameTenant, getBearerToken, requireTenantUser } from "../_shared/authz.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 // Safety cap: at most this many newly-inserted recordings auto-trigger the
 // pipeline per sync run (backstop against a large backfill flooding OpenAI).
@@ -110,7 +110,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
-  const authToken = getBearerToken(req) ?? "";
+  // Background pipeline processing must NOT depend on the caller's (expiring) JWT.
+  // Trigger it via the internal service path (service-role key + explicit tenant).
+  const pipelineToken = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
   const suppliedCustomerId = optionalString(body.provider_customer_id);
 
@@ -327,7 +329,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // --- auto-process newly inserted recordings (background, isolated) -------
   const toTrigger = newRecordingIds.slice(0, MAX_AUTO_PIPELINE);
-  if (toTrigger.length > 0) triggerPipelineBackground(tenantId, toTrigger, authToken);
+  if (toTrigger.length > 0 && pipelineToken) {
+    triggerPipelineBackground(tenantId, toTrigger, pipelineToken);
+  }
 
   // --- success -------------------------------------------------------------
   const metadata = {

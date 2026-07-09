@@ -17,6 +17,7 @@ import {
   syncSimwoodCalls,
   syncSimwoodRecordings,
   processPhonePipeline,
+  processPendingPhone,
   getPhonePipelineStatus,
 } from "@/lib/api";
 import type {
@@ -25,12 +26,18 @@ import type {
   SimwoodSyncCallsResult,
   SimwoodSyncRecordingsResult,
   ProcessPhonePipelineResult,
+  ProcessPendingPhoneResult,
   PhonePipelineStatusResult,
 } from "@/lib/types";
 import { ConnectorStatusBadge } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
 import type { ConnectorSurfaceProps } from "@/lib/runtime/types";
-import { getSimwoodAccount, type SimwoodAccount } from "@/lib/phone-feed";
+import {
+  getSimwoodAccount,
+  getPhonePipelineBacklog,
+  type SimwoodAccount,
+  type PhonePipelineBacklog,
+} from "@/lib/phone-feed";
 import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
 
 type ActionKey = "test" | "calls" | "recordings";
@@ -100,16 +107,36 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   const [statusLoading, setStatusLoading] = useState(false);
   const [status, setStatus] = useState<ApiResult<PhonePipelineStatusResult> | null>(null);
 
+  // Processing backlog (truthful "what still needs work") + the latest failure.
+  const [backlog, setBacklog] = useState<ApiResult<PhonePipelineBacklog> | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [processResult, setProcessResult] = useState<ApiResult<ProcessPendingPhoneResult> | null>(
+    null,
+  );
+
   const loadStatus = useCallback(async () => {
     if (!tenantId) return;
     setStatusLoading(true);
-    setStatus(await getPhonePipelineStatus(tenantId));
+    const [st, bl] = await Promise.all([
+      getPhonePipelineStatus(tenantId),
+      getPhonePipelineBacklog(),
+    ]);
+    setStatus(st);
+    setBacklog(bl);
     setStatusLoading(false);
   }, [tenantId]);
 
   useEffect(() => {
     void loadStatus();
   }, [loadStatus]);
+
+  async function runProcessPending() {
+    if (!tenantId) return;
+    setProcessing(true);
+    setProcessResult(await processPendingPhone({ tenantId }));
+    setProcessing(false);
+    void loadStatus();
+  }
 
   // Retry pipeline for one recording.
   const [retryId, setRetryId] = useState("");
@@ -232,6 +259,93 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             );
           })}
         </div>
+      </div>
+
+      {/* Processing backlog — truthful "what still needs work" + one-click drain */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Processing backlog</div>
+            <div className="text-xs text-muted-foreground">
+              Download → transcribe → analyse runs server-side (no session needed).
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={runProcessPending}
+            disabled={processing || !tenantId}
+            title="Process a batch of pending recordings now"
+          >
+            {processing ? "Processing…" : "Process pending now"}
+          </Button>
+        </div>
+
+        {backlog && !backlog.ok ? (
+          <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            Backlog unavailable — {backlog.error.code}: {backlog.error.message}
+          </div>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              {
+                label: "Not downloaded",
+                value: backlog?.ok ? backlog.data.notDownloaded : null,
+                tone:
+                  backlog?.ok && backlog.data.notDownloaded > 0
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+              },
+              {
+                label: "Need transcription",
+                value: backlog?.ok ? backlog.data.needTranscription : null,
+                tone:
+                  backlog?.ok && backlog.data.needTranscription > 0
+                    ? "text-warning"
+                    : "text-muted-foreground",
+              },
+              {
+                label: "Need analysis",
+                value: backlog?.ok ? backlog.data.needAnalysis : null,
+                tone:
+                  backlog?.ok && backlog.data.needAnalysis > 0
+                    ? "text-warning"
+                    : "text-muted-foreground",
+              },
+              {
+                label: "Downloaded",
+                value: backlog?.ok ? backlog.data.downloaded : null,
+                tone: "text-success",
+              },
+            ].map((t) => (
+              <div key={t.label} className="rounded-xl border border-hairline bg-surface-alt p-4">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {t.label}
+                </div>
+                <div className={`text-display mt-2 text-2xl font-bold tabular ${t.tone}`}>
+                  {t.value === null ? "—" : t.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {backlog?.ok && backlog.data.latestFailureMessage && (
+          <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+            Latest pipeline failure: {backlog.data.latestFailureMessage}
+          </div>
+        )}
+
+        <StatusPanel
+          running={processing}
+          result={processResult}
+          renderOk={(d) => [
+            { label: "Processed", value: String(d.processed) },
+            { label: "Downloaded", value: String(d.downloaded) },
+            { label: "Transcribed", value: String(d.transcribed) },
+            { label: "Analysed", value: String(d.analysed) },
+            { label: "Failed", value: String(d.failed) },
+          ]}
+        />
       </div>
 
       {/* Diagnostics & manual sync (collapsed by default) */}
