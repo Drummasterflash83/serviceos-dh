@@ -137,20 +137,66 @@ Deno.serve(async (req: Request): Promise<Response> => {
     await writeAudit(status, { ...metadata, ...(errorMessage ? { message: errorMessage } : {}) });
   }
 
+  // Structured per-step trace so a failed run is self-diagnosing WITHOUT logging
+  // any transcript/audio content or secrets — only step outcomes + a length-capped
+  // safe error string (already just auth/step codes, never content). Identity /
+  // customer-card enrichment run in a downstream subscriber (identity-resolve), so
+  // they are out of this pipeline's scope and marked "deferred".
+  function buildTrace(opts: {
+    finalStatus: "success" | "failed";
+    downloaded: boolean;
+    transcribed: boolean;
+    analysed: boolean;
+    interaction?: string;
+    event?: string;
+    failedStep?: string | null;
+    errorCode?: string | null;
+    errorMessageSafe?: string | null;
+  }): Record<string, unknown> {
+    return {
+      recording_id: recordingId,
+      download: opts.downloaded ? "ok" : opts.failedStep === "download" ? "failed" : "pending",
+      transcribe: opts.transcribed ? "ok" : opts.failedStep === "transcribe" ? "failed" : "pending",
+      analyse: opts.analysed ? "ok" : opts.failedStep === "analyse" ? "failed" : "pending",
+      interaction: opts.interaction ?? "none",
+      event: opts.event ?? "none",
+      identity: "deferred", // downstream subscriber (identity-resolve) — not this pipeline
+      final_status: opts.finalStatus,
+      failed_step: opts.failedStep ?? null,
+      error_code: opts.errorCode ?? null,
+      error_message_safe: opts.errorMessageSafe ? opts.errorMessageSafe.slice(0, 300) : null,
+    };
+  }
+
   async function finishFailed(
     code: string,
     message: string,
     httpStatus: number,
     stages: { downloaded: boolean; transcribed: boolean; analysed: boolean },
+    failedStep: string,
     metaExtra: Record<string, unknown> = {},
   ): Promise<Response> {
-    await finish("failed", 0, { ...stages, ...metaExtra, error_code: code }, message);
+    const trace = buildTrace({
+      finalStatus: "failed",
+      ...stages,
+      failedStep,
+      errorCode: code,
+      errorMessageSafe: message,
+    });
+    await finish(
+      "failed",
+      0,
+      { ...stages, ...metaExtra, error_code: code, failed_step: failedStep, trace },
+      message,
+    );
     return failResponse(code, message, httpStatus, {
       sync_run_id: syncRunId,
       recording_id: recordingId,
       downloaded: stages.downloaded,
       transcribed: stages.transcribed,
       analysed: stages.analysed,
+      failed_step: failedStep,
+      trace,
     });
   }
 
@@ -162,46 +208,56 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq("tenant_id", tenantId)
     .maybeSingle();
   if (recErr) {
-    return await finishFailed("db_error", "Failed to load recording", 500, {
-      downloaded: false,
-      transcribed: false,
-      analysed: false,
-    });
+    return await finishFailed(
+      "db_error",
+      "Failed to load recording",
+      500,
+      { downloaded: false, transcribed: false, analysed: false },
+      "load",
+    );
   }
   if (!recording) {
-    return await finishFailed("not_found", "Recording not found for this tenant", 404, {
-      downloaded: false,
-      transcribed: false,
-      analysed: false,
-    });
+    return await finishFailed(
+      "not_found",
+      "Recording not found for this tenant",
+      404,
+      { downloaded: false, transcribed: false, analysed: false },
+      "load",
+    );
   }
 
   // --- Step 2: download (idempotent) --------------------------------------
   const d = await ensureRecordingDownloaded({ tenantId, recordingId, force, authToken });
   if (!d.ok) {
-    return await finishFailed(d.code, d.message, d.httpStatus, {
-      downloaded: false,
-      transcribed: false,
-      analysed: false,
-    });
+    return await finishFailed(
+      d.code,
+      d.message,
+      d.httpStatus,
+      { downloaded: false, transcribed: false, analysed: false },
+      "download",
+    );
   }
 
   // --- Step 3: transcribe (idempotent) ------------------------------------
   const t = await ensureRecordingTranscribed({ tenantId, recordingId, force, authToken });
   if (!t.ok) {
-    return await finishFailed(t.code, t.message, t.httpStatus, {
-      downloaded: true,
-      transcribed: false,
-      analysed: false,
-    });
+    return await finishFailed(
+      t.code,
+      t.message,
+      t.httpStatus,
+      { downloaded: true, transcribed: false, analysed: false },
+      "transcribe",
+    );
   }
   const transcriptId = typeof t.data.transcript_id === "string" ? t.data.transcript_id : null;
   if (!transcriptId) {
-    return await finishFailed("transcribe_incomplete", "No transcript id returned", 502, {
-      downloaded: true,
-      transcribed: false,
-      analysed: false,
-    });
+    return await finishFailed(
+      "transcribe_incomplete",
+      "No transcript id returned",
+      502,
+      { downloaded: true, transcribed: false, analysed: false },
+      "transcribe",
+    );
   }
 
   // --- Step 4: analyse (idempotent) ---------------------------------------
@@ -211,11 +267,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       a.code,
       a.message,
       a.httpStatus,
-      {
-        downloaded: true,
-        transcribed: true,
-        analysed: false,
-      },
+      { downloaded: true, transcribed: true, analysed: false },
+      "analyse",
       { transcript_id: transcriptId },
     );
   }
@@ -232,6 +285,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
     recordingId: recordingId as string,
   });
 
+  const interactionStatus = !fin.ok
+    ? `skipped(${fin.reason ?? "unknown"})`
+    : fin.alreadyEnriched
+      ? "enriched"
+      : "ready";
+  const eventStatus = fin.eventPublished
+    ? "published"
+    : fin.ok && fin.alreadyEnriched
+      ? "skipped"
+      : "none";
+
+  const trace = buildTrace({
+    finalStatus: "success",
+    downloaded: true,
+    transcribed: true,
+    analysed: true,
+    interaction: interactionStatus,
+    event: eventStatus,
+  });
+
   // --- Step 6: combined result --------------------------------------------
   await finish(
     "success",
@@ -246,6 +319,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       interaction_ready: fin.ok && !fin.alreadyEnriched,
       event_published: fin.eventPublished,
       ...(fin.ok ? {} : { finalize_skipped: fin.reason ?? "unknown" }),
+      trace,
     },
     null,
   );
@@ -261,6 +335,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     interaction_id: fin.interactionId,
     interaction_ready: fin.ok && !fin.alreadyEnriched,
     event_published: fin.eventPublished,
+    failed_step: null,
+    trace,
     sync_run_id: syncRunId,
   });
 });

@@ -83,8 +83,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       downloaded: typeof j?.downloaded === "number" ? j.downloaded : 0,
       transcribed: typeof j?.transcribed === "number" ? j.transcribed : 0,
       analysed: typeof j?.analysed === "number" ? j.analysed : 0,
+      interaction_ready: typeof j?.interaction_ready === "number" ? j.interaction_ready : 0,
       failed: typeof j?.failed === "number" ? j.failed : 0,
       skipped: typeof j?.skipped === "number" ? j.skipped : 0,
+      ...(typeof j?.failed_step === "string" ? { failed_step: j.failed_step } : {}),
     });
   }
 

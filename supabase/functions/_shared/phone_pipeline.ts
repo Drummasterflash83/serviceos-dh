@@ -24,9 +24,13 @@ function functionsBase(): string | null {
 }
 
 /**
- * Invoke a sibling Edge Function, forwarding the CALLER'S user JWT so the target
- * enforces the same tenant/role. `apikey` uses the service-role key only to pass
- * the platform gateway; user authorization is the forwarded bearer token.
+ * Invoke a sibling Edge Function server-to-server. `authToken` MUST be the
+ * SERVICE-ROLE key (every caller in this codebase passes
+ * Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")): the target's authz recognises the
+ * service-role bearer + the x-internal-tenant-id header set below and binds the
+ * tenant internally. A user JWT must NEVER be passed here — a background/manual
+ * pipeline run would then fail the moment that session expires ("Invalid or
+ * expired session"). `apikey` also uses the service-role key to pass the gateway.
  */
 export async function invokeFunction(
   name: string,
@@ -128,10 +132,10 @@ export async function ensureTranscriptAnalysed(opts: {
 }
 
 /**
- * Fire-and-forget pipeline runs for newly-inserted recordings, forwarding the
- * caller's user JWT so the pipeline enforces tenant/role. Each invocation is
- * failure-isolated; when supported, they continue after the response is sent via
- * EdgeRuntime.waitUntil.
+ * Fire-and-forget pipeline runs for newly-inserted recordings. `authToken` MUST
+ * be the SERVICE-ROLE key — this is a BACKGROUND path (it outlives the request
+ * via EdgeRuntime.waitUntil), so a user JWT would frequently be expired by the
+ * time it runs. Each invocation is failure-isolated.
  */
 export function triggerPipelineBackground(
   tenantId: string,

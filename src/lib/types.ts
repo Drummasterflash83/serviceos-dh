@@ -213,6 +213,13 @@ export interface ProcessPendingPhoneInput {
   limit?: number;
 }
 
+/** One recording's failure summary from `phone-process-pending`. */
+export interface ProcessPendingFailure {
+  recording_id: string;
+  failed_step: string | null;
+  error: string;
+}
+
 /** Per-stage counts from `phone-process-pending`. */
 export interface ProcessPendingPhoneResult {
   success: boolean;
@@ -220,11 +227,17 @@ export interface ProcessPendingPhoneResult {
   downloaded: number;
   transcribed: number;
   analysed: number;
+  /** Recordings that produced a fresh canonical interaction (interaction.ready). */
+  interaction_ready: number;
   failed: number;
   /** Recordings already complete within the scan window (not reprocessed). */
   skipped: number;
   /** Most recent child error (e.g. missing OPENAI_API_KEY); null when clean. */
   last_error: string | null;
+  /** The step the most recent failure occurred at (download/transcribe/…). */
+  failed_step: string | null;
+  /** Up to 10 per-recording failure summaries (no secrets, no content). */
+  failures: ProcessPendingFailure[];
 }
 
 /**
@@ -254,6 +267,8 @@ export interface PhonePipelineStatusResult {
   last_success_at: string | null;
   last_failure_at: string | null;
   last_failure_message: string | null;
+  /** True only when the latest failure is newer than the latest success. */
+  last_failure_is_current: boolean;
   throughput_per_min: number;
   estimated_drain_seconds: number | null;
 }

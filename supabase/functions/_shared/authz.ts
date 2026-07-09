@@ -81,6 +81,25 @@ export async function requireTenantUser(
     };
   }
 
+  // Diagnostic guard: an internal function-to-function call is identified by the
+  // x-internal-tenant-id header (the frontend NEVER sends it). If it's present but
+  // we did NOT take the internal branch above, the bearer was not the service-role
+  // key — i.e. a MISCONFIGURED internal call (service key unset/rotated, or a
+  // non-JWT secret-key format the gateway rejected before swapping it). Surfacing
+  // this distinctly stops it masquerading as a user "Invalid or expired session"
+  // and makes the real cause obvious in the pipeline trace. No access is granted
+  // here — internal access still requires token === serviceKey above.
+  if (req.headers.get("x-internal-tenant-id")) {
+    return {
+      ok: false,
+      error: authzError(
+        "internal_auth_mismatch",
+        "Internal service authorization failed — service-role key mismatch or unset",
+        401,
+      ),
+    };
+  }
+
   let userId: string;
   let email: string | null;
   try {

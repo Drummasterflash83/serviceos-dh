@@ -294,6 +294,51 @@ let the scheduler do the repetition.
 
 ---
 
+## Troubleshooting: `invalid_auth` / "Invalid or expired session"
+
+The internal pipeline is **service-role only**: `phone-process-pending` →
+`phone-process-pipeline` → `simwood-download-recording` / `phone-transcribe-recording`
+/ `phone-analyse-transcript`, and `simwood-sync-recordings`'s background trigger,
+**all** invoke siblings with `Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")` as the
+bearer plus an `x-internal-tenant-id` header ([_shared/phone_pipeline.ts](../supabase/functions/_shared/phone_pipeline.ts)).
+No user JWT is ever forwarded. So a pipeline run failing with
+`invalid_auth` / "Invalid or expired session" means one of two things:
+
+1. **It's stale** — a failure from before the service-role migration, still shown
+   as "latest". `phone-pipeline-status` now returns `last_failure_is_current`
+   (true only when the latest failure is newer than the latest success); the UI
+   shows non-current failures as resolved history. Confirm with:
+
+   ```sql
+   select
+     max(started_at) filter (where status = 'success') as last_success,
+     max(started_at) filter (where status = 'failed')  as last_failure
+   from phone_sync_runs
+   where sync_type = 'pipeline';
+   -- last_success newer than last_failure ⇒ the invalid_auth is resolved history.
+   ```
+
+2. **The service-role key isn't matching at runtime** — rotated key, or a project
+   on the newer non-JWT secret-key format that the gateway rejects. `authz.ts` now
+   returns a **distinct** `internal_auth_mismatch` code in this case (instead of
+   the misleading "expired session"), which surfaces in the trace. If a NEW run's
+   `trace.error_code` is `internal_auth_mismatch`, the fix is to realign the
+   service-role key, or set `verify_jwt = false` for the pipeline child functions
+   in [config.toml](../supabase/config.toml) so the gateway doesn't pre-reject the
+   service-role bearer (authz still fully enforces auth inside the function).
+
+Each pipeline run records a safe per-step trace in `phone_sync_runs.metadata.trace`
+(`download`/`transcribe`/`analyse`/`interaction`/`event` status, `failed_step`,
+`error_code`, `error_message_safe`) — no transcript/audio content, no secrets:
+
+```sql
+select started_at, status, metadata->'trace' as trace
+from phone_sync_runs
+where sync_type = 'pipeline'
+order by started_at desc
+limit 10;
+```
+
 ## Full verification SQL (copy/paste)
 
 ```sql

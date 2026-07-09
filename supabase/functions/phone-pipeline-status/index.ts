@@ -199,6 +199,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .maybeSingle();
   const lastFailureAt = (lastFail?.started_at as string | null) ?? null;
   const lastFailureMessage = (lastFail?.error_message as string | null) ?? null;
+  // A failure is only CURRENT if it happened after the last successful run (or
+  // there has never been one). A newer success resolves it → it becomes history,
+  // not a current warning. This is what stops a stale 'invalid_auth' from a past
+  // era being shown as the live problem once processing recovers.
+  const lastFailureIsCurrent =
+    lastFailureAt !== null &&
+    (lastSuccessAt === null || Date.parse(lastFailureAt) > Date.parse(lastSuccessAt));
 
   // --- throughput + estimated drain ---------------------------------------
   const windowStartIso = new Date(nowMs - THROUGHPUT_WINDOW_MIN * 60_000).toISOString();
@@ -217,8 +224,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     needWork > 0 && throughputPerMin > 0 ? Math.round((needWork / throughputPerMin) * 60) : null;
 
   // --- derived health ------------------------------------------------------
-  const failureRecent =
-    lastFailureAt !== null && nowMs - Date.parse(lastFailureAt) <= WARNING_AGE_SEC * 1000;
   let health: "healthy" | "warning" | "critical" = "healthy";
   let healthReason = "Pipeline healthy";
   if (needWork > 0 && lastSuccessAt === null) {
@@ -230,9 +235,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } else if (oldestPendingBeyondScan) {
     health = "critical";
     healthReason = "Backlog older than the scan window — processing has stalled";
-  } else if (failureRecent && needWork > 0) {
+  } else if (lastFailureIsCurrent && needWork > 0) {
+    // Only when the latest failure is newer than the latest success — a resolved
+    // (older) failure never drives health.
     health = "warning";
-    healthReason = "A pipeline run failed recently with work still pending";
+    healthReason = "The latest pipeline run failed and work is still pending";
   } else if (needWork > WARNING_BACKLOG) {
     health = "warning";
     healthReason = `${needWork} recordings waiting to be processed`;
@@ -266,6 +273,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     last_success_at: lastSuccessAt,
     last_failure_at: lastFailureAt,
     last_failure_message: lastFailureMessage,
+    last_failure_is_current: lastFailureIsCurrent,
     throughput_per_min: Math.round(throughputPerMin * 100) / 100,
     estimated_drain_seconds: estimatedDrainSeconds,
   });

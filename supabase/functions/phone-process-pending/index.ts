@@ -124,11 +124,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     let downloaded = 0;
     let transcribed = 0;
     let analysedCount = 0;
+    let interactionReady = 0;
     let failed = 0;
-    // Surface the most recent child error (e.g. missing OPENAI_API_KEY) instead of
-    // hiding it behind an opaque `failed` count. Never contains a secret — the
-    // step functions return only codes/messages.
+    // Surface the most recent child error (e.g. missing OPENAI_API_KEY) + the step
+    // it failed at, instead of hiding it behind an opaque `failed` count. Never a
+    // secret and never transcript/audio — the step functions return only
+    // codes/messages. Keep a small per-failure summary for the UI.
     let lastError: string | null = null;
+    let lastFailedStep: string | null = null;
+    const failures: Array<{ recording_id: string; failed_step: string | null; error: string }> = [];
 
     // Serial + failure-isolated: one bad recording never aborts the batch.
     for (const r of pending) {
@@ -142,12 +146,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (j.downloaded) downloaded += 1;
         if (j.transcribed) transcribed += 1;
         if (j.analysed) analysedCount += 1;
+        if (j.interaction_ready) interactionReady += 1;
       } else {
         failed += 1;
         const err = (j?.error ?? null) as { code?: unknown; message?: unknown } | null;
         const code = typeof err?.code === "string" ? err.code : null;
         const message = typeof err?.message === "string" ? err.message : null;
+        const step = typeof j?.failed_step === "string" ? j.failed_step : null;
         lastError = message ?? code ?? `pipeline failed (${res.status || "network"})`;
+        lastFailedStep = step ?? lastFailedStep;
+        if (failures.length < 10) {
+          failures.push({ recording_id: r.id, failed_step: step, error: lastError });
+        }
       }
     }
 
@@ -158,9 +168,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
           downloaded,
           transcribed,
           analysed: analysedCount,
+          interaction_ready: interactionReady,
           failed,
           skipped,
           ...(lastError ? { last_error: lastError } : {}),
+          ...(lastFailedStep ? { failed_step: lastFailedStep } : {}),
+          ...(failures.length > 0 ? { failures } : {}),
         },
       });
     }
@@ -171,9 +184,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       downloaded,
       transcribed,
       analysed: analysedCount,
+      interaction_ready: interactionReady,
       failed,
       skipped,
       last_error: lastError,
+      failed_step: lastFailedStep,
+      failures,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "process-pending failed";

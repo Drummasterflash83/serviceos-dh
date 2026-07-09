@@ -448,11 +448,19 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
           ))}
         </div>
 
-        {status?.ok && status.data.last_failure_message && (
-          <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-            Latest pipeline failure: {status.data.last_failure_message}
-          </div>
-        )}
+        {status?.ok &&
+          status.data.last_failure_message &&
+          (status.data.last_failure_is_current ? (
+            <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+              Current pipeline failure: {status.data.last_failure_message}
+            </div>
+          ) : (
+            // A newer successful run has resolved this — show as history, not a
+            // live warning (no stale invalid_auth masquerading as current).
+            <div className="mt-3 rounded-md border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
+              Last failure (resolved by a later success): {status.data.last_failure_message}
+            </div>
+          ))}
 
         <StatusPanel
           running={processing}
@@ -462,13 +470,16 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             { label: "Downloaded", value: String(d.downloaded) },
             { label: "Transcribed", value: String(d.transcribed) },
             { label: "Analysed", value: String(d.analysed) },
+            { label: "Interaction ready", value: String(d.interaction_ready) },
             { label: "Failed", value: String(d.failed) },
             { label: "Skipped", value: String(d.skipped) },
           ]}
         />
         {processResult?.ok && processResult.data.last_error && (
           <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            Last error: {processResult.data.last_error}
+            Failed at{" "}
+            <span className="font-mono">{processResult.data.failed_step ?? "unknown"}</span> —{" "}
+            {processResult.data.last_error}
           </div>
         )}
       </div>
