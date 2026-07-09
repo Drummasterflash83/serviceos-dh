@@ -31,6 +31,7 @@ import {
 import { getCardsSummary, type CardsSummary } from "@/lib/cards";
 import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
+import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
 import type { ApiResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,16 +139,18 @@ export function OperationsOverview({
   const [cards, setCards] = useState<ApiResult<CardsSummary> | null>(null);
   const [matches, setMatches] = useState<ApiResult<MatchSummary> | null>(null);
   const [schedulers, setSchedulers] = useState<ApiResult<SchedulerHealthItem[]> | null>(null);
+  const [liveCalls, setLiveCalls] = useState<ApiResult<LiveCallOpsSummary> | null>(null);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched] = await Promise.all([
+    const [sum, list, inter, card, match, sched, live] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
       getCardsSummary(),
       getMatchSummary(),
       getSchedulerHealth(),
+      getLiveCallOpsSummary(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
@@ -155,6 +158,7 @@ export function OperationsOverview({
     setCards(card);
     setMatches(match);
     setSchedulers(sched);
+    setLiveCalls(live);
   }, []);
 
   async function buildTimeline() {
@@ -271,6 +275,8 @@ export function OperationsOverview({
   const cardsData = cards?.ok ? cards.data : null;
   const matchData = matches?.ok ? matches.data : null;
   const schedulerItems = schedulers?.ok ? schedulers.data : null;
+  const liveData = liveCalls?.ok ? liveCalls.data : null;
+  const liveUnavailable = liveCalls !== null && !liveCalls.ok;
   /** Show a real count, or "—" when the source is unavailable. */
   const metric = (v: number | null | undefined): string | number =>
     typeof v === "number" ? v : "—";
@@ -584,6 +590,34 @@ export function OperationsOverview({
             </ul>
           )}
         </div>
+      </div>
+
+      {/* Live calls — real-time operational surface health */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="text-sm font-semibold">Live calls</div>
+        <div className="text-xs text-muted-foreground">
+          Real-time inbound calls surfaced to the assigned user; webhook health.
+        </div>
+        {liveUnavailable ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Live calls unavailable — the live-call tables could not be read.
+          </p>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <MetricCard
+              label="Active"
+              value={metric(liveData?.active)}
+              tone={liveData && liveData.active > 0 ? "accent" : "default"}
+            />
+            <MetricCard
+              label="Unassigned"
+              value={metric(liveData?.unassigned)}
+              tone={liveData && liveData.unassigned > 0 ? "warning" : "default"}
+            />
+            <MetricCard label="Extension mappings" value={metric(liveData?.mappings)} />
+            <MetricCard label="Latest webhook" value={fmtTime(liveData?.latestEventAt ?? null)} />
+          </div>
+        )}
       </div>
 
       {/* Recent platform jobs — the durable execution record */}

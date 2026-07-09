@@ -26,6 +26,7 @@ import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
 import { CallsCommsView } from "@/components/app/CallsComms";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
+import { LiveCallCard } from "@/components/app/LiveCallCard";
 
 
 export const Route = createFileRoute("/app")({
@@ -90,6 +91,8 @@ function AppShell() {
 
   return (
     <div className="flex min-h-screen bg-surface-alt text-foreground">
+      {/* Real-time live call surface — floats for the assigned logged-in user only */}
+      <LiveCallCard />
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:flex">
         <Link to="/" className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold">

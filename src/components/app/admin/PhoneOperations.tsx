@@ -38,6 +38,12 @@ import {
   type SimwoodAccount,
   type PhonePipelineBacklog,
 } from "@/lib/phone-feed";
+import {
+  listVoiceEndpoints,
+  saveVoiceEndpoint,
+  disableVoiceEndpoint,
+  type UserVoiceEndpoint,
+} from "@/lib/live-calls";
 import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
 
 type ActionKey = "test" | "calls" | "recordings";
@@ -136,6 +142,48 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     setProcessResult(await processPendingPhone({ tenantId }));
     setProcessing(false);
     void loadStatus();
+  }
+
+  // User ↔ VoIP extension mapping (drives Live Call Card assignment).
+  const [endpoints, setEndpoints] = useState<UserVoiceEndpoint[]>([]);
+  const [newExt, setNewExt] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+  const [savingEndpoint, setSavingEndpoint] = useState(false);
+  const [endpointError, setEndpointError] = useState<string | null>(null);
+
+  const loadEndpoints = useCallback(async () => {
+    const res = await listVoiceEndpoints();
+    if (res.ok) setEndpoints(res.data);
+  }, []);
+
+  useEffect(() => {
+    if (allowed) void loadEndpoints();
+  }, [allowed, loadEndpoints]);
+
+  async function addEndpoint() {
+    if (!newExt.trim() || !newEmail.trim()) return;
+    setSavingEndpoint(true);
+    setEndpointError(null);
+    const res = await saveVoiceEndpoint({
+      extension: newExt.trim(),
+      email: newEmail.trim(),
+      displayName: newName.trim() || undefined,
+    });
+    setSavingEndpoint(false);
+    if (!res.ok) {
+      setEndpointError(`${res.error.code}: ${res.error.message}`);
+      return;
+    }
+    setNewExt("");
+    setNewEmail("");
+    setNewName("");
+    await loadEndpoints();
+  }
+
+  async function toggleEndpoint(id: string) {
+    await disableVoiceEndpoint(id);
+    await loadEndpoints();
   }
 
   // Retry pipeline for one recording.
@@ -346,6 +394,80 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             { label: "Failed", value: String(d.failed) },
           ]}
         />
+      </div>
+
+      {/* User phone extensions — maps a user to a VoIP extension (Live Call Card) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="text-sm font-semibold">User phone extensions</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Map a user to a VoIP extension so live calls on that extension surface to only that person
+          (e.g. Mary → 102).
+        </p>
+
+        {endpoints.length > 0 && (
+          <div className="mt-4 divide-y divide-hairline rounded-xl border border-hairline">
+            {endpoints.map((e) => (
+              <div key={e.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                <div className="min-w-0">
+                  <div className="font-mono text-xs text-foreground">
+                    Ext {e.extension}
+                    {e.display_name ? ` · ${e.display_name}` : ""}
+                  </div>
+                  <div className="truncate text-[11px] text-muted-foreground">{e.user_id}</div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                      e.enabled
+                        ? "border-success/20 bg-success/10 text-success"
+                        : "border-hairline bg-surface-alt text-muted-foreground"
+                    }`}
+                  >
+                    {e.enabled ? "enabled" : "disabled"}
+                  </span>
+                  {e.enabled && (
+                    <Button size="sm" variant="ghost" onClick={() => void toggleEndpoint(e.id)}>
+                      Disable
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-4">
+          <Input
+            value={newExt}
+            onChange={(ev) => setNewExt(ev.target.value)}
+            placeholder="Extension (102)"
+            className="font-mono"
+          />
+          <Input
+            value={newEmail}
+            onChange={(ev) => setNewEmail(ev.target.value)}
+            placeholder="User email"
+            className="sm:col-span-2"
+          />
+          <Input
+            value={newName}
+            onChange={(ev) => setNewName(ev.target.value)}
+            placeholder="Display name (optional)"
+          />
+        </div>
+        <Button
+          size="sm"
+          className="mt-3"
+          onClick={addEndpoint}
+          disabled={savingEndpoint || newExt.trim() === "" || newEmail.trim() === ""}
+        >
+          {savingEndpoint ? "Saving…" : "Add mapping"}
+        </Button>
+        {endpointError && (
+          <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {endpointError}
+          </div>
+        )}
       </div>
 
       {/* Diagnostics & manual sync (collapsed by default) */}

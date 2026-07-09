@@ -45,3 +45,9 @@ verify_jwt = false
 # `interactions` timeline automatically so users never have to press "Build".
 [functions.interactions-scheduled-sync]
 verify_jwt = false
+
+# Live call webhook — the VoIP provider posts here with NO Supabase JWT. Gateway JWT
+# verification MUST be off; trust comes from the `x-simwood-webhook-secret` header
+# checked inside the function against SIMWOOD_WEBHOOK_SECRET.
+[functions.simwood-call-webhook]
+verify_jwt = false
