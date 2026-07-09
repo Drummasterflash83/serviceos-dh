@@ -74,3 +74,55 @@ verify_jwt = false
 # deterministic rules to customer-card projections. Runs after customer-card sync.
 [functions.recommendation-scheduled-sync]
 verify_jwt = false
+
+# ── Internal worker functions (verify_jwt = false) ──────────────────────────
+# These are invoked SERVER-TO-SERVER with the SERVICE-ROLE key as the bearer:
+#   • the schedulers above fan out to them,
+#   • phone-process-pipeline chains the phone workers,
+#   • simwood-sync-recordings / identity-resolve fire background triggers.
+# With verify_jwt = true the platform GATEWAY must itself accept the service-role
+# bearer as a JWT before the function runs — which fails on projects using the
+# newer non-JWT secret-key format and then surfaces INSIDE the function as the
+# misleading "Invalid or expired session" (authz code `invalid_auth`). Turning the
+# gateway check off makes _shared/authz.ts the SOLE gatekeeper: it still fully
+# validates BOTH real user JWTs (manual override buttons) AND the internal path
+# (token === SUPABASE_SERVICE_ROLE_KEY + x-internal-tenant-id, tenant-bound). No
+# security is lost — the gateway JWT check was defense-in-depth only and is
+# incompatible with internal service-role invocation. Same model the schedulers
+# above already use.
+
+# Phone pipeline workers (chained by phone-process-pipeline / phone-process-pending).
+[functions.phone-process-pending]
+verify_jwt = false
+[functions.phone-process-pipeline]
+verify_jwt = false
+[functions.simwood-download-recording]
+verify_jwt = false
+[functions.phone-transcribe-recording]
+verify_jwt = false
+[functions.phone-analyse-transcript]
+verify_jwt = false
+[functions.simwood-sync-calls]
+verify_jwt = false
+[functions.simwood-sync-recordings]
+verify_jwt = false
+
+# Core engines (invoked by their scheduler + manual override buttons + triggers).
+[functions.interactions-sync]
+verify_jwt = false
+[functions.identity-resolve]
+verify_jwt = false
+[functions.business-graph-sync]
+verify_jwt = false
+[functions.customer-card-sync]
+verify_jwt = false
+[functions.recommendation-sync]
+verify_jwt = false
+
+# Email workers (invoked by the email schedulers via _shared/email_pipeline.ts).
+[functions.gmail-sync-messages]
+verify_jwt = false
+[functions.gmail-workspace-sync-messages]
+verify_jwt = false
+[functions.gmail-workspace-backfill-messages]
+verify_jwt = false

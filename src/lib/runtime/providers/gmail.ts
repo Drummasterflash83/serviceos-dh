@@ -99,13 +99,20 @@ export const gmailProvider: ConnectorProvider = {
         actionLabel: "Reconnect Gmail",
       });
     }
-    if (e.gmailFailures24h > 0) {
+    // Only warn on a CURRENT failure — i.e. the latest run failed AFTER the last
+    // success. A resolved historical failure (a later success exists) must not
+    // show "Reconnect Gmail". (The rolling 24h count is still shown in
+    // diagnostics; it just no longer drives a live alert.)
+    const hasNewerFailure =
+      !!e.gmailLastFailure &&
+      (!e.gmailLastSuccess || Date.parse(e.gmailLastFailure) > Date.parse(e.gmailLastSuccess));
+    if (hasNewerFailure) {
       w.push({
-        id: "gmail:failures",
+        id: "gmail:failing",
         connector: ID,
         severity: "warning",
-        title: "Gmail sync failures",
-        detail: `${e.gmailFailures24h} failed sync(s) in the last 24h.`,
+        title: "Gmail sync failing",
+        detail: "The latest Gmail sync failed after the last successful sync.",
         recommendedAction: "reconnect",
         actionLabel: "Reconnect Gmail",
       });

@@ -52,16 +52,16 @@ function evaluate(s: OperationsSnapshot): {
     configured: p.configured,
     authOk: true,
   });
-  const extraReasons: string[] = [];
-  if (p.transcriptionsFailed > 0)
-    extraReasons.push(`${p.transcriptionsFailed} failed transcription(s)`);
+  // Transcription failures are an ALL-TIME processing count — they belong to the
+  // phone-pipeline health surface (which distinguishes current vs resolved via
+  // last_failure_is_current), NOT the connector-sync card, where they'd read as a
+  // standing "reason" that never clears after recovery.
   const health = deriveHealth({
     freshness,
     configured: p.configured,
     authOk: true,
     hasNewerFailure: failedAfterSuccess(p),
     syncing: p.running > 0,
-    extraReasons,
   });
   return { freshness, health };
 }

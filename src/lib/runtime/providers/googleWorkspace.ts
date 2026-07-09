@@ -63,7 +63,10 @@ function evaluate(s: OperationsSnapshot): {
     configured,
     authOk,
     hasNewerFailure,
-    runningFailures: e.backfillErrors,
+    // NOTE: backfill_status='error' is a PERSISTENT historical flag from a
+    // one-time backfill, not an in-flight failure — it must NOT drag a
+    // currently-healthy connection to "warning". Backfill health surfaces in Admin
+    // diagnostics + a gated warning below, never in the live connector bucket.
     configIssue: active && e.workspaceMailboxesTotal === 0 ? "No mailboxes discovered" : null,
     backfilling: e.backfillRunning > 0,
     extraReasons,
@@ -98,6 +101,10 @@ export const googleWorkspaceProvider: ConnectorProvider = {
   warnings: (s): ConnectorWarning[] => {
     const e = s.email;
     const { freshness } = evaluate(s);
+    const hasNewerFailure =
+      !!e.workspaceLastFailure &&
+      (!e.workspaceLastSuccess ||
+        Date.parse(e.workspaceLastFailure) > Date.parse(e.workspaceLastSuccess));
     const w: ConnectorWarning[] = [];
     if (e.connectionStatus === "error") {
       w.push({
@@ -137,7 +144,12 @@ export const googleWorkspaceProvider: ConnectorProvider = {
         actionLabel: "Re-test delegation",
       });
     }
-    if (e.backfillErrors > 0) {
+    // Backfill errors are only a LIVE warning when something is currently active
+    // (backfill running) or the connector is currently failing. A recovered
+    // connection (a newer successful sync exists, nothing running) must not show
+    // historical backfill errors as a current problem — they stay in Admin
+    // diagnostics only.
+    if (e.backfillErrors > 0 && (hasNewerFailure || e.backfillRunning > 0)) {
       w.push({
         id: "google_workspace:backfill_errors",
         connector: ID,
