@@ -53,36 +53,57 @@ type ViewKey =
   | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
   | "cards" | "operations" | "comms" | "customers" | "engineers"
   | "learn" | "intelligence" | "automations" | "agents" | "protocol"
-  | "compliance" | "finance" | "admin" | "settings";
+  | "compliance" | "finance" | "admin" | "settings"
+  | "marketing" | "campaigns" | "journeys" | "reviews" | "platformadmin";
 
 type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; group?: string };
 
 const NAV: NavItem[] = [
-  // Spine · the New Dawn engine
-  { key: "northstar",    label: "North Star",     icon: Target,          group: "Spine" },
-  { key: "arr",          label: "ARR Growth",     icon: TrendingUp,      group: "Spine" },
-  { key: "furtherworks", label: "Further Works",  icon: Timer,           group: "Spine" },
-  { key: "quote",        label: "Quote Engine",   icon: Calculator,      group: "Spine" },
-  { key: "coordinator",  label: "Coordinator",    icon: Users,           group: "Spine" },
-  { key: "assets",       label: "Assets",         icon: Layers,          group: "Spine" },
-  // Surfaces · role-aware execution
-  { key: "cards",        label: "Cards",          icon: IdCard,          group: "Surfaces" },
-  { key: "operations",   label: "Operations",     icon: Briefcase,       group: "Surfaces" },
-  { key: "comms",        label: "Calls & Comms",  icon: Phone,           group: "Surfaces" },
-  { key: "customers",    label: "Customers",      icon: Compass,         group: "Surfaces" },
-  { key: "engineers",    label: "Engineers",      icon: HardHat,         group: "Surfaces" },
-  // Intelligence · the why behind the engine
-  { key: "learn",        label: "Learn",          icon: GraduationCap,   group: "Intelligence" },
-  { key: "intelligence", label: "Intelligence",   icon: Brain,           group: "Intelligence" },
-  { key: "automations",  label: "Automations",    icon: Zap,             group: "Intelligence" },
-  { key: "agents",       label: "Agents",         icon: Bot,             group: "Intelligence" },
-  { key: "protocol",     label: "Protocol",       icon: ShieldCheck,     group: "Intelligence" },
-  { key: "compliance",   label: "Compliance",     icon: ShieldCheck,     group: "Intelligence" },
-  { key: "finance",      label: "Numbers",        icon: Banknote,        group: "Intelligence" },
-  { key: "admin",        label: "Operations Centre", icon: Network,      group: "Intelligence" },
-  { key: "settings",     label: "Settings",       icon: Settings,        group: "Intelligence" },
+  // OPERATE · run today's business
+  { key: "northstar",     label: "North Star",       icon: Target,       group: "OPERATE" },
+  { key: "cards",         label: "Cards",            icon: IdCard,       group: "OPERATE" },
+  { key: "operations",    label: "Operations",       icon: Briefcase,    group: "OPERATE" },
+  { key: "comms",         label: "Calls & Comms",    icon: Phone,        group: "OPERATE" },
+  { key: "customers",     label: "Customers",        icon: Compass,      group: "OPERATE" },
+  { key: "engineers",     label: "Engineers",        icon: HardHat,      group: "OPERATE" },
+  { key: "coordinator",   label: "Coordinator",      icon: Users,        group: "OPERATE" },
+  { key: "quote",         label: "Quote Engine",     icon: Calculator,   group: "OPERATE" },
+  { key: "assets",        label: "Assets",           icon: Layers,       group: "OPERATE" },
+  { key: "furtherworks",  label: "Further Works",    icon: Timer,        group: "OPERATE" },
+  // GROW · increase revenue
+  { key: "arr",           label: "ARR Growth",       icon: TrendingUp,   group: "GROW" },
+  { key: "marketing",     label: "Marketing",        icon: Radio,        group: "GROW" },
+  { key: "campaigns",     label: "Campaigns",        icon: Mail,         group: "GROW" },
+  { key: "automations",   label: "Automations",      icon: Zap,          group: "GROW" },
+  { key: "journeys",      label: "Customer Journeys", icon: Workflow,    group: "GROW" },
+  { key: "reviews",       label: "Reviews",          icon: MessageSquare, group: "GROW" },
+  // INTELLIGENCE · understand and improve
+  { key: "intelligence",  label: "Intelligence",     icon: Brain,        group: "INTELLIGENCE" },
+  { key: "learn",         label: "Knowledge",        icon: GraduationCap, group: "INTELLIGENCE" },
+  { key: "agents",        label: "Agents",           icon: Bot,          group: "INTELLIGENCE" },
+  { key: "protocol",      label: "Protocol",         icon: ShieldCheck,  group: "INTELLIGENCE" },
+  { key: "compliance",    label: "Compliance",       icon: ShieldCheck,  group: "INTELLIGENCE" },
+  { key: "finance",       label: "Numbers",          icon: Banknote,     group: "INTELLIGENCE" },
+  // CONTROL · configure and govern
+  { key: "admin",         label: "Operations Centre", icon: Network,     group: "CONTROL" },
+  { key: "platformadmin", label: "Admin",            icon: Database,     group: "CONTROL" },
+  { key: "settings",      label: "Settings",         icon: Settings,     group: "CONTROL" },
 ];
 
+/* Lightweight, honest placeholder for pages not built yet — no fake data. */
+function ComingSoon({ title }: { title: string }) {
+  return (
+    <div className="grid min-h-[60vh] place-items-center">
+      <div className="max-w-sm text-center">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-surface-alt">
+          <Sparkles className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div className="text-display mt-4 text-xl font-semibold">{title}</div>
+        <p className="mt-1 text-sm text-muted-foreground">Coming soon.</p>
+      </div>
+    </div>
+  );
+}
 
 function AppShell() {
   const [view, setView] = useState<ViewKey>("northstar");
@@ -100,10 +121,10 @@ function AppShell() {
           ServiceOS
         </Link>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {(["Spine", "Surfaces", "Intelligence"] as const).map((group) => (
-            <div key={group} className="pt-2 first:pt-0">
-              <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <nav className="flex-1 overflow-y-auto p-3">
+          {(["OPERATE", "GROW", "INTELLIGENCE", "CONTROL"] as const).map((group) => (
+            <div key={group} className="mt-6 border-t border-hairline pt-4 first:mt-0 first:border-0 first:pt-0">
+              <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                 {group}
               </div>
               {NAV.filter((n) => n.group === group).map((item) => (
@@ -113,11 +134,11 @@ function AppShell() {
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
                     view === item.key
-                      ? "bg-foreground text-background"
+                      ? "bg-foreground font-medium text-background"
                       : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-4 w-4 shrink-0" />
                   <span className="flex-1 text-left">{item.label}</span>
                   {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
                 </button>
@@ -173,28 +194,34 @@ function AppShell() {
         </header>
 
         <main className="flex-1 p-6">
-          {/* Spine */}
+          {/* OPERATE */}
           {view === "northstar"    && <NorthStar />}
-          {view === "arr"          && <ARRGrowth />}
-          {view === "furtherworks" && <FurtherWorks />}
-          {view === "quote"        && <QuoteEngine />}
-          {view === "coordinator"  && <CoordinatorCockpit />}
-          {view === "assets"       && <Assets />}
-          {/* Surfaces */}
           {view === "cards"        && <CardsView />}
           {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
           {view === "comms"        && <CallsCommsView />}
           {view === "customers"    && <Customers />}
           {view === "engineers"    && <EngineersView />}
-          {/* Intelligence */}
-          {view === "learn"        && <Learn />}
-          {view === "intelligence" && <Intelligence />}
+          {view === "coordinator"  && <CoordinatorCockpit />}
+          {view === "quote"        && <QuoteEngine />}
+          {view === "assets"       && <Assets />}
+          {view === "furtherworks" && <FurtherWorks />}
+          {/* GROW */}
+          {view === "arr"          && <ARRGrowth />}
+          {view === "marketing"    && <ComingSoon title="Marketing" />}
+          {view === "campaigns"    && <ComingSoon title="Campaigns" />}
           {view === "automations"  && <Automations />}
+          {view === "journeys"     && <ComingSoon title="Customer Journeys" />}
+          {view === "reviews"      && <ComingSoon title="Reviews" />}
+          {/* INTELLIGENCE */}
+          {view === "intelligence" && <Intelligence />}
+          {view === "learn"        && <Learn />}
           {view === "agents"       && <Agents />}
           {view === "protocol"     && <Protocol />}
           {view === "compliance"   && <ComplianceRoadmap />}
           {view === "finance"      && <Finance />}
+          {/* CONTROL */}
           {view === "admin"        && <OperationsCentre />}
+          {view === "platformadmin" && <ComingSoon title="Admin" />}
           {view === "settings"     && <SettingsView />}
         </main>
       </div>
