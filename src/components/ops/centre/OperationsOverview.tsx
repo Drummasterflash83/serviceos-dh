@@ -32,6 +32,7 @@ import { getCardsSummary, type CardsSummary } from "@/lib/cards";
 import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
 import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
+import { getIdentitySummary, type IdentitySummary } from "@/lib/identity";
 import type { ApiResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,10 +141,11 @@ export function OperationsOverview({
   const [matches, setMatches] = useState<ApiResult<MatchSummary> | null>(null);
   const [schedulers, setSchedulers] = useState<ApiResult<SchedulerHealthItem[]> | null>(null);
   const [liveCalls, setLiveCalls] = useState<ApiResult<LiveCallOpsSummary> | null>(null);
+  const [identity, setIdentity] = useState<ApiResult<IdentitySummary> | null>(null);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live] = await Promise.all([
+    const [sum, list, inter, card, match, sched, live, ident] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
@@ -151,6 +153,7 @@ export function OperationsOverview({
       getMatchSummary(),
       getSchedulerHealth(),
       getLiveCallOpsSummary(),
+      getIdentitySummary(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
@@ -159,6 +162,7 @@ export function OperationsOverview({
     setMatches(match);
     setSchedulers(sched);
     setLiveCalls(live);
+    setIdentity(ident);
   }, []);
 
   async function buildTimeline() {
@@ -277,6 +281,8 @@ export function OperationsOverview({
   const schedulerItems = schedulers?.ok ? schedulers.data : null;
   const liveData = liveCalls?.ok ? liveCalls.data : null;
   const liveUnavailable = liveCalls !== null && !liveCalls.ok;
+  const identData = identity?.ok ? identity.data : null;
+  const identUnavailable = identity !== null && !identity.ok;
   /** Show a real count, or "—" when the source is unavailable. */
   const metric = (v: number | null | undefined): string | number =>
     typeof v === "number" ? v : "—";
@@ -590,6 +596,66 @@ export function OperationsOverview({
             </ul>
           )}
         </div>
+      </div>
+
+      {/* Intelligence — identity resolution engine (evidence-based, honest states) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="text-sm font-semibold">Intelligence · identity engine</div>
+        <div className="text-xs text-muted-foreground">
+          Evidence-based who/company resolution, card enrichment and recommendations.
+        </div>
+        {identUnavailable ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Identity engine unavailable — the engine tables could not be read.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard
+                label="Identity jobs today"
+                value={metric(identData?.identityJobsToday)}
+              />
+              <MetricCard
+                label="Signals processed"
+                value={metric(identData?.signalsProcessed)}
+                tone="accent"
+              />
+              <MetricCard
+                label="Cards enriched today"
+                value={metric(identData?.cardsEnrichedToday)}
+              />
+              <MetricCard
+                label="Recommendations today"
+                value={metric(identData?.recommendationsToday)}
+                tone={identData && identData.recommendationsToday > 0 ? "accent" : "default"}
+              />
+              <MetricCard
+                label="Open recommendations"
+                value={metric(identData?.recommendationsOpen)}
+                tone={identData && identData.recommendationsOpen > 0 ? "warning" : "default"}
+              />
+              <MetricCard
+                label="Unknown people"
+                value={metric(identData?.unknownPeople)}
+                tone={identData && identData.unknownPeople > 0 ? "warning" : "default"}
+              />
+              <MetricCard label="Unknown companies" value={metric(identData?.unknownCompanies)} />
+              <MetricCard
+                label="Avg confidence"
+                value={
+                  identData && identData.avgConfidence !== null
+                    ? `${Math.round(identData.avgConfidence * 100)}%`
+                    : "—"
+                }
+                tone="accent"
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              Last identity job {fmtTime(identData?.latestIdentityJobAt ?? null)}. Matches are
+              evidence-led and reversible — never silently merged.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Live calls — real-time operational surface health */}

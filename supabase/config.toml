@@ -51,3 +51,8 @@ verify_jwt = false
 # checked inside the function against SIMWOOD_WEBHOOK_SECRET.
 [functions.simwood-call-webhook]
 verify_jwt = false
+
+# Scheduled Identity Resolution Engine — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against IDENTITY_SYNC_SECRET.
+[functions.identity-scheduled-sync]
+verify_jwt = false
