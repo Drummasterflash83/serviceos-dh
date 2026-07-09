@@ -56,3 +56,9 @@ verify_jwt = false
 # by the `x-schedule-secret` header checked against IDENTITY_SYNC_SECRET.
 [functions.identity-scheduled-sync]
 verify_jwt = false
+
+# Scheduled Business Graph projection — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against GRAPH_SYNC_SECRET. Projects the
+# system-of-record tables into graph_nodes/graph_edges automatically.
+[functions.business-graph-scheduled-sync]
+verify_jwt = false

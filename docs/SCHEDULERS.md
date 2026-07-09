@@ -34,6 +34,7 @@ the others; a missed tick simply resumes on the next run.
 | `email-workspace-backfill-scheduled-sync` | `EMAIL_WORKSPACE_BACKFILL_SECRET` | Historical Workspace mail backfill                      |
 | `interactions-scheduled-sync`             | `SIGNAL_SYNC_SECRET`              | Refresh the canonical `interactions` timeline           |
 | `identity-scheduled-sync`                 | `IDENTITY_SYNC_SECRET`            | Run the Identity Engine over ready/pending interactions |
+| `business-graph-scheduled-sync`           | `GRAPH_SYNC_SECRET`               | Project the system of record into the Business Graph    |
 
 All also require the platform secrets `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`; the phone/email ingest and AI steps additionally
@@ -56,6 +57,7 @@ npx supabase secrets set EMAIL_WORKSPACE_SCHEDULE_SECRET="…"
 npx supabase secrets set EMAIL_WORKSPACE_BACKFILL_SECRET="…"
 npx supabase secrets set SIGNAL_SYNC_SECRET="…"
 npx supabase secrets set IDENTITY_SYNC_SECRET="…"
+npx supabase secrets set GRAPH_SYNC_SECRET="…"
 
 # Platform + provider secrets the schedulers rely on (set once)
 npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="…"
@@ -263,6 +265,32 @@ limit 20;
 ```
 
 ---
+
+## 8. `business-graph-scheduled-sync`
+
+- **Purpose:** for each operational tenant, invoke `business-graph-sync`, which
+  projects people/companies/customer_cards/interactions/recommendations into the
+  Business Graph (`graph_nodes` / `graph_edges` / `graph_events`). Idempotent and
+  additive — the source tables are never modified. See
+  [BUSINESS_GRAPH.md](BUSINESS_GRAPH.md). Identity-resolve also best-effort
+  triggers a sync on enrichment; this scheduler is the reliable backstop.
+- **Recommended cadence:** every **5 minutes**.
+- **Secret:** `GRAPH_SYNC_SECRET`.
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/business-graph-scheduled-sync" \
+  -H "x-schedule-secret: $GRAPH_SYNC_SECRET" \
+  -H "content-type: application/json" -d '{}'
+```
+
+- **Expected success shape:** `{ "success": true, "tenants": <n>, "results": [ { "tenant_id": "…", "ok": true, "nodes_upserted": <n>, "edges_upserted": <n>, "failed": 0 } ] }`
+- **Verify (SQL):**
+
+```sql
+select node_type, count(*) from graph_nodes group by node_type order by 1;
+select edge_type, count(*) from graph_edges group by edge_type order by 1;
+select event_type, count(*) from graph_events group by event_type order by 1;
+```
 
 ## Throughput recommendation (phone processing)
 

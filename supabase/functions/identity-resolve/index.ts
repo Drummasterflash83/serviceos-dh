@@ -30,6 +30,7 @@ import {
   startPlatformJob,
 } from "../_shared/platform_jobs.ts";
 import { markEventsConsumed } from "../_shared/events.ts";
+import { triggerGraphSyncBackground } from "../_shared/business_graph.ts";
 import {
   matchLevelOf,
   resolveIdentity,
@@ -425,6 +426,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
       });
     }
+
+    // Best-effort: project the freshly-enriched identities into the Business Graph.
+    // Identity does NOT depend on the graph — this is fire-and-forget, failure-
+    // isolated, and the scheduled graph sync also covers it. Only fire when there
+    // was real enrichment work to project.
+    if (resolved > 0) triggerGraphSyncBackground(tenantId);
 
     return jsonResponse({
       success: true,

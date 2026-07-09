@@ -34,6 +34,15 @@ import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-he
 import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
 import { getIdentitySummary, type IdentitySummary } from "@/lib/identity";
 import { getPhonePipelineStatus } from "@/lib/api";
+import {
+  getBusinessGraphSummary,
+  listGraphEdges,
+  listGraphNodes,
+  syncBusinessGraph,
+  type GraphSummary,
+  type GraphNode,
+  type GraphEdge,
+} from "@/lib/business-graph";
 import type { ApiResult, PhonePipelineStatusResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -160,10 +169,15 @@ export function OperationsOverview({
   const [phonePipeline, setPhonePipeline] = useState<ApiResult<PhonePipelineStatusResult> | null>(
     null,
   );
+  const [graph, setGraph] = useState<ApiResult<GraphSummary> | null>(null);
+  const [buildingGraph, setBuildingGraph] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+  const [graphNodes, setGraphNodes] = useState<GraphNode[]>([]);
+  const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live, ident, phone] = await Promise.all([
+    const [sum, list, inter, card, match, sched, live, ident, phone, gr] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
@@ -180,6 +194,7 @@ export function OperationsOverview({
             ok: false,
             error: { code: "no_tenant", message: "No tenant in session" },
           }),
+      getBusinessGraphSummary(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
@@ -190,7 +205,30 @@ export function OperationsOverview({
     setLiveCalls(live);
     setIdentity(ident);
     setPhonePipeline(phone);
+    setGraph(gr);
   }, [tenantId]);
+
+  async function buildGraph() {
+    setBuildingGraph(true);
+    await syncBusinessGraph("all");
+    setBuildingGraph(false);
+    void loadJobs();
+    if (showGraph) void loadGraphDetail();
+  }
+
+  const loadGraphDetail = useCallback(async () => {
+    const [n, e] = await Promise.all([listGraphNodes(15), listGraphEdges(15)]);
+    setGraphNodes(n.ok ? n.data : []);
+    setGraphEdges(e.ok ? e.data : []);
+  }, []);
+
+  function toggleGraphExplorer() {
+    setShowGraph((v) => {
+      const next = !v;
+      if (next) void loadGraphDetail();
+      return next;
+    });
+  }
 
   async function buildTimeline() {
     setBuildingTimeline(true);
@@ -710,6 +748,112 @@ export function OperationsOverview({
                 : "idle"}{" "}
               · processing runs automatically every 2 minutes.
             </p>
+          </>
+        )}
+      </div>
+
+      {/* Business Graph — the shared memory layer. Nodes/edges projected from the
+          system of record. "Build graph" is a manual override; normal operation is
+          automatic (identity trigger + scheduled sync). No fake relationships. */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Business Graph</div>
+            <div className="text-xs text-muted-foreground">
+              The shared relationship layer — people, companies, interactions, cards and
+              recommendations projected as nodes and edges.
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {graph?.ok && graph.data.totalNodes > 0 && (
+              <Button size="sm" variant="outline" onClick={toggleGraphExplorer}>
+                {showGraph ? "Hide" : "Explore"}
+              </Button>
+            )}
+            <Button size="sm" onClick={buildGraph} disabled={buildingGraph}>
+              {buildingGraph ? "Building…" : "Build graph"}
+            </Button>
+          </div>
+        </div>
+
+        {!graph || !graph.ok ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Business Graph unavailable — the graph tables could not be read.
+          </p>
+        ) : graph.data.totalNodes === 0 ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Business Graph not built yet — press “Build graph”, or it builds automatically as
+            identities are enriched.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard label="Nodes" value={metric(graph.data.totalNodes)} />
+              <MetricCard label="Edges" value={metric(graph.data.totalEdges)} />
+              <MetricCard label="People" value={metric(graph.data.people)} />
+              <MetricCard label="Companies" value={metric(graph.data.companies)} />
+              <MetricCard label="Interactions" value={metric(graph.data.interactions)} />
+              <MetricCard label="Cards" value={metric(graph.data.cards)} />
+              <MetricCard label="Recommendations" value={metric(graph.data.recommendations)} />
+              <MetricCard
+                label="Avg confidence"
+                value={graph.data.avgConfidence === null ? "—" : String(graph.data.avgConfidence)}
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              Latest graph event{" "}
+              {graph.data.latestEvent ? fmtTime(graph.data.latestEvent.created_at) : "never"} ·
+              builds automatically on enrichment and on a schedule.
+            </p>
+
+            {showGraph && (
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <div>
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Recent nodes
+                  </div>
+                  <ul className="mt-2 divide-y divide-hairline rounded-xl border border-hairline">
+                    {graphNodes.length === 0 ? (
+                      <li className="px-3 py-2 text-xs text-muted-foreground">No nodes.</li>
+                    ) : (
+                      graphNodes.map((n) => (
+                        <li
+                          key={n.id}
+                          className="flex items-center justify-between gap-2 px-3 py-2 text-xs"
+                        >
+                          <span className="min-w-0 truncate">{n.label ?? n.node_type}</span>
+                          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                            {n.node_type}
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Recent edges
+                  </div>
+                  <ul className="mt-2 divide-y divide-hairline rounded-xl border border-hairline">
+                    {graphEdges.length === 0 ? (
+                      <li className="px-3 py-2 text-xs text-muted-foreground">No edges.</li>
+                    ) : (
+                      graphEdges.map((e) => (
+                        <li
+                          key={e.id}
+                          className="flex items-center justify-between gap-2 px-3 py-2 text-xs"
+                        >
+                          <span className="font-mono text-[11px]">{e.edge_type}</span>
+                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                            {e.confidence === null ? "—" : e.confidence}
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
