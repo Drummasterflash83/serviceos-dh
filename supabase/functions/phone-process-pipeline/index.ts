@@ -22,6 +22,7 @@ import {
   ensureRecordingTranscribed,
   ensureTranscriptAnalysed,
 } from "../_shared/phone_pipeline.ts";
+import { finalizeInteractionForRecording } from "../_shared/phone_enrich.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const PROVIDER = "pipeline";
@@ -220,7 +221,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   const insightId = typeof a.data.insight_id === "string" ? a.data.insight_id : null;
 
-  // --- Step 5: combined result --------------------------------------------
+  // --- Step 5: produce the canonical interaction + publish interaction.ready ---
+  // The pipeline's ONLY hand-off to the shared business layer. Best-effort: a
+  // failure here never fails the (already successful) analysis — downstream
+  // enrichment engines are independent subscribers, not pipeline dependencies.
+  // The scheduled interactions/identity syncs also cover this on their own cadence.
+  const fin = await finalizeInteractionForRecording({
+    admin: supabase,
+    tenantId,
+    recordingId: recordingId as string,
+  });
+
+  // --- Step 6: combined result --------------------------------------------
   await finish(
     "success",
     1,
@@ -230,6 +242,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       analysed: true,
       transcript_id: transcriptId,
       insight_id: insightId,
+      interaction_id: fin.interactionId,
+      interaction_ready: fin.ok && !fin.alreadyEnriched,
+      event_published: fin.eventPublished,
+      ...(fin.ok ? {} : { finalize_skipped: fin.reason ?? "unknown" }),
     },
     null,
   );
@@ -242,6 +258,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     analysed: true,
     transcript_id: transcriptId,
     insight_id: insightId,
+    interaction_id: fin.interactionId,
+    interaction_ready: fin.ok && !fin.alreadyEnriched,
+    event_published: fin.eventPublished,
     sync_run_id: syncRunId,
   });
 });

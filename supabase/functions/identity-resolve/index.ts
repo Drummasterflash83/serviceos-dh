@@ -29,6 +29,7 @@ import {
   failPlatformJob,
   startPlatformJob,
 } from "../_shared/platform_jobs.ts";
+import { markEventsConsumed } from "../_shared/events.ts";
 import {
   matchLevelOf,
   resolveIdentity,
@@ -371,11 +372,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (jobId) await startPlatformJob(admin, jobId);
 
   try {
+    // Subscriber to interaction.ready: consume interactions that are fully
+    // processed at source (READY) but not yet enriched. Also picks up the
+    // pre-events 'pending' state so email/legacy rows are never stranded.
     const { data: pending, error } = await admin
       .from("interactions")
       .select(INTERACTION_COLUMNS)
       .eq("tenant_id", tenantId)
-      .eq("processing_status", "pending")
+      .in("processing_status", ["pending", "ready"])
       .order("occurred_at", { ascending: false })
       .limit(batch);
     if (error) throw new Error(`interactions read failed: ${error.message}`);
@@ -397,6 +401,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (r.cardEnriched) cardsEnriched += 1;
         recommendations += r.recs;
         if (r.unknown) unknown += 1;
+        // Close the loop: this subscriber has handled interaction.ready for this
+        // subject. Best-effort — bus bookkeeping never fails the real enrichment.
+        await markEventsConsumed(admin, {
+          tenantId,
+          eventType: "interaction.ready",
+          subjectId: i.id,
+        });
       } catch (_e) {
         // Failure-isolated: one bad interaction never aborts the batch.
       }

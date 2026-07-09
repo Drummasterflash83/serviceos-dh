@@ -19,70 +19,12 @@ function clampLimit(v: number | undefined): number {
 }
 
 /**
- * Phone processing backlog (RLS-scoped browser read) — the truthful "what still
- * needs work" counts, plus the latest pipeline failure. No service role. Returns
- * ok:false when the tables can't be read (so the UI never shows a fake zero).
+ * NOTE: the phone-processing backlog used to be computed here as a second,
+ * client-side RLS read. It now lives in ONE place — the `phone-pipeline-status`
+ * Edge Function (PhonePipelineStatusResult) — which both the Operations Centre
+ * summary and the Admin › Phone diagnostics consume, so the numbers can never
+ * drift between surfaces. See getPhonePipelineStatus in @/lib/api.
  */
-export interface PhonePipelineBacklog {
-  recordingsTotal: number;
-  notDownloaded: number;
-  downloaded: number;
-  needTranscription: number;
-  needAnalysis: number;
-  latestFailureMessage: string | null;
-  latestFailureAt: string | null;
-}
-
-export async function getPhonePipelineBacklog(): Promise<ApiResult<PhonePipelineBacklog>> {
-  if (!isSupabaseConfigured()) {
-    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
-  }
-  const supabase = getSupabaseClient();
-  const head = { count: "exact" as const, head: true as const };
-
-  const cnt = (build: () => PromiseLike<{ count: number | null; error: unknown }>) =>
-    build().then((r) => (r.error ? null : (r.count ?? 0)));
-
-  // Probe recordings first — distinguishes "unavailable" from "empty".
-  const probe = await supabase.from("phone_recordings").select("*", head);
-  if (probe.error) {
-    return { ok: false, error: { code: "backlog_unavailable", message: probe.error.message } };
-  }
-  const recordingsTotal = probe.count ?? 0;
-
-  const [notDownloaded, transcriptsCompleted, insightsTotal, latest] = await Promise.all([
-    cnt(() => supabase.from("phone_recordings").select("*", head).is("storage_path", null)),
-    cnt(() => supabase.from("phone_transcripts").select("*", head).eq("status", "completed")),
-    cnt(() => supabase.from("phone_ai_insights").select("*", head)),
-    supabase
-      .from("phone_sync_runs")
-      .select("error_message, started_at")
-      .eq("sync_type", "pipeline")
-      .eq("status", "failed")
-      .order("started_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const nd = notDownloaded ?? 0;
-  const downloaded = Math.max(0, recordingsTotal - nd);
-  const completed = transcriptsCompleted ?? 0;
-  const insights = insightsTotal ?? 0;
-  const failRow = latest.data as { error_message: string | null; started_at: string | null } | null;
-
-  return {
-    ok: true,
-    data: {
-      recordingsTotal,
-      notDownloaded: nd,
-      downloaded,
-      needTranscription: Math.max(0, downloaded - completed),
-      needAnalysis: Math.max(0, completed - insights),
-      latestFailureMessage: failRow?.error_message ?? null,
-      latestFailureAt: failRow?.started_at ?? null,
-    },
-  };
-}
 
 /**
  * The tenant's configured Simwood connector account (RLS-scoped browser read),

@@ -148,7 +148,10 @@ async function syncPhone(
       phone_to: (c.to_number as string | null) ?? null,
       sentiment: insight?.sentiment ?? null,
       related_thread_id: (c.linked_id as string | null) ?? null,
-      processing_status: insight ? "analysed" : "pending",
+      // A call WITH an AI insight is fully processed at source → READY for
+      // enrichment subscribers; without one it is still 'pending'. (Matches the
+      // pipeline's finaliser so the backfill and live paths are interchangeable.)
+      processing_status: insight ? "ready" : "pending",
       metadata: {
         duration_seconds: duration,
         outcome,

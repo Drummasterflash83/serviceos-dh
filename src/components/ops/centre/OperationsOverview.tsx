@@ -33,7 +33,8 @@ import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
 import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
 import { getIdentitySummary, type IdentitySummary } from "@/lib/identity";
-import type { ApiResult } from "@/lib/types";
+import { getPhonePipelineStatus } from "@/lib/api";
+import type { ApiResult, PhonePipelineStatusResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   ActivityTable,
@@ -63,6 +64,20 @@ function fmtTime(iso: string | null): string {
   const hrs = Math.round(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.round(hrs / 24)}d ago`;
+}
+
+/** Humanise a duration in seconds ("clear" handled by caller): "3m" · "2h 5m" · "1d 4h". */
+function fmtDur(seconds: number | null): string {
+  if (seconds === null) return "—";
+  if (seconds < 60) return "<1m";
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  if (h < 24) return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  return rh > 0 ? `${d}d ${rh}h` : `${d}d`;
 }
 
 /** Seconds-precision "last refreshed" label (now · 3 sec ago · 35 sec ago · 2m ago). */
@@ -142,10 +157,13 @@ export function OperationsOverview({
   const [schedulers, setSchedulers] = useState<ApiResult<SchedulerHealthItem[]> | null>(null);
   const [liveCalls, setLiveCalls] = useState<ApiResult<LiveCallOpsSummary> | null>(null);
   const [identity, setIdentity] = useState<ApiResult<IdentitySummary> | null>(null);
+  const [phonePipeline, setPhonePipeline] = useState<ApiResult<PhonePipelineStatusResult> | null>(
+    null,
+  );
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live, ident] = await Promise.all([
+    const [sum, list, inter, card, match, sched, live, ident, phone] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
@@ -154,6 +172,14 @@ export function OperationsOverview({
       getSchedulerHealth(),
       getLiveCallOpsSummary(),
       getIdentitySummary(),
+      // Business-health summary of the phone pipeline — the SAME single source
+      // Admin › Phone reads for full diagnostics. Skipped until a tenant is known.
+      tenantId
+        ? getPhonePipelineStatus(tenantId)
+        : Promise.resolve<ApiResult<PhonePipelineStatusResult>>({
+            ok: false,
+            error: { code: "no_tenant", message: "No tenant in session" },
+          }),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
@@ -163,7 +189,8 @@ export function OperationsOverview({
     setSchedulers(sched);
     setLiveCalls(live);
     setIdentity(ident);
-  }, []);
+    setPhonePipeline(phone);
+  }, [tenantId]);
 
   async function buildTimeline() {
     setBuildingTimeline(true);
@@ -596,6 +623,95 @@ export function OperationsOverview({
             </ul>
           )}
         </div>
+      </div>
+
+      {/* Phone system — BUSINESS health (is the business operating correctly?).
+          The full stage-by-stage diagnostics live in Admin › Phone Operations,
+          reachable via "View diagnostics". Both read one source of truth. */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold">Phone system</div>
+            {phonePipeline?.ok && (
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                  phonePipeline.data.health === "healthy"
+                    ? "border-success/20 bg-success/10 text-success"
+                    : phonePipeline.data.health === "warning"
+                      ? "border-warning/30 bg-warning/10 text-warning"
+                      : "border-destructive/30 bg-destructive/10 text-destructive"
+                }`}
+              >
+                {phonePipeline.data.health}
+              </span>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              onNavigate?.({ section: "communications", surface: "phone", focus: "diagnostics" })
+            }
+          >
+            View diagnostics
+          </Button>
+        </div>
+
+        {!phonePipeline || !phonePipeline.ok ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Phone pipeline status unavailable — the pipeline tables could not be read.
+          </p>
+        ) : (
+          <>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {phonePipeline.data.health_reason}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard
+                label="Calls waiting"
+                value={metric(phonePipeline.data.need_work)}
+                tone={phonePipeline.data.need_work > 0 ? "warning" : "default"}
+              />
+              <MetricCard
+                label="Oldest waiting"
+                value={
+                  phonePipeline.data.oldest_pending_beyond_scan
+                    ? "old"
+                    : phonePipeline.data.need_work === 0
+                      ? "—"
+                      : fmtDur(phonePipeline.data.oldest_pending_age_seconds)
+                }
+                tone={
+                  (phonePipeline.data.oldest_pending_age_seconds ?? 0) > 900 ||
+                  phonePipeline.data.oldest_pending_beyond_scan
+                    ? "critical"
+                    : "default"
+                }
+              />
+              <MetricCard
+                label="Catch-up ETA"
+                value={
+                  phonePipeline.data.need_work === 0
+                    ? "clear"
+                    : phonePipeline.data.estimated_drain_seconds === null
+                      ? "—"
+                      : fmtDur(phonePipeline.data.estimated_drain_seconds)
+                }
+              />
+              <MetricCard
+                label="Last processed"
+                value={fmtTime(phonePipeline.data.last_success_at)}
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              Throughput{" "}
+              {phonePipeline.data.throughput_per_min > 0
+                ? `${phonePipeline.data.throughput_per_min} call(s)/min`
+                : "idle"}{" "}
+              · processing runs automatically every 2 minutes.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Intelligence — identity resolution engine (evidence-based, honest states) */}

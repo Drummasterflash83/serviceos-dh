@@ -206,14 +206,56 @@ export interface ProcessPhonePipelineResult {
   sync_run_id: string | null;
 }
 
-/** Diagnostics counts from `phone-pipeline-status`. */
+/** Input to the `phone-process-pending` backlog drainer. */
+export interface ProcessPendingPhoneInput {
+  tenantId: string;
+  /** Max recordings to process this run (clamped 1–10 server-side). */
+  limit?: number;
+}
+
+/** Per-stage counts from `phone-process-pending`. */
+export interface ProcessPendingPhoneResult {
+  success: boolean;
+  processed: number;
+  downloaded: number;
+  transcribed: number;
+  analysed: number;
+  failed: number;
+  /** Recordings already complete within the scan window (not reprocessed). */
+  skipped: number;
+  /** Most recent child error (e.g. missing OPENAI_API_KEY); null when clean. */
+  last_error: string | null;
+}
+
+/**
+ * The single source of truth for phone-pipeline health (`phone-pipeline-status`).
+ * The Operations Centre renders the SUMMARY; Admin › Phone renders full detail.
+ */
 export interface PhonePipelineStatusResult {
   success: boolean;
+  health: "healthy" | "warning" | "critical";
+  health_reason: string;
+  // stage backlog
+  recordings_total: number;
+  not_downloaded: number;
+  downloaded: number;
+  need_transcription: number;
+  need_analysis: number;
+  need_work: number;
+  // high-level (back-compat)
   pending: number;
   processing: number;
   failed: number;
   completed: number;
-  recordings_total: number;
+  // freshness + flow
+  oldest_pending_at: string | null;
+  oldest_pending_age_seconds: number | null;
+  oldest_pending_beyond_scan: boolean;
+  last_success_at: string | null;
+  last_failure_at: string | null;
+  last_failure_message: string | null;
+  throughput_per_min: number;
+  estimated_drain_seconds: number | null;
 }
 
 /** Filters for the tenant-scoped call feed (client-side RLS reads). */

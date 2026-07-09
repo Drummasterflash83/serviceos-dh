@@ -112,16 +112,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    const pending = recordings
-      .filter(
-        (r) => r.storage_path === null || !completedTranscript.has(r.id) || !analysed.has(r.id),
-      )
-      .slice(0, batch);
+    const pendingAll = recordings.filter(
+      (r) => r.storage_path === null || !completedTranscript.has(r.id) || !analysed.has(r.id),
+    );
+    const pending = pendingAll.slice(0, batch);
+    // Recordings in the recent scan window that are ALREADY fully complete and so
+    // are deliberately NOT reprocessed (evidence of "never reprocesses complete
+    // items"). Scan-window scoped — older complete recordings aren't counted.
+    const skipped = recordings.length - pendingAll.length;
 
     let downloaded = 0;
     let transcribed = 0;
     let analysedCount = 0;
     let failed = 0;
+    // Surface the most recent child error (e.g. missing OPENAI_API_KEY) instead of
+    // hiding it behind an opaque `failed` count. Never contains a secret — the
+    // step functions return only codes/messages.
+    let lastError: string | null = null;
 
     // Serial + failure-isolated: one bad recording never aborts the batch.
     for (const r of pending) {
@@ -137,13 +144,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (j.analysed) analysedCount += 1;
       } else {
         failed += 1;
+        const err = (j?.error ?? null) as { code?: unknown; message?: unknown } | null;
+        const code = typeof err?.code === "string" ? err.code : null;
+        const message = typeof err?.message === "string" ? err.message : null;
+        lastError = message ?? code ?? `pipeline failed (${res.status || "network"})`;
       }
     }
 
     if (jobId) {
       await completePlatformJob(supabase, jobId, {
         recordsProcessed: pending.length,
-        result: { downloaded, transcribed, analysed: analysedCount, failed },
+        result: {
+          downloaded,
+          transcribed,
+          analysed: analysedCount,
+          failed,
+          skipped,
+          ...(lastError ? { last_error: lastError } : {}),
+        },
       });
     }
 
@@ -154,6 +172,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       transcribed,
       analysed: analysedCount,
       failed,
+      skipped,
+      last_error: lastError,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "process-pending failed";

@@ -84,6 +84,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       transcribed: typeof j?.transcribed === "number" ? j.transcribed : 0,
       analysed: typeof j?.analysed === "number" ? j.analysed : 0,
       failed: typeof j?.failed === "number" ? j.failed : 0,
+      skipped: typeof j?.skipped === "number" ? j.skipped : 0,
     });
   }
 

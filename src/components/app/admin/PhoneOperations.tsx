@@ -32,12 +32,7 @@ import type {
 import { ConnectorStatusBadge } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
 import type { ConnectorSurfaceProps } from "@/lib/runtime/types";
-import {
-  getSimwoodAccount,
-  getPhonePipelineBacklog,
-  type SimwoodAccount,
-  type PhonePipelineBacklog,
-} from "@/lib/phone-feed";
+import { getSimwoodAccount, type SimwoodAccount } from "@/lib/phone-feed";
 import {
   listVoiceEndpoints,
   saveVoiceEndpoint,
@@ -58,6 +53,34 @@ const STATUS_TILES: {
   { key: "failed", label: "Failed", tone: "text-destructive" },
   { key: "completed", label: "Completed", tone: "text-success" },
 ];
+
+const HEALTH_TONE: Record<string, string> = {
+  healthy: "border-success/20 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  critical: "border-destructive/30 bg-destructive/10 text-destructive",
+};
+
+/** Humanise a duration in seconds ("just now" / "3m" / "2h 5m" / "1d 4h"). */
+function fmtDuration(seconds: number | null): string {
+  if (seconds === null) return "—";
+  if (seconds < 60) return "just now";
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  if (h < 24) return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  return rh > 0 ? `${d}d ${rh}h` : `${d}d`;
+}
+
+/** Absolute → relative "x ago" for a success/failure watermark. */
+function fmtAgo(iso: string | null): string {
+  if (!iso) return "never";
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) return "—";
+  return `${fmtDuration(Math.max(0, Math.floor((Date.now() - ms) / 1000)))} ago`;
+}
 
 export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {}) {
   const { profile } = useAuth();
@@ -113,22 +136,17 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   const [statusLoading, setStatusLoading] = useState(false);
   const [status, setStatus] = useState<ApiResult<PhonePipelineStatusResult> | null>(null);
 
-  // Processing backlog (truthful "what still needs work") + the latest failure.
-  const [backlog, setBacklog] = useState<ApiResult<PhonePipelineBacklog> | null>(null);
   const [processing, setProcessing] = useState(false);
   const [processResult, setProcessResult] = useState<ApiResult<ProcessPendingPhoneResult> | null>(
     null,
   );
 
+  // ONE source of truth: phone-pipeline-status returns health + stage backlog +
+  // freshness, so there is no second client-side backlog computation to drift.
   const loadStatus = useCallback(async () => {
     if (!tenantId) return;
     setStatusLoading(true);
-    const [st, bl] = await Promise.all([
-      getPhonePipelineStatus(tenantId),
-      getPhonePipelineBacklog(),
-    ]);
-    setStatus(st);
-    setBacklog(bl);
+    setStatus(await getPhonePipelineStatus(tenantId));
     setStatusLoading(false);
   }, [tenantId]);
 
@@ -307,79 +325,132 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             );
           })}
         </div>
+
+        {/* Pipeline health strip — freshness + flow (the diagnostics view of the
+            same signals the Operations Centre summarises). */}
+        {status?.ok && (
+          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-hairline bg-surface-alt p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                  HEALTH_TONE[status.data.health] ?? HEALTH_TONE.warning
+                }`}
+              >
+                {status.data.health}
+              </span>
+              <span className="text-xs text-muted-foreground">{status.data.health_reason}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: "Last success", value: fmtAgo(status.data.last_success_at) },
+                {
+                  label: "Oldest waiting",
+                  value: status.data.oldest_pending_beyond_scan
+                    ? "> scan window"
+                    : fmtDuration(status.data.oldest_pending_age_seconds),
+                },
+                {
+                  label: "Throughput",
+                  value:
+                    status.data.throughput_per_min > 0
+                      ? `${status.data.throughput_per_min}/min`
+                      : "idle",
+                },
+                {
+                  label: "Est. drain",
+                  value:
+                    status.data.need_work === 0
+                      ? "clear"
+                      : status.data.estimated_drain_seconds === null
+                        ? "—"
+                        : fmtDuration(status.data.estimated_drain_seconds),
+                },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    {s.label}
+                  </div>
+                  <div className="text-display mt-1 text-base font-semibold tabular text-foreground">
+                    {s.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Processing backlog — truthful "what still needs work" + one-click drain */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div className="text-sm font-semibold">Processing backlog</div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-semibold">Processing backlog</div>
+              <span className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Manual override
+              </span>
+            </div>
             <div className="text-xs text-muted-foreground">
-              Download → transcribe → analyse runs server-side (no session needed).
+              Normally automatic — the scheduler drains this every 2 minutes. Use this only to force
+              a batch now.
             </div>
           </div>
           <Button
             size="sm"
             onClick={runProcessPending}
             disabled={processing || !tenantId}
-            title="Process a batch of pending recordings now"
+            title="Manual override: force-process a batch of pending recordings now"
           >
             {processing ? "Processing…" : "Process pending now"}
           </Button>
         </div>
 
-        {backlog && !backlog.ok ? (
-          <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            Backlog unavailable — {backlog.error.code}: {backlog.error.message}
-          </div>
-        ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              {
-                label: "Not downloaded",
-                value: backlog?.ok ? backlog.data.notDownloaded : null,
-                tone:
-                  backlog?.ok && backlog.data.notDownloaded > 0
-                    ? "text-destructive"
-                    : "text-muted-foreground",
-              },
-              {
-                label: "Need transcription",
-                value: backlog?.ok ? backlog.data.needTranscription : null,
-                tone:
-                  backlog?.ok && backlog.data.needTranscription > 0
-                    ? "text-warning"
-                    : "text-muted-foreground",
-              },
-              {
-                label: "Need analysis",
-                value: backlog?.ok ? backlog.data.needAnalysis : null,
-                tone:
-                  backlog?.ok && backlog.data.needAnalysis > 0
-                    ? "text-warning"
-                    : "text-muted-foreground",
-              },
-              {
-                label: "Downloaded",
-                value: backlog?.ok ? backlog.data.downloaded : null,
-                tone: "text-success",
-              },
-            ].map((t) => (
-              <div key={t.label} className="rounded-xl border border-hairline bg-surface-alt p-4">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {t.label}
-                </div>
-                <div className={`text-display mt-2 text-2xl font-bold tabular ${t.tone}`}>
-                  {t.value === null ? "—" : t.value}
-                </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            {
+              label: "Not downloaded",
+              value: status?.ok ? status.data.not_downloaded : null,
+              tone:
+                status?.ok && status.data.not_downloaded > 0
+                  ? "text-destructive"
+                  : "text-muted-foreground",
+            },
+            {
+              label: "Need transcription",
+              value: status?.ok ? status.data.need_transcription : null,
+              tone:
+                status?.ok && status.data.need_transcription > 0
+                  ? "text-warning"
+                  : "text-muted-foreground",
+            },
+            {
+              label: "Need analysis",
+              value: status?.ok ? status.data.need_analysis : null,
+              tone:
+                status?.ok && status.data.need_analysis > 0
+                  ? "text-warning"
+                  : "text-muted-foreground",
+            },
+            {
+              label: "Downloaded",
+              value: status?.ok ? status.data.downloaded : null,
+              tone: "text-success",
+            },
+          ].map((t) => (
+            <div key={t.label} className="rounded-xl border border-hairline bg-surface-alt p-4">
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                {t.label}
               </div>
-            ))}
-          </div>
-        )}
+              <div className={`text-display mt-2 text-2xl font-bold tabular ${t.tone}`}>
+                {t.value === null ? "—" : t.value}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {backlog?.ok && backlog.data.latestFailureMessage && (
+        {status?.ok && status.data.last_failure_message && (
           <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-            Latest pipeline failure: {backlog.data.latestFailureMessage}
+            Latest pipeline failure: {status.data.last_failure_message}
           </div>
         )}
 
@@ -392,8 +463,14 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             { label: "Transcribed", value: String(d.transcribed) },
             { label: "Analysed", value: String(d.analysed) },
             { label: "Failed", value: String(d.failed) },
+            { label: "Skipped", value: String(d.skipped) },
           ]}
         />
+        {processResult?.ok && processResult.data.last_error && (
+          <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            Last error: {processResult.data.last_error}
+          </div>
+        )}
       </div>
 
       {/* User phone extensions — maps a user to a VoIP extension (Live Call Card) */}
