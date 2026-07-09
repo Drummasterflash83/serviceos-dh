@@ -39,3 +39,9 @@ verify_jwt = false
 # JWT, gated by the `x-schedule-secret` header checked against PHONE_PROCESSING_SECRET.
 [functions.phone-processing-scheduled-sync]
 verify_jwt = false
+
+# Scheduled canonical-signal build — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against SIGNAL_SYNC_SECRET. Refreshes the
+# `interactions` timeline automatically so users never have to press "Build".
+[functions.interactions-scheduled-sync]
+verify_jwt = false

@@ -28,6 +28,9 @@ import {
   syncInteractions,
   type InteractionSummary,
 } from "@/lib/interactions";
+import { getCardsSummary, type CardsSummary } from "@/lib/cards";
+import { getMatchSummary, type MatchSummary } from "@/lib/matching";
+import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
 import type { ApiResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,17 +135,26 @@ export function OperationsOverview({
   const [jobsSummary, setJobsSummary] = useState<ApiResult<PlatformJobSummary> | null>(null);
   const [recentJobs, setRecentJobs] = useState<PlatformJob[]>([]);
   const [interactions, setInteractions] = useState<ApiResult<InteractionSummary> | null>(null);
+  const [cards, setCards] = useState<ApiResult<CardsSummary> | null>(null);
+  const [matches, setMatches] = useState<ApiResult<MatchSummary> | null>(null);
+  const [schedulers, setSchedulers] = useState<ApiResult<SchedulerHealthItem[]> | null>(null);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter] = await Promise.all([
+    const [sum, list, inter, card, match, sched] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
+      getCardsSummary(),
+      getMatchSummary(),
+      getSchedulerHealth(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
     setInteractions(inter);
+    setCards(card);
+    setMatches(match);
+    setSchedulers(sched);
   }, []);
 
   async function buildTimeline() {
@@ -254,6 +266,14 @@ export function OperationsOverview({
   const interData = interactions?.ok ? interactions.data : null;
   const interUnavailable = interactions !== null && !interactions.ok;
   const timelineNotBuilt = !!interData && interData.latest_interaction_at === null;
+
+  // Signals / cards / matches / scheduler — all honest (real evidence only).
+  const cardsData = cards?.ok ? cards.data : null;
+  const matchData = matches?.ok ? matches.data : null;
+  const schedulerItems = schedulers?.ok ? schedulers.data : null;
+  /** Show a real count, or "—" when the source is unavailable. */
+  const metric = (v: number | null | undefined): string | number =>
+    typeof v === "number" ? v : "—";
 
   // Health breakdown — one row per present connector (+ honest placeholders).
   const healthItems: HealthBreakdownItem[] = [
@@ -454,7 +474,7 @@ export function OperationsOverview({
           <div>
             <div className="text-sm font-semibold">Business timeline</div>
             <div className="text-xs text-muted-foreground">
-              Unified interactions across calls &amp; email — the CRM foundation.
+              Builds automatically from calls &amp; email — this button is a recovery override.
             </div>
           </div>
           <Button
@@ -462,6 +482,7 @@ export function OperationsOverview({
             variant="outline"
             onClick={() => void buildTimeline()}
             disabled={buildingTimeline}
+            title="Override: rebuild the timeline now (normally automatic)"
           >
             {buildingTimeline ? "Building…" : timelineNotBuilt ? "Build timeline" : "Rebuild"}
           </Button>
@@ -487,6 +508,82 @@ export function OperationsOverview({
             <MetricCard label="Latest" value={fmtTime(interData?.latest_interaction_at ?? null)} />
           </div>
         )}
+      </div>
+
+      {/* Signals & customer cards — the foundation for the daily work surface */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-hairline bg-white p-6">
+          <div className="text-sm font-semibold">Signals &amp; cards</div>
+          <div className="text-xs text-muted-foreground">
+            Every interaction is a signal; cards &amp; matches build over time.
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <MetricCard
+              label="Signals today"
+              value={metric(interData?.total_today)}
+              tone="accent"
+            />
+            <MetricCard
+              label="Unprocessed"
+              value={metric(interData?.pending_processing)}
+              tone={interData && interData.pending_processing > 0 ? "warning" : "default"}
+            />
+            <MetricCard label="Customer cards" value={metric(cardsData?.total)} />
+            <MetricCard
+              label="Suggested matches"
+              value={metric(matchData?.pending)}
+              tone={matchData && matchData.pending > 0 ? "accent" : "default"}
+            />
+            <MetricCard
+              label="Urgent cards"
+              value={metric(cardsData?.urgent)}
+              tone={cardsData && cardsData.urgent > 0 ? "critical" : "default"}
+            />
+            <MetricCard label="Waiting" value={metric(cardsData?.waiting)} />
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            {cardsData && cardsData.total === 0
+              ? "No customer cards yet — cards build automatically as signals are enriched."
+              : "Cards & match suggestions are populated by background enrichment (no fake data)."}
+          </p>
+        </div>
+
+        {/* Scheduler health — is automatic processing actually running? */}
+        <div className="rounded-2xl border border-hairline bg-white p-6">
+          <div className="text-sm font-semibold">Scheduler health</div>
+          <div className="text-xs text-muted-foreground">
+            Automatic processing cadence — “never” means the cron isn’t configured yet.
+          </div>
+          {!schedulerItems ? (
+            <p className="mt-3 text-xs text-muted-foreground">Scheduler status unavailable.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-hairline">
+              {schedulerItems.map((s) => (
+                <li key={s.name} className="flex items-center justify-between gap-3 py-2 text-xs">
+                  <span className="min-w-0 truncate text-foreground">{s.label}</span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      {fmtTime(s.lastRunAt)}
+                    </span>
+                    <span
+                      className={
+                        s.status === "healthy"
+                          ? "text-success"
+                          : s.status === "stale"
+                            ? "text-warning"
+                            : s.status === "never"
+                              ? "text-muted-foreground"
+                              : "text-destructive"
+                      }
+                    >
+                      {s.status}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* Recent platform jobs — the durable execution record */}
