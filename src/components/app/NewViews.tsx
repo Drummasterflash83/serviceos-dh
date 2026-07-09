@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck, Clock, AlertTriangle, CheckCircle2, Phone, Mail, Inbox,
   Truck, PackageSearch, Receipt, CalendarClock, Workflow, Sparkles,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { getCustomerCards, type ProjectedCard } from "@/lib/customer-cards";
 
 /* ───── Shared bits ───── */
 function Hero({
@@ -1183,110 +1184,143 @@ function PPM() {
   );
 }
 
-/* ────── CUSTOMERS (5-year asset visual + wraparound) ────── */
-type CustomerCard = {
-  id: string; name: string; assets: number; plant: number;
-  next: string; value: string;
+/* ────── CUSTOMERS (read-only projections of the Business Graph) ────── */
+
+const HEALTH_BADGE: Record<string, string> = {
+  excellent: "border-success/30 bg-success/10 text-success",
+  good: "border-success/20 bg-success/10 text-success",
+  attention: "border-warning/30 bg-warning/10 text-warning",
+  critical: "border-destructive/30 bg-destructive/10 text-destructive",
 };
-const CUSTOMERS: CustomerCard[] = [
-  { id: "C-01", name: "ABC School", assets: 8, plant: 84, next: "Boiler #1 service · 8d", value: "£4,800/yr" },
-  { id: "C-02", name: "Greenfield Care Home", assets: 4, plant: 71, next: "Pump replacement · 30d", value: "£2,400/yr" },
-  { id: "C-03", name: "Highbridge Foods Ltd", assets: 12, plant: 92, next: "Conveyor service · 21d", value: "£7,200/yr" },
-  { id: "C-04", name: "Crestmont Apartments", assets: 22, plant: 58, next: "5 boilers nearing EOL · 6m", value: "£9,600/yr" },
-];
+
+function fmtWhen(iso: string | null): string {
+  if (!iso) return "—";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
+function CardStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-hairline bg-surface-alt p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-display mt-1 text-lg font-bold tabular">{value}</div>
+    </div>
+  );
+}
 
 export function Customers() {
-  const [tab, setTab] = useState<"health" | "wraparound">("health");
-  const [open, setOpen] = useState<CustomerCard | null>(null);
+  const [cards, setCards] = useState<ProjectedCard[] | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  const [open, setOpen] = useState<ProjectedCard | null>(null);
 
-  const reviews = [
-    { cust: "ABC School", job: "J-3390 · emergency call-out", status: "Received", rating: 5 },
-    { cust: "Greenfield Care", job: "J-3388 · annual service", status: "Sent", rating: null },
-    { cust: "12 Marlborough Rd", job: "J-3385 · install", status: "Not sent", rating: null, flag: "Big job - Mary to send" },
-    { cust: "Highbridge Foods", job: "J-3380 · plant room", status: "Flagged", rating: 2, flag: "Sentiment risk" },
-  ];
+  useEffect(() => {
+    let active = true;
+    void getCustomerCards(100).then((res) => {
+      if (!active) return;
+      if (res.ok) setCards(res.data);
+      else {
+        setUnavailable(true);
+        setCards([]);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const proj = open?.projection ?? null;
 
   return (
     <div className="space-y-5">
       <Hero
         eyebrow="Customers"
-        title="The full picture, per customer."
-        sub="5-year asset health on one side, the human wraparound on the other. Every big or problem job is auto-flagged so Mary or Heidi can add the personal touch."
+        title="Every customer, as the platform sees them."
+        sub="Read-only operational cards projected from the Business Graph — who they are, what's happening, what needs doing and what's at risk. Nothing here is typed in; it's all calculated and explainable."
         icon={Users}
       />
 
-      <div className="flex gap-1">
-        {(["health", "wraparound"] as const).map((k) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            className={cn("rounded-full px-3 py-1.5 text-xs font-medium", tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:bg-surface-alt")}
-          >
-            {k === "health" ? "Asset health · 5-year" : "Wraparound & reviews"}
-          </button>
-        ))}
-      </div>
-
-      {tab === "health" && (
-        <div className="grid gap-3 md:grid-cols-2">
-          {CUSTOMERS.map((c) => (
-            <button key={c.id} onClick={() => setOpen(c)} className="rounded-2xl border border-hairline bg-white p-5 text-left hover:border-foreground/40">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Customer</div>
-                  <div className="text-display text-sm font-semibold">{c.name}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Plant room</div>
-                  <div className="text-display text-lg font-bold tabular">{c.plant}</div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-surface-alt">
-                <div className="bg-success/60" style={{ width: "40%" }} />
-                <div className="bg-warning/60" style={{ width: "20%" }} />
-                <div className="bg-destructive/40" style={{ width: "15%" }} />
-              </div>
-              <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
-                <span>Y1</span><span>Y2</span><span>Y3</span><span>Y4</span><span>Y5</span>
-              </div>
-
-              <div className="mt-4 border-t border-hairline pt-3 text-[11px]">
-                <div className="flex justify-between"><span className="text-muted-foreground">Assets</span><span className="font-mono tabular">{c.assets}</span></div>
-                <div className="mt-1 flex justify-between"><span className="text-muted-foreground">Contract</span><span className="font-mono tabular">{c.value}</span></div>
-                <div className="mt-1 flex justify-between"><span className="text-muted-foreground">Next</span><span>{c.next}</span></div>
-              </div>
-            </button>
-          ))}
+      {unavailable ? (
+        <div className="rounded-2xl border border-hairline bg-white p-6 text-sm text-muted-foreground">
+          Customer cards are unavailable — the projection tables could not be read.
         </div>
-      )}
-
-      {tab === "wraparound" && (
-        <div className="rounded-2xl border border-hairline bg-white">
-          <div className="border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">Completed jobs · review status</div>
-          {reviews.map((r, i) => (
-            <div key={i} className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0">
-              <div className="col-span-3 font-medium min-w-0">{r.cust}</div>
-              <div className="col-span-4 text-xs text-muted-foreground min-w-0">{r.job}</div>
-              <div className="col-span-2 min-w-0">
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium",
-                  r.status === "Received" && "bg-success/10 text-success",
-                  r.status === "Sent" && "bg-accent/10 text-accent",
-                  r.status === "Not sent" && "bg-muted/40 text-muted-foreground",
-                  r.status === "Flagged" && "bg-destructive/10 text-destructive",
-                )}>{r.status}</span>
-              </div>
-              <div className="col-span-2 flex items-center gap-0.5 min-w-0">
-                {r.rating && Array.from({ length: 5 }).map((_, j) => (
-                  <Star key={j} className={cn("h-3 w-3", j < r.rating! ? "fill-warning text-warning" : "text-muted-foreground/30")} />
-                ))}
-                {r.flag && <span className="ml-2 text-[10px] text-warning">{r.flag}</span>}
-              </div>
-              <div className="col-span-1 flex justify-end min-w-0">
-                <button className="rounded-full border border-hairline px-2.5 py-1 text-[11px]">Send</button>
-              </div>
-            </div>
-          ))}
+      ) : cards === null ? (
+        <div className="rounded-2xl border border-hairline bg-white p-6 text-sm text-muted-foreground">
+          Loading customer cards…
+        </div>
+      ) : cards.length === 0 ? (
+        <div className="rounded-2xl border border-hairline bg-white p-6 text-sm text-muted-foreground">
+          No customer cards yet — cards build automatically as identities are enriched and the
+          projection engine runs. Trigger “Build cards” from the Operations Centre to project now.
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {cards.map((c) => {
+            const p = c.projection;
+            const health = p?.business.health ?? null;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setOpen(c)}
+                className="rounded-2xl border border-hairline bg-white p-5 text-left hover:border-foreground/40"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Customer
+                    </div>
+                    <div className="text-display truncate text-sm font-semibold">
+                      {p?.identity.display_name ?? c.title ?? "Unknown contact"}
+                    </div>
+                    {p?.identity.company_name && (
+                      <div className="truncate text-xs text-muted-foreground">
+                        {p.identity.company_name}
+                      </div>
+                    )}
+                  </div>
+                  {health && (
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize",
+                        HEALTH_BADGE[health],
+                      )}
+                    >
+                      {health}
+                    </span>
+                  )}
+                </div>
+                {p ? (
+                  <div className="mt-4 grid grid-cols-3 gap-2 border-t border-hairline pt-3 text-[11px]">
+                    <div>
+                      <div className="text-muted-foreground">Activity</div>
+                      <div className="text-display text-base font-bold tabular">
+                        {p.business.activity_score}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Open actions</div>
+                      <div className="text-display text-base font-bold tabular">
+                        {p.operations.open_recommendations}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Last contact</div>
+                      <div className="text-sm">{fmtWhen(p.communication.last_interaction_at)}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 border-t border-hairline pt-3 text-[11px] text-muted-foreground">
+                    Projection pending — not yet built for this card.
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -1295,36 +1329,144 @@ export function Customers() {
           {open && (
             <>
               <DialogHeader>
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Customer · plant room health {open.plant}</div>
-                <DialogTitle className="text-display text-xl font-semibold">{open.name}</DialogTitle>
-                <DialogDescription>5-year asset timeline · service, likely failure and break-even-to-replace markers.</DialogDescription>
+                <div className="flex items-center gap-2">
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                    Customer card
+                  </div>
+                  {proj && (
+                    <span
+                      className={cn(
+                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize",
+                        HEALTH_BADGE[proj.business.health],
+                      )}
+                    >
+                      {proj.business.health}
+                    </span>
+                  )}
+                </div>
+                <DialogTitle className="text-display text-xl font-semibold">
+                  {proj?.identity.display_name ?? open.title ?? "Customer"}
+                </DialogTitle>
+                <DialogDescription>
+                  {proj?.identity.company_name ? `${proj.identity.company_name} · ` : ""}Read-only
+                  projection of the Business Graph.
+                </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 py-2">
-                {["Boiler #1 · Worcester 30CDi", "Boiler #2 · Worcester 30CDi", "Plant room pumps · Grundfos UPS2"].map((a, i) => (
-                  <div key={a} className="rounded-xl border border-hairline bg-surface-alt p-4">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">{a}</span>
-                      <span className="text-muted-foreground font-mono">installed {2020 + i}</span>
-                    </div>
-                    <div className="relative mt-4 h-8 rounded-md bg-white">
-                      {[15, 45, 70].map((p, j) => (
-                        <span key={j} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-success px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ left: `${p}%` }}>service</span>
-                      ))}
-                      <span className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-warning px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ left: "82%" }}>likely failure</span>
-                      <span className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-destructive px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ left: "95%" }}>replace</span>
-                    </div>
-                    <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
-                      <span>now</span><span>Y1</span><span>Y2</span><span>Y3</span><span>Y4</span><span>Y5</span>
-                    </div>
+              {!proj ? (
+                <div className="py-4 text-sm text-muted-foreground">
+                  Projection pending — this card hasn't been built by the engine yet.
+                </div>
+              ) : (
+                <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
+                  <div className="grid grid-cols-3 gap-3">
+                    <CardStat label="Activity score" value={String(proj.business.activity_score)} />
+                    <CardStat
+                      label="Confidence"
+                      value={
+                        proj.business.confidence === null ? "—" : String(proj.business.confidence)
+                      }
+                    />
+                    <CardStat
+                      label="Relationships"
+                      value={String(proj.business.relationship_count)}
+                    />
                   </div>
-                ))}
-              </div>
+                  {proj.business.health_reasons.length > 0 && (
+                    <div className="rounded-xl border border-hairline bg-surface-alt p-3 text-xs">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Why this health
+                      </div>
+                      <div className="mt-1 text-muted-foreground">
+                        {proj.business.health_reasons.join(" · ")}
+                      </div>
+                    </div>
+                  )}
 
-              <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
-                <button className="rounded-full border border-hairline px-3 py-1.5 text-xs">Open customer record</button>
-                <button className="rounded-full bg-foreground px-3 py-1.5 text-xs text-background">Generate customer report</button>
-              </div>
+                  <div className="rounded-xl border border-hairline p-3 text-xs">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Communication
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <div>
+                        Last contact:{" "}
+                        <span className="text-foreground">
+                          {fmtWhen(proj.communication.last_interaction_at)}
+                        </span>
+                      </div>
+                      <div>
+                        Interactions:{" "}
+                        <span className="tabular text-foreground">
+                          {proj.communication.interaction_count}
+                        </span>
+                      </div>
+                      <div>
+                        Trend: <span className="text-foreground">{proj.communication.trend}</span>
+                      </div>
+                      <div>
+                        Response:{" "}
+                        <span className="text-foreground">
+                          {proj.business.avg_response_hours === null
+                            ? "—"
+                            : `${proj.business.avg_response_hours}h`}
+                        </span>
+                      </div>
+                    </div>
+                    {proj.communication.channels.length > 0 && (
+                      <div className="mt-2 text-muted-foreground">
+                        Channels: {proj.communication.channels.join(", ")}
+                      </div>
+                    )}
+                  </div>
+
+                  {(proj.operations.urgent.length > 0 || proj.operations.waiting.length > 0) && (
+                    <div className="rounded-xl border border-hairline p-3 text-xs">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        What needs doing
+                      </div>
+                      <ul className="mt-2 space-y-1">
+                        {proj.operations.urgent.map((r, i) => (
+                          <li key={`u${i}`} className="flex items-center gap-2">
+                            <span className="rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                              urgent
+                            </span>
+                            <span className="min-w-0 truncate">{r.title ?? "Action"}</span>
+                          </li>
+                        ))}
+                        {proj.operations.waiting.map((r, i) => (
+                          <li key={`w${i}`} className="flex items-center gap-2">
+                            <span className="rounded-full bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                              waiting
+                            </span>
+                            <span className="min-w-0 truncate">{r.title ?? "Action"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {proj.timeline.length > 0 && (
+                    <div className="rounded-xl border border-hairline p-3 text-xs">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Recent activity
+                      </div>
+                      <ul className="mt-2 space-y-1">
+                        {proj.timeline.map((t, i) => (
+                          <li key={i} className="flex items-center justify-between gap-2">
+                            <span className="min-w-0 truncate">{t.label}</span>
+                            <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                              {fmtWhen(t.at)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="text-[10px] text-muted-foreground">
+                    Projected {fmtWhen(proj.generated_at)} · read-only.
+                  </div>
+                </div>
+              )}
             </>
           )}
         </DialogContent>

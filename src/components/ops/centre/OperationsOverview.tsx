@@ -43,6 +43,11 @@ import {
   type GraphNode,
   type GraphEdge,
 } from "@/lib/business-graph";
+import {
+  getCustomerCardSummary,
+  syncCustomerCards,
+  type CustomerCardSummary,
+} from "@/lib/customer-cards";
 import type { ApiResult, PhonePipelineStatusResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -174,10 +179,12 @@ export function OperationsOverview({
   const [showGraph, setShowGraph] = useState(false);
   const [graphNodes, setGraphNodes] = useState<GraphNode[]>([]);
   const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
+  const [customerCards, setCustomerCards] = useState<ApiResult<CustomerCardSummary> | null>(null);
+  const [buildingCards, setBuildingCards] = useState(false);
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live, ident, phone, gr] = await Promise.all([
+    const [sum, list, inter, card, match, sched, live, ident, phone, gr, cc] = await Promise.all([
       getPlatformJobSummary(),
       listPlatformJobs({ limit: 12 }),
       getInteractionSummary(),
@@ -195,6 +202,7 @@ export function OperationsOverview({
             error: { code: "no_tenant", message: "No tenant in session" },
           }),
       getBusinessGraphSummary(),
+      getCustomerCardSummary(),
     ]);
     setJobsSummary(sum);
     setRecentJobs(list.ok ? list.data : []);
@@ -206,7 +214,15 @@ export function OperationsOverview({
     setIdentity(ident);
     setPhonePipeline(phone);
     setGraph(gr);
+    setCustomerCards(cc);
   }, [tenantId]);
+
+  async function buildCards() {
+    setBuildingCards(true);
+    await syncCustomerCards();
+    setBuildingCards(false);
+    void loadJobs();
+  }
 
   async function buildGraph() {
     setBuildingGraph(true);
@@ -853,6 +869,81 @@ export function OperationsOverview({
                   </ul>
                 </div>
               </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Customer Health — projections of the Business Graph (health/activity/
+          confidence). "Build cards" is a manual override; normal operation is
+          automatic (scheduled after the graph). No fake data. */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Customer health</div>
+            <div className="text-xs text-muted-foreground">
+              Projected from the Business Graph — read-only, all calculated and explainable.
+            </div>
+          </div>
+          <Button size="sm" onClick={buildCards} disabled={buildingCards}>
+            {buildingCards ? "Building…" : "Build cards"}
+          </Button>
+        </div>
+
+        {!customerCards || !customerCards.ok ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Customer cards unavailable — the projection tables could not be read.
+          </p>
+        ) : customerCards.data.projected === 0 ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            No projected cards yet — press “Build cards”, or they build automatically after the
+            graph.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard label="Excellent" value={metric(customerCards.data.excellent)} />
+              <MetricCard label="Good" value={metric(customerCards.data.good)} />
+              <MetricCard
+                label="Attention"
+                value={metric(customerCards.data.attention)}
+                tone={customerCards.data.attention > 0 ? "warning" : "default"}
+              />
+              <MetricCard
+                label="Critical"
+                value={metric(customerCards.data.critical)}
+                tone={customerCards.data.critical > 0 ? "critical" : "default"}
+              />
+              <MetricCard
+                label="Avg activity"
+                value={
+                  customerCards.data.avgActivityScore === null
+                    ? "—"
+                    : String(customerCards.data.avgActivityScore)
+                }
+              />
+              <MetricCard
+                label="Avg confidence"
+                value={
+                  customerCards.data.avgConfidence === null
+                    ? "—"
+                    : String(customerCards.data.avgConfidence)
+                }
+              />
+              <MetricCard label="Projected" value={metric(customerCards.data.projected)} />
+              <MetricCard
+                label="Latest card"
+                value={fmtTime(customerCards.data.latestProjectedAt)}
+              />
+            </div>
+            {customerCards.data.topWaiting && (
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                Top waiting customer:{" "}
+                <span className="text-foreground">
+                  {customerCards.data.topWaiting.title ?? "Customer"}
+                </span>{" "}
+                · {customerCards.data.topWaiting.waiting} waiting action(s)
+              </p>
             )}
           </>
         )}

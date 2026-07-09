@@ -62,3 +62,9 @@ verify_jwt = false
 # system-of-record tables into graph_nodes/graph_edges automatically.
 [functions.business-graph-scheduled-sync]
 verify_jwt = false
+
+# Scheduled Customer Card projection — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against CARD_SYNC_SECRET. Projects the
+# graph into customer_cards.context. Runs after the graph; the graph never waits.
+[functions.customer-card-scheduled-sync]
+verify_jwt = false

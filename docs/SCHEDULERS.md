@@ -35,6 +35,7 @@ the others; a missed tick simply resumes on the next run.
 | `interactions-scheduled-sync`             | `SIGNAL_SYNC_SECRET`              | Refresh the canonical `interactions` timeline           |
 | `identity-scheduled-sync`                 | `IDENTITY_SYNC_SECRET`            | Run the Identity Engine over ready/pending interactions |
 | `business-graph-scheduled-sync`           | `GRAPH_SYNC_SECRET`               | Project the system of record into the Business Graph    |
+| `customer-card-scheduled-sync`            | `CARD_SYNC_SECRET`                | Project the graph into customer_cards.context           |
 
 All also require the platform secrets `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`; the phone/email ingest and AI steps additionally
@@ -58,6 +59,7 @@ npx supabase secrets set EMAIL_WORKSPACE_BACKFILL_SECRET="…"
 npx supabase secrets set SIGNAL_SYNC_SECRET="…"
 npx supabase secrets set IDENTITY_SYNC_SECRET="…"
 npx supabase secrets set GRAPH_SYNC_SECRET="…"
+npx supabase secrets set CARD_SYNC_SECRET="…"
 
 # Platform + provider secrets the schedulers rely on (set once)
 npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="…"
@@ -290,6 +292,40 @@ curl -sS -X POST "$SUPABASE_URL/functions/v1/business-graph-scheduled-sync" \
 select node_type, count(*) from graph_nodes group by node_type order by 1;
 select edge_type, count(*) from graph_edges group by edge_type order by 1;
 select event_type, count(*) from graph_events group by event_type order by 1;
+```
+
+## 9. `customer-card-scheduled-sync`
+
+- **Purpose:** for each operational tenant, invoke `customer-card-sync`, which
+  projects the Business Graph + its source facts into
+  `customer_cards.context.projection` (identity / communication / operations /
+  business / timeline) with an explainable health + activity score. Runs AFTER
+  the graph — the graph never waits on cards. See
+  [CUSTOMER_CARD_ENGINE.md](CUSTOMER_CARD_ENGINE.md).
+- **Recommended cadence:** every **5 minutes** (a minute or two behind the graph
+  sync so it projects fresh graph data).
+- **Secret:** `CARD_SYNC_SECRET`.
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/customer-card-scheduled-sync" \
+  -H "x-schedule-secret: $CARD_SYNC_SECRET" \
+  -H "content-type: application/json" -d '{}'
+```
+
+- **Expected success shape:** `{ "success": true, "tenants": <n>, "results": [ { "tenant_id": "…", "ok": true, "cards_projected": <n>, "failed": 0 } ] }`
+- **Verify (SQL):**
+
+```sql
+select count(*) filter (where context ? 'projection') as projected,
+       count(*)                                       as total
+from customer_cards;
+
+select id, status, context->'projection'->'business'->>'health'        as health,
+       context->'projection'->'business'->>'activity_score'            as activity
+from customer_cards
+where context ? 'projection'
+order by updated_at desc
+limit 20;
 ```
 
 ## Throughput recommendation (phone processing)

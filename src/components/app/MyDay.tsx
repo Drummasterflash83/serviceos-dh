@@ -12,10 +12,24 @@ import { RotateCcw, PhoneIncoming, Sparkles } from "lucide-react";
 
 import { MetricCard } from "@/components/ops";
 import { getInteractionSummary, type InteractionSummary } from "@/lib/interactions";
-import { getCardsSummary, type CardsSummary } from "@/lib/cards";
+import {
+  getCustomerCardSummary,
+  getCustomerCards,
+  type CustomerCardSummary,
+  type ProjectedCard,
+} from "@/lib/customer-cards";
 import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { listMyLiveCallSessions, type LiveCallSession } from "@/lib/live-calls";
+import { cn } from "@/lib/utils";
 import type { ApiResult } from "@/lib/types";
+
+const HEALTH_RANK: Record<string, number> = { critical: 0, attention: 1, good: 2, excellent: 3 };
+const HEALTH_BADGE: Record<string, string> = {
+  excellent: "bg-success/10 text-success",
+  good: "bg-success/10 text-success",
+  attention: "bg-warning/10 text-warning",
+  critical: "bg-destructive/10 text-destructive",
+};
 
 function fmtTime(iso: string | null): string {
   if (!iso) return "never";
@@ -36,21 +50,24 @@ function metric(v: number | null | undefined): string | number {
 
 export function MyDayDashboard() {
   const [interactions, setInteractions] = useState<ApiResult<InteractionSummary> | null>(null);
-  const [cards, setCards] = useState<ApiResult<CardsSummary> | null>(null);
+  const [cardSummary, setCardSummary] = useState<ApiResult<CustomerCardSummary> | null>(null);
+  const [projectedCards, setProjectedCards] = useState<ProjectedCard[]>([]);
   const [matches, setMatches] = useState<ApiResult<MatchSummary> | null>(null);
   const [liveCalls, setLiveCalls] = useState<LiveCallSession[]>([]);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [inter, card, match, live] = await Promise.all([
+    const [inter, cardSum, cardList, match, live] = await Promise.all([
       getInteractionSummary(),
-      getCardsSummary(),
+      getCustomerCardSummary(),
+      getCustomerCards(50),
       getMatchSummary(),
       listMyLiveCallSessions(),
     ]);
     setInteractions(inter);
-    setCards(card);
+    setCardSummary(cardSum);
+    setProjectedCards(cardList.ok ? cardList.data : []);
     setMatches(match);
     setLiveCalls(live.ok ? live.data : []);
     setLoading(false);
@@ -61,8 +78,19 @@ export function MyDayDashboard() {
   }, [load]);
 
   const interData = interactions?.ok ? interactions.data : null;
-  const cardsData = cards?.ok ? cards.data : null;
+  const cardsData = cardSummary?.ok ? cardSummary.data : null;
   const matchData = matches?.ok ? matches.data : null;
+
+  // Cards needing attention first (critical → attention), highest activity within.
+  const attentionCards = [...projectedCards]
+    .filter((c) => c.projection)
+    .sort((a, b) => {
+      const ra = HEALTH_RANK[a.projection!.business.health] ?? 9;
+      const rb = HEALTH_RANK[b.projection!.business.health] ?? 9;
+      if (ra !== rb) return ra - rb;
+      return b.projection!.business.activity_score - a.projection!.business.activity_score;
+    })
+    .slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -86,11 +114,15 @@ export function MyDayDashboard() {
       {/* Attention KPIs — real signals only */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <MetricCard
-          label="Urgent cards"
-          value={metric(cardsData?.urgent)}
-          tone={cardsData && cardsData.urgent > 0 ? "critical" : "default"}
+          label="Critical customers"
+          value={metric(cardsData?.critical)}
+          tone={cardsData && cardsData.critical > 0 ? "critical" : "default"}
         />
-        <MetricCard label="Waiting" value={metric(cardsData?.waiting)} tone="warning" />
+        <MetricCard
+          label="Needs attention"
+          value={metric(cardsData?.attention)}
+          tone={cardsData && cardsData.attention > 0 ? "warning" : "default"}
+        />
         <MetricCard
           label="Live calls (you)"
           value={liveCalls.length}
@@ -137,25 +169,60 @@ export function MyDayDashboard() {
           )}
         </div>
 
-        {/* Priority cards — honest, populated by the future card builder */}
+        {/* Customers needing attention — driven by Customer Card projections */}
         <div className="rounded-2xl border border-hairline bg-white p-6">
-          <div className="text-sm font-semibold">Priority cards</div>
-          {cards && !cards.ok ? (
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Customers needing attention</div>
+            {cardsData && (
+              <span className="text-[11px] text-muted-foreground">
+                Avg activity {cardsData.avgActivityScore ?? "—"} · projected{" "}
+                {fmtTime(cardsData.latestProjectedAt)}
+              </span>
+            )}
+          </div>
+          {cardSummary && !cardSummary.ok ? (
             <p className="mt-3 text-xs text-muted-foreground">Cards unavailable.</p>
-          ) : cardsData && cardsData.total === 0 ? (
+          ) : cardsData && cardsData.projected === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">
-              No customer cards yet — cards build automatically as signals are enriched.
+              No projected cards yet — cards build automatically after the graph, or use “Build
+              cards” in the Operations Centre.
+            </p>
+          ) : attentionCards.length === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              All customers healthy — nothing needs attention right now.
             </p>
           ) : (
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-              <span>
-                Total:{" "}
-                <span className="font-medium text-foreground">{metric(cardsData?.total)}</span>
-              </span>
-              <span>Urgent: {metric(cardsData?.urgent)}</span>
-              <span>Waiting: {metric(cardsData?.waiting)}</span>
-              <span>Latest: {fmtTime(cardsData?.latest_activity_at ?? null)}</span>
-            </div>
+            <ul className="mt-3 divide-y divide-hairline">
+              {attentionCards.map((c) => {
+                const p = c.projection!;
+                return (
+                  <li key={c.id} className="flex items-center justify-between gap-3 py-2 text-xs">
+                    <span className="min-w-0 truncate">
+                      <span className="font-medium text-foreground">{p.identity.display_name}</span>
+                      {p.operations.open_recommendations > 0 && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · {p.operations.open_recommendations} action(s)
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="tabular text-muted-foreground">
+                        {p.business.activity_score}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize",
+                          HEALTH_BADGE[p.business.health],
+                        )}
+                      >
+                        {p.business.health}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
       </div>
