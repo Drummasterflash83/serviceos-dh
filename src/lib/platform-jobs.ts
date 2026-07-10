@@ -12,7 +12,14 @@ import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import type { ApiResult } from "./types";
 
 export type PlatformJobStatus =
-  "queued" | "running" | "succeeded" | "failed" | "cancelled" | "retrying" | "skipped";
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled"
+  | "retrying"
+  | "dead_letter"
+  | "skipped";
 
 export interface PlatformJob {
   id: string;
@@ -35,6 +42,12 @@ export interface PlatformJob {
   cancelled_at: string | null;
   next_run_at: string | null;
   last_error: string | null;
+  // Queue fields (Async Worker Queue v1).
+  available_at: string | null;
+  claimed_by: string | null;
+  lease_expires_at: string | null;
+  dead_lettered_at: string | null;
+  error_code: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +66,12 @@ export interface PlatformJobSummary {
   failed_today: number;
   retrying: number;
   cancelled_today: number;
+  /** Jobs that exhausted retries (need operator attention; never auto-deleted). */
+  dead_letter: number;
+  /** Running jobs whose lease has expired (a worker died) — reclaimed next tick. */
+  expired_leases: number;
+  /** Oldest still-waiting (queued/retrying) job's timestamp, for "oldest queued age". */
+  oldest_queued_at: string | null;
   /** Mean succeeded-job duration today, in seconds (null if none). */
   avg_duration_seconds: number | null;
   latest_failed: PlatformJob | null;
@@ -61,7 +80,7 @@ export interface PlatformJobSummary {
 }
 
 const JOB_COLUMNS =
-  "id, tenant_id, connector_id, module_id, job_type, job_key, status, priority, progress_current, progress_total, records_processed, error_count, attempt_count, max_attempts, started_at, completed_at, failed_at, cancelled_at, next_run_at, last_error, created_at, updated_at";
+  "id, tenant_id, connector_id, module_id, job_type, job_key, status, priority, progress_current, progress_total, records_processed, error_count, attempt_count, max_attempts, started_at, completed_at, failed_at, cancelled_at, next_run_at, last_error, available_at, claimed_by, lease_expires_at, dead_lettered_at, error_code, created_at, updated_at";
 
 function clampLimit(v: number | undefined, fallback = 50): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : fallback;
@@ -116,12 +135,16 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
     return { ok: false, error: { code: "jobs_unavailable", message: probe.error.message } };
   }
 
+  const nowIso = new Date().toISOString();
   const [
     queued,
     retrying,
     succeededToday,
     failedToday,
     cancelledToday,
+    deadLetter,
+    expiredLeases,
+    oldestQueued,
     latestFailed,
     latestRunning,
     lastCompleted,
@@ -150,6 +173,22 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
         .eq("status", "cancelled")
         .gte("cancelled_at", startToday),
     ),
+    count(() => supabase.from("platform_jobs").select("*", head).eq("status", "dead_letter")),
+    count(() =>
+      supabase
+        .from("platform_jobs")
+        .select("*", head)
+        .eq("status", "running")
+        .not("lease_expires_at", "is", null)
+        .lt("lease_expires_at", nowIso),
+    ),
+    supabase
+      .from("platform_jobs")
+      .select("created_at")
+      .in("status", ["queued", "retrying"])
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
     supabase
       .from("platform_jobs")
       .select(JOB_COLUMNS)
@@ -196,6 +235,9 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
       failed_today: failedToday ?? 0,
       retrying: retrying ?? 0,
       cancelled_today: cancelledToday ?? 0,
+      dead_letter: deadLetter ?? 0,
+      expired_leases: expiredLeases ?? 0,
+      oldest_queued_at: (oldestQueued.data as { created_at: string } | null)?.created_at ?? null,
       avg_duration_seconds: avgDuration,
       latest_failed: (latestFailed.data as PlatformJob | null) ?? null,
       latest_running: (latestRunning.data as PlatformJob | null) ?? null,

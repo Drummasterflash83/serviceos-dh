@@ -13,7 +13,7 @@
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
-import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import { enqueueJob } from "../_shared/platform_queue.ts";
 
 const CONNECTOR_ID = "simwood";
 
@@ -72,23 +72,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (tenantIds.length === 0) return json({ success: true, tenants: 0, results: [] });
 
-  const results: Array<Record<string, unknown>> = [];
+  // ENQUEUE + return fast — the platform-worker claims and runs phone-process-pending
+  // asynchronously (matching job_key ⇒ the worker's run owns the single job row).
+  // Heavy download/transcribe/analyse no longer happens in this cron request.
+  let queued = 0;
+  let duplicates = 0;
   for (const tenantId of tenantIds) {
-    const res = await invokeFunction("phone-process-pending", { tenant_id: tenantId }, serviceKey);
-    const j = res.json;
-    results.push({
-      tenant_id: tenantId,
-      ok: Boolean(j?.success),
-      processed: typeof j?.processed === "number" ? j.processed : 0,
-      downloaded: typeof j?.downloaded === "number" ? j.downloaded : 0,
-      transcribed: typeof j?.transcribed === "number" ? j.transcribed : 0,
-      analysed: typeof j?.analysed === "number" ? j.analysed : 0,
-      interaction_ready: typeof j?.interaction_ready === "number" ? j.interaction_ready : 0,
-      failed: typeof j?.failed === "number" ? j.failed : 0,
-      skipped: typeof j?.skipped === "number" ? j.skipped : 0,
-      ...(typeof j?.failed_step === "string" ? { failed_step: j.failed_step } : {}),
+    const r = await enqueueJob(supabase, {
+      tenantId,
+      jobType: "phone.process_pending",
+      jobKey: `phone.process_pending:${tenantId}`,
+      connectorId: CONNECTOR_ID,
+      moduleId: "communications.phone",
     });
+    if (r.duplicate) duplicates += 1;
+    else if (r.id) queued += 1;
   }
 
-  return json({ success: results.every((r) => r.ok === true), tenants: results.length, results });
+  return json({ success: true, tenants: tenantIds.length, queued, duplicates });
 });

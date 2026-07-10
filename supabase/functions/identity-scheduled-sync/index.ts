@@ -11,7 +11,7 @@
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
-import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import { enqueueJob } from "../_shared/platform_queue.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,17 +66,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (tenantIds.length === 0) return json({ success: true, tenants: 0, results: [] });
 
-  const results: Array<Record<string, unknown>> = [];
+  // ENQUEUE + return fast — the platform-worker claims and runs identity-resolve
+  // asynchronously (job_key matches identity-resolve's own, so the worker's run
+  // owns the single job row). No heavy work in this request.
+  let queued = 0;
+  let duplicates = 0;
   for (const tenantId of tenantIds) {
-    const res = await invokeFunction("identity-resolve", { tenant_id: tenantId }, serviceKey);
-    const j = res.json;
-    results.push({
-      tenant_id: tenantId,
-      ok: Boolean(j?.success),
-      resolved: typeof j?.resolved === "number" ? j.resolved : 0,
-      cards_enriched: typeof j?.cards_enriched === "number" ? j.cards_enriched : 0,
+    const r = await enqueueJob(supabase, {
+      tenantId,
+      jobType: "identity.resolve",
+      jobKey: `identity.resolve:${tenantId}`,
+      connectorId: "openfolk-core",
+      moduleId: "core.identity",
     });
+    if (r.duplicate) duplicates += 1;
+    else if (r.id) queued += 1;
   }
 
-  return json({ success: results.every((r) => r.ok === true), tenants: results.length, results });
+  return json({ success: true, tenants: tenantIds.length, queued, duplicates });
 });

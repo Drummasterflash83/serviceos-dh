@@ -67,6 +67,7 @@ value**:
    npx supabase secrets set GRAPH_SYNC_SECRET="…"
    npx supabase secrets set CARD_SYNC_SECRET="…"
    npx supabase secrets set RECOMMENDATION_SYNC_SECRET="…"
+   npx supabase secrets set WORKER_SECRET="…"
    ```
 2. **Postgres Vault** (so the cron job can send the header). In the SQL editor:
    ```sql
@@ -80,6 +81,7 @@ value**:
    select vault.create_secret('<same-value>', 'GRAPH_SYNC_SECRET');
    select vault.create_secret('<same-value>', 'CARD_SYNC_SECRET');
    select vault.create_secret('<same-value>', 'RECOMMENDATION_SYNC_SECRET');
+   select vault.create_secret('<same-value>', 'WORKER_SECRET');
    -- to rotate later: select vault.update_secret((select id from vault.secrets where name='…'), '<new>');
    ```
 
@@ -144,6 +146,7 @@ fake healthy states — "never" means the cron isn't running yet.
 
 | Cron job                        | Function                                  | Cadence | Secret                            |
 | ------------------------------- | ----------------------------------------- | ------- | --------------------------------- |
+| `serviceos-worker`              | `platform-worker`                         | \* (1m) | `WORKER_SECRET`                   |
 | `serviceos-phone-sync`          | `phone-scheduled-sync`                    | */5     | `PHONE_SCHEDULE_SECRET`           |
 | `serviceos-phone-processing`    | `phone-processing-scheduled-sync`         | */2     | `PHONE_PROCESSING_SECRET`         |
 | `serviceos-email-sync`          | `email-scheduled-sync`                    | */5     | `EMAIL_SCHEDULE_SECRET`           |

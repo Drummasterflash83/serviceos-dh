@@ -85,6 +85,12 @@ function fmtTime(iso: string | null): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
+/** Seconds elapsed since an ISO timestamp (0 if unparseable). */
+function ageSeconds(iso: string): number {
+  const t = Date.parse(iso);
+  return Number.isNaN(t) ? 0 : Math.max(0, Math.floor((Date.now() - t) / 1000));
+}
+
 /** Humanise a duration in seconds ("clear" handled by caller): "3m" · "2h 5m" · "1d 4h". */
 function fmtDur(seconds: number | null): string {
   if (seconds === null) return "—";
@@ -1017,6 +1023,76 @@ export function OperationsOverview({
           </>
         )}
       </div>
+
+      {/* Worker queue — async platform_jobs queue (Async Worker Queue v1). Truthful
+          state only: dead-letters and expired leases are surfaced, never hidden. */}
+      {(() => {
+        const q = jobsSummary?.ok ? jobsSummary.data : null;
+        return (
+          <div className="rounded-2xl border border-hairline bg-white p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-sm font-semibold">Worker queue</div>
+                <div className="text-xs text-muted-foreground">
+                  Schedulers enqueue; the worker claims and processes asynchronously.
+                </div>
+              </div>
+              {q && q.dead_letter > 0 && (
+                <span className="rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-destructive">
+                  {q.dead_letter} dead-letter
+                </span>
+              )}
+            </div>
+            {!jobsSummary || !jobsSummary.ok ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Queue unavailable — platform_jobs could not be read.
+              </p>
+            ) : (
+              <>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <MetricCard label="Queued" value={metric(q?.queued)} />
+                  <MetricCard label="Running" value={metric(q?.running)} tone="accent" />
+                  <MetricCard
+                    label="Retrying"
+                    value={metric(q?.retrying)}
+                    tone={q && q.retrying > 0 ? "warning" : "default"}
+                  />
+                  <MetricCard
+                    label="Dead-letter"
+                    value={metric(q?.dead_letter)}
+                    tone={q && q.dead_letter > 0 ? "critical" : "default"}
+                  />
+                  <MetricCard label="Succeeded today" value={metric(q?.succeeded_today)} />
+                  <MetricCard
+                    label="Failed today"
+                    value={metric(q?.failed_today)}
+                    tone={q && q.failed_today > 0 ? "warning" : "default"}
+                  />
+                  <MetricCard
+                    label="Oldest queued"
+                    value={q?.oldest_queued_at ? fmtDur(ageSeconds(q.oldest_queued_at)) : "—"}
+                    tone={
+                      q?.oldest_queued_at && ageSeconds(q.oldest_queued_at) > 900
+                        ? "warning"
+                        : "default"
+                    }
+                  />
+                  <MetricCard
+                    label="Avg duration"
+                    value={q?.avg_duration_seconds == null ? "—" : fmtDur(q.avg_duration_seconds)}
+                  />
+                </div>
+                {q && q.expired_leases > 0 && (
+                  <p className="mt-3 text-[11px] text-warning">
+                    {q.expired_leases} running job(s) with an expired lease — reclaimed on the next
+                    worker tick.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Intelligence — identity resolution engine (evidence-based, honest states) */}
       <div className="rounded-2xl border border-hairline bg-white p-6">

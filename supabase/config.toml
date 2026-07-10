@@ -126,3 +126,9 @@ verify_jwt = false
 verify_jwt = false
 [functions.gmail-workspace-backfill-messages]
 verify_jwt = false
+
+# Generic async queue worker — invoked by cron with NO Supabase JWT, gated by the
+# `x-schedule-secret` header checked against WORKER_SECRET. Claims + dispatches
+# queued platform_jobs. Not tenant-bound (cross-tenant infrastructure).
+[functions.platform-worker]
+verify_jwt = false

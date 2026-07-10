@@ -14,7 +14,7 @@
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
-import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import { enqueueJob } from "../_shared/platform_queue.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -70,19 +70,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (tenantIds.length === 0) return json({ success: true, tenants: 0, results: [] });
 
-  const results: Array<Record<string, unknown>> = [];
+  // ENQUEUE + return fast — the platform-worker claims and runs recommendation-sync
+  // asynchronously (matching job_key ⇒ the worker's run owns the single job row).
+  let queued = 0;
+  let duplicates = 0;
   for (const tenantId of tenantIds) {
-    const res = await invokeFunction("recommendation-sync", { tenant_id: tenantId }, serviceKey);
-    const j = res.json;
-    results.push({
-      tenant_id: tenantId,
-      ok: Boolean(j?.success),
-      created: typeof j?.created === "number" ? j.created : 0,
-      updated: typeof j?.updated === "number" ? j.updated : 0,
-      closed: typeof j?.closed === "number" ? j.closed : 0,
-      failed: typeof j?.failed === "number" ? j.failed : 0,
+    const r = await enqueueJob(supabase, {
+      tenantId,
+      jobType: "recommendation.sync",
+      jobKey: `recommendation.sync:${tenantId}`,
+      connectorId: "openfolk-core",
+      moduleId: "core.recommendations",
     });
+    if (r.duplicate) duplicates += 1;
+    else if (r.id) queued += 1;
   }
 
-  return json({ success: results.every((r) => r.ok === true), tenants: results.length, results });
+  return json({ success: true, tenants: tenantIds.length, queued, duplicates });
 });
