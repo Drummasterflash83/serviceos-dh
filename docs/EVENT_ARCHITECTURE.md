@@ -100,6 +100,12 @@ best-effort marks the `interaction.ready` event **consumed**. It runs on its own
 cron ([`identity-scheduled-sync`](../supabase/functions/identity-scheduled-sync/index.ts),
 gated by `IDENTITY_SYNC_SECRET`).
 
+> Since Async Worker Queue v1.1, this logic is a **shared worker handler**
+> ([`_shared/worker_handlers/identity_resolve.ts`](../supabase/functions/_shared/worker_handlers/identity_resolve.ts))
+> that the `platform-worker` runs **in-process** and the `identity-resolve` Edge
+> Function calls as a thin wrapper — one copy of the logic. See
+> [WORKER_HANDLERS.md](WORKER_HANDLERS.md).
+
 ---
 
 ## The canonical interaction lifecycle

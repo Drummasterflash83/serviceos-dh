@@ -24,13 +24,11 @@
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
-import { invokeFunction } from "../_shared/phone_pipeline.ts";
 import {
   claimJobs,
   completeJob,
   deadLetterJob,
   failJob,
-  isRetryable,
   releaseExpiredLeases,
   type JobRow,
 } from "../_shared/platform_queue.ts";
@@ -62,20 +60,6 @@ function safeEqual(a: string, b: string): boolean {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
-
-// job_type → the authoritative worker function + the body it expects. The worker
-// dispatches; it never re-implements business logic.
-const DISPATCH: Record<
-  string,
-  { fn: string; body: (tenantId: string) => Record<string, unknown> }
-> = {
-  "phone.process_pending": { fn: "phone-process-pending", body: (t) => ({ tenant_id: t }) },
-  "interactions.sync": { fn: "interactions-sync", body: (t) => ({ tenant_id: t, source: "all" }) },
-  "identity.resolve": { fn: "identity-resolve", body: (t) => ({ tenant_id: t }) },
-  "graph.sync": { fn: "business-graph-sync", body: (t) => ({ tenant_id: t, source: "all" }) },
-  "customer_card.sync": { fn: "customer-card-sync", body: (t) => ({ tenant_id: t }) },
-  "recommendation.sync": { fn: "recommendation-sync", body: (t) => ({ tenant_id: t }) },
-};
 
 function num(v: unknown, def: number, min: number, max: number): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : def;
@@ -154,42 +138,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return;
     }
 
-    // Fallback: no shared handler yet for this job_type → invoke its Edge Function
-    // over HTTP (unchanged path; migrates to a handler by adding one to the registry).
-    const route = DISPATCH[jobType];
-    if (!route) {
-      await deadLetterJob(admin, id, {
-        errorCode: "unsupported_job",
-        message: `No dispatch for job_type '${jobType}'`,
-      });
-      counts.dead_lettered += 1;
-      return;
-    }
-
-    const res = await invokeFunction(route.fn, route.body(tenantId), serviceKey);
-    const j = res.json;
-    if (j?.success) {
-      await completeJob(admin, id, {
-        recordsProcessed: typeof j.processed === "number" ? j.processed : undefined,
-        result: safeResult(j),
-      });
-      counts.succeeded += 1;
-      return;
-    }
-
-    const err = (j?.error ?? null) as { code?: unknown; message?: unknown } | null;
-    const code = typeof err?.code === "string" ? err.code : `dispatch_failed_${res.status || 0}`;
-    const message =
-      typeof err?.message === "string"
-        ? err.message
-        : `dispatch failed (${res.status || "network"})`;
-    const outcome = await failJob(
-      admin,
-      { id, attempt, maxAttempts },
-      { errorCode: code, message, retryable: isRetryable(code, res.status) },
-    );
-    if (outcome === "retrying") counts.retrying += 1;
-    else counts.dead_lettered += 1;
+    // No shared handler for this job_type → unsupported. Never retried forever.
+    await deadLetterJob(admin, id, {
+      errorCode: "unsupported_job",
+      message: `No handler for job_type '${jobType}'`,
+    });
+    counts.dead_lettered += 1;
   }
 
   // Heavy dispatch runs in the background (survives caller disconnect) AND is
@@ -211,29 +165,3 @@ Deno.serve(async (req: Request): Promise<Response> => {
     duration_ms: Date.now() - startedMs,
   });
 });
-
-/** Keep only small, non-sensitive fields from a child response for the job result. */
-function safeResult(j: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const k of [
-    "processed",
-    "downloaded",
-    "transcribed",
-    "analysed",
-    "interaction_ready",
-    "failed",
-    "skipped",
-    "resolved",
-    "cards_enriched",
-    "nodes_upserted",
-    "edges_upserted",
-    "cards_projected",
-    "created",
-    "updated",
-    "closed",
-    "interactions_upserted",
-  ]) {
-    if (typeof j[k] === "number") out[k] = j[k];
-  }
-  return out;
-}

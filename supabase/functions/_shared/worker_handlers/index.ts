@@ -18,6 +18,9 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
+import { handlePhoneProcessPending } from "./phone_process_pending.ts";
+import { handleInteractionsSync } from "./interactions_sync.ts";
+import { handleIdentityResolve } from "./identity_resolve.ts";
 import { handleBusinessGraphSync } from "./business_graph_sync.ts";
 import { handleCustomerCardSync } from "./customer_card_sync.ts";
 import { handleRecommendationSync } from "./recommendation_sync.ts";
@@ -56,16 +59,14 @@ export interface WorkerHandlerResult {
 export type WorkerHandler = (ctx: WorkerHandlerContext) => Promise<WorkerHandlerResult>;
 
 /**
- * job_type → shared handler. The generic worker holds NO provider logic.
- *
- * Migrated to direct handlers (worker calls in-process, no HTTP):
- *   graph.sync · customer_card.sync · recommendation.sync
- * Not yet migrated (worker still dispatches these over HTTP to their Edge
- * Function, which works unchanged) — each becomes a direct handler by adding its
- * file here, with NO worker change:
- *   phone.process_pending · interactions.sync · identity.resolve
+ * job_type → shared handler. The generic worker holds NO provider logic and runs
+ * every supported job type IN-PROCESS (no worker→orchestrator HTTP). A future
+ * connector registers here with no worker change.
  */
 export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
+  "phone.process_pending": handlePhoneProcessPending,
+  "interactions.sync": handleInteractionsSync,
+  "identity.resolve": handleIdentityResolve,
   "graph.sync": handleBusinessGraphSync,
   "customer_card.sync": handleCustomerCardSync,
   "recommendation.sync": handleRecommendationSync,

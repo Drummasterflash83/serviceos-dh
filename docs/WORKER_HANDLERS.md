@@ -1,8 +1,8 @@
 # ServiceOS — Shared Worker Handlers
 
-**Status:** v1 landed (incremental). Framework + registry live; three engines
-migrated to direct handlers; the rest run via HTTP fallback until migrated the
-same way.
+**Status:** v1.1 complete. **All six** supported job types run through direct
+in-process handlers; the worker's HTTP dispatch fallback is removed. Only phone's
+per-recording child pipeline remains HTTP (by design — see below).
 
 **Last updated:** 2026-07-10
 
@@ -62,15 +62,18 @@ that — and **never** derives the tenant from browser input.
 
 ```ts
 export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
-  "graph.sync": handleBusinessGraphSync, // migrated ✓
-  "customer_card.sync": handleCustomerCardSync, // migrated ✓
-  "recommendation.sync": handleRecommendationSync, // migrated ✓
+  "phone.process_pending": handlePhoneProcessPending,
+  "interactions.sync": handleInteractionsSync,
+  "identity.resolve": handleIdentityResolve,
+  "graph.sync": handleBusinessGraphSync,
+  "customer_card.sync": handleCustomerCardSync,
+  "recommendation.sync": handleRecommendationSync,
 };
 ```
 
-The worker calls `getWorkerHandler(job_type)`. **If a handler exists it runs
-in-process; otherwise the worker falls back to invoking the Edge Function over
-HTTP** (unchanged path). So migration is incremental and always backwards-safe.
+The worker calls `getWorkerHandler(job_type)` and runs it **in-process**. There is
+no internal-HTTP dispatch for the six supported types; an unregistered job_type is
+dead-lettered (`unsupported_job`), never retried forever.
 
 ## Platform-job ownership (§10)
 
@@ -95,17 +98,27 @@ Edge wrapper maps the same error to an HTTP response. `message` is always safe �
 
 ## Internal HTTP paths — before vs after
 
-| job_type                | before (worker → …)          | after                                                                                                                                                 |
-| ----------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `graph.sync`            | HTTP → business-graph-sync   | **in-process handler**                                                                                                                                |
-| `customer_card.sync`    | HTTP → customer-card-sync    | **in-process handler**                                                                                                                                |
-| `recommendation.sync`   | HTTP → recommendation-sync   | **in-process handler**                                                                                                                                |
-| `interactions.sync`     | HTTP → interactions-sync     | HTTP (fallback) — next to migrate                                                                                                                     |
-| `identity.resolve`      | HTTP → identity-resolve      | HTTP (fallback) — next to migrate                                                                                                                     |
-| `phone.process_pending` | HTTP → phone-process-pending | HTTP (fallback); the per-recording pipeline (download→transcribe→analyse) stays HTTP by design — those are separate provider/OpenAI/storage functions |
+| job_type                | before (worker → …)          | after                                                                                                                                          |
+| ----------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `graph.sync`            | HTTP → business-graph-sync   | **in-process handler**                                                                                                                         |
+| `customer_card.sync`    | HTTP → customer-card-sync    | **in-process handler**                                                                                                                         |
+| `recommendation.sync`   | HTTP → recommendation-sync   | **in-process handler**                                                                                                                         |
+| `interactions.sync`     | HTTP → interactions-sync     | **in-process handler**                                                                                                                         |
+| `identity.resolve`      | HTTP → identity-resolve      | **in-process handler**                                                                                                                         |
+| `phone.process_pending` | HTTP → phone-process-pending | **in-process handler**; the per-recording chain (phone-process-pipeline → download/transcribe/analyse) stays HTTP — see "Remaining child HTTP" |
 
-Three worker→function HTTP hops eliminated; the remaining three keep working
-unchanged.
+**All six** worker→orchestrator HTTP hops are eliminated.
+
+### Remaining child HTTP (justified)
+
+The `phone.process_pending` handler still calls `phone-process-pipeline` over HTTP
+per recording, which chains to `simwood-download-recording`,
+`phone-transcribe-recording` and `phone-analyse-transcript`. These are separate
+provider (Simwood), OpenAI and object-storage functions; extracting them is out of
+scope for this phase (they'd add regression risk for a smaller HTTP saving). The
+worker→pending hop — the one that mattered — is gone. Identity's best-effort
+`triggerGraphSyncBackground` also remains a fire-and-forget HTTP call by design
+(the graph is a decoupled subscriber).
 
 ## Migrating the next engine (the whole recipe)
 
