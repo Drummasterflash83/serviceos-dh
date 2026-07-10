@@ -96,6 +96,13 @@ duration_ms }`.
 Dispatched job types (v1): `phone.process_pending`, `interactions.sync`,
 `identity.resolve`, `graph.sync`, `customer_card.sync`, `recommendation.sync`.
 
+**Dispatch is now handler-first** (see [WORKER_HANDLERS.md](WORKER_HANDLERS.md)):
+if a shared handler is registered for the job type, the worker runs it
+**in-process (no HTTP)**; otherwise it falls back to invoking the Edge Function
+over HTTP. `graph.sync`, `customer_card.sync` and `recommendation.sync` run as
+direct handlers today; the rest migrate the same way (add a handler + registry
+line — no worker change).
+
 ## Retries (exponential backoff)
 
 On a retryable failure with attempts remaining, the job goes `retrying` with

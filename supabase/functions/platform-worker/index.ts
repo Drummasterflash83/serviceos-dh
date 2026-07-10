@@ -34,6 +34,7 @@ import {
   releaseExpiredLeases,
   type JobRow,
 } from "../_shared/platform_queue.ts";
+import { getWorkerHandler } from "../_shared/worker_handlers/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,6 +127,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const attempt = (job.attempt_count as number) ?? 1;
     const maxAttempts = (job.max_attempts as number) ?? 5;
 
+    // Preferred: a shared handler runs the business logic IN-PROCESS (no HTTP).
+    const handler = getWorkerHandler(jobType);
+    if (handler) {
+      const payload = (job.payload as Record<string, unknown> | null) ?? {};
+      const r = await handler({ supabaseAdmin: admin, tenantId, jobId: id, payload });
+      if (r.success) {
+        await completeJob(admin, id, {
+          recordsProcessed: r.recordsProcessed,
+          result: r.result ?? {},
+        });
+        counts.succeeded += 1;
+        return;
+      }
+      const hOutcome = await failJob(
+        admin,
+        { id, attempt, maxAttempts },
+        {
+          errorCode: r.error?.code ?? "handler_error",
+          message: r.error?.message ?? "handler failed",
+          retryable: r.error?.retryable ?? true,
+        },
+      );
+      if (hOutcome === "retrying") counts.retrying += 1;
+      else counts.dead_lettered += 1;
+      return;
+    }
+
+    // Fallback: no shared handler yet for this job_type → invoke its Edge Function
+    // over HTTP (unchanged path; migrates to a handler by adding one to the registry).
     const route = DISPATCH[jobType];
     if (!route) {
       await deadLetterJob(admin, id, {
