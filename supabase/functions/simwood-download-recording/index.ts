@@ -34,9 +34,46 @@ import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const STORAGE_BUCKET = "phone-recordings";
 
+// Provider recording retention window. A 404 on a recording younger than this is
+// treated as "not ready yet" (retryable); older than this, the audio is gone for
+// good (non-retryable). Simwood/Sipcentric retention is conservative here.
+const PROVIDER_RETENTION_DAYS = 45;
+
 /** Keep storage keys safe/deterministic: only [A-Za-z0-9._-], others -> "_". */
 function safeSegment(value: string): string {
   return value.replace(/[^A-Za-z0-9._-]/g, "_");
+}
+
+/**
+ * Map a raw provider fetch failure to a SAFE, retry-aware error code (§5). The
+ * queue (platform_queue.ts) reads these codes to decide retry vs dead-letter:
+ * transient provider states retry with backoff; a recording gone past retention
+ * dead-letters. Never contains a URL, secret or customer content.
+ */
+function classifyDownloadError(
+  code: string,
+  ageMs: number | null,
+): { code: string; retryable: boolean } {
+  switch (code) {
+    case "rate_limited":
+      return { code: "provider_rate_limited", retryable: true };
+    case "network_error":
+      return { code: "provider_timeout", retryable: true };
+    case "upstream_error":
+    case "download_error":
+      return { code: "download_failed", retryable: true };
+    case "not_found": {
+      // A provider 404: not ready yet (young) vs permanently gone (past retention).
+      const beyondRetention =
+        ageMs !== null && ageMs > PROVIDER_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+      return beyondRetention
+        ? { code: "provider_recording_missing", retryable: false }
+        : { code: "recording_not_ready", retryable: true };
+    }
+    default:
+      // auth_failed / anything else — keep the original code.
+      return { code, retryable: true };
+  }
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -164,7 +201,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // --- load the recording row ---------------------------------------------
   const { data: recording, error: recErr } = await supabase
     .from("phone_recordings")
-    .select("id, provider, provider_recording_id, recording_uri, storage_path, file_size")
+    .select(
+      "id, provider, provider_recording_id, recording_uri, storage_path, file_size, started_at, created_at",
+    )
     .eq("id", recordingId)
     .eq("tenant_id", tenantId)
     .maybeSingle();
@@ -178,8 +217,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const providerRecordingId = recording.provider_recording_id as string | null;
   if (!providerRecordingId) {
+    // Unfetchable forever (non-retryable per platform_queue.ts).
     return await finishFailed("invalid_recording", "Recording has no provider_recording_id", 422);
   }
+
+  // Recording age drives 404 classification (not-ready vs gone-past-retention).
+  const recordedAtIso = (recording.started_at ?? recording.created_at) as string | null;
+  const recordingAgeMs =
+    recordedAtIso && !Number.isNaN(Date.parse(recordedAtIso))
+      ? Date.now() - Date.parse(recordedAtIso)
+      : null;
 
   const storagePath = `${tenantId}/${PROVIDER}/recordings/${safeSegment(providerRecordingId)}.wav`;
 
@@ -234,8 +281,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // --- download the WAV (server-side only) --------------------------------
   const audio = await simwoodGetBinary(downloadUrl, creds, "audio/wav");
   if (!audio.ok) {
-    return await finishFailed(audio.code, audio.message, audio.httpStatus, {
+    // Reclassify to a safe, retry-aware code (§5). A 404 within retention is
+    // "not ready" (retryable); past retention it is "missing" (dead-letter).
+    const mapped = classifyDownloadError(audio.code, recordingAgeMs);
+    return await finishFailed(mapped.code, audio.message, audio.httpStatus, {
       provider_recording_id: providerRecordingId,
+      retryable: mapped.retryable,
     });
   }
   if (audio.bytes.byteLength === 0) {
@@ -252,10 +303,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       upsert: true,
     });
   if (uploadErr) {
-    return await finishFailed("storage_error", `Failed to store audio: ${uploadErr.message}`, 500, {
-      provider_recording_id: providerRecordingId,
-      storage_path: storagePath,
-    });
+    // Storage hiccup — transient, retryable (§5).
+    return await finishFailed(
+      "storage_failed",
+      `Failed to store audio: ${uploadErr.message}`,
+      500,
+      {
+        provider_recording_id: providerRecordingId,
+        storage_path: storagePath,
+      },
+    );
   }
 
   // --- record the storage pointer -----------------------------------------

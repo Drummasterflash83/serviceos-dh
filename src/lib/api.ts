@@ -638,6 +638,7 @@ export async function processPendingPhone(
  */
 export async function getPhonePipelineStatus(
   tenantId: string,
+  detail = false,
 ): Promise<ApiResult<PhonePipelineStatusResult>> {
   if (typeof tenantId !== "string" || tenantId.trim() === "") {
     return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
@@ -652,7 +653,7 @@ export async function getPhonePipelineStatus(
     response = await fetch(endpoint, {
       method: "POST",
       headers: functionHeaders(authz.token),
-      body: JSON.stringify({ tenant_id: tenantId }),
+      body: JSON.stringify({ tenant_id: tenantId, detail }),
     });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Network request failed";

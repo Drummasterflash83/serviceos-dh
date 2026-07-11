@@ -1,15 +1,19 @@
 // ServiceOS — Worker handler: phone.process_pending (backlog drainer orchestration).
-// Pure orchestration — moved verbatim from phone-process-pending/index.ts. Auth,
-// CORS and the platform_jobs lifecycle live in the caller. Tenant is always
-// caller-validated.
+// Pure orchestration — auth, CORS and the platform_jobs lifecycle live in the
+// caller. Tenant is always caller-validated.
+//
+// SELECTION (Reliability v2): work is chosen DATABASE-SIDE via
+// phone_select_pending() — the OLDEST incomplete recordings first, bounded batch,
+// with a readiness delay applied only to the download stage. This replaces the
+// former "scan the newest 40, filter in memory" logic, which starved old
+// recordings and produced the misleading `skipped: 40` no-op. See migration
+// 20260711120000_phone_pipeline_selection.sql.
 //
 // REMAINING CHILD HTTP (documented, §5/§8): this handler still invokes
 // phone-process-pipeline over HTTP per recording, which chains to
 // simwood-download-recording / phone-transcribe-recording / phone-analyse-transcript.
-// Those are separate provider (Simwood) / OpenAI / object-storage functions; the
-// worker→phone-process-pending hop is removed (this handler runs in-process), but
-// extracting the download/transcribe/analyse providers is deliberately out of
-// scope here to avoid regression risk.
+// Those are separate provider (Simwood) / OpenAI / object-storage functions;
+// extracting them is deliberately out of scope here to avoid regression risk.
 
 import { invokeFunction } from "../phone_pipeline.ts";
 import { isRetryable, heartbeatLease } from "../platform_queue.ts";
@@ -18,7 +22,10 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 
 const DEFAULT_BATCH = 5;
 const MAX_BATCH = 10;
-const SCAN_LIMIT = 40;
+// Brand-new recordings may not have downloadable audio on the provider yet. The
+// download stage waits this long before first attempt; transcribe/analyse of
+// already-downloaded rows are never delayed (readiness gate lives in the RPC).
+const MIN_DOWNLOAD_AGE_SECONDS = 120;
 const LEASE_SECONDS = 300;
 
 function clampBatch(v: unknown): number {
@@ -46,50 +53,47 @@ export async function handlePhoneProcessPending(
   }
 
   try {
-    // Scan recent recordings, then pick those missing any pipeline stage.
-    const { data: recs, error: recErr } = await supabase
-      .from("phone_recordings")
-      .select("id, storage_path")
+    // Database-side selection: OLDEST incomplete recordings first (no starvation),
+    // bounded batch, download-readiness delay applied server-side.
+    const { data: selected, error: selErr } = await supabase.rpc("phone_select_pending", {
+      p_tenant_id: tenantId,
+      p_limit: batch,
+      p_min_download_age_seconds: MIN_DOWNLOAD_AGE_SECONDS,
+    });
+    if (selErr) throw new Error(`select pending failed: ${selErr.message}`);
+    const pending = (selected ?? []) as { id: string; stage: string }[];
+
+    // Total still-incomplete recordings (full table, not a scan window) so the
+    // result reports honest remaining work — and proves a no-op is "nothing to
+    // do", never "skipped 40 complete rows".
+    const { count: backlogCount } = await supabase
+      .from("phone_recording_pipeline_state")
+      .select("*", { count: "exact", head: true })
       .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false })
-      .limit(SCAN_LIMIT);
-    if (recErr) throw new Error(`recordings read failed: ${recErr.message}`);
-    const recordings = (recs ?? []) as { id: string; storage_path: string | null }[];
+      .eq("is_incomplete", true);
+    const eligibleBacklog = backlogCount ?? pending.length;
 
-    const ids = recordings.map((r) => r.id);
-    const completedTranscript = new Set<string>();
-    const analysed = new Set<string>();
-    if (ids.length > 0) {
-      // Completed transcripts → their recording_ids.
-      const { data: trs } = await supabase
-        .from("phone_transcripts")
-        .select("recording_id, status")
-        .eq("tenant_id", tenantId)
-        .in("recording_id", ids)
-        .eq("status", "completed");
-      for (const t of (trs ?? []) as Record<string, unknown>[]) {
-        const rid = t.recording_id as string | null;
-        if (rid) completedTranscript.add(rid);
-      }
-      const { data: inss } = await supabase
-        .from("phone_ai_insights")
-        .select("recording_id")
-        .eq("tenant_id", tenantId)
-        .in("recording_id", ids);
-      for (const i of (inss ?? []) as Record<string, unknown>[]) {
-        const rid = i.recording_id as string | null;
-        if (rid) analysed.add(rid);
-      }
+    // Truthful no-op: the query found nothing to do (NOT 40 complete rows skipped).
+    if (pending.length === 0) {
+      return {
+        success: true,
+        recordsProcessed: 0,
+        result: {
+          processed: 0,
+          downloaded: 0,
+          transcribed: 0,
+          analysed: 0,
+          interaction_ready: 0,
+          failed: 0,
+          skipped: 0,
+          eligible_backlog: eligibleBacklog,
+          reason: "no_eligible_recordings",
+          last_error: null,
+          failed_step: null,
+          failures: [],
+        },
+      };
     }
-
-    const pendingAll = recordings.filter(
-      (r) => r.storage_path === null || !completedTranscript.has(r.id) || !analysed.has(r.id),
-    );
-    const pending = pendingAll.slice(0, batch);
-    // Recordings in the recent scan window that are ALREADY fully complete and so
-    // are deliberately NOT reprocessed (evidence of "never reprocesses complete
-    // items"). Scan-window scoped — older complete recordings aren't counted.
-    const skipped = recordings.length - pendingAll.length;
 
     let downloaded = 0;
     let transcribed = 0;
@@ -138,6 +142,15 @@ export async function handlePhoneProcessPending(
       }
     }
 
+    // Truthful backlog remaining AFTER this batch — re-read the count (a recording
+    // that only advanced one stage is still incomplete, so an estimate would lie).
+    const { count: remainingCount } = await supabase
+      .from("phone_recording_pipeline_state")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("is_incomplete", true);
+    const remaining = remainingCount ?? eligibleBacklog;
+
     const result = {
       processed: pending.length,
       downloaded,
@@ -145,7 +158,9 @@ export async function handlePhoneProcessPending(
       analysed: analysedCount,
       interaction_ready: interactionReady,
       failed,
-      skipped,
+      skipped: 0,
+      eligible_backlog: remaining,
+      reason: failed > 0 ? "processed_with_failures" : "processed",
       last_error: lastError,
       failed_step: lastFailedStep,
       failures,

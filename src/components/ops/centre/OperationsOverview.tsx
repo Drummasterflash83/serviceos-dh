@@ -743,49 +743,56 @@ export function OperationsOverview({
             <div className="mt-1 text-xs text-muted-foreground">
               {phonePipeline.data.health_reason}
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {/* Business-facing only (§14): no all-time failures, no admin buttons. */}
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               <MetricCard
                 label="Calls waiting"
-                value={metric(phonePipeline.data.need_work)}
-                tone={phonePipeline.data.need_work > 0 ? "warning" : "default"}
+                value={metric(phonePipeline.data.eligible_backlog)}
+                tone={phonePipeline.data.eligible_backlog > 0 ? "warning" : "default"}
               />
               <MetricCard
                 label="Oldest waiting"
                 value={
-                  phonePipeline.data.oldest_pending_beyond_scan
-                    ? "old"
-                    : phonePipeline.data.need_work === 0
-                      ? "—"
-                      : fmtDur(phonePipeline.data.oldest_pending_age_seconds)
+                  phonePipeline.data.eligible_backlog === 0
+                    ? "—"
+                    : fmtDur(phonePipeline.data.oldest_pending_age_seconds)
                 }
                 tone={
-                  (phonePipeline.data.oldest_pending_age_seconds ?? 0) > 900 ||
-                  phonePipeline.data.oldest_pending_beyond_scan
+                  (phonePipeline.data.oldest_pending_age_seconds ?? 0) > 1800
                     ? "critical"
                     : "default"
                 }
               />
               <MetricCard
+                label="Current failures"
+                value={metric(phonePipeline.data.current_unresolved_failures)}
+                tone={phonePipeline.data.current_unresolved_failures > 0 ? "critical" : "default"}
+              />
+              <MetricCard
                 label="Catch-up ETA"
                 value={
-                  phonePipeline.data.need_work === 0
+                  phonePipeline.data.eligible_backlog === 0
                     ? "clear"
                     : phonePipeline.data.estimated_drain_seconds === null
-                      ? "—"
+                      ? "waiting"
                       : fmtDur(phonePipeline.data.estimated_drain_seconds)
                 }
               />
               <MetricCard
-                label="Last processed"
-                value={fmtTime(phonePipeline.data.last_success_at)}
+                label="Last ingestion"
+                value={fmtTime(phonePipeline.data.last_ingestion_at)}
+              />
+              <MetricCard
+                label="Last processing"
+                value={fmtTime(phonePipeline.data.last_useful_at)}
               />
             </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
               Throughput{" "}
-              {phonePipeline.data.throughput_per_min > 0
-                ? `${phonePipeline.data.throughput_per_min} call(s)/min`
+              {phonePipeline.data.throughput_total_per_hour > 0
+                ? `${phonePipeline.data.throughput_total_per_hour} stage advance(s)/hr`
                 : "idle"}{" "}
-              · processing runs automatically every 2 minutes.
+              · ingestion every 5 min, processing every 2 min — both automatic.
             </p>
           </>
         )}

@@ -1,12 +1,16 @@
 /**
  * PhoneOperations — the Simwood VoIP dashboard (Communications › Phone).
  *
- * Extracted from the former AdminView with NO behaviour change: the same API
- * calls, handlers and controls. Reorganised so the operational status (pipeline
- * health) is primary and the manual diagnostics/backfill collapse away.
+ * Operationally honest (Reliability v2): the primary card separates SCHEDULER,
+ * WORKER and USEFUL-PROCESSING health; stage counts show what genuinely needs
+ * work; current (unresolved) failures are distinct from resolved history; a
+ * read-only diagnostic table lists the actual blocked items. The "Catch up 24h"
+ * and "Process pending now" buttons are recovery overrides — normal operation
+ * needs neither. All numbers come from the single source of truth,
+ * phone-pipeline-status.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Phone, Activity, RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +32,7 @@ import type {
   ProcessPhonePipelineResult,
   ProcessPendingPhoneResult,
   PhonePipelineStatusResult,
+  PhonePipelineDiagItem,
 } from "@/lib/types";
 import { ConnectorStatusBadge } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
@@ -43,22 +48,26 @@ import { ADMIN_ROLES, RestrictedNotice, StatusPanel } from "./StatusPanel";
 
 type ActionKey = "test" | "calls" | "recordings";
 
-const STATUS_TILES: {
-  key: "pending" | "processing" | "failed" | "completed";
-  label: string;
-  tone: string;
-}[] = [
-  { key: "pending", label: "Pending", tone: "text-muted-foreground" },
-  { key: "processing", label: "Processing", tone: "text-accent" },
-  { key: "failed", label: "Failed", tone: "text-destructive" },
-  { key: "completed", label: "Completed", tone: "text-success" },
-];
-
 const HEALTH_TONE: Record<string, string> = {
   healthy: "border-success/20 bg-success/10 text-success",
   warning: "border-warning/30 bg-warning/10 text-warning",
   critical: "border-destructive/30 bg-destructive/10 text-destructive",
 };
+
+// Diagnostic-table filter chips → predicate over a diagnostic row.
+const DIAG_FILTERS: { key: string; label: string; match: (d: PhonePipelineDiagItem) => boolean }[] =
+  [
+    { key: "all", label: "All", match: () => true },
+    { key: "undownloaded", label: "Undownloaded", match: (d) => d.stage === "download" },
+    { key: "transcription", label: "Transcription", match: (d) => d.stage === "transcribe" },
+    { key: "analysis", label: "Analysis", match: (d) => d.stage === "analyse" },
+    { key: "blocked", label: "Blocked", match: (d) => d.last_run_status === "failed" },
+    {
+      key: "retrying",
+      label: "Retrying",
+      match: (d) => d.attempts > 0 && d.last_run_status !== "failed",
+    },
+  ];
 
 /** Humanise a duration in seconds ("just now" / "3m" / "2h 5m" / "1d 4h"). */
 function fmtDuration(seconds: number | null): string {
@@ -132,7 +141,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     setRunning(null);
   }
 
-  // Pipeline diagnostics (read-only counts).
+  // Pipeline diagnostics (read-only counts + per-item detail).
   const [statusLoading, setStatusLoading] = useState(false);
   const [status, setStatus] = useState<ApiResult<PhonePipelineStatusResult> | null>(null);
 
@@ -142,11 +151,12 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   );
 
   // ONE source of truth: phone-pipeline-status returns health + stage backlog +
-  // freshness, so there is no second client-side backlog computation to drift.
+  // freshness + the per-item diagnostic rows (detail=true), so there is no second
+  // client-side backlog computation to drift.
   const loadStatus = useCallback(async () => {
     if (!tenantId) return;
     setStatusLoading(true);
-    setStatus(await getPhonePipelineStatus(tenantId));
+    setStatus(await getPhonePipelineStatus(tenantId, true));
     setStatusLoading(false);
   }, [tenantId]);
 
@@ -221,6 +231,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   }
 
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [diagFilter, setDiagFilter] = useState("all");
   const diagnosticsRef = useRef<HTMLDivElement>(null);
 
   // Deep-link handoff from the Operations Overview (Settings action).
@@ -235,11 +246,14 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
 
+  const data = status?.ok ? status.data : null;
+  const diagRows = useMemo(() => data?.diagnostics ?? [], [data]);
+  const filteredDiag = useMemo(() => {
+    const f = DIAG_FILTERS.find((x) => x.key === diagFilter) ?? DIAG_FILTERS[0];
+    return diagRows.filter(f.match);
+  }, [diagRows, diagFilter]);
+
   // Honest header status: not-configured never reads as connected.
-  const pipelineTotal =
-    status && status.ok
-      ? status.data.pending + status.data.processing + status.data.failed + status.data.completed
-      : 0;
   const headerStatus: ConnectorStatus =
     accountLoaded && !configured
       ? "warning"
@@ -247,7 +261,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
         ? "syncing"
         : status && !status.ok
           ? "error"
-          : status && status.ok && pipelineTotal > 0
+          : data && (data.recordings_total > 0 || data.eligible_backlog > 0)
             ? "connected"
             : "warning";
 
@@ -255,7 +269,7 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
 
   return (
     <div className="space-y-6">
-      {/* Operational header + pipeline status (primary) */}
+      {/* Operational header + primary health (scheduler / worker / useful) */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex items-center justify-between border-b border-hairline pb-4">
           <div className="flex items-center gap-3">
@@ -285,18 +299,9 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Activity className="h-4 w-4 text-muted-foreground" />
-            Processing pipeline
+            Pipeline health
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={runCalls}
-              disabled={!configured || running !== null}
-              title="Catch up: re-sync the last 24 hours of calls"
-            >
-              {running === "calls" ? "Catching up…" : "Catch up 24h"}
-            </Button>
             <Button size="sm" variant="outline" onClick={loadStatus} disabled={statusLoading}>
               <RotateCcw className="h-3.5 w-3.5" />
               {statusLoading ? "Refreshing…" : "Refresh"}
@@ -310,155 +315,185 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
           </div>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {STATUS_TILES.map((tile) => {
-            const value = status && status.ok ? status.data[tile.key] : null;
-            return (
-              <div key={tile.key} className="rounded-xl border border-hairline bg-surface-alt p-4">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {tile.label}
-                </div>
-                <div className={`text-display mt-2 text-2xl font-bold tabular ${tile.tone}`}>
-                  {value === null ? "—" : value}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Pipeline health strip — freshness + flow (the diagnostics view of the
-            same signals the Operations Centre summarises). */}
-        {status?.ok && (
-          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-hairline bg-surface-alt p-4">
-            <div className="flex flex-wrap items-center gap-2">
+        {data && (
+          <>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <span
                 className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                  HEALTH_TONE[status.data.health] ?? HEALTH_TONE.warning
+                  HEALTH_TONE[data.health] ?? HEALTH_TONE.warning
                 }`}
               >
-                {status.data.health}
+                {data.health}
               </span>
-              <span className="text-xs text-muted-foreground">{status.data.health_reason}</span>
+              <span className="text-xs text-muted-foreground">{data.health_reason}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { label: "Last success", value: fmtAgo(status.data.last_success_at) },
-                {
-                  label: "Oldest waiting",
-                  value: status.data.oldest_pending_beyond_scan
-                    ? "> scan window"
-                    : fmtDuration(status.data.oldest_pending_age_seconds),
-                },
-                {
-                  label: "Throughput",
-                  value:
-                    status.data.throughput_per_min > 0
-                      ? `${status.data.throughput_per_min}/min`
-                      : "idle",
-                },
-                {
-                  label: "Est. drain",
-                  value:
-                    status.data.need_work === 0
-                      ? "clear"
-                      : status.data.estimated_drain_seconds === null
-                        ? "—"
-                        : fmtDuration(status.data.estimated_drain_seconds),
-                },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {s.label}
-                  </div>
-                  <div className="text-display mt-1 text-base font-semibold tabular text-foreground">
-                    {s.value}
-                  </div>
-                </div>
-              ))}
+
+            {/* Scheduler vs worker health, separately (§8/§10) */}
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <HealthTile
+                label="Scheduler"
+                value={data.scheduler_healthy ? "healthy" : "stale"}
+                tone={data.scheduler_healthy ? "text-success" : "text-warning"}
+                sub={`enqueued ${fmtAgo(data.last_scheduler_at)}`}
+              />
+              <HealthTile
+                label="Worker"
+                value={data.worker_healthy ? "healthy" : "stale"}
+                tone={data.worker_healthy ? "text-success" : "text-warning"}
+                sub={`ran ${fmtAgo(data.last_worker_success_at)}`}
+              />
+              <HealthTile
+                label="Eligible backlog"
+                value={String(data.eligible_backlog)}
+                tone={data.eligible_backlog > 0 ? "text-warning" : "text-success"}
+                sub={data.eligible_backlog === 0 ? "clear" : "recordings need work"}
+              />
+              <HealthTile
+                label="Current failures"
+                value={String(data.current_unresolved_failures)}
+                tone={
+                  data.current_unresolved_failures > 0
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                }
+                sub={data.current_unresolved_failures > 0 ? "blocked now" : "none unresolved"}
+              />
+              <HealthTile
+                label="Oldest waiting"
+                value={
+                  data.eligible_backlog === 0 ? "—" : fmtDuration(data.oldest_pending_age_seconds)
+                }
+                tone={
+                  (data.oldest_pending_age_seconds ?? 0) > 1800
+                    ? "text-destructive"
+                    : "text-foreground"
+                }
+              />
+              <HealthTile
+                label="Last useful processing"
+                value={fmtAgo(data.last_useful_at)}
+                tone="text-foreground"
+              />
+              <HealthTile
+                label="Throughput"
+                value={
+                  data.throughput_total_per_hour > 0
+                    ? `${data.throughput_total_per_hour}/hr`
+                    : "idle"
+                }
+                tone="text-foreground"
+                sub={
+                  data.throughput_total_per_hour > 0
+                    ? `${data.throughput_downloads_per_hour}d · ${data.throughput_transcripts_per_hour}t · ${data.throughput_analyses_per_hour}a`
+                    : undefined
+                }
+              />
+              <HealthTile
+                label="Est. drain"
+                value={
+                  data.eligible_backlog === 0
+                    ? "clear"
+                    : data.estimated_drain_seconds === null
+                      ? "waiting"
+                      : fmtDuration(data.estimated_drain_seconds)
+                }
+                tone="text-foreground"
+                sub={
+                  data.eligible_backlog > 0 && data.estimated_drain_seconds === null
+                    ? "no recent throughput"
+                    : undefined
+                }
+              />
             </div>
+          </>
+        )}
+      </div>
+
+      {/* Stage counts — truthful "what needs work" */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="text-sm font-semibold">Stage backlog</div>
+        <div className="text-xs text-muted-foreground">
+          Where each incomplete recording currently sits in the pipeline.
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <StageTile
+            label="Waiting for download"
+            value={data?.not_downloaded ?? null}
+            tone={data && data.not_downloaded > 0 ? "text-destructive" : "text-muted-foreground"}
+          />
+          <StageTile
+            label="Waiting for transcription"
+            value={data?.need_transcription ?? null}
+            tone={data && data.need_transcription > 0 ? "text-warning" : "text-muted-foreground"}
+          />
+          <StageTile
+            label="Waiting for analysis"
+            value={data?.need_analysis ?? null}
+            tone={data && data.need_analysis > 0 ? "text-warning" : "text-muted-foreground"}
+          />
+          <StageTile label="Completed" value={data?.completed ?? null} tone="text-success" />
+          <StageTile
+            label="Blocked"
+            value={data?.current_unresolved_failures ?? null}
+            tone={
+              data && data.current_unresolved_failures > 0
+                ? "text-destructive"
+                : "text-muted-foreground"
+            }
+          />
+        </div>
+        {data && data.missing_provider_id > 0 && (
+          <div className="mt-3 rounded-md border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
+            {data.missing_provider_id} recording(s) have no provider identifier and can never be
+            downloaded — excluded from selection (operator action needed).
           </div>
         )}
       </div>
 
-      {/* Processing backlog — truthful "what still needs work" + one-click drain */}
+      {/* Recovery overrides — normal operation needs neither button */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <div className="text-sm font-semibold">Processing backlog</div>
+              <div className="text-sm font-semibold">Recovery overrides</div>
               <span className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Manual override
+                Admin only
               </span>
             </div>
             <div className="text-xs text-muted-foreground">
-              Normally automatic — the scheduler drains this every 2 minutes. Use this only to force
-              a batch now.
+              Processing runs automatically (scheduler every 2 min → worker). Use these only to
+              force work now — day-to-day operation needs neither.
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={runProcessPending}
-            disabled={processing || !tenantId}
-            title="Manual override: force-process a batch of pending recordings now"
-          >
-            {processing ? "Processing…" : "Process pending now"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={runCalls}
+              disabled={!configured || running !== null}
+              title="Recovery override: re-sync the last 24 hours of calls"
+            >
+              {running === "calls" ? "Catching up…" : "Catch up 24h"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={runProcessPending}
+              disabled={processing || !tenantId}
+              title="Recovery override: force-process a batch of the oldest pending recordings now"
+            >
+              {processing ? "Processing…" : "Process pending now"}
+            </Button>
+          </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            {
-              label: "Not downloaded",
-              value: status?.ok ? status.data.not_downloaded : null,
-              tone:
-                status?.ok && status.data.not_downloaded > 0
-                  ? "text-destructive"
-                  : "text-muted-foreground",
-            },
-            {
-              label: "Need transcription",
-              value: status?.ok ? status.data.need_transcription : null,
-              tone:
-                status?.ok && status.data.need_transcription > 0
-                  ? "text-warning"
-                  : "text-muted-foreground",
-            },
-            {
-              label: "Need analysis",
-              value: status?.ok ? status.data.need_analysis : null,
-              tone:
-                status?.ok && status.data.need_analysis > 0
-                  ? "text-warning"
-                  : "text-muted-foreground",
-            },
-            {
-              label: "Downloaded",
-              value: status?.ok ? status.data.downloaded : null,
-              tone: "text-success",
-            },
-          ].map((t) => (
-            <div key={t.label} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                {t.label}
-              </div>
-              <div className={`text-display mt-2 text-2xl font-bold tabular ${t.tone}`}>
-                {t.value === null ? "—" : t.value}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {status?.ok &&
-          status.data.last_failure_message &&
-          (status.data.last_failure_is_current ? (
+        {data?.last_failure_message &&
+          (data.last_failure_is_current ? (
             <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-              Current pipeline failure: {status.data.last_failure_message}
+              Current pipeline failure: {data.last_failure_message}
             </div>
           ) : (
-            // A newer successful run has resolved this — show as history, not a
-            // live warning (no stale invalid_auth masquerading as current).
             <div className="mt-3 rounded-md border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
-              Last failure (resolved by a later success): {status.data.last_failure_message}
+              Last failure (resolved by later work): {data.last_failure_message}
             </div>
           ))}
 
@@ -472,14 +507,111 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             { label: "Analysed", value: String(d.analysed) },
             { label: "Interaction ready", value: String(d.interaction_ready) },
             { label: "Failed", value: String(d.failed) },
-            { label: "Skipped", value: String(d.skipped) },
+            { label: "Backlog left", value: String(d.eligible_backlog) },
           ]}
         />
+        {processResult?.ok && processResult.data.reason === "no_eligible_recordings" && (
+          <div className="mt-3 rounded-md border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
+            Nothing eligible to process — the backlog is clear (not a skipped batch).
+          </div>
+        )}
         {processResult?.ok && processResult.data.last_error && (
           <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             Failed at{" "}
             <span className="font-mono">{processResult.data.failed_step ?? "unknown"}</span> —{" "}
             {processResult.data.last_error}
+          </div>
+        )}
+      </div>
+
+      {/* Unresolved items — the honest per-recording diagnostic table (§11) */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Unresolved items</div>
+            <div className="text-xs text-muted-foreground">
+              Every recording that still needs work — read-only. No recording URLs or content.
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {DIAG_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setDiagFilter(f.key)}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                  diagFilter === f.key
+                    ? "border-accent/30 bg-accent/10 text-accent"
+                    : "border-hairline bg-surface-alt text-muted-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {!data ? (
+          <p className="mt-4 text-xs text-muted-foreground">Loading diagnostics…</p>
+        ) : filteredDiag.length === 0 ? (
+          <p className="mt-4 text-xs text-muted-foreground">
+            {diagRows.length === 0
+              ? "No unresolved items — the pipeline is clear."
+              : "No items match this filter."}
+          </p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-xs">
+              <thead>
+                <tr className="border-b border-hairline text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <th className="py-2 pr-3 font-medium">Recorded</th>
+                  <th className="py-2 pr-3 font-medium">Call ID</th>
+                  <th className="py-2 pr-3 font-medium">Stage</th>
+                  <th className="py-2 pr-3 font-medium">Age</th>
+                  <th className="py-2 pr-3 font-medium">Attempts</th>
+                  <th className="py-2 pr-3 font-medium">Last error</th>
+                  <th className="py-2 pr-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline">
+                {filteredDiag.map((d) => (
+                  <tr key={d.recording_id}>
+                    <td className="py-2 pr-3 whitespace-nowrap text-muted-foreground">
+                      {fmtAgo(d.started_at)}
+                    </td>
+                    <td className="py-2 pr-3 font-mono text-[11px] text-muted-foreground">
+                      {d.provider_call_id ?? "—"}
+                    </td>
+                    <td className="py-2 pr-3">{d.stage}</td>
+                    <td className="py-2 pr-3 tabular whitespace-nowrap">
+                      {fmtDuration(d.age_seconds)}
+                    </td>
+                    <td className="py-2 pr-3 tabular">{d.attempts}</td>
+                    <td className="py-2 pr-3">
+                      {d.last_error_code ? (
+                        <span className="font-mono text-[11px] text-destructive">
+                          {d.last_error_code}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-3">
+                      <span
+                        className={
+                          d.last_run_status === "failed"
+                            ? "text-destructive"
+                            : d.attempts === 0
+                              ? "text-muted-foreground"
+                              : "text-warning"
+                        }
+                      >
+                        {d.attempts === 0 ? "waiting" : (d.last_run_status ?? "—")}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -567,8 +699,8 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
           <div>
             <div className="text-sm font-semibold">Diagnostics &amp; manual sync</div>
             <div className="text-xs text-muted-foreground">
-              Test the connection, backfill on demand, or retry one recording. Not needed day to
-              day.
+              Historical failures, connection test, on-demand backfill, retry one recording. Not
+              needed day to day.
             </div>
           </div>
           {showDiagnostics ? (
@@ -580,6 +712,32 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
 
         {showDiagnostics && (
           <>
+            {/* Historical / resolved failures — NOT current health */}
+            {data && (
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StageTile
+                  label="Failures (24h)"
+                  value={data.failures_24h}
+                  tone={data.failures_24h > 0 ? "text-warning" : "text-muted-foreground"}
+                />
+                <StageTile
+                  label="All-time failures"
+                  value={data.historical_failures}
+                  tone="text-muted-foreground"
+                />
+                <StageTile
+                  label="Dead-letter jobs"
+                  value={data.dead_letter_count}
+                  tone={data.dead_letter_count > 0 ? "text-destructive" : "text-muted-foreground"}
+                />
+                <StageTile
+                  label="Active jobs"
+                  value={data.processing}
+                  tone={data.processing > 0 ? "text-accent" : "text-muted-foreground"}
+                />
+              </div>
+            )}
+
             <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {/* Test connection */}
               <div className="rounded-xl border border-hairline p-4">
@@ -699,6 +857,43 @@ export function PhoneOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/** Compact health tile (value + optional sub-line). */
+function HealthTile({
+  label,
+  value,
+  tone,
+  sub,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+  sub?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-hairline bg-surface-alt p-4">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className={`text-display mt-1.5 text-lg font-bold tabular ${tone}`}>{value}</div>
+      {sub && <div className="mt-0.5 text-[10px] text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}
+
+/** Big-number stage-count tile. */
+function StageTile({ label, value, tone }: { label: string; value: number | null; tone: string }) {
+  return (
+    <div className="rounded-xl border border-hairline bg-surface-alt p-4">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className={`text-display mt-2 text-2xl font-bold tabular ${tone}`}>
+        {value === null ? "—" : value}
       </div>
     </div>
   );

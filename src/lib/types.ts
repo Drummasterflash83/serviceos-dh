@@ -230,14 +230,32 @@ export interface ProcessPendingPhoneResult {
   /** Recordings that produced a fresh canonical interaction (interaction.ready). */
   interaction_ready: number;
   failed: number;
-  /** Recordings already complete within the scan window (not reprocessed). */
+  /** Always 0 now — selection is DB-side, so complete rows are never fetched. */
   skipped: number;
+  /** Incomplete recordings still remaining after this batch (full table). */
+  eligible_backlog: number;
+  /** Why the run did what it did — e.g. "no_eligible_recordings", "processed". */
+  reason: string;
   /** Most recent child error (e.g. missing OPENAI_API_KEY); null when clean. */
   last_error: string | null;
   /** The step the most recent failure occurred at (download/transcribe/…). */
   failed_step: string | null;
   /** Up to 10 per-recording failure summaries (no secrets, no content). */
   failures: ProcessPendingFailure[];
+}
+
+/** One unresolved-item row from `phone-pipeline-status` (detail=true). §11. */
+export interface PhonePipelineDiagItem {
+  recording_id: string;
+  provider_call_id: string | null;
+  stage: string;
+  started_at: string | null;
+  age_seconds: number;
+  attempts: number;
+  last_error_code: string | null;
+  last_error: string | null;
+  last_attempt_at: string | null;
+  last_run_status: string | null;
 }
 
 /**
@@ -248,29 +266,50 @@ export interface PhonePipelineStatusResult {
   success: boolean;
   health: "healthy" | "warning" | "critical";
   health_reason: string;
-  // stage backlog
+  // stage backlog (full table — no scan window)
   recordings_total: number;
   not_downloaded: number;
   downloaded: number;
   need_transcription: number;
   need_analysis: number;
   need_work: number;
-  // high-level (back-compat)
+  eligible_backlog: number;
+  missing_provider_id: number;
+  // high-level (back-compat) — `failed` = CURRENT unresolved (not all-time)
   pending: number;
   processing: number;
   failed: number;
   completed: number;
-  // freshness + flow
+  // failure separation (§7)
+  current_unresolved_failures: number;
+  historical_failures: number;
+  failures_24h: number;
+  dead_letter_count: number;
+  // freshness — scheduler / worker / useful measured separately (§8)
   oldest_pending_at: string | null;
   oldest_pending_age_seconds: number | null;
   oldest_pending_beyond_scan: boolean;
+  /** Alias for last useful processing (kept for back-compat). */
   last_success_at: string | null;
+  last_useful_at: string | null;
+  last_ingestion_at: string | null;
+  last_worker_success_at: string | null;
+  last_scheduler_at: string | null;
+  scheduler_healthy: boolean;
+  worker_healthy: boolean;
   last_failure_at: string | null;
   last_failure_message: string | null;
-  /** True only when the latest failure is newer than the latest success. */
+  /** True when a recording is still blocked by the latest failure. */
   last_failure_is_current: boolean;
+  // flow
   throughput_per_min: number;
+  throughput_downloads_per_hour: number;
+  throughput_transcripts_per_hour: number;
+  throughput_analyses_per_hour: number;
+  throughput_total_per_hour: number;
   estimated_drain_seconds: number | null;
+  /** Present only when requested with detail=true. */
+  diagnostics?: PhonePipelineDiagItem[];
 }
 
 /** Filters for the tenant-scoped call feed (client-side RLS reads). */

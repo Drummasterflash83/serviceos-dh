@@ -16,6 +16,11 @@ export type JobRow = Record<string, unknown>;
 const BACKOFF_SECONDS: Record<number, number> = { 1: 60, 2: 300, 3: 900, 4: 3600 };
 
 // Error codes that will NEVER succeed on retry → dead-letter immediately.
+// Provider/download codes: `recording_not_ready`, `provider_rate_limited`,
+// `provider_timeout`, `download_failed`, `storage_failed`, `transcription_empty`
+// are DELIBERATELY absent (retryable by default). Only the terminal ones below
+// dead-letter — a recording gone past provider retention, a malformed identifier,
+// a cross-tenant mismatch or an unsupported format can never succeed on retry.
 const NON_RETRYABLE = new Set([
   "config_error",
   "invalid_json",
@@ -23,6 +28,7 @@ const NON_RETRYABLE = new Set([
   "invalid_transcript_id",
   "invalid_force",
   "invalid_input",
+  "invalid_recording", // recording row has no provider_recording_id — unfetchable
   "not_found",
   "tenant_mismatch",
   "forbidden",
@@ -32,6 +38,10 @@ const NON_RETRYABLE = new Set([
   "malformed_response",
   "empty_transcript",
   "unsupported_job",
+  "provider_recording_missing", // 404 past retention — the audio is gone for good
+  "malformed_provider_id",
+  "cross_tenant_mismatch",
+  "unsupported_format",
 ]);
 
 /** Classify an error as retryable (transient) vs terminal. Default: retryable. */
