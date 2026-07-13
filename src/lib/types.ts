@@ -312,6 +312,56 @@ export interface PhonePipelineStatusResult {
   diagnostics?: PhonePipelineDiagItem[];
 }
 
+/** Explicit email connector state (mirrors _shared/email_health.ts). */
+export type EmailConnectorState =
+  | "needs_setup"
+  | "connected_healthy"
+  | "connected_stale"
+  | "connected_failing"
+  | "auth_expired"
+  | "delegation_failed"
+  | "no_mailboxes"
+  | "backfill_running"
+  | "backfill_failed"
+  | "disabled"
+  | "unknown";
+
+/** One connector's derived state + the raw evidence it was derived from. */
+export interface EmailConnectorHealth {
+  state: EmailConnectorState;
+  reason: string;
+  currentFailure: boolean;
+  backfill: "idle" | "running" | "failed";
+  needsReconnect: boolean;
+  needsDelegationRetest: boolean;
+  evidence: Record<string, number | string | boolean | null>;
+}
+
+/** One unresolved account/mailbox row (email-connector-status detail=true). §13 */
+export interface EmailConnectorDiagItem {
+  email_account_id: string;
+  connector: string;
+  email_address: string | null;
+  enabled: boolean;
+  account_status: string | null;
+  auth_state: string | null;
+  history_cursor: string | null;
+  last_success_at: string | null;
+  last_attempt_at: string | null;
+  last_error: string | null;
+  backfill_status: string | null;
+  backfill_total_fetched: number | null;
+}
+
+/** Authoritative email health — the single source both surfaces read (§12). */
+export interface EmailConnectorStatusResult {
+  success: boolean;
+  gmail: EmailConnectorHealth;
+  workspace: EmailConnectorHealth;
+  pipeline: Record<string, number | string | null>;
+  diagnostics?: EmailConnectorDiagItem[];
+}
+
 /** Filters for the tenant-scoped call feed (client-side RLS reads). */
 export interface PhoneFeedInput {
   /** ISO date — inclusive lower bound on call start. */

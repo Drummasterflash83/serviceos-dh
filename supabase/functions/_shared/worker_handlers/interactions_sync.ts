@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
+import { publishEvent } from "../events.ts";
 
 type Admin = SupabaseClient;
 
@@ -133,12 +134,7 @@ async function syncPhone(
   return interactions.length;
 }
 
-async function syncEmail(
-  admin: Admin,
-  tenantId: string,
-  limit: number,
-  since: string | null,
-): Promise<number> {
+async function syncEmail(admin: Admin, tenantId: string, limit: number): Promise<number> {
   // Detect the owning connector by matching message addresses to the tenant's DWD
   // mailboxes / OAuth accounts (loaded once). Falls back to a generic 'email'.
   const dwd = new Set<string>();
@@ -161,16 +157,15 @@ async function syncEmail(
     if (addr && a.status === "active") oauth.add(addr);
   }
 
-  let q = admin
-    .from("email_messages")
-    .select(
-      "id, provider_message_id, provider_thread_id, from_email, from_name, to_emails, cc_emails, subject, snippet, sent_at, received_at, direction, created_at",
-    )
-    .eq("tenant_id", tenantId)
-    .order("received_at", { ascending: false, nullsFirst: false })
-    .limit(limit);
-  if (since) q = q.gte("received_at", since);
-  const { data: msgs, error } = await q;
+  // Starvation-free selection (§16): the OLDEST email_messages that do NOT yet
+  // have a canonical interaction, oldest first, bounded. This replaces the former
+  // newest-500 window, under which older unprojected mail could never be picked
+  // up (email interactions are created ONLY here — there is no inline finaliser
+  // like phone). Idempotent upsert stays below.
+  const { data: msgs, error } = await admin.rpc("email_select_unprojected", {
+    p_tenant_id: tenantId,
+    p_limit: limit,
+  });
   if (error) throw new Error(`email_messages read failed: ${error.message}`);
   const rows = (msgs ?? []) as Record<string, unknown>[];
   if (rows.length === 0) return 0;
@@ -213,7 +208,24 @@ async function syncEmail(
     };
   });
 
-  await upsertInteractions(admin, interactions);
+  // Upsert and capture ids — the selection returned only messages WITHOUT an
+  // interaction, so every row is new. Publish interaction.ready for each so the
+  // downstream identity → graph → card → recommendation enrichment fires promptly
+  // (§9/§10); publishEvent is idempotent and best-effort.
+  const { data: upserted, error: upErr } = await admin
+    .from("interactions")
+    .upsert(interactions, { onConflict: "tenant_id,source_table,source_id" })
+    .select("id");
+  if (upErr) throw new Error(`interactions upsert failed: ${upErr.message}`);
+  for (const row of (upserted ?? []) as { id: string }[]) {
+    await publishEvent(admin, {
+      tenantId,
+      eventType: "interaction.ready",
+      subjectType: "interaction",
+      subjectId: row.id,
+      source: "interactions-sync:email",
+    });
+  }
   return interactions.length;
 }
 
@@ -233,7 +245,7 @@ export async function handleInteractionsSync(
       phoneProcessed = await syncPhone(admin, tenantId, limit, since);
     }
     if (source === "email" || source === "all") {
-      emailProcessed = await syncEmail(admin, tenantId, limit, since);
+      emailProcessed = await syncEmail(admin, tenantId, limit);
     }
     const upserted = phoneProcessed + emailProcessed;
 

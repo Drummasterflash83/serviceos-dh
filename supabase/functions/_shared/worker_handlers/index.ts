@@ -24,6 +24,12 @@ import { handleIdentityResolve } from "./identity_resolve.ts";
 import { handleBusinessGraphSync } from "./business_graph_sync.ts";
 import { handleCustomerCardSync } from "./customer_card_sync.ts";
 import { handleRecommendationSync } from "./recommendation_sync.ts";
+import {
+  handleEmailGmailSync,
+  handleEmailWorkspaceSync,
+  handleEmailWorkspaceBackfill,
+  handleEmailMailboxDiscovery,
+} from "./email_sync.ts";
 
 export interface WorkerHandlerContext {
   /** Service-role client (bypasses RLS). Business writes go through this. */
@@ -70,6 +76,10 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "graph.sync": handleBusinessGraphSync,
   "customer_card.sync": handleCustomerCardSync,
   "recommendation.sync": handleRecommendationSync,
+  "email.gmail_sync": handleEmailGmailSync,
+  "email.workspace_sync": handleEmailWorkspaceSync,
+  "email.workspace_backfill": handleEmailWorkspaceBackfill,
+  "email.mailbox_discovery": handleEmailMailboxDiscovery,
 };
 
 export function getWorkerHandler(jobType: string): WorkerHandler | null {

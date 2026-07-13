@@ -33,7 +33,7 @@ import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
 import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
 import { getIdentitySummary, type IdentitySummary } from "@/lib/identity";
-import { getPhonePipelineStatus } from "@/lib/api";
+import { getPhonePipelineStatus, getEmailConnectorStatus } from "@/lib/api";
 import {
   getBusinessGraphSummary,
   listGraphEdges,
@@ -53,7 +53,7 @@ import {
   syncRecommendations,
   type RecommendationSummary,
 } from "@/lib/recommendations";
-import type { ApiResult, PhonePipelineStatusResult } from "@/lib/types";
+import type { ApiResult, PhonePipelineStatusResult, EmailConnectorStatusResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   ActivityTable,
@@ -185,6 +185,9 @@ export function OperationsOverview({
   const [phonePipeline, setPhonePipeline] = useState<ApiResult<PhonePipelineStatusResult> | null>(
     null,
   );
+  const [emailStatus, setEmailStatus] = useState<ApiResult<EmailConnectorStatusResult> | null>(
+    null,
+  );
   const [graph, setGraph] = useState<ApiResult<GraphSummary> | null>(null);
   const [buildingGraph, setBuildingGraph] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
@@ -197,7 +200,12 @@ export function OperationsOverview({
   const [buildingTimeline, setBuildingTimeline] = useState(false);
 
   const loadJobs = useCallback(async () => {
-    const [sum, list, inter, card, match, sched, live, ident, phone, gr, cc, rc] =
+    const noTenant = <T,>(): Promise<ApiResult<T>> =>
+      Promise.resolve<ApiResult<T>>({
+        ok: false,
+        error: { code: "no_tenant", message: "No tenant in session" },
+      });
+    const [sum, list, inter, card, match, sched, live, ident, phone, email, gr, cc, rc] =
       await Promise.all([
         getPlatformJobSummary(),
         listPlatformJobs({ limit: 12 }),
@@ -207,14 +215,10 @@ export function OperationsOverview({
         getSchedulerHealth(),
         getLiveCallOpsSummary(),
         getIdentitySummary(),
-        // Business-health summary of the phone pipeline — the SAME single source
-        // Admin › Phone reads for full diagnostics. Skipped until a tenant is known.
-        tenantId
-          ? getPhonePipelineStatus(tenantId)
-          : Promise.resolve<ApiResult<PhonePipelineStatusResult>>({
-              ok: false,
-              error: { code: "no_tenant", message: "No tenant in session" },
-            }),
+        // Business-health summaries — the SAME single sources Admin reads for full
+        // diagnostics. Skipped until a tenant is known.
+        tenantId ? getPhonePipelineStatus(tenantId) : noTenant<PhonePipelineStatusResult>(),
+        tenantId ? getEmailConnectorStatus(tenantId) : noTenant<EmailConnectorStatusResult>(),
         getBusinessGraphSummary(),
         getCustomerCardSummary(),
         getRecommendationSummary(),
@@ -228,6 +232,7 @@ export function OperationsOverview({
     setLiveCalls(live);
     setIdentity(ident);
     setPhonePipeline(phone);
+    setEmailStatus(email);
     setGraph(gr);
     setCustomerCards(cc);
     setRecs(rc);
@@ -797,6 +802,142 @@ export function OperationsOverview({
           </>
         )}
       </div>
+
+      {/* Email — BUSINESS health for Gmail + Workspace (§14). Read the ONE
+          authoritative source; full diagnostics live in Admin › Email. Only
+          current (never historical) failures show; no OAuth/setup jargon. */}
+      {(() => {
+        const data = emailStatus?.ok ? emailStatus.data : null;
+        const bad = new Set([
+          "connected_failing",
+          "auth_expired",
+          "delegation_failed",
+          "backfill_failed",
+        ]);
+        const warn = new Set(["connected_stale", "no_mailboxes", "needs_setup", "unknown"]);
+        const badge = (state: string) =>
+          bad.has(state)
+            ? "border-destructive/30 bg-destructive/10 text-destructive"
+            : warn.has(state)
+              ? "border-warning/30 bg-warning/10 text-warning"
+              : "border-success/20 bg-success/10 text-success";
+        const evStr = (ev: Record<string, unknown>, k: string): string | null => {
+          const v = ev[k];
+          return typeof v === "string" ? v : null;
+        };
+        const evNum = (ev: Record<string, unknown>, k: string): number =>
+          typeof ev[k] === "number" ? (ev[k] as number) : 0;
+        const pipeNum = (k: string): number =>
+          data && typeof data.pipeline[k] === "number" ? (data.pipeline[k] as number) : 0;
+        const openDiag = () =>
+          onNavigate?.({ section: "communications", surface: "email", focus: "diagnostics" });
+        return (
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Gmail */}
+            <div className="rounded-2xl border border-hairline bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold">Gmail</div>
+                  {data && (
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge(data.gmail.state)}`}
+                    >
+                      {data.gmail.state.replace(/_/g, " ")}
+                    </span>
+                  )}
+                </div>
+                <Button size="sm" variant="outline" onClick={openDiag}>
+                  View diagnostics
+                </Button>
+              </div>
+              {!data ? (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Email health unavailable — the email tables could not be read.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-1 text-xs text-muted-foreground">{data.gmail.reason}</div>
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <MetricCard
+                      label="Last sync"
+                      value={fmtTime(evStr(data.gmail.evidence, "last_success_at"))}
+                    />
+                    <MetricCard
+                      label="Messages (60m)"
+                      value={pipeNum("messages_last_60m")}
+                      tone="accent"
+                    />
+                    <MetricCard
+                      label="Oldest pending"
+                      value={
+                        pipeNum("unprojected_backlog") === 0
+                          ? "—"
+                          : fmtDur(pipeNum("oldest_unprojected_age_seconds"))
+                      }
+                      tone={
+                        pipeNum("oldest_unprojected_age_seconds") > 900 ? "critical" : "default"
+                      }
+                    />
+                    <MetricCard
+                      label="Current failures"
+                      value={data.gmail.currentFailure ? "yes" : 0}
+                      tone={data.gmail.currentFailure ? "critical" : "default"}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Workspace */}
+            <div className="rounded-2xl border border-hairline bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold">Google Workspace</div>
+                  {data && (
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge(data.workspace.state)}`}
+                    >
+                      {data.workspace.state.replace(/_/g, " ")}
+                    </span>
+                  )}
+                </div>
+                <Button size="sm" variant="outline" onClick={openDiag}>
+                  View diagnostics
+                </Button>
+              </div>
+              {!data ? (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Email health unavailable — the email tables could not be read.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-1 text-xs text-muted-foreground">{data.workspace.reason}</div>
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <MetricCard
+                      label="Delegation"
+                      value={data.workspace.needsDelegationRetest ? "failing" : "healthy"}
+                      tone={data.workspace.needsDelegationRetest ? "critical" : "success"}
+                    />
+                    <MetricCard
+                      label="Enabled mailboxes"
+                      value={evNum(data.workspace.evidence, "mailboxes_enabled")}
+                    />
+                    <MetricCard
+                      label="Last sync"
+                      value={fmtTime(evStr(data.workspace.evidence, "last_success_at"))}
+                    />
+                    <MetricCard
+                      label="Current failures"
+                      value={data.workspace.currentFailure ? "yes" : 0}
+                      tone={data.workspace.currentFailure ? "critical" : "default"}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Business Graph — the shared memory layer. Nodes/edges projected from the
           system of record. "Build graph" is a manual override; normal operation is

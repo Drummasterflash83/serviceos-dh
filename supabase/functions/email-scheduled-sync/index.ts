@@ -1,36 +1,24 @@
-// ServiceOS — Edge Function: email-scheduled-sync (Connector Automation Phase-1)
+// ServiceOS — Edge Function: email-scheduled-sync (OAuth Gmail, queue-driven)
 //
-// Keeps connected Gmail mailboxes current WITHOUT a human clicking the Admin
-// sync button. Intended to run on a cron (every 5 minutes). It owns NO Gmail
-// logic — it finds the tenant's active email_accounts and invokes the existing,
-// already-idempotent gmail-sync-messages function once per mailbox (service-role
-// internal path, see _shared/authz.ts). One failing mailbox never aborts the run.
+// ENQUEUES one `email.gmail_sync` job per connected OAuth mailbox and returns
+// fast — the platform-worker claims and runs the heavy sync asynchronously, so a
+// slow/failing mailbox never blocks the scheduler or the other mailboxes. Runs on
+// a cron every 5 minutes. Multi-tenant: every tenant with an active OAuth Gmail
+// account is covered (no hardcoded tenant).
 //
-// Auth: NOT a user session. A shared secret header `x-schedule-secret` must match
-// EMAIL_SCHEDULE_SECRET, else 403. Tokens are loaded/refreshed inside
-// gmail-sync-messages and are NEVER exposed or logged here.
-//
-// Cost safety: max_results is small per mailbox; upserts are idempotent so
-// overlap is safe. No AI analysis (later phase).
-//
-// Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false (cron
-// has no JWT; the schedule secret is the gate) — see supabase/config.toml.
+// Auth: NOT a user session. `x-schedule-secret` must match EMAIL_SCHEDULE_SECRET,
+// else 403. Tokens are never touched here. Deploy with verify_jwt=false.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { syncGmailMailbox } from "../_shared/email_pipeline.ts";
+import { enqueueJob } from "../_shared/platform_queue.ts";
 
 const PROVIDER = "gmail";
-
-// TODO(integration): move tenant to per-tenant integration config once provider
-// connections are stored per tenant.
-const SCHEDULED_TENANT_ID = "00000000-0000-0000-0000-000000000001";
-
-// Recent-only per mailbox each tick; idempotent upserts make overlap safe.
 const MAX_RESULTS = 25;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-schedule-secret",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-schedule-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -40,12 +28,9 @@ function json(body: unknown, status = 200): Response {
     headers: { ...corsHeaders, "content-type": "application/json" },
   });
 }
-
 function fail(code: string, message: string, status: number): Response {
   return json({ success: false, error: { code, message } }, status);
 }
-
-/** Constant-time-ish string compare (avoids trivial timing leaks on the secret). */
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -57,112 +42,39 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return fail("method_not_allowed", "Use POST", 405);
 
-  // --- shared-secret gate (NOT callable by ordinary users) -----------------
   const expected = Deno.env.get("EMAIL_SCHEDULE_SECRET");
   if (!expected) return fail("config_error", "EMAIL_SCHEDULE_SECRET is not configured", 500);
   const provided = req.headers.get("x-schedule-secret") ?? "";
-  if (!safeEqual(provided, expected)) {
-    return fail("forbidden", "Invalid or missing x-schedule-secret", 403);
-  }
+  if (!safeEqual(provided, expected)) return fail("forbidden", "Invalid or missing secret", 403);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
-  if (!serviceKey || !supabase) {
-    return fail("config_error", "Supabase admin client is not configured", 500);
-  }
+  if (!supabase) return fail("config_error", "Supabase admin client is not configured", 500);
 
-  const tenantId = SCHEDULED_TENANT_ID;
-  const startedAt = new Date().toISOString();
-  const baseMetadata: Record<string, unknown> = { provider: PROVIDER, max_results: MAX_RESULTS };
-
-  // Open a scheduled_sync run so every tick is auditable even on mid-run failure.
-  const { data: runRow, error: runErr } = await supabase
-    .from("email_sync_runs")
-    .insert({
-      tenant_id: tenantId,
-      provider: PROVIDER,
-      sync_type: "scheduled_sync",
-      status: "running",
-      started_at: startedAt,
-      metadata: baseMetadata,
-    })
-    .select("id")
-    .single();
-  if (runErr || !runRow) return fail("db_error", "Could not open a scheduled sync run", 500);
-  const syncRunId = runRow.id as string;
-
-  // --- find active Gmail accounts for the tenant (service role) -------------
-  const { data: accounts, error: accErr } = await supabase
+  // Active OAuth Gmail mailboxes across ALL tenants (DWD accounts are handled by
+  // email-workspace-scheduled-sync and are excluded by status here).
+  const { data: accounts, error } = await supabase
     .from("email_accounts")
-    .select("id, email_address")
-    .eq("tenant_id", tenantId)
+    .select("id, tenant_id")
     .eq("provider", PROVIDER)
     .eq("status", "active");
-  if (accErr) {
-    await supabase
-      .from("email_sync_runs")
-      .update({
-        status: "failed",
-        completed_at: new Date().toISOString(),
-        error_message: "Could not list email accounts",
-        metadata: { ...baseMetadata, error_code: "db_error" },
-      })
-      .eq("id", syncRunId);
-    return json({ success: false, sync_run_id: syncRunId, error: { code: "db_error" } }, 500);
-  }
-  const accountList = accounts ?? [];
+  if (error) return fail("db_error", "Could not list Gmail accounts", 500);
 
-  // --- sync each mailbox; one failure never aborts the run -----------------
-  let messagesProcessed = 0;
-  let failedAccounts = 0;
-  const perAccount: Array<Record<string, unknown>> = [];
-
-  for (const acc of accountList) {
-    const res = await syncGmailMailbox({
-      tenantId,
-      emailAccountId: acc.id as string,
-      maxResults: MAX_RESULTS,
-      serviceKey,
+  let queued = 0;
+  let duplicates = 0;
+  for (const acc of accounts ?? []) {
+    const r = await enqueueJob(supabase, {
+      tenantId: acc.tenant_id as string,
+      jobType: "email.gmail_sync",
+      jobKey: `email.gmail_sync:${acc.id}`,
+      connectorId: "gmail",
+      moduleId: "communications.email",
+      payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
     });
-    if (res.ok) {
-      messagesProcessed += res.recordsProcessed;
-    } else {
-      failedAccounts++;
-    }
-    perAccount.push({
-      email_account_id: acc.id,
-      ok: res.ok,
-      records: res.recordsProcessed,
-      child_sync_run_id: res.syncRunId,
-      ...(res.code ? { error: res.code } : {}),
-    });
+    if (r.duplicate) duplicates += 1;
+    else if (r.id) queued += 1;
   }
 
-  const overallOk = failedAccounts === 0;
-  const metadata = {
-    ...baseMetadata,
-    accounts_processed: accountList.length,
-    messages_processed: messagesProcessed,
-    failed_accounts: failedAccounts,
-    accounts: perAccount,
-  };
-  await supabase
-    .from("email_sync_runs")
-    .update({
-      status: overallOk ? "success" : "failed",
-      completed_at: new Date().toISOString(),
-      records_processed: messagesProcessed,
-      error_message: overallOk ? null : `${failedAccounts} mailbox(es) failed`,
-      metadata,
-    })
-    .eq("id", syncRunId);
-
-  return json({
-    success: overallOk,
-    accounts_processed: accountList.length,
-    messages_processed: messagesProcessed,
-    failed_accounts: failedAccounts,
-    sync_run_id: syncRunId,
-  });
+  return json({ success: true, accounts: (accounts ?? []).length, queued, duplicates });
 });

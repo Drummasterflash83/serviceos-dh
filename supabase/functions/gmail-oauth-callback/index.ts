@@ -147,6 +147,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
         email_address: email,
         display_name: displayName,
         status: "active",
+        // A fresh consent clears any prior auth-failure state (self-heal §3).
+        auth_state: "ok",
+        auth_error: null,
+        auth_state_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "tenant_id,provider,email_address" },
@@ -163,22 +167,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
     typeof tokens.expires_in === "number"
       ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
       : null;
-  const { error: tokErr } = await supabase.from("email_oauth_tokens").upsert(
-    {
-      tenant_id: tenantId,
-      email_account_id: account.id,
-      provider: "gmail",
-      access_token: tokens.access_token,
-      // Google only returns refresh_token on first consent / prompt=consent.
-      refresh_token: tokens.refresh_token ?? null,
-      expires_at: expiresAt,
-      scope: tokens.scope ?? null,
-      token_type: tokens.token_type ?? null,
-      raw_payload: { scope: tokens.scope ?? null, token_type: tokens.token_type ?? null },
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "email_account_id" },
-  );
+  // Google only returns refresh_token on first consent / prompt=consent. NEVER
+  // overwrite a stored refresh token with null: omit the column when absent so the
+  // on-conflict UPDATE keeps the existing one (a consent response without a refresh
+  // token must not turn a working mailbox into a permanently-failing one — §3).
+  const tokenRow: Record<string, unknown> = {
+    tenant_id: tenantId,
+    email_account_id: account.id,
+    provider: "gmail",
+    access_token: tokens.access_token,
+    expires_at: expiresAt,
+    scope: tokens.scope ?? null,
+    token_type: tokens.token_type ?? null,
+    raw_payload: { scope: tokens.scope ?? null, token_type: tokens.token_type ?? null },
+    updated_at: new Date().toISOString(),
+  };
+  if (tokens.refresh_token) tokenRow.refresh_token = tokens.refresh_token;
+  const { error: tokErr } = await supabase
+    .from("email_oauth_tokens")
+    .upsert(tokenRow, { onConflict: "email_account_id" });
   if (tokErr) {
     await logOutcome("failed", 0, "token_store_failed", { reason: "db_token" });
     return redirectBack(origin, { gmail: "error", reason: "db" });

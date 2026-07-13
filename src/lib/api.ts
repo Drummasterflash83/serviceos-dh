@@ -30,6 +30,7 @@ import type {
   ProcessPendingPhoneInput,
   ProcessPendingPhoneResult,
   PhonePipelineStatusResult,
+  EmailConnectorStatusResult,
   GmailOAuthStartResult,
   GoogleWorkspaceTestResult,
   GoogleWorkspaceSaveConnectionInput,
@@ -676,6 +677,54 @@ export async function getPhonePipelineStatus(
     error: toApiError(
       body?.error?.code ?? `http_${response.status}`,
       body?.error?.message ?? "Status fetch failed",
+      response.status,
+    ),
+  };
+}
+
+/**
+ * Fetch the authoritative email connector health (`email-connector-status`) — the
+ * single source both the Operations Centre and Admin › Email read. `detail=true`
+ * also returns per account/mailbox diagnostic rows. Service-role read server-side.
+ */
+export async function getEmailConnectorStatus(
+  tenantId: string,
+  detail = false,
+): Promise<ApiResult<EmailConnectorStatusResult>> {
+  if (typeof tenantId !== "string" || tenantId.trim() === "") {
+    return { ok: false, error: toApiError("invalid_tenant_id", "tenantId is required") };
+  }
+  const authz = await functionAuth();
+  if (!authz.ok) return { ok: false, error: authz.error };
+
+  const endpoint = `${supabaseConfig.url}/functions/v1/email-connector-status`;
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: functionHeaders(authz.token),
+      body: JSON.stringify({ tenant_id: tenantId, detail }),
+    });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "Network request failed";
+    return { ok: false, error: toApiError("network", message) };
+  }
+
+  let body: (Partial<EmailConnectorStatusResult> & { error?: ApiError }) | null;
+  try {
+    body = await response.json();
+  } catch {
+    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+  }
+
+  if (response.ok && body?.success) {
+    return { ok: true, data: body as EmailConnectorStatusResult };
+  }
+  return {
+    ok: false,
+    error: toApiError(
+      body?.error?.code ?? `http_${response.status}`,
+      body?.error?.message ?? "Email status fetch failed",
       response.status,
     ),
   };

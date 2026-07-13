@@ -8,7 +8,7 @@
  * the connection setup collapses automatically once the Workspace is active.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Mail, Building2, ChevronDown, ChevronRight, RefreshCw, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
   syncGmailMessages,
   syncGmailWorkspaceMessages,
   backfillGmailWorkspaceMessages,
+  getEmailConnectorStatus,
 } from "@/lib/api";
 import {
   listEmailAccounts,
@@ -42,6 +43,8 @@ import type {
   GmailSyncMessagesResult,
   GmailWorkspaceBackfillResult,
   EmailAccount,
+  EmailConnectorStatusResult,
+  EmailConnectorDiagItem,
 } from "@/lib/types";
 import { ConnectorStatusBadge, MetricCard } from "@/components/ops";
 import type { ConnectorStatus } from "@/lib/connectors/types";
@@ -77,10 +80,118 @@ function fmtAgo(iso: string | null): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
+// ── Authoritative email-health helpers (email-connector-status is the sole source) ──
+const EMAIL_STATE_TONE: Record<string, string> = {
+  connected_healthy: "border-success/20 bg-success/10 text-success",
+  backfill_running: "border-accent/20 bg-accent/10 text-accent",
+  connected_stale: "border-warning/30 bg-warning/10 text-warning",
+  no_mailboxes: "border-warning/30 bg-warning/10 text-warning",
+  needs_setup: "border-hairline bg-surface-alt text-muted-foreground",
+  disabled: "border-hairline bg-surface-alt text-muted-foreground",
+  unknown: "border-hairline bg-surface-alt text-muted-foreground",
+  connected_failing: "border-destructive/30 bg-destructive/10 text-destructive",
+  auth_expired: "border-destructive/30 bg-destructive/10 text-destructive",
+  delegation_failed: "border-destructive/30 bg-destructive/10 text-destructive",
+  backfill_failed: "border-destructive/30 bg-destructive/10 text-destructive",
+};
+
+function emailStateBadge(state: string): ConnectorStatus {
+  if (state === "connected_healthy" || state === "backfill_running") return "connected";
+  if (
+    state === "connected_failing" ||
+    state === "auth_expired" ||
+    state === "delegation_failed" ||
+    state === "backfill_failed"
+  ) {
+    return "error";
+  }
+  if (state === "disabled") return "disabled";
+  return "warning";
+}
+
+// Permanent (non-retryable) codes — a row carrying one is effectively dead-lettered.
+const PERMANENT_ERROR_CODES = new Set([
+  "refresh_token_revoked",
+  "oauth_client_invalid",
+  "refresh_forbidden",
+  "needs_reconnect",
+  "token_expired",
+  "no_token",
+  "sa_config_missing",
+  "sa_credentials_invalid",
+  "admin_delegation_missing",
+  "scopes_missing",
+  "subject_invalid",
+  "mailbox_disabled",
+  "not_dwd_account",
+]);
+
+type DiagBucket =
+  | "healthy"
+  | "stale"
+  | "failing"
+  | "auth_expired"
+  | "delegation_failed"
+  | "backfill_running"
+  | "dead_letter";
+
+/** Derive one honest per-row bucket from real fields (a later success = healthy). */
+function rowBucket(d: EmailConnectorDiagItem, workspaceDelegationFailing: boolean): DiagBucket {
+  const auth = d.auth_state ?? "";
+  if (auth === "revoked" || auth === "needs_reconnect" || auth === "expired") return "auth_expired";
+  if (d.connector === "workspace" && workspaceDelegationFailing) return "delegation_failed";
+  if (d.backfill_status === "running") return "backfill_running";
+  if (d.last_error && PERMANENT_ERROR_CODES.has(d.last_error)) return "dead_letter";
+  if (d.last_error) return "failing";
+  if (!d.last_success_at) return "stale";
+  const ageMin = (Date.now() - Date.parse(d.last_success_at)) / 60000;
+  if (Number.isNaN(ageMin) || ageMin > 15) return "stale";
+  return "healthy";
+}
+
+function recommendedAction(bucket: DiagBucket): string {
+  switch (bucket) {
+    case "auth_expired":
+      return "Reconnect (permanent auth)";
+    case "delegation_failed":
+      return "Re-test delegation";
+    case "dead_letter":
+      return "Investigate — permanent error";
+    case "failing":
+      return "Retry — transient";
+    case "backfill_running":
+      return "Backfill in progress";
+    case "stale":
+      return "Waiting for scheduler";
+    default:
+      return "—";
+  }
+}
+
+const DIAG_FILTERS: { key: string; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "gmail", label: "Gmail OAuth" },
+  { key: "workspace", label: "Workspace" },
+  { key: "healthy", label: "Healthy" },
+  { key: "stale", label: "Stale" },
+  { key: "failing", label: "Failing" },
+  { key: "auth_expired", label: "Auth expired" },
+  { key: "delegation_failed", label: "Delegation failed" },
+  { key: "backfill_running", label: "Backfill running" },
+  { key: "dead_letter", label: "Dead-letter" },
+];
+
 export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {}) {
   const { profile } = useAuth();
   const role = profile?.role ?? null;
+  const tenantId = profile?.tenant_id ?? "";
   const allowed = role !== null && (ADMIN_ROLES as readonly string[]).includes(role);
+
+  // Authoritative email health — the SOLE health source (email-connector-status).
+  const [emailHealth, setEmailHealth] = useState<ApiResult<EmailConnectorStatusResult> | null>(
+    null,
+  );
+  const [diagFilter, setDiagFilter] = useState("all");
 
   // Gmail OAuth connect (Email Phase-1).
   const [connectingGmail, setConnectingGmail] = useState(false);
@@ -176,11 +287,18 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   const loadAll = useCallback(async () => {
     setRefreshing(true);
     try {
-      const [connRes, acctRes, syncRes] = await Promise.all([
+      const [connRes, acctRes, syncRes, healthRes] = await Promise.all([
         getWorkspaceConnection(),
         listEmailAccounts("gmail"),
         getWorkspaceSyncState(),
+        tenantId
+          ? getEmailConnectorStatus(tenantId, true)
+          : Promise.resolve<ApiResult<EmailConnectorStatusResult>>({
+              ok: false,
+              error: { code: "no_tenant", message: "No tenant in session" },
+            }),
       ]);
+      setEmailHealth(healthRes);
 
       if (connRes.ok && connRes.data) {
         const conn = connRes.data;
@@ -198,7 +316,7 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     } finally {
       setRefreshing(false);
     }
-  }, [loadWsMailboxes]);
+  }, [loadWsMailboxes, tenantId]);
 
   useEffect(() => {
     if (allowed) void loadAll();
@@ -309,6 +427,22 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
 
+  // Authoritative health (sole source). Memoised BEFORE any early return so hook
+  // order is stable. Everything reads `eh`, never the latched connection flag.
+  const eh = emailHealth?.ok ? emailHealth.data : null;
+  const wsDelegFailing = eh?.workspace.needsDelegationRetest ?? false;
+  const diagRows = useMemo(() => eh?.diagnostics ?? [], [eh]);
+  const filteredDiag = useMemo(
+    () =>
+      diagRows.filter((d) => {
+        if (diagFilter === "all") return true;
+        if (diagFilter === "gmail") return d.connector === "gmail";
+        if (diagFilter === "workspace") return d.connector === "workspace";
+        return rowBucket(d, wsDelegFailing) === diagFilter;
+      }),
+    [diagRows, diagFilter, wsDelegFailing],
+  );
+
   if (!allowed) return <RestrictedNotice role={role} />;
 
   // Operational summary — derived entirely from already-loaded state (no extra
@@ -329,8 +463,268 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
   const lastSuccessAt = wsSyncState?.lastSuccessAt ?? null;
   const lastFailureAt = wsSyncState?.lastFailureAt ?? null;
 
+  // Non-hook health derivations (eh / diagRows / filteredDiag are computed above).
+  const ehUnavailable = emailHealth !== null && !emailHealth.ok;
+  const currentFailures = eh
+    ? (eh.gmail.currentFailure ? 1 : 0) + (eh.workspace.currentFailure ? 1 : 0)
+    : 0;
+  const pipeNum = (k: string): number =>
+    eh && typeof eh.pipeline[k] === "number" ? (eh.pipeline[k] as number) : 0;
+  const pipeStr = (k: string): string | null =>
+    eh && typeof eh.pipeline[k] === "string" ? (eh.pipeline[k] as string) : null;
+  const evStr = (ev: Record<string, unknown>, k: string): string | null =>
+    typeof ev[k] === "string" ? (ev[k] as string) : null;
+
   return (
     <div className="space-y-6">
+      {/* Authoritative health & diagnostics (email-connector-status, sole source).
+          Only CURRENT failures show; recovery actions appear only when genuinely
+          needed. Discovery runs automatically — the manual controls below are
+          recovery/admin overrides. */}
+      <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface-alt">
+              <Mail className="h-4 w-4 text-foreground" />
+            </span>
+            <div>
+              <div className="text-sm font-semibold">Email health</div>
+              <div className="text-xs text-muted-foreground">
+                Live connector health — Gmail (OAuth) and Google Workspace (DWD). Automatic; no
+                action needed during normal operation.
+              </div>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void loadAll()}
+            disabled={refreshing}
+            title="Reload health, mailboxes and sync state (no changes)"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </Button>
+        </div>
+
+        {ehUnavailable ? (
+          <p className="mt-4 text-xs text-muted-foreground">
+            Health unavailable — the email tables could not be read (
+            {emailHealth?.ok ? "" : emailHealth?.error.code}).
+          </p>
+        ) : !eh ? (
+          <p className="mt-4 text-xs text-muted-foreground">Loading health…</p>
+        ) : (
+          <>
+            {/* Two connector state chips + genuine-only recovery actions */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {[
+                { key: "gmail" as const, label: "Gmail (OAuth)", h: eh.gmail },
+                { key: "workspace" as const, label: "Google Workspace (DWD)", h: eh.workspace },
+              ].map(({ key, label, h }) => (
+                <div key={key} className="rounded-xl border border-hairline bg-surface-alt/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-semibold text-foreground">{label}</div>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                        EMAIL_STATE_TONE[h.state] ?? EMAIL_STATE_TONE.unknown
+                      }`}
+                    >
+                      {h.state.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{h.reason}</div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-muted-foreground">
+                    <span>Last sync: {fmtAgo(evStr(h.evidence, "last_success_at"))}</span>
+                    <span>Last useful: {fmtAgo(evStr(h.evidence, "last_useful_at"))}</span>
+                    {key === "workspace" && (
+                      <span>
+                        Enabled mailboxes:{" "}
+                        {typeof h.evidence.mailboxes_enabled === "number"
+                          ? h.evidence.mailboxes_enabled
+                          : "—"}
+                      </span>
+                    )}
+                    {h.backfill !== "idle" && <span>Backfill: {h.backfill}</span>}
+                  </div>
+                  {/* Recovery actions — shown ONLY on a genuine current condition */}
+                  {key === "gmail" && h.needsReconnect && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3"
+                      onClick={connectGmail}
+                      disabled={connectingGmail}
+                      title="Recovery: a refresh token was revoked/expired — reconnect required"
+                    >
+                      {connectingGmail ? "Connecting…" : "Reconnect Gmail"}
+                    </Button>
+                  )}
+                  {key === "workspace" && h.needsDelegationRetest && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3"
+                      onClick={runWorkspaceTest}
+                      disabled={wsRunning}
+                      title="Recovery: delegation is currently failing — re-test required"
+                    >
+                      {wsRunning ? "Testing…" : "Re-test delegation"}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Pipeline freshness strip (real timestamps + backlog) */}
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <MetricCard label="Last scheduler" value={fmtAgo(pipeStr("scheduler_last_at"))} />
+              <MetricCard
+                label="Last interaction"
+                value={fmtAgo(pipeStr("last_email_interaction_at"))}
+              />
+              <MetricCard
+                label="Backlog"
+                value={pipeNum("unprojected_backlog")}
+                tone={pipeNum("unprojected_backlog") > 0 ? "warning" : "success"}
+              />
+              <MetricCard
+                label="Oldest pending"
+                value={
+                  pipeNum("unprojected_backlog") === 0
+                    ? "—"
+                    : fmtAgo(pipeStr("oldest_unprojected_at"))
+                }
+                tone={pipeNum("oldest_unprojected_age_seconds") > 900 ? "critical" : "default"}
+              />
+              <MetricCard
+                label="Current failures"
+                value={currentFailures}
+                tone={currentFailures > 0 ? "critical" : "success"}
+              />
+              <MetricCard
+                label="Dead-letter jobs"
+                value={pipeNum("dead_letter_count")}
+                tone={pipeNum("dead_letter_count") > 0 ? "critical" : "success"}
+              />
+              <MetricCard label="Msgs (60m)" value={pipeNum("messages_last_60m")} tone="accent" />
+              <MetricCard label="Active jobs" value={pipeNum("active_jobs")} tone="accent" />
+            </div>
+
+            {/* Per-account / per-mailbox diagnostics (real data only) */}
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold text-foreground">
+                Accounts &amp; mailboxes ({filteredDiag.length})
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {DIAG_FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setDiagFilter(f.key)}
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                      diagFilter === f.key
+                        ? "border-accent/30 bg-accent/10 text-accent"
+                        : "border-hairline bg-surface-alt text-muted-foreground"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {diagRows.length === 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                {eh.gmail.state === "needs_setup" && eh.workspace.state === "needs_setup"
+                  ? "Not configured — connect Gmail or a Workspace below to begin."
+                  : "No accounts or mailboxes yet — discovery runs automatically once delegation is healthy."}
+              </p>
+            ) : filteredDiag.length === 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">No items match this filter.</p>
+            ) : (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[820px] text-xs">
+                  <thead>
+                    <tr className="border-b border-hairline text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Account / mailbox</th>
+                      <th className="py-2 pr-3 font-medium">Type</th>
+                      <th className="py-2 pr-3 font-medium">Enabled</th>
+                      <th className="py-2 pr-3 font-medium">Health</th>
+                      <th className="py-2 pr-3 font-medium">Auth / deleg</th>
+                      <th className="py-2 pr-3 font-medium">Cursor</th>
+                      <th className="py-2 pr-3 font-medium">Last sync</th>
+                      <th className="py-2 pr-3 font-medium">Backfill</th>
+                      <th className="py-2 pr-3 font-medium">Error</th>
+                      <th className="py-2 pr-3 font-medium">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline">
+                    {filteredDiag.map((d) => {
+                      const bucket = rowBucket(d, wsDelegFailing);
+                      return (
+                        <tr key={d.email_account_id}>
+                          <td className="py-2 pr-3 font-mono text-[11px] text-foreground">
+                            {d.email_address ?? "—"}
+                          </td>
+                          <td className="py-2 pr-3">
+                            {d.connector === "workspace" ? "Workspace" : "Gmail OAuth"}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <span
+                              className={d.enabled ? "text-foreground" : "text-muted-foreground"}
+                            >
+                              {d.enabled ? "enabled" : "disabled"}
+                            </span>
+                          </td>
+                          <td className="py-2 pr-3">
+                            <span
+                              className={
+                                bucket === "healthy"
+                                  ? "text-success"
+                                  : bucket === "stale" || bucket === "backfill_running"
+                                    ? "text-warning"
+                                    : "text-destructive"
+                              }
+                            >
+                              {bucket.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td className="py-2 pr-3 font-mono text-[11px] text-muted-foreground">
+                            {d.connector === "workspace" ? "delegated" : (d.auth_state ?? "—")}
+                          </td>
+                          <td className="py-2 pr-3 text-muted-foreground">
+                            {d.history_cursor === "history" ? "cursor set" : "window"}
+                          </td>
+                          <td className="py-2 pr-3 whitespace-nowrap text-muted-foreground">
+                            {fmtAgo(d.last_success_at)}
+                          </td>
+                          <td className="py-2 pr-3 text-muted-foreground">
+                            {d.backfill_status && d.backfill_status !== "idle"
+                              ? `${d.backfill_status}${d.backfill_total_fetched ? ` · ${d.backfill_total_fetched}` : ""}`
+                              : "—"}
+                          </td>
+                          <td className="py-2 pr-3">
+                            {d.last_error ? (
+                              <span className="font-mono text-[11px] text-destructive">
+                                {d.last_error}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="py-2 pr-3 text-[11px] text-muted-foreground">
+                            {recommendedAction(bucket)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </div>
       {/* Operational header + summary */}
       <div className="rounded-2xl border border-hairline bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-4">
@@ -350,7 +744,10 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ConnectorStatusBadge status={connStatus(wsConn?.status)} />
+            {/* Authoritative state (never the latched connection flag). */}
+            <ConnectorStatusBadge
+              status={eh ? emailStateBadge(eh.workspace.state) : connStatus(wsConn?.status)}
+            />
             <Button
               size="sm"
               variant="outline"
@@ -396,10 +793,11 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             value={fmtAgo(lastSuccessAt)}
             tone={lastSuccessAt ? "success" : "warning"}
           />
+          {/* Current (unresolved) failures only — never latched history. */}
           <MetricCard
-            label="Alerts / errors"
-            value={alertCount}
-            tone={alertCount > 0 ? "critical" : "success"}
+            label="Current failures"
+            value={eh ? currentFailures : alertCount}
+            tone={(eh ? currentFailures : alertCount) > 0 ? "critical" : "success"}
           />
         </div>
       </div>
@@ -419,15 +817,20 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm font-semibold">Mailboxes</div>
-          {/* Discovery is available but not required — mailboxes load automatically. */}
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold">Mailboxes</div>
+            <span className="rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              Admin overrides
+            </span>
+          </div>
+          {/* Discovery is AUTOMATIC (every ~15 min); this is a manual recovery re-scan. */}
           {wsMailboxes.length > 0 && (
             <Button
               size="sm"
               variant="ghost"
               onClick={runDiscover}
               disabled={wsDiscovering}
-              title="Re-scan the domain for new or removed mailboxes"
+              title="Recovery override: re-scan now — discovery runs automatically every ~15 min"
             >
               <Search className="h-3.5 w-3.5" />
               {wsDiscovering ? "Discovering…" : "Re-discover"}
@@ -435,8 +838,8 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
           )}
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
-          Enable/disable DWD sync per mailbox. Disable stops future sync but keeps all historical
-          email. No AI analysis yet.
+          Enable/disable DWD sync per mailbox. Discovery and sync are automatic — the sync and
+          backfill buttons here are recovery/admin overrides, not the normal workflow.
         </p>
 
         {wsDiscover && !wsDiscover.ok && (
@@ -493,7 +896,7 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   disabled={wsSyncing || !soleSyncable}
                   title={
                     soleSyncable
-                      ? "Sync this mailbox now"
+                      ? "Recovery override: sync this mailbox now (automatic every 5 min)"
                       : "Select exactly one enabled DWD mailbox"
                   }
                 >
@@ -504,7 +907,7 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   variant="outline"
                   onClick={() => runBackfill(true)}
                   disabled={wsBackfilling || !soleSyncable}
-                  title="Start historical backfill from the beginning"
+                  title="Admin override: start historical backfill from the beginning (lower priority than live sync)"
                 >
                   Start backfill
                 </Button>
@@ -513,7 +916,7 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   variant="outline"
                   onClick={() => runBackfill(false)}
                   disabled={wsBackfilling || !soleSyncable}
-                  title="Continue historical backfill (next page)"
+                  title="Admin override: continue historical backfill (next page)"
                 >
                   {wsBackfilling ? "Backfilling…" : "Continue backfill"}
                 </Button>

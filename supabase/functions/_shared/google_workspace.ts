@@ -43,8 +43,7 @@ export interface PlatformWorkspaceConfig {
  * google_workspace_connections.
  */
 export function getPlatformWorkspaceConfig():
-  | { ok: true; config: PlatformWorkspaceConfig }
-  | { ok: false; missing: string[] } {
+  { ok: true; config: PlatformWorkspaceConfig } | { ok: false; missing: string[] } {
   const clientEmail = Deno.env.get("GOOGLE_WORKSPACE_CLIENT_EMAIL");
   const privateKey = Deno.env.get("GOOGLE_WORKSPACE_PRIVATE_KEY");
   const clientId = Deno.env.get("GOOGLE_WORKSPACE_CLIENT_ID") ?? null;
@@ -115,9 +114,45 @@ export interface DelegatedToken {
   expiresIn: number | null;
 }
 
+/** A classified DWD failure — safe code + whether it is permanent (§4). */
+export class DelegationError extends Error {
+  readonly code: string;
+  readonly permanent: boolean;
+  constructor(code: string, permanent: boolean) {
+    super(code);
+    this.name = "DelegationError";
+    this.code = code;
+    this.permanent = permanent;
+  }
+}
+
+/**
+ * Map a Google DWD failure to a SAFE, distinct code + permanence (§4). Permanent
+ * conditions (config/authz) must NOT be retried forever and should surface a
+ * specific operator action; a transient Google 5xx/429 must be retried and must
+ * NOT flip the connector to a permanent delegation failure. Pure + unit-tested.
+ */
+export function classifyDelegationError(
+  googleError: string,
+  status: number,
+): { code: string; permanent: boolean } {
+  const e = (googleError || "").toLowerCase();
+  if (e.startsWith("config_incomplete")) return { code: "sa_config_missing", permanent: true };
+  if (e === "private_key_invalid") return { code: "sa_credentials_invalid", permanent: true };
+  if (e === "unauthorized_client" || e === "access_denied") {
+    return { code: "admin_delegation_missing", permanent: true };
+  }
+  if (e === "invalid_scope") return { code: "scopes_missing", permanent: true };
+  if (e === "invalid_grant") return { code: "subject_invalid", permanent: true };
+  if (status === 0 || status === 408 || status === 429 || status >= 500) {
+    return { code: "provider_temporary", permanent: false };
+  }
+  return { code: "delegation_denied", permanent: true };
+}
+
 /**
  * Get a delegated access token that impersonates `config.subject`. Throws a
- * short, credential-free Error on failure (e.g. bad key, delegation not granted).
+ * classified, credential-free DelegationError on failure.
  */
 export async function getDelegatedToken(
   config: WorkspaceConfig,
@@ -127,31 +162,37 @@ export async function getDelegatedToken(
   try {
     assertion = await signAssertion(config, scopes);
   } catch (_cause) {
-    throw new Error("private_key_invalid");
+    throw new DelegationError("sa_credentials_invalid", true);
   }
 
-  const resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: JWT_BEARER_GRANT, assertion }).toString(),
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ grant_type: JWT_BEARER_GRANT, assertion }).toString(),
+    });
+  } catch {
+    throw new DelegationError("provider_temporary", false);
+  }
   if (!resp.ok) {
     // Google returns {error, error_description}; surface the safe short code only.
-    let code = "delegation_denied";
+    let raw = "delegation_denied";
     try {
       const err = (await resp.json()) as { error?: string };
-      if (err.error) code = String(err.error);
+      if (err.error) raw = String(err.error);
     } catch {
       // ignore parse failure
     }
-    throw new Error(code);
+    const c = classifyDelegationError(raw, resp.status);
+    throw new DelegationError(c.code, c.permanent);
   }
   const data = (await resp.json()) as {
     access_token?: string;
     scope?: string;
     expires_in?: number;
   };
-  if (!data.access_token) throw new Error("no_access_token");
+  if (!data.access_token) throw new DelegationError("no_access_token", false);
   return {
     accessToken: data.access_token,
     scope: data.scope ?? null,
@@ -170,7 +211,7 @@ const GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
  */
 export async function getDelegatedGmailToken(mailboxEmail: string): Promise<DelegatedToken> {
   const cfg = getPlatformWorkspaceConfig();
-  if (!cfg.ok) throw new Error(`config_incomplete:${cfg.missing.join(",")}`);
+  if (!cfg.ok) throw new DelegationError("sa_config_missing", true);
   // Platform key + private key; impersonate the mailbox itself. Domain is not
   // used for token minting, so no tenant connection lookup is needed here.
   const config: WorkspaceConfig = {

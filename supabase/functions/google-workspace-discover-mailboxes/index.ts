@@ -14,6 +14,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import {
+  DelegationError,
   getDelegatedToken,
   getPlatformWorkspaceConfig,
   listDirectoryUsers,
@@ -102,7 +103,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (loadErr) return fail("db_error", "Could not load the Workspace connection", 500);
   if (!connection || !connection.domain || !connection.impersonation_subject) {
     await logOutcome("failed", "no_connection", {});
-    return fail("no_connection", "Save the Workspace connection (domain + admin subject) first", 400);
+    return fail(
+      "no_connection",
+      "Save the Workspace connection (domain + admin subject) first",
+      400,
+    );
   }
   const connectionId = connection.id as string;
   const domain = connection.domain as string;
@@ -129,9 +134,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     token = await getDelegatedToken(config, WORKSPACE_SCOPES);
   } catch (cause) {
-    const reason = cause instanceof Error ? cause.message : "delegation_failed";
-    await logOutcome("failed", reason, { domain, phase: "token" });
-    return fail("delegation_failed", `Domain-wide delegation failed (${reason}).`, 502);
+    // Classified code (§4) — stored as the connection error + safe run reason.
+    const code = cause instanceof DelegationError ? cause.code : "delegation_failed";
+    const httpStatus = cause instanceof DelegationError && !cause.permanent ? 502 : 401;
+    await supabase
+      .from("google_workspace_connections")
+      .update({ status: "error", error_message: code, updated_at: new Date().toISOString() })
+      .eq("id", connectionId);
+    await logOutcome("failed", code, { domain, phase: "token" });
+    return fail(code, `Domain-wide delegation failed (${code}).`, httpStatus);
   }
 
   // 2) List the domain's users (Admin Directory API).
@@ -161,8 +172,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
     })
     .eq("id", connectionId);
 
-  // 4) Upsert mailboxes. sync_enabled/status are intentionally OMITTED so
-  //    re-discovery preserves admin choices (new rows use table defaults).
+  // 4) Upsert mailboxes + prune the ones no longer in the directory (§5). We stamp
+  //    last_seen_at on present rows this run; any row NOT stamped this run is now
+  //    absent from the directory → mark it 'removed' (preserving sync_enabled and
+  //    the admin's choices). sync_enabled/status stay OMITTED on upsert so
+  //    re-discovery never re-enables a mailbox an admin disabled.
+  const seenAt = new Date().toISOString();
+  const presentEmails = new Set(users.map((u) => u.email));
+
+  // Which addresses already existed (to count genuinely-new mailboxes)?
+  const { data: existingRows } = await supabase
+    .from("google_workspace_mailboxes")
+    .select("email_address, status")
+    .eq("connection_id", connectionId);
+  const existingEmails = new Set(
+    (existingRows ?? []).map((r) => (r.email_address as string).toLowerCase()),
+  );
+  const added = users.filter((u) => !existingEmails.has(u.email.toLowerCase())).length;
+
   if (users.length > 0) {
     const rows = users.map((u) => ({
       tenant_id: tenantId,
@@ -170,6 +197,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       email_address: u.email,
       display_name: u.displayName,
       mailbox_type: u.suspended ? "suspended" : "user",
+      last_seen_at: seenAt,
     }));
     const { error: mbErr } = await supabase
       .from("google_workspace_mailboxes")
@@ -180,15 +208,40 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
+  // Prune: rows not seen this run (absent from the directory) become 'removed'.
+  let removed = 0;
+  const stale = (existingRows ?? []).filter(
+    (r) => !presentEmails.has((r.email_address as string).toLowerCase()) && r.status !== "removed",
+  );
+  if (stale.length > 0) {
+    const { data: pruned } = await supabase
+      .from("google_workspace_mailboxes")
+      .update({ status: "removed", updated_at: new Date().toISOString() })
+      .eq("connection_id", connectionId)
+      .in(
+        "email_address",
+        stale.map((r) => r.email_address as string),
+      )
+      .neq("status", "removed")
+      .select("id");
+    removed = (pruned ?? []).length;
+  }
+
   const syncRunId = await logOutcome("success", null, {
     domain,
     mailboxes_discovered: users.length,
+    added,
+    removed,
     connection_id: connectionId,
   });
 
   return json({
     success: true,
     domain,
+    discovered: users.length,
+    added,
+    removed,
+    skipped: users.length - added,
     mailboxes_discovered: users.length,
     connection_id: connectionId,
     sync_run_id: syncRunId,

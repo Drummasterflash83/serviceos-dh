@@ -69,9 +69,7 @@ function b64urlDecode(input: string): Uint8Array {
 /** Server-only signing key. Falls back to the service-role key (never exposed). */
 function stateSigningSecret(): string | null {
   return (
-    Deno.env.get("GMAIL_OAUTH_STATE_SECRET") ??
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-    null
+    Deno.env.get("GMAIL_OAUTH_STATE_SECRET") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? null
   );
 }
 
@@ -93,9 +91,11 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
 }
 
 /** Sign a `state` binding tenant/user/origin. Returns null if no secret. */
-export async function signState(
-  input: { tenantId: string; userId: string; origin: string },
-): Promise<string | null> {
+export async function signState(input: {
+  tenantId: string;
+  userId: string;
+  origin: string;
+}): Promise<string | null> {
   const secret = stateSigningSecret();
   if (!secret) return null;
   const nonceBytes = new Uint8Array(16);
@@ -228,26 +228,77 @@ export interface RefreshedToken {
   tokenType: string | null;
 }
 
+/**
+ * Classify a Google token-refresh failure into a SAFE code + permanence (§3).
+ * Google returns HTTP 400 `{"error":"invalid_grant"}` when the refresh token is
+ * revoked/expired (a genuine reconnect condition) — distinct from a transient
+ * 429/5xx/network blip which must be retried, never surfaced as "Reconnect".
+ * Pure + exported → unit-tested. Never contains a token.
+ */
+export function classifyRefreshError(
+  status: number,
+  body: string,
+): { code: string; permanent: boolean } {
+  let err = "";
+  try {
+    err = String((JSON.parse(body) as { error?: unknown }).error ?? "");
+  } catch {
+    err = "";
+  }
+  if (status === 400 && err === "invalid_grant") {
+    return { code: "refresh_token_revoked", permanent: true };
+  }
+  if (status === 400 && (err === "invalid_client" || err === "unauthorized_client")) {
+    return { code: "oauth_client_invalid", permanent: true };
+  }
+  if (status === 401 || status === 403) return { code: "refresh_forbidden", permanent: true };
+  // 0 = network error; 408/429/5xx = transient → retry, do not demote the account.
+  if (status === 0 || status === 408 || status === 429 || status >= 500) {
+    return { code: "provider_temporary", permanent: false };
+  }
+  return { code: `token_refresh_failed_${status}`, permanent: false };
+}
+
+/** A classified refresh failure — carries the safe code + whether it is permanent. */
+export class RefreshError extends Error {
+  readonly code: string;
+  readonly permanent: boolean;
+  constructor(code: string, permanent: boolean) {
+    super(code);
+    this.name = "RefreshError";
+    this.code = code;
+    this.permanent = permanent;
+  }
+}
+
 /** Exchange a refresh_token for a fresh access_token (server-side). */
 export async function refreshGmailAccessToken(
   config: GoogleOAuthConfig,
   refreshToken: string,
 ): Promise<RefreshedToken> {
-  const resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token",
-    }).toString(),
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        refresh_token: refreshToken,
+        grant_type: "refresh_token",
+      }).toString(),
+    });
+  } catch {
+    // Network failure — transient.
+    throw new RefreshError("provider_temporary", false);
+  }
   if (!resp.ok) {
-    throw new Error(`token_refresh_failed_${resp.status}`);
+    const body = await resp.text().catch(() => "");
+    const c = classifyRefreshError(resp.status, body);
+    throw new RefreshError(c.code, c.permanent);
   }
   const data = (await resp.json()) as TokenResponse;
-  if (!data.access_token) throw new Error("no_access_token");
+  if (!data.access_token) throw new RefreshError("no_access_token", false);
   return {
     accessToken: data.access_token,
     expiresIn: typeof data.expires_in === "number" ? data.expires_in : null,
@@ -257,7 +308,11 @@ export async function refreshGmailAccessToken(
 }
 
 /** Authorized fetch against the Gmail API (`path` may be absolute or `/…`). */
-export function gmailFetch(accessToken: string, path: string, init: RequestInit = {}): Promise<Response> {
+export function gmailFetch(
+  accessToken: string,
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
   const url = path.startsWith("http") ? path : `${GMAIL_API_BASE}${path}`;
   return fetch(url, {
     ...init,
@@ -316,7 +371,10 @@ export async function listGmailMessages(
   const messages: GmailMessageRef[] = Array.isArray(d.messages)
     ? d.messages
         .filter((m) => m?.id != null)
-        .map((m) => ({ id: String(m.id), threadId: m.threadId != null ? String(m.threadId) : null }))
+        .map((m) => ({
+          id: String(m.id),
+          threadId: m.threadId != null ? String(m.threadId) : null,
+        }))
     : [];
   return {
     messages,
@@ -331,7 +389,79 @@ export async function getGmailMessage(
   id: string,
   format = "full",
 ): Promise<Record<string, unknown>> {
-  const resp = await gmailFetch(accessToken, `/messages/${encodeURIComponent(id)}?format=${format}`);
+  const resp = await gmailFetch(
+    accessToken,
+    `/messages/${encodeURIComponent(id)}?format=${format}`,
+  );
   if (!resp.ok) throw new Error(`gmail_get_${resp.status}`);
   return (await resp.json()) as Record<string, unknown>;
+}
+
+/**
+ * Sentinel thrown when the stored historyId is too old for the History API
+ * (Gmail returns 404). The caller falls back to a recent-window list and resets
+ * the cursor from the current profile historyId.
+ */
+export const HISTORY_TOO_OLD = "history_too_old";
+
+export interface GmailHistoryResult {
+  /** Ids of messages ADDED since startHistoryId (deduped across labels/pages). */
+  messageIds: string[];
+  /** The latest historyId to persist AFTER the returned messages are stored. */
+  historyId: string | null;
+}
+
+/**
+ * Incremental message ids since a cursor (users.history.list, messageAdded). The
+ * History API's labelId filter is single-valued, so we query once per label and
+ * union. A 404 (historyId expired) throws HISTORY_TOO_OLD so the caller can fall
+ * back. Deleted/archived messages don't appear as messageAdded, so they never
+ * corrupt the cursor. Paginated with a safety cap.
+ */
+export async function listGmailHistory(
+  accessToken: string,
+  startHistoryId: string,
+  opts: { labelIds?: string[]; maxPages?: number } = {},
+): Promise<GmailHistoryResult> {
+  const labels = opts.labelIds && opts.labelIds.length ? opts.labelIds : [undefined];
+  const maxPages = opts.maxPages ?? 10;
+  const ids = new Set<string>();
+  let latestHistoryId: string | null = null;
+
+  for (const label of labels) {
+    let pageToken: string | undefined;
+    let pages = 0;
+    do {
+      const params = new URLSearchParams({
+        startHistoryId,
+        historyTypes: "messageAdded",
+      });
+      if (label) params.set("labelId", label);
+      if (pageToken) params.set("pageToken", pageToken);
+      const resp = await gmailFetch(accessToken, `/history?${params.toString()}`);
+      if (resp.status === 404) throw new Error(HISTORY_TOO_OLD);
+      if (!resp.ok) throw new Error(`gmail_history_${resp.status}`);
+      const d = (await resp.json()) as {
+        history?: Array<{ messagesAdded?: Array<{ message?: { id?: unknown } }> }>;
+        nextPageToken?: string;
+        historyId?: string;
+      };
+      if (d.historyId != null) {
+        const hid = String(d.historyId);
+        // Keep the numerically-largest historyId across labels/pages.
+        if (latestHistoryId === null || Number(hid) > Number(latestHistoryId))
+          latestHistoryId = hid;
+      }
+      for (const h of d.history ?? []) {
+        for (const m of h.messagesAdded ?? []) {
+          const id = m.message?.id;
+          if (id != null) ids.add(String(id));
+        }
+      }
+      pageToken = d.nextPageToken;
+      pages += 1;
+    } while (pageToken && pages < maxPages);
+  }
+
+  return { messageIds: [...ids], historyId: latestHistoryId };
 }

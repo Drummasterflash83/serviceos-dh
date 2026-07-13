@@ -42,6 +42,20 @@ const NON_RETRYABLE = new Set([
   "malformed_provider_id",
   "cross_tenant_mismatch",
   "unsupported_format",
+  // Email — permanent auth/delegation conditions (need operator action, never retry)
+  "refresh_token_revoked",
+  "oauth_client_invalid",
+  "refresh_forbidden",
+  "needs_reconnect",
+  "token_expired",
+  "no_token",
+  "sa_config_missing",
+  "sa_credentials_invalid",
+  "admin_delegation_missing",
+  "scopes_missing",
+  "subject_invalid",
+  "mailbox_disabled",
+  "not_dwd_account",
 ]);
 
 /** Classify an error as retryable (transient) vs terminal. Default: retryable. */

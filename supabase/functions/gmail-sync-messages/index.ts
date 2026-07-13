@@ -18,7 +18,10 @@ import {
   getGmailMessage,
   getGmailProfile,
   getGoogleOAuthConfig,
+  HISTORY_TOO_OLD,
+  listGmailHistory,
   listGmailMessages,
+  RefreshError,
   refreshGmailAccessToken,
 } from "../_shared/gmail_oauth.ts";
 import { parseGmailMessages } from "../_shared/gmail_message.ts";
@@ -88,13 +91,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // Verify the account belongs to this tenant (never trust the client).
   const { data: account, error: accErr } = await supabase
     .from("email_accounts")
-    .select("id, email_address, provider")
+    .select("id, email_address, provider, history_id")
     .eq("id", accountId)
     .eq("tenant_id", tenantId)
     .eq("provider", PROVIDER)
     .maybeSingle();
   if (accErr) return fail("db_error", "Could not load the email account", 500);
   if (!account) return fail("not_found", "No Gmail account for this tenant with that id", 404);
+
+  // Best-effort account-state stamps (feed the diagnostics table; never secrets).
+  async function stampAccount(patch: Record<string, unknown>): Promise<void> {
+    try {
+      await supabase!
+        .from("email_accounts")
+        .update({ ...patch, updated_at: new Date().toISOString() })
+        .eq("id", accountId);
+    } catch (_e) {
+      // never mask the real result
+    }
+  }
+  await stampAccount({ last_incremental_attempt_at: new Date().toISOString() });
 
   const startedAt = new Date().toISOString();
   const baseMetadata: Record<string, unknown> = {
@@ -120,7 +136,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (runErr || !runRow) return fail("db_error", "Could not open a sync run", 500);
   const syncRunId = runRow.id as string;
 
-  async function finishFailed(code: string, message: string, httpStatus: number): Promise<Response> {
+  async function finishFailed(
+    code: string,
+    message: string,
+    httpStatus: number,
+  ): Promise<Response> {
     try {
       await supabase!
         .from("email_sync_runs")
@@ -145,14 +165,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq("email_account_id", accountId)
     .maybeSingle();
   if (tokErr) return await finishFailed("db_error", "Could not load the OAuth token", 500);
-  if (!token) return await finishFailed("no_token", "This mailbox is not connected (no token)", 400);
+  if (!token)
+    return await finishFailed("no_token", "This mailbox is not connected (no token)", 400);
 
   let accessToken = (token.access_token as string | null) ?? "";
   const expMs = token.expires_at ? Date.parse(token.expires_at as string) : 0;
   if (!accessToken || !expMs || expMs - Date.now() < TOKEN_SKEW_MS) {
     const refreshToken = (token.refresh_token as string | null) ?? "";
     if (!refreshToken) {
-      return await finishFailed("token_expired", "Access token expired and no refresh token", 401);
+      // Genuine reconnect condition — record honest auth state; non-retryable.
+      await stampAccount({
+        auth_state: "needs_reconnect",
+        auth_error: "missing_refresh_token",
+        auth_state_at: new Date().toISOString(),
+        last_sync_error: "missing_refresh_token",
+      });
+      return await finishFailed("needs_reconnect", "Mailbox has no refresh token — reconnect", 401);
     }
     try {
       const refreshed = await refreshGmailAccessToken(config, refreshToken);
@@ -169,63 +197,109 @@ Deno.serve(async (req: Request): Promise<Response> => {
           updated_at: new Date().toISOString(),
         })
         .eq("email_account_id", accountId);
-    } catch (_cause) {
-      return await finishFailed("token_refresh_failed", "Could not refresh the access token", 502);
-    }
-  }
-
-  // --- resolve the mailbox address (for direction) --------------------------
-  let mailbox = ((account.email_address as string | null) ?? "").toLowerCase();
-  if (!mailbox) {
-    try {
-      const profile = await getGmailProfile(accessToken);
-      mailbox = (profile.emailAddress ?? "").toLowerCase();
-      if (mailbox) {
-        await supabase
-          .from("email_accounts")
-          .update({ email_address: mailbox, updated_at: new Date().toISOString() })
-          .eq("id", accountId);
-      }
-    } catch (_e) {
-      // non-fatal; direction falls back to the SENT label below.
-    }
-  }
-
-  // --- list recent message ids for INBOX + SENT -----------------------------
-  const refs = new Map<string, string | null>(); // id -> threadId
-  try {
-    for (const label of LABELS) {
-      const { messages } = await listGmailMessages(accessToken, {
-        maxResults,
-        labelIds: [label],
+      // A successful refresh HEALS any prior auth-failure state (§3).
+      await stampAccount({
+        auth_state: "ok",
+        auth_error: null,
+        auth_state_at: new Date().toISOString(),
       });
-      for (const m of messages) if (!refs.has(m.id)) refs.set(m.id, m.threadId);
+    } catch (cause) {
+      // Permanent (invalid_grant/revoked) → genuine reconnect, dead-letter.
+      // Transient (429/5xx/network) → leave state intact, retry later.
+      const permanent = cause instanceof RefreshError ? cause.permanent : false;
+      const code = cause instanceof RefreshError ? cause.code : "token_refresh_failed";
+      if (permanent) {
+        await stampAccount({
+          auth_state: code === "refresh_token_revoked" ? "revoked" : "needs_reconnect",
+          auth_error: code,
+          auth_state_at: new Date().toISOString(),
+          last_sync_error: code,
+        });
+        return await finishFailed(code, "Token refresh permanently failed — reconnect", 401);
+      }
+      await stampAccount({ last_sync_error: code });
+      return await finishFailed("provider_temporary", "Temporary token refresh failure", 502);
     }
-  } catch (_cause) {
-    return await finishFailed("gmail_list_failed", "Could not list Gmail messages", 502);
   }
 
-  // Incremental: without force, only fetch messages we don't already have.
-  const allIds = Array.from(refs.keys());
-  let idsToFetch = allIds;
-  if (!force && allIds.length > 0) {
+  // --- resolve the mailbox address + capture the cursor target --------------
+  // Always read the profile: it yields both the mailbox (for direction) and the
+  // current historyId we advance the cursor to AFTER a successful persist (§6).
+  let mailbox = ((account.email_address as string | null) ?? "").toLowerCase();
+  let profileHistoryId: string | null = null;
+  try {
+    const profile = await getGmailProfile(accessToken);
+    profileHistoryId = profile.historyId;
+    if (!mailbox && profile.emailAddress) {
+      mailbox = profile.emailAddress.toLowerCase();
+      await stampAccount({ email_address: mailbox });
+    }
+  } catch (_e) {
+    // non-fatal; without a fresh historyId we simply won't advance the cursor.
+  }
+
+  // --- select message ids: incremental (historyId) or recent-window fallback -
+  const priorCursor = (account.history_id as string | null) ?? null;
+  let candidateIds: string[] = [];
+  let usedIncremental = false;
+  if (priorCursor && !force) {
+    try {
+      const h = await listGmailHistory(accessToken, priorCursor, { labelIds: LABELS });
+      candidateIds = h.messageIds;
+      usedIncremental = true;
+    } catch (cause) {
+      // Cursor expired → fall back to the recent window and reset it below.
+      if (!(cause instanceof Error && cause.message === HISTORY_TOO_OLD)) {
+        return await finishFailed("gmail_history_failed", "Could not read Gmail history", 502);
+      }
+    }
+  }
+  if (!usedIncremental) {
+    const refs = new Map<string, string | null>();
+    try {
+      for (const label of LABELS) {
+        const { messages } = await listGmailMessages(accessToken, {
+          maxResults,
+          labelIds: [label],
+        });
+        for (const m of messages) if (!refs.has(m.id)) refs.set(m.id, m.threadId);
+      }
+    } catch (_cause) {
+      return await finishFailed("gmail_list_failed", "Could not list Gmail messages", 502);
+    }
+    candidateIds = Array.from(refs.keys());
+  }
+
+  // Idempotent dedupe: without force, skip ids we already stored (a message added
+  // to a label we already ingested must never create a duplicate row).
+  let idsToFetch = candidateIds;
+  if (!force && candidateIds.length > 0) {
     const { data: existing } = await supabase
       .from("email_messages")
       .select("provider_message_id")
       .eq("tenant_id", tenantId)
       .eq("provider", PROVIDER)
-      .in("provider_message_id", allIds);
+      .in("provider_message_id", candidateIds);
     const have = new Set((existing ?? []).map((r) => r.provider_message_id as string));
-    idsToFetch = allIds.filter((id) => !have.has(id));
+    idsToFetch = candidateIds.filter((id) => !have.has(id));
   }
+  const allIds = candidateIds;
 
   // --- fetch full messages, then parse via the shared parser ----------------
+  // A 404/410 means the message is gone (deleted/archived) → safe to skip and let
+  // the cursor advance past it. Any OTHER fetch error is transient: we keep the run
+  // going but must NOT advance the cursor, so the next run re-lists the same range
+  // and retries the missed message (no silently-skipped mail). Upserts are
+  // idempotent, so re-processing already-stored messages is harmless.
   const rawMessages: Record<string, unknown>[] = [];
+  let blockingFetchFailure = false;
   for (const id of idsToFetch) {
     try {
       rawMessages.push(await getGmailMessage(accessToken, id, "full"));
-    } catch (_e) {
-      continue; // skip a single unreadable message; keep the run going
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (!(msg.endsWith("_404") || msg.endsWith("_410"))) blockingFetchFailure = true;
+      continue;
     }
   }
   const { messageRows, threadRows } = parseGmailMessages(rawMessages, {
@@ -239,23 +313,40 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { error: thErr } = await supabase
       .from("email_threads")
       .upsert(threadRows, { onConflict: "tenant_id,provider,provider_thread_id" });
-    if (thErr) return await finishFailed("db_error", `Failed to upsert threads: ${thErr.message}`, 500);
+    if (thErr)
+      return await finishFailed("db_error", `Failed to upsert threads: ${thErr.message}`, 500);
   }
 
   if (messageRows.length > 0) {
     const { error: msgErr } = await supabase
       .from("email_messages")
       .upsert(messageRows, { onConflict: "tenant_id,provider,provider_message_id" });
-    if (msgErr) return await finishFailed("db_error", `Failed to upsert messages: ${msgErr.message}`, 500);
+    if (msgErr)
+      return await finishFailed("db_error", `Failed to upsert messages: ${msgErr.message}`, 500);
   }
 
-  // --- success --------------------------------------------------------------
+  // --- advance the cursor + stamp success (AFTER persistence, §6) -----------
+  // Only advance history_id once messages are safely stored AND no selected message
+  // hit a transient fetch failure — otherwise the next run re-lists the same range
+  // and retries, so mail is never silently skipped. A window-fallback run seeds the
+  // cursor so subsequent runs are incremental.
+  const successStamp: Record<string, unknown> = {
+    auth_state: "ok",
+    auth_error: null,
+    last_incremental_success_at: new Date().toISOString(),
+    last_sync_error: null,
+  };
+  if (profileHistoryId && !blockingFetchFailure) successStamp.history_id = profileHistoryId;
+  await stampAccount(successStamp);
+
   const metadata = {
     ...baseMetadata,
     mailbox: mailbox || null,
+    mode: usedIncremental ? "incremental" : "window",
     ids_seen: allIds.length,
     fetched: idsToFetch.length,
     threads_processed: threadRows.length,
+    cursor_advanced: Boolean(profileHistoryId),
   };
   await supabase
     .from("email_sync_runs")
@@ -274,6 +365,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     records_processed: messageRows.length,
     threads_processed: threadRows.length,
     mailbox: mailbox || null,
+    mode: usedIncremental ? "incremental" : "window",
     sync_run_id: syncRunId,
   });
 });
