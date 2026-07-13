@@ -34,6 +34,15 @@ function dirOf(raw: unknown): string {
   return raw === "IN" ? "inbound" : raw === "OUT" ? "outbound" : "unknown";
 }
 
+/** Later of two ISO timestamps (ignores nulls / unparseable). */
+function maxIso(a: string | null, b: string | null): string | null {
+  const ta = a && !Number.isNaN(Date.parse(a)) ? Date.parse(a) : null;
+  const tb = b && !Number.isNaN(Date.parse(b)) ? Date.parse(b) : null;
+  if (ta === null) return b ?? null;
+  if (tb === null) return a ?? null;
+  return ta >= tb ? a : b;
+}
+
 /**
  * Produce/refresh the canonical interaction for a just-analysed recording and
  * publish interaction.ready. Never throws — returns a structured result the
@@ -68,7 +77,7 @@ export async function finalizeInteractionForRecording(opts: {
     const { data: call, error: callErr } = await admin
       .from("phone_calls")
       .select(
-        "id, provider_call_id, direction, from_number, to_number, started_at, duration_seconds, outcome, linked_id, created_at",
+        "id, provider_call_id, direction, from_number, to_number, started_at, duration_seconds, outcome, linked_id, created_at, updated_at",
       )
       .eq("tenant_id", tenantId)
       .eq("provider_call_id", providerCallId)
@@ -82,7 +91,7 @@ export async function finalizeInteractionForRecording(opts: {
     // 2) Back-fill the insight's call_id (only when unset — never overwrite).
     const { data: insight } = await admin
       .from("phone_ai_insights")
-      .select("id, call_id, summary, sentiment")
+      .select("id, call_id, summary, sentiment, updated_at")
       .eq("tenant_id", tenantId)
       .eq("recording_id", recordingId)
       .order("created_at", { ascending: false })
@@ -134,6 +143,13 @@ export async function finalizeInteractionForRecording(opts: {
       phone_to: (call.to_number as string | null) ?? null,
       sentiment,
       related_thread_id: (call.linked_id as string | null) ?? null,
+      // Incremental projection marker (max source timestamp at projection time) so
+      // the scheduled projector never re-selects this row as "repair" — must match
+      // interactions-sync's marker semantics.
+      source_updated_at: maxIso(
+        (call.updated_at as string | null) ?? null,
+        (insight?.updated_at as string | null) ?? null,
+      ),
       // Only these columns are written on upsert, so identity's related_person_id /
       // related_company_id on an existing enriched row are preserved untouched.
       processing_status: targetStatus,

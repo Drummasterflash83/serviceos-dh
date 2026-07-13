@@ -1,9 +1,13 @@
 // ServiceOS — Worker handler: interactions.sync (canonical interactions v1).
-// Pure business logic — moved verbatim from interactions-sync/index.ts. Auth, CORS
-// and the platform_jobs lifecycle live in the caller. Tenant is always
-// caller-validated. Idempotent upserts keyed on (tenant, source_table, source_id);
-// source rows are never mutated. No platform events are published here (the
-// interaction.ready event is owned by the phone finaliser, not this projection).
+// Pure business logic. Auth, CORS and the platform_jobs lifecycle live in the
+// caller. Tenant is always caller-validated. Idempotent upserts keyed on
+// (tenant, source_table, source_id); source rows are never mutated.
+//
+// INCREMENTAL (repair/backfill): phone selects via phone_select_projectable and
+// email via email_select_unprojected, so unchanged rows are never re-selected and
+// a steady-state run upserts zero. interaction.ready is published ONLY for
+// genuinely-new interactions (never on a refresh) — the live phone finaliser
+// (_shared/phone_enrich.ts) still owns real-time phone projection + events.
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
@@ -43,7 +47,18 @@ interface InteractionRow {
   sentiment: string | null;
   related_thread_id: string | null;
   processing_status: string;
+  /** Max source timestamp at projection time — the incremental marker (phone). */
+  source_updated_at?: string | null;
   metadata: Record<string, unknown>;
+}
+
+/** Later of two ISO timestamps (ignores nulls / unparseable). */
+function maxIso(a: string | null, b: string | null): string | null {
+  const ta = a && !Number.isNaN(Date.parse(a)) ? Date.parse(a) : null;
+  const tb = b && !Number.isNaN(Date.parse(b)) ? Date.parse(b) : null;
+  if (ta === null) return b ?? null;
+  if (tb === null) return a ?? null;
+  return ta >= tb ? a : b;
 }
 
 async function upsertInteractions(admin: Admin, rows: InteractionRow[]): Promise<void> {
@@ -54,42 +69,63 @@ async function upsertInteractions(admin: Admin, rows: InteractionRow[]): Promise
   if (error) throw new Error(`interactions upsert failed: ${error.message}`);
 }
 
-async function syncPhone(
-  admin: Admin,
-  tenantId: string,
-  limit: number,
-  since: string | null,
-): Promise<number> {
-  let q = admin
-    .from("phone_calls")
-    .select(
-      "id, provider_call_id, direction, from_number, to_number, started_at, duration_seconds, outcome, linked_id, created_at",
-    )
-    .eq("tenant_id", tenantId)
-    .order("started_at", { ascending: false, nullsFirst: false })
-    .limit(limit);
-  if (since) q = q.gte("started_at", since);
-  const { data: calls, error } = await q;
-  if (error) throw new Error(`phone_calls read failed: ${error.message}`);
-  const rows = (calls ?? []) as Record<string, unknown>[];
-  if (rows.length === 0) return 0;
+interface ProjectionCounts {
+  selected: number;
+  created: number;
+  updated: number;
+}
 
-  // Best-effort AI summary/sentiment (already-computed insights only; no AI here).
+async function syncPhone(admin: Admin, tenantId: string, limit: number): Promise<ProjectionCounts> {
+  // INCREMENTAL selection (§2/§3): only calls that genuinely need (re)projection —
+  // no interaction yet, no marker (legacy/pipeline-created), or the source call /
+  // AI insight changed after projection. An unchanged call is never returned, so a
+  // steady-state run selects zero. The live pipeline finaliser (phone_enrich.ts)
+  // still owns real-time projection; this is the repair/backfill path.
+  const { data: calls, error } = await admin.rpc("phone_select_projectable", {
+    p_tenant_id: tenantId,
+    p_limit: limit,
+  });
+  if (error) throw new Error(`phone_select_projectable failed: ${error.message}`);
+  const rows = (calls ?? []) as Record<string, unknown>[];
+  if (rows.length === 0) return { selected: 0, created: 0, updated: 0 };
+
   const ids = rows.map((c) => c.id as string);
-  const insights = new Map<string, { summary: string | null; sentiment: string | null }>();
+
+  // Latest AI insight per call (summary/sentiment + updated_at for the marker).
+  const insights = new Map<
+    string,
+    { summary: string | null; sentiment: string | null; updatedAt: string | null }
+  >();
   const { data: ins } = await admin
     .from("phone_ai_insights")
-    .select("call_id, summary, sentiment")
+    .select("call_id, summary, sentiment, updated_at, created_at")
     .eq("tenant_id", tenantId)
-    .in("call_id", ids);
+    .in("call_id", ids)
+    .order("created_at", { ascending: false });
   for (const i of (ins ?? []) as Record<string, unknown>[]) {
     const cid = i.call_id as string | null;
     if (cid && !insights.has(cid)) {
       insights.set(cid, {
         summary: (i.summary as string | null) ?? null,
         sentiment: (i.sentiment as string | null) ?? null,
+        updatedAt: (i.updated_at as string | null) ?? null,
       });
     }
+  }
+
+  // Which of the selected calls ALREADY have an interaction? New ones (no prior
+  // interaction) will publish interaction.ready; refreshes must NOT (no event
+  // storm, §7). The pipeline finaliser already published for recording-based calls.
+  const existing = new Set<string>();
+  const { data: existingRows } = await admin
+    .from("interactions")
+    .select("source_id")
+    .eq("tenant_id", tenantId)
+    .eq("source_table", "phone_calls")
+    .in("source_id", ids);
+  for (const r of (existingRows ?? []) as Record<string, unknown>[]) {
+    const sid = r.source_id as string | null;
+    if (sid) existing.add(sid);
   }
 
   const interactions: InteractionRow[] = rows.map((c) => {
@@ -122,6 +158,12 @@ async function syncPhone(
       // enrichment subscribers; without one it is still 'pending'. (Matches the
       // pipeline's finaliser so the backfill and live paths are interchangeable.)
       processing_status: insight ? "ready" : "pending",
+      // Incremental marker: the later of the call's and the insight's updated_at.
+      // Stored so an unchanged call is never re-selected next cycle.
+      source_updated_at: maxIso(
+        (c.updated_at as string | null) ?? null,
+        insight?.updatedAt ?? null,
+      ),
       metadata: {
         duration_seconds: duration,
         outcome,
@@ -131,7 +173,36 @@ async function syncPhone(
   });
 
   await upsertInteractions(admin, interactions);
-  return interactions.length;
+
+  // Publish interaction.ready ONLY for genuinely-new interactions (idempotent,
+  // best-effort). Refreshes/repairs never emit a duplicate event.
+  const created = interactions.filter((r) => !existing.has(r.source_id));
+  if (created.length > 0) {
+    const { data: createdRows } = await admin
+      .from("interactions")
+      .select("id, source_id")
+      .eq("tenant_id", tenantId)
+      .eq("source_table", "phone_calls")
+      .in(
+        "source_id",
+        created.map((r) => r.source_id),
+      );
+    for (const row of (createdRows ?? []) as { id: string }[]) {
+      await publishEvent(admin, {
+        tenantId,
+        eventType: "interaction.ready",
+        subjectType: "interaction",
+        subjectId: row.id,
+        source: "interactions-sync:phone",
+      });
+    }
+  }
+
+  return {
+    selected: rows.length,
+    created: created.length,
+    updated: rows.length - created.length,
+  };
 }
 
 async function syncEmail(admin: Admin, tenantId: string, limit: number): Promise<number> {
@@ -235,29 +306,39 @@ export async function handleInteractionsSync(
   const { supabaseAdmin: admin, tenantId, payload } = ctx;
   const source = payload.source === "phone" || payload.source === "email" ? payload.source : "all";
   const limit = clampLimit(payload.limit);
-  const since =
-    typeof payload.since === "string" && payload.since.trim() !== "" ? payload.since : null;
 
   try {
-    let phoneProcessed = 0;
-    let emailProcessed = 0;
+    let phone: ProjectionCounts = { selected: 0, created: 0, updated: 0 };
+    let emailCreated = 0;
     if (source === "phone" || source === "all") {
-      phoneProcessed = await syncPhone(admin, tenantId, limit, since);
+      phone = await syncPhone(admin, tenantId, limit);
     }
     if (source === "email" || source === "all") {
-      emailProcessed = await syncEmail(admin, tenantId, limit);
+      emailCreated = await syncEmail(admin, tenantId, limit);
     }
-    const upserted = phoneProcessed + emailProcessed;
+    // interactions_upserted = actual writes (selected phone + created email). In
+    // steady state everything is 0 — unchanged rows are never selected/upserted.
+    const phoneUpserted = phone.selected;
+    const upserted = phoneUpserted + emailCreated;
 
     return {
       success: true,
       recordsProcessed: upserted,
       result: {
-        phone_processed: phoneProcessed,
-        email_processed: emailProcessed,
+        // rich, incremental-aware counts (§8)
+        phone_selected: phone.selected,
+        phone_created: phone.created,
+        phone_updated: phone.updated,
+        phone_skipped: 0,
+        email_selected: emailCreated,
+        email_created: emailCreated,
+        email_updated: 0,
         interactions_upserted: upserted,
-        skipped: 0,
         failed: 0,
+        // back-compat totals (existing consumers keep working)
+        phone_processed: phoneUpserted,
+        email_processed: emailCreated,
+        skipped: 0,
       },
     };
   } catch (e) {

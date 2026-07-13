@@ -162,3 +162,35 @@ from platform_jobs order by created_at desc limit 30;
   the worker (`claimed_by` set) vs by a manual call — same `result` shape.
 - No duplicate active rows for the same `(tenant, job_key)`.
 - Retries/dead-letter still driven by the structured error contract.
+
+## Incremental interaction projection (`interactions.sync`)
+
+`interactions.sync` projects source rows (`phone_calls`, `email_messages`) into the
+canonical `interactions` table. Both sides are **incremental** — a steady-state run
+selects and upserts **zero** unchanged rows:
+
+- **Email** selects via `email_select_unprojected(tenant, limit)` — source messages
+  with no interaction yet, oldest first.
+- **Phone** selects via `phone_select_projectable(tenant, limit)` — the _repair /
+  backfill_ path only: calls with no interaction, calls whose source row or AI
+  insight changed after projection, or legacy rows with no marker. Real-time phone
+  projection is owned by the pipeline finaliser (`_shared/phone_enrich.ts`), which
+  runs on `interaction.ready`; the scheduled projector no longer rewrites every call
+  each cycle.
+
+**Refresh marker.** `interactions.source_updated_at` holds the _max source timestamp_
+(`phone_calls.updated_at`, latest `phone_ai_insights.updated_at`) at projection time.
+Both the finaliser and `interactions.sync` write it. A call is re-selected only when a
+real source timestamp is newer — never because of `interactions.updated_at`, which
+churns on every no-op upsert. One canonical interaction per call is guaranteed by the
+`unique (tenant_id, source_table, source_id)` index; a repeated projection of an
+unchanged call is a no-op.
+
+**Events.** The projector publishes `interaction.ready` only for genuinely-new
+interactions (no prior row), never on a refresh — so unchanged rows never re-trigger
+identity/graph/card/recommendation work.
+
+**Result shape** (back-compat totals preserved, richer fields added):
+`phone_selected/created/updated/skipped`, `email_selected/created/updated`,
+`interactions_upserted`, plus `phone_processed`/`email_processed`. Steady state:
+`{ "phone_processed": 0, "email_processed": 0, "interactions_upserted": 0 }`.

@@ -141,3 +141,21 @@ still accepted by subscribers and the UI.
   dispatcher will track partial consumption).
 
 These are natural next steps that this foundation supports without a rewrite.
+
+## Scheduled projector vs live finaliser (no event storms)
+
+Phone `interaction.ready` has two producers, and they do not duplicate events:
+
+- **Live finaliser** (`_shared/phone_enrich.ts`, on the pipeline) creates/refreshes
+  the interaction for a recording-based call and publishes `interaction.ready` once
+  (skipped when already `enriched`).
+- **Scheduled projector** (`interactions.sync` → `phone_select_projectable`) is the
+  repair/backfill path. It publishes `interaction.ready` **only for genuinely-new
+  interactions** (calls with no prior interaction — e.g. calls without a recording).
+  A _refresh_ (source/insight changed) upserts the row but emits no event.
+
+Because the finaliser already created the interaction for recording-based calls, the
+projector sees them as existing and never re-emits. Combined with the incremental
+selector (unchanged calls are never selected) this guarantees no per-cycle event
+storm and no needless identity/graph/card/recommendation work. `publishEvent` remains
+idempotent (one pending event per `(tenant, event_type, subject)`).
