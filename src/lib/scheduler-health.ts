@@ -6,6 +6,7 @@
  * "never" rather than a fake healthy state.
  */
 
+import { CADENCE_SEC, staleAfterSec } from "./health-model";
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import type { ApiResult } from "./types";
 
@@ -39,7 +40,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "sync_type",
     typeValue: "scheduled_sync",
     tsColumn: "started_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.phoneSync,
   },
   {
     name: "phone-processing-scheduled-sync",
@@ -48,7 +49,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "phone.process_pending",
     tsColumn: "created_at",
-    expectedIntervalSec: 600,
+    expectedIntervalSec: CADENCE_SEC.phoneProcessing,
   },
   {
     name: "email-scheduled-sync",
@@ -57,7 +58,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "sync_type",
     typeValue: "scheduled_sync",
     tsColumn: "started_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.emailGmail,
   },
   {
     name: "email-workspace-scheduled-sync",
@@ -66,7 +67,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "sync_type",
     typeValue: "workspace_scheduled_sync",
     tsColumn: "started_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.emailWorkspace,
   },
   {
     name: "email-workspace-backfill-scheduled-sync",
@@ -75,7 +76,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "sync_type",
     typeValue: "workspace_backfill_scheduled",
     tsColumn: "started_at",
-    expectedIntervalSec: 900,
+    expectedIntervalSec: CADENCE_SEC.emailWorkspaceBackfill,
   },
   {
     name: "interactions-scheduled-sync",
@@ -84,7 +85,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "interactions.sync",
     tsColumn: "created_at",
-    expectedIntervalSec: 600,
+    expectedIntervalSec: CADENCE_SEC.interactions,
   },
   {
     name: "identity-scheduled-sync",
@@ -93,7 +94,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "identity.resolve",
     tsColumn: "created_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.identity,
   },
   {
     name: "business-graph-scheduled-sync",
@@ -102,7 +103,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "graph.sync",
     tsColumn: "created_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.businessGraph,
   },
   {
     name: "customer-card-scheduled-sync",
@@ -111,7 +112,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "customer_card.sync",
     tsColumn: "created_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.customerCards,
   },
   {
     name: "recommendation-scheduled-sync",
@@ -120,7 +121,7 @@ const SCHEDULERS: SchedulerDef[] = [
     typeColumn: "job_type",
     typeValue: "recommendation.sync",
     tsColumn: "created_at",
-    expectedIntervalSec: 300,
+    expectedIntervalSec: CADENCE_SEC.recommendations,
   },
 ];
 
@@ -129,8 +130,8 @@ function statusFor(lastRunAt: string | null, expectedIntervalSec: number): Sched
   const t = Date.parse(lastRunAt);
   if (Number.isNaN(t)) return "unknown";
   const ageSec = (Date.now() - t) / 1000;
-  // Generous grace (4× cadence) — a couple of missed ticks isn't "stale".
-  return ageSec <= expectedIntervalSec * 4 ? "healthy" : "stale";
+  // Single source of truth: cadence × HEALTH_STALE_MULTIPLIER (see health-model).
+  return ageSec <= staleAfterSec(expectedIntervalSec) ? "healthy" : "stale";
 }
 
 /** Per-scheduler last-run + freshness. Best-effort per item (read error → unknown). */

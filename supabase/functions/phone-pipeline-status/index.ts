@@ -21,15 +21,17 @@ import {
   jsonResponse,
 } from "../_shared/simwood.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
+import { CADENCE_SEC, staleAfterSec } from "../_shared/health_model.ts";
 
-// Health thresholds (seconds / counts) — documented, not magic. Aligned with
-// docs/PHONE_RELIABILITY_ACCEPTANCE.md ("no eligible item older than 30m").
+// Backlog-age SLAs (how long WORK may wait) — a product SLA, distinct from
+// scheduler/worker freshness. Aligned with docs/PHONE_RELIABILITY_ACCEPTANCE.md.
 const CRITICAL_AGE_SEC = 1800; // >30m oldest eligible ⇒ the drainer isn't keeping up
 const WARNING_AGE_SEC = 900; // >15m oldest eligible ⇒ building
 const WARNING_BACKLOG = 10; // >10 items needing work ⇒ building
-// A scheduler/worker that hasn't succeeded in this long is "stale" (cron cadence
-// is 2m/1m respectively; 10m allows for missed ticks without false alarms).
-const STALE_AFTER_SEC = 600;
+// Scheduler/worker freshness comes from the ONE authoritative health model. Phone
+// processing is enqueued every 2 min → stale after HEALTH_STALE_MULTIPLIER ticks
+// (8 min), so this agrees with the scheduler panel instead of a hard-coded 10m.
+const STALE_AFTER_SEC = staleAfterSec(CADENCE_SEC.phoneProcessing);
 
 function ageSec(iso: string | null, nowMs: number): number | null {
   if (!iso) return null;

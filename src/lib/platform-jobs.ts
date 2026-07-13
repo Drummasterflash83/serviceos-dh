@@ -8,6 +8,8 @@
  * server-side executor exists. Mirrors `./phone-feed` / `./email-feed`.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import type { ApiResult } from "./types";
 
@@ -66,7 +68,8 @@ export interface PlatformJobSummary {
   failed_today: number;
   retrying: number;
   cancelled_today: number;
-  /** Jobs that exhausted retries (need operator attention; never auto-deleted). */
+  /** CURRENT unresolved dead-letters — a dead-lettered job is excluded once a
+   *  later succeeded job for the same job_key recovers it (never all-time). */
   dead_letter: number;
   /** Running jobs whose lease has expired (a worker died) — reclaimed next tick. */
   expired_leases: number;
@@ -85,6 +88,53 @@ const JOB_COLUMNS =
 function clampLimit(v: number | undefined, fallback = 50): number {
   const n = typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : fallback;
   return Math.max(1, Math.min(200, n));
+}
+
+/**
+ * CURRENT unresolved dead-letters across all job types. A dead-lettered job is
+ * "resolved" (historical) once a later succeeded job for the SAME job_key exists
+ * — mirrors the per-key supersession rule the email connector endpoint uses, so
+ * an old dead-letter the pipeline has since recovered from never latches the
+ * Operations Centre to CRITICAL. Returns null on read error (caller → 0).
+ */
+async function currentDeadLetterCount(supabase: SupabaseClient): Promise<number | null> {
+  const { data: dls, error } = await supabase
+    .from("platform_jobs")
+    .select("job_key, dead_lettered_at, failed_at, created_at")
+    .eq("status", "dead_letter");
+  if (error) return null;
+  const rows = (dls ?? []) as Record<string, string | null>[];
+  if (rows.length === 0) return 0;
+
+  const keys = Array.from(
+    new Set(rows.map((r) => r.job_key).filter((k): k is string => typeof k === "string")),
+  );
+  const latestSuccessByKey = new Map<string, number>();
+  if (keys.length > 0) {
+    const { data: succ } = await supabase
+      .from("platform_jobs")
+      .select("job_key, completed_at")
+      .eq("status", "succeeded")
+      .in("job_key", keys);
+    for (const s of (succ ?? []) as Record<string, string | null>[]) {
+      const k = s.job_key;
+      const t = Date.parse(s.completed_at ?? "");
+      if (k && !Number.isNaN(t)) {
+        latestSuccessByKey.set(k, Math.max(latestSuccessByKey.get(k) ?? 0, t));
+      }
+    }
+  }
+
+  let current = 0;
+  for (const r of rows) {
+    const k = r.job_key;
+    const atStr = r.dead_lettered_at ?? r.failed_at ?? r.created_at ?? "";
+    const at = Date.parse(atStr);
+    // A dead-letter with no job_key can't be superseded → always current.
+    const resolved = k !== null && (latestSuccessByKey.get(k) ?? 0) > (Number.isNaN(at) ? 0 : at);
+    if (!resolved) current += 1;
+  }
+  return current;
 }
 
 /** List recent platform jobs for the tenant (RLS-scoped), newest first. */
@@ -173,7 +223,7 @@ export async function getPlatformJobSummary(): Promise<ApiResult<PlatformJobSumm
         .eq("status", "cancelled")
         .gte("cancelled_at", startToday),
     ),
-    count(() => supabase.from("platform_jobs").select("*", head).eq("status", "dead_letter")),
+    currentDeadLetterCount(supabase),
     count(() =>
       supabase
         .from("platform_jobs")

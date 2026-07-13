@@ -10,6 +10,7 @@
  * human reasons the UI shows.
  */
 
+import { staleAfterSec as modelStaleAfterSec } from "../health-model";
 import type { RuntimeHealth } from "./types";
 
 export type FreshnessStatus = "healthy" | "stale" | "offline" | "never_run" | "unknown";
@@ -35,7 +36,8 @@ export interface FreshnessInput {
   configured: boolean;
   /** Is authentication currently valid? undefined = don't know (treated as ok). */
   authOk?: boolean;
-  /** Grace before "stale" — defaults to 3× the interval (tolerates one miss). */
+  /** Grace before "stale" — defaults to the authoritative health model
+   *  (interval × HEALTH_STALE_MULTIPLIER). Override only for special cases. */
   staleAfterSec?: number;
   /** Injected clock for tests; defaults to Date.now(). */
   now?: number;
@@ -52,7 +54,7 @@ export function calculateFreshness(input: FreshnessInput): ConnectorFreshness {
   const now = input.now ?? Date.now();
   const successMs = parseMs(input.lastSuccess);
   const ageSeconds = successMs === null ? null : Math.max(0, (now - successMs) / 1000);
-  const staleAfter = input.staleAfterSec ?? input.expectedIntervalSec * 3;
+  const staleAfter = input.staleAfterSec ?? modelStaleAfterSec(input.expectedIntervalSec);
 
   let status: FreshnessStatus;
   if (!input.configured) status = "unknown";

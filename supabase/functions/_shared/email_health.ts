@@ -9,6 +9,8 @@
 // failure" is expressed as (last_failure newer than last_success), never a latched
 // flag. Pure + deterministic (now is injected) → directly unit-testable.
 
+import { CADENCE_SEC, staleAfterMs } from "./health_model.ts";
+
 export type ConnectorState =
   | "needs_setup"
   | "connected_healthy"
@@ -69,8 +71,13 @@ export interface WorkspaceEvidence {
   backfill_errored: number;
 }
 
-// Live sync cadence is every 5 min; call it stale after 3 missed ticks.
-export const LIVE_STALE_MS = 15 * 60 * 1000;
+// Live email sync cadence is every 5 min. Staleness comes from the ONE
+// authoritative health model (cadence × HEALTH_STALE_MULTIPLIER = 20 min), so
+// this badge agrees with the scheduler panel and KPI row instead of using its
+// own hard-coded window.
+export const LIVE_STALE_MS = staleAfterMs(CADENCE_SEC.emailWorkspace);
+/** The stale window in whole minutes, for human-readable reasons. */
+export const LIVE_STALE_MINUTES = Math.round(LIVE_STALE_MS / 60000);
 
 function ms(iso: string | null): number | null {
   if (!iso) return null;
@@ -140,7 +147,7 @@ export function deriveGmailState(e: GmailEvidence, nowMs: number): DerivedState 
   if (nowMs - lastOk > LIVE_STALE_MS) {
     return {
       state: "connected_stale",
-      reason: "No successful sync in the last 15 minutes",
+      reason: `No successful sync in the last ${LIVE_STALE_MINUTES} minutes`,
       currentFailure: false,
       ...base,
     };
@@ -232,7 +239,7 @@ export function deriveWorkspaceState(e: WorkspaceEvidence, nowMs: number): Deriv
   if (nowMs - lastOk > LIVE_STALE_MS) {
     return {
       state: "connected_stale",
-      reason: "No successful sync in the last 15 minutes",
+      reason: `No successful sync in the last ${LIVE_STALE_MINUTES} minutes`,
       currentFailure: false,
       ...base,
       ...nd,
