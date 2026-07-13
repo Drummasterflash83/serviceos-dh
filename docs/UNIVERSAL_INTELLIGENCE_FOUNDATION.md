@@ -420,6 +420,21 @@ create table review_tasks (
 );
 ```
 
+### 6.3 Update — routing is now the Universal Decision Engine (v1, implemented)
+
+The design above (routing as a policy output) has been realised and **elevated
+into one deterministic authority**: the Universal Decision Engine. The earlier
+`review_route` was split between `policy.ts` and the observe handler; that scatter
+is gone. `evaluateDecision()` now consumes a fully-resolved input and returns one
+immutable **Decision Package** — the single downstream authority for *every*
+routing choice — evaluating five independent axes (confidence, authority, risk,
+reversibility, impact) through one data-driven precedence. Confidence routing
+remains a policy/profile output; it is simply now one axis inside the engine
+rather than a standalone concept. Persistence extends `decision_log` (no parallel
+audit table); the review queue gains the `customer`/`escalate` routes. Handlers
+persist and execute; they no longer decide. Full detail:
+[UNIVERSAL_DECISION_ENGINE.md](UNIVERSAL_DECISION_ENGINE.md).
+
 ---
 
 ## 7. Learning Model (Part 8)

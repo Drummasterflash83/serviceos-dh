@@ -104,7 +104,9 @@ function applyEffects(
     route: ReviewRoute;
     recommended_action: string | null;
     automation_permission: "none" | "suggest" | "act";
+    automation_permission_set: boolean;
     action_proposals: ActionProposal[];
+    prohibited: boolean;
     reasons: string[];
   },
 ): void {
@@ -152,7 +154,9 @@ function applyEffects(
   if (effects.recommended_action !== undefined) acc.recommended_action = effects.recommended_action;
   if (effects.automation_permission !== undefined) {
     acc.automation_permission = effects.automation_permission;
+    acc.automation_permission_set = true;
   }
+  if (effects.prohibit) acc.prohibited = true;
   if (effects.reason) acc.reasons.push(effects.reason);
 }
 
@@ -178,7 +182,9 @@ export function evaluatePolicies(
     route: "auto" as ReviewRoute,
     recommended_action: null as string | null,
     automation_permission: "none" as "none" | "suggest" | "act",
+    automation_permission_set: false,
     action_proposals: [] as ActionProposal[],
+    prohibited: false,
     reasons: [] as string[],
   };
   const matched: MatchedRule[] = [];
@@ -207,7 +213,9 @@ export function evaluatePolicies(
     review_route: acc.route,
     recommended_action: acc.recommended_action,
     automation_permission: acc.automation_permission,
+    automation_permission_set: acc.automation_permission_set,
     action_proposals: acc.action_proposals,
+    prohibited: acc.prohibited,
     reasons: acc.reasons,
   };
 

@@ -1,17 +1,36 @@
 // ServiceOS — Worker handler: intelligence.observe
 //
-// The reference Intelligence Loop shell. Given an extracted Observation it:
-// resolves the effective profile, evaluates the policy set (Decision), persists
-// the Observation, and then either — when confidence is high enough — materialises
-// the proposed Action(s) with ownership + Automation INTENT, or routes to the
-// OpenFolk review queue when uncertain. Domain-agnostic: the identical path
-// serves ServiceOS and ProductOS; behaviour is entirely profile + policy data.
+// The reference Intelligence Loop shell, now driven by the Universal Decision
+// Engine. Given an extracted Observation it: resolves the effective profile,
+// asks the PURE engine for one immutable Decision Package, persists that package
+// to decision_log, and then EXECUTES the single authoritative destination —
+// materialising an Action (+ Automation Intent) on AUTOMATION_AUTHORISED, or opening the
+// right review queue for OpenFolk / tenant-senior / customer approval. No routing
+// is decided here; the engine decides, the handler only persists and executes.
 
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 import { resolveEffectiveProfile } from "../intelligence/profile.ts";
-import { evaluatePolicies, stableHash } from "../intelligence/policy.ts";
-import { automationIntentFor, buildActionDrafts } from "../intelligence/action.ts";
-import type { IntelligenceObject, Policy, ProfileEntry } from "../intelligence/types.ts";
+import { resolveAuthorityContext } from "../intelligence/authority.ts";
+import { evaluateDecision } from "../intelligence/decision.ts";
+import { automationIntentFor } from "../intelligence/action.ts";
+import type {
+  DecisionInput,
+  DecisionPackage,
+  IntelligenceObject,
+  OwnershipAssignment,
+  Policy,
+  ProfileEntry,
+} from "../intelligence/types.ts";
+
+const ENGINE_VERSION = "decision-engine/1.0.0";
+
+// Decision destination → the human review queue's route value.
+const REVIEW_ROUTE: Record<string, string> = {
+  OPENFOLK_REVIEW: "openfolk",
+  TENANT_SENIOR_REVIEW: "tenant_senior",
+  CUSTOMER_APPROVAL: "customer",
+  ESCALATE: "escalate",
+};
 
 interface ObservationDraft {
   domain: string;
@@ -44,7 +63,7 @@ export async function handleIntelligenceObserve(
     };
   }
 
-  // 1) effective profile (industry is a data layer, resolved — never branched on)
+  // 1) resolve inputs (the engine never queries anything itself)
   const { data: tenantRow } = await db
     .from("tenants")
     .select("industry")
@@ -66,7 +85,6 @@ export async function handleIntelligenceObserve(
     domain: draft.domain,
   });
 
-  // 2) policy set (core + this domain's pack)
   const { data: policyRows, error: polErr } = await db
     .from("policies")
     .select("id, domain, scope_kind, name, priority, enabled, rules, version_id")
@@ -78,7 +96,7 @@ export async function handleIntelligenceObserve(
       error: { code: "policy_read_failed", message: polErr.message, retryable: true },
     };
 
-  // 3) Decision — PURE
+  // 2) persist the Observation first so the decision can reference its id
   const observation: IntelligenceObject = {
     tenant_id: tenantId,
     domain: draft.domain,
@@ -96,11 +114,6 @@ export async function handleIntelligenceObserve(
     source_entities: draft.source_entities ?? [],
     attributes: draft.attributes ?? {},
   };
-  const decision = evaluatePolicies((policyRows ?? []) as Policy[], observation, profile, {
-    now: Date.now(),
-  });
-
-  // 4) persist the Observation
   const { data: obsRow, error: obsErr } = await db
     .from("intelligence_objects")
     .insert({
@@ -109,15 +122,11 @@ export async function handleIntelligenceObserve(
       object_type: "Observation",
       object_class: "observation",
       subject: draft.subject,
-      accountable_ref: hotRef(decision.assignments, "accountable"),
-      priority: decision.priority,
-      severity: decision.severity,
       confidence: draft.confidence ?? null,
       ambiguity: draft.ambiguity ?? null,
       risk: draft.risk ?? null,
       reversibility: draft.reversibility ?? null,
       status: "monitoring",
-      deadline: decision.deadline,
       evidence: draft.evidence ?? [],
       source_interactions: draft.source_interactions ?? [],
       source_entities: draft.source_entities ?? [],
@@ -139,43 +148,76 @@ export async function handleIntelligenceObserve(
   }
   const observationId = obsRow.id as string;
 
-  // 5) decision log (outputs include action_proposals so approval can materialise later)
-  const { data: decRow } = await db
-    .from("decision_log")
-    .insert({
-      tenant_id: tenantId,
-      object_id: observationId,
-      object_snapshot: observation,
-      effective_profile_hash: stableHash(profile),
-      policy_version_ids: decision.policy_version_ids,
-      matched_rules: decision.matched_rules,
-      outputs: {
-        priority: decision.priority,
-        severity: decision.severity,
-        deadline: decision.deadline,
-        review_route: decision.review_route,
-        assignments: decision.assignments,
-        action_proposals: decision.action_proposals,
-        reasons: decision.reasons,
-      },
-      input_hash: decision.input_hash,
-    })
-    .select("id")
-    .single();
-  const decisionId = (decRow?.id as string | undefined) ?? null;
+  // 3) the ONE decision — pure, deterministic (caller supplies ids/timestamps).
+  //    Authority is normalised to a domain-neutral context BEFORE the engine runs.
+  const objectForDecision = { ...observation, id: observationId };
+  const input: DecisionInput = {
+    decisionId: crypto.randomUUID(),
+    correlationId: crypto.randomUUID(),
+    evaluatedAt: new Date().toISOString(),
+    engineVersion: ENGINE_VERSION,
+    object: objectForDecision,
+    profile,
+    authority: resolveAuthorityContext(objectForDecision, profile),
+    policies: (policyRows ?? []) as Policy[],
+    domainPackKeys: [draft.domain],
+    domainPackVersions: [],
+    operatingProfileVersion: null,
+    learningVersionIds: [],
+    supersedes: (payload?.supersedes as string | null) ?? null,
+    now: Date.now(),
+  };
+  const pkg = evaluateDecision(input);
 
+  // 4) reflect the decision on the observation + persist the Decision Package
+  const policyVersion = pkg.versions.policyVersionIds[0] ?? null;
   await db
     .from("intelligence_objects")
-    .update({ policy_applied: decision.policy_version_ids[0] ?? null, decision_id: decisionId })
+    .update({
+      priority: pkg.proposedAction?.priority ?? null,
+      deadline: pkg.proposedAction?.dueAt ?? null,
+      accountable_ref: pkg.ownership.accountable
+        ? { kind: pkg.ownership.accountable.party_kind, ref: pkg.ownership.accountable.party_ref }
+        : null,
+      policy_applied: policyVersion,
+      decision_id: pkg.id,
+    })
     .eq("id", observationId);
-  await writeOwnership(db, tenantId, observationId, decision.assignments);
+
+  await db.from("decision_log").insert({
+    id: pkg.id,
+    tenant_id: tenantId,
+    object_id: observationId,
+    object_snapshot: input.object,
+    effective_profile_hash: pkg.audit.inputHash,
+    policy_version_ids: pkg.versions.policyVersionIds,
+    matched_rules: pkg.rationale.policyMatches,
+    outputs: {
+      decision: pkg.decision,
+      reason_codes: pkg.rationale.reasonCodes,
+      next_owner: pkg.nextDecisionOwner,
+    },
+    input_hash: pkg.audit.inputHash,
+    decision: pkg.decision,
+    next_owner_kind: pkg.nextDecisionOwner.kind,
+    engine_version: pkg.versions.engineVersion,
+    operating_profile_version: pkg.versions.operatingProfileVersion,
+    learning_version_ids: pkg.versions.learningVersionIds,
+    reason_codes: pkg.rationale.reasonCodes,
+    correlation_id: pkg.audit.correlationId,
+    output_hash: pkg.audit.outputHash,
+    supersedes: pkg.supersedes,
+    decision_package: pkg,
+  });
+
+  await writeOwnership(db, tenantId, observationId, flattenOwnership(pkg));
   await writeHistory(
     db,
     tenantId,
     observationId,
     null,
     "monitoring",
-    decisionId,
+    pkg.id,
     "Observation recorded",
   );
   await publish(
@@ -184,56 +226,112 @@ export async function handleIntelligenceObserve(
     "intelligence.observation.created",
     observationId,
     draft.domain,
-    decisionId,
+    pkg.id,
     {
-      review_route: decision.review_route,
+      decision: pkg.decision,
     },
   );
 
-  // 6) the confidence gate
-  if (decision.review_route !== "auto") {
-    // Uncertain ⇒ OpenFolk review. Actions are NOT created and nothing reaches
-    // the customer until a consultant resolves the review (intelligence.review_resolve).
-    await db.from("review_tasks").insert({
-      tenant_id: tenantId,
-      object_id: observationId,
-      route: decision.review_route,
-      reason: decision.reasons.join("; ") || null,
-      decision_id: decisionId,
-    });
-    return {
-      success: true,
-      recordsProcessed: 1,
-      result: {
-        observation_id: observationId,
-        decision_id: decisionId,
-        review_route: decision.review_route,
-        actions_created: 0,
-      },
-    };
-  }
-
-  // 7) high confidence ⇒ materialise the Action(s) + Automation Intent(s)
-  const drafts = buildActionDrafts({ ...observation, id: observationId }, decision);
-  const actionIds = await materialiseActions(
-    db,
-    tenantId,
-    observationId,
-    decisionId,
-    decision.policy_version_ids[0] ?? null,
-    drafts,
-  );
+  // 5) EXECUTE the single authoritative destination
+  const actionIds = await execute(db, tenantId, observationId, policyVersion, pkg);
 
   return {
     success: true,
     recordsProcessed: 1 + actionIds.length,
     result: {
       observation_id: observationId,
-      decision_id: decisionId,
-      review_route: "auto",
+      decision_id: pkg.id,
+      decision: pkg.decision,
       action_ids: actionIds,
     },
   };
+}
+
+// ── execution: the handler acts on the decision; it never re-decides ─────────
+async function execute(
+  db: Db,
+  tenantId: string,
+  observationId: string,
+  policyVersion: string | null,
+  pkg: DecisionPackage,
+): Promise<string[]> {
+  const d = pkg.decision;
+  if (
+    (d === "AUTOMATION_AUTHORISED" || d === "AUTOMATION_REQUIRES_APPROVAL") &&
+    pkg.proposedAction
+  ) {
+    const owner = pkg.ownership.responsible ?? pkg.ownership.accountable ?? null;
+    const draft = {
+      domain: pkg.domainPackKeys[0],
+      subject: pkg.proposedAction.title,
+      action_type: pkg.proposedAction.actionType,
+      description: pkg.proposedAction.description,
+      reason: null,
+      priority: pkg.proposedAction.priority,
+      severity: null,
+      confidence: pkg.confidence.score,
+      deadline: pkg.proposedAction.dueAt,
+      // Provenance travels via the derived_from link + source ids, not a copied
+      // evidence array (the Decision Package carries no raw evidence content).
+      evidence: [],
+      source_interactions: pkg.evidence.interactionIds,
+      source_entities: pkg.evidence.entityIds,
+      owner,
+      automation_intent: pkg.automationIntent?.intentType ?? null,
+      derived_from: observationId,
+    };
+    return await materialiseActions(db, tenantId, observationId, pkg.id, policyVersion, [draft]);
+  }
+
+  const route = REVIEW_ROUTE[d];
+  if (route) {
+    await db.from("review_tasks").insert({
+      tenant_id: tenantId,
+      object_id: observationId,
+      route,
+      reason: pkg.rationale.summary,
+      decision_id: pkg.id,
+    });
+    return [];
+  }
+
+  if (d === "WAIT_FOR_EVENT") {
+    await db.from("intelligence_objects").update({ status: "waiting" }).eq("id", observationId);
+    await writeHistory(
+      db,
+      tenantId,
+      observationId,
+      "monitoring",
+      "waiting",
+      pkg.id,
+      "Waiting on dependency",
+    );
+  } else if (d === "REJECT") {
+    await db.from("intelligence_objects").update({ status: "cancelled" }).eq("id", observationId);
+    await writeHistory(
+      db,
+      tenantId,
+      observationId,
+      "monitoring",
+      "cancelled",
+      pkg.id,
+      "Rejected by policy",
+    );
+  }
+  // NO_ACTION: the observation simply stands as recorded.
+  return [];
+}
+
+function flattenOwnership(pkg: DecisionPackage): OwnershipAssignment[] {
+  const o = pkg.ownership;
+  return [
+    o.responsible,
+    o.accountable,
+    o.approver,
+    o.waitingOn,
+    ...o.consulted,
+    ...o.informed,
+  ].filter((a): a is OwnershipAssignment => a !== null);
 }
 
 // ── shared persistence helpers (also used by intelligence.review_resolve) ────

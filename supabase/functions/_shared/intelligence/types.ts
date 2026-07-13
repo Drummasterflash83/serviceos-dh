@@ -124,6 +124,8 @@ export interface Effects {
   recommended_action?: string;
   escalate?: boolean;
   automation_permission?: "none" | "suggest" | "act";
+  /** Policy explicitly forbids acting on this object (→ REJECT). */
+  prohibit?: boolean;
   reason?: string;
 }
 
@@ -159,7 +161,11 @@ export interface PolicyDecision {
   review_route: ReviewRoute;
   recommended_action: string | null;
   automation_permission: "none" | "suggest" | "act";
+  /** True only when a policy EXPLICITLY set the automation permission. A false
+   *  here on an automatable action means the automation policy is missing. */
+  automation_permission_set: boolean;
   action_proposals: ActionProposal[];
+  prohibited: boolean;
   reasons: string[];
   matched_rules: MatchedRule[];
   policy_version_ids: string[];
@@ -242,4 +248,209 @@ export interface Improvement {
   layer: LearningLayer;
   entry: ProfileEntry | null; // the profile delta to publish (null = no config change)
   rationale: string;
+}
+
+// ── Universal Decision Engine ────────────────────────────────────────────────
+
+/** The single authoritative destination for the next step. */
+export type DecisionDestination =
+  | "AUTOMATION_AUTHORISED"
+  | "AUTOMATION_REQUIRES_APPROVAL"
+  | "OPENFOLK_REVIEW"
+  | "TENANT_SENIOR_REVIEW"
+  | "CUSTOMER_APPROVAL"
+  | "WAIT_FOR_EVENT"
+  | "ESCALATE"
+  | "REJECT"
+  | "NO_ACTION";
+
+export type OwnerKind =
+  | "ai"
+  | "automation"
+  | "openfolk_user"
+  | "tenant_user"
+  | "tenant_role"
+  | "customer"
+  | "supplier"
+  | "external_party"
+  | "event";
+
+/** A currency-tagged amount. Comparisons across unlike currencies are refused. */
+export interface Money {
+  amount: number;
+  currency: string;
+}
+
+/** Domain-neutral authority facts, RESOLVED before the pure engine runs. The
+ *  engine compares these; it never reads authority from arbitrary attributes. */
+export interface AuthorityContext {
+  authorityType:
+    | "none"
+    | "financial"
+    | "commercial"
+    | "contractual"
+    | "legal"
+    | "compliance"
+    | "safety"
+    | "operational"
+    | "policy_exception";
+  requestedValue: Money | null;
+  delegatedLimit: Money | null;
+  requiredAuthorityHolder:
+    | "ai"
+    | "automation"
+    | "openfolk"
+    | "tenant_role"
+    | "tenant_user"
+    | "customer"
+    | "external_party";
+  resolvedHolderId: string | null;
+  /** True when the required authority is already delegated (no approval needed). */
+  delegated: boolean;
+  explicitCustomerApprovalRequired: boolean;
+  sourcePolicyIds: string[];
+}
+
+export type RiskLevel = "none" | "low" | "medium" | "high" | "critical";
+export type ReversibilityLevel = "fully_reversible" | "partially_reversible" | "irreversible";
+export type ImpactLevel = "low" | "medium" | "high" | "critical";
+export type ImpactCategory =
+  | "financial"
+  | "customer"
+  | "legal"
+  | "compliance"
+  | "safety"
+  | "reputation"
+  | "production"
+  | "service"
+  | "inventory"
+  | "supplier";
+
+export interface DecisionOwner {
+  kind: OwnerKind;
+  id?: string;
+  roleKey?: string;
+  displayLabel?: string;
+}
+
+/** Fully-resolved input — the engine NEVER queries anything itself. */
+export interface DecisionInput {
+  decisionId: string; // caller-supplied (deterministic replay)
+  correlationId: string;
+  evaluatedAt: string; // caller-supplied ISO (deterministic replay)
+  engineVersion: string;
+  object: IntelligenceObject;
+  profile: EffectiveProfile;
+  policies: Policy[];
+  /** Domain-neutral authority facts, resolved by the caller before entry. */
+  authority: AuthorityContext;
+  domainPackKeys: string[];
+  domainPackVersions: string[];
+  operatingProfileVersion: string | null;
+  learningVersionIds: string[];
+  supersedes?: string | null;
+  now: number;
+}
+
+/** The immutable, complete output — the ONLY downstream decision authority. */
+export interface DecisionPackage {
+  id: string;
+  tenantId: string;
+  supersedes: string | null;
+
+  intelligenceObjectId: string;
+  intelligenceObjectType: string;
+  objectClass: string;
+  domainPackKeys: string[];
+
+  decision: DecisionDestination;
+  nextDecisionOwner: DecisionOwner;
+
+  rationale: {
+    summary: string;
+    reasonCodes: string[];
+    policyMatches: string[];
+    rejectedAlternatives: string[];
+    /** Decision-critical config keys that were absent (structured, no content). */
+    missingConfiguration: string[];
+  };
+
+  confidence: {
+    score: number;
+    threshold: number;
+    ambiguityScore: number;
+    evidenceQuality: number;
+  };
+
+  authority: {
+    requiredAuthority: string | null;
+    resolvedAuthorityHolder: string | null;
+    delegatedLimit: number | null;
+    requestedValue: number | null;
+    withinDelegatedAuthority: boolean;
+  };
+
+  risk: { level: RiskLevel; score: number; categories: string[] };
+  reversibility: { level: ReversibilityLevel; compensationAvailable: boolean };
+  impact: { level: ImpactLevel; categories: ImpactCategory[] };
+
+  ownership: {
+    responsible: OwnershipAssignment | null;
+    accountable: OwnershipAssignment | null;
+    approver: OwnershipAssignment | null;
+    waitingOn: OwnershipAssignment | null;
+    consulted: OwnershipAssignment[];
+    informed: OwnershipAssignment[];
+  };
+
+  proposedAction: {
+    actionType: string;
+    title: string;
+    description: string | null;
+    priority: string | null;
+    dueAt: string | null;
+  } | null;
+
+  automationIntent: {
+    intentType: string;
+    payload: Record<string, unknown>;
+    requiresApproval: boolean;
+  } | null;
+
+  routing: {
+    reviewRequired: boolean;
+    openfolkRequired: boolean;
+    tenantReviewRequired: boolean;
+    customerApprovalRequired: boolean;
+    waitCondition: Record<string, unknown> | null;
+  };
+
+  versions: {
+    engineVersion: string;
+    operatingProfileVersion: string | null;
+    policyVersionIds: string[];
+    learningVersionIds: string[];
+    domainPackVersions: string[];
+  };
+
+  evidence: {
+    interactionIds: string[];
+    entityIds: string[];
+    objectIds: string[];
+    evidenceHash: string;
+  };
+
+  outcomeContract: {
+    expectedOutcomeType: string | null;
+    measurableSignals: string[];
+    timeoutAt: string | null;
+    objectiveId?: string | null;
+  };
+
+  audit: {
+    inputHash: string;
+    outputHash: string;
+    evaluatedAt: string;
+    correlationId: string;
+  };
 }
