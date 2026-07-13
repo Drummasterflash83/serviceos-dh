@@ -64,15 +64,22 @@ the side. The test is not "is this useful?" but "does the business now operate
 
 ### 2. Software is half the company. Managed intelligence is the other half.
 
-Customers do not buy software from us. They buy an outcome: a business that runs
-better. The software is necessary but not sufficient. The rest is
-implementation, optimisation, intelligence, automation, and continuous
-improvement — delivered as a service, not shipped as a download.
+Customers do not buy software from us. They buy an end result: a business that
+runs better — lower operating costs, more capacity without proportional hiring,
+faster response and completion, fewer missed actions, fewer bottlenecks, clearer
+ownership, less admin, better service to their own customers and better
+performance from their suppliers, more revenue captured, and operations that keep
+improving. ServiceOS and ProductOS are *how* that result is delivered; OpenFolk
+is the managed-intelligence service that keeps improving it. The software is
+necessary but never sufficient.
 
 This is deliberate and it is not a services-company compromise. Most software
 asks the customer to supply the expertise to make it valuable. We supply that
 expertise as part of the product. The service should become as valuable as the
-software, and neither should be able to stand alone.
+software, and neither should be able to stand alone. Commercially this is one
+proposition delivered in three parts: an implementation fee to stand the
+operating system up, an ongoing subscription for the software, and a recurring
+optimisation and managed-intelligence retainer for the continuing improvement.
 
 *The challenge:* a service that makes the customer more capable is a partnership;
 a service that makes the customer dependent without making them better is a trap.
@@ -106,36 +113,70 @@ A consultant supported this way can serve far more customers at higher quality
 than one working alone. That is the economic engine that makes discovery #2
 affordable: managed intelligence at software margins.
 
+We hold ourselves to a concrete design test for this — the founder proof model:
+one highly capable operator should be able to oversee on the order of twenty
+customer companies before we need to add OpenFolk staff. This is not a staffing
+promise or a fixed ratio; it is a challenge we point at every workflow we build.
+Can AI complete this with no human at all? If not, can AI prepare the decision so
+a human only has to approve or correct it? Can that correction remove the
+exception next time? Can one operator supervise many tenants without becoming the
+bottleneck? A workflow that cannot survive those questions scales administrative
+workload instead of expertise — and scaling expertise, not headcount, is the
+whole point.
+
 *The challenge:* "we augment, we don't replace" is what everyone says. We should
 be honest that augmentation changes what the job is. Our obligation is to make
 consultants more valuable, more expert, and more in demand — not to quietly
 hollow the role out while claiming otherwise.
 
-### 5. Human judgement protects trust
+### 5. AI acts by default; human judgement guards the exceptions
 
-This is the most important operational belief we hold, so we state the mechanism
-exactly.
+This is the most important operational belief we hold, so we state it exactly.
 
-When confidence is high, AI should act.
+The default is not human oversight. The default is AI. The normal path is:
 
-When confidence is uncertain, the path is:
+> AI understands → policy permits → AI acts → the outcome is measured → the
+> system learns.
 
-> AI → OpenFolk → Customer
+Human intervention is the exception, not the operating model. Our long-term
+objective is to automate everything that can be done perfectly, safely and within
+policy, and to keep shrinking the set of things that cannot. A human enters the
+loop only when there is a real reason:
 
-never:
+- confidence is genuinely insufficient;
+- the evidence conflicts;
+- no policy covers the situation;
+- the business risk is too high;
+- customer authority is legally or commercially required;
+- the action is irreversible or outside delegated limits.
 
-> AI → Customer
+When one of those is true, the uncertainty is routed to a person *before* it ever
+reaches the customer — `AI → OpenFolk → Customer`, never `AI → Customer`.
 
-Uncertainty is routed to a person before it ever reaches the customer. OpenFolk
-is the buffer that absorbs the machine's mistakes so the customer never has to.
-The customer experiences a system that is reliably right, because the times it
-was unsure were caught by someone whose job is to catch them.
+But not every exception is the same exception, and sending one to the wrong place
+is its own failure:
 
-*The challenge:* this gate is exactly the thing that will be under pressure to
-erode. It is slower and more expensive than letting the AI speak directly, and
-there will always be a quarter where bypassing it looks like progress. It is not
-progress. The day low-confidence output reaches a customer unreviewed is the day
-we start spending the trust that the entire company is built on. Guard the gate.
+- **OpenFolk review** handles the machine's problems — insufficient confidence,
+  conflicting evidence, missing policy, unusual patterns. OpenFolk resolves these
+  professionally so the customer never has to.
+- **Tenant senior review** handles customer-specific judgement — the calls only
+  someone inside that business should make.
+- **Customer approval** handles genuine business *authority* — high-value spend,
+  refunds, discounts, legal commitments, policy exceptions. This is the
+  customer's decision and it stays theirs.
+
+Two mistakes to refuse: never route AI uncertainty to the customer when OpenFolk
+can resolve it first, and never route the customer's own authority to OpenFolk as
+though we owned their business decision. OpenFolk absorbs the machine's mistakes;
+it does not own the customer's choices.
+
+*The challenge:* this gate is exactly what will be under pressure to erode — from
+both sides. Skipping OpenFolk when the AI is unsure is faster and cheaper, and
+there will always be a quarter where bypassing it looks like progress; it is not.
+Equally, quietly making decisions that were the customer's to make is convenient
+and corrosive. The day low-confidence output reaches a customer unreviewed, or a
+customer's authority is exercised without them, is the day we start spending the
+trust the entire company is built on. Guard the gate — in both directions.
 
 ### 6. Everything becomes configuration
 
@@ -157,8 +198,19 @@ decisions to the people closest to the customer and keeping them legible.
 
 ### 7. Every customer improves the platform — and learning stays layered
 
-Every correction a human makes is a gift to the system. But learning must always
-be separated into three layers that never blur:
+Every correction a human makes is a gift to the system — but a gift with a job to
+do. **Every manual intervention must make the next similar decision more
+automatable.** An intervention that fixes today's case and teaches the system
+nothing is waste; the point of a human touching the loop is to remove the need
+for a human to touch it next time. So when OpenFolk or a tenant user intervenes,
+we capture the whole lesson: what the AI believed, why it was uncertain, the
+correction, the correct owner, the correct action, whether the lesson is
+universal, industry-specific or tenant-specific, and what policy or configuration
+should change as a result. OpenFolk's people are there to improve the system, not
+to become permanent middleware inside it.
+
+That classification is not optional bookkeeping, because learning must always be
+separated into three layers that never blur:
 
 - **Universal learning** — true for everyone. The engine gets smarter for all.
 - **Industry learning** — true for a trade or sector. Shared within it.
@@ -242,6 +294,14 @@ before they ask, and that measurably makes their business run better. Software i
 something you purchase and then have to figure out. A partner is someone who
 figures it out with you.
 
+So we must never position ourselves as "another SaaS subscription." Software is
+the delivery infrastructure; what the customer actually buys is the
+transformation and its continuing improvement — a business that operates better,
+automates more, costs less to run, and has more capacity than its headcount would
+suggest. Customers routinely value a delivered operational outcome far more than
+access to a tool, and our pricing and our language should reflect that we deliver
+the outcome, not merely the tool.
+
 Our aim is to become indispensable. But indispensable the right way: because we
 create so much value that leaving would be a loss, never because we have made
 leaving hard. The strongest lock-in is a customer who does not want to leave.
@@ -285,8 +345,13 @@ briefly because their justification is everything above.
   learn, or be replayed later.
 - **Version everything.** Profiles, policies, packs, rules, behaviour. Nothing
   changes silently; everything can be rolled back and reasoned about.
+- **AI acts by default; humans intervene by exception.** The normal path is fully
+  automated within policy; a human enters only at a deliberate boundary.
 - **Human judgement for uncertainty.** High confidence acts; uncertainty routes
-  to a person. (Discovery #5 is not optional.)
+  to a person, and the customer's own authority always stays with the customer.
+  (Discovery #5 is not optional.)
+- **Every intervention reduces the next.** A correction that does not make the
+  next similar decision more automatable has done only half its job.
 - **Continuous optimisation.** The system is never finished; it improves without
   being asked.
 - **Managed intelligence.** The service is part of the product, not a bolt-on.
@@ -311,6 +376,16 @@ customer's operating system — the intelligence and the people that make Servic
 and ProductOS better for every business that runs on them, every month, mostly
 before anyone asks.
 
+Concretely, OpenFolk is the control plane and nothing less: the quality gate for
+uncertain intelligence, the operator of policy and configuration, the keeper of
+platform health, the learning and optimisation layer, and the customer's
+strategic improvement partner. And it is emphatically *not* a manual processing
+team, an outsourced admin department, a permanent approval bottleneck, or a human
+wrapper around weak automation. Its job is to remove repetitive work — from
+itself as much as from the customer. Every hour an OpenFolk operator spends doing
+something a policy should have decided is a signal that the policy, not the
+staffing, needs to change.
+
 ServiceOS and ProductOS are what the customer runs their business on. OpenFolk is
 what makes those systems get better over time without the customer having to
 become an expert in them. One is the machine. The other keeps making the machine
@@ -320,19 +395,28 @@ worth more than it cost.
 
 ## How to use this document
 
-When a decision is genuinely hard, this is the test:
+When a decision is genuinely hard — or before building any workflow at all — this
+is the test:
 
-1. Does it improve how businesses operate? (If no, stop.)
-2. Does it keep the engine universal and push difference into configuration?
-3. Does it respect the confidence gate — humans for uncertainty, machines for
-   work?
-4. Does it keep universal, industry, and tenant learning cleanly separated?
-5. Can we measure it, audit it, and undo it?
-6. Does it make OpenFolk more of an operations centre and less of an admin panel?
+1. Does it improve how businesses operate, not just add a capability? (If no,
+   stop.)
+2. Can AI do this completely, with no human in the loop?
+3. If not, can policy make the decision deterministic, so it still needs no
+   judgement?
+4. Is human judgement *genuinely* required, or are we merely nervous?
+5. Who legally or commercially owns the authority here — us, the tenant, or the
+   customer? Route accordingly, and never hold authority that is the customer's.
+6. Will the intervention create reusable learning that makes the next case more
+   automatable?
+7. Can one OpenFolk operator supervise many tenants doing this, or does it create
+   a bottleneck?
+8. Does it work across both ServiceOS and ProductOS from configuration,
+   strengthening the universal platform rather than adding bespoke code?
+9. Can we measure it, audit it, and undo it? If not, we do not trust it.
 
-A decision that passes all six is aligned with who we are. A decision that fails
-one of them is worth stopping for, even if it is convenient — *especially* if it
-is convenient, because the convenient shortcuts are exactly the ones that erode a
+A decision that passes is aligned with who we are. A decision that fails one
+point is worth stopping for, even if it is convenient — *especially* if it is
+convenient, because the convenient shortcuts are exactly the ones that erode a
 philosophy one reasonable exception at a time.
 
 ---
@@ -343,10 +427,16 @@ Technologies will change. This repository will be rewritten, probably more than
 once. Names may change. The following should not:
 
 - We build operating systems and the service that improves them — both, always.
-- Humans hold judgement; machines do work; uncertainty goes to a human first.
+- AI acts by default; humans intervene by exception, and uncertainty reaches a
+  human before it reaches the customer.
+- Customer authority stays with the customer; we never quietly make the decisions
+  that are theirs.
+- Every human intervention exists to reduce the next one.
 - Difference is configuration, never bespoke code.
 - Learning is layered, and the layers are a boundary of trust.
-- We demonstrate value honestly, including when it is small.
+- We sell and deliver outcomes, not software access — and we demonstrate value
+  honestly, including when it is small.
+- ServiceOS and ProductOS are two domain expressions of one platform, never two.
 - Every customer makes the next one better served.
 
 If a future version of us has quietly abandoned these while keeping the logo, they
