@@ -100,9 +100,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   let queued = 0;
   let duplicates = 0;
+  const perTenant = new Map<string, number>();
   for (const acc of accounts ?? []) {
+    const tid = acc.tenant_id as string;
     const r = await enqueueJob(supabase, {
-      tenantId: acc.tenant_id as string,
+      tenantId: tid,
       jobType: "email.workspace_sync",
       jobKey: `email.workspace_sync:${acc.id}`,
       connectorId: "google-workspace",
@@ -111,6 +113,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
     if (r.duplicate) duplicates += 1;
     else if (r.id) queued += 1;
+    if (r.id || r.duplicate) perTenant.set(tid, (perTenant.get(tid) ?? 0) + 1);
+  }
+
+  // Scheduler-acceptance HEARTBEAT per configured Workspace tenant (sync-health
+  // reads the latest 'workspace_scheduled_sync' row). A no-op run is SUCCESS —
+  // the scheduler executed, so the connector is not "stale". No provider content.
+  const hbIso = new Date().toISOString();
+  for (const tid of tenantIds) {
+    await supabase.from("email_sync_runs").insert({
+      tenant_id: tid,
+      provider: PROVIDER,
+      sync_type: "workspace_scheduled_sync",
+      status: "success",
+      started_at: hbIso,
+      completed_at: hbIso,
+      records_processed: perTenant.get(tid) ?? 0,
+      metadata: { heartbeat: true, mailboxes_enqueued: perTenant.get(tid) ?? 0 },
+    });
   }
 
   return json({

@@ -421,7 +421,11 @@ export async function getOperationsSnapshot(): Promise<OperationsSnapshot> {
       running: phoneRunning,
       configured: simwood !== null,
       customerId: simwood?.providerCustomerId ?? null,
-      connectorLastSuccess: simwood?.lastSuccessfulSyncAt ?? null,
+      // A successful provider POLL (phone_sync_runs success — incl. a no-op poll
+      // that found 0 new calls) must refresh the connector card. The scheduled
+      // poll writes phone_sync_runs but never tenant_connectors.last_successful_
+      // sync_at, so preferring phoneLast stops false "stale" after healthy polls.
+      connectorLastSuccess: phoneLast ?? simwood?.lastSuccessfulSyncAt ?? null,
       connectorLastFailure: simwood?.lastFailedSyncAt ?? null,
       connectorLastError: simwood?.lastError ?? null,
     },

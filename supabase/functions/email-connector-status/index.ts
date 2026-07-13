@@ -56,6 +56,52 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const health = deriveEmailHealth(evidence as EmailHealthEvidence, Date.now());
 
+  // CURRENT vs historical dead-letters (§12): a dead-letter is only CURRENT if no
+  // later succeeded job exists for the same job_key (i.e. that mailbox unit hasn't
+  // recovered). Dead-letters created before the email worker handler was deployed
+  // are superseded by later successes → historical, not a current warning.
+  const [{ data: dls }, { data: succ }] = await Promise.all([
+    supabase
+      .from("platform_jobs")
+      .select("job_key, dead_lettered_at, failed_at, updated_at")
+      .eq("tenant_id", tenantId)
+      .like("job_type", "email.%")
+      .eq("status", "dead_letter"),
+    supabase
+      .from("platform_jobs")
+      .select("job_key, completed_at")
+      .eq("tenant_id", tenantId)
+      .like("job_type", "email.%")
+      .eq("status", "succeeded"),
+  ]);
+  const latestSuccessByKey = new Map<string, number>();
+  for (const s of (succ ?? []) as Record<string, unknown>[]) {
+    const k = s.job_key as string | null;
+    const t = Date.parse((s.completed_at as string | null) ?? "");
+    if (k && !Number.isNaN(t))
+      latestSuccessByKey.set(k, Math.max(latestSuccessByKey.get(k) ?? 0, t));
+  }
+  let currentDeadLetter = 0;
+  let historicalDeadLetter = 0;
+  for (const d of (dls ?? []) as Record<string, unknown>[]) {
+    const k = d.job_key as string | null;
+    const atStr =
+      (d.dead_lettered_at as string | null) ??
+      (d.failed_at as string | null) ??
+      (d.updated_at as string | null) ??
+      "";
+    const at = Date.parse(atStr);
+    const resolved = k !== null && (latestSuccessByKey.get(k) ?? 0) > (Number.isNaN(at) ? 0 : at);
+    if (resolved) historicalDeadLetter += 1;
+    else currentDeadLetter += 1;
+  }
+  const pipeline = {
+    ...health.pipeline,
+    dead_letter_count: currentDeadLetter, // now CURRENT only (was all-time)
+    historical_dead_letter_count: historicalDeadLetter,
+    expected_cadence_seconds: 300,
+  };
+
   let diagnostics: unknown[] | undefined;
   if (wantDetail) {
     const { data: diag } = await supabase.rpc("email_connector_diagnostics", {
@@ -69,7 +115,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     success: true,
     gmail: { ...health.gmail, evidence: (evidence as EmailHealthEvidence).gmail },
     workspace: { ...health.workspace, evidence: (evidence as EmailHealthEvidence).workspace },
-    pipeline: health.pipeline,
+    pipeline,
     ...(diagnostics ? { diagnostics } : {}),
   });
 });

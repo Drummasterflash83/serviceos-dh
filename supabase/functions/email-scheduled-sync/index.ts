@@ -63,17 +63,45 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   let queued = 0;
   let duplicates = 0;
+  // Per-tenant tallies so each tenant gets a truthful scheduler heartbeat.
+  const perTenant = new Map<string, { queued: number; duplicates: number }>();
   for (const acc of accounts ?? []) {
+    const tid = acc.tenant_id as string;
+    const t = perTenant.get(tid) ?? { queued: 0, duplicates: 0 };
     const r = await enqueueJob(supabase, {
-      tenantId: acc.tenant_id as string,
+      tenantId: tid,
       jobType: "email.gmail_sync",
       jobKey: `email.gmail_sync:${acc.id}`,
       connectorId: "gmail",
       moduleId: "communications.email",
       payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
     });
-    if (r.duplicate) duplicates += 1;
-    else if (r.id) queued += 1;
+    if (r.duplicate) {
+      duplicates += 1;
+      t.duplicates += 1;
+    } else if (r.id) {
+      queued += 1;
+      t.queued += 1;
+    }
+    perTenant.set(tid, t);
+  }
+
+  // Scheduler-acceptance HEARTBEAT: scheduler-health.ts reads the latest
+  // email_sync_runs row of sync_type='scheduled_sync'. A no-op run (0 accounts /
+  // 0 enqueued) is still SUCCESS — the scheduler ran, so it is not "stale". No
+  // provider content is written; this only proves the tick executed.
+  const nowIso = new Date().toISOString();
+  for (const [tid, counts] of perTenant) {
+    await supabase.from("email_sync_runs").insert({
+      tenant_id: tid,
+      provider: PROVIDER,
+      sync_type: "scheduled_sync",
+      status: "success",
+      started_at: nowIso,
+      completed_at: nowIso,
+      records_processed: counts.queued,
+      metadata: { heartbeat: true, queued: counts.queued, duplicates: counts.duplicates },
+    });
   }
 
   return json({ success: true, accounts: (accounts ?? []).length, queued, duplicates });

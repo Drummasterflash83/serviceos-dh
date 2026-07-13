@@ -47,18 +47,10 @@ interface InteractionRow {
   sentiment: string | null;
   related_thread_id: string | null;
   processing_status: string;
-  /** Max source timestamp at projection time — the incremental marker (phone). */
-  source_updated_at?: string | null;
+  /** Deterministic projected-content hash — the incremental marker (phone). Set
+   *  from phone_select_projectable so an unchanged call is never re-selected. */
+  source_version?: string | null;
   metadata: Record<string, unknown>;
-}
-
-/** Later of two ISO timestamps (ignores nulls / unparseable). */
-function maxIso(a: string | null, b: string | null): string | null {
-  const ta = a && !Number.isNaN(Date.parse(a)) ? Date.parse(a) : null;
-  const tb = b && !Number.isNaN(Date.parse(b)) ? Date.parse(b) : null;
-  if (ta === null) return b ?? null;
-  if (tb === null) return a ?? null;
-  return ta >= tb ? a : b;
 }
 
 async function upsertInteractions(admin: Admin, rows: InteractionRow[]): Promise<void> {
@@ -91,14 +83,13 @@ async function syncPhone(admin: Admin, tenantId: string, limit: number): Promise
 
   const ids = rows.map((c) => c.id as string);
 
-  // Latest AI insight per call (summary/sentiment + updated_at for the marker).
-  const insights = new Map<
-    string,
-    { summary: string | null; sentiment: string | null; updatedAt: string | null }
-  >();
+  // Latest AI insight per call (summary/sentiment for the projected body). The
+  // incremental marker (source_version) is computed DB-side and returned by the
+  // selector, so no timestamp is read here.
+  const insights = new Map<string, { summary: string | null; sentiment: string | null }>();
   const { data: ins } = await admin
     .from("phone_ai_insights")
-    .select("call_id, summary, sentiment, updated_at, created_at")
+    .select("call_id, summary, sentiment, created_at")
     .eq("tenant_id", tenantId)
     .in("call_id", ids)
     .order("created_at", { ascending: false });
@@ -108,7 +99,6 @@ async function syncPhone(admin: Admin, tenantId: string, limit: number): Promise
       insights.set(cid, {
         summary: (i.summary as string | null) ?? null,
         sentiment: (i.sentiment as string | null) ?? null,
-        updatedAt: (i.updated_at as string | null) ?? null,
       });
     }
   }
@@ -158,12 +148,9 @@ async function syncPhone(admin: Admin, tenantId: string, limit: number): Promise
       // enrichment subscribers; without one it is still 'pending'. (Matches the
       // pipeline's finaliser so the backfill and live paths are interchangeable.)
       processing_status: insight ? "ready" : "pending",
-      // Incremental marker: the later of the call's and the insight's updated_at.
-      // Stored so an unchanged call is never re-selected next cycle.
-      source_updated_at: maxIso(
-        (c.updated_at as string | null) ?? null,
-        insight?.updatedAt ?? null,
-      ),
+      // Incremental marker: the deterministic content hash computed by the
+      // selector. Stored so a no-op re-upsert of the call never re-selects it.
+      source_version: (c.source_version as string | null) ?? null,
       metadata: {
         duration_seconds: duration,
         outcome,

@@ -84,5 +84,30 @@ Deno.serve(async (req: Request): Promise<Response> => {
     else if (r.id) queued += 1;
   }
 
+  // Scheduler-acceptance HEARTBEAT per configured Workspace tenant — backfill is
+  // idle most of the time (admin-initiated), and an idle tick is HEALTHY, not
+  // stale. Heartbeat every tenant with a Workspace connection so scheduler-health
+  // ('workspace_backfill_scheduled') is truthful even with zero running backfills.
+  const { data: conns } = await supabase
+    .from("google_workspace_connections")
+    .select("tenant_id")
+    .neq("status", "disabled");
+  const tenantIds = Array.from(
+    new Set(((conns ?? []) as { tenant_id: string }[]).map((c) => c.tenant_id)),
+  );
+  const hbIso = new Date().toISOString();
+  for (const tid of tenantIds) {
+    await supabase.from("email_sync_runs").insert({
+      tenant_id: tid,
+      provider: PROVIDER,
+      sync_type: "workspace_backfill_scheduled",
+      status: "success",
+      started_at: hbIso,
+      completed_at: hbIso,
+      records_processed: queued,
+      metadata: { heartbeat: true, running_backfills_enqueued: queued },
+    });
+  }
+
   return json({ success: true, mailboxes: (accounts ?? []).length, queued, duplicates });
 });

@@ -34,15 +34,6 @@ function dirOf(raw: unknown): string {
   return raw === "IN" ? "inbound" : raw === "OUT" ? "outbound" : "unknown";
 }
 
-/** Later of two ISO timestamps (ignores nulls / unparseable). */
-function maxIso(a: string | null, b: string | null): string | null {
-  const ta = a && !Number.isNaN(Date.parse(a)) ? Date.parse(a) : null;
-  const tb = b && !Number.isNaN(Date.parse(b)) ? Date.parse(b) : null;
-  if (ta === null) return b ?? null;
-  if (tb === null) return a ?? null;
-  return ta >= tb ? a : b;
-}
-
 /**
  * Produce/refresh the canonical interaction for a just-analysed recording and
  * publish interaction.ready. Never throws — returns a structured result the
@@ -108,6 +99,19 @@ export async function finalizeInteractionForRecording(opts: {
     const summary = (insight?.summary as string | null) ?? null;
     const sentiment = (insight?.sentiment as string | null) ?? null;
 
+    // Deterministic projected-content marker (SAME definition as the scheduled
+    // projector) so a pipeline-created interaction is never re-selected as "repair".
+    let sourceVersion: string | null = null;
+    try {
+      const { data: ver } = await admin.rpc("phone_projection_version", {
+        p_tenant_id: tenantId,
+        p_call_id: callId,
+      });
+      sourceVersion = typeof ver === "string" ? ver : null;
+    } catch {
+      sourceVersion = null; // best-effort; the projector will repair once if null
+    }
+
     // 3) Preserve an already-ENRICHED interaction — never downgrade its status.
     const { data: existing } = await admin
       .from("interactions")
@@ -143,13 +147,9 @@ export async function finalizeInteractionForRecording(opts: {
       phone_to: (call.to_number as string | null) ?? null,
       sentiment,
       related_thread_id: (call.linked_id as string | null) ?? null,
-      // Incremental projection marker (max source timestamp at projection time) so
-      // the scheduled projector never re-selects this row as "repair" — must match
-      // interactions-sync's marker semantics.
-      source_updated_at: maxIso(
-        (call.updated_at as string | null) ?? null,
-        (insight?.updated_at as string | null) ?? null,
-      ),
+      // Deterministic projected-content marker (SAME hash the scheduled projector
+      // compares) so this row is never re-selected as "repair" while unchanged.
+      source_version: sourceVersion,
       // Only these columns are written on upsert, so identity's related_person_id /
       // related_company_id on an existing enriched row are preserved untouched.
       processing_status: targetStatus,
