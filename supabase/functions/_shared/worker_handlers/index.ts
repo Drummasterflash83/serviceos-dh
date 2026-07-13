@@ -30,6 +30,9 @@ import {
   handleEmailWorkspaceBackfill,
   handleEmailMailboxDiscovery,
 } from "./email_sync.ts";
+import { handleIntelligenceEvaluate } from "./intelligence_evaluate.ts";
+import { handleIntelligenceObserve } from "./intelligence_observe.ts";
+import { handleIntelligenceReviewResolve } from "./intelligence_review_resolve.ts";
 
 export interface WorkerHandlerContext {
   /** Service-role client (bypasses RLS). Business writes go through this. */
@@ -80,6 +83,9 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "email.workspace_sync": handleEmailWorkspaceSync,
   "email.workspace_backfill": handleEmailWorkspaceBackfill,
   "email.mailbox_discovery": handleEmailMailboxDiscovery,
+  "intelligence.evaluate": handleIntelligenceEvaluate,
+  "intelligence.observe": handleIntelligenceObserve,
+  "intelligence.review_resolve": handleIntelligenceReviewResolve,
 };
 
 export function getWorkerHandler(jobType: string): WorkerHandler | null {
