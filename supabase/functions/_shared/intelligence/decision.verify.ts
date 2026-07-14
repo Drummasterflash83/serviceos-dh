@@ -464,6 +464,36 @@ check(
   allCodes.filter((c) => !areReasonCodes([c])),
 );
 
+// ── OBJECTIVES boundary — context is descriptive, never bypasses safety ─────
+console.log("Objective context (descriptive only):");
+const ctx = {
+  objectiveIds: ["obj-svc"],
+  primaryObjectiveId: "obj-svc",
+  expectedContribution: "reduce response time",
+  contributionConfidence: 0.7,
+  constraintsChecked: [],
+};
+const overObj = obs({
+  confidence: 0.99,
+  attributes: { intent: "engineer_visit_requested", authority: fin(5000) },
+});
+const withCtx = evaluateDecision({ ...input(overObj), objectiveContext: ctx });
+const withoutCtx = evaluateDecision(input(overObj));
+check(
+  "22a. objective context is carried verbatim on the package",
+  withCtx.objectiveContext?.primaryObjectiveId === "obj-svc" &&
+    withoutCtx.objectiveContext === null,
+);
+check(
+  "22b. objective context does NOT change routing (same decision)",
+  withCtx.decision === withoutCtx.decision,
+);
+check(
+  "22c. objective context cannot bypass authority (still CUSTOMER_APPROVAL)",
+  withCtx.decision === "CUSTOMER_APPROVAL",
+  withCtx.decision,
+);
+
 console.log(
   failures === 0 ? "\nALL DECISION-ENGINE CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`,
 );

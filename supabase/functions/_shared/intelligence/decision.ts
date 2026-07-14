@@ -493,6 +493,8 @@ export function evaluateDecision(input: DecisionInput): DecisionPackage {
           objectiveId: (a["objective_id"] as string) ?? null,
         }
       : { expectedOutcomeType: null, measurableSignals: [], timeoutAt: null, objectiveId: null },
+    // Descriptive only — carried verbatim; the engine never routes on it.
+    objectiveContext: input.objectiveContext ?? null,
     audit: {
       inputHash: stableHash({
         o: input.object,

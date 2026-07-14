@@ -304,6 +304,156 @@ export interface MaturityRecommendation {
   unmet: string[];
 }
 
+// ── Objectives & Outcomes ────────────────────────────────────────────────────
+// The strategic layer: what the business is trying to achieve, and whether our
+// decisions and actions moved it closer. Objectives DEFINE direction (dedicated,
+// versioned records); Measurements observe reality; the pure evaluators here
+// derive Health and Contribution. Nothing here executes, routes or decides.
+
+export type MetricDirection =
+  "increase" | "decrease" | "maintain" | "range" | "threshold" | "binary" | "milestone";
+
+export interface Money2 {
+  value: number | null;
+  unit: string | null; // e.g. "hours", "percent", "count", "currency"
+  currency: string | null; // set only when unit === "currency"
+}
+
+/** A single observed value of a metric (time-series snapshot). */
+export interface MeasurementSnapshot {
+  metricKey: string;
+  value: number | null; // null for qualitative/milestone metrics
+  unit: string | null;
+  currency: string | null;
+  measuredAt: string; // ISO
+  source?: string | null;
+  confidence?: number | null;
+  milestoneReached?: boolean | null; // for binary/milestone metrics
+}
+
+export interface ObjectiveConstraint {
+  key: string;
+  kind: "hard" | "soft" | "guardrail";
+  description: string;
+  metricKey?: string | null;
+  direction?: MetricDirection | null; // the direction a violation would move
+  threshold?: number | null;
+  unit?: string | null;
+  authorityRequired?: boolean | null;
+}
+
+/** The evaluation-relevant shape of an Objective (not the full DB record). */
+export interface ObjectiveSnapshot {
+  id: string;
+  objectiveType: string;
+  title: string;
+  status: string; // lifecycle: draft|active|paused|... (NOT health)
+  primaryMetricKey: string | null;
+  direction: MetricDirection;
+  baseline: Money2 | null;
+  target: (Money2 & { rangeMin?: number | null; rangeMax?: number | null }) | null;
+  startsAt?: string | null;
+  targetAt?: string | null;
+  constraints: ObjectiveConstraint[];
+  dependencies?: Array<{ id: string; healthStatus: string }>;
+  staleAfterHours?: number | null; // freshness ceiling (data-driven)
+}
+
+export type ObjectiveHealthStatus =
+  "unknown" | "on_track" | "at_risk" | "off_track" | "blocked" | "achieved" | "missed";
+
+export interface ObjectiveHealth {
+  status: ObjectiveHealthStatus;
+  progress: number | null; // 0..1, null when not computable
+  confidence: number;
+  reasons: string[]; // controlled reason codes
+  blockers: string[];
+  staleMeasurements: string[];
+  evaluatedAt: string;
+}
+
+// ── Contribution ─────────────────────────────────────────────────────────────
+
+export type ContributionState =
+  | "proposed"
+  | "expected"
+  | "in_progress"
+  | "outcome_observed"
+  | "contribution_confirmed"
+  | "contribution_rejected"
+  | "inconclusive";
+
+export interface ExpectedContribution {
+  objectiveId: string;
+  metricKey: string | null;
+  expectedDirection: MetricDirection | null;
+  expectedDelta?: number | null;
+  actionRef?: string | null;
+  /** Only a VERIFIED objective link may yield confirmed contribution. */
+  verified?: boolean;
+}
+
+export interface OutcomeSnapshot {
+  ref: string;
+  status: string; // 'complete' | 'failed' | ...
+  observedAt: string;
+  metricKey?: string | null;
+}
+
+export interface ContributionAssessment {
+  state: ContributionState;
+  confidence: number;
+  observedMovement: number | null;
+  rationale: string[];
+}
+
+// ── Objective context on a decision (resolved BEFORE the Decision Engine). ──
+// Descriptive metadata only. The Decision Engine records it but NEVER routes on
+// it, queries objectives, or becomes goal-seeking.
+export interface ObjectiveContext {
+  objectiveIds: string[];
+  /** The subset that is VERIFIED — safe to use for value/contribution claims. */
+  verifiedObjectiveIds: string[];
+  primaryObjectiveId?: string | null;
+  expectedContribution?: string | null;
+  contributionConfidence?: number | null;
+  constraintsChecked?: string[];
+}
+
+/** Provenance of an objective reference. Unverified links may NOT be used to
+ *  claim measured value or attributable contribution. */
+export type VerificationState =
+  "verified_published" | "approved_link" | "proposed" | "inferred_unverified" | "rejected";
+
+/** A caller-supplied candidate link, BEFORE verification. */
+export interface CandidateObjectiveLink {
+  objectiveId: string;
+  relation: string;
+  primary?: boolean;
+  source: "approved_link" | "caller" | "ai_inferred";
+  expectedContribution?: string | null;
+  confidence?: number | null;
+  constraintKeys?: string[];
+}
+
+/** A minimal objective fact (from the DB) used to verify candidate links. */
+export interface KnownObjective {
+  id: string;
+  tenantId: string;
+  status: string; // 'draft' | 'active' | ...
+}
+
+/** One VERIFIED objective link feeding the context resolver. */
+export interface ObjectiveLinkFact {
+  objectiveId: string;
+  relation: string;
+  primary?: boolean;
+  verificationState: VerificationState;
+  expectedContribution?: string | null;
+  confidence?: number | null;
+  constraintKeys?: string[];
+}
+
 // ── Universal Decision Engine ────────────────────────────────────────────────
 
 /** The single authoritative destination for the next step. */
@@ -403,6 +553,9 @@ export interface DecisionInput {
   operatingProfileVersion: string | null;
   learningVersionIds: string[];
   supersedes?: string | null;
+  /** Descriptive objective linkage, RESOLVED before entry. The engine records it
+   *  but NEVER routes on it, queries objectives, or becomes goal-seeking. */
+  objectiveContext?: ObjectiveContext | null;
   now: number;
 }
 
@@ -500,6 +653,9 @@ export interface DecisionPackage {
     timeoutAt: string | null;
     objectiveId?: string | null;
   };
+
+  /** Which objectives this decision relates to (descriptive; never routed on). */
+  objectiveContext: ObjectiveContext | null;
 
   audit: {
     inputHash: string;

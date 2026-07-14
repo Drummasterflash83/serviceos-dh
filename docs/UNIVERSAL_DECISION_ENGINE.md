@@ -146,6 +146,10 @@ they never re-decide. Its shape is defined in
 - `versions` — engine, profile, policy, learning, domain-pack versions.
 - `evidence` — interaction/entity/object ids + an `evidenceHash` (no raw content).
 - `outcomeContract` — how success will be measured (§8).
+- `objectiveContext` — which business objectives this decision relates to,
+  **resolved before entry** and carried verbatim. It is descriptive only: the
+  engine never queries objectives, never routes on it, and never becomes
+  goal-seeking. See [UNIVERSAL_OBJECTIVES_ENGINE.md](UNIVERSAL_OBJECTIVES_ENGINE.md).
 - `audit` — `inputHash`, `outputHash`, `evaluatedAt`, `correlationId`.
 
 It carries **no raw email bodies, transcripts, tokens or secrets** — only

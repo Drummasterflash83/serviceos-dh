@@ -19,12 +19,16 @@ CORE=(
   supabase/functions/_shared/intelligence/authority.ts
   supabase/functions/_shared/intelligence/decision.ts
   supabase/functions/_shared/intelligence/modes.ts
+  supabase/functions/_shared/intelligence/objectives.ts
 )
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
 echo "G1 — no hard-coded tenant/industry/domain in the core engine:"
-BANNED='serviceos|productos|hvac|electrical|plumbing|00000000-0000-0000-0000-|tenant *[=!]=|tenantId *[=!]=|industry *[=!]='
+# Bans hardcoded tenant/industry BRANCHING (compared to a string LITERAL) and any
+# hardcoded tenant uuid — but allows variable-to-variable comparisons such as a
+# legitimate same-tenant security guard (obj.tenantId !== tenantId).
+BANNED="serviceos|productos|hvac|electrical|plumbing|00000000-0000-0000-0000-|tenant *[=!]=+ *[\"']|tenantId *[=!]=+ *[\"']|industry *[=!]=+ *[\"']"
 if grep -nEi "$BANNED" "${CORE[@]}" ; then
   note FAIL "core engine contains a hard-coded tenant/industry/domain or equality branch"; fail=1
 else
@@ -47,7 +51,7 @@ else
 fi
 
 echo "G4 — pure engine determinism self-tests:"
-for t in verify action_loop.verify decision.verify modes.verify ; do
+for t in verify action_loop.verify decision.verify modes.verify objectives.verify ; do
   if node "supabase/functions/_shared/intelligence/$t.ts" >/tmp/uif_$t.log 2>&1 ; then
     note PASS "$t.ts — all checks passed"
   else

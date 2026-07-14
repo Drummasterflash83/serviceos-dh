@@ -13,8 +13,10 @@ import { resolveEffectiveProfile } from "../intelligence/profile.ts";
 import { resolveAuthorityContext } from "../intelligence/authority.ts";
 import { evaluateDecision } from "../intelligence/decision.ts";
 import { resolveOperationalMode } from "../intelligence/modes.ts";
+import { resolveObjectiveContext, verifyObjectiveLinks } from "../intelligence/objectives.ts";
 import { automationIntentFor } from "../intelligence/action.ts";
 import type {
+  CandidateObjectiveLink,
   DecisionInput,
   DecisionPackage,
   IntelligenceObject,
@@ -153,6 +155,30 @@ export async function handleIntelligenceObserve(
   // 3) the ONE decision — pure, deterministic (caller supplies ids/timestamps).
   //    Authority is normalised to a domain-neutral context BEFORE the engine runs.
   const objectForDecision = { ...observation, id: observationId };
+
+  // Objective context: VERIFY caller-supplied candidate links against the tenant's
+  // objectives (cross-tenant/unknown ⇒ rejected or unverified), then resolve to
+  // descriptive context. Missing linkage never blocks routine work.
+  let objectiveContext = null;
+  const candidateLinks = Array.isArray(draft.attributes?.["objective_links"])
+    ? (draft.attributes["objective_links"] as CandidateObjectiveLink[])
+    : [];
+  if (candidateLinks.length > 0) {
+    const { data: objRows } = await db
+      .from("objectives")
+      .select("id, tenant_id, status")
+      .in(
+        "id",
+        candidateLinks.map((c) => c.objectiveId),
+      );
+    const known = ((objRows ?? []) as { id: string; tenant_id: string; status: string }[]).map(
+      (o) => ({ id: o.id, tenantId: o.tenant_id, status: o.status }),
+    );
+    objectiveContext = resolveObjectiveContext(
+      verifyObjectiveLinks(candidateLinks, known, tenantId),
+    );
+  }
+
   const input: DecisionInput = {
     decisionId: crypto.randomUUID(),
     correlationId: crypto.randomUUID(),
@@ -161,6 +187,7 @@ export async function handleIntelligenceObserve(
     object: objectForDecision,
     profile,
     authority: resolveAuthorityContext(objectForDecision, profile),
+    objectiveContext, // resolved + verified above; descriptive only
     policies: (policyRows ?? []) as Policy[],
     domainPackKeys: [draft.domain],
     domainPackVersions: [],

@@ -443,6 +443,14 @@ data-driven; the mode lives in the Tenant Operating Profile and defaults to
 discovery; and promotion is recommended, never automatic. See §2b of the Decision
 Engine doc.
 
+Above all of this sits the **Objectives & Outcomes Engine** — the strategic layer
+that asks *what is the business trying to achieve, and did our decisions move it
+closer?* It adds dedicated (versioned) objective and measurement tables, a
+universal link table, pure Objective-Health and Contribution evaluators, and a
+descriptive `objectiveContext` on the DecisionPackage. It never executes, routes or
+decides, and objective context can never bypass authority, risk, policy or
+Operational Mode. See [UNIVERSAL_OBJECTIVES_ENGINE.md](UNIVERSAL_OBJECTIVES_ENGINE.md).
+
 ---
 
 ## 7. Learning Model (Part 8)
