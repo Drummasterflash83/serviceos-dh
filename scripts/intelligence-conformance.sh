@@ -18,6 +18,7 @@ CORE=(
   supabase/functions/_shared/intelligence/reason_codes.ts
   supabase/functions/_shared/intelligence/authority.ts
   supabase/functions/_shared/intelligence/decision.ts
+  supabase/functions/_shared/intelligence/modes.ts
 )
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
@@ -46,7 +47,7 @@ else
 fi
 
 echo "G4 — pure engine determinism self-tests:"
-for t in verify action_loop.verify decision.verify ; do
+for t in verify action_loop.verify decision.verify modes.verify ; do
   if node "supabase/functions/_shared/intelligence/$t.ts" >/tmp/uif_$t.log 2>&1 ; then
     note PASS "$t.ts — all checks passed"
   else

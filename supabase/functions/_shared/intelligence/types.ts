@@ -250,6 +250,60 @@ export interface Improvement {
   rationale: string;
 }
 
+// ── Operational Modes ────────────────────────────────────────────────────────
+// The Decision Engine decides WHAT should happen. Operational Modes decide HOW
+// MUCH AUTONOMY the platform currently has for this tenant — i.e. what is ALLOWED
+// to happen. Modes only CONSTRAIN execution; they never change decision logic.
+
+export type OperationalMode =
+  "discovery" | "recommendation" | "assisted" | "trusted" | "optimisation";
+
+/** Data-driven behaviour of a mode. Comes from configuration, never hardcoded. */
+export interface ModeBehaviour {
+  ordinal: number; // progression order (discovery=0 … optimisation=4)
+  observe_only: boolean; // nothing proceeds beyond observation (discovery)
+  allows_execution: boolean; // may anything execute automatically at all
+  requires_review: boolean; // everything routes to OpenFolk review (recommendation)
+  max_risk: RiskLevel; // ceiling for auto-execution
+  require_reversible: boolean; // only fully_reversible may auto-execute (assisted)
+  require_policy_authorised: boolean; // only policy-authorised decisions may execute
+  optimisation: boolean; // continuous-optimisation behaviours active
+}
+
+/** How much autonomy the platform currently has for THIS decision, for this
+ *  tenant. Produced after the DecisionPackage, before handler execution. */
+export interface OperationalDecision {
+  mode: string;
+  allowed: boolean; // may this decision proceed beyond observation at all
+  can_execute: boolean; // may it execute automatically now
+  requires_openfolk: boolean;
+  requires_customer: boolean;
+  requires_tenant: boolean;
+  max_risk: RiskLevel;
+  optimisation: boolean;
+  notes: string;
+  blocked_reason: string | null; // stable code when execution is blocked/withheld
+}
+
+export interface MaturityMetrics {
+  accuracy: number;
+  false_positives: number;
+  false_negatives: number;
+  manual_overrides: number;
+  automation_success: number;
+  customer_confidence: number;
+  openfolk_confidence: number;
+}
+
+/** A RECOMMENDATION only — the engine never auto-promotes a tenant's mode. */
+export interface MaturityRecommendation {
+  current_mode: string;
+  recommended_mode: string;
+  ready: boolean;
+  rationale: string[];
+  unmet: string[];
+}
+
 // ── Universal Decision Engine ────────────────────────────────────────────────
 
 /** The single authoritative destination for the next step. */

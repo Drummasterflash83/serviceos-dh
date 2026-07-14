@@ -12,11 +12,13 @@ import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 import { resolveEffectiveProfile } from "../intelligence/profile.ts";
 import { resolveAuthorityContext } from "../intelligence/authority.ts";
 import { evaluateDecision } from "../intelligence/decision.ts";
+import { resolveOperationalMode } from "../intelligence/modes.ts";
 import { automationIntentFor } from "../intelligence/action.ts";
 import type {
   DecisionInput,
   DecisionPackage,
   IntelligenceObject,
+  OperationalDecision,
   OwnershipAssignment,
   Policy,
   ProfileEntry,
@@ -169,6 +171,11 @@ export async function handleIntelligenceObserve(
   };
   const pkg = evaluateDecision(input);
 
+  // 3a) Operational Modes — how much autonomy the platform has for this tenant.
+  //     Runs AFTER the decision, BEFORE execution. It only CONSTRAINS execution;
+  //     it never changes the decision.
+  const opDecision = resolveOperationalMode(pkg, profile);
+
   // 4) reflect the decision on the observation + persist the Decision Package
   const policyVersion = pkg.versions.policyVersionIds[0] ?? null;
   await db
@@ -196,9 +203,11 @@ export async function handleIntelligenceObserve(
       decision: pkg.decision,
       reason_codes: pkg.rationale.reasonCodes,
       next_owner: pkg.nextDecisionOwner,
+      operational: opDecision,
     },
     input_hash: pkg.audit.inputHash,
     decision: pkg.decision,
+    operational_mode: opDecision.mode,
     next_owner_kind: pkg.nextDecisionOwner.kind,
     engine_version: pkg.versions.engineVersion,
     operating_profile_version: pkg.versions.operatingProfileVersion,
@@ -232,8 +241,8 @@ export async function handleIntelligenceObserve(
     },
   );
 
-  // 5) EXECUTE the single authoritative destination
-  const actionIds = await execute(db, tenantId, observationId, policyVersion, pkg);
+  // 5) EXECUTE — but only as far as the operational mode allows.
+  const actionIds = await execute(db, tenantId, observationId, policyVersion, pkg, opDecision);
 
   return {
     success: true,
@@ -242,24 +251,40 @@ export async function handleIntelligenceObserve(
       observation_id: observationId,
       decision_id: pkg.id,
       decision: pkg.decision,
+      operational_mode: opDecision.mode,
+      can_execute: opDecision.can_execute,
       action_ids: actionIds,
     },
   };
 }
 
-// ── execution: the handler acts on the decision; it never re-decides ─────────
+// ── execution: the handler acts on the decision within the mode's autonomy.
+// It never re-decides (that is the Decision Engine) and never re-scopes autonomy
+// (that is the Modes engine); it simply carries out what both have permitted.
 async function execute(
   db: Db,
   tenantId: string,
   observationId: string,
   policyVersion: string | null,
   pkg: DecisionPackage,
+  op: OperationalDecision,
 ): Promise<string[]> {
-  const d = pkg.decision;
-  if (
-    (d === "AUTOMATION_AUTHORISED" || d === "AUTOMATION_REQUIRES_APPROVAL") &&
-    pkg.proposedAction
-  ) {
+  // Discovery / observe-only: record the observation as learning; nothing else.
+  if (op.blocked_reason === "mode_observe_only") {
+    await writeHistory(
+      db,
+      tenantId,
+      observationId,
+      "monitoring",
+      "monitoring",
+      pkg.id,
+      `Observe-only mode (${op.mode}) — no action taken`,
+    );
+    return [];
+  }
+
+  // Execution permitted by BOTH the decision and the mode.
+  if (op.can_execute && pkg.proposedAction) {
     const owner = pkg.ownership.responsible ?? pkg.ownership.accountable ?? null;
     const draft = {
       domain: pkg.domainPackKeys[0],
@@ -283,19 +308,27 @@ async function execute(
     return await materialiseActions(db, tenantId, observationId, pkg.id, policyVersion, [draft]);
   }
 
-  const route = REVIEW_ROUTE[d];
+  // Not executed — route to the appropriate human queue. Most-authoritative gate
+  // first; both the mode's requirements and the decision's own routing feed this.
+  const route = op.requires_customer
+    ? "customer"
+    : op.requires_tenant
+      ? "tenant_senior"
+      : op.requires_openfolk
+        ? "openfolk"
+        : (REVIEW_ROUTE[pkg.decision] ?? null);
   if (route) {
     await db.from("review_tasks").insert({
       tenant_id: tenantId,
       object_id: observationId,
       route,
-      reason: pkg.rationale.summary,
+      reason: op.blocked_reason ?? pkg.rationale.summary,
       decision_id: pkg.id,
     });
     return [];
   }
 
-  if (d === "WAIT_FOR_EVENT") {
+  if (pkg.decision === "WAIT_FOR_EVENT") {
     await db.from("intelligence_objects").update({ status: "waiting" }).eq("id", observationId);
     await writeHistory(
       db,
@@ -306,7 +339,7 @@ async function execute(
       pkg.id,
       "Waiting on dependency",
     );
-  } else if (d === "REJECT") {
+  } else if (pkg.decision === "REJECT") {
     await db.from("intelligence_objects").update({ status: "cancelled" }).eq("id", observationId);
     await writeHistory(
       db,

@@ -79,6 +79,54 @@ fires only on a genuine omission (notably `authority.delegated_limit`, which is
 deliberately left per-tenant — an unconfigured spend fails safe to review rather
 than auto-approving).
 
+## 2b. Operational Modes — the autonomy gate
+
+The Decision Engine decides **what should happen**. It does *not* decide **what is
+allowed to happen** — that is a separate responsibility, and the two are never
+merged. Between the DecisionPackage and handler execution sits a second pure
+engine, the **Operational Modes Engine**
+([modes.ts](../supabase/functions/_shared/intelligence/modes.ts)):
+
+`resolveOperationalMode(pkg: DecisionPackage, profile): OperationalDecision`
+
+It answers one question — *how much autonomy does the platform currently have for
+this tenant?* — and it **only constrains execution**. It never changes the
+decision, and it can only make execution *less* permissive; a human gate the
+Decision Engine required (customer approval, tenant review) always stands.
+
+There are five modes, and they are the mechanical expression of the five
+customer-maturity stages in
+[foundation/OPENFOLK_CONTINUOUS_OPTIMISATION.md](foundation/OPENFOLK_CONTINUOUS_OPTIMISATION.md):
+
+| Mode | Autonomy |
+|---|---|
+| **discovery** | Observe only — nothing proceeds beyond learning. |
+| **recommendation** | Recommendations produced; nothing executes; all routes to OpenFolk. |
+| **assisted** | Auto-executes only low-risk, fully-reversible, policy-authorised work. |
+| **trusted** | Executes whatever the Decision Engine authorised. |
+| **optimisation** | Trusted autonomy, plus the continuous-optimisation flag. |
+
+Key properties:
+
+- **Data-driven.** Mode behaviour (`observe_only`, `allows_execution`, `max_risk`,
+  `require_reversible`, …) is configuration read from the effective profile, never
+  hardcoded. Adding or retuning a mode is a config change.
+- **The mode lives in the Tenant Operating Profile** (`operational_mode.current`),
+  not on the tenants table. Every new tenant inherits the platform default —
+  **discovery** — until explicitly promoted.
+- **Fail-safe.** Absent or malformed mode config resolves to observe-only. Missing
+  autonomy config never becomes permissive.
+- **Output** — `OperationalDecision { mode, allowed, can_execute,
+  requires_openfolk/customer/tenant, max_risk, optimisation, notes,
+  blocked_reason }`. Handlers execute only when `can_execute` is true; otherwise
+  they route to the required queue. Persisted to `decision_log.operational_mode`.
+- **Promotion is recommended, never automatic.** A separate maturity evaluator
+  turns accuracy / false-positives / overrides / automation-success / confidence
+  metrics into a *recommended* next mode against data-driven thresholds. An
+  OpenFolk operator decides; the engine never promotes a tenant on its own.
+- **The Automation Engine is unchanged.** Modes decide only *whether* automation
+  is permitted; the Automation Engine still claims and executes the intent.
+
 ## 3. The Decision Package
 
 The engine returns one **immutable** (deep-frozen), serialisable, complete

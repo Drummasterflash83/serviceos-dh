@@ -435,6 +435,14 @@ audit table); the review queue gains the `customer`/`escalate` routes. Handlers
 persist and execute; they no longer decide. Full detail:
 [UNIVERSAL_DECISION_ENGINE.md](UNIVERSAL_DECISION_ENGINE.md).
 
+Between the DecisionPackage and execution sits a second pure engine — the
+**Operational Modes Engine** — which decides *how much autonomy* the platform
+currently has for a tenant (discovery → recommendation → assisted → trusted →
+optimisation). It only constrains execution, never the decision; mode behaviour is
+data-driven; the mode lives in the Tenant Operating Profile and defaults to
+discovery; and promotion is recommended, never automatic. See §2b of the Decision
+Engine doc.
+
 ---
 
 ## 7. Learning Model (Part 8)
