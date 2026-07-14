@@ -450,6 +450,11 @@ universal link table, pure Objective-Health and Contribution evaluators, and a
 descriptive `objectiveContext` on the DecisionPackage. It never executes, routes or
 decides, and objective context can never bypass authority, risk, policy or
 Operational Mode. See [UNIVERSAL_OBJECTIVES_ENGINE.md](UNIVERSAL_OBJECTIVES_ENGINE.md).
+Its first live feedback loop, the **Objective Evaluation Worker** (`objective.evaluate`
+in `WORKER_HANDLERS`), turns measurements into immutable `objective_health` snapshots
+and publishes factual `objective.*` events — the same event/handler pattern as every
+other reactor, no engine change. See
+[OBJECTIVE_EVALUATION_WORKER.md](OBJECTIVE_EVALUATION_WORKER.md).
 
 ---
 

@@ -128,6 +128,14 @@ measurements. **Missing or stale data never reads as healthy** (it returns
 `unknown` and reports the stale metrics). It is time-aware (progress vs elapsed
 window), direction-aware, dependency-aware and constraint-aware.
 
+**The Objective Evaluation Worker operationalises this evaluator** — see
+[OBJECTIVE_EVALUATION_WORKER.md](OBJECTIVE_EVALUATION_WORKER.md). It appends immutable
+`objective_health` snapshots (idempotent on a deterministic input hash), publishes
+factual `objective.*` events, and propagates to parent objectives — without inventing a
+second health algorithm, computing health in SQL, or creating any Action. It is the
+realisation of §19's "scheduled health-evaluation worker projecting `objective_health`
+snapshots".
+
 ## 10. Contribution — honest attribution
 
 `evaluateContribution(expected, outcomes, measurements) → ContributionAssessment`

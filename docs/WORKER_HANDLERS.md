@@ -68,8 +68,22 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "graph.sync": handleBusinessGraphSync,
   "customer_card.sync": handleCustomerCardSync,
   "recommendation.sync": handleRecommendationSync,
+  "email.gmail_sync": handleEmailGmailSync,
+  "email.workspace_sync": handleEmailWorkspaceSync,
+  "email.workspace_backfill": handleEmailWorkspaceBackfill,
+  "email.mailbox_discovery": handleEmailMailboxDiscovery,
+  "intelligence.evaluate": handleIntelligenceEvaluate,
+  "intelligence.observe": handleIntelligenceObserve,
+  "intelligence.review_resolve": handleIntelligenceReviewResolve,
+  "objective.evaluate": handleObjectiveEvaluate,
 };
 ```
+
+`objective.evaluate` is the **Objective Evaluation Worker** — it turns measurements
+into immutable `objective_health` snapshots via the pure evaluator. Enqueued by
+[`enqueueObjectiveEvaluation`](../supabase/functions/_shared/objective_evaluation_enqueue.ts)
+(app-owned) or the `objective-evaluation-scheduled-sync` repair scanner. See
+[OBJECTIVE_EVALUATION_WORKER.md](OBJECTIVE_EVALUATION_WORKER.md).
 
 The worker calls `getWorkerHandler(job_type)` and runs it **in-process**. There is
 no internal-HTTP dispatch for the six supported types; an unregistered job_type is
