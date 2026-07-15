@@ -58,13 +58,16 @@ export interface AutomationConnectorAdapter {
 
 import { controlledTestAdapter } from "./controlled_test.ts";
 import { internalNoteAdapter } from "./internal_note.ts";
+import { emailReplyDraftAdapter } from "./email_reply_draft.ts";
 
 // v1 registry — SAFE, side-effect-free internal adapters only. No adapter here
 // sends email, spends money, schedules engineers, alters stock, or touches any real
-// external system. Adding a real connector is an explicit, reviewed change.
+// external system (email.reply_draft PREPARES a reply artifact, it never transmits).
+// Adding a real transmitting connector is an explicit, reviewed change.
 export const AUTOMATION_ADAPTERS: AutomationConnectorAdapter[] = [
   controlledTestAdapter,
   internalNoteAdapter,
+  emailReplyDraftAdapter,
 ];
 
 /** Resolve the adapter that supports an intent type, or null if none (unsupported

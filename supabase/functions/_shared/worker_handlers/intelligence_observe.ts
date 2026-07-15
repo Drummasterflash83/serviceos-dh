@@ -554,7 +554,15 @@ export async function materialiseActions(
         (typeof a.description === "string" && a.description) ||
         (typeof a.subject === "string" && a.subject) ||
         "Proposed internal note";
-      const parameters = internal ? { ...intent.parameters, note: noteText } : intent.parameters;
+      // The source interaction lets a capability (e.g. email.reply_draft) address the
+      // reply server-side. Injected generically — the intelligence layer stays
+      // capability-agnostic; each adapter reads only what it needs.
+      const sourceInteraction = Array.isArray(a.source_interactions)
+        ? ((a.source_interactions[0] as string | undefined) ?? null)
+        : null;
+      const parameters = internal
+        ? { ...intent.parameters, note: noteText, source_interaction: sourceInteraction }
+        : intent.parameters;
       await db.from("automation_intents").insert({
         tenant_id: tenantId,
         action_object_id: actionId,
