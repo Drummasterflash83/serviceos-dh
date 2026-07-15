@@ -8,7 +8,7 @@
 // arbitrary-SQL surface — see docs/REMOTE_VERIFICATION_HARNESS.md.
 
 import type { SupabaseClient } from "@supabase/supabase-js"; // type-only — erased at runtime
-import type { VerifyEnv } from "./lib.ts";
+import { workerRequest, type VerifyEnv, type WorkerInvocation } from "./lib.ts";
 
 export interface RejectionProbe {
   rejected: boolean;
@@ -19,8 +19,12 @@ export interface RejectionProbe {
 export interface VerifyClient {
   db: SupabaseClient;
   env: VerifyEnv;
-  /** Invoke the deployed platform-worker to process queued jobs now (bounded). */
-  invokeWorker(jobTypes?: string[]): Promise<{ ok: boolean; status: number }>;
+  /** Invoke the deployed platform-worker to process queued jobs now (bounded).
+   *  Captures the HTTP status and a sanitized, truncated response body. A non-2xx
+   *  is an infrastructure failure. Job state is NEVER inferred from this response —
+   *  the DB job row remains the source of truth. The WORKER_SECRET is sent only as
+   *  the `x-schedule-secret` header value and is never returned or logged. */
+  invokeWorker(jobTypes?: string[]): Promise<WorkerInvocation>;
   /** Run a mutation expected to be REJECTED by a DB guard (append-only / immutable /
    *  illegal transition). Returns whether it was rejected + the pg error code. */
   expectRejected(op: () => PromiseLike<{ error: unknown }>): Promise<RejectionProbe>;
@@ -44,18 +48,23 @@ export async function makeClient(env: VerifyEnv): Promise<VerifyClient> {
     db,
     env,
     async invokeWorker(jobTypes) {
-      if (!env.workerSecret) {
-        throw new Error("WORKER_SECRET is required to invoke the platform-worker");
-      }
-      const res = await fetch(`${env.supabaseUrl}/functions/v1/platform-worker`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-schedule-secret": env.workerSecret,
-        },
-        body: JSON.stringify({ batch_size: 5, ...(jobTypes ? { job_types: jobTypes } : {}) }),
+      // Build the exact deployed contract (POST + x-schedule-secret). Throws if the
+      // secret is missing — the harness cannot invoke the worker without it.
+      const spec = workerRequest(env, jobTypes ?? null);
+      const res = await fetch(spec.url, {
+        method: spec.method,
+        headers: spec.headers,
+        body: spec.body,
       });
-      return { ok: res.ok, status: res.status };
+      // Capture a bounded snippet of the body for diagnostics only. It is redacted
+      // at the reporting layer and is NEVER used to infer job state.
+      let body: string | null = null;
+      try {
+        body = (await res.text()).slice(0, 500);
+      } catch {
+        body = null;
+      }
+      return { ok: res.ok, status: res.status, body };
     },
     async expectRejected(op) {
       const { error } = await op();

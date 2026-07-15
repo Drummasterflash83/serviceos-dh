@@ -10,11 +10,20 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
+  LEGACY_STUCK_RUN,
   VerificationRun,
+  describeJobResult,
+  discoveryBlocked,
   fixtureTag,
-  pollJob,
+  handlerOutcome,
+  jobStatusLabel,
+  planRunJobCleanup,
+  processJobStage,
   runGuarded,
-  type PolledJob,
+  stageJobKey,
+  type JobTerminalResult,
+  type RunJobRow,
+  type StageDeps,
   type VerifyEnv,
 } from "./lib.ts";
 import type { VerifyClient } from "./client.ts";
@@ -39,40 +48,66 @@ export interface Suite {
 const nowIso = () => new Date().toISOString();
 const inHours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
 
-/** Enqueue a platform job, invoke the worker to process it now, and poll to terminal. */
-async function enqueueAndProcess(
+/**
+ * Enqueue ONE job for this stage's deterministic key, then drive it to terminal by
+ * repeatedly invoking the worker and polling THAT job id (never the key). An active
+ * duplicate is REUSED (polled), never re-inserted; a non-2xx worker response is an
+ * infrastructure failure; a job that never finishes is reported with full DB + worker
+ * diagnostics (never `status=undefined`). The DB job row is the source of truth.
+ */
+async function processStage(
   c: VerifyClient,
   run: VerificationRun,
-  args: { jobType: string; jobKey: string; tenantId: string; payload: Record<string, unknown> },
-): Promise<PolledJob | null> {
-  const { data, error } = await c.db
-    .from("platform_jobs")
-    .insert({
-      tenant_id: args.tenantId,
-      connector_id: "openfolk-core",
-      module_id: "verification",
-      job_type: args.jobType,
-      job_key: args.jobKey,
-      status: "queued",
-      priority: 100,
-      max_attempts: 3,
-      available_at: nowIso(),
-      payload: args.payload,
-    })
-    .select("id")
-    .single();
-  if (error || !data) {
-    run.error(`enqueue ${args.jobType} failed: ${error?.message ?? "no id"}`);
-    return null;
-  }
-  run.fixture("platform_job", data.id as string, "platform_jobs");
-  await c.invokeWorker([args.jobType]);
-  const poll = await pollJob(
-    async () => {
+  args: {
+    stage: string;
+    jobType: string;
+    jobKey: string;
+    tenantId: string;
+    payload: Record<string, unknown>;
+  },
+): Promise<JobTerminalResult> {
+  const deps: StageDeps = {
+    enqueue: async (jobKey) => {
+      const { data, error } = await c.db
+        .from("platform_jobs")
+        .insert({
+          tenant_id: args.tenantId,
+          connector_id: "openfolk-core",
+          module_id: "verification",
+          job_type: args.jobType,
+          job_key: jobKey,
+          status: "queued",
+          priority: 100,
+          max_attempts: 3,
+          available_at: nowIso(),
+          payload: args.payload,
+        })
+        .select("id")
+        .single();
+      if (!error && data) return { id: data.id as string, duplicate: false, error: null };
+      // Active-duplicate on platform_jobs_active_job_key_uk → REUSE the existing
+      // active job (retrieve + poll it); do NOT insert a second row for the same key.
+      if (error && (error as { code?: string }).code === "23505") {
+        const { data: existing } = await c.db
+          .from("platform_jobs")
+          .select("id")
+          .eq("tenant_id", args.tenantId)
+          .eq("job_key", jobKey)
+          .in("status", ["queued", "running", "retrying"])
+          .limit(1)
+          .maybeSingle();
+        return { id: (existing?.id as string | undefined) ?? null, duplicate: true, error: null };
+      }
+      return { id: null, duplicate: false, error: error?.message ?? "enqueue failed" };
+    },
+    invokeWorker: () => c.invokeWorker([args.jobType]),
+    readJob: async (id) => {
       const { data: j } = await c.db
         .from("platform_jobs")
-        .select("status, error_code, last_error, result, attempt_count")
-        .eq("id", data.id)
+        .select(
+          "status, error_code, last_error, result, attempt_count, claimed_by, lease_expires_at",
+        )
+        .eq("id", id)
         .maybeSingle();
       return j
         ? {
@@ -81,18 +116,133 @@ async function enqueueAndProcess(
             last_error: j.last_error as string | null,
             result: j.result,
             attempt_count: j.attempt_count as number,
+            claimed_by: j.claimed_by as string | null,
+            lease_expires_at: j.lease_expires_at as string | null,
           }
         : null;
     },
-    {
-      timeoutMs: 45_000,
-      intervalMs: 1_500,
-      now: () => Date.now(),
-      sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
-    },
-  );
-  if (poll.timedOut) run.error(`job ${args.jobType} did not finish within timeout`);
-  return poll.job;
+    now: () => Date.now(),
+    sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+  };
+
+  const result = await processJobStage(deps, {
+    jobKey: args.jobKey,
+    timeoutMs: 45_000,
+    intervalMs: 1_500,
+  });
+  if (result.jobId) run.fixture("platform_job", result.jobId, "platform_jobs");
+  if (result.classification === "infrastructure_error") {
+    run.error(
+      `stage ${args.stage}: worker/enqueue infrastructure failure — ${describeJobResult(result)}`,
+    );
+  } else if (result.classification === "timed_out") {
+    run.error(
+      `stage ${args.stage}: job did not reach a terminal state — ${describeJobResult(result)}`,
+    );
+  }
+  return result;
+}
+
+/**
+ * Cancel-then-delete every platform job owned by THIS run (exact `verify:<run>:` key
+ * prefix), scoped to the tenant. Active jobs are cancelled through the lifecycle
+ * first so no stuck active job lingers (the failure mode of verify-20260715-a78555ae);
+ * unrelated jobs are never touched. Reports each disposition.
+ */
+async function cleanupRunJobs(
+  c: VerifyClient,
+  run: VerificationRun,
+  tenantId: string,
+): Promise<void> {
+  const runId = run.report.runId;
+  const { data: rows } = await c.db
+    .from("platform_jobs")
+    .select("id, job_key, status")
+    .eq("tenant_id", tenantId)
+    .like("job_key", `verify:${runId}:%`);
+  const plan = planRunJobCleanup((rows ?? []) as RunJobRow[], runId);
+  const cancelled = new Set(plan.cancel);
+  for (const id of plan.cancel) {
+    try {
+      await c.db
+        .from("platform_jobs")
+        .update({ status: "cancelled", cancelled_at: nowIso(), lease_expires_at: null })
+        .eq("id", id)
+        .eq("tenant_id", tenantId);
+    } catch {
+      // best-effort — the delete below still removes the row
+    }
+  }
+  for (const id of plan.delete) {
+    try {
+      const { error } = await c.db
+        .from("platform_jobs")
+        .delete()
+        .eq("id", id)
+        .eq("tenant_id", tenantId);
+      if (error) {
+        run.dispose("platform_job", id, "cleanup_failed", (error as { message?: string }).message);
+        run.error(`cleanup platform_job:${id} failed`);
+      } else {
+        run.dispose(
+          "platform_job",
+          id,
+          "deleted",
+          cancelled.has(id) ? "cancelled active job then deleted" : undefined,
+        );
+      }
+    } catch (e) {
+      run.dispose("platform_job", id, "cleanup_failed", e instanceof Error ? e.message : String(e));
+      run.error(`cleanup platform_job:${id} threw`);
+    }
+  }
+}
+
+// One-time remediation for the failed live run verify-20260715-a78555ae, which left
+// its automation.execute job under the OLD (pre-per-stage-key) scheme. Matched by the
+// EXACT tenant + job_key, so it can never touch any unrelated job; a no-op once the
+// job is gone. Safe to remove after the incident is confirmed cleared.
+const LEGACY_STUCK_JOB = {
+  tenantId: "00000000-0000-0000-0000-000000000001",
+  jobKey:
+    "automation.execute:00000000-0000-0000-0000-000000000001:22d113a1-3f41-4099-87ac-d1d701c93d66",
+};
+
+async function cleanupLegacyStuckJob(c: VerifyClient, run: VerificationRun): Promise<void> {
+  const { data: rows } = await c.db
+    .from("platform_jobs")
+    .select("id, status")
+    .eq("tenant_id", LEGACY_STUCK_JOB.tenantId)
+    .eq("job_key", LEGACY_STUCK_JOB.jobKey)
+    .in("status", ["queued", "running", "retrying"]);
+  for (const j of rows ?? []) {
+    const id = j.id as string;
+    try {
+      await c.db
+        .from("platform_jobs")
+        .update({ status: "cancelled", cancelled_at: nowIso(), lease_expires_at: null })
+        .eq("id", id)
+        .eq("tenant_id", LEGACY_STUCK_JOB.tenantId);
+      const { error } = await c.db
+        .from("platform_jobs")
+        .delete()
+        .eq("id", id)
+        .eq("tenant_id", LEGACY_STUCK_JOB.tenantId);
+      run.dispose(
+        "legacy_platform_job",
+        id,
+        error ? "cleanup_failed" : "deleted",
+        error ? "delete failed" : `${LEGACY_STUCK_RUN} stuck job cancelled + deleted`,
+      );
+    } catch (e) {
+      run.dispose(
+        "legacy_platform_job",
+        id,
+        "cleanup_failed",
+        e instanceof Error ? e.message : String(e),
+      );
+    }
+  }
 }
 
 async function count(
@@ -236,6 +386,10 @@ export const automationSuite: Suite = {
     const CONN = "verify-controlled";
     const CAP = "internal.record_execution";
 
+    // ── PREFLIGHT: one-time remediation of the verify-20260715-a78555ae stuck job.
+    // Narrowly scoped (exact tenant + job_key); a no-op once cleared.
+    await cleanupLegacyStuckJob(c, run);
+
     // ── CAPTURE exact pre-run state BEFORE any mutation (for restoration) ──────
     const capMode =
       (
@@ -275,7 +429,6 @@ export const automationSuite: Suite = {
       modeCreated: !capMode,
       connectorCreated: !capConnector,
       capabilityCreated: !capCapability,
-      jobKey: null as string | null,
     };
 
     const guarded = await runGuarded(
@@ -395,12 +548,17 @@ export const automationSuite: Suite = {
         if (iErr || !intent) throw new Error(`intent fixture failed: ${iErr?.message}`);
         st.intentId = intent.id as string;
         run.fixture("automation_intent", st.intentId, "automation_intents");
-        st.jobKey = `automation.execute:${T}:${st.intentId}`;
 
-        // Discovery blocks (tenant is at its default/current mode, expected discovery).
-        const blockedJob = await enqueueAndProcess(c, run, {
+        // ── DISCOVERY: process the intent while the tenant is at its default mode.
+        // The proof is BEHAVIOURAL (persisted DB state), not the worker HTTP shape:
+        // the worker must have processed the job (so a real guard ran), the intent
+        // must remain pending, there must be zero attempts + zero outcomes, and a
+        // guard BLOCK record must exist (distinguishing a real block from a job that
+        // never ran).
+        const discovery = await processStage(c, run, {
+          stage: "discovery",
           jobType: "automation.execute",
-          jobKey: st.jobKey,
+          jobKey: stageJobKey(run.report.runId, "automation", "discovery"),
           tenantId: T,
           payload: {
             automation_intent_id: st.intentId,
@@ -409,15 +567,27 @@ export const automationSuite: Suite = {
           },
         });
         run.assert(
-          "Discovery mode blocks execution",
-          (blockedJob?.result as Record<string, unknown> | undefined)?.status === "blocked",
-          `status=${(blockedJob?.result as Record<string, unknown>)?.status}`,
+          "Discovery stage processed by worker",
+          discovery.classification === "succeeded",
+          jobStatusLabel(discovery),
         );
         const { data: afterBlock } = await c.db
           .from("automation_intents")
           .select("status")
           .eq("id", st.intentId)
           .maybeSingle();
+        const discAttempts = await count(c, "automation_execution_attempts", {
+          automation_intent_id: st.intentId,
+        });
+        const discOutcomes = await count(c, "outcomes", { automation_intent_id: st.intentId });
+        const { data: blockGuards } = await c.db
+          .from("automation_execution_guard_decisions")
+          .select("id, outcome")
+          .eq("automation_intent_id", st.intentId)
+          .eq("outcome", "BLOCKED");
+        const blockGuardCount = (blockGuards ?? []).length;
+        for (const g of blockGuards ?? [])
+          run.retain("guard_decision", g.id as string, "automation_execution_guard_decisions");
         run.assert(
           "intent stays pending under Discovery",
           afterBlock?.status === "pending",
@@ -425,9 +595,23 @@ export const automationSuite: Suite = {
         );
         run.assert(
           "no execution attempt created under Discovery",
-          (await count(c, "automation_execution_attempts", {
-            automation_intent_id: st.intentId,
-          })) === 0,
+          discAttempts === 0,
+          `got ${discAttempts}`,
+        );
+        run.assert(
+          "no operational outcome under Discovery",
+          discOutcomes === 0,
+          `got ${discOutcomes}`,
+        );
+        run.assert(
+          "Discovery mode blocks execution",
+          discoveryBlocked({
+            intentStatus: afterBlock?.status ?? null,
+            attempts: discAttempts,
+            outcomes: discOutcomes,
+            blockGuards: blockGuardCount,
+          }),
+          `pending=${afterBlock?.status === "pending"} attempts=${discAttempts} outcomes=${discOutcomes} blockGuards=${blockGuardCount}`,
         );
 
         // Temporary Trusted override via a dedicated verification config version.
@@ -472,10 +656,11 @@ export const automationSuite: Suite = {
         if (st.modeEntryId)
           run.fixture("operating_profile_entry", st.modeEntryId, "operating_profile_entries");
 
-        // Process under Trusted.
-        const okJob = await enqueueAndProcess(c, run, {
+        // Process under Trusted — a NEW stage, so a distinct deterministic job key.
+        const trusted = await processStage(c, run, {
+          stage: "trusted",
           jobType: "automation.execute",
-          jobKey: st.jobKey,
+          jobKey: stageJobKey(run.report.runId, "automation", "trusted"),
           tenantId: T,
           payload: {
             automation_intent_id: st.intentId,
@@ -485,8 +670,13 @@ export const automationSuite: Suite = {
         });
         run.assert(
           "execution allowed + succeeded under Trusted",
-          (okJob?.result as Record<string, unknown> | undefined)?.status === "succeeded",
-          `status=${(okJob?.result as Record<string, unknown>)?.status}`,
+          trusted.classification === "succeeded",
+          jobStatusLabel(trusted),
+        );
+        run.assert(
+          "engine reports intent succeeded (persisted job result)",
+          handlerOutcome(trusted).status === "succeeded",
+          `handler=${handlerOutcome(trusted).status ?? "?"} job=${jobStatusLabel(trusted)}`,
         );
 
         const { data: inflight } = await c.db
@@ -552,10 +742,12 @@ export const automationSuite: Suite = {
           .limit(1);
         run.assert("guard decision EXECUTION_ALLOWED recorded", (guard ?? []).length >= 1);
 
-        // Retry ⇒ already_completed, no duplicates.
-        const retryJob = await enqueueAndProcess(c, run, {
+        // Retry ⇒ already_completed, no duplicates. A genuinely NEW stage, so a
+        // distinct deterministic key (never a re-insert of an active key).
+        const retry = await processStage(c, run, {
+          stage: "idempotency-retry",
           jobType: "automation.execute",
-          jobKey: st.jobKey,
+          jobKey: stageJobKey(run.report.runId, "automation", "idempotency-retry"),
           tenantId: T,
           payload: {
             automation_intent_id: st.intentId,
@@ -563,11 +755,16 @@ export const automationSuite: Suite = {
             correlation_id: correlationId,
           },
         });
-        const rr = (retryJob?.result ?? {}) as Record<string, unknown>;
+        run.assert(
+          "retry job processed by worker",
+          retry.classification === "succeeded",
+          jobStatusLabel(retry),
+        );
+        const rr = handlerOutcome(retry);
         run.assert(
           "retry returns already_completed/idempotent",
           rr.status === "already_completed" || rr.idempotent === true,
-          `status=${rr.status}`,
+          `handler=${rr.status ?? "?"} job=${jobStatusLabel(retry)}`,
         );
         run.assert(
           "no duplicate succeeded attempt",
@@ -709,17 +906,10 @@ export const automationSuite: Suite = {
                 .eq("id", st.cvId as string),
             "deleted",
           );
-        if (st.jobKey)
-          await safe(
-            "platform_job",
-            st.jobKey,
-            () =>
-              c.db
-                .from("platform_jobs")
-                .delete()
-                .eq("job_key", st.jobKey as string),
-            "deleted",
-          );
+        // Run-scoped platform-job cleanup: cancel any still-active stage job, then
+        // delete every job owned by this run (exact `verify:<run>:` prefix). Never
+        // touches unrelated jobs.
+        await cleanupRunJobs(c, run, T);
 
         // 5) The intent has immutable attempts (FK cascade) → RETAIN, never delete.
         if (st.intentId)

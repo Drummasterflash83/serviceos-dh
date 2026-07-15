@@ -400,6 +400,8 @@ export interface PolledJob {
   last_error?: string | null;
   result?: unknown;
   attempt_count?: number;
+  claimed_by?: string | null;
+  lease_expires_at?: string | null;
 }
 
 export interface PollOptions {
@@ -449,6 +451,357 @@ export async function pollJob(
   }
   return { done: false, timedOut: true, job: last, ticks };
 }
+
+// ── Platform job lifecycle (harness view) ────────────────────────────────────
+//
+// The DB job row is the SOURCE OF TRUTH. The harness never infers job state from
+// the worker's HTTP response — it invokes the worker to make progress, then reads
+// platform_jobs. These helpers give the harness a controlled lifecycle so an
+// assertion can never print `status=undefined`.
+
+/** Queue statuses from which the worker can still make progress. */
+export function isActiveJobStatus(status: string | null | undefined): boolean {
+  return status === "queued" || status === "running" || status === "retrying";
+}
+
+/** Queue statuses the harness treats as terminal (no further progress). */
+export function isTerminalJobStatus(status: string | null | undefined): boolean {
+  return (
+    status === "succeeded" ||
+    status === "dead_letter" ||
+    status === "cancelled" ||
+    status === "failed"
+  );
+}
+
+/** The full, closed set of job classifications the harness can report. Never a
+ *  free-form/undefined value — every assertion label comes from here. */
+export type JobLifecycle =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "dead_letter"
+  | "cancelled"
+  | "timed_out"
+  | "infrastructure_error";
+
+/** The controlled terminal result of driving one job to completion (or timeout /
+ *  infrastructure failure). Carries the full last-known DB state for diagnostics. */
+export interface JobTerminalResult {
+  classification: JobLifecycle;
+  jobId: string | null;
+  jobKey: string;
+  reused: boolean;
+  dbStatus: string | null;
+  attemptCount: number | null;
+  claimedBy: string | null;
+  leaseExpiresAt: string | null;
+  lastError: string | null;
+  errorCode: string | null;
+  /** The persisted platform_jobs.result payload (handler outcome — source of truth). */
+  result: unknown;
+  workerHttpStatus: number | null;
+  workerBody: string | null;
+}
+
+/**
+ * Classify the outcome of driving a job. Precedence: a non-2xx worker invocation
+ * (or a job that could not be enqueued/read) is an INFRASTRUCTURE failure; a DB
+ * terminal status wins next; otherwise a timeout is `timed_out` and a still-active
+ * status is surfaced verbatim. Pure + total — the return is never undefined.
+ */
+export function classifyJob(
+  job: PolledJob | null,
+  timedOut: boolean,
+  workerFailed: boolean,
+): JobLifecycle {
+  if (workerFailed) return "infrastructure_error";
+  if (!job) return "infrastructure_error";
+  switch (job.status) {
+    case "succeeded":
+      return "succeeded";
+    case "dead_letter":
+      return "dead_letter";
+    case "cancelled":
+      return "cancelled";
+    case "failed":
+      return "failed";
+  }
+  if (timedOut) return "timed_out";
+  if (job.status === "running") return "running";
+  return "queued";
+}
+
+/** Assemble a JobTerminalResult from the last-known job + worker invocation. */
+export function buildJobResult(args: {
+  classification: JobLifecycle;
+  jobId: string | null;
+  jobKey: string;
+  reused: boolean;
+  job: PolledJob | null;
+  worker: WorkerInvocation | null;
+}): JobTerminalResult {
+  const j = args.job;
+  return {
+    classification: args.classification,
+    jobId: args.jobId,
+    jobKey: args.jobKey,
+    reused: args.reused,
+    dbStatus: j?.status ?? null,
+    attemptCount: j?.attempt_count ?? null,
+    claimedBy: j?.claimed_by ?? null,
+    leaseExpiresAt: j?.lease_expires_at ?? null,
+    lastError: j?.last_error ?? null,
+    errorCode: j?.error_code ?? null,
+    result: j?.result ?? null,
+    workerHttpStatus: args.worker?.status ?? null,
+    workerBody: args.worker?.body ?? null,
+  };
+}
+
+/** A stable, non-undefined status label for assertion details. */
+export function jobStatusLabel(r: JobTerminalResult | null | undefined): string {
+  return r?.classification ?? "infrastructure_error";
+}
+
+/** The handler outcome persisted on platform_jobs.result (e.g. blocked/succeeded/
+ *  already_completed). Read from the DB row — never from the worker HTTP response. */
+export function handlerOutcome(r: JobTerminalResult | null | undefined): Record<string, unknown> {
+  const res = r?.result;
+  return res && typeof res === "object" ? (res as Record<string, unknown>) : {};
+}
+
+/** Full diagnostic line for a non-terminal / infrastructure outcome — includes the
+ *  last known DB job state AND the worker HTTP status + sanitized body. */
+export function describeJobResult(r: JobTerminalResult): string {
+  return [
+    `classification=${r.classification}`,
+    `jobId=${r.jobId ?? "?"}`,
+    `jobKey=${r.jobKey}`,
+    `dbStatus=${r.dbStatus ?? "?"}`,
+    `attempt_count=${r.attemptCount ?? "?"}`,
+    `claimed_by=${r.claimedBy ?? "?"}`,
+    `lease_expires_at=${r.leaseExpiresAt ?? "?"}`,
+    `error_code=${r.errorCode ?? "?"}`,
+    `last_error=${r.lastError ?? "?"}`,
+    `worker_http=${r.workerHttpStatus ?? "?"}`,
+    `worker_body=${r.workerBody ?? "?"}`,
+  ].join(" ");
+}
+
+/**
+ * The Discovery-mode block proof, computed from PERSISTED DB state ONLY (never the
+ * worker HTTP response shape). A genuine block requires: the intent still pending,
+ * zero execution attempts, zero outcomes, AND at least one guard BLOCK record — the
+ * last clause distinguishes a real guard block from a job that simply never ran
+ * (which would also leave the intent pending with zero attempts). Pure + testable.
+ */
+export function discoveryBlocked(state: {
+  intentStatus: string | null | undefined;
+  attempts: number;
+  outcomes: number;
+  blockGuards: number;
+}): boolean {
+  return (
+    state.intentStatus === "pending" &&
+    state.attempts === 0 &&
+    state.outcomes === 0 &&
+    state.blockGuards >= 1
+  );
+}
+
+// ── Worker invocation contract (matches the deployed platform-worker) ─────────
+//
+// The deployed contract (see supabase/functions/platform-worker/index.ts and the
+// cron in 20260709180000_scheduler_cron.sql): POST, JSON body { batch_size, job_types? },
+// authenticated by the shared `x-schedule-secret` header == WORKER_SECRET. There is
+// NO Authorization/apikey header (the function is deployed verify_jwt=false). The
+// secret is a header VALUE only — it is never placed in the URL, the body, or logs.
+
+export interface WorkerRequestSpec {
+  url: string;
+  method: "POST";
+  headers: Record<string, string>;
+  body: string;
+}
+
+/** Build the exact HTTP request the deployed platform-worker expects. Pure +
+ *  testable. Throws if the secret is absent (the harness cannot invoke without it). */
+export function workerRequest(
+  env: { supabaseUrl: string; workerSecret: string | null },
+  jobTypes?: string[] | null,
+): WorkerRequestSpec {
+  if (!env.workerSecret) {
+    throw new Error("WORKER_SECRET is required to invoke the platform-worker");
+  }
+  const list = Array.isArray(jobTypes) ? jobTypes.filter((t) => typeof t === "string") : null;
+  return {
+    url: `${env.supabaseUrl}/functions/v1/platform-worker`,
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-schedule-secret": env.workerSecret,
+    },
+    body: JSON.stringify({ batch_size: 5, ...(list && list.length ? { job_types: list } : {}) }),
+  };
+}
+
+/** The captured result of one worker invocation. `body` is a truncated snippet of
+ *  the response (redacted at the reporting layer); it is diagnostic only and is
+ *  NEVER used to infer job state. */
+export interface WorkerInvocation {
+  ok: boolean;
+  status: number;
+  body: string | null;
+}
+
+/** A worker HTTP response is an infrastructure failure iff it is not 2xx. */
+export function classifyWorkerInvocation(status: number): { ok: boolean; infrastructure: boolean } {
+  const ok = Number.isFinite(status) && status >= 200 && status < 300;
+  return { ok, infrastructure: !ok };
+}
+
+// ── Deterministic per-stage job keys ─────────────────────────────────────────
+
+/** Deterministic, run-scoped job key for one verification stage. The `verify:<run>:`
+ *  prefix makes run-scoped cleanup exact (see planRunJobCleanup). Each stage gets a
+ *  DISTINCT key so stages never collide on platform_jobs_active_job_key_uk and a
+ *  genuinely new stage (e.g. idempotency-retry) is a genuinely new job. */
+export function stageJobKey(runId: string, suite: string, stage: string): string {
+  return `verify:${runId}:${suite}:${stage}`;
+}
+
+// ── Enqueue-once / poll-the-same-job orchestration (DI: no clock/network) ─────
+
+/** Injected effects for processJobStage — real ones in client/suites, fakes in tests. */
+export interface StageDeps {
+  /** Enqueue exactly one job for `jobKey`. On an active-duplicate it MUST resolve the
+   *  existing active job's id and return { duplicate: true } — never insert twice. */
+  enqueue: (
+    jobKey: string,
+  ) => Promise<{ id: string | null; duplicate: boolean; error: string | null }>;
+  /** Invoke the deployed worker (captures HTTP status + sanitized body). */
+  invokeWorker: () => Promise<WorkerInvocation>;
+  /** Read the authoritative job row BY ID (never by key — the key can be reused). */
+  readJob: (id: string) => Promise<PolledJob | null>;
+  now: () => number;
+  sleep: (ms: number) => Promise<void>;
+}
+
+export interface StageOptions {
+  jobKey: string;
+  timeoutMs: number;
+  intervalMs: number;
+}
+
+/**
+ * Enqueue ONE job, then repeatedly invoke the worker and poll THAT job id until it
+ * is terminal, times out, or the worker returns a non-2xx (infrastructure error,
+ * surfaced immediately). Re-invoking each cycle means a single missed claim no
+ * longer guarantees a timeout — the defect behind verify-20260715-a78555ae. The
+ * DB row is the source of truth; the worker response only gates infra failure.
+ */
+export async function processJobStage(
+  deps: StageDeps,
+  opts: StageOptions,
+): Promise<JobTerminalResult> {
+  const enq = await deps.enqueue(opts.jobKey);
+  if (!enq.id) {
+    // Could not enqueue OR resolve an existing active job → infrastructure error.
+    return buildJobResult({
+      classification: "infrastructure_error",
+      jobId: null,
+      jobKey: opts.jobKey,
+      reused: enq.duplicate,
+      job: null,
+      worker: enq.error ? { ok: false, status: 0, body: enq.error } : null,
+    });
+  }
+  const jobId = enq.id;
+  const start = deps.now();
+  const interval = Math.max(1, opts.intervalMs);
+  const maxTicks = Math.max(1, Math.ceil(opts.timeoutMs / interval) + 2);
+
+  let job: PolledJob | null = null;
+  let worker: WorkerInvocation | null = null;
+  let workerFailed = false;
+  let timedOut = false;
+  let ticks = 0;
+
+  while (ticks < maxTicks) {
+    worker = await deps.invokeWorker();
+    ticks++;
+    if (!worker.ok) {
+      workerFailed = true; // non-2xx ⇒ infrastructure failure, immediately
+      break;
+    }
+    job = await deps.readJob(jobId); // poll BY ID
+    if (job && isTerminalJobStatus(job.status)) break;
+    if (deps.now() - start >= opts.timeoutMs) {
+      timedOut = true;
+      break;
+    }
+    await deps.sleep(interval);
+  }
+  if (!workerFailed && !timedOut && !(job && isTerminalJobStatus(job.status))) {
+    timedOut = true; // exhausted maxTicks without a terminal state
+  }
+
+  return buildJobResult({
+    classification: classifyJob(job, timedOut, workerFailed),
+    jobId,
+    jobKey: opts.jobKey,
+    reused: enq.duplicate,
+    job,
+    worker,
+  });
+}
+
+// ── Run-scoped platform-job cleanup planning ─────────────────────────────────
+
+/** True iff a job_key belongs to this verification run (exact prefix match). */
+export function isRunJobKey(jobKey: string | null | undefined, runId: string): boolean {
+  return typeof jobKey === "string" && jobKey.startsWith(`verify:${runId}:`);
+}
+
+export interface RunJobRow {
+  id: string;
+  job_key: string | null;
+  status: string;
+}
+
+export interface RunJobCleanupPlan {
+  /** Active jobs to cancel through the lifecycle before deleting. */
+  cancel: string[];
+  /** All run-owned jobs to remove (harness fixtures). */
+  delete: string[];
+  /** Jobs left untouched because they do NOT belong to this run. */
+  skip: string[];
+}
+
+/**
+ * Decide cleanup for a set of platform_jobs, scoped STRICTLY to this run's key
+ * prefix. A job not owned by the run is never cancelled or deleted (it is skipped).
+ * Active jobs are cancelled first (lifecycle transition), then all run-owned jobs
+ * are removed. Pure — the caller performs the DB writes and reports the ids.
+ */
+export function planRunJobCleanup(jobs: RunJobRow[], runId: string): RunJobCleanupPlan {
+  const plan: RunJobCleanupPlan = { cancel: [], delete: [], skip: [] };
+  for (const j of jobs) {
+    if (!isRunJobKey(j.job_key, runId)) {
+      plan.skip.push(j.id);
+      continue;
+    }
+    if (isActiveJobStatus(j.status)) plan.cancel.push(j.id);
+    plan.delete.push(j.id);
+  }
+  return plan;
+}
+
+/** The one-time remediation target from the failed live run (see the suite's
+ *  preflight). Cleared idempotently; safe to leave in place after it is gone. */
+export const LEGACY_STUCK_RUN = "verify-20260715-a78555ae";
 
 // ── Result model + reporting ────────────────────────────────────────────────
 

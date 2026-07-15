@@ -3,18 +3,29 @@
 
 import {
   DEFAULT_VERIFY_TENANT,
+  LEGACY_STUCK_RUN,
   VerificationRun,
+  buildJobResult,
   canReleaseLock,
+  classifyJob,
+  classifyWorkerInvocation,
+  describeJobResult,
+  discoveryBlocked,
   fixtureTag,
+  handlerOutcome,
   isCleanupSafe,
   classifyLockAttempt,
+  isRunJobKey,
   isVerificationFixture,
+  jobStatusLabel,
   mergeEnv,
   newRunId,
   parseArgs,
   parseDotenv,
   planLockAcquire,
+  planRunJobCleanup,
   pollJob,
+  processJobStage,
   projectAllowed,
   projectRefFromUrl,
   redact,
@@ -24,8 +35,14 @@ import {
   runGuarded,
   secretValues,
   shouldAcquireLock,
+  stageJobKey,
+  workerRequest,
+  type JobTerminalResult,
   type LeaseRow,
+  type PolledJob,
+  type StageDeps,
   type VerifyEnv,
+  type WorkerInvocation,
 } from "./lib.ts";
 
 let failures = 0;
@@ -443,6 +460,317 @@ check(
 );
 const acquiredOk = classifyLockAttempt({ ok: true, acquired: true, holder: "run-B" }, "automation");
 check("acquired ⇒ proceed, no failure", acquiredOk.proceed === true && acquiredOk.failure === null);
+
+// ── Worker invocation contract (exact deployed platform-worker contract) ─────
+console.log("Worker invocation contract:");
+const wreq = workerRequest({ supabaseUrl: "https://abcdxyz.supabase.co", workerSecret: WS }, [
+  "automation.execute",
+]);
+check("worker request method is POST", wreq.method === "POST");
+check(
+  "worker request targets functions/v1/platform-worker",
+  wreq.url === "https://abcdxyz.supabase.co/functions/v1/platform-worker",
+);
+check(
+  "worker auth uses the x-schedule-secret header == WORKER_SECRET",
+  wreq.headers["x-schedule-secret"] === WS,
+);
+check(
+  "worker request sends NO Authorization/apikey header (verify_jwt=false contract)",
+  !("authorization" in wreq.headers) &&
+    !("Authorization" in wreq.headers) &&
+    !("apikey" in wreq.headers),
+);
+check(
+  "worker request body carries batch_size + job_types",
+  (() => {
+    const b = JSON.parse(wreq.body) as { batch_size?: number; job_types?: string[] };
+    return (
+      b.batch_size === 5 && Array.isArray(b.job_types) && b.job_types[0] === "automation.execute"
+    );
+  })(),
+);
+check(
+  "WORKER_SECRET is a header value only — never in the url or body",
+  !wreq.url.includes(WS) && !wreq.body.includes(WS),
+);
+check(
+  "workerRequest refuses to build without a secret",
+  (() => {
+    try {
+      workerRequest({ supabaseUrl: "https://x.supabase.co", workerSecret: null });
+      return false;
+    } catch {
+      return true;
+    }
+  })(),
+);
+check(
+  "non-2xx worker response ⇒ infrastructure failure",
+  classifyWorkerInvocation(200).ok &&
+    !classifyWorkerInvocation(200).infrastructure &&
+    classifyWorkerInvocation(403).infrastructure &&
+    classifyWorkerInvocation(500).infrastructure &&
+    classifyWorkerInvocation(0).infrastructure,
+);
+
+// ── Job classification (never undefined; DB row is the source of truth) ──────
+console.log("Job classification:");
+check(
+  "classifyJob: worker failure ⇒ infrastructure_error",
+  classifyJob({ status: "queued" }, false, true) === "infrastructure_error",
+);
+check(
+  "classifyJob: null job ⇒ infrastructure_error",
+  classifyJob(null, false, false) === "infrastructure_error",
+);
+check(
+  "classifyJob: terminal DB status wins",
+  classifyJob({ status: "succeeded" }, true, false) === "succeeded",
+);
+check(
+  "classifyJob: dead_letter/cancelled/failed are terminal",
+  classifyJob({ status: "dead_letter" }, false, false) === "dead_letter" &&
+    classifyJob({ status: "cancelled" }, false, false) === "cancelled" &&
+    classifyJob({ status: "failed" }, false, false) === "failed",
+);
+check(
+  "classifyJob: non-terminal + timeout ⇒ timed_out",
+  classifyJob({ status: "running" }, true, false) === "timed_out",
+);
+check(
+  "classifyJob: still running, no timeout ⇒ running",
+  classifyJob({ status: "running" }, false, false) === "running",
+);
+check(
+  "jobStatusLabel is ALWAYS a defined, non-undefined string",
+  jobStatusLabel(null) === "infrastructure_error" &&
+    jobStatusLabel(undefined) === "infrastructure_error" &&
+    !jobStatusLabel(null).includes("undefined"),
+);
+
+// ── Timeout diagnostics carry the last known DB state + worker response ──────
+console.log("Timeout diagnostics:");
+const timedResult: JobTerminalResult = buildJobResult({
+  classification: "timed_out",
+  jobId: "job-1",
+  jobKey: "verify:run:automation:discovery",
+  reused: false,
+  job: {
+    status: "running",
+    attempt_count: 2,
+    claimed_by: "worker-abc",
+    lease_expires_at: "2026-07-15T16:20:00Z",
+    last_error: "none",
+    error_code: "e_code",
+    result: { status: "blocked" },
+  },
+  worker: { ok: true, status: 200, body: '{"success":true}' },
+});
+const diag = describeJobResult(timedResult);
+check(
+  "timeout diagnostics include jobId/jobKey/dbStatus/attempt/claimed_by/lease/error/worker",
+  diag.includes("jobId=job-1") &&
+    diag.includes("jobKey=verify:run:automation:discovery") &&
+    diag.includes("dbStatus=running") &&
+    diag.includes("attempt_count=2") &&
+    diag.includes("claimed_by=worker-abc") &&
+    diag.includes("lease_expires_at=2026-07-15T16:20:00Z") &&
+    diag.includes("error_code=e_code") &&
+    diag.includes("last_error=none") &&
+    diag.includes("worker_http=200"),
+);
+check("diagnostics never render the literal 'undefined'", !diag.includes("undefined"));
+check(
+  "handlerOutcome reads the persisted job.result (never the HTTP body)",
+  handlerOutcome(timedResult).status === "blocked",
+);
+check("handlerOutcome tolerates a null result", Object.keys(handlerOutcome(null)).length === 0);
+
+// ── Discovery proof is DB-state based, not HTTP-response based ────────────────
+console.log("Discovery block proof (DB state):");
+check(
+  "discovery block proof holds when all persisted facts present",
+  discoveryBlocked({ intentStatus: "pending", attempts: 0, outcomes: 0, blockGuards: 1 }) === true,
+);
+check(
+  "discovery proof FAILS if the guard never ran (unprocessed job)",
+  discoveryBlocked({ intentStatus: "pending", attempts: 0, outcomes: 0, blockGuards: 0 }) === false,
+);
+check(
+  "discovery proof FAILS if an attempt or outcome slipped through",
+  discoveryBlocked({ intentStatus: "pending", attempts: 1, outcomes: 0, blockGuards: 1 }) ===
+    false &&
+    discoveryBlocked({ intentStatus: "pending", attempts: 0, outcomes: 1, blockGuards: 1 }) ===
+      false,
+);
+check(
+  "discovery proof FAILS if the intent did not stay pending",
+  discoveryBlocked({ intentStatus: "succeeded", attempts: 0, outcomes: 0, blockGuards: 1 }) ===
+    false,
+);
+
+// ── Deterministic per-stage keys (retry is a genuinely NEW stage) ────────────
+console.log("Per-stage job keys:");
+const rid2 = "verify-20260715-abcd1234";
+const kDisc = stageJobKey(rid2, "automation", "discovery");
+const kTrust = stageJobKey(rid2, "automation", "trusted");
+const kRetry = stageJobKey(rid2, "automation", "idempotency-retry");
+check("stage key is deterministic + run-scoped", kDisc === `verify:${rid2}:automation:discovery`);
+check(
+  "each stage has a DISTINCT key (retry ≠ discovery ≠ trusted)",
+  kDisc !== kTrust && kTrust !== kRetry && kDisc !== kRetry,
+);
+check(
+  "stage keys carry the run prefix (own-run only)",
+  isRunJobKey(kDisc, rid2) && isRunJobKey(kRetry, rid2) && !isRunJobKey(kDisc, "verify-other"),
+);
+
+// ── Run-scoped cleanup planning (never touches unrelated jobs) ────────────────
+console.log("Run-scoped cleanup planning:");
+const cleanupPlan = planRunJobCleanup(
+  [
+    { id: "own-active", job_key: `verify:${rid2}:automation:trusted`, status: "running" },
+    { id: "own-done", job_key: `verify:${rid2}:automation:discovery`, status: "succeeded" },
+    { id: "other-run", job_key: "verify:verify-other:automation:trusted", status: "running" },
+    { id: "unrelated", job_key: "automation.execute:tenant:intent", status: "running" },
+    { id: "no-key", job_key: null, status: "queued" },
+  ],
+  rid2,
+);
+check(
+  "cleanup deletes ONLY this run's jobs",
+  cleanupPlan.delete.slice().sort().join(",") === "own-active,own-done",
+);
+check("cleanup cancels ONLY this run's ACTIVE jobs", cleanupPlan.cancel.join(",") === "own-active");
+check(
+  "cleanup SKIPS every job not owned by this run",
+  cleanupPlan.skip.slice().sort().join(",") === "no-key,other-run,unrelated",
+);
+check(
+  "legacy stuck-run constant targets verify-20260715-a78555ae",
+  LEGACY_STUCK_RUN === "verify-20260715-a78555ae",
+);
+
+// ── Enqueue-once / poll-the-same-job orchestration (DI: no clock/network) ────
+console.log("Stage orchestration (enqueue once, poll same job):");
+async function stageOrchestration() {
+  // A) one enqueue → one retained id → polls BY ID → terminal succeeded
+  let enqueueCallsA = 0;
+  const readIdsA: string[] = [];
+  let tA = 0;
+  const depsA: StageDeps = {
+    enqueue: async () => {
+      enqueueCallsA++;
+      return { id: "job-A", duplicate: false, error: null };
+    },
+    invokeWorker: async () => ({ ok: true, status: 200, body: "{}" }) as WorkerInvocation,
+    readJob: async (id) => {
+      readIdsA.push(id);
+      return { status: "succeeded", result: { status: "blocked" } } as PolledJob;
+    },
+    now: () => (tA += 100),
+    sleep: async () => {},
+  };
+  const rA = await processJobStage(depsA, {
+    jobKey: "verify:r:automation:discovery",
+    timeoutMs: 5000,
+    intervalMs: 100,
+  });
+  check(
+    "ONE enqueue call, returns + retains ONE job id",
+    enqueueCallsA === 1 && rA.jobId === "job-A",
+  );
+  check(
+    "polling uses the job ID, not the key",
+    readIdsA.length >= 1 && readIdsA.every((x) => x === "job-A"),
+  );
+  check("happy path classifies succeeded", rA.classification === "succeeded");
+
+  // B) active duplicate key ⇒ REUSE + poll, never a second insert
+  let enqueueCallsB = 0;
+  const depsB: StageDeps = {
+    enqueue: async () => {
+      enqueueCallsB++;
+      return { id: "existing-1", duplicate: true, error: null };
+    },
+    invokeWorker: async () => ({ ok: true, status: 200, body: "{}" }) as WorkerInvocation,
+    readJob: async () => ({ status: "succeeded", result: {} }) as PolledJob,
+    now: () => 0,
+    sleep: async () => {},
+  };
+  const rB = await processJobStage(depsB, {
+    jobKey: "verify:r:automation:trusted",
+    timeoutMs: 5000,
+    intervalMs: 100,
+  });
+  check(
+    "active duplicate ⇒ reuse existing job (no second insert)",
+    enqueueCallsB === 1 && rB.reused === true && rB.jobId === "existing-1",
+  );
+
+  // C) non-2xx worker ⇒ infrastructure_error immediately (single invocation)
+  let invokeC = 0;
+  const depsC: StageDeps = {
+    enqueue: async () => ({ id: "job-C", duplicate: false, error: null }),
+    invokeWorker: async () => {
+      invokeC++;
+      return { ok: false, status: 403, body: "forbidden" } as WorkerInvocation;
+    },
+    readJob: async () => ({ status: "queued" }) as PolledJob,
+    now: () => 0,
+    sleep: async () => {},
+  };
+  const rC = await processJobStage(depsC, { jobKey: "k", timeoutMs: 45000, intervalMs: 1500 });
+  check(
+    "non-2xx worker ⇒ infrastructure_error, immediately",
+    rC.classification === "infrastructure_error" && invokeC === 1 && rC.workerHttpStatus === 403,
+  );
+
+  // D) never terminal ⇒ timed_out with full diagnostics (status never undefined)
+  let tD = 0;
+  const depsD: StageDeps = {
+    enqueue: async () => ({ id: "job-D", duplicate: false, error: null }),
+    invokeWorker: async () => ({ ok: true, status: 200, body: "{}" }) as WorkerInvocation,
+    readJob: async () =>
+      ({
+        status: "running",
+        attempt_count: 1,
+        claimed_by: "w1",
+        lease_expires_at: "L",
+      }) as PolledJob,
+    now: () => (tD += 1500),
+    sleep: async () => {},
+  };
+  const rD = await processJobStage(depsD, {
+    jobKey: "verify:r:automation:discovery",
+    timeoutMs: 4500,
+    intervalMs: 1500,
+  });
+  check("never-terminal ⇒ timed_out", rD.classification === "timed_out");
+  check(
+    "timed_out carries last DB state + a defined label",
+    rD.dbStatus === "running" &&
+      rD.claimedBy === "w1" &&
+      rD.leaseExpiresAt === "L" &&
+      jobStatusLabel(rD) === "timed_out",
+  );
+
+  // E) enqueue truly fails (not a duplicate) ⇒ infrastructure_error, jobId null
+  const depsE: StageDeps = {
+    enqueue: async () => ({ id: null, duplicate: false, error: "insert boom" }),
+    invokeWorker: async () => ({ ok: true, status: 200, body: "{}" }) as WorkerInvocation,
+    readJob: async () => null,
+    now: () => 0,
+    sleep: async () => {},
+  };
+  const rE = await processJobStage(depsE, { jobKey: "k", timeoutMs: 1000, intervalMs: 100 });
+  check(
+    "failed enqueue ⇒ infrastructure_error, no job id",
+    rE.classification === "infrastructure_error" && rE.jobId === null,
+  );
+}
+await stageOrchestration();
 
 console.log(failures === 0 ? "\nALL HARNESS UNIT CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
