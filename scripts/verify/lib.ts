@@ -196,6 +196,18 @@ export function isCleanupSafe(table: string): boolean {
   return !IMMUTABLE_TABLES.has(table);
 }
 
+/**
+ * IMMUTABLE audit tables that anchor to a platform_jobs row via a `job_id` FK. A
+ * platform job referenced by any of these is LINEAGE — deleting it would either
+ * violate the FK or require cascading an immutable audit row, both forbidden. Such
+ * a job is classified `retained`, never `deleted`/`cleanup_failed`. Every table here
+ * MUST also be in IMMUTABLE_TABLES (asserted in the harness tests). */
+export const IMMUTABLE_JOB_REFERENCE_TABLES: ReadonlyArray<{ table: string; column: string }> = [
+  { table: "automation_execution_guard_decisions", column: "job_id" },
+  { table: "objective_health", column: "job_id" },
+  { table: "objective_contribution_assessments", column: "job_id" },
+];
+
 // ── Project allowlist ───────────────────────────────────────────────────────
 
 /**
@@ -769,28 +781,41 @@ export interface RunJobRow {
   id: string;
   job_key: string | null;
   status: string;
+  /** True iff an IMMUTABLE audit row references this job (see
+   *  IMMUTABLE_JOB_REFERENCE_TABLES). Such a job is retained, never deleted. */
+  hasImmutableLineage?: boolean;
 }
 
 export interface RunJobCleanupPlan {
-  /** Active jobs to cancel through the lifecycle before deleting. */
+  /** Active jobs (with NO immutable lineage) to cancel through the lifecycle before deleting. */
   cancel: string[];
-  /** All run-owned jobs to remove (harness fixtures). */
+  /** Mutable run-owned jobs safe to remove (no immutable audit references them). */
   delete: string[];
+  /** Run-owned jobs anchoring immutable audit lineage — kept for history (never deleted). */
+  retain: string[];
   /** Jobs left untouched because they do NOT belong to this run. */
   skip: string[];
 }
 
 /**
  * Decide cleanup for a set of platform_jobs, scoped STRICTLY to this run's key
- * prefix. A job not owned by the run is never cancelled or deleted (it is skipped).
- * Active jobs are cancelled first (lifecycle transition), then all run-owned jobs
- * are removed. Pure — the caller performs the DB writes and reports the ids.
+ * prefix. Classification:
+ *   • not owned by the run          → skip (never touched)
+ *   • owned + immutable lineage      → retain (required for audit; never cancelled/deleted)
+ *   • owned + mutable (no lineage)   → delete (cancel first if still active)
+ * Pure — the caller performs the DB writes and reports the ids. A job that anchors
+ * an immutable guard-decision / outcome / attempt is retained so the FK protecting
+ * that audit history is never violated (the cause of the cleanup FAIL).
  */
 export function planRunJobCleanup(jobs: RunJobRow[], runId: string): RunJobCleanupPlan {
-  const plan: RunJobCleanupPlan = { cancel: [], delete: [], skip: [] };
+  const plan: RunJobCleanupPlan = { cancel: [], delete: [], retain: [], skip: [] };
   for (const j of jobs) {
     if (!isRunJobKey(j.job_key, runId)) {
       plan.skip.push(j.id);
+      continue;
+    }
+    if (j.hasImmutableLineage) {
+      plan.retain.push(j.id); // immutable lineage — keep for audit/history
       continue;
     }
     if (isActiveJobStatus(j.status)) plan.cancel.push(j.id);

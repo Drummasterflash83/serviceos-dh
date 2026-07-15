@@ -10,6 +10,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
+  IMMUTABLE_JOB_REFERENCE_TABLES,
   LEGACY_STUCK_RUN,
   VerificationRun,
   describeJobResult,
@@ -144,10 +145,31 @@ async function processStage(
 }
 
 /**
- * Cancel-then-delete every platform job owned by THIS run (exact `verify:<run>:` key
- * prefix), scoped to the tenant. Active jobs are cancelled through the lifecycle
- * first so no stuck active job lingers (the failure mode of verify-20260715-a78555ae);
- * unrelated jobs are never touched. Reports each disposition.
+ * True iff any IMMUTABLE audit row references this platform job via its `job_id` FK
+ * (guard decisions / objective health / contribution assessments). Such a job is
+ * lineage: it CANNOT be deleted without violating the FK that protects append-only
+ * audit history, so it is retained. Best-effort per table (a read error is treated
+ * as "cannot prove deletable" ⇒ retain, the safe direction).
+ */
+async function jobHasImmutableLineage(c: VerifyClient, jobId: string): Promise<boolean> {
+  for (const ref of IMMUTABLE_JOB_REFERENCE_TABLES) {
+    const { count, error } = await c.db
+      .from(ref.table)
+      .select("*", { head: true, count: "exact" })
+      .eq(ref.column, jobId);
+    if (error) return true; // fail safe — never delete when lineage is uncertain
+    if ((count ?? 0) > 0) return true;
+  }
+  return false;
+}
+
+/**
+ * Classify + clean every platform job owned by THIS run (exact `verify:<run>:` key
+ * prefix), scoped to the tenant. A job that anchors immutable audit lineage is
+ * RETAINED (never deleted — deleting it violates the guard-decision/outcome FK, the
+ * cause of the cleanup FAIL). A mutable job (no immutable references) is deleted,
+ * cancelled first if still active so no stuck active job lingers. Jobs not owned by
+ * this run are never touched. Reports each disposition.
  */
 async function cleanupRunJobs(
   c: VerifyClient,
@@ -160,8 +182,27 @@ async function cleanupRunJobs(
     .select("id, job_key, status")
     .eq("tenant_id", tenantId)
     .like("job_key", `verify:${runId}:%`);
-  const plan = planRunJobCleanup((rows ?? []) as RunJobRow[], runId);
+
+  // Enrich each row with whether an immutable audit row references it.
+  const enriched: RunJobRow[] = [];
+  for (const r of rows ?? []) {
+    enriched.push({
+      id: r.id as string,
+      job_key: r.job_key as string | null,
+      status: r.status as string,
+      hasImmutableLineage: await jobHasImmutableLineage(c, r.id as string),
+    });
+  }
+
+  const plan = planRunJobCleanup(enriched, runId);
   const cancelled = new Set(plan.cancel);
+
+  // Immutable-lineage jobs: keep for audit/history (never cancelled or deleted).
+  for (const id of plan.retain) {
+    run.dispose("platform_job", id, "retained", "anchors immutable audit lineage (guard/outcome)");
+  }
+
+  // Mutable jobs: cancel any still-active one, then delete.
   for (const id of plan.cancel) {
     try {
       await c.db
@@ -218,6 +259,17 @@ async function cleanupLegacyStuckJob(c: VerifyClient, run: VerificationRun): Pro
   for (const j of rows ?? []) {
     const id = j.id as string;
     try {
+      // If the stuck job already anchors immutable audit lineage, RETAIN it (deleting
+      // would violate the guard-decision/outcome FK). Otherwise cancel + delete.
+      if (await jobHasImmutableLineage(c, id)) {
+        run.dispose(
+          "legacy_platform_job",
+          id,
+          "retained",
+          `${LEGACY_STUCK_RUN} job anchors immutable audit lineage`,
+        );
+        continue;
+      }
       await c.db
         .from("platform_jobs")
         .update({ status: "cancelled", cancelled_at: nowIso(), lease_expires_at: null })
@@ -376,7 +428,7 @@ export const automationSuite: Suite = {
       "assert: guard allowed; in-flight + terminal attempts; intent succeeded; one system_observed operational outcome; no business outcome; no objective-health write; synthetic external ref only",
       "assert: retry ⇒ already_completed; no duplicate succeeded attempt/outcome",
       "restore: previous operational mode",
-      "cleanup: delete run-tagged mutable fixtures; RETAIN immutable audit (attempts/outcomes/guard/decision) + report ids",
+      "cleanup: delete run-tagged MUTABLE fixtures; RETAIN immutable audit (attempts/outcomes/guard/decision) AND the platform_jobs that anchor it + report ids",
     ];
   },
   async run(run, c, env) {

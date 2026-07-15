@@ -14,6 +14,7 @@ import {
   fixtureTag,
   handlerOutcome,
   isCleanupSafe,
+  IMMUTABLE_JOB_REFERENCE_TABLES,
   classifyLockAttempt,
   isRunJobKey,
   isVerificationFixture,
@@ -650,6 +651,91 @@ check(
 check(
   "legacy stuck-run constant targets verify-20260715-a78555ae",
   LEGACY_STUCK_RUN === "verify-20260715-a78555ae",
+);
+
+// ── Immutable-lineage classification (retained, never deleted) ────────────────
+console.log("Immutable-lineage cleanup classification:");
+const lineagePlan = planRunJobCleanup(
+  [
+    // Owned + anchors immutable audit (guard decision / outcome) ⇒ retained.
+    {
+      id: "guarded-job",
+      job_key: `verify:${rid2}:automation:discovery`,
+      status: "succeeded",
+      hasImmutableLineage: true,
+    },
+    // Owned + an ACTIVE job that still anchors lineage ⇒ retained (never cancelled).
+    {
+      id: "active-guarded",
+      job_key: `verify:${rid2}:automation:trusted`,
+      status: "running",
+      hasImmutableLineage: true,
+    },
+    // Owned + no immutable references ⇒ deletable mutable fixture.
+    {
+      id: "mutable-job",
+      job_key: `verify:${rid2}:automation:idempotency-retry`,
+      status: "succeeded",
+      hasImmutableLineage: false,
+    },
+    // Owned + active + mutable ⇒ cancel then delete.
+    {
+      id: "active-mutable",
+      job_key: `verify:${rid2}:automation:probe`,
+      status: "queued",
+      hasImmutableLineage: false,
+    },
+    // Not owned by this run ⇒ skipped even though it carries lineage.
+    {
+      id: "foreign-guarded",
+      job_key: "verify:verify-other:automation:trusted",
+      status: "succeeded",
+      hasImmutableLineage: true,
+    },
+  ],
+  rid2,
+);
+check(
+  "platform_job with immutable guard-decision lineage is RETAINED",
+  lineagePlan.retain.slice().sort().join(",") === "active-guarded,guarded-job",
+);
+check(
+  "platform_job WITHOUT immutable references can be DELETED",
+  lineagePlan.delete.slice().sort().join(",") === "active-mutable,mutable-job",
+);
+check(
+  "an immutable-lineage job is NEVER cancelled or deleted",
+  !lineagePlan.cancel.includes("guarded-job") &&
+    !lineagePlan.cancel.includes("active-guarded") &&
+    !lineagePlan.delete.includes("guarded-job") &&
+    !lineagePlan.delete.includes("active-guarded"),
+);
+check(
+  "only ACTIVE mutable jobs are cancelled before delete",
+  lineagePlan.cancel.join(",") === "active-mutable",
+);
+check(
+  "a foreign job is skipped even when it carries lineage",
+  lineagePlan.skip.join(",") === "foreign-guarded" &&
+    !lineagePlan.retain.includes("foreign-guarded"),
+);
+check(
+  "retain ∪ delete ∪ skip partitions every input job (no loss/overlap)",
+  lineagePlan.retain.length + lineagePlan.delete.length + lineagePlan.skip.length === 5,
+);
+// Every immutable job-reference table is itself an immutable (never-deleted) audit
+// table — so no immutable table row is ever a cleanup delete target.
+check(
+  "immutable job-reference tables are all immutable audit tables",
+  IMMUTABLE_JOB_REFERENCE_TABLES.every((r) => !isCleanupSafe(r.table)),
+);
+check(
+  "guard-decision / outcome / objective-health audit tables are never cleanup-safe",
+  !isCleanupSafe("automation_execution_guard_decisions") &&
+    !isCleanupSafe("outcomes") &&
+    !isCleanupSafe("automation_execution_attempts") &&
+    !isCleanupSafe("objective_health") &&
+    !isCleanupSafe("objective_contribution_assessments"),
 );
 
 // ── Enqueue-once / poll-the-same-job orchestration (DI: no clock/network) ────
