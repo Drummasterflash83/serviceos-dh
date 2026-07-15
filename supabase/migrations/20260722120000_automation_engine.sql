@@ -265,6 +265,17 @@ insert into outcome_statuses (status, description) values
   ('corrected','Corrected by a later outcome'),('rejected','Rejected on review')
 on conflict (status) do nothing;
 
+-- Outcome verification-state registry — created HERE (before RLS + the FK column that
+-- references it) so it exists in execution order. Used by HARDENING 3 below.
+create table if not exists outcome_verification_states (state text primary key, description text);
+insert into outcome_verification_states (state, description) values
+  ('system_observed','Observed by the platform itself (e.g. a controlled execution)'),
+  ('externally_verified','Verified against an external source of truth'),
+  ('human_verified','Verified by a human reviewer'),
+  ('inferred_unverified','Inferred/derived; not verified'),
+  ('rejected','Rejected on review')
+on conflict (state) do nothing;
+
 create table if not exists outcomes (
   id                   uuid primary key default gen_random_uuid(),
   tenant_id            uuid not null references tenants(id) on delete cascade,
@@ -400,15 +411,8 @@ end;
 $$;
 
 -- ── HARDENING 3: Outcome PROVENANCE + verification authority. ────────────────
-create table if not exists outcome_verification_states (state text primary key, description text);
-insert into outcome_verification_states (state, description) values
-  ('system_observed','Observed by the platform itself (e.g. a controlled execution)'),
-  ('externally_verified','Verified against an external source of truth'),
-  ('human_verified','Verified by a human reviewer'),
-  ('inferred_unverified','Inferred/derived; not verified'),
-  ('rejected','Rejected on review')
-on conflict (state) do nothing;
-
+-- (The outcome_verification_states registry is created earlier, in the outcomes
+--  foundation section, so it exists before RLS and before this FK column.)
 alter table outcomes add column if not exists verification_state text
   references outcome_verification_states(state) default 'system_observed';
 alter table outcomes add column if not exists source_kind      text;     -- e.g. automation_execution
