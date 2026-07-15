@@ -34,6 +34,7 @@ import { handleIntelligenceEvaluate } from "./intelligence_evaluate.ts";
 import { handleIntelligenceObserve } from "./intelligence_observe.ts";
 import { handleIntelligenceReviewResolve } from "./intelligence_review_resolve.ts";
 import { handleObjectiveEvaluate } from "./objective_evaluate.ts";
+import { handleAutomationExecute } from "./automation_execute.ts";
 
 export interface WorkerHandlerContext {
   /** Service-role client (bypasses RLS). Business writes go through this. */
@@ -88,6 +89,7 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "intelligence.observe": handleIntelligenceObserve,
   "intelligence.review_resolve": handleIntelligenceReviewResolve,
   "objective.evaluate": handleObjectiveEvaluate,
+  "automation.execute": handleAutomationExecute,
 };
 
 export function getWorkerHandler(jobType: string): WorkerHandler | null {

@@ -126,6 +126,12 @@ Key properties:
   OpenFolk operator decides; the engine never promotes a tenant on its own.
 - **The Automation Engine is unchanged.** Modes decide only *whether* automation
   is permitted; the Automation Engine still claims and executes the intent.
+- **The [Universal Automation Engine](UNIVERSAL_AUTOMATION_ENGINE.md) consumes the
+  immutable Decision Package without re-deciding it.** At execution time it re-checks
+  Operational Mode by re-running the *same* `resolveOperationalMode` against the current
+  profile, revalidates policy/config versions and approval, and only then executes — a
+  demotion or revocation after authorisation blocks execution without ever changing the
+  package. It creates no new Decision or Action.
 
 ## 3. The Decision Package
 

@@ -456,6 +456,13 @@ and publishes factual `objective.*` events — the same event/handler pattern as
 other reactor, no engine change. See
 [OBJECTIVE_EVALUATION_WORKER.md](OBJECTIVE_EVALUATION_WORKER.md).
 
+The safe execution layer, the **Universal Automation Engine** (`automation.execute` in
+`WORKER_HANDLERS`), turns an already-authorised Automation Intent into controlled,
+idempotent, auditable execution through a connector adapter — re-checking Operational Mode
+and approval at execution time, appending immutable execution attempts and the first-class
+**Outcomes** foundation, and never re-deciding business policy. See
+[UNIVERSAL_AUTOMATION_ENGINE.md](UNIVERSAL_AUTOMATION_ENGINE.md).
+
 ---
 
 ## 7. Learning Model (Part 8)

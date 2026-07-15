@@ -200,6 +200,12 @@ Assessments are written to an **append-only** `objective_contribution_assessment
 > append-only, immutable `outcomes` record (or a verified external outcome-evidence type)
 > added to `SUPPORTED_OUTCOME_EVIDENCE_TYPES`. Until then, confirmation cannot occur, by
 > construction. This is a deliberate integrity boundary, not a limitation to work around.
+>
+> **Update:** the [Universal Automation Engine](UNIVERSAL_AUTOMATION_ENGINE.md) now creates
+> that append-only `outcomes` foundation (execution / operational / **business** layers).
+> It records only *operational* outcomes in v1 — no `business` outcome type is registered,
+> so the layer exists **without** loosening this boundary. Confirmed contribution still
+> waits for a verified business-outcome evidence type to be registered and consumed here.
 
 ## Parent objectives
 

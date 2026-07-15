@@ -76,8 +76,17 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "intelligence.observe": handleIntelligenceObserve,
   "intelligence.review_resolve": handleIntelligenceReviewResolve,
   "objective.evaluate": handleObjectiveEvaluate,
+  "automation.execute": handleAutomationExecute,
 };
 ```
+
+`automation.execute` is the **Universal Automation Engine** — it turns an already-authorised
+Automation Intent into controlled, idempotent, auditable execution via a connector adapter,
+appends an immutable execution attempt + operational Outcome, and never re-decides business
+policy. Enqueued by
+[`enqueueAutomationExecution`](../supabase/functions/_shared/automation_execution_enqueue.ts)
+or the `automation-execution-scheduled-sync` repair scanner. See
+[UNIVERSAL_AUTOMATION_ENGINE.md](UNIVERSAL_AUTOMATION_ENGINE.md).
 
 `objective.evaluate` is the **Objective Evaluation Worker** — it turns measurements
 into immutable `objective_health` snapshots via the pure evaluator. Enqueued by

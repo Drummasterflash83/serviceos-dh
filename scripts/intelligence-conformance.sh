@@ -21,10 +21,17 @@ CORE=(
   supabase/functions/_shared/intelligence/modes.ts
   supabase/functions/_shared/intelligence/objectives.ts
   supabase/functions/_shared/intelligence/objective_evaluation.ts
+  supabase/functions/_shared/intelligence/automation_guards.ts
 )
 # The impure Objective Evaluation shell (NOT part of the pure core).
 OBJ_WORKER=supabase/functions/_shared/worker_handlers/objective_evaluate.ts
 OBJ_PURE=supabase/functions/_shared/intelligence/objective_evaluation.ts
+# The impure Automation Engine shell + adapters (NOT part of the pure core).
+AUTO_PURE=supabase/functions/_shared/intelligence/automation_guards.ts
+AUTO_WORKER=supabase/functions/_shared/worker_handlers/automation_execute.ts
+AUTO_MIGRATION=supabase/migrations/20260722120000_automation_engine.sql
+CONNECTOR_FILES=$(ls supabase/functions/_shared/connectors/*.ts)
+ADAPTER_IMPLS="supabase/functions/_shared/connectors/controlled_test.ts supabase/functions/_shared/connectors/internal_note.ts"
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
@@ -55,7 +62,7 @@ else
 fi
 
 echo "G4 — pure engine determinism self-tests:"
-for t in verify action_loop.verify decision.verify modes.verify objectives.verify objective_evaluation.verify ; do
+for t in verify action_loop.verify decision.verify modes.verify objectives.verify objective_evaluation.verify automation_guards.verify ; do
   if node "supabase/functions/_shared/intelligence/$t.ts" >/tmp/uif_$t.log 2>&1 ; then
     note PASS "$t.ts — all checks passed"
   else
@@ -122,6 +129,69 @@ if grep -qE 'SUPPORTED_OUTCOME_EVIDENCE_TYPES: *readonly string\[\] *= *\[\]' "$
   note PASS "confirmed contribution is impossible in v1 (empty supported-evidence set + boundary)"
 else
   note FAIL "v1 contribution boundary missing or supported-evidence set is non-empty"; fail=1
+fi
+
+echo "G6 — Universal Automation Engine boundaries (executor never re-decides):"
+# (a) the executor creates NO Decisions and NO business Actions (it only executes).
+if grep -nE '\.from\("(decision_log|actions)"\)\.insert|from\("intelligence_objects"\)[^;]*\.insert' "$AUTO_WORKER" ; then
+  note FAIL "automation_execute.ts creates a Decision/Action — it must only execute"; fail=1
+else
+  note PASS "executor creates no Decisions or business Actions"
+fi
+# (b) the executor NEVER writes Objective Health (facts flow via Outcomes only).
+if grep -nE 'objective_health' "$AUTO_WORKER" ; then
+  note FAIL "executor writes Objective Health directly"; fail=1
+else
+  note PASS "executor never writes Objective Health (Outcomes handoff only)"
+fi
+# (c) connector adapters do not import Decision/Mode/Policy logic and do not mutate
+#     lifecycle tables or publish events (they only return sanitized results).
+if grep -nE 'from "\.\./intelligence/(decision|modes|policy|authority)\.ts"|automation_intents|platform_events|\.update\(|\.insert\(' $CONNECTOR_FILES ; then
+  note FAIL "a connector adapter re-decides policy, mutates lifecycle, or publishes events"; fail=1
+else
+  note PASS "connector adapters stay dumb (no policy/lifecycle/events)"
+fi
+# (d) NO dangerous real connector capability is implemented in v1.
+if grep -nEi 'email\.send|purchasing\.|inventory\.adjust|calendar\.create_event|service\.schedule_visit|crm\.update' $CONNECTOR_FILES ; then
+  note FAIL "a dangerous real connector capability appears in an adapter"; fail=1
+else
+  note PASS "only safe internal adapters exist (no dangerous real connector)"
+fi
+# (e) the pre-existing schedule_engineer_visit intent stays UNSUPPORTED (enabled=false).
+if grep -qE "'schedule_engineer_visit',[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*, *false\)" "$AUTO_MIGRATION" ; then
+  note PASS "schedule_engineer_visit remains registered but unsupported (enabled=false)"
+else
+  note FAIL "schedule_engineer_visit is not pinned unsupported in the migration"; fail=1
+fi
+# (f) no BUSINESS-value outcome is produced (engine writes only operational outcomes;
+#     no business outcome_type is seeded, so the FK makes one impossible).
+if grep -nE 'outcome_layer: *"business"' "$AUTO_WORKER" || grep -nE "'[a-z_]+','business'" "$AUTO_MIGRATION" ; then
+  note FAIL "a business-value outcome is produced/seeded — v1 must not claim business value"; fail=1
+else
+  note PASS "engine records only operational outcomes (no business-value claim)"
+fi
+# (g) every automation.* EVENT literal the worker emits is in the controlled registry.
+A_REG="$(grep -oE '"automation\.(intent|execution|retry|outcome)\.[a-z.]+"' "$AUTO_PURE" | sort -u)"
+A_EMIT="$(grep -oE '"automation\.(intent|execution|retry|outcome)\.[a-z.]+"' "$AUTO_WORKER" | sort -u)"
+A_UNREG="$(comm -23 <(printf '%s\n' "$A_EMIT") <(printf '%s\n' "$A_REG"))"
+if [ -n "$A_UNREG" ]; then
+  note FAIL "executor emits an event outside the controlled registry: $A_UNREG"; fail=1
+else
+  note PASS "executor emits only controlled automation.* events"
+fi
+# (h) the pure guard is deterministic (no argless clock / randomness) + has the key.
+if grep -nE "Date\.now\(|Math\.random\(|new Date\(\)" "$AUTO_PURE" ; then
+  note FAIL "pure automation guard references a non-deterministic clock/random"; fail=1
+elif ! grep -q "buildIdempotencyKey" "$AUTO_PURE" ; then
+  note FAIL "deterministic idempotency key missing from the pure guard"; fail=1
+else
+  note PASS "pure guard is deterministic with a deterministic idempotency key"
+fi
+# (i) the controlled adapters make NO network / external calls (v1 is internal-only).
+if grep -nE 'fetch\(|createClient\(|new WebSocket|Deno\.connect|XMLHttpRequest|https?://' $ADAPTER_IMPLS ; then
+  note FAIL "a controlled adapter contains a network client / external call"; fail=1
+else
+  note PASS "controlled adapters make no network/external calls (internal-only)"
 fi
 
 echo ""
