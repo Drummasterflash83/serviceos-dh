@@ -9,7 +9,13 @@
 import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
 import { buildActionDrafts } from "../intelligence/action.ts";
 import { proposeImprovement } from "../intelligence/learning.ts";
-import type { Correction, IntelligenceObject, PolicyDecision } from "../intelligence/types.ts";
+import type {
+  Correction,
+  DecisionPackage,
+  IntelligenceObject,
+  PolicyDecision,
+} from "../intelligence/types.ts";
+import { reconstructApprovalDecision, type ApprovalOutputs } from "../review_approval.ts";
 import { materialiseActions, publish } from "./intelligence_observe.ts";
 
 // universal/industry/tenant → the corrections.correction_kind vocabulary
@@ -24,14 +30,17 @@ export async function handleIntelligenceReviewResolve(
 ): Promise<WorkerHandlerResult> {
   const { supabaseAdmin: db, tenantId, payload } = ctx;
   const reviewTaskId = payload?.review_task_id as string | undefined;
-  const resolution = payload?.resolution as "approve" | "correct" | undefined;
+  const resolution = payload?.resolution as "approve" | "reject" | "correct" | undefined;
   const operator = (payload?.operator as string | undefined) ?? "openfolk";
-  if (!reviewTaskId || (resolution !== "approve" && resolution !== "correct")) {
+  if (
+    !reviewTaskId ||
+    (resolution !== "approve" && resolution !== "reject" && resolution !== "correct")
+  ) {
     return {
       success: false,
       error: {
         code: "invalid_payload",
-        message: "payload {review_task_id, resolution: approve|correct} required",
+        message: "payload {review_task_id, resolution: approve|reject|correct} required",
         retryable: false,
       },
     };
@@ -64,10 +73,11 @@ export async function handleIntelligenceReviewResolve(
 
   const { data: dec } = await db
     .from("decision_log")
-    .select("outputs, policy_version_ids")
+    .select("outputs, decision_package, policy_version_ids")
     .eq("id", decisionId)
     .maybeSingle();
   const outputs = (dec?.outputs ?? {}) as Record<string, unknown>;
+  const decisionPackage = (dec?.decision_package as DecisionPackage | null) ?? null;
   const policyVersion = ((dec?.policy_version_ids as string[] | null) ?? [])[0] ?? null;
 
   const { data: obs } = await db
@@ -77,15 +87,37 @@ export async function handleIntelligenceReviewResolve(
     .maybeSingle();
   const observation = (obs ?? {}) as IntelligenceObject;
 
+  if (resolution === "reject") {
+    // Dismiss the review — record the decision, materialise NOTHING (no Action, no
+    // Automation Intent). The immutable decision/observation history is untouched.
+    await db
+      .from("review_tasks")
+      .update({
+        status: "dismissed",
+        resolved_by: operator,
+        resolved_at: new Date().toISOString(),
+        resolution: { rejected: true },
+      })
+      .eq("id", reviewTaskId);
+    await publish(
+      db,
+      tenantId,
+      "intelligence.review.rejected",
+      observationId,
+      observation.domain,
+      decisionId,
+      { operator },
+    );
+    return { success: true, recordsProcessed: 0, result: { rejected: true, action_ids: [] } };
+  }
+
   if (resolution === "approve") {
-    // Reconstruct just enough of the decision to rebuild the proposed actions.
-    const decision = {
-      priority: (outputs.priority as string | null) ?? null,
-      severity: (outputs.severity as string | null) ?? null,
-      deadline: (outputs.deadline as string | null) ?? null,
-      assignments: (outputs.assignments as PolicyDecision["assignments"]) ?? [],
-      action_proposals: (outputs.action_proposals as PolicyDecision["action_proposals"]) ?? [],
-    } as PolicyDecision;
+    // Rebuild the proposed action(s) from the immutable DecisionPackage produced by
+    // intelligence.observe (falls back to legacy outputs for the evaluate path).
+    const decision = reconstructApprovalDecision({
+      decisionPackage,
+      outputs: outputs as ApprovalOutputs,
+    }) as PolicyDecision;
 
     const drafts = buildActionDrafts({ ...observation, id: observationId }, decision);
     const actionIds = await materialiseActions(

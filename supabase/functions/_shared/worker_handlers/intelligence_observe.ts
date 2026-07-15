@@ -15,6 +15,7 @@ import { evaluateDecision } from "../intelligence/decision.ts";
 import { resolveOperationalMode } from "../intelligence/modes.ts";
 import { resolveObjectiveContext, verifyObjectiveLinks } from "../intelligence/objectives.ts";
 import { automationIntentFor } from "../intelligence/action.ts";
+import { DEFAULT_INTERNAL_CONNECTOR } from "../review_approval.ts";
 import type {
   CandidateObjectiveLink,
   DecisionInput,
@@ -534,12 +535,26 @@ export async function materialiseActions(
 
     const intent = automationIntentFor(a);
     if (intent) {
-      // EMIT intent only — the Automation Engine decides execution.
+      // EMIT intent only — the Automation Engine decides execution. Stamp the controlled
+      // connector + capability so the verified guard can run an INTERNAL (no-external-
+      // effect) capability; external-effect capabilities are left unstamped and require
+      // explicit connector configuration. The decision link lets the guard revalidate
+      // authority/mode against the originating DecisionPackage.
+      const { data: itype } = await db
+        .from("automation_intent_types")
+        .select("connector_capability, external_side_effect")
+        .eq("intent_type", intent.intent_type)
+        .maybeSingle();
+      const capabilityKey = (itype?.connector_capability as string | null) ?? null;
+      const internal = itype ? itype.external_side_effect === false : false;
       await db.from("automation_intents").insert({
         tenant_id: tenantId,
         action_object_id: actionId,
         intent_type: intent.intent_type,
         parameters: intent.parameters,
+        decision_id: decisionId,
+        connector_id: internal && capabilityKey ? DEFAULT_INTERNAL_CONNECTOR : null,
+        capability_key: capabilityKey,
       });
     }
     await publish(db, tenantId, "intelligence.action.created", actionId, a.domain, decisionId, {
