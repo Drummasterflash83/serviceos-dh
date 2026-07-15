@@ -329,6 +329,41 @@ export function shouldAcquireLock(mutating: boolean, dryRun: boolean): boolean {
   return mutating && !dryRun;
 }
 
+/** The outcome of attempting to acquire the lease. An `ok:false` is an
+ *  INFRASTRUCTURE failure (the RPC threw); it is NOT contention. */
+export type LockAttempt =
+  { ok: true; acquired: boolean; holder: string | null } | { ok: false; error: string };
+
+export interface LockClassification {
+  proceed: boolean;
+  failure: "infra" | "contended" | null;
+  message: string;
+}
+
+/**
+ * Classify a lock-acquire attempt. A thrown RPC error is reported as a **lock
+ * infrastructure failure** (abort before mutation — never infer contention); a clean
+ * `acquired:false` is genuine contention. This fixes the misleading double message
+ * where an ambiguous-column RPC error was reported as "another run holds the lease".
+ */
+export function classifyLockAttempt(attempt: LockAttempt, suite: string): LockClassification {
+  if (!attempt.ok) {
+    return {
+      proceed: false,
+      failure: "infra",
+      message: `lock infrastructure failure — aborting before mutation: ${attempt.error}`,
+    };
+  }
+  if (!attempt.acquired) {
+    return {
+      proceed: false,
+      failure: "contended",
+      message: `another verification run holds the '${suite}' lease (holder=${attempt.holder ?? "?"}) — refusing concurrent mutating run`,
+    };
+  }
+  return { proceed: true, failure: null, message: `acquired the '${suite}' lease` };
+}
+
 // ── CLI argument parsing ────────────────────────────────────────────────────
 
 export interface CliArgs {

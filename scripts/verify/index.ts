@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
   VerificationRun,
+  classifyLockAttempt,
   mergeEnv,
   newRunId,
   parseArgs,
@@ -22,6 +23,7 @@ import {
   resolveEnv,
   secretValues,
   shouldAcquireLock,
+  type LockAttempt,
   type SuiteReport,
 } from "./lib.ts";
 import { SUITES } from "./suites.ts";
@@ -111,19 +113,20 @@ async function main(): Promise<number> {
     });
 
     // Mutating suites take a tenant+suite lease so two concurrent runs can't collide.
+    // An RPC error is an INFRASTRUCTURE failure — abort before mutation, never infer
+    // contention.
     let lockHeld = false;
     if (shouldAcquireLock(!!suite.mutating, false)) {
-      let lock: { acquired: boolean; holder: string | null };
+      let attempt: LockAttempt;
       try {
-        lock = await client.acquireLock(suite.name, run.report.runId, LOCK_TTL_SECONDS);
+        const lock = await client.acquireLock(suite.name, run.report.runId, LOCK_TTL_SECONDS);
+        attempt = { ok: true, acquired: lock.acquired, holder: lock.holder };
       } catch (e) {
-        run.error(`lock acquire failed: ${e instanceof Error ? e.message : String(e)}`);
-        lock = { acquired: false, holder: null };
+        attempt = { ok: false, error: e instanceof Error ? e.message : String(e) };
       }
-      if (!lock.acquired) {
-        run.error(
-          `another verification run holds the '${suite.name}' lease (holder=${lock.holder ?? "?"}) — refusing concurrent mutating run`,
-        );
+      const cls = classifyLockAttempt(attempt, suite.name);
+      if (!cls.proceed) {
+        run.error(cls.message);
         const report = run.finish(new Date().toISOString());
         reports.push(report);
         console.log(renderTerminal(report, secrets));

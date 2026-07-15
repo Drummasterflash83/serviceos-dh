@@ -7,6 +7,7 @@ import {
   canReleaseLock,
   fixtureTag,
   isCleanupSafe,
+  classifyLockAttempt,
   isVerificationFixture,
   mergeEnv,
   newRunId,
@@ -419,6 +420,29 @@ check(
     shouldAcquireLock(true, false) === true &&
     shouldAcquireLock(false, false) === false,
 );
+
+// ── Lock error classification (RPC error ≠ contention) ──────────────────────
+console.log("Lock error classification:");
+const infra = classifyLockAttempt(
+  { ok: false, error: 'column reference "expires_at" is ambiguous' },
+  "automation",
+);
+check(
+  "RPC error ⇒ infrastructure failure, NOT contention",
+  infra.failure === "infra" &&
+    !infra.proceed &&
+    infra.message.includes("infrastructure") &&
+    !infra.message.includes("holds the"),
+);
+const contended = classifyLockAttempt({ ok: true, acquired: false, holder: "run-A" }, "automation");
+check(
+  "clean acquired:false ⇒ contention",
+  contended.failure === "contended" &&
+    !contended.proceed &&
+    contended.message.includes("holds the"),
+);
+const acquiredOk = classifyLockAttempt({ ok: true, acquired: true, holder: "run-B" }, "automation");
+check("acquired ⇒ proceed, no failure", acquiredOk.proceed === true && acquiredOk.failure === null);
 
 console.log(failures === 0 ? "\nALL HARNESS UNIT CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

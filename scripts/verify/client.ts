@@ -68,25 +68,25 @@ export async function makeClient(env: VerifyEnv): Promise<VerifyClient> {
     },
     async acquireLock(suite, runId, ttlSeconds) {
       const { data, error } = await db.rpc("verification_acquire_lock", {
-        p_tenant: env.tenantId,
+        p_tenant_id: env.tenantId,
         p_suite: suite,
-        p_run_id: runId,
+        p_verification_run_id: runId,
         p_ttl_seconds: ttlSeconds,
       });
-      if (error) throw new Error(`lock acquire failed: ${error.message}`);
+      if (error) throw new Error(`lock acquire RPC failed: ${error.message}`);
       const row = (Array.isArray(data) ? data[0] : data) as
-        { acquired?: boolean; holder?: string; expires_at?: string } | undefined;
+        { acquired?: boolean; holder?: string; lock_expires_at?: string } | undefined;
       return {
         acquired: !!row?.acquired,
         holder: row?.holder ?? null,
-        expiresAt: row?.expires_at ?? null,
+        expiresAt: row?.lock_expires_at ?? null,
       };
     },
     async releaseLock(suite, runId) {
       const { data, error } = await db.rpc("verification_release_lock", {
-        p_tenant: env.tenantId,
+        p_tenant_id: env.tenantId,
         p_suite: suite,
-        p_run_id: runId,
+        p_verification_run_id: runId,
       });
       return !error && data === true;
     },
