@@ -75,6 +75,28 @@ export function resolveEnv(source: Record<string, string | undefined>): ResolveE
   };
 }
 
+/**
+ * Merge a `.env.verify` file map with process.env SAFELY. A non-empty process value
+ * overrides the file (so exported CI vars still win); an EMPTY or whitespace-only
+ * process value must NOT clobber a populated file value (the bug: a blank exported
+ * `SUPABASE_URL=""` was overwriting the real file value because process.env was
+ * spread last). Emptiness is decided by trimming; the stored value is kept VERBATIM
+ * so secrets are never corrupted.
+ */
+export function mergeEnv(
+  fileEnv: Record<string, string>,
+  processEnv: Record<string, string | undefined>,
+): Record<string, string> {
+  const merged: Record<string, string> = { ...fileEnv };
+  for (const [k, v] of Object.entries(processEnv)) {
+    if (typeof v === "string" && v.trim().length > 0) {
+      merged[k] = v; // non-empty process value wins — verbatim, not trimmed
+    }
+    // empty / whitespace-only / undefined process values never overwrite a file value
+  }
+  return merged;
+}
+
 /** Derive the project ref from a Supabase URL (https://<ref>.supabase.co). */
 export function projectRefFromUrl(url: string): string | null {
   const m = url.match(/^https?:\/\/([a-z0-9-]+)\.supabase\.(?:co|in|net)/i);

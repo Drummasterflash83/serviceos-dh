@@ -8,6 +8,7 @@ import {
   fixtureTag,
   isCleanupSafe,
   isVerificationFixture,
+  mergeEnv,
   newRunId,
   parseArgs,
   parseDotenv,
@@ -69,6 +70,49 @@ check(
   "projectRefFromUrl",
   projectRefFromUrl("https://zzzz.supabase.co") === "zzzz" &&
     projectRefFromUrl("http://localhost") === null,
+);
+
+// ── Environment merge (file vs process.env; blank process must not clobber) ──
+console.log("Environment merge:");
+check(
+  "populated file value survives a BLANK process value",
+  mergeEnv({ SUPABASE_URL: "https://real.supabase.co" }, { SUPABASE_URL: "" }).SUPABASE_URL ===
+    "https://real.supabase.co",
+);
+check(
+  "populated process value overrides file value",
+  mergeEnv({ A: "file" }, { A: "proc" }).A === "proc",
+);
+check("missing file value is supplied by process value", mergeEnv({}, { A: "proc" }).A === "proc");
+check(
+  "whitespace-only process value does NOT overwrite file value",
+  mergeEnv({ A: "file" }, { A: "   " }).A === "file",
+);
+check(
+  "secret is preserved EXACTLY (blank process, verbatim value)",
+  mergeEnv({ SUPABASE_SERVICE_ROLE_KEY: SR }, { SUPABASE_SERVICE_ROLE_KEY: "" })
+    .SUPABASE_SERVICE_ROLE_KEY === SR &&
+    mergeEnv({}, { SUPABASE_SERVICE_ROLE_KEY: SR }).SUPABASE_SERVICE_ROLE_KEY === SR,
+);
+check(
+  "undefined process value never overwrites file value",
+  mergeEnv({ A: "file" }, { A: undefined }).A === "file",
+);
+check(
+  "exported CI var (file absent) is carried through",
+  mergeEnv(
+    { SUPABASE_URL: "https://x.supabase.co", SUPABASE_SERVICE_ROLE_KEY: SR },
+    { VERIFY_CI: "true" },
+  ).VERIFY_CI === "true",
+);
+check(
+  "dry-run/live: file env resolves despite blank exported values (the bug)",
+  resolveEnv(
+    mergeEnv(
+      { SUPABASE_URL: "https://real.supabase.co", SUPABASE_SERVICE_ROLE_KEY: SR },
+      { SUPABASE_URL: "", SUPABASE_SERVICE_ROLE_KEY: "", WORKER_SECRET: "" },
+    ),
+  ).ok === true,
 );
 
 console.log("Dotenv parsing:");

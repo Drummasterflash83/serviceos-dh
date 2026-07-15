@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
   VerificationRun,
+  mergeEnv,
   newRunId,
   parseArgs,
   parseDotenv,
@@ -46,7 +47,7 @@ async function main(): Promise<number> {
 
   // ── Dry-run: print the plan, never connect, never mutate. ──────────────────
   if (args.dryRun) {
-    const envCheck = resolveEnv({ ...loadEnvFile(), ...process.env });
+    const envCheck = resolveEnv(mergeEnv(loadEnvFile(), process.env));
     console.log(`▐ DRY RUN — no connection, no mutation`);
     console.log(
       envCheck.ok
@@ -67,7 +68,7 @@ async function main(): Promise<number> {
   }
 
   // ── Live: require env, confirm project, then run. ──────────────────────────
-  const resolved = resolveEnv({ ...loadEnvFile(), ...process.env });
+  const resolved = resolveEnv(mergeEnv(loadEnvFile(), process.env));
   if (!resolved.ok) {
     console.error(
       `Setup error: missing ${resolved.missing.join(", ")}.\n` +
