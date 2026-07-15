@@ -858,5 +858,94 @@ async function stageOrchestration() {
 }
 await stageOrchestration();
 
+// ── Intelligence-ingest suite: fixture planning + registration ───────────────
+console.log("Intelligence-ingest suite (fixture planning):");
+const {
+  SUITES: ALL_SUITES,
+  buildIngestInteractionFixture,
+  intelligenceIngestSuite,
+} = await import("./suites.ts");
+const { observeJobKey: obsKey } =
+  await import("../../supabase/functions/_shared/observation_ingest.ts");
+
+check(
+  "intelligence-ingest suite is registered, mutating, with a plan",
+  ALL_SUITES["intelligence-ingest"] === intelligenceIngestSuite &&
+    intelligenceIngestSuite.mutating === true &&
+    intelligenceIngestSuite.plan().length >= 10,
+);
+
+const fxRun = "verify-20260724-abcd1234";
+const emailFx = buildIngestInteractionFixture({
+  runId: fxRun,
+  tenantId: DEFAULT_VERIFY_TENANT,
+  channel: "email",
+  interactionId: "int-e",
+  nowIso: "2026-07-24T10:00:00Z",
+});
+const phoneFx = buildIngestInteractionFixture({
+  runId: fxRun,
+  tenantId: DEFAULT_VERIFY_TENANT,
+  channel: "phone",
+  interactionId: "int-p",
+  nowIso: "2026-07-24T10:00:00Z",
+});
+check(
+  "email fixture planning: enriched, tagged, email provenance",
+  emailFx.source_type === "email" &&
+    emailFx.source_table === "email_messages" &&
+    emailFx.interaction_type === "email_message" &&
+    emailFx.processing_status === "enriched" &&
+    isVerificationFixture(emailFx.metadata as Record<string, unknown>, fxRun),
+);
+check(
+  "phone fixture planning: enriched, tagged, phone provenance",
+  phoneFx.source_type === "phone" &&
+    phoneFx.source_table === "phone_calls" &&
+    phoneFx.interaction_type === "phone_call" &&
+    phoneFx.from_address === null &&
+    phoneFx.phone_from === "+440000000000" &&
+    isVerificationFixture(phoneFx.metadata as Record<string, unknown>, fxRun),
+);
+check(
+  "email + phone share IDENTICAL business content (differ only in provenance)",
+  emailFx.subject === phoneFx.subject &&
+    emailFx.summary === phoneFx.summary &&
+    emailFx.body_preview === phoneFx.body_preview &&
+    emailFx.direction === phoneFx.direction &&
+    emailFx.processing_status === phoneFx.processing_status &&
+    emailFx.source_type !== phoneFx.source_type,
+);
+check(
+  "fixture planning is deterministic (same inputs ⇒ identical row)",
+  JSON.stringify(
+    buildIngestInteractionFixture({
+      runId: fxRun,
+      tenantId: DEFAULT_VERIFY_TENANT,
+      channel: "email",
+      interactionId: "int-e",
+      nowIso: "2026-07-24T10:00:00Z",
+    }),
+  ) === JSON.stringify(emailFx),
+);
+check(
+  "ineligible fixture planning: overrides processing_status",
+  buildIngestInteractionFixture({
+    runId: fxRun,
+    tenantId: DEFAULT_VERIFY_TENANT,
+    channel: "phone",
+    interactionId: "int-x",
+    nowIso: "2026-07-24T10:00:00Z",
+    processingStatus: "pending",
+  }).processing_status === "pending",
+);
+check(
+  "observe job key is deterministic per interaction (same handler + mapper path)",
+  obsKey(DEFAULT_VERIFY_TENANT, "int-e", "obs-ingest/1") !==
+    obsKey(DEFAULT_VERIFY_TENANT, "int-p", "obs-ingest/1") &&
+    obsKey(DEFAULT_VERIFY_TENANT, "int-e", "obs-ingest/1") ===
+      obsKey(DEFAULT_VERIFY_TENANT, "int-e", "obs-ingest/1"),
+);
+
 console.log(failures === 0 ? "\nALL HARNESS UNIT CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

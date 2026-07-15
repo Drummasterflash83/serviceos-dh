@@ -386,7 +386,14 @@ export interface CliArgs {
   tenant: string | null;
 }
 
-const SUITES = new Set(["remote", "automation", "objectives", "intelligence", "all"]);
+const SUITES = new Set([
+  "remote",
+  "automation",
+  "objectives",
+  "intelligence",
+  "intelligence-ingest",
+  "all",
+]);
 
 export function parseArgs(argv: string[]): CliArgs {
   let suite = "remote";

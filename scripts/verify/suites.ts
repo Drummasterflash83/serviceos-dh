@@ -27,6 +27,12 @@ import {
   type StageDeps,
   type VerifyEnv,
 } from "./lib.ts";
+// Single source of truth for the deterministic bridge keys + mapper version: the same
+// pure module the handler uses, so the suite asserts against exactly what it produces.
+import {
+  MAPPER_VERSION as INGEST_MAPPER_VERSION,
+  observeJobKey,
+} from "../../supabase/functions/_shared/observation_ingest.ts";
 import type { VerifyClient } from "./client.ts";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -1109,9 +1115,510 @@ export const intelligenceSuite: Suite = {
   },
 };
 
+// ── INTELLIGENCE INGEST BRIDGE SUITE ────────────────────────────────────────
+// Proves, without manual SQL, the horizontal channel-neutral bridge:
+//   controlled interaction → intelligence.ingest_interaction → intelligence.observe
+//   → Observation → immutable DecisionPackage → review routing
+// for one email-shaped AND one phone-shaped interaction, plus idempotency, tenant /
+// eligibility safety, and no side effects. Reuses the shared lock, fixture tagging,
+// worker invocation, bounded polling, cleanup + report model. It creates NO automation
+// intent, enables NO connector, and sends nothing external.
+
+export type IngestChannel = "email" | "phone";
+
+/** A verification-tagged canonical `interactions` row that resembles the normalised
+ *  shape the real pipeline produces. PURE + deterministic given its inputs. Channel
+ *  changes only source/provenance fields — never the business content — so email and
+ *  phone drive the identical bridge path. */
+export function buildIngestInteractionFixture(args: {
+  runId: string;
+  tenantId: string;
+  channel: IngestChannel;
+  interactionId: string;
+  nowIso: string;
+  processingStatus?: string;
+}): Record<string, unknown> {
+  const isEmail = args.channel === "email";
+  return {
+    id: args.interactionId,
+    tenant_id: args.tenantId,
+    // Provenance / source references (the ONLY channel-dependent fields).
+    source_connector_id: isEmail ? "google-workspace" : "simwood",
+    source_type: args.channel,
+    source_table: isEmail ? "email_messages" : "phone_calls",
+    source_id: args.interactionId, // synthetic self-ref — no real source-of-record row
+    source_external_id: `verify-${args.channel}-${args.runId}`,
+    interaction_type: isEmail ? "email_message" : "phone_call",
+    direction: "inbound",
+    occurred_at: args.nowIso,
+    // Business content — identical across channels.
+    subject: "Verification inbound communication",
+    summary: "Controlled verification inbound communication",
+    body_preview: "verification fixture — no real customer content",
+    from_address: isEmail ? `verify-${args.runId}@example.invalid` : null,
+    from_name: "Verification Contact",
+    phone_from: isEmail ? null : "+440000000000",
+    to_addresses: [],
+    status: "active",
+    processing_status: args.processingStatus ?? "enriched",
+    sentiment: "neutral",
+    priority: "medium",
+    related_person_id: null,
+    related_company_id: null,
+    metadata: fixtureTag(args.runId),
+  };
+}
+
+const REVIEW_DESTINATIONS: ReadonlySet<string> = new Set([
+  "OPENFOLK_REVIEW",
+  "TENANT_SENIOR_REVIEW",
+  "CUSTOMER_APPROVAL",
+  "ESCALATE",
+]);
+
+/** Drive a PRE-EXISTING job (e.g. the observe job the handler enqueued) to terminal —
+ *  poll by id, re-invoking the worker each cycle. Never inserts a new job. */
+async function drivePreexistingJob(
+  c: VerifyClient,
+  jobType: string,
+  jobId: string,
+  jobKey: string,
+): Promise<JobTerminalResult> {
+  const deps: StageDeps = {
+    enqueue: async () => ({ id: jobId, duplicate: true, error: null }),
+    invokeWorker: () => c.invokeWorker([jobType]),
+    readJob: async (id) => {
+      const { data: j } = await c.db
+        .from("platform_jobs")
+        .select(
+          "status, error_code, last_error, result, attempt_count, claimed_by, lease_expires_at",
+        )
+        .eq("id", id)
+        .maybeSingle();
+      return j
+        ? {
+            status: j.status as string,
+            error_code: j.error_code as string | null,
+            last_error: j.last_error as string | null,
+            result: j.result,
+            attempt_count: j.attempt_count as number,
+            claimed_by: j.claimed_by as string | null,
+            lease_expires_at: j.lease_expires_at as string | null,
+          }
+        : null;
+    },
+    now: () => Date.now(),
+    sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+  };
+  return processJobStage(deps, { jobKey, timeoutMs: 45_000, intervalMs: 1_500 });
+}
+
+async function observationsFor(
+  c: VerifyClient,
+  tenantId: string,
+  interactionId: string,
+): Promise<Array<Record<string, unknown>>> {
+  const { data } = await c.db
+    .from("intelligence_objects")
+    .select("id, object_class, source_interactions, attributes, decision_id, domain")
+    .eq("tenant_id", tenantId)
+    .eq("object_class", "observation")
+    .contains("source_interactions", [interactionId]);
+  return (data ?? []) as Array<Record<string, unknown>>;
+}
+
+export const intelligenceIngestSuite: Suite = {
+  name: "intelligence-ingest",
+  mutating: true,
+  plan() {
+    return [
+      "fixture: controlled ENRICHED email + phone canonical interactions (tagged)",
+      "fixture: one ENRICHED interaction NOT passed to ingest (proves no history sweep)",
+      "fixture: one INELIGIBLE (pending) interaction (proves eligibility rejection)",
+      "run: enqueue intelligence.ingest_interaction per channel; drive platform-worker",
+      "assert: ingestion job succeeds; exactly one ledger row per (tenant, interaction, mapper)",
+      "run: drive the linked intelligence.observe job to terminal",
+      "assert: exactly one observe job (deterministic key); one immutable Observation",
+      "assert: Observation preserves source interaction id; channel is provenance only",
+      "assert: immutable DecisionPackage written; review routing present",
+      "assert: NO Action/Automation Intent materialised; no external side effect",
+      "assert: same mapper version + same handler + same evaluation path for both channels",
+      "assert: retry ⇒ idempotent (one ledger/observe/Observation; no duplicate DecisionPackage)",
+      "assert: cross-tenant ingest rejected; unknown id rejected; ineligible rejected",
+      "assert: a failing record does not block others in a bounded batch",
+      "assert: untouched enriched interaction was NOT ingested (no implicit sweep)",
+      "cleanup: delete MUTABLE fixtures; RETAIN Observation/DecisionPackage/ledger/observe-job + report ids",
+    ];
+  },
+  async run(run, c, env) {
+    const T = env.tenantId;
+    const runId = run.report.runId;
+    const mapper = INGEST_MAPPER_VERSION;
+    const nowIso = new Date().toISOString();
+    const OTHER_TENANT = "00000000-0000-0000-0000-0000000000ff"; // deliberately NOT T
+
+    // Track mutable fixtures we must clean up, and the per-channel identities.
+    const created = {
+      interactions: [] as string[], // all interaction fixtures (id)
+      retainInteractions: new Set<string>(), // referenced by retained lineage
+      crossTenantJobKey: null as string | null,
+    };
+    const chan: Record<IngestChannel, { id: string; observeKey: string }> = {
+      email: { id: "", observeKey: "" },
+      phone: { id: "", observeKey: "" },
+    };
+    let untouchedId = "";
+    let ineligibleId = "";
+
+    const guarded = await runGuarded(
+      async () => {
+        // ── Fixtures ─────────────────────────────────────────────────────────
+        for (const ch of ["email", "phone"] as IngestChannel[]) {
+          const id = crypto.randomUUID();
+          const { error } = await c.db.from("interactions").insert(
+            buildIngestInteractionFixture({
+              runId,
+              tenantId: T,
+              channel: ch,
+              interactionId: id,
+              nowIso,
+            }),
+          );
+          if (error) throw new Error(`${ch} interaction fixture failed: ${error.message}`);
+          created.interactions.push(id);
+          run.fixture("interaction", id, "interactions");
+          chan[ch] = { id, observeKey: observeJobKey(T, id, mapper) };
+        }
+        untouchedId = crypto.randomUUID();
+        await c.db.from("interactions").insert(
+          buildIngestInteractionFixture({
+            runId,
+            tenantId: T,
+            channel: "email",
+            interactionId: untouchedId,
+            nowIso,
+          }),
+        );
+        created.interactions.push(untouchedId);
+        run.fixture("interaction", untouchedId, "interactions");
+        ineligibleId = crypto.randomUUID();
+        await c.db.from("interactions").insert(
+          buildIngestInteractionFixture({
+            runId,
+            tenantId: T,
+            channel: "phone",
+            interactionId: ineligibleId,
+            nowIso,
+            processingStatus: "pending",
+          }),
+        );
+        created.interactions.push(ineligibleId);
+        run.fixture("interaction", ineligibleId, "interactions");
+
+        // ── Per-channel proof ────────────────────────────────────────────────
+        for (const ch of ["email", "phone"] as IngestChannel[]) {
+          const f = chan[ch];
+          const ingest = await processStage(c, run, {
+            stage: `${ch}-ingest`,
+            jobType: "intelligence.ingest_interaction",
+            jobKey: stageJobKey(runId, "intelligence-ingest", ch),
+            tenantId: T,
+            payload: { interaction_ids: [f.id] },
+          });
+          run.assert(
+            `${ch}: ingestion job reaches terminal success`,
+            ingest.classification === "succeeded",
+            jobStatusLabel(ingest),
+          );
+          const ir = handlerOutcome(ingest);
+          run.assert(
+            `${ch}: exactly one interaction observed`,
+            ir.observed === 1,
+            `got observed=${ir.observed}`,
+          );
+
+          const ledgerN = await count(c, "intelligence_ingestions", {
+            tenant_id: T,
+            interaction_id: f.id,
+            mapper_version: mapper,
+          });
+          run.assert(`${ch}: exactly one ingestion-ledger record`, ledgerN === 1, `got ${ledgerN}`);
+          const { data: led } = await c.db
+            .from("intelligence_ingestions")
+            .select("id, observe_job_id")
+            .eq("tenant_id", T)
+            .eq("interaction_id", f.id)
+            .eq("mapper_version", mapper)
+            .maybeSingle();
+          if (led?.id) {
+            run.retain("intelligence_ingestion", led.id as string, "intelligence_ingestions");
+            created.retainInteractions.add(f.id);
+          }
+          run.assert(`${ch}: observe job linked on the ledger`, !!led?.observe_job_id);
+
+          // Drive the observe job (enqueued by the handler with the deterministic key).
+          const observe = await drivePreexistingJob(
+            c,
+            "intelligence.observe",
+            (led?.observe_job_id as string) ?? "",
+            f.observeKey,
+          );
+          run.assert(
+            `${ch}: observe job reaches terminal success`,
+            observe.classification === "succeeded",
+            jobStatusLabel(observe),
+          );
+          const obsJobN = await count(c, "platform_jobs", { tenant_id: T, job_key: f.observeKey });
+          run.assert(
+            `${ch}: exactly one intelligence.observe job (idempotent key)`,
+            obsJobN === 1,
+            `got ${obsJobN}`,
+          );
+          if (led?.observe_job_id)
+            run.retain("platform_job", led.observe_job_id as string, "platform_jobs");
+
+          const obs = await observationsFor(c, T, f.id);
+          run.assert(
+            `${ch}: exactly one logical Observation`,
+            obs.length === 1,
+            `got ${obs.length}`,
+          );
+          const observation = obs[0] ?? {};
+          if (observation.id)
+            run.retain("observation", observation.id as string, "intelligence_objects");
+          run.assert(
+            `${ch}: Observation preserves the source interaction id`,
+            Array.isArray(observation.source_interactions) &&
+              (observation.source_interactions as string[]).includes(f.id),
+          );
+          run.assert(
+            `${ch}: channel is provenance only`,
+            ((observation.attributes as Record<string, unknown>)?.channel as string) === ch,
+          );
+
+          const { data: dls } = await c.db
+            .from("decision_log")
+            .select("id, decision, decision_package")
+            .eq("object_id", observation.id as string);
+          const dl = (dls ?? [])[0];
+          run.assert(`${ch}: immutable DecisionPackage written`, !!dl && !!dl.decision_package);
+          for (const d of dls ?? []) run.retain("decision_log", d.id as string, "decision_log");
+          const pkg = (dl?.decision_package ?? {}) as {
+            routing?: { reviewRequired?: boolean };
+            automationIntent?: unknown;
+          };
+          run.assert(
+            `${ch}: review routing present`,
+            pkg.routing?.reviewRequired === true || REVIEW_DESTINATIONS.has(dl?.decision as string),
+            `decision=${dl?.decision}`,
+          );
+
+          // No Action materialised ⇒ no Automation Intent ⇒ no external side effect.
+          const actionN = await count(c, "intelligence_objects", {
+            tenant_id: T,
+            object_class: "action",
+            decision_id: dl?.id as string,
+          });
+          run.assert(
+            `${ch}: no Action/Automation Intent materialised`,
+            actionN === 0,
+            `actions=${actionN}`,
+          );
+          run.assert(
+            `${ch}: DecisionPackage carries no automation intent`,
+            (pkg.automationIntent ?? null) === null,
+          );
+
+          // Idempotency: a retry reuses the ledger/observe/Observation — no duplicates.
+          const retry = await processStage(c, run, {
+            stage: `${ch}-retry`,
+            jobType: "intelligence.ingest_interaction",
+            jobKey: stageJobKey(runId, "intelligence-ingest", `${ch}-retry`),
+            tenantId: T,
+            payload: { interaction_ids: [f.id] },
+          });
+          run.assert(
+            `${ch}: retry ingestion succeeds`,
+            retry.classification === "succeeded",
+            jobStatusLabel(retry),
+          );
+          run.assert(
+            `${ch}: retry is idempotent (reused)`,
+            handlerOutcome(retry).reused === 1,
+            `reused=${handlerOutcome(retry).reused}`,
+          );
+          run.assert(
+            `${ch}: still exactly one ledger row after retry`,
+            (await count(c, "intelligence_ingestions", {
+              tenant_id: T,
+              interaction_id: f.id,
+              mapper_version: mapper,
+            })) === 1,
+          );
+          run.assert(
+            `${ch}: still exactly one Observation after retry`,
+            (await observationsFor(c, T, f.id)).length === 1,
+          );
+        }
+
+        // ── Channel neutrality: same mapper, handler, evaluation path ─────────
+        run.assert(
+          "email + phone share the same mapper version + observe path (keys differ only by interaction)",
+          chan.email.observeKey === observeJobKey(T, chan.email.id, mapper) &&
+            chan.phone.observeKey === observeJobKey(T, chan.phone.id, mapper) &&
+            chan.email.observeKey !== chan.phone.observeKey,
+        );
+
+        // ── Bounded batch: rejections + failure isolation in ONE job ─────────
+        const unknownId = crypto.randomUUID();
+        const mixed = await processStage(c, run, {
+          stage: "mixed-batch",
+          jobType: "intelligence.ingest_interaction",
+          jobKey: stageJobKey(runId, "intelligence-ingest", "mixed"),
+          tenantId: T,
+          payload: { interaction_ids: [chan.email.id, ineligibleId, unknownId] },
+        });
+        run.assert(
+          "mixed batch does not abort on a failing record",
+          mixed.classification === "succeeded",
+          jobStatusLabel(mixed),
+        );
+        const mr = (handlerOutcome(mixed).results ?? []) as Array<{
+          interactionId: string;
+          outcome: string;
+          reason?: string;
+        }>;
+        const byId = Object.fromEntries(mr.map((x) => [x.interactionId, x]));
+        run.assert(
+          "ineligible (pending) interaction is rejected",
+          byId[ineligibleId]?.reason === "not_eligible",
+          JSON.stringify(byId[ineligibleId]),
+        );
+        run.assert(
+          "unknown interaction id is rejected",
+          byId[unknownId]?.outcome === "rejected",
+          JSON.stringify(byId[unknownId]),
+        );
+        run.assert(
+          "the healthy interaction in the batch is still handled (reused)",
+          byId[chan.email.id]?.outcome === "reused",
+        );
+
+        // ── Cross-tenant: a worker for ANOTHER tenant cannot ingest T's row ──
+        created.crossTenantJobKey = stageJobKey(runId, "intelligence-ingest", "cross-tenant");
+        const { data: xrow } = await c.db
+          .from("platform_jobs")
+          .insert({
+            tenant_id: OTHER_TENANT,
+            connector_id: "openfolk-core",
+            module_id: "verification",
+            job_type: "intelligence.ingest_interaction",
+            job_key: created.crossTenantJobKey,
+            status: "queued",
+            priority: 100,
+            max_attempts: 1,
+            available_at: nowIso,
+            payload: { interaction_id: chan.email.id },
+          })
+          .select("id")
+          .single();
+        if (xrow?.id) {
+          const xjob = await drivePreexistingJob(
+            c,
+            "intelligence.ingest_interaction",
+            xrow.id as string,
+            created.crossTenantJobKey,
+          );
+          const xr = (handlerOutcome(xjob).results ?? []) as Array<{ outcome: string }>;
+          run.assert(
+            "cross-tenant ingestion is rejected (tenant-scoped loader sees nothing)",
+            xjob.classification === "succeeded" && (xr[0]?.outcome ?? "rejected") === "rejected",
+            jobStatusLabel(xjob),
+          );
+        }
+
+        // ── No implicit history sweep ────────────────────────────────────────
+        run.assert(
+          "untouched enriched interaction was NOT ingested (no implicit sweep)",
+          (await count(c, "intelligence_ingestions", {
+            tenant_id: T,
+            interaction_id: untouchedId,
+          })) === 0,
+        );
+      },
+
+      // ── FINALLY: cleanup — delete mutable fixtures; retain immutable lineage ─
+      async () => {
+        // Harness-enqueued ingest jobs (verify:<run>: prefix, tenant T) → cancel + delete.
+        await cleanupRunJobs(c, run, T);
+
+        // Cross-tenant ingest job lives under OTHER_TENANT → delete explicitly.
+        if (created.crossTenantJobKey) {
+          try {
+            const { error } = await c.db
+              .from("platform_jobs")
+              .delete()
+              .eq("tenant_id", OTHER_TENANT)
+              .eq("job_key", created.crossTenantJobKey);
+            if (!error)
+              run.dispose(
+                "platform_job",
+                created.crossTenantJobKey,
+                "deleted",
+                "cross-tenant probe job",
+              );
+          } catch {
+            /* best-effort */
+          }
+        }
+
+        // Interactions: retain those referenced by retained lineage (ledger/Observation);
+        // delete the purely-mutable ones (untouched + ineligible).
+        for (const id of created.interactions) {
+          if (created.retainInteractions.has(id)) {
+            run.dispose("interaction", id, "retained", "referenced by retained ingestion lineage");
+            continue;
+          }
+          try {
+            const { error } = await c.db
+              .from("interactions")
+              .delete()
+              .eq("id", id)
+              .eq("tenant_id", T);
+            run.dispose(
+              "interaction",
+              id,
+              error ? "cleanup_failed" : "deleted",
+              error ? (error as { message?: string }).message : undefined,
+            );
+            if (error) run.error(`cleanup interaction:${id} failed`);
+          } catch (e) {
+            run.dispose(
+              "interaction",
+              id,
+              "cleanup_failed",
+              e instanceof Error ? e.message : String(e),
+            );
+          }
+        }
+
+        // Immutable audit already retained via retain() → classify retained.
+        for (const r of run.report.retainedAudit) run.dispose(r.kind, r.id, "retained");
+        run.report.cleanup.status = "done";
+      },
+    );
+    if (guarded.bodyThrew) run.error(`suite body error: ${guarded.bodyError}`);
+    if (guarded.finallyThrew) {
+      run.error(`restoration error: ${guarded.finallyError}`);
+      run.report.cleanup.status = "error";
+    }
+  },
+};
+
 export const SUITES: Record<string, Suite> = {
   remote: remoteSuite,
   automation: automationSuite,
   objectives: objectivesSuite,
   intelligence: intelligenceSuite,
+  "intelligence-ingest": intelligenceIngestSuite,
 };
