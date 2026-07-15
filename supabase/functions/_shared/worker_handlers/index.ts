@@ -31,6 +31,7 @@ import {
   handleEmailMailboxDiscovery,
 } from "./email_sync.ts";
 import { handleIntelligenceEvaluate } from "./intelligence_evaluate.ts";
+import { handleIntelligenceIngest } from "./intelligence_ingest.ts";
 import { handleIntelligenceObserve } from "./intelligence_observe.ts";
 import { handleIntelligenceReviewResolve } from "./intelligence_review_resolve.ts";
 import { handleObjectiveEvaluate } from "./objective_evaluate.ts";
@@ -86,6 +87,7 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "email.workspace_backfill": handleEmailWorkspaceBackfill,
   "email.mailbox_discovery": handleEmailMailboxDiscovery,
   "intelligence.evaluate": handleIntelligenceEvaluate,
+  "intelligence.ingest_interaction": handleIntelligenceIngest,
   "intelligence.observe": handleIntelligenceObserve,
   "intelligence.review_resolve": handleIntelligenceReviewResolve,
   "objective.evaluate": handleObjectiveEvaluate,

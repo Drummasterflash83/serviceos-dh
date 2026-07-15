@@ -73,12 +73,22 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "email.workspace_backfill": handleEmailWorkspaceBackfill,
   "email.mailbox_discovery": handleEmailMailboxDiscovery,
   "intelligence.evaluate": handleIntelligenceEvaluate,
+  "intelligence.ingest_interaction": handleIntelligenceIngest,
   "intelligence.observe": handleIntelligenceObserve,
   "intelligence.review_resolve": handleIntelligenceReviewResolve,
   "objective.evaluate": handleObjectiveEvaluate,
   "automation.execute": handleAutomationExecute,
 };
 ```
+
+`intelligence.ingest_interaction` is the **channel-neutral bridge** from the canonical
+`interactions` projection into `intelligence.observe`. It maps an enriched interaction
+(phone/email/…) to a channel-neutral `ObservationDraft` and enqueues `intelligence.observe`
+— it never evaluates a Decision or creates an Automation Intent itself. Idempotency is
+enforced by the `intelligence_ingestions` ledger (atomic claim on
+`(tenant, interaction, mapper_version)`) plus the deterministic observe job key; it
+processes only explicit, bounded interaction ids (no history sweep). Full seam +
+idempotency model: **docs/INTELLIGENCE_INGEST_BRIDGE.md**.
 
 `automation.execute` is the **Universal Automation Engine** — it turns an already-authorised
 Automation Intent into controlled, idempotent, auditable execution via a connector adapter,
