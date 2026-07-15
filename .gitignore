@@ -20,6 +20,10 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Remote Verification Harness — secrets + generated reports (never commit)
+.env.verify
+.verification-results/
+
 # Supabase CLI local state (never commit — environment-specific)
 supabase/.temp/
 supabase/.branches/

@@ -174,6 +174,12 @@ their claim. Distributed cancellation is intentionally not built yet.
 
 ## Verification
 
+For repeatable, source-controlled verification of the **linked remote** project (schema,
+registries, append-only behaviour, and the full controlled Automation slice) without
+pasting SQL into the dashboard, use the **Remote Verification Harness** —
+`npm run verify:remote` / `verify:automation` / `verify:all`. See
+[REMOTE_VERIFICATION_HARNESS.md](REMOTE_VERIFICATION_HARNESS.md).
+
 Manual endpoints and the worker produce identical results (same handler). Prove:
 
 ```sql
