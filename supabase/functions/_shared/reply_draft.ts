@@ -8,12 +8,21 @@
 // attempt with NO transmission (external_side_effect = false). Pure + testable: no DB,
 // no network, no side effect.
 
+/** A pointer to a piece of business context that informed the drafted body. */
+export interface ReplyProvenanceRef {
+  kind: string;
+  ref: string;
+  note?: string;
+}
+
 export interface ReplyDraft {
   channel: string; // email (SMS/WhatsApp/… reuse the same shape later)
   recipient: string;
   subject: string;
   body: string;
   source_interaction: string;
+  /** Which business context informed the drafted body (empty for a generic draft). */
+  provenance: ReplyProvenanceRef[];
 }
 
 /** Normalise a reply subject: "Re: <original>" (idempotent — never "Re: Re: …"). */
@@ -36,6 +45,7 @@ export function buildReplyDraft(input: {
   originalSubject: string | null | undefined;
   body: string | null | undefined;
   sourceInteraction: string | null | undefined;
+  provenance?: ReplyProvenanceRef[];
 }): BuildReplyResult {
   if (!input.recipient || !input.recipient.trim()) return { ok: false, error: "no_recipient" };
   if (!input.body || !input.body.trim()) return { ok: false, error: "empty_body" };
@@ -48,6 +58,7 @@ export function buildReplyDraft(input: {
       subject: replySubject(input.originalSubject),
       body: input.body.slice(0, 4000), // bounded; no unbounded content in the audit record
       source_interaction: input.sourceInteraction,
+      provenance: Array.isArray(input.provenance) ? input.provenance : [],
     },
   };
 }

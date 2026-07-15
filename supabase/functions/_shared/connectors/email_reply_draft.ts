@@ -77,12 +77,20 @@ export const emailReplyDraftAdapter: AutomationConnectorAdapter = {
       .eq("id", sourceInteraction)
       .eq("tenant_id", input.tenantId)
       .maybeSingle();
+    const provenance = Array.isArray(input.parameters?.response_provenance)
+      ? (input.parameters.response_provenance as Array<{
+          kind: string;
+          ref: string;
+          note?: string;
+        }>)
+      : [];
     const built = buildReplyDraft({
       channel: "email",
       recipient: (it?.from_address as string | null) ?? null,
       originalSubject: (it?.subject as string | null) ?? null,
       body,
       sourceInteraction,
+      provenance,
     });
     if (!built.ok) {
       return {

@@ -16,6 +16,7 @@ import { resolveOperationalMode } from "../intelligence/modes.ts";
 import { resolveObjectiveContext, verifyObjectiveLinks } from "../intelligence/objectives.ts";
 import { automationIntentFor } from "../intelligence/action.ts";
 import { DEFAULT_INTERNAL_CONNECTOR } from "../review_approval.ts";
+import { assembleReplyDraft } from "../response_assistant.ts";
 import type {
   CandidateObjectiveLink,
   DecisionInput,
@@ -560,8 +561,27 @@ export async function materialiseActions(
       const sourceInteraction = Array.isArray(a.source_interactions)
         ? ((a.source_interactions[0] as string | undefined) ?? null)
         : null;
+      // For a reply-draft capability, generate the BUSINESS-AWARE body from existing
+      // context (customer card + projection + interaction history) at PROPOSAL time, so
+      // the human approves the actual context-aware response. Provenance records which
+      // context informed it. Falls back to the generic note text when unavailable.
+      let bodyText = noteText;
+      let responseProvenance: unknown[] | null = null;
+      if (capabilityKey === "email.reply_draft" && sourceInteraction) {
+        const drafted = await assembleReplyDraft(db, tenantId, sourceInteraction);
+        if (drafted && drafted.body) {
+          bodyText = drafted.body;
+          responseProvenance = drafted.provenance;
+        }
+      }
       const parameters = internal
-        ? { ...intent.parameters, note: noteText, source_interaction: sourceInteraction }
+        ? {
+            ...intent.parameters,
+            note: bodyText,
+            body: bodyText,
+            source_interaction: sourceInteraction,
+            ...(responseProvenance ? { response_provenance: responseProvenance } : {}),
+          }
         : intent.parameters;
       await db.from("automation_intents").insert({
         tenant_id: tenantId,
