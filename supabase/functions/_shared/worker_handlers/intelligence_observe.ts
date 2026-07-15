@@ -547,11 +547,19 @@ export async function materialiseActions(
         .maybeSingle();
       const capabilityKey = (itype?.connector_capability as string | null) ?? null;
       const internal = itype ? itype.external_side_effect === false : false;
+      // Internal capabilities record a NOTE (the drafted internal content). Derive it
+      // from the proposed action's description/title so the controlled internal adapter
+      // has the note text it requires — no external content, no customer-specific logic.
+      const noteText =
+        (typeof a.description === "string" && a.description) ||
+        (typeof a.subject === "string" && a.subject) ||
+        "Proposed internal note";
+      const parameters = internal ? { ...intent.parameters, note: noteText } : intent.parameters;
       await db.from("automation_intents").insert({
         tenant_id: tenantId,
         action_object_id: actionId,
         intent_type: intent.intent_type,
-        parameters: intent.parameters,
+        parameters,
         decision_id: decisionId,
         connector_id: internal && capabilityKey ? DEFAULT_INTERNAL_CONNECTOR : null,
         capability_key: capabilityKey,
