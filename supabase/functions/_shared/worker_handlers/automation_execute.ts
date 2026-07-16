@@ -29,10 +29,46 @@ import { enqueueAutomationExecution } from "../automation_execution_enqueue.ts";
 
 const TRIGGERS = new Set(["intent_created", "approval_completed", "retry", "repair", "manual"]);
 const LEASE_SECONDS = 300;
-const OUTCOME_TYPE_FOR_CAPABILITY: Record<string, string> = {
-  "internal.record_execution": "controlled_execution_recorded",
-  "internal.create_note": "internal_note_recorded",
-};
+
+/** The registered execution contract for a capability: what outcome it must record + the
+ *  adapter version the envelope binds. No contract ⇒ the capability is NOT executable. */
+interface CapabilityContract {
+  outcomeType: string;
+  outcomeLayer: string;
+  adapterVersion: string;
+}
+async function resolveCapabilityContract(
+  db: WorkerHandlerContext["supabaseAdmin"],
+  capabilityKey: string | null,
+): Promise<CapabilityContract | null> {
+  if (!capabilityKey) return null;
+  const { data } = await db
+    .from("automation_capability_contracts")
+    .select("outcome_type, outcome_layer, adapter_version, enabled")
+    .eq("capability_key", capabilityKey)
+    .maybeSingle();
+  if (!data || data.enabled === false) return null;
+  return {
+    outcomeType: data.outcome_type as string,
+    outcomeLayer: data.outcome_layer as string,
+    adapterVersion: data.adapter_version as string,
+  };
+}
+
+/** The exact immutable envelope the claim RPC returns; the adapter executes ONLY this. */
+interface ClaimedEnvelope {
+  attempt_id: string;
+  attempt_number: number;
+  envelope_parameters: Record<string, unknown> | null;
+  capability_key: string | null;
+  connector_id: string | null;
+  intent_type: string | null;
+  action_object_id: string | null;
+  decision_id: string | null;
+  schema_version: string | null;
+  adapter_version: string | null;
+  envelope_hash: string | null;
+}
 
 function isUuid(v: unknown): v is string {
   return (
@@ -73,6 +109,22 @@ export async function handleAutomationExecute(
   if (intent.tenant_id !== tenantId) {
     return err("cross_tenant_mismatch", "intent belongs to another tenant", false);
   }
+  if (intent.status === "executing") {
+    const leaseExpired =
+      typeof intent.lease_expires_at === "string" &&
+      new Date(intent.lease_expires_at as string).getTime() < Date.now();
+    if (!leaseExpired) {
+      return ok(intentId, "waiting", { reason_codes: ["lease_active"] });
+    }
+    const { data: recovered, error: recoveryError } = await db.rpc(
+      "automation_recover_expired_execution",
+      { p_tenant_id: tenantId, p_intent_id: intentId, p_job_id: jobId },
+    );
+    if (recoveryError) return err("execution_recovery_failed", recoveryError.message, true);
+    return ok(intentId, recovered ? "unknown" : "waiting", {
+      reason_codes: recovered ? ["execution_lease_expired"] : ["lease_active"],
+    });
+  }
 
   // 3) resolve facts (all fully resolved BEFORE the pure guard) ────────────────
   const { data: intentTypeRow } = await db
@@ -88,6 +140,9 @@ export async function handleAutomationExecute(
     (intentTypeRow?.connector_capability as string | null) ??
     null;
   const connectorId = (intent.connector_id as string | null) ?? null;
+
+  // P0-4: the capability's registered outcome contract (its presence gates execution).
+  const contract = await resolveCapabilityContract(db, capabilityKey);
 
   // Action object (same-tenant + its decision + domain for the profile).
   const { data: action } = await db
@@ -175,7 +230,7 @@ export async function handleAutomationExecute(
       intentId,
       intent: intent as Record<string, unknown>,
       supportsStatusLookup: !!intentTypeRow?.supports_status_lookup,
-      capabilityKey,
+      contract,
       correlationId,
       jobId,
       now,
@@ -238,6 +293,7 @@ export async function handleAutomationExecute(
           decision: null,
         },
     connector,
+    outcomeContractPresent: !!contract,
     dependenciesMet: true, // v1: no dependency graph wired; guard path exists for the future
     priorSucceededExecutionId: priorSucceededExecutionId ?? null,
     leaseActiveByOtherWorker: false,
@@ -298,12 +354,15 @@ export async function handleAutomationExecute(
       payload: { reason_codes: guard.reasonCodes },
     });
     if (guard.retryAt) {
+      // Distinct per-attempt retry key: never collides with (and vanishes behind) the
+      // currently-running base job under the active-job unique index.
       await enqueueAutomationExecution(db, {
         tenantId,
         automationIntentId: intentId,
         triggeredBy: "retry",
         correlationId,
         availableAt: guard.retryAt,
+        retryToken: (intent.attempts as number) ?? 0,
       });
     }
     return ok(intentId, "waiting", {
@@ -339,8 +398,7 @@ export async function handleAutomationExecute(
     p_engine_version: AUTOMATION_EXECUTOR_VERSION,
   });
   if (claimErr) return err("claim_failed", claimErr.message, true);
-  const claimed = (claimRows ?? [])[0] as
-    { attempt_id: string; attempt_number: number } | undefined;
+  const claimed = (claimRows ?? [])[0] as ClaimedEnvelope | undefined;
   if (!claimed) return ok(intentId, "waiting", { reason_codes: ["lease_active"] });
   const inFlightAttemptId = claimed.attempt_id;
   const nextAttempt = claimed.attempt_number;
@@ -364,15 +422,18 @@ export async function handleAutomationExecute(
     payload: { attempt: nextAttempt, in_flight_attempt_id: inFlightAttemptId },
   });
 
-  // 7) resolve adapter + execute ─────────────────────────────────────────────
-  const adapter = getAdapterForIntentType(intent.intent_type as string);
+  // 7) resolve adapter + execute the EXACT CLAIMED ENVELOPE ───────────────────
+  // P0-1: the adapter runs the envelope the claim RPC locked + hashed (returned above) —
+  // NOT a fresh read of the intent. This closes the read-vs-hash gap: the executed payload
+  // is provably identical to the hashed, approved one.
+  const adapter = getAdapterForIntentType(claimed.intent_type ?? (intent.intent_type as string));
   const operationInput: ConnectorExecutionInput = {
     tenantId,
     intentId: intent.id as string,
-    intentType: intent.intent_type as string,
-    capabilityKey: capabilityKey ?? "",
-    operationType: intent.intent_type as string,
-    parameters: (intent.parameters as Record<string, unknown>) ?? {},
+    intentType: claimed.intent_type ?? (intent.intent_type as string),
+    capabilityKey: claimed.capability_key ?? capabilityKey ?? "",
+    operationType: claimed.intent_type ?? (intent.intent_type as string),
+    parameters: (claimed.envelope_parameters as Record<string, unknown>) ?? {},
     idempotencyKey,
     correlationId,
   };
@@ -383,6 +444,14 @@ export async function handleAutomationExecute(
       outcome: "failed_permanent",
       errorCode: "no_adapter",
       errorMessage: "no adapter for intent type",
+      retryable: false,
+    };
+  } else if (adapter.adapterVersion !== claimed.adapter_version) {
+    // The running adapter code must match the contract version bound into the envelope.
+    result = {
+      outcome: "failed_permanent",
+      errorCode: "adapter_version_mismatch",
+      errorMessage: `adapter ${adapter.adapterVersion} != contract ${claimed.adapter_version}`,
       retryable: false,
     };
   } else {
@@ -414,107 +483,40 @@ export async function handleAutomationExecute(
     }
   }
 
-  // 8) plan lifecycle + APPEND the immutable TERMINAL attempt (supersedes in-flight).
+  // 8) plan lifecycle, then atomically commit terminal attempt + intent state + outcome +
+  // event (+ retry job when needed). The external call cannot share a DB transaction; this
+  // RPC is the single local commit point for its result.
   const plan = planPostExecution(result, nextAttempt, (intent.max_attempts as number) ?? 5, now);
-  const { data: attemptRow } = await db
-    .from("automation_execution_attempts")
-    .insert({
-      tenant_id: tenantId,
-      automation_intent_id: intentId,
-      action_object_id: (intent.action_object_id as string | null) ?? null,
-      connector_id: connectorId,
-      capability_key: capabilityKey,
-      operation_type: intent.intent_type as string,
-      idempotency_key: idempotencyKey,
-      attempt_number: nextAttempt,
-      worker,
-      started_at: now,
-      completed_at: new Date().toISOString(),
-      status: attemptStatus(result.outcome),
-      request_fingerprint: idempotencyKey,
-      request_snapshot: sanitizeParams((intent.parameters as Record<string, unknown>) ?? {}),
-      external_reference: result.externalReference ?? null,
-      response_class: result.outcome,
-      result: result.result ?? null,
-      error_code: result.errorCode ?? null,
-      error_class: result.outcome.startsWith("failed") ? result.outcome : null,
-      retryable: !!result.retryable,
-      retry_at: plan.retryAt,
-      correlation_id: correlationId,
-      previous_attempt_id: inFlightAttemptId, // lineage to the durable in-flight row
-      execution_engine_version: AUTOMATION_EXECUTOR_VERSION,
-    })
-    .select("id")
-    .single();
-  const attemptId = (attemptRow?.id as string | undefined) ?? inFlightAttemptId;
-
-  // 9) transition intent + outcome + events ──────────────────────────────────
-  await transition(db, tenantId, intentId, "executing", plan.toState, now, {
-    last_error: result.errorCode ?? null,
-    result: result.result ?? null,
-    lease_expires_at: null,
-  });
-
-  let outcomeId: string | null = null;
-  if (plan.toState === "succeeded") {
-    outcomeId = await appendOperationalOutcome(db, {
-      tenantId,
-      intent,
-      capabilityKey,
-      attemptId,
-      result,
-      now,
-      correlationId,
-      jobId,
-    });
-    await emit(db, {
-      tenantId,
-      type: "automation.execution.succeeded",
-      subjectId: intentId,
-      now,
-      correlationId,
-      jobId,
-      payload: { attempt: nextAttempt, external_reference: result.externalReference ?? null },
-    });
-  } else if (plan.toState === "unknown") {
-    await emit(db, {
-      tenantId,
-      type: "automation.execution.unknown",
-      subjectId: intentId,
-      now,
-      correlationId,
-      jobId,
-      payload: { attempt: nextAttempt },
-    });
-  } else {
-    await emit(db, {
-      tenantId,
-      type: "automation.execution.failed",
-      subjectId: intentId,
-      now,
-      correlationId,
-      jobId,
-      payload: { attempt: nextAttempt, reason_code: plan.reasonCode },
-    });
-    if (plan.enqueueRetry) {
-      await enqueueAutomationExecution(db, {
-        tenantId,
-        automationIntentId: intentId,
-        triggeredBy: "retry",
-        correlationId,
-        availableAt: plan.retryAt,
-      });
-      await emit(db, {
-        tenantId,
-        type: "automation.retry.scheduled",
-        subjectId: intentId,
-        now,
-        correlationId,
-        jobId,
-        payload: { retry_at: plan.retryAt },
-      });
-    }
+  const outcomeType = plan.toState === "succeeded" ? (contract?.outcomeType ?? null) : null;
+  const finalArgs = {
+    p_tenant_id: tenantId,
+    p_intent_id: intentId,
+    p_inflight_attempt_id: inFlightAttemptId,
+    p_worker: worker,
+    p_to_state: plan.toState,
+    p_result: result.result ?? {},
+    p_error_code: result.errorCode ?? null,
+    p_attempt_status: attemptStatus(result.outcome),
+    p_retryable: !!result.retryable,
+    p_retry_at: plan.enqueueRetry ? plan.retryAt : null,
+    p_external_reference: result.externalReference ?? null,
+    p_response_class: result.outcome,
+    p_outcome_type: outcomeType,
+    p_outcome_layer: contract?.outcomeLayer ?? "operational",
+    p_correlation_id: correlationId,
+    p_job_id: jobId,
+  };
+  // One immediate retry is safe: the RPC is atomic and the intent row remains executing
+  // when it fails, so there can be no partially committed duplicate.
+  let finalised = await db.rpc("automation_finalize_execution", finalArgs);
+  if (finalised.error) finalised = await db.rpc("automation_finalize_execution", finalArgs);
+  if (finalised.error) {
+    return err("finalisation_failed", finalised.error.message, true);
   }
+  const finalRow = (finalised.data ?? [])[0] as
+    { execution_attempt_id?: string; outcome_id?: string | null } | undefined;
+  const attemptId = finalRow?.execution_attempt_id ?? null;
+  const outcomeId = finalRow?.outcome_id ?? null;
 
   return ok(intentId, plan.toState, {
     execution_attempt_id: attemptId ?? null,
@@ -537,16 +539,6 @@ function ok(intentId: string, status: string, extra: Record<string, unknown>): W
 }
 function attemptStatus(o: ConnectorExecutionResult["outcome"]): string {
   return o === "succeeded" ? "succeeded" : o === "unknown" ? "unknown" : o;
-}
-function sanitizeParams(p: Record<string, unknown>): Record<string, unknown> {
-  // Drop anything that could carry a secret; keep bounded business parameters.
-  const banned = /token|secret|password|credential|authorization|apikey|api_key/i;
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(p)) {
-    if (banned.test(k)) continue;
-    out[k] = typeof v === "string" ? v.slice(0, 2000) : v;
-  }
-  return out;
 }
 function requiredApprover(pkg: DecisionPackage | null): string | null {
   const r = pkg?.routing;
@@ -632,82 +624,11 @@ async function resolveConnector(
 }
 
 /**
- * Append the immutable OPERATIONAL outcome for a successful execution. Provenance is
- * explicit (layer, type, source kind + record id, attempt/action/intent ids, evidence,
- * verification state) and it is `system_observed` — never a business outcome. Deduped:
- * at most one non-superseded operational outcome per intent (so unknown-result
- * resolution cannot double-record); a correction would append a superseding outcome.
- */
-async function appendOperationalOutcome(
-  db: WorkerHandlerContext["supabaseAdmin"],
-  args: {
-    tenantId: string;
-    intent: Record<string, unknown>;
-    capabilityKey: string | null;
-    attemptId: string | null;
-    result: ConnectorExecutionResult;
-    now: string;
-    correlationId: string | null;
-    jobId: string | null;
-  },
-): Promise<string | null> {
-  const { tenantId, intent, capabilityKey, attemptId, result, now, correlationId, jobId } = args;
-  const outcomeType = OUTCOME_TYPE_FOR_CAPABILITY[capabilityKey ?? ""] ?? null;
-  if (!outcomeType) return null;
-  const intentId = intent.id as string;
-  const { data: existing } = await db
-    .from("outcomes")
-    .select("id")
-    .eq("tenant_id", tenantId)
-    .eq("automation_intent_id", intentId)
-    .eq("outcome_type", outcomeType)
-    .is("supersedes", null)
-    .limit(1);
-  if ((existing ?? []).length > 0) return (existing ?? [])[0].id as string;
-
-  const { data: oc } = await db
-    .from("outcomes")
-    .insert({
-      tenant_id: tenantId,
-      action_object_id: (intent.action_object_id as string | null) ?? null,
-      automation_intent_id: intentId,
-      execution_attempt_id: attemptId,
-      outcome_type: outcomeType,
-      outcome_layer: "operational", // NEVER business — controlled adapters observe only
-      status: "observed",
-      verification_state: "system_observed",
-      source_kind: "automation_execution",
-      source_record_id: attemptId,
-      observed_at: now,
-      evidence: result.evidenceRefs ?? [],
-      confidence: null,
-      source: "automation.execute",
-      external_reference: result.externalReference ?? null,
-      correlation_id: correlationId,
-    })
-    .select("id")
-    .single();
-  const id = (oc?.id as string | undefined) ?? null;
-  if (id) {
-    await emit(db, {
-      tenantId,
-      type: "automation.outcome.recorded",
-      subjectType: "outcome",
-      subjectId: id,
-      now,
-      correlationId,
-      jobId,
-      payload: { intent_id: intentId, outcome_type: outcomeType },
-    });
-  }
-  return id;
-}
-
-/**
- * Reconcile an `unknown` (lost-response) intent WITHOUT a blind retry. If the connector
- * supports status lookup and an external reference exists, resolve via getStatus and
- * append a superseding attempt (and outcome, if now succeeded); otherwise route to the
- * correct human review owner. Never rewrites history.
+ * Reconcile an `unknown` (lost-response) intent WITHOUT a blind retry. It performs only the
+ * (external) status lookup here; the LOCAL commit — superseding attempt + lifecycle transition
+ * + outcome, or routing to human review when still unknown — goes through ONE atomic RPC
+ * (automation_resolve_unknown_execution), the same single-transaction mechanism finalise and
+ * recover use. Never rewrites history; never blindly retries.
  */
 async function resolveUnknownIntent(
   db: WorkerHandlerContext["supabaseAdmin"],
@@ -716,22 +637,14 @@ async function resolveUnknownIntent(
     intentId: string;
     intent: Record<string, unknown>;
     supportsStatusLookup: boolean;
-    capabilityKey: string | null;
+    contract: CapabilityContract | null;
     correlationId: string | null;
     jobId: string | null;
     now: string;
   },
 ): Promise<WorkerHandlerResult> {
-  const {
-    tenantId,
-    intentId,
-    intent,
-    supportsStatusLookup,
-    capabilityKey,
-    correlationId,
-    jobId,
-    now,
-  } = args;
+  const { tenantId, intentId, intent, supportsStatusLookup, contract, correlationId, jobId, now } =
+    args;
   const { data: attempts } = await db
     .from("automation_execution_attempts")
     .select("id, external_reference")
@@ -743,10 +656,12 @@ async function resolveUnknownIntent(
   const extRef = (last?.external_reference as string | null) ?? null;
   const plan = planUnknownResolution({ supportsStatusLookup, hasExternalReference: !!extRef });
 
+  // Default resolution: still unknown ⇒ route to review (p_to_state 'unknown').
+  let statusResult: ConnectorExecutionResult | null = null;
+  let toState: "succeeded" | "failed" | "unknown" = "unknown";
   if (plan.path === "status_check") {
     const adapter = getAdapterForIntentType(intent.intent_type as string);
     if (adapter?.getStatus && extRef) {
-      let statusResult: ConnectorExecutionResult;
       try {
         statusResult = await adapter.getStatus(extRef, { supabaseAdmin: db, now });
       } catch {
@@ -758,110 +673,36 @@ async function resolveUnknownIntent(
         (intent.max_attempts as number) ?? 5,
         now,
       );
-      const { data: resAttempt } = await db
-        .from("automation_execution_attempts")
-        .insert({
-          tenant_id: tenantId,
-          automation_intent_id: intentId,
-          action_object_id: (intent.action_object_id as string | null) ?? null,
-          connector_id: (intent.connector_id as string | null) ?? null,
-          capability_key: capabilityKey,
-          operation_type: intent.intent_type as string,
-          idempotency_key: (intent.idempotency_key as string | null) ?? "",
-          attempt_number: (intent.attempts as number) ?? 1,
-          worker: `status_check:${jobId ?? "manual"}`,
-          started_at: now,
-          completed_at: new Date().toISOString(),
-          status: attemptStatus(statusResult.outcome),
-          response_class: statusResult.outcome,
-          external_reference: statusResult.externalReference ?? extRef,
-          result: statusResult.result ?? null,
-          error_code: statusResult.errorCode ?? null,
-          retryable: false,
-          correlation_id: correlationId,
-          previous_attempt_id: (last?.id as string | undefined) ?? null,
-          execution_engine_version: AUTOMATION_EXECUTOR_VERSION,
-        })
-        .select("id")
-        .single();
-      const resAttemptId = (resAttempt?.id as string | undefined) ?? null;
-
-      if (post.toState === "succeeded") {
-        await transition(db, tenantId, intentId, "unknown", "succeeded", now, {
-          lease_expires_at: null,
-        });
-        const outcomeId = await appendOperationalOutcome(db, {
-          tenantId,
-          intent,
-          capabilityKey,
-          attemptId: resAttemptId,
-          result: statusResult,
-          now,
-          correlationId,
-          jobId,
-        });
-        await emit(db, {
-          tenantId,
-          type: "automation.execution.succeeded",
-          subjectId: intentId,
-          now,
-          correlationId,
-          jobId,
-          payload: { resolved_from: "unknown" },
-        });
-        return ok(intentId, "succeeded", { resolved_from: "unknown", outcome_id: outcomeId });
-      }
-      if (post.toState === "failed") {
-        await transition(db, tenantId, intentId, "unknown", "failed", now, {
-          lease_expires_at: null,
-        });
-        await emit(db, {
-          tenantId,
-          type: "automation.execution.failed",
-          subjectId: intentId,
-          now,
-          correlationId,
-          jobId,
-          payload: { resolved_from: "unknown" },
-        });
-        return ok(intentId, "failed", { resolved_from: "unknown" });
-      }
-      // still unknown → fall through to review
+      if (post.toState === "succeeded" || post.toState === "failed") toState = post.toState;
     }
   }
 
-  await routeUnknownToReview(db, { tenantId, intentId, intent, correlationId });
-  return ok(intentId, "unknown_routed_to_review", { reason_codes: ["external_result_unknown"] });
-}
-
-/** Route an unresolved unknown intent to a human review owner (idempotent — never
- *  stacks duplicate pending review tasks for the same object). */
-async function routeUnknownToReview(
-  db: WorkerHandlerContext["supabaseAdmin"],
-  args: {
-    tenantId: string;
-    intentId: string;
-    intent: Record<string, unknown>;
-    correlationId: string | null;
-  },
-): Promise<void> {
-  const objectId = (args.intent.action_object_id as string | null) ?? null;
-  if (!objectId) return;
-  const { data: existing } = await db
-    .from("review_tasks")
-    .select("id")
-    .eq("tenant_id", args.tenantId)
-    .eq("object_id", objectId)
-    .eq("route", "openfolk")
-    .eq("status", "pending")
-    .limit(1);
-  if ((existing ?? []).length > 0) return;
-  await db.from("review_tasks").insert({
-    tenant_id: args.tenantId,
-    object_id: objectId,
-    route: "openfolk",
-    reason: "automation execution result unknown — reconcile before any retry",
-    decision_id: (args.intent.decision_id as string | null) ?? null,
+  const outcomeType = toState === "succeeded" ? (contract?.outcomeType ?? null) : null;
+  const { data: rows, error } = await db.rpc("automation_resolve_unknown_execution", {
+    p_tenant_id: tenantId,
+    p_intent_id: intentId,
+    p_to_state: toState,
+    p_result: statusResult?.result ?? {},
+    p_error_code: statusResult?.errorCode ?? null,
+    p_attempt_status: statusResult ? attemptStatus(statusResult.outcome) : "unknown",
+    p_external_reference: statusResult?.externalReference ?? extRef,
+    p_response_class: statusResult?.outcome ?? "unknown",
+    p_outcome_type: outcomeType,
+    p_outcome_layer: contract?.outcomeLayer ?? "operational",
+    p_correlation_id: correlationId,
+    p_job_id: jobId,
+  });
+  if (error) return err("unknown_resolution_failed", error.message, true);
+  const row = (rows ?? [])[0] as
+    { resolution?: string; execution_attempt_id?: string; outcome_id?: string | null } | undefined;
+  const resolution = row?.resolution ?? "routed_to_review";
+  if (resolution === "routed_to_review") {
+    return ok(intentId, "unknown_routed_to_review", { reason_codes: ["external_result_unknown"] });
+  }
+  return ok(intentId, resolution, {
+    resolved_from: "unknown",
+    execution_attempt_id: row?.execution_attempt_id ?? null,
+    outcome_id: row?.outcome_id ?? null,
   });
 }
 

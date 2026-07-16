@@ -227,7 +227,10 @@ export function UnifiedTimeline() {
                 <span
                   className={cn(
                     "text-[10px] capitalize",
-                    i.processing_status === "analysed" ? "text-success" : "text-muted-foreground",
+                    // ready/enriched (and the legacy 'analysed' synonym) = processed.
+                    ["ready", "enriched", "analysed"].includes(i.processing_status)
+                      ? "text-success"
+                      : "text-muted-foreground",
                   )}
                 >
                   {i.processing_status}

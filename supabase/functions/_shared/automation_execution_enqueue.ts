@@ -19,23 +19,31 @@ export interface EnqueueAutomationExecutionInput {
   correlationId?: string | null;
   forceGuardRecheck?: boolean;
   availableAt?: string | null;
+  /** A per-attempt token that makes a RETRY key distinct from the running base job, so a
+   *  reschedule enqueued while the current job is still `running` can never collide-and-
+   *  vanish under the active-job unique index. Pass the current attempt count. */
+  retryToken?: string | number | null;
 }
 
 /**
- * Idempotent enqueue of `automation.execute`. All triggers share the job key
- * `automation.execute:{tenant}:{intent}`, so a pending execution is never stacked
- * (a retry, an approval-release and a repair scan collapse to one active job). The
- * intent lifecycle + idempotency key remain the authoritative execution guards.
+ * Idempotent enqueue of `automation.execute`. Non-retry triggers share the job key
+ * `automation.execute:{tenant}:{intent}`, so a fresh execution is never stacked (an
+ * approval-release and a repair scan collapse to one active job). A RETRY passes a
+ * `retryToken` so its key is `…:{intent}:retry:{token}` — distinct from the running base
+ * job, so the reschedule survives. The intent lifecycle + claim RPC remain the
+ * authoritative single-execution guards regardless of how many jobs point at the intent.
  */
 export async function enqueueAutomationExecution(
   client: SupabaseClient,
   input: EnqueueAutomationExecutionInput,
 ): Promise<EnqueueResult> {
   if (!input.tenantId || !input.automationIntentId) return { id: null, duplicate: false };
+  const baseKey = `automation.execute:${input.tenantId}:${input.automationIntentId}`;
+  const jobKey = input.retryToken != null ? `${baseKey}:retry:${input.retryToken}` : baseKey;
   return enqueueJob(client, {
     tenantId: input.tenantId,
     jobType: "automation.execute",
-    jobKey: `automation.execute:${input.tenantId}:${input.automationIntentId}`,
+    jobKey,
     connectorId: "openfolk-core",
     moduleId: "core.automation",
     availableAt: input.availableAt ?? null,

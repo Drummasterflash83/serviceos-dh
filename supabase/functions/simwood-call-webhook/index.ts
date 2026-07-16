@@ -15,11 +15,7 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, createSupabaseAdmin, jsonResponse, PROVIDER } from "../_shared/simwood.ts";
-
-// TODO(multi-tenant): the single-tenant fallback mirrors the scheduled syncs. Once
-// the webhook can prove tenant from the payload (customer id / DID → tenant map),
-// drop the constant.
-const FALLBACK_TENANT_ID = "00000000-0000-0000-0000-000000000001";
+import { resolveWebhookTenant, type WebhookTenantResolution } from "../_shared/webhook_tenant.ts";
 
 type Admin = SupabaseClient;
 
@@ -93,36 +89,41 @@ function normalise(body: Record<string, unknown>): Normalised | null {
   };
 }
 
-/** Resolve the tenant from connector config; never trust the payload's tenant. */
-async function resolveTenant(admin: Admin, customerId: string | null): Promise<string> {
+/** Resolve the tenant from connector config; never trust or default from payload. */
+async function resolveTenant(
+  admin: Admin,
+  customerId: string | null,
+): Promise<WebhookTenantResolution> {
   const { data: tcs } = await admin
     .from("tenant_connectors")
     .select("id, tenant_id")
     .eq("connector_id", PROVIDER)
     .eq("enabled", true);
   const rows = (tcs ?? []) as { id: string; tenant_id: string }[];
-  if (rows.length === 0) return FALLBACK_TENANT_ID;
-  const tenantByTc = new Map(rows.map((r) => [r.id, r.tenant_id]));
+  const ids = rows.map((r) => r.id);
+  const { data: accts } = ids.length
+    ? await admin
+        .from("connector_accounts")
+        .select("tenant_connector_id, account_key, settings")
+        .in("tenant_connector_id", ids)
+        .eq("status", "active")
+    : { data: [] };
+  return resolveWebhookTenant({
+    customerId,
+    connectors: rows.map((r) => ({ id: r.id, tenantId: r.tenant_id })),
+    accounts: ((accts ?? []) as Record<string, unknown>[]).map((a) => ({
+      connectorId: a.tenant_connector_id as string,
+      accountKey: str(a.account_key),
+      providerCustomerId: str((a.settings as Record<string, unknown> | null)?.provider_customer_id),
+    })),
+  });
+}
 
-  if (customerId) {
-    const { data: accts } = await admin
-      .from("connector_accounts")
-      .select("tenant_connector_id, account_key, settings")
-      .in("tenant_connector_id", Array.from(tenantByTc.keys()))
-      .eq("status", "active");
-    for (const a of (accts ?? []) as Record<string, unknown>[]) {
-      const settings = (a.settings ?? {}) as Record<string, unknown>;
-      const key = str(a.account_key);
-      const sid = str(settings.provider_customer_id);
-      if (key === customerId || sid === customerId) {
-        return tenantByTc.get(a.tenant_connector_id as string) ?? FALLBACK_TENANT_ID;
-      }
-    }
-  }
-
-  // Exactly one operational tenant → unambiguous. Otherwise fall back (TODO).
-  const distinct = Array.from(new Set(rows.map((r) => r.tenant_id)));
-  return distinct.length === 1 ? distinct[0] : FALLBACK_TENANT_ID;
+async function sha256(value: string): Promise<string> {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(bytes))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /** Evidence-led matching: exact caller-number history only. No fake person match. */
@@ -217,21 +218,36 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const n = normalise(raw);
   if (!n) return fail("invalid_payload", "Could not resolve a call id from the payload", 400);
 
-  const tenantId = await resolveTenant(admin, n.customerId);
-
-  // 1) Persist the raw event (audit/replay). Store the payload verbatim (no secrets).
-  await admin.from("live_call_events").insert({
-    tenant_id: tenantId,
-    provider: PROVIDER,
-    provider_call_id: n.providerCallId,
-    event_type: n.eventType,
-    caller_number: n.caller,
-    callee_number: n.callee,
-    extension: n.extension,
-    direction: n.direction,
-    occurred_at: n.occurredAt,
-    raw_payload: raw,
-  });
+  const payloadText = JSON.stringify(raw);
+  const payloadHash = await sha256(payloadText);
+  const deliveryKey = await sha256(
+    [n.providerCallId, n.eventType, n.occurredAt, payloadHash].join("\n"),
+  );
+  const resolution = await resolveTenant(admin, n.customerId);
+  if (resolution.kind === "quarantine") {
+    const { error } = await admin.rpc("quarantine_inbound_webhook", {
+      p_provider: PROVIDER,
+      p_delivery_key: deliveryKey,
+      p_provider_call_id: n.providerCallId,
+      p_provider_customer_id: n.customerId,
+      p_reason_code: resolution.reason,
+      p_occurred_at: n.occurredAt,
+      p_payload: raw,
+      p_payload_sha256: payloadHash,
+    });
+    if (error) return fail("quarantine_failed", "Could not quarantine webhook delivery", 500);
+    return jsonResponse(
+      {
+        success: true,
+        accepted: false,
+        quarantined: true,
+        reason: resolution.reason,
+        delivery_key: deliveryKey,
+      },
+      202,
+    );
+  }
+  const tenantId = resolution.tenantId;
 
   // 2) Assign to the user mapped to this extension (Mary → 102).
   let assignedUserId: string | null = null;
@@ -251,50 +267,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // 3) Evidence-led matching (only for live/inbound-relevant events).
   const match = await buildMatch(admin, tenantId, n.caller);
 
-  // 4) Map event → session status/timestamps.
-  const status =
-    n.eventType === "answered"
-      ? "answered"
-      : n.eventType === "completed"
-        ? "completed"
-        : n.eventType === "missed"
-          ? "missed"
-          : n.eventType === "failed"
-            ? "failed"
-            : "ringing";
-
-  const nowIso = n.occurredAt;
-  const patch: Record<string, unknown> = {
-    tenant_id: tenantId,
-    provider: PROVIDER,
-    provider_call_id: n.providerCallId,
-    caller_number: n.caller,
-    callee_number: n.callee,
-    extension: n.extension,
-    direction: n.direction ?? "inbound",
-    status,
-    latest_event_at: nowIso,
-    match_status: match.matchStatus,
-    matched_person_id: match.personId,
-    confidence: match.confidence,
-    evidence: match.evidence,
-  };
-  if (assignedUserId) patch.assigned_user_id = assignedUserId;
-  if (n.eventType === "answered") patch.answered_at = nowIso;
-  if (n.eventType === "completed" || n.eventType === "missed" || n.eventType === "failed") {
-    patch.completed_at = nowIso;
-  }
-
-  const { error: upsertErr } = await admin
-    .from("live_call_sessions")
-    .upsert(patch, { onConflict: "tenant_id,provider,provider_call_id" });
-  if (upsertErr) return fail("db_error", "Could not upsert live call session", 500);
+  // Persist immutable event + conditionally advance the session in one transaction.
+  const { data: ingestRows, error: ingestErr } = await admin.rpc("ingest_live_call_webhook", {
+    p_tenant_id: tenantId,
+    p_provider: PROVIDER,
+    p_delivery_key: deliveryKey,
+    p_provider_call_id: n.providerCallId,
+    p_event_type: n.eventType,
+    p_caller_number: n.caller,
+    p_callee_number: n.callee,
+    p_extension: n.extension,
+    p_direction: n.direction,
+    p_occurred_at: n.occurredAt,
+    p_raw_payload: raw,
+    p_assigned_user_id: assignedUserId,
+    p_match_status: match.matchStatus,
+    p_matched_person_id: match.personId,
+    p_confidence: match.confidence,
+    p_evidence: match.evidence,
+  });
+  if (ingestErr) return fail("db_error", "Could not ingest live call event", 500);
+  const ingest = (ingestRows ?? [])[0] as
+    { duplicate?: boolean; session_updated?: boolean } | undefined;
 
   return jsonResponse({
     success: true,
     provider_call_id: n.providerCallId,
     event_type: n.eventType,
-    status,
+    duplicate: !!ingest?.duplicate,
+    session_updated: !!ingest?.session_updated,
     assigned: Boolean(assignedUserId),
     match_status: match.matchStatus,
   });

@@ -132,3 +132,15 @@ verify_jwt = false
 # queued platform_jobs. Not tenant-bound (cross-tenant infrastructure).
 [functions.platform-worker]
 verify_jwt = false
+
+# Scheduled intelligence-ingestion scan — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against INTELLIGENCE_INGEST_SECRET. Selects
+# enriched-but-uningested interactions and enqueues intelligence.ingest_interaction jobs.
+[functions.intelligence-ingestion-scheduled-sync]
+verify_jwt = false
+
+# Human approval endpoint — the frontend/service calls it with a user JWT (or the
+# service-role key for the internal path); tenant + role are bound INSIDE via
+# requireTenantUser, so gateway JWT verification is OFF (mirrors gmail-oauth-callback).
+[functions.intelligence-review-action]
+verify_jwt = false

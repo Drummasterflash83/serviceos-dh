@@ -22,6 +22,7 @@ function sanitizedNote(parameters: Record<string, unknown>): string | null {
 
 export const internalNoteAdapter: AutomationConnectorAdapter = {
   connectorType: "internal",
+  adapterVersion: "1",
   supportedIntentTypes: ["record_internal_note"],
 
   validate(input: ConnectorExecutionInput): ValidationResult {

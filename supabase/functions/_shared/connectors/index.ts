@@ -43,6 +43,9 @@ export interface ValidationResult {
 export interface AutomationConnectorAdapter {
   connectorType: string;
   supportedIntentTypes: string[];
+  /** Adapter code version — bound into the execution envelope hash + recorded on the
+   *  attempt. Must match the capability's registered contract adapter_version to execute. */
+  adapterVersion: string;
   validate(input: ConnectorExecutionInput): ValidationResult;
   execute(
     input: ConnectorExecutionInput,

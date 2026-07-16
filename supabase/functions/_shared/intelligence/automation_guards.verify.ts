@@ -146,6 +146,7 @@ function base(over: Partial<ExecutionGuardInput> = {}): ExecutionGuardInput {
     profile: profile("trusted"),
     approval: null,
     connector: { exists: true, enabled: true, healthStatus: "healthy", capabilityEnabled: true },
+    outcomeContractPresent: true,
     dependenciesMet: true,
     priorSucceededExecutionId: null,
     leaseActiveByOtherWorker: false,
@@ -321,6 +322,13 @@ check(
       connector: { exists: true, enabled: true, healthStatus: "healthy", capabilityEnabled: false },
     }),
   ).reasonCodes.includes("capability_disabled"),
+);
+check(
+  "12a. a capability with no registered outcome contract blocks (no execution without a contract)",
+  (() => {
+    const g = evaluateExecutionGuards(merge({ outcomeContractPresent: false }));
+    return g.outcome === "BLOCKED" && g.reasonCodes.includes("outcome_contract_missing");
+  })(),
 );
 check(
   "12b. disabled/unsupported intent type blocks (e.g. schedule_engineer_visit)",

@@ -16,6 +16,7 @@ import type {
 
 export const controlledTestAdapter: AutomationConnectorAdapter = {
   connectorType: "controlled_test",
+  adapterVersion: "1",
   supportedIntentTypes: ["record_controlled_execution"],
 
   validate(input: ConnectorExecutionInput): ValidationResult {

@@ -203,6 +203,30 @@ export function parseApprovalRoute(
   return null;
 }
 
+export type RefinementOp = "revise" | "refinement";
+
+/**
+ * Parse a refinement route — …/intent/{id}/revise (record a human edit) or
+ * …/intent/{id}/refinement (read the audit trail). Distinct from the approve/reject
+ * routes so refinement never approves. Function-name-prefix tolerant; null if absent.
+ */
+export function parseIntentRefinementRoute(
+  pathname: string,
+): { id: string; op: RefinementOp } | null {
+  const segs = pathname.split("/").filter(Boolean);
+  for (let i = 0; i + 1 < segs.length; i++) {
+    const op = segs[i + 1].toLowerCase();
+    if (
+      UUID_RE.test(segs[i]) &&
+      (op === "revise" || op === "refinement") &&
+      segs[i - 1]?.toLowerCase() === "intent"
+    ) {
+      return { id: segs[i], op: op as RefinementOp };
+    }
+  }
+  return null;
+}
+
 /** The automation_approvals.approver_kind a human approval should carry, derived from
  *  the DecisionPackage routing. Falls back to tenant_senior (a tenant operator). The
  *  engine's guard skips the kind check when the decision requires no specific holder. */

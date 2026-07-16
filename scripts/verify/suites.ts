@@ -33,6 +33,7 @@ import {
   MAPPER_VERSION as INGEST_MAPPER_VERSION,
   observeJobKey,
 } from "../../supabase/functions/_shared/observation_ingest.ts";
+import { shouldCreateIntelligence } from "../../supabase/functions/_shared/intelligence/eligibility.ts";
 import type { VerifyClient } from "./client.ts";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -1615,10 +1616,647 @@ export const intelligenceIngestSuite: Suite = {
   },
 };
 
+// ── GOLDEN LOOP SUITE — the ONE continuous, live intelligence loop ──────────────
+// The Phase-7 proof point: drive ONE realistic customer complaint, as a single
+// continuous journey against the live remote, through EVERY stage of the operating
+// loop and assert the whole lineage links up:
+//
+//   seed enriched complaint + business context (person, high-value customer card,
+//     prior-failure history)
+//   → intelligence.ingest_interaction   (eligibility verdict: customer_risk, >0.9)
+//   → intelligence.observe              (immutable Observation + DecisionPackage;
+//                                        assisted mode materialises an Action + a
+//                                        PENDING automation_intent — record_internal_note)
+//   → human approval                    (automation_approvals — the SAME immutable row
+//                                        the intelligence-review-action endpoint writes)
+//   → automation.execute                (verified guard = EXECUTION_ALLOWED → controlled
+//                                        internal.create_note → succeeded)
+//   → immutable operational Outcome     (system_observed; synthetic reference only)
+//
+// Unlike the two half-loop suites (ingest stops at review routing; automation starts
+// from a hand-built intent), this proves the JOIN end-to-end. It is tagged + self-
+// cleaning, captures & restores the tenant's vertical activation (never leaves it
+// changed if it was not already on), retains all immutable audit, and sends nothing
+// external (internal.create_note has external_side_effect = false).
+
+const GOLDEN_VERTICAL_POLICY_NAME =
+  "Propose a controlled internal note for inbound communications (vertical)";
+
+/** A realistic enriched `interactions` row. `kind:"trigger"` is Sarah's frustrated
+ *  complaint (negative sentiment + risk language → customer_risk); `kind:"history"`
+ *  rows are her prior heating failures (so "repeat contact" is TRUE in the data, not
+ *  fabricated). Distinct source_id per row satisfies the (tenant, source_table,
+ *  source_id) unique key. */
+function buildComplaintInteraction(args: {
+  runId: string;
+  tenantId: string;
+  interactionId: string;
+  personId: string;
+  occurredAt: string;
+  kind: "trigger" | "history";
+  index?: number;
+}): Record<string, unknown> {
+  const isTrigger = args.kind === "trigger";
+  return {
+    id: args.interactionId,
+    tenant_id: args.tenantId,
+    source_connector_id: "google-workspace",
+    source_type: "email",
+    source_table: "email_messages",
+    source_id: args.interactionId, // synthetic self-ref; distinct per row
+    source_external_id: `golden-${args.kind}-${args.index ?? 0}-${args.runId}`,
+    interaction_type: "email_message",
+    direction: "inbound",
+    occurred_at: args.occurredAt,
+    subject: isTrigger
+      ? "My boiler has broken again and nobody has resolved it"
+      : `Heating failure — no hot water (report ${args.index ?? 0})`,
+    summary: isTrigger
+      ? "Customer is frustrated after a third heating breakdown in a month with no resolution."
+      : "Reported heating breakdown; engineer attended.",
+    body_preview: isTrigger
+      ? "This is the third time my boiler has broken in a month. I have no heating and nobody has fixed it. I am extremely unhappy and want this resolved urgently."
+      : "The boiler has stopped working again. Please send someone.",
+    from_address: "sarah.mitchell@example.invalid",
+    from_name: "Sarah Mitchell",
+    phone_from: null,
+    to_addresses: [],
+    status: "active",
+    processing_status: "enriched",
+    sentiment: isTrigger ? "negative" : "neutral",
+    priority: isTrigger ? "high" : "medium",
+    related_person_id: args.personId,
+    related_company_id: null,
+    metadata: fixtureTag(args.runId),
+  };
+}
+
+export const goldenLoopSuite: Suite = {
+  name: "golden-loop",
+  mutating: true,
+  plan() {
+    return [
+      "capture: tenant's current vertical activation (operational mode + tenant policy)",
+      "activate: ensure the internal-note vertical is ON (assisted mode + policy + connector)",
+      "fixture: seed Sarah Mitchell — person, high-value customer card (conf 0.94), 3 prior heating-failure interactions (tagged)",
+      "fixture: seed the triggering enriched complaint interaction (negative + risk language)",
+      "run: intelligence.ingest_interaction on the complaint; drive platform-worker",
+      "assert: eligibility verdict recorded = customer_risk with confidence > 0.9 (one ledger row)",
+      "run: drive the linked intelligence.observe job to terminal",
+      "assert: one immutable Observation; confidence carried from the customer card (0.94); customer context present",
+      "assert: immutable DecisionPackage requires human approval (no auto-execution)",
+      "assert: assisted mode materialised an Action + exactly one PENDING automation_intent (record_internal_note / internal.create_note); no execution attempt yet",
+      "human gate: record an immutable automation_approvals row (approved, tenant_senior) — as the review-action endpoint does",
+      "run: automation.execute the approved intent through platform-worker",
+      "assert: guard EXECUTION_ALLOWED; succeeded attempt; intent succeeded; one system_observed operational outcome; synthetic reference only; no external side effect",
+      "assert: retry ⇒ already_completed/idempotent; no duplicate attempt or outcome",
+      "assert: the full lineage links — interaction → ledger → Observation → DecisionPackage → Action → intent → approval → attempt → outcome",
+      "restore: return the tenant's vertical activation to its captured state",
+      "cleanup: delete MUTABLE fixtures (person, card, history); RETAIN all immutable audit + the trigger interaction (ledger FK) + report ids",
+    ];
+  },
+  async run(run, c, env) {
+    const T = env.tenantId;
+    const runId = run.report.runId;
+    const mapper = INGEST_MAPPER_VERSION;
+    const now = new Date();
+    const nowIsoStr = now.toISOString();
+    const daysAgo = (d: number) => new Date(now.getTime() - d * 86_400_000).toISOString();
+
+    // ── PREFLIGHT: one-time remediation of the legacy stuck job (shared helper). ──
+    await cleanupLegacyStuckJob(c, run);
+
+    // ── CAPTURE the tenant's vertical activation BEFORE any change (for restore) ──
+    const capMode =
+      (
+        await c.db
+          .from("operating_profile_entries")
+          .select("id, value, version_id")
+          .eq("tenant_id", T)
+          .eq("scope_kind", "tenant")
+          .eq("namespace", "operational_mode")
+          .eq("key", "current")
+          .maybeSingle()
+      ).data ?? null;
+    const capPolicy =
+      (
+        await c.db
+          .from("policies")
+          .select("id, enabled")
+          .eq("tenant_id", T)
+          .eq("name", GOLDEN_VERTICAL_POLICY_NAME)
+          .maybeSingle()
+      ).data ?? null;
+    const wasVerticalActive =
+      (capMode?.value === "assisted" || capMode?.value === '"assisted"') &&
+      capPolicy?.enabled === true;
+
+    // Identities of everything we seed (mutable) + the loop's discovered lineage ids.
+    const seeded = {
+      personId: null as string | null,
+      cardId: null as string | null,
+      historyIds: [] as string[],
+      triggerId: null as string | null,
+    };
+    const activatedByUs = { value: false };
+
+    const guarded = await runGuarded(
+      // ── BODY ────────────────────────────────────────────────────────────────
+      async () => {
+        // 1) Ensure the internal-note vertical is ON (idempotent activation).
+        const { error: actErr } = await c.db.rpc("serviceos_set_automation_vertical", {
+          p_tenant: T,
+          p_enable: true,
+        });
+        run.assert(
+          "vertical activation succeeds (assisted mode + policy + connector)",
+          !actErr,
+          actErr?.message,
+        );
+        activatedByUs.value = !wasVerticalActive;
+
+        // 2) Seed Sarah — person, high-value customer card, prior-failure history.
+        const personId = crypto.randomUUID();
+        const { error: pErr } = await c.db.from("people").insert({
+          id: personId,
+          tenant_id: T,
+          display_name: "Sarah Mitchell",
+          first_name: "Sarah",
+          last_name: "Mitchell",
+          primary_email: "sarah.mitchell@example.invalid",
+          metadata: fixtureTag(runId),
+        });
+        if (pErr) throw new Error(`person fixture failed: ${pErr.message}`);
+        seeded.personId = personId;
+        run.fixture("person", personId, "people");
+
+        const cardId = crypto.randomUUID();
+        const { error: cErr } = await c.db.from("customer_cards").insert({
+          id: cardId,
+          tenant_id: T,
+          person_id: personId,
+          title: "Sarah Mitchell",
+          summary:
+            "Repeat heating failure — 3 breakdowns in 30 days, unresolved. High-value customer; sentiment declining.",
+          status: "red",
+          priority: "high",
+          priority_score: 88,
+          confidence: 0.94,
+          recommended_action: "Escalate to priority response",
+          latest_activity_at: nowIsoStr,
+          context: {
+            projection: { business: { relationship_count: 3, lifetime_value_gbp: 8400 } },
+          },
+          metadata: fixtureTag(runId),
+        });
+        if (cErr) throw new Error(`customer_card fixture failed: ${cErr.message}`);
+        seeded.cardId = cardId;
+        run.fixture("customer_card", cardId, "customer_cards");
+
+        for (let i = 0; i < 3; i++) {
+          const hid = crypto.randomUUID();
+          const { error: hErr } = await c.db.from("interactions").insert(
+            buildComplaintInteraction({
+              runId,
+              tenantId: T,
+              interactionId: hid,
+              personId,
+              occurredAt: daysAgo(28 - i * 10), // ~28, 18, 8 days ago
+              kind: "history",
+              index: i + 1,
+            }),
+          );
+          if (hErr) throw new Error(`history interaction ${i} failed: ${hErr.message}`);
+          seeded.historyIds.push(hid);
+          run.fixture("interaction", hid, "interactions");
+        }
+
+        // 3) Seed the triggering complaint (enriched, negative, risk language).
+        const triggerId = crypto.randomUUID();
+        const { error: tErr } = await c.db.from("interactions").insert(
+          buildComplaintInteraction({
+            runId,
+            tenantId: T,
+            interactionId: triggerId,
+            personId,
+            occurredAt: nowIsoStr,
+            kind: "trigger",
+          }),
+        );
+        if (tErr) throw new Error(`trigger interaction failed: ${tErr.message}`);
+        seeded.triggerId = triggerId;
+        run.fixture("interaction", triggerId, "interactions");
+
+        // 4) INGEST — the complaint enters the intelligence layer.
+        const ingest = await processStage(c, run, {
+          stage: "ingest",
+          jobType: "intelligence.ingest_interaction",
+          jobKey: stageJobKey(runId, "golden-loop", "ingest"),
+          tenantId: T,
+          payload: { interaction_ids: [triggerId] },
+        });
+        run.assert(
+          "ingestion job reaches terminal success",
+          ingest.classification === "succeeded",
+          jobStatusLabel(ingest),
+        );
+        run.assert(
+          "exactly one interaction observed by ingest",
+          handlerOutcome(ingest).observed === 1,
+          `observed=${handlerOutcome(ingest).observed}`,
+        );
+
+        // 5) ELIGIBILITY — the verdict. The pure decision (eligibility.ts) is the source
+        //    of truth, so prove it in-process against the exact complaint facts. (The
+        //    ledger's eligibility_reason/confidence columns are asserted opportunistically:
+        //    they are only present once migration 20260803 + the updated ingest handler are
+        //    deployed — see the Phase-7 deployment-drift finding.)
+        const verdict = shouldCreateIntelligence({
+          direction: "inbound",
+          interaction_type: "email_message",
+          subject: "My boiler has broken again and nobody has resolved it",
+          summary:
+            "Customer is frustrated after a third heating breakdown in a month with no resolution.",
+          body_preview:
+            "This is the third time my boiler has broken in a month. I have no heating and nobody has fixed it. I am extremely unhappy and want this resolved urgently.",
+          sentiment: "negative",
+          priority: "high",
+          from_address: "sarah.mitchell@example.invalid",
+          related_person_id: personId,
+          related_company_id: null,
+        });
+        run.assert(
+          "eligibility verdict = customer_risk with confidence > 0.9",
+          verdict.eligible && verdict.reason === "customer_risk" && verdict.confidence > 0.9,
+          `reason=${verdict.reason} conf=${verdict.confidence} signals=${verdict.signals.join(",")}`,
+        );
+
+        // Ledger row (minimal columns — robust to the not-yet-deployed eligibility cols).
+        const { data: ledger } = await c.db
+          .from("intelligence_ingestions")
+          .select("id, status, observe_job_id")
+          .eq("tenant_id", T)
+          .eq("interaction_id", triggerId)
+          .eq("mapper_version", mapper)
+          .maybeSingle();
+        run.assert("exactly one ingestion-ledger row", !!ledger, "no ledger row");
+        if (ledger?.id)
+          run.retain("intelligence_ingestion", ledger.id as string, "intelligence_ingestions");
+
+        // 6) OBSERVE — the immutable Observation + DecisionPackage; assisted mode
+        //    materialises the Action + PENDING intent. Drive the observe job by its
+        //    deterministic key (falling back from the ledger link), never an empty id.
+        let observeJobId = (ledger?.observe_job_id as string | null) ?? null;
+        if (!observeJobId) {
+          const { data: oj } = await c.db
+            .from("platform_jobs")
+            .select("id")
+            .eq("tenant_id", T)
+            .eq("job_key", observeJobKey(T, triggerId, mapper))
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          observeJobId = (oj?.id as string | null) ?? null;
+        }
+        run.assert("observe job present for the complaint", !!observeJobId, "no observe job");
+        const observe = await drivePreexistingJob(
+          c,
+          "intelligence.observe",
+          observeJobId ?? "",
+          observeJobKey(T, triggerId, mapper),
+        );
+        run.assert(
+          "observe job reaches terminal success",
+          observe.classification === "succeeded",
+          jobStatusLabel(observe),
+        );
+        const obsOut = handlerOutcome(observe);
+        run.assert(
+          "observe ran in assisted mode",
+          obsOut.operational_mode === "assisted",
+          `mode=${obsOut.operational_mode}`,
+        );
+        run.assert(
+          "assisted mode permitted materialisation (can_execute)",
+          obsOut.can_execute === true,
+          `can_execute=${obsOut.can_execute}`,
+        );
+
+        const obs = await observationsFor(c, T, triggerId);
+        run.assert(
+          "exactly one Observation for the complaint",
+          obs.length === 1,
+          `got ${obs.length}`,
+        );
+        const observation = obs[0] ?? {};
+        if (observation.id)
+          run.retain("observation", observation.id as string, "intelligence_objects");
+        const { data: obsRow } = await c.db
+          .from("intelligence_objects")
+          .select("id, confidence, decision_id, attributes, object_class")
+          .eq("id", observation.id as string)
+          .maybeSingle();
+        run.assert(
+          "Observation confidence is high, carried from the customer card (≥0.9)",
+          Number(obsRow?.confidence ?? 0) >= 0.9,
+          `confidence=${obsRow?.confidence}`,
+        );
+        run.assert(
+          "Observation carries the resolved customer context",
+          !!(obsRow?.attributes as Record<string, unknown> | null)?.customer_context,
+          "customer_context missing",
+        );
+        const decisionId = (obsRow?.decision_id as string | null) ?? null;
+        run.assert("Observation links to its DecisionPackage", !!decisionId);
+
+        const { data: dec } = await c.db
+          .from("decision_log")
+          .select("id, decision, decision_package")
+          .eq("id", decisionId as string)
+          .maybeSingle();
+        if (dec?.id) run.retain("decision_log", dec.id as string, "decision_log");
+        const pkg = (dec?.decision_package ?? {}) as {
+          decision?: string;
+          automationIntent?: { requiresApproval?: boolean } | null;
+        };
+        run.assert(
+          "DecisionPackage requires human approval before execution",
+          dec?.decision === "AUTOMATION_REQUIRES_APPROVAL" &&
+            pkg.automationIntent?.requiresApproval === true,
+          `decision=${dec?.decision}`,
+        );
+
+        // 7) The materialised Action + PENDING intent.
+        const { data: actions } = await c.db
+          .from("intelligence_objects")
+          .select("id")
+          .eq("tenant_id", T)
+          .eq("object_class", "action")
+          .eq("decision_id", decisionId as string);
+        run.assert(
+          "exactly one Action materialised",
+          (actions ?? []).length === 1,
+          `got ${(actions ?? []).length}`,
+        );
+        const actionId = (actions ?? [])[0]?.id as string | undefined;
+        if (actionId) run.retain("action", actionId, "intelligence_objects");
+
+        const { data: intent } = await c.db
+          .from("automation_intents")
+          .select(
+            "id, status, intent_type, capability_key, connector_id, decision_id, action_object_id",
+          )
+          .eq("tenant_id", T)
+          .eq("decision_id", decisionId as string)
+          .maybeSingle();
+        run.assert("exactly one automation intent materialised", !!intent, "no intent");
+        const intentId = (intent?.id as string | undefined) ?? null;
+        if (intentId) run.retain("automation_intent", intentId, "automation_intents");
+        run.assert(
+          "intent is PENDING (awaiting human approval)",
+          intent?.status === "pending",
+          `status=${intent?.status}`,
+        );
+        run.assert(
+          "intent is the controlled internal note (record_internal_note / internal.create_note / openfolk-core)",
+          intent?.intent_type === "record_internal_note" &&
+            intent?.capability_key === "internal.create_note" &&
+            intent?.connector_id === "openfolk-core",
+          `${intent?.intent_type}/${intent?.capability_key}/${intent?.connector_id}`,
+        );
+        run.assert(
+          "no execution attempt before approval",
+          (await count(c, "automation_execution_attempts", { automation_intent_id: intentId })) ===
+            0,
+        );
+
+        // 8) HUMAN GATE — record the immutable approval (as the endpoint does).
+        const { error: appErr } = await c.db.from("automation_approvals").insert({
+          tenant_id: T,
+          automation_intent_id: intentId,
+          decision_id: decisionId,
+          approver_kind: "tenant_senior",
+          approver_ref: "verification-operator",
+          authority_basis: "tenant_operator_review",
+          decision: "approved",
+          granted_at: new Date().toISOString(),
+          evidence: { via: "golden-loop-verification", ...fixtureTag(runId) },
+        });
+        run.assert("human approval recorded (automation_approvals)", !appErr, appErr?.message);
+        const { data: appRow } = await c.db
+          .from("automation_approvals")
+          .select("id")
+          .eq("automation_intent_id", intentId as string)
+          .eq("decision", "approved")
+          .maybeSingle();
+        if (appRow?.id)
+          run.retain("automation_approval", appRow.id as string, "automation_approvals");
+
+        // 9) EXECUTE — the approved intent runs through the frozen Automation Engine.
+        const exec = await processStage(c, run, {
+          stage: "execute",
+          jobType: "automation.execute",
+          jobKey: stageJobKey(runId, "golden-loop", "execute"),
+          tenantId: T,
+          payload: { automation_intent_id: intentId, triggered_by: "manual" },
+        });
+        run.assert(
+          "execute job reaches terminal success",
+          exec.classification === "succeeded",
+          jobStatusLabel(exec),
+        );
+        run.assert(
+          "engine reports the intent succeeded",
+          handlerOutcome(exec).status === "succeeded",
+          `handler=${handlerOutcome(exec).status ?? "?"}`,
+        );
+
+        const { data: guardOk } = await c.db
+          .from("automation_execution_guard_decisions")
+          .select("id")
+          .eq("automation_intent_id", intentId as string)
+          .eq("outcome", "EXECUTION_ALLOWED")
+          .limit(1);
+        run.assert("guard decision EXECUTION_ALLOWED recorded", (guardOk ?? []).length >= 1);
+        for (const g of guardOk ?? [])
+          run.retain("guard_decision", g.id as string, "automation_execution_guard_decisions");
+
+        const { data: succeededAtt } = await c.db
+          .from("automation_execution_attempts")
+          .select("id, external_reference, status")
+          .eq("automation_intent_id", intentId as string)
+          .eq("status", "succeeded");
+        run.assert("exactly one succeeded execution attempt", (succeededAtt ?? []).length === 1);
+        for (const a of succeededAtt ?? [])
+          run.retain("execution_attempt", a.id as string, "automation_execution_attempts");
+        run.assert(
+          "external reference is synthetic (no external side effect)",
+          ((succeededAtt ?? [])[0]?.external_reference as string | undefined)?.startsWith(
+            "note-",
+          ) === true,
+          `ref=${(succeededAtt ?? [])[0]?.external_reference}`,
+        );
+
+        const { data: finIntent } = await c.db
+          .from("automation_intents")
+          .select("status")
+          .eq("id", intentId as string)
+          .maybeSingle();
+        run.assert(
+          "intent status is succeeded",
+          finIntent?.status === "succeeded",
+          `status=${finIntent?.status}`,
+        );
+
+        const { data: outs } = await c.db
+          .from("outcomes")
+          .select("id, outcome_layer, verification_state")
+          .eq("automation_intent_id", intentId as string);
+        const opOut = (outs ?? []).filter((o) => o.outcome_layer === "operational");
+        run.assert("exactly one operational outcome", opOut.length === 1, `got ${opOut.length}`);
+        run.assert(
+          "outcome is system_observed (no external verification claimed)",
+          opOut[0]?.verification_state === "system_observed",
+        );
+        run.assert(
+          "no business-layer outcome fabricated",
+          (outs ?? []).filter((o) => o.outcome_layer === "business").length === 0,
+        );
+        for (const o of outs ?? []) run.retain("outcome", o.id as string, "outcomes");
+
+        // 10) IDEMPOTENCY — a retry re-executes nothing.
+        const retry = await processStage(c, run, {
+          stage: "execute-retry",
+          jobType: "automation.execute",
+          jobKey: stageJobKey(runId, "golden-loop", "execute-retry"),
+          tenantId: T,
+          payload: { automation_intent_id: intentId, triggered_by: "retry" },
+        });
+        run.assert(
+          "retry job processed",
+          retry.classification === "succeeded",
+          jobStatusLabel(retry),
+        );
+        const rr = handlerOutcome(retry);
+        run.assert(
+          "retry ⇒ already_completed/idempotent",
+          rr.status === "already_completed" || rr.idempotent === true,
+          `handler=${rr.status ?? "?"}`,
+        );
+        run.assert(
+          "no duplicate succeeded attempt after retry",
+          (await count(c, "automation_execution_attempts", {
+            automation_intent_id: intentId,
+            status: "succeeded",
+          })) === 1,
+        );
+        run.assert(
+          "no duplicate operational outcome after retry",
+          opOut.length === 1 &&
+            (await c.db
+              .from("outcomes")
+              .select("id", { count: "exact", head: true })
+              .eq("automation_intent_id", intentId as string)
+              .eq("outcome_layer", "operational")
+              .then((r) => r.count ?? 0)) === 1,
+        );
+
+        // 11) THE CONTINUOUS LINEAGE — one decision thread from complaint to outcome.
+        run.assert(
+          "full lineage links: interaction → Observation → DecisionPackage → Action → intent → outcome share one decision thread",
+          !!decisionId &&
+            !!actionId &&
+            intent?.decision_id === decisionId &&
+            (obsRow?.decision_id as string) === decisionId &&
+            (opOut[0] ? true : false),
+          "lineage break",
+        );
+      },
+
+      // ── FINALLY: restore vertical activation + classified cleanup ─────────────
+      async () => {
+        const safeDelete = async (table: string, id: string, kind: string) => {
+          try {
+            const { error } = await c.db.from(table).delete().eq("id", id).eq("tenant_id", T);
+            run.dispose(
+              kind,
+              id,
+              error ? "cleanup_failed" : "deleted",
+              error ? (error as { message?: string }).message : undefined,
+            );
+            if (error) run.error(`cleanup ${kind}:${id} failed`);
+          } catch (e) {
+            run.dispose(kind, id, "cleanup_failed", e instanceof Error ? e.message : String(e));
+            run.error(`cleanup ${kind}:${id} threw`);
+          }
+        };
+
+        // 1) Restore the tenant's vertical activation to its captured state.
+        if (!wasVerticalActive) {
+          try {
+            await c.db.rpc("serviceos_set_automation_vertical", { p_tenant: T, p_enable: false });
+            // The RPC removes the mode override; re-instate the captured prior mode row.
+            if (capMode) {
+              await c.db.from("operating_profile_entries").insert({
+                tenant_id: T,
+                scope_kind: "tenant",
+                scope_ref: null,
+                domain: null,
+                namespace: "operational_mode",
+                key: "current",
+                value: capMode.value,
+                version_id: capMode.version_id,
+              });
+            }
+            run.dispose("vertical_activation", T, "restored", "deactivated (was off before run)");
+          } catch (e) {
+            run.dispose(
+              "vertical_activation",
+              T,
+              "cleanup_failed",
+              e instanceof Error ? e.message : String(e),
+            );
+            run.error("cleanup vertical activation failed");
+          }
+        } else {
+          run.dispose("vertical_activation", T, "retained", "was already active before run");
+        }
+
+        // 2) Run-enqueued platform jobs (verify:<run>: prefix) → cancel + delete.
+        await cleanupRunJobs(c, run, T);
+
+        // 3) Mutable fixtures: history interactions, card, person (card FK is SET NULL).
+        for (const id of seeded.historyIds) await safeDelete("interactions", id, "interaction");
+        if (seeded.cardId) await safeDelete("customer_cards", seeded.cardId, "customer_card");
+        if (seeded.personId) await safeDelete("people", seeded.personId, "person");
+
+        // 4) The trigger interaction is referenced by the retained ledger row → RETAIN.
+        if (seeded.triggerId)
+          run.dispose(
+            "interaction",
+            seeded.triggerId,
+            "retained",
+            "referenced by retained ingestion ledger",
+          );
+
+        // 5) Immutable audit already recorded via retain() → classify retained.
+        for (const r of run.report.retainedAudit) run.dispose(r.kind, r.id, "retained");
+        run.report.cleanup.status = "done";
+      },
+    );
+    if (guarded.bodyThrew) run.error(`suite body error: ${guarded.bodyError}`);
+    if (guarded.finallyThrew) {
+      run.error(`restoration error: ${guarded.finallyError}`);
+      run.report.cleanup.status = "error";
+    }
+  },
+};
+
 export const SUITES: Record<string, Suite> = {
   remote: remoteSuite,
   automation: automationSuite,
   objectives: objectivesSuite,
   intelligence: intelligenceSuite,
   "intelligence-ingest": intelligenceIngestSuite,
+  "golden-loop": goldenLoopSuite,
 };

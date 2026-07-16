@@ -35,7 +35,7 @@ begin
       and automation_intent_id=p_intent_id and status='in_flight';
   if not found then raise exception 'in-flight attempt not found' using errcode='no_data_found'; end if;
 
-  v_hash:=encode(digest(v_intent.parameters::text,'sha256'),'hex');
+  v_hash:=encode(extensions.digest(v_intent.parameters::text,'sha256'),'hex');
   if v_intent.approved_payload_hash is not null and v_hash <> v_intent.approved_payload_hash then
     raise exception 'approved payload integrity mismatch' using errcode='data_exception';
   end if;
@@ -111,7 +111,7 @@ begin
   if v.lease_expires_at is not null and v.lease_expires_at>now() then return; end if;
   if v.expires_at is not null and v.expires_at<now() then return; end if;
   if v.attempts>=v.max_attempts then return; end if;
-  v_hash:=encode(digest(v.parameters::text,'sha256'),'hex');
+  v_hash:=encode(extensions.digest(v.parameters::text,'sha256'),'hex');
   if v.approved_payload_hash is not null and v_hash<>v.approved_payload_hash then
     raise exception 'approved payload integrity mismatch' using errcode='data_exception';
   end if;

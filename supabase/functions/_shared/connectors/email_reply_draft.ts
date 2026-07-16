@@ -29,6 +29,7 @@ function sourceInteractionOf(p: Record<string, unknown>): string | null {
 
 export const emailReplyDraftAdapter: AutomationConnectorAdapter = {
   connectorType: "internal", // a controlled internal draft — no external system
+  adapterVersion: "1",
   supportedIntentTypes: ["draft_email_reply"],
 
   validate(input: ConnectorExecutionInput): ValidationResult {

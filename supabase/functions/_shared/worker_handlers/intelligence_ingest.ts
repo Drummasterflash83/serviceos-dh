@@ -17,10 +17,13 @@ import {
   MAPPER_VERSION,
   OBSERVE_JOB_TYPE,
   ingestInteractions,
+  ingestKey,
+  isEligibleForIngest,
   type CardContext,
   type IngestDeps,
   type IngestInteraction,
 } from "../observation_ingest.ts";
+import { shouldCreateIntelligence, type EligibilityDecision } from "../intelligence/eligibility.ts";
 
 const INTERACTION_COLUMNS =
   "id, tenant_id, source_type, source_connector_id, source_table, source_id, source_external_id, " +
@@ -36,6 +39,33 @@ function parseIds(payload: Record<string, unknown> | null | undefined): string[]
   if (Array.isArray(many)) for (const v of many) if (typeof v === "string" && v) out.push(v);
   // Dedup while preserving order.
   return [...new Set(out)];
+}
+
+/** Record an INELIGIBLE interaction's decision in the ledger (audited + idempotent) so it
+ *  is never re-evaluated for this mapper version and never becomes an intelligence object.
+ *  Uses the same atomic (tenant, interaction, mapper_version) claim — a 23505 conflict means
+ *  it was already decided (observed or skipped), so this is a no-op. */
+async function recordSkip(
+  db: WorkerHandlerContext["supabaseAdmin"],
+  tenantId: string,
+  interactionId: string,
+  mapperVersion: string,
+  domain: string,
+  decision: EligibilityDecision,
+): Promise<void> {
+  const { error } = await db.from("intelligence_ingestions").insert({
+    tenant_id: tenantId,
+    interaction_id: interactionId,
+    mapper_version: mapperVersion,
+    ingest_key: ingestKey(tenantId, interactionId, mapperVersion),
+    domain,
+    status: "skipped",
+    eligibility_reason: decision.reason,
+    eligibility_confidence: decision.confidence,
+  });
+  if (error && (error as { code?: string }).code !== "23505") {
+    // best-effort audit; a genuine write failure must not fail the whole batch.
+  }
 }
 
 export async function handleIntelligenceIngest(
@@ -61,6 +91,30 @@ export async function handleIntelligenceIngest(
     typeof payload?.domain === "string" && payload.domain
       ? (payload.domain as string)
       : DEFAULT_INGEST_DOMAIN;
+
+  // ── ELIGIBILITY (Phase 2): decide per interaction whether it becomes intelligence.
+  // Load the candidates once, apply the pure decision, record ineligible ones as `skipped`
+  // (audited), and only pass the eligible ids into the (unchanged) idempotent bridge.
+  const { data: loaded } = await db
+    .from("interactions")
+    .select(INTERACTION_COLUMNS)
+    .in("id", ids)
+    .eq("tenant_id", tenantId);
+  const rows = (loaded ?? []) as IngestInteraction[];
+  const eligibility = new Map<string, EligibilityDecision>();
+  const eligibleIds: string[] = [];
+  let skipped = 0;
+  for (const it of rows) {
+    if (!isEligibleForIngest(it)) continue; // lifecycle gate — not enriched yet, leave it
+    const decision = shouldCreateIntelligence(it);
+    if (decision.eligible) {
+      eligibility.set(it.id, decision);
+      eligibleIds.push(it.id);
+    } else {
+      await recordSkip(db, tenantId, it.id, mapperVersion, domain, decision);
+      skipped += 1;
+    }
+  }
 
   const deps: IngestDeps = {
     // Tenant-scoped load — a cross-tenant id simply returns null (never leaks).
@@ -124,6 +178,9 @@ export async function handleIntelligenceIngest(
           ingest_key: args.ingestKey,
           domain: args.domain,
           status: "enqueued",
+          // Provenance/explainability: why this interaction was deemed intelligence-worthy.
+          eligibility_reason: eligibility.get(args.interactionId)?.reason ?? null,
+          eligibility_confidence: eligibility.get(args.interactionId)?.confidence ?? null,
         })
         .select("id, observe_job_id")
         .single();
@@ -189,14 +246,14 @@ export async function handleIntelligenceIngest(
   try {
     const batch = await ingestInteractions(deps, {
       tenantId,
-      interactionIds: ids,
+      interactionIds: eligibleIds,
       mapperVersion,
       domain,
     });
     return {
       success: true,
       recordsProcessed: batch.observed + batch.reused,
-      result: batch as unknown as Record<string, unknown>,
+      result: { ...batch, skipped } as unknown as Record<string, unknown>,
     };
   } catch (e) {
     return {

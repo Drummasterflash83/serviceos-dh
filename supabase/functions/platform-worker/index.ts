@@ -33,6 +33,7 @@ import {
   type JobRow,
 } from "../_shared/platform_queue.ts";
 import { getWorkerHandler } from "../_shared/worker_handlers/index.ts";
+import { healthComponentForJob, recordHealthCheck } from "../_shared/system_health.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,12 +116,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const handler = getWorkerHandler(jobType);
     if (handler) {
       const payload = (job.payload as Record<string, unknown> | null) ?? {};
+      // The one place every pipeline stage reports health: map the job to its sensor
+      // component and emit healthy on success / degraded (retry) / failed (dead-letter).
+      const component = healthComponentForJob(jobType);
       const r = await handler({ supabaseAdmin: admin, tenantId, jobId: id, payload });
       if (r.success) {
         await completeJob(admin, id, {
           recordsProcessed: r.recordsProcessed,
           result: r.result ?? {},
         });
+        if (component)
+          await recordHealthCheck(admin, {
+            tenantId,
+            component,
+            status: "healthy",
+            metadata: { job_type: jobType, records: r.recordsProcessed ?? 0 },
+          });
         counts.succeeded += 1;
         return;
       }
@@ -133,6 +144,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
           retryable: r.error?.retryable ?? true,
         },
       );
+      if (component)
+        await recordHealthCheck(admin, {
+          tenantId,
+          component,
+          status: hOutcome === "retrying" ? "degraded" : "failed",
+          error: r.error?.message ?? "handler failed",
+          metadata: { job_type: jobType, code: r.error?.code ?? "handler_error", outcome: hOutcome },
+        });
       if (hOutcome === "retrying") counts.retrying += 1;
       else counts.dead_lettered += 1;
       return;

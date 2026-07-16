@@ -51,7 +51,7 @@ create or replace function automation_envelope_hash(
   p_tenant uuid, p_intent uuid, p_decision uuid, p_capability text, p_connector text,
   p_parameters jsonb, p_schema_version text, p_adapter_version text, p_snapshot uuid
 ) returns text language sql immutable as $$
-  select encode(digest(
+  select encode(extensions.digest(
     jsonb_build_object(
       'tenant', p_tenant, 'intent', p_intent, 'decision', p_decision,
       'capability', p_capability, 'connector', p_connector,

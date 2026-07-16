@@ -268,6 +268,7 @@ function guardInput(withApproval: boolean): ExecutionGuardInput {
           decision: null,
         },
     connector: { exists: true, enabled: true, healthStatus: "healthy", capabilityEnabled: true },
+    outcomeContractPresent: true,
     dependenciesMet: true,
     priorSucceededExecutionId: null,
     leaseActiveByOtherWorker: false,

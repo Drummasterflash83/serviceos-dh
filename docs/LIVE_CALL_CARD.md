@@ -23,7 +23,8 @@ Sipcentric's push payload shape isn't documented in-repo, so the receiver is
 required secret header (`x-simwood-webhook-secret` == `SIMWOOD_WEBHOOK_SECRET`); no
 user JWT; no unauthenticated writes. Tenant is resolved server-side from connector
 config (payload `customer_id` → `connector_accounts`, else the single enabled
-Simwood tenant, else a documented fallback constant — never trusted from the body).
+Simwood tenant. Missing, unknown, or ambiguous provider identity is quarantined; there is
+no default tenant and tenant identity is never trusted from the body).
 
 **Normalised fields (accepted key variants):**
 

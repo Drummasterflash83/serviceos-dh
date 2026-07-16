@@ -8,6 +8,7 @@ import {
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
   Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass, LogOut,
+  Radar,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import {
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
 import { CallsCommsView } from "@/components/app/CallsComms";
+import { CommandCentre } from "@/components/app/CommandCentre";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 import { LiveCallCard } from "@/components/app/LiveCallCard";
 import { MyDayDashboard } from "@/components/app/MyDay";
@@ -54,6 +56,7 @@ type ViewKey =
   | "myday"
   | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
   | "cards" | "operations" | "comms" | "customers" | "engineers"
+  | "command"
   | "learn" | "intelligence" | "automations" | "agents" | "protocol"
   | "compliance" | "finance" | "admin" | "settings"
   | "marketing" | "campaigns" | "journeys" | "reviews" | "platformadmin";
@@ -81,6 +84,7 @@ const NAV: NavItem[] = [
   { key: "journeys",      label: "Customer Journeys", icon: Workflow,    group: "GROW" },
   { key: "reviews",       label: "Reviews",          icon: MessageSquare, group: "GROW" },
   // INTELLIGENCE · understand and improve
+  { key: "command",       label: "Command Centre",   icon: Radar,        group: "INTELLIGENCE" },
   { key: "intelligence",  label: "Intelligence",     icon: Brain,        group: "INTELLIGENCE" },
   { key: "learn",         label: "Knowledge",        icon: GraduationCap, group: "INTELLIGENCE" },
   { key: "agents",        label: "Agents",           icon: Bot,          group: "INTELLIGENCE" },
@@ -217,6 +221,7 @@ function AppShell() {
           {view === "journeys"     && <ComingSoon title="Customer Journeys" />}
           {view === "reviews"      && <ComingSoon title="Reviews" />}
           {/* INTELLIGENCE */}
+          {view === "command"      && <CommandCentre />}
           {view === "intelligence" && <Intelligence />}
           {view === "learn"        && <Learn />}
           {view === "agents"       && <Agents />}

@@ -32,6 +32,8 @@ interface AuthContextValue {
   profile: Profile | null;
   /** True until the initial session check resolves. */
   loading: boolean;
+  /** Access-token expiry (ms epoch), or null — for diagnostics / near-expiry UI. */
+  sessionExpiresAt: number | null;
   /** False when VITE_SUPABASE_* are not set. */
   configured: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -48,6 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   // Track the session (client only — effects never run during SSR).
+  //
+  // Root-cause fix for "keeps logging out": the listener must NEVER drop a known-good
+  // session because of a transient null. Supabase fires onAuthStateChange for TOKEN_REFRESHED
+  // / USER_UPDATED / INITIAL_SESSION (all carry a valid session) and SIGNED_OUT (genuine
+  // logout). Only SIGNED_OUT clears the session; a null arriving on any other event is a
+  // refresh/hydration race and is ignored (previous session kept). All callbacks are guarded
+  // by `mounted` so a late event after unmount can't flip auth state.
   useEffect(() => {
     if (!configured) {
       setLoading(false);
@@ -62,8 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!mounted) return;
+      if (import.meta.env.DEV) {
+        // Temporary diagnostics — surfaces the real event sequence behind auth issues.
+        console.debug("[auth]", event, nextSession ? "session" : "no-session");
+      }
+      setSession((prev) => (event === "SIGNED_OUT" ? null : (nextSession ?? prev)));
       setLoading(false);
     });
 
@@ -127,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       profile,
       loading,
+      sessionExpiresAt: session?.expires_at ? session.expires_at * 1000 : null,
       configured,
       signInWithPassword,
       signUpWithPassword,

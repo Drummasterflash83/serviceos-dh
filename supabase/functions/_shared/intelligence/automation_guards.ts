@@ -40,6 +40,7 @@ export const AUTOMATION_REASON_CODES = [
   "connector_disabled",
   "connector_unhealthy",
   "capability_disabled",
+  "outcome_contract_missing",
   "intent_type_unsupported",
   "idempotency_already_succeeded",
   "retry_limit_reached",
@@ -131,6 +132,8 @@ export interface ExecutionGuardInput {
   profile: EffectiveProfile;
   approval: GuardApprovalFacts | null;
   connector: GuardConnectorFacts | null;
+  /** A registered, enabled outcome contract for this capability (no execution without one). */
+  outcomeContractPresent: boolean;
   dependenciesMet: boolean;
   dependencyRetryAt?: string | null;
   priorSucceededExecutionId?: string | null;
@@ -278,6 +281,10 @@ export function evaluateExecutionGuards(input: ExecutionGuardInput): ExecutionGu
   if (!c || !c.exists) return { outcome: "BLOCKED", reasonCodes: ["connector_missing"] };
   if (!c.enabled) return { outcome: "BLOCKED", reasonCodes: ["connector_disabled"] };
   if (!c.capabilityEnabled) return { outcome: "BLOCKED", reasonCodes: ["capability_disabled"] };
+  // No executable capability without a registered outcome contract (what it must record).
+  if (!input.outcomeContractPresent) {
+    return { outcome: "BLOCKED", reasonCodes: ["outcome_contract_missing"] };
+  }
   if (c.healthStatus === "critical") {
     return { outcome: "WAIT", reasonCodes: ["connector_unhealthy"], retryAt: null };
   }

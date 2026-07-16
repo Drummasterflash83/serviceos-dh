@@ -392,6 +392,7 @@ const SUITES = new Set([
   "objectives",
   "intelligence",
   "intelligence-ingest",
+  "golden-loop",
   "all",
 ]);
 

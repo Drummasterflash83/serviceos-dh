@@ -1,13 +1,18 @@
 -- Reliability Phases 2, 4 and 5: transactional approval, payload binding,
 -- tenant-consistent lineage, and mandatory audit correlation.
 
+-- pgcrypto (for extensions.digest()) lives in the `extensions` schema on Supabase and is not on the
+-- migration role's search_path, so every extensions.digest() call below is schema-qualified as
+-- extensions.digest(...). This guard is a no-op when the extension is already present.
+create extension if not exists pgcrypto with schema extensions;
+
 alter table response_approval_snapshots add column if not exists approved_payload_hash text;
 alter table automation_intents add column if not exists approved_payload_hash text;
 alter table automation_execution_attempts add column if not exists execution_payload_hash text;
 
 -- Existing snapshots are bound to the payload currently staged on their intent. This is a
 -- migration baseline, not retrospective proof; future approvals are atomically bound below.
-update response_approval_snapshots s set approved_payload_hash = encode(digest(i.parameters::text, 'sha256'),'hex')
+update response_approval_snapshots s set approved_payload_hash = encode(extensions.digest(i.parameters::text, 'sha256'),'hex')
 from automation_intents i
 where i.id=s.automation_intent_id and i.tenant_id=s.tenant_id and s.approved_payload_hash is null;
 update automation_intents i set approved_payload_hash=s.approved_payload_hash
@@ -109,7 +114,7 @@ begin
     jsonb_build_array(jsonb_build_object('kind','human_revision','ref',v_revision.id::text,
       'note','edited by '||v_revision.editor_ref||case when nullif(v_revision.change_reason,'') is null then '' else ': '||v_revision.change_reason end)) end;
   v_params:=v_intent.parameters || jsonb_build_object('body',v_body,'note',v_body,'response_provenance',v_provenance);
-  v_hash:=encode(digest(v_params::text,'sha256'),'hex');
+  v_hash:=encode(extensions.digest(v_params::text,'sha256'),'hex');
   v_corr:=coalesce(v_intent.correlation_id,gen_random_uuid());
   update automation_intents set parameters=v_params,approved_payload_hash=v_hash,correlation_id=v_corr where id=p_intent_id;
   insert into response_approval_snapshots(tenant_id,automation_intent_id,response_proposal_id,approved_revision_id,

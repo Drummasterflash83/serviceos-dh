@@ -17,6 +17,8 @@ import { resolveObjectiveContext, verifyObjectiveLinks } from "../intelligence/o
 import { automationIntentFor } from "../intelligence/action.ts";
 import { DEFAULT_INTERNAL_CONNECTOR } from "../review_approval.ts";
 import { assembleReplyDraft } from "../response_assistant.ts";
+import { recordResponseProposal } from "../response_refinement.ts";
+import type { ProvenanceRef } from "../response_proposal.ts";
 import type {
   CandidateObjectiveLink,
   DecisionInput,
@@ -567,11 +569,13 @@ export async function materialiseActions(
       // context informed it. Falls back to the generic note text when unavailable.
       let bodyText = noteText;
       let responseProvenance: unknown[] | null = null;
+      let draftVersion: string | null = null;
       if (capabilityKey === "email.reply_draft" && sourceInteraction) {
         const drafted = await assembleReplyDraft(db, tenantId, sourceInteraction);
         if (drafted && drafted.body) {
           bodyText = drafted.body;
           responseProvenance = drafted.provenance;
+          draftVersion = drafted.version;
         }
       }
       const parameters = internal
@@ -583,15 +587,38 @@ export async function materialiseActions(
             ...(responseProvenance ? { response_provenance: responseProvenance } : {}),
           }
         : intent.parameters;
-      await db.from("automation_intents").insert({
-        tenant_id: tenantId,
-        action_object_id: actionId,
-        intent_type: intent.intent_type,
-        parameters,
-        decision_id: decisionId,
-        connector_id: internal && capabilityKey ? DEFAULT_INTERNAL_CONNECTOR : null,
-        capability_key: capabilityKey,
-      });
+      const { data: intentRow } = await db
+        .from("automation_intents")
+        .insert({
+          tenant_id: tenantId,
+          action_object_id: actionId,
+          intent_type: intent.intent_type,
+          parameters,
+          decision_id: decisionId,
+          connector_id: internal && capabilityKey ? DEFAULT_INTERNAL_CONNECTOR : null,
+          capability_key: capabilityKey,
+        })
+        .select("id")
+        .single();
+
+      // For a reply-draft capability, persist the IMMUTABLE original AI proposal so a human
+      // can inspect + refine it before approval, and so the reviewed version can be proven
+      // against the untouched original. Non-response intents record no proposal.
+      if (capabilityKey === "email.reply_draft" && sourceInteraction && intentRow?.id) {
+        await recordResponseProposal(db, {
+          tenantId,
+          automationIntentId: intentRow.id as string,
+          actionObjectId: actionId,
+          decisionId,
+          channel: "email",
+          sourceInteraction,
+          body: bodyText,
+          provenance: (responseProvenance as ProvenanceRef[] | null) ?? [],
+          draftVersion,
+          generatedBy: responseProvenance ? "response-assistant" : "intelligence.observe",
+          generatedAt: new Date().toISOString(),
+        });
+      }
     }
     await publish(db, tenantId, "intelligence.action.created", actionId, a.domain, decisionId, {
       action_type: a.action_type,
