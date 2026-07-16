@@ -46,7 +46,7 @@ begin
   select * into r from verification_acquire_lock('00000000-0000-0000-0000-000000000001','test_suite','run-C',600);
   if not r.acquired then raise exception 'FAIL: acquire after release failed'; end if;
 end $$;
-perform verification_release_lock('00000000-0000-0000-0000-000000000001','test_suite','run-C');
+select verification_release_lock('00000000-0000-0000-0000-000000000001','test_suite','run-C');
 
 -- 6) An EXPIRED-but-unreleased lease is reclaimed by the next acquire.
 insert into verification_locks (tenant_id, suite, verification_run_id, acquired_at, expires_at)

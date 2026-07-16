@@ -106,7 +106,9 @@ do $$ begin
   values ('00000000-0000-0000-0000-000000000001','60000000-0000-0000-0000-000000000001',
           'business_value_claimed','business','observed');
   raise exception 'FAIL: an unregistered business-value outcome was allowed';
-exception when foreign_key_violation then null; -- expected: outcome_type FK (no business type seeded)
+-- Rejected by EITHER guard: the business-verification trigger (BEFORE INSERT, fires first)
+-- or the outcome_type FK (no business type seeded). Both prove the outcome is refused.
+exception when foreign_key_violation or check_violation then null;
 end $$;
 
 -- 8) schedule_engineer_visit remains registered but UNSUPPORTED (never executable).
