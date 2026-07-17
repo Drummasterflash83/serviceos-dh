@@ -348,12 +348,17 @@ export async function handleIdentityResolve(
     // Subscriber to interaction.ready: consume interactions that are fully
     // processed at source (READY) but not yet enriched. Also picks up the
     // pre-events 'pending' state so email/legacy rows are never stranded.
+    // OLDEST-FIRST (starvation-free). A newest-first window permanently strands a
+    // historical backfill tail: the oldest-dated rows never reach the top-N and are never
+    // enriched, so they never enter the intelligence loop. This mirrors the same fix
+    // already applied to the projection step (`email_select_unprojected`, migration
+    // 20260712120000_email_reliability.sql — "replaces the former newest-500 window").
     const { data: pending, error } = await admin
       .from("interactions")
       .select(INTERACTION_COLUMNS)
       .eq("tenant_id", tenantId)
       .in("processing_status", ["pending", "ready"])
-      .order("occurred_at", { ascending: false })
+      .order("occurred_at", { ascending: true })
       .limit(batch);
     if (error) throw new Error(`interactions read failed: ${error.message}`);
 
