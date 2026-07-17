@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion } from "motion/react";
 import {
   LayoutDashboard, Workflow, Phone, Bot, Banknote, Settings, Briefcase,
@@ -8,7 +8,7 @@ import {
   Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
   Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
   Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass, LogOut,
-  Radar,
+  Radar, FlaskConical, ShieldAlert,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ import { CommandCentre } from "@/components/app/CommandCentre";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 import { LiveCallCard } from "@/components/app/LiveCallCard";
 import { MyDayDashboard } from "@/components/app/MyDay";
+import { SystemHealth } from "@/components/app/SystemHealth";
 
 
 export const Route = createFileRoute("/app")({
@@ -53,52 +54,76 @@ function ProtectedApp() {
 }
 
 type ViewKey =
-  | "myday"
-  | "northstar" | "arr" | "furtherworks" | "quote" | "coordinator" | "assets"
-  | "cards" | "operations" | "comms" | "customers" | "engineers"
+  // ── Primary IA (the operating system) ──
   | "command"
-  | "learn" | "intelligence" | "automations" | "agents" | "protocol"
-  | "compliance" | "finance" | "admin" | "settings"
-  | "marketing" | "campaigns" | "journeys" | "reviews" | "platformadmin";
+  | "customers" | "operations" | "communications"
+  | "learning" | "knowledge" | "agents"
+  | "growth"
+  | "settings" | "integrations" | "systemhealth"
+  | "openfolk"
+  | "labs"
+  // ── Labs / Preview (reachable via Labs, NOT primary nav — retained, never deleted) ──
+  | "myday" | "northstar" | "cards" | "comms" | "engineers" | "coordinator"
+  | "quote" | "assets" | "furtherworks" | "arr" | "marketing" | "campaigns"
+  | "automations" | "journeys" | "reviews" | "intelligence" | "learn"
+  | "protocol" | "compliance" | "finance" | "platformadmin" | "admin";
 
 type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; group?: string };
 
+// The approved product IA: Command Centre is the heartbeat; each item names a real
+// backing capability. Concepts without a live backend live in Labs (see LABS_MODULES),
+// surfaced honestly with a Preview banner rather than faked in the primary nav.
 const NAV: NavItem[] = [
-  // OPERATE · run today's business
-  { key: "myday",         label: "My Day",           icon: LayoutDashboard, group: "OPERATE" },
-  { key: "northstar",     label: "North Star",       icon: Target,       group: "OPERATE" },
-  { key: "cards",         label: "Cards",            icon: IdCard,       group: "OPERATE" },
-  { key: "operations",    label: "Operations",       icon: Briefcase,    group: "OPERATE" },
-  { key: "comms",         label: "Calls & Comms",    icon: Phone,        group: "OPERATE" },
-  { key: "customers",     label: "Customers",        icon: Compass,      group: "OPERATE" },
-  { key: "engineers",     label: "Engineers",        icon: HardHat,      group: "OPERATE" },
-  { key: "coordinator",   label: "Coordinator",      icon: Users,        group: "OPERATE" },
-  { key: "quote",         label: "Quote Engine",     icon: Calculator,   group: "OPERATE" },
-  { key: "assets",        label: "Assets",           icon: Layers,       group: "OPERATE" },
-  { key: "furtherworks",  label: "Further Works",    icon: Timer,        group: "OPERATE" },
-  // GROW · increase revenue
-  { key: "arr",           label: "ARR Growth",       icon: TrendingUp,   group: "GROW" },
-  { key: "marketing",     label: "Marketing",        icon: Radio,        group: "GROW" },
-  { key: "campaigns",     label: "Campaigns",        icon: Mail,         group: "GROW" },
-  { key: "automations",   label: "Automations",      icon: Zap,          group: "GROW" },
-  { key: "journeys",      label: "Customer Journeys", icon: Workflow,    group: "GROW" },
-  { key: "reviews",       label: "Reviews",          icon: MessageSquare, group: "GROW" },
-  // INTELLIGENCE · understand and improve
-  { key: "command",       label: "Command Centre",   icon: Radar,        group: "INTELLIGENCE" },
-  { key: "intelligence",  label: "Intelligence",     icon: Brain,        group: "INTELLIGENCE" },
-  { key: "learn",         label: "Knowledge",        icon: GraduationCap, group: "INTELLIGENCE" },
-  { key: "agents",        label: "Agents",           icon: Bot,          group: "INTELLIGENCE" },
-  { key: "protocol",      label: "Protocol",         icon: ShieldCheck,  group: "INTELLIGENCE" },
-  { key: "compliance",    label: "Compliance",       icon: ShieldCheck,  group: "INTELLIGENCE" },
-  { key: "finance",       label: "Numbers",          icon: Banknote,     group: "INTELLIGENCE" },
+  // HEARTBEAT
+  { key: "command",       label: "Command Centre",     icon: Radar,        group: "COMMAND" },
+  // OPERATE · run the business
+  { key: "customers",     label: "Customers",          icon: Compass,      group: "OPERATE" },
+  { key: "operations",    label: "Operations",         icon: Briefcase,    group: "OPERATE" },
+  { key: "communications", label: "Communications",    icon: Phone,        group: "OPERATE" },
+  // INTELLIGENCE · the company brain
+  { key: "learning",      label: "Learning Centre",    icon: Brain,        group: "INTELLIGENCE" },
+  { key: "knowledge",     label: "Knowledge",          icon: GraduationCap, group: "INTELLIGENCE" },
+  { key: "agents",        label: "Agents",             icon: Bot,          group: "INTELLIGENCE" },
+  // GROW · commercial intelligence
+  { key: "growth",        label: "Growth Intelligence", icon: TrendingUp,  group: "GROW" },
   // CONTROL · configure and govern
-  { key: "admin",         label: "Operations Centre", icon: Network,     group: "CONTROL" },
-  { key: "platformadmin", label: "Admin",            icon: Database,     group: "CONTROL" },
-  { key: "settings",      label: "Settings",         icon: Settings,     group: "CONTROL" },
+  { key: "settings",      label: "Settings",           icon: Settings,     group: "CONTROL" },
+  { key: "integrations",  label: "Integrations",       icon: Network,      group: "CONTROL" },
+  { key: "systemhealth",  label: "System Health",      icon: Activity,     group: "CONTROL" },
 ];
 
+// Future concepts held in Labs — the existing components are preserved and reachable here,
+// each shown with a Preview banner. Nothing is deleted; nothing is presented as production.
+const LABS_MODULES: { key: ViewKey; label: string }[] = [
+  { key: "myday",        label: "My Day (role view)" },
+  { key: "northstar",    label: "North Star / Objectives" },
+  { key: "cards",        label: "Cards" },
+  { key: "engineers",    label: "Engineers" },
+  { key: "coordinator",  label: "Coordinator" },
+  { key: "quote",        label: "Quote Engine" },
+  { key: "assets",       label: "Assets" },
+  { key: "furtherworks", label: "Further Works" },
+  { key: "arr",          label: "ARR Growth" },
+  { key: "marketing",    label: "Marketing" },
+  { key: "campaigns",    label: "Campaigns" },
+  { key: "automations",  label: "Automations" },
+  { key: "journeys",     label: "Customer Journeys" },
+  { key: "reviews",      label: "Reviews" },
+  { key: "intelligence", label: "Intelligence (detail)" },
+  { key: "learn",        label: "Knowledge (concept)" },
+  { key: "protocol",     label: "Protocol" },
+  { key: "compliance",   label: "Compliance" },
+  { key: "finance",      label: "Numbers" },
+];
+
+/** Platform-admin gate for the Open Folk control plane. The `platform_admin` role is added
+ *  in Phase 8; until then this returns false and the Open Folk area stays hidden. */
+function isPlatformAdmin(profile: { role?: string | null } | null | undefined): boolean {
+  return profile?.role === "platform_admin";
+}
+
 /* Lightweight, honest placeholder for pages not built yet — no fake data. */
-function ComingSoon({ title }: { title: string }) {
+function ComingSoon({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="grid min-h-[60vh] place-items-center">
       <div className="max-w-sm text-center">
@@ -106,16 +131,110 @@ function ComingSoon({ title }: { title: string }) {
           <Sparkles className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="text-display mt-4 text-xl font-semibold">{title}</div>
-        <p className="mt-1 text-sm text-muted-foreground">Coming soon.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle ?? "Coming soon."}</p>
+      </div>
+    </div>
+  );
+}
+
+/* Preview banner — marks a Labs concept as not-yet-production. It never presents demo
+   content as live data; the wrapped view is a design preview only. */
+function PreviewBanner({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-4 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-muted-foreground">
+        <FlaskConical className="h-3.5 w-3.5 shrink-0 text-warning" />
+        <span>
+          <span className="font-medium text-foreground">{title} — Preview.</span> A design
+          concept in Labs. Not connected to production data.
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* Labs — the honest home for future concepts. Every existing demo view is preserved and
+   openable here (with a Preview banner), so no work is lost and nothing fakes production. */
+function LabsGallery({ onOpen }: { onOpen: (k: ViewKey) => void }) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <div className="text-display text-xl font-semibold">Labs</div>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Future product concepts and design prototypes. These are not connected to live
+          data yet — they move into the product as their backend capability lands.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {LABS_MODULES.map((m) => (
+          <button
+            key={m.key}
+            onClick={() => onOpen(m.key)}
+            className="flex items-center justify-between rounded-xl border border-hairline bg-white px-4 py-3 text-left text-sm transition hover:border-accent hover:bg-surface-alt"
+          >
+            <span className="font-medium text-foreground">{m.label}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-warning">
+              <FlaskConical className="h-3 w-3" /> Preview
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Open Folk control plane — gated super-admin shell. The management surfaces (companies,
+   AI config, cross-tenant health) require the multi-tenant backend that does not exist yet,
+   so this is a foundation shell, not fake multi-tenancy. */
+function OpenFolkShell() {
+  const areas = [
+    { icon: Database, label: "Companies", note: "Tenant management — requires multi-tenant backend" },
+    { icon: Network, label: "Connectors (fleet)", note: "Cross-tenant connector + credential health" },
+    { icon: Brain, label: "AI Configuration", note: "Models · prompts · policies · behaviour" },
+    { icon: Activity, label: "Platform Health", note: "Uptime · ingestion · automation across tenants" },
+  ];
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <ShieldAlert className="h-5 w-5 text-accent" />
+        <div>
+          <div className="text-display text-xl font-semibold">Open Folk — Control Plane</div>
+          <p className="text-sm text-muted-foreground">
+            The operating system controlling ServiceOS deployments. Super-admin only.
+          </p>
+        </div>
+      </div>
+      <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-muted-foreground">
+        Foundation shell. Multi-tenant management is not yet built — these areas are
+        scaffolding for expansion, not live cross-tenant functionality.
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {areas.map((a) => (
+          <div key={a.label} className="rounded-xl border border-hairline bg-white p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <a.icon className="h-4 w-4 text-muted-foreground" /> {a.label}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{a.note}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
 function AppShell() {
-  const [view, setView] = useState<ViewKey>("myday");
-  const { signOut } = useAuth();
+  const [view, setView] = useState<ViewKey>("command");
+  const { signOut, profile } = useAuth();
   const navigate = useNavigate();
+  const platformAdmin = isPlatformAdmin(profile);
+  const viewTitle =
+    NAV.find((n) => n.key === view)?.label ??
+    (view === "labs"
+      ? "Labs"
+      : view === "openfolk"
+        ? "Open Folk"
+        : (LABS_MODULES.find((m) => m.key === view)?.label ?? "ServiceOS"));
 
   return (
     <div className="flex min-h-screen bg-surface-alt text-foreground">
@@ -129,11 +248,13 @@ function AppShell() {
         </Link>
 
         <nav className="flex-1 overflow-y-auto p-3">
-          {(["OPERATE", "GROW", "INTELLIGENCE", "CONTROL"] as const).map((group) => (
+          {(["COMMAND", "OPERATE", "INTELLIGENCE", "GROW", "CONTROL"] as const).map((group) => (
             <div key={group} className="mt-6 border-t border-hairline pt-4 first:mt-0 first:border-0 first:pt-0">
-              <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                {group}
-              </div>
+              {group !== "COMMAND" && (
+                <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                  {group}
+                </div>
+              )}
               {NAV.filter((n) => n.group === group).map((item) => (
                 <button
                   key={item.key}
@@ -143,15 +264,52 @@ function AppShell() {
                     view === item.key
                       ? "bg-foreground font-medium text-background"
                       : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                    group === "COMMAND" && view !== item.key && "font-medium text-foreground",
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   <span className="flex-1 text-left">{item.label}</span>
-                  {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
+                  {group === "COMMAND" && <Sparkles className="h-3.5 w-3.5 text-accent" />}
+                  {view === item.key && group !== "COMMAND" && <ChevronRight className="h-3.5 w-3.5" />}
                 </button>
               ))}
             </div>
           ))}
+
+          {/* Labs + Open Folk — future concepts and the gated super-admin plane */}
+          <div className="mt-6 border-t border-hairline pt-4">
+            <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              More
+            </div>
+            <button
+              onClick={() => setView("labs")}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                view === "labs"
+                  ? "bg-foreground font-medium text-background"
+                  : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+              )}
+            >
+              <FlaskConical className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">Labs</span>
+              {view === "labs" && <ChevronRight className="h-3.5 w-3.5" />}
+            </button>
+            {platformAdmin && (
+              <button
+                onClick={() => setView("openfolk")}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                  view === "openfolk"
+                    ? "bg-foreground font-medium text-background"
+                    : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+                )}
+              >
+                <ShieldAlert className="h-4 w-4 shrink-0" />
+                <span className="flex-1 text-left">Open Folk</span>
+                {view === "openfolk" && <ChevronRight className="h-3.5 w-3.5" />}
+              </button>
+            )}
+          </div>
         </nav>
 
         <div className="border-t border-hairline p-4">
@@ -201,37 +359,45 @@ function AppShell() {
         </header>
 
         <main className="flex-1 p-6">
+          {/* HEARTBEAT */}
+          {view === "command"       && <CommandCentre />}
           {/* OPERATE */}
-          {view === "myday"        && <MyDayDashboard />}
-          {view === "northstar"    && <NorthStar />}
-          {view === "cards"        && <CardsView />}
-          {view === "operations"   && <OperationsHub jobsSlot={<Operations />} />}
-          {view === "comms"        && <CallsCommsView />}
-          {view === "customers"    && <Customers />}
-          {view === "engineers"    && <EngineersView />}
-          {view === "coordinator"  && <CoordinatorCockpit />}
-          {view === "quote"        && <QuoteEngine />}
-          {view === "assets"       && <Assets />}
-          {view === "furtherworks" && <FurtherWorks />}
-          {/* GROW */}
-          {view === "arr"          && <ARRGrowth />}
-          {view === "marketing"    && <ComingSoon title="Marketing" />}
-          {view === "campaigns"    && <ComingSoon title="Campaigns" />}
-          {view === "automations"  && <Automations />}
-          {view === "journeys"     && <ComingSoon title="Customer Journeys" />}
-          {view === "reviews"      && <ComingSoon title="Reviews" />}
+          {view === "customers"     && <Customers />}
+          {view === "operations"    && <OperationsHub jobsSlot={<Operations />} />}
+          {view === "communications" && <CallsCommsView />}
           {/* INTELLIGENCE */}
-          {view === "command"      && <CommandCentre />}
-          {view === "intelligence" && <Intelligence />}
-          {view === "learn"        && <Learn />}
-          {view === "agents"       && <Agents />}
-          {view === "protocol"     && <Protocol />}
-          {view === "compliance"   && <ComplianceRoadmap />}
-          {view === "finance"      && <Finance />}
+          {view === "learning"      && <ComingSoon title="Learning Centre" subtitle="The company's continuous intelligence layer — Health, Sources, Learning Timeline and Knowledge Graph. Arriving next (Phase 5)." />}
+          {view === "knowledge"     && <ComingSoon title="Knowledge" subtitle="Company memory & documents — arriving with the knowledge backend." />}
+          {view === "agents"        && <ComingSoon title="Agents" subtitle="AI workers — arriving with the agent backend." />}
+          {/* GROW */}
+          {view === "growth"        && <ComingSoon title="Growth Intelligence" subtitle="Revenue, retention and opportunities — arriving next." />}
           {/* CONTROL */}
-          {view === "admin"        && <OperationsCentre />}
-          {view === "platformadmin" && <ComingSoon title="Admin" />}
-          {view === "settings"     && <SettingsView />}
+          {view === "settings"      && <SettingsView />}
+          {view === "integrations"  && <OperationsCentre />}
+          {view === "systemhealth"  && <SystemHealth />}
+          {/* More */}
+          {view === "labs"          && <LabsGallery onOpen={setView} />}
+          {view === "openfolk"      && (platformAdmin ? <OpenFolkShell /> : <ComingSoon title="Open Folk" subtitle="Super-admin only." />)}
+          {/* Labs previews — design concepts, reachable via Labs, never faked as production */}
+          {view === "myday"         && <PreviewBanner title="My Day"><MyDayDashboard /></PreviewBanner>}
+          {view === "northstar"     && <PreviewBanner title="North Star"><NorthStar /></PreviewBanner>}
+          {view === "cards"         && <PreviewBanner title="Cards"><CardsView /></PreviewBanner>}
+          {view === "engineers"     && <PreviewBanner title="Engineers"><EngineersView /></PreviewBanner>}
+          {view === "coordinator"   && <PreviewBanner title="Coordinator"><CoordinatorCockpit /></PreviewBanner>}
+          {view === "quote"         && <PreviewBanner title="Quote Engine"><QuoteEngine /></PreviewBanner>}
+          {view === "assets"        && <PreviewBanner title="Assets"><Assets /></PreviewBanner>}
+          {view === "furtherworks"  && <PreviewBanner title="Further Works"><FurtherWorks /></PreviewBanner>}
+          {view === "arr"           && <PreviewBanner title="ARR Growth"><ARRGrowth /></PreviewBanner>}
+          {view === "marketing"     && <ComingSoon title="Marketing" />}
+          {view === "campaigns"     && <ComingSoon title="Campaigns" />}
+          {view === "automations"   && <PreviewBanner title="Automations"><Automations /></PreviewBanner>}
+          {view === "journeys"      && <ComingSoon title="Customer Journeys" />}
+          {view === "reviews"       && <ComingSoon title="Reviews" />}
+          {view === "intelligence"  && <PreviewBanner title="Intelligence"><Intelligence /></PreviewBanner>}
+          {view === "learn"         && <PreviewBanner title="Knowledge"><Learn /></PreviewBanner>}
+          {view === "protocol"      && <PreviewBanner title="Protocol"><Protocol /></PreviewBanner>}
+          {view === "compliance"    && <PreviewBanner title="Compliance"><ComplianceRoadmap /></PreviewBanner>}
+          {view === "finance"       && <PreviewBanner title="Numbers"><Finance /></PreviewBanner>}
         </main>
       </div>
     </div>
