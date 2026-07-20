@@ -19,7 +19,8 @@
     "verify:all": "node scripts/verify/index.ts all --json",
     "verify:automation:dry-run": "node scripts/verify/index.ts automation --dry-run",
     "verify:intelligence-ingest:dry-run": "node scripts/verify/index.ts intelligence-ingest --dry-run",
-    "verify:test": "node scripts/verify/lib.verify.ts"
+    "verify:test": "node scripts/verify/lib.verify.ts",
+    "verify:product": "node scripts/product-alignment.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

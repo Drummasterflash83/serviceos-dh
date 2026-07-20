@@ -84,7 +84,48 @@ function parseProjection(context: unknown): CardProjection | null {
   if (!context || typeof context !== "object") return null;
   const proj = (context as Record<string, unknown>).projection;
   if (!proj || typeof proj !== "object") return null;
-  return proj as CardProjection;
+  // Projections are durable records and older rows pre-date several fields used by
+  // the customer screen. Normalise at the data boundary so one legacy row cannot
+  // crash the whole route (for example `operations.waiting.length`).
+  const p = proj as Partial<CardProjection>;
+  const identity = p.identity ?? ({} as CardProjection["identity"]);
+  const communication = p.communication ?? ({} as CardProjection["communication"]);
+  const operations = p.operations ?? ({} as CardProjection["operations"]);
+  const business = p.business ?? ({} as CardProjection["business"]);
+  return {
+    version: typeof p.version === "number" ? p.version : 1,
+    generated_at: p.generated_at ?? "",
+    identity: {
+      display_name: identity.display_name ?? "Unknown contact",
+      company_name: identity.company_name ?? null,
+      primary_contact: identity.primary_contact ?? null,
+      emails: Array.isArray(identity.emails) ? identity.emails : [],
+      phones: Array.isArray(identity.phones) ? identity.phones : [],
+    },
+    communication: {
+      last_interaction_at: communication.last_interaction_at ?? null,
+      interaction_count: communication.interaction_count ?? 0,
+      trend: communication.trend ?? "flat",
+      channels: Array.isArray(communication.channels) ? communication.channels : [],
+    },
+    operations: {
+      open_recommendations: operations.open_recommendations ?? 0,
+      urgent: Array.isArray(operations.urgent) ? operations.urgent : [],
+      waiting: Array.isArray(operations.waiting) ? operations.waiting : [],
+      blockers: Array.isArray(operations.blockers) ? operations.blockers : [],
+    },
+    business: {
+      confidence: business.confidence ?? null,
+      health: business.health ?? "attention",
+      health_reasons: Array.isArray(business.health_reasons) ? business.health_reasons : [],
+      sentiment: business.sentiment ?? null,
+      avg_response_hours: business.avg_response_hours ?? null,
+      activity_score: business.activity_score ?? 0,
+      activity_inputs: business.activity_inputs,
+      relationship_count: business.relationship_count ?? 0,
+    },
+    timeline: Array.isArray(p.timeline) ? p.timeline : [],
+  };
 }
 
 function toProjectedCard(row: Record<string, unknown>): ProjectedCard {

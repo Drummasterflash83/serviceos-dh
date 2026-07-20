@@ -1,43 +1,100 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
 import {
-  LayoutDashboard, Workflow, Phone, Bot, Banknote, Settings, Briefcase,
-  Search, Bell, ArrowUpRight, Activity, ChevronRight, Sparkles,
-  GraduationCap, Mail, MessageSquare, Database, HardDrive, Globe,
-  Monitor, FileText, Radio, Brain, TrendingUp, AlertTriangle, CheckCircle2,
-  Zap, Eye, Target, Gauge, Layers, Network, ShieldCheck, Clock, Filter,
-  Users, Inbox, IdCard, HardHat, Timer, Calculator, Compass, LogOut,
-  Radar, FlaskConical, ShieldAlert,
+  LayoutDashboard,
+  Workflow,
+  Phone,
+  Bot,
+  Banknote,
+  Settings,
+  Briefcase,
+  Search,
+  Bell,
+  ArrowUpRight,
+  Activity,
+  ChevronRight,
+  Sparkles,
+  GraduationCap,
+  Mail,
+  MessageSquare,
+  Database,
+  HardDrive,
+  Globe,
+  Monitor,
+  FileText,
+  Radio,
+  Brain,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Zap,
+  Eye,
+  Target,
+  Gauge,
+  Layers,
+  Network,
+  ShieldCheck,
+  Clock,
+  Filter,
+  Users,
+  Inbox,
+  IdCard,
+  HardHat,
+  Timer,
+  Calculator,
+  Compass,
+  LogOut,
+  Radar,
+  FlaskConical,
+  ShieldAlert,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { RequireAuth, useAuth } from "@/lib/auth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import dhIcon from "@/assets/dh-icon-blackwhite.png.asset.json";
 import {
-  Protocol, OperationsHub, Customers,
-  ApprovalQueuePanel, RecurringIssuesPanel, SystemsInventoryPanel,
+  Protocol,
+  OperationsHub,
+  Customers,
+  ApprovalQueuePanel,
+  RecurringIssuesPanel,
+  SystemsInventoryPanel,
 } from "@/components/app/NewViews";
 import {
-  NorthStar, ARRGrowth, FurtherWorks, QuoteEngine,
-  CoordinatorCockpit, Assets, ComplianceRoadmap,
+  NorthStar,
+  ARRGrowth,
+  FurtherWorks,
+  QuoteEngine,
+  CoordinatorCockpit,
+  Assets,
+  ComplianceRoadmap,
 } from "@/components/app/NorthStar";
 import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
-import { CallsCommsView } from "@/components/app/CallsComms";
+import { Communications } from "@/components/app/Communications";
+import { LearningCentre } from "@/components/app/LearningCentre";
 import { CommandCentre } from "@/components/app/CommandCentre";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 import { LiveCallCard } from "@/components/app/LiveCallCard";
 import { MyDayDashboard } from "@/components/app/MyDay";
 import { SystemHealth } from "@/components/app/SystemHealth";
 
-
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
       { title: "ServiceOS · Command Centre" },
-      { name: "description", content: "Live operations, calls, finance and intelligence in one surface." },
+      {
+        name: "description",
+        content: "Live operations, calls, finance and intelligence in one surface.",
+      },
     ],
   }),
   component: ProtectedApp,
@@ -56,17 +113,41 @@ function ProtectedApp() {
 type ViewKey =
   // ── Primary IA (the operating system) ──
   | "command"
-  | "customers" | "operations" | "communications"
-  | "learning" | "knowledge" | "agents"
+  | "customers"
+  | "operations"
+  | "communications"
+  | "learning"
+  | "knowledge"
+  | "agents"
   | "growth"
-  | "settings" | "integrations" | "systemhealth"
+  | "settings"
+  | "integrations"
+  | "systemhealth"
   | "openfolk"
   | "labs"
   // ── Labs / Preview (reachable via Labs, NOT primary nav — retained, never deleted) ──
-  | "myday" | "northstar" | "cards" | "comms" | "engineers" | "coordinator"
-  | "quote" | "assets" | "furtherworks" | "arr" | "marketing" | "campaigns"
-  | "automations" | "journeys" | "reviews" | "intelligence" | "learn"
-  | "protocol" | "compliance" | "finance" | "platformadmin" | "admin";
+  | "myday"
+  | "northstar"
+  | "cards"
+  | "comms"
+  | "engineers"
+  | "coordinator"
+  | "quote"
+  | "assets"
+  | "furtherworks"
+  | "arr"
+  | "marketing"
+  | "campaigns"
+  | "automations"
+  | "journeys"
+  | "reviews"
+  | "intelligence"
+  | "learn"
+  | "protocol"
+  | "compliance"
+  | "finance"
+  | "platformadmin"
+  | "admin";
 
 type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; group?: string };
 
@@ -74,46 +155,37 @@ type NavItem = { key: ViewKey; label: string; icon: typeof LayoutDashboard; grou
 // backing capability. Concepts without a live backend live in Labs (see LABS_MODULES),
 // surfaced honestly with a Preview banner rather than faked in the primary nav.
 const NAV: NavItem[] = [
-  // HEARTBEAT
-  { key: "command",       label: "Command Centre",     icon: Radar,        group: "COMMAND" },
-  // OPERATE · run the business
-  { key: "customers",     label: "Customers",          icon: Compass,      group: "OPERATE" },
-  { key: "operations",    label: "Operations",         icon: Briefcase,    group: "OPERATE" },
-  { key: "communications", label: "Communications",    icon: Phone,        group: "OPERATE" },
-  // INTELLIGENCE · the company brain
-  { key: "learning",      label: "Learning Centre",    icon: Brain,        group: "INTELLIGENCE" },
-  { key: "knowledge",     label: "Knowledge",          icon: GraduationCap, group: "INTELLIGENCE" },
-  { key: "agents",        label: "Agents",             icon: Bot,          group: "INTELLIGENCE" },
-  // GROW · commercial intelligence
-  { key: "growth",        label: "Growth Intelligence", icon: TrendingUp,  group: "GROW" },
-  // CONTROL · configure and govern
-  { key: "settings",      label: "Settings",           icon: Settings,     group: "CONTROL" },
-  { key: "integrations",  label: "Integrations",       icon: Network,      group: "CONTROL" },
-  { key: "systemhealth",  label: "System Health",      icon: Activity,     group: "CONTROL" },
+  { key: "command", label: "Command Centre", icon: Radar, group: "CORE" },
+  { key: "communications", label: "Communications", icon: Phone, group: "CORE" },
+  { key: "customers", label: "Customers", icon: Compass, group: "CORE" },
+  { key: "operations", label: "Operations", icon: Briefcase, group: "CORE" },
+  { key: "learning", label: "Learning Centre", icon: Brain, group: "CORE" },
+  { key: "agents", label: "Agents", icon: Bot, group: "CORE" },
+  { key: "protocol", label: "Protocol", icon: ShieldCheck, group: "CORE" },
+  { key: "settings", label: "Settings", icon: Settings, group: "CORE" },
 ];
 
 // Future concepts held in Labs — the existing components are preserved and reachable here,
 // each shown with a Preview banner. Nothing is deleted; nothing is presented as production.
 const LABS_MODULES: { key: ViewKey; label: string }[] = [
-  { key: "myday",        label: "My Day (role view)" },
-  { key: "northstar",    label: "North Star / Objectives" },
-  { key: "cards",        label: "Cards" },
-  { key: "engineers",    label: "Engineers" },
-  { key: "coordinator",  label: "Coordinator" },
-  { key: "quote",        label: "Quote Engine" },
-  { key: "assets",       label: "Assets" },
+  { key: "myday", label: "My Day (role view)" },
+  { key: "northstar", label: "North Star / Objectives" },
+  { key: "cards", label: "Cards" },
+  { key: "engineers", label: "Engineers" },
+  { key: "coordinator", label: "Coordinator" },
+  { key: "quote", label: "Quote Engine" },
+  { key: "assets", label: "Assets" },
   { key: "furtherworks", label: "Further Works" },
-  { key: "arr",          label: "ARR Growth" },
-  { key: "marketing",    label: "Marketing" },
-  { key: "campaigns",    label: "Campaigns" },
-  { key: "automations",  label: "Automations" },
-  { key: "journeys",     label: "Customer Journeys" },
-  { key: "reviews",      label: "Reviews" },
+  { key: "arr", label: "ARR Growth" },
+  { key: "marketing", label: "Marketing" },
+  { key: "campaigns", label: "Campaigns" },
+  { key: "automations", label: "Automations" },
+  { key: "journeys", label: "Customer Journeys" },
+  { key: "reviews", label: "Reviews" },
   { key: "intelligence", label: "Intelligence (detail)" },
-  { key: "learn",        label: "Knowledge (concept)" },
-  { key: "protocol",     label: "Protocol" },
-  { key: "compliance",   label: "Compliance" },
-  { key: "finance",      label: "Numbers" },
+  { key: "learn", label: "Knowledge (concept)" },
+  { key: "compliance", label: "Compliance" },
+  { key: "finance", label: "Numbers" },
 ];
 
 /** Platform-admin gate for the Open Folk control plane. The `platform_admin` role is added
@@ -145,8 +217,8 @@ function PreviewBanner({ title, children }: { title: string; children: ReactNode
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-muted-foreground">
         <FlaskConical className="h-3.5 w-3.5 shrink-0 text-warning" />
         <span>
-          <span className="font-medium text-foreground">{title} — Preview.</span> A design
-          concept in Labs. Not connected to production data.
+          <span className="font-medium text-foreground">{title} — Preview.</span> A design concept
+          in Labs. Not connected to production data.
         </span>
       </div>
       {children}
@@ -162,8 +234,8 @@ function LabsGallery({ onOpen }: { onOpen: (k: ViewKey) => void }) {
       <div>
         <div className="text-display text-xl font-semibold">Labs</div>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Future product concepts and design prototypes. These are not connected to live
-          data yet — they move into the product as their backend capability lands.
+          Future product concepts and design prototypes. These are not connected to live data yet —
+          they move into the product as their backend capability lands.
         </p>
       </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -189,10 +261,22 @@ function LabsGallery({ onOpen }: { onOpen: (k: ViewKey) => void }) {
    so this is a foundation shell, not fake multi-tenancy. */
 function OpenFolkShell() {
   const areas = [
-    { icon: Database, label: "Companies", note: "Tenant management — requires multi-tenant backend" },
-    { icon: Network, label: "Connectors (fleet)", note: "Cross-tenant connector + credential health" },
+    {
+      icon: Database,
+      label: "Companies",
+      note: "Tenant management — requires multi-tenant backend",
+    },
+    {
+      icon: Network,
+      label: "Connectors (fleet)",
+      note: "Cross-tenant connector + credential health",
+    },
     { icon: Brain, label: "AI Configuration", note: "Models · prompts · policies · behaviour" },
-    { icon: Activity, label: "Platform Health", note: "Uptime · ingestion · automation across tenants" },
+    {
+      icon: Activity,
+      label: "Platform Health",
+      note: "Uptime · ingestion · automation across tenants",
+    },
   ];
   return (
     <div className="space-y-5">
@@ -206,8 +290,8 @@ function OpenFolkShell() {
         </div>
       </div>
       <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-muted-foreground">
-        Foundation shell. Multi-tenant management is not yet built — these areas are
-        scaffolding for expansion, not live cross-tenant functionality.
+        Foundation shell. Multi-tenant management is not yet built — these areas are scaffolding for
+        expansion, not live cross-tenant functionality.
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {areas.map((a) => (
@@ -224,7 +308,36 @@ function OpenFolkShell() {
 }
 
 function AppShell() {
-  const [view, setView] = useState<ViewKey>("command");
+  const [view, setViewState] = useState<ViewKey>(() => {
+    if (typeof window === "undefined") return "command";
+    const candidate = window.location.hash.replace(/^#\/?/, "") as ViewKey;
+    return [
+      ...NAV,
+      { key: "labs" as ViewKey, label: "Labs", icon: FlaskConical },
+      ...LABS_MODULES,
+    ].some((item) => item.key === candidate)
+      ? candidate
+      : "command";
+  });
+  const setView = (next: ViewKey) => {
+    setViewState(next);
+    if (typeof window !== "undefined")
+      window.history.replaceState(
+        null,
+        "",
+        next === "command" ? window.location.pathname : `${window.location.pathname}#/${next}`,
+      );
+  };
+  useEffect(() => {
+    const sync = () => {
+      const candidate = window.location.hash.replace(/^#\/?/, "") as ViewKey;
+      if (candidate && [...NAV, ...LABS_MODULES].some((item) => item.key === candidate))
+        setViewState(candidate);
+      else setViewState("command");
+    };
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
   const { signOut, profile } = useAuth();
   const navigate = useNavigate();
   const platformAdmin = isPlatformAdmin(profile);
@@ -242,19 +355,20 @@ function AppShell() {
       <LiveCallCard />
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:flex">
-        <Link to="/" className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold">
+        <Link
+          to="/"
+          className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold"
+        >
           <img src={dhIcon.url} alt="Drummonds" className="h-6 w-6 rounded-md object-contain" />
           ServiceOS
         </Link>
 
         <nav className="flex-1 overflow-y-auto p-3">
-          {(["COMMAND", "OPERATE", "INTELLIGENCE", "GROW", "CONTROL"] as const).map((group) => (
-            <div key={group} className="mt-6 border-t border-hairline pt-4 first:mt-0 first:border-0 first:pt-0">
-              {group !== "COMMAND" && (
-                <div className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                  {group}
-                </div>
-              )}
+          {(["CORE"] as const).map((group) => (
+            <div
+              key={group}
+              className="mt-6 border-t border-hairline pt-4 first:mt-0 first:border-0 first:pt-0"
+            >
               {NAV.filter((n) => n.group === group).map((item) => (
                 <button
                   key={item.key}
@@ -264,13 +378,13 @@ function AppShell() {
                     view === item.key
                       ? "bg-foreground font-medium text-background"
                       : "text-muted-foreground hover:bg-surface-alt hover:text-foreground",
-                    group === "COMMAND" && view !== item.key && "font-medium text-foreground",
+                    view !== item.key && "font-medium text-foreground",
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   <span className="flex-1 text-left">{item.label}</span>
-                  {group === "COMMAND" && <Sparkles className="h-3.5 w-3.5 text-accent" />}
-                  {view === item.key && group !== "COMMAND" && <ChevronRight className="h-3.5 w-3.5" />}
+                  {item.key === "command" && <Sparkles className="h-3.5 w-3.5 text-accent" />}
+                  {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
                 </button>
               ))}
             </div>
@@ -337,11 +451,15 @@ function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-hairline bg-white/80 px-6 py-3 backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <div className="text-display text-lg font-semibold capitalize">
-              {NAV.find((n) => n.key === view)?.label}
-            </div>
+            <div className="text-display text-lg font-semibold capitalize">{viewTitle}</div>
             <span className="hidden text-xs text-muted-foreground md:inline">·</span>
-            <span className="hidden font-mono text-xs text-muted-foreground md:inline">Tuesday · 14:22</span>
+            <span className="hidden font-mono text-xs text-muted-foreground md:inline">
+              {new Date().toLocaleString([], {
+                weekday: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative hidden md:block">
@@ -354,50 +472,133 @@ function AppShell() {
             <button className="grid h-9 w-9 place-items-center rounded-full border border-hairline">
               <Bell className="h-4 w-4 text-muted-foreground" />
             </button>
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">DH</div>
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">
+              DH
+            </div>
           </div>
         </header>
 
         <main className="flex-1 p-6">
           {/* HEARTBEAT */}
-          {view === "command"       && <CommandCentre />}
+          {view === "command" && <CommandCentre />}
           {/* OPERATE */}
-          {view === "customers"     && <Customers />}
-          {view === "operations"    && <OperationsHub jobsSlot={<Operations />} />}
-          {view === "communications" && <CallsCommsView />}
+          {view === "customers" && <Customers />}
+          {view === "operations" && <OperationsCentre />}
+          {view === "communications" && <Communications />}
           {/* INTELLIGENCE */}
-          {view === "learning"      && <ComingSoon title="Learning Centre" subtitle="The company's continuous intelligence layer — Health, Sources, Learning Timeline and Knowledge Graph. Arriving next (Phase 5)." />}
-          {view === "knowledge"     && <ComingSoon title="Knowledge" subtitle="Company memory & documents — arriving with the knowledge backend." />}
-          {view === "agents"        && <ComingSoon title="Agents" subtitle="AI workers — arriving with the agent backend." />}
+          {view === "learning" && <LearningCentre />}
+          {view === "agents" && (
+            <ComingSoon title="Agents" subtitle="AI workers — arriving with the agent backend." />
+          )}
+          {view === "protocol" && <Protocol />}
           {/* GROW */}
-          {view === "growth"        && <ComingSoon title="Growth Intelligence" subtitle="Revenue, retention and opportunities — arriving next." />}
+          {view === "growth" && (
+            <ComingSoon
+              title="Growth Intelligence"
+              subtitle="Revenue, retention and opportunities — arriving next."
+            />
+          )}
           {/* CONTROL */}
-          {view === "settings"      && <SettingsView />}
-          {view === "integrations"  && <OperationsCentre />}
-          {view === "systemhealth"  && <SystemHealth />}
+          {view === "settings" && <SettingsView />}
           {/* More */}
-          {view === "labs"          && <LabsGallery onOpen={setView} />}
-          {view === "openfolk"      && (platformAdmin ? <OpenFolkShell /> : <ComingSoon title="Open Folk" subtitle="Super-admin only." />)}
+          {view === "labs" && <LabsGallery onOpen={setView} />}
+          {view === "openfolk" &&
+            (platformAdmin ? (
+              <OpenFolkShell />
+            ) : (
+              <ComingSoon title="Open Folk" subtitle="Super-admin only." />
+            ))}
           {/* Labs previews — design concepts, reachable via Labs, never faked as production */}
-          {view === "myday"         && <PreviewBanner title="My Day"><MyDayDashboard /></PreviewBanner>}
-          {view === "northstar"     && <PreviewBanner title="North Star"><NorthStar /></PreviewBanner>}
-          {view === "cards"         && <PreviewBanner title="Cards"><CardsView /></PreviewBanner>}
-          {view === "engineers"     && <PreviewBanner title="Engineers"><EngineersView /></PreviewBanner>}
-          {view === "coordinator"   && <PreviewBanner title="Coordinator"><CoordinatorCockpit /></PreviewBanner>}
-          {view === "quote"         && <PreviewBanner title="Quote Engine"><QuoteEngine /></PreviewBanner>}
-          {view === "assets"        && <PreviewBanner title="Assets"><Assets /></PreviewBanner>}
-          {view === "furtherworks"  && <PreviewBanner title="Further Works"><FurtherWorks /></PreviewBanner>}
-          {view === "arr"           && <PreviewBanner title="ARR Growth"><ARRGrowth /></PreviewBanner>}
-          {view === "marketing"     && <ComingSoon title="Marketing" />}
-          {view === "campaigns"     && <ComingSoon title="Campaigns" />}
-          {view === "automations"   && <PreviewBanner title="Automations"><Automations /></PreviewBanner>}
-          {view === "journeys"      && <ComingSoon title="Customer Journeys" />}
-          {view === "reviews"       && <ComingSoon title="Reviews" />}
-          {view === "intelligence"  && <PreviewBanner title="Intelligence"><Intelligence /></PreviewBanner>}
-          {view === "learn"         && <PreviewBanner title="Knowledge"><Learn /></PreviewBanner>}
-          {view === "protocol"      && <PreviewBanner title="Protocol"><Protocol /></PreviewBanner>}
-          {view === "compliance"    && <PreviewBanner title="Compliance"><ComplianceRoadmap /></PreviewBanner>}
-          {view === "finance"       && <PreviewBanner title="Numbers"><Finance /></PreviewBanner>}
+          {view === "myday" && (
+            <PreviewBanner title="My Day">
+              <MyDayDashboard />
+            </PreviewBanner>
+          )}
+          {view === "northstar" && (
+            <PreviewBanner title="North Star">
+              <NorthStar />
+            </PreviewBanner>
+          )}
+          {view === "cards" && (
+            <PreviewBanner title="Cards">
+              <CardsView />
+            </PreviewBanner>
+          )}
+          {view === "engineers" && (
+            <PreviewBanner title="Engineers">
+              <EngineersView />
+            </PreviewBanner>
+          )}
+          {view === "coordinator" && (
+            <PreviewBanner title="Coordinator">
+              <CoordinatorCockpit />
+            </PreviewBanner>
+          )}
+          {view === "quote" && (
+            <PreviewBanner title="Quote Engine">
+              <QuoteEngine />
+            </PreviewBanner>
+          )}
+          {view === "assets" && (
+            <PreviewBanner title="Assets">
+              <Assets />
+            </PreviewBanner>
+          )}
+          {view === "furtherworks" && (
+            <PreviewBanner title="Further Works">
+              <FurtherWorks />
+            </PreviewBanner>
+          )}
+          {view === "arr" && (
+            <PreviewBanner title="ARR Growth">
+              <ARRGrowth />
+            </PreviewBanner>
+          )}
+          {view === "marketing" && (
+            <PreviewBanner title="Marketing">
+              <ComingSoon title="Marketing" />
+            </PreviewBanner>
+          )}
+          {view === "campaigns" && (
+            <PreviewBanner title="Campaigns">
+              <ComingSoon title="Campaigns" />
+            </PreviewBanner>
+          )}
+          {view === "automations" && (
+            <PreviewBanner title="Automations">
+              <Automations />
+            </PreviewBanner>
+          )}
+          {view === "journeys" && (
+            <PreviewBanner title="Customer Journeys">
+              <ComingSoon title="Customer Journeys" />
+            </PreviewBanner>
+          )}
+          {view === "reviews" && (
+            <PreviewBanner title="Reviews">
+              <ComingSoon title="Reviews" />
+            </PreviewBanner>
+          )}
+          {view === "intelligence" && (
+            <PreviewBanner title="Intelligence">
+              <Intelligence />
+            </PreviewBanner>
+          )}
+          {view === "learn" && (
+            <PreviewBanner title="Knowledge">
+              <Learn />
+            </PreviewBanner>
+          )}
+          {view === "compliance" && (
+            <PreviewBanner title="Compliance">
+              <ComplianceRoadmap />
+            </PreviewBanner>
+          )}
+          {view === "finance" && (
+            <PreviewBanner title="Numbers">
+              <Finance />
+            </PreviewBanner>
+          )}
         </main>
       </div>
     </div>
@@ -418,43 +619,98 @@ function Dashboard() {
   // score 0-100, higher = healthier. Reasons drive hover tooltips and the insights panel.
   type HealthPoint = { hour: string; score: number; reason?: string; pillar?: string };
   const health: HealthPoint[] = [
-    { hour: "00:00", score: 47, pillar: "Operations", reason: "Parts not verified at goods-in (×2)" },
-    { hour: "01:00", score: 49, pillar: "Comms",      reason: "Rudi callbacks owed ×3 · landing on Mary" },
-    { hour: "02:00", score: 51, pillar: "Customer",   reason: "No touchpoint in quote→book gap (3 wks)" },
-    { hour: "03:00", score: 54, pillar: "Customer",   reason: "Complaint risk · ABC School (unresolved)" },
-    { hour: "04:00", score: 58, pillar: "Customer",   reason: "ABC School sentiment recovering" },
-    { hour: "05:00", score: 62, pillar: "Comms",      reason: "office@ backlog being cleared" },
-    { hour: "06:00", score: 68, pillar: "Quoting",    reason: "Alan's review queue drained to 2" },
-    { hour: "07:00", score: 71, pillar: "Quoting",    reason: "Follow-ups sent · 3 replies in" },
+    {
+      hour: "00:00",
+      score: 47,
+      pillar: "Operations",
+      reason: "Parts not verified at goods-in (×2)",
+    },
+    {
+      hour: "01:00",
+      score: 49,
+      pillar: "Comms",
+      reason: "Rudi callbacks owed ×3 · landing on Mary",
+    },
+    {
+      hour: "02:00",
+      score: 51,
+      pillar: "Customer",
+      reason: "No touchpoint in quote→book gap (3 wks)",
+    },
+    {
+      hour: "03:00",
+      score: 54,
+      pillar: "Customer",
+      reason: "Complaint risk · ABC School (unresolved)",
+    },
+    { hour: "04:00", score: 58, pillar: "Customer", reason: "ABC School sentiment recovering" },
+    { hour: "05:00", score: 62, pillar: "Comms", reason: "office@ backlog being cleared" },
+    { hour: "06:00", score: 68, pillar: "Quoting", reason: "Alan's review queue drained to 2" },
+    { hour: "07:00", score: 71, pillar: "Quoting", reason: "Follow-ups sent · 3 replies in" },
     { hour: "08:00", score: 74, pillar: "Operations", reason: "Engineer 04 back on schedule" },
     { hour: "09:00", score: 78, pillar: "Operations", reason: "Supplier swap resolved 3 jobs" },
-    { hour: "10:00", score: 82 }, { hour: "11:00", score: 84 },
-    { hour: "12:00", score: 86 }, { hour: "13:00", score: 88 },
-    { hour: "14:00", score: 89 }, { hour: "15:00", score: 91 },
-    { hour: "16:00", score: 88 }, { hour: "17:00", score: 90 },
-    { hour: "18:00", score: 92 }, { hour: "19:00", score: 95 },
-    { hour: "20:00", score: 97 }, { hour: "21:00", score: 98 },
-    { hour: "22:00", score: 98 }, { hour: "23:00", score: 97 },
+    { hour: "10:00", score: 82 },
+    { hour: "11:00", score: 84 },
+    { hour: "12:00", score: 86 },
+    { hour: "13:00", score: 88 },
+    { hour: "14:00", score: 89 },
+    { hour: "15:00", score: 91 },
+    { hour: "16:00", score: 88 },
+    { hour: "17:00", score: 90 },
+    { hour: "18:00", score: 92 },
+    { hour: "19:00", score: 95 },
+    { hour: "20:00", score: 97 },
+    { hour: "21:00", score: 98 },
+    { hour: "22:00", score: 98 },
+    { hour: "23:00", score: 97 },
   ];
 
   const overall = Math.round(health.reduce((a, b) => a + b.score, 0) / health.length);
   const trend = health[health.length - 1].score - health[0].score; // negative = declining
 
   const insights = [
-    { tone: "warning",     pillar: "Operations", text: "Supplier delay affecting 3 jobs", detail: "Reorder window closes 16:00 - switch to Plumb Base saves 2 days." },
-    { tone: "accent",      pillar: "Quoting",    text: "Quote follow-up overdue ×7",      detail: "Day-20 nudge ready to send. ~70% reply rate on spam-drift line." },
-    { tone: "destructive", pillar: "Customer",   text: "Complaint risk · ABC School",     detail: "Frustrated sentiment + no callback in 2 days. Mary owns the response." },
-    { tone: "warning",     pillar: "Comms",      text: "office@ unread climbing",         detail: "Oldest 47m. 3 likely routable to scheduling - auto-route ready." },
-    { tone: "success",     pillar: "Cashflow",      text: "Margin tracking +3.4% vs week",   detail: "Procurement agent saved £214 across 3 supplier comparisons today." },
+    {
+      tone: "warning",
+      pillar: "Operations",
+      text: "Supplier delay affecting 3 jobs",
+      detail: "Reorder window closes 16:00 - switch to Plumb Base saves 2 days.",
+    },
+    {
+      tone: "accent",
+      pillar: "Quoting",
+      text: "Quote follow-up overdue ×7",
+      detail: "Day-20 nudge ready to send. ~70% reply rate on spam-drift line.",
+    },
+    {
+      tone: "destructive",
+      pillar: "Customer",
+      text: "Complaint risk · ABC School",
+      detail: "Frustrated sentiment + no callback in 2 days. Mary owns the response.",
+    },
+    {
+      tone: "warning",
+      pillar: "Comms",
+      text: "office@ unread climbing",
+      detail: "Oldest 47m. 3 likely routable to scheduling - auto-route ready.",
+    },
+    {
+      tone: "success",
+      pillar: "Cashflow",
+      text: "Margin tracking +3.4% vs week",
+      detail: "Procurement agent saved £214 across 3 supplier comparisons today.",
+    },
   ] as const;
-
 
   const activity = [
     { t: "14:22", who: "Reception Agent", what: "Inbound call · ABC School routed to dispatch" },
     { t: "14:19", who: "Procurement Agent", what: "Compared 3 supplier quotes · saved £214" },
     { t: "14:15", who: "Scheduling Agent", what: "Re-routed Engineer 04 · saved 28 mins" },
     { t: "14:11", who: "Finance Agent", what: "Reconciled invoice INV-3387 · matched" },
-    { t: "14:04", who: "Workflow Intelligence", what: "New automation candidate detected (74% time saving)" },
+    {
+      t: "14:04",
+      who: "Workflow Intelligence",
+      what: "New automation candidate detected (74% time saving)",
+    },
   ];
 
   /* ── Click-to-open detail modals ── */
@@ -472,77 +728,163 @@ function Dashboard() {
   };
 
   const toneClass = (t: Tone) =>
-    t === "success" ? "bg-success/10 text-success border-success/20" :
-    t === "warning" ? "bg-warning/10 text-warning border-warning/20" :
-    t === "destructive" ? "bg-destructive/10 text-destructive border-destructive/20" :
-    t === "accent" ? "bg-accent/10 text-accent border-accent/20" :
-                     "bg-surface-alt text-foreground border-hairline";
+    t === "success"
+      ? "bg-success/10 text-success border-success/20"
+      : t === "warning"
+        ? "bg-warning/10 text-warning border-warning/20"
+        : t === "destructive"
+          ? "bg-destructive/10 text-destructive border-destructive/20"
+          : t === "accent"
+            ? "bg-accent/10 text-accent border-accent/20"
+            : "bg-surface-alt text-foreground border-hairline";
 
   const DETAILS: Record<string, DetailBlock> = {
     "pillar:ops": {
-      title: "Operations · 81 / 100", subtitle: "Time, throughput, engineer utilisation", tone: "warning", score: "81 · +3 vs last wk",
+      title: "Operations · 81 / 100",
+      subtitle: "Time, throughput, engineer utilisation",
+      tone: "warning",
+      score: "81 · +3 vs last wk",
       metrics: [
-        { l: "Jobs in flight", v: "42" }, { l: "First-time fix", v: "89%" },
-        { l: "Avg over-run", v: "12 min" }, { l: "Utilisation", v: "84%" },
+        { l: "Jobs in flight", v: "42" },
+        { l: "First-time fix", v: "89%" },
+        { l: "Avg over-run", v: "12 min" },
+        { l: "Utilisation", v: "84%" },
       ],
       drivers: [
-        { label: "Engineer 04 over-running", reason: "28 min behind on Greenfield service · knock-on to 14:30 slot", weight: 18 },
-        { label: "Parts not verified at goods-in", reason: "Two part-numbers flagged · pending Mary's check", weight: 9 },
-        { label: "Supplier swap resolved 3 jobs", reason: "Plumb Base subbed in · 2 days reclaimed", weight: -12 },
+        {
+          label: "Engineer 04 over-running",
+          reason: "28 min behind on Greenfield service · knock-on to 14:30 slot",
+          weight: 18,
+        },
+        {
+          label: "Parts not verified at goods-in",
+          reason: "Two part-numbers flagged · pending Mary's check",
+          weight: 9,
+        },
+        {
+          label: "Supplier swap resolved 3 jobs",
+          reason: "Plumb Base subbed in · 2 days reclaimed",
+          weight: -12,
+        },
       ],
       actions: [
-        { label: "Re-route 14:30 slot", detail: "Scheduling Agent ready · swap Engineer 04 → Engineer 02", owner: "Rudi" },
-        { label: "Open Operations board", detail: "All active jobs with live ETAs and exception flags" },
+        {
+          label: "Re-route 14:30 slot",
+          detail: "Scheduling Agent ready · swap Engineer 04 → Engineer 02",
+          owner: "Rudi",
+        },
+        {
+          label: "Open Operations board",
+          detail: "All active jobs with live ETAs and exception flags",
+        },
       ],
     },
     "pillar:finance": {
-      title: "Finance · 88 / 100", subtitle: "Cash, margin, debt, forecasting", tone: "success", score: "88 · +2 vs last wk",
+      title: "Finance · 88 / 100",
+      subtitle: "Cash, margin, debt, forecasting",
+      tone: "success",
+      score: "88 · +2 vs last wk",
       metrics: [
-        { l: "Revenue today", v: "£18.4k" }, { l: "Margin (rolling 7d)", v: "31.2%" },
-        { l: "AR > 30 days", v: "£6.4k" }, { l: "Forecast variance", v: "±2.1%" },
+        { l: "Revenue today", v: "£18.4k" },
+        { l: "Margin (rolling 7d)", v: "31.2%" },
+        { l: "AR > 30 days", v: "£6.4k" },
+        { l: "Forecast variance", v: "±2.1%" },
       ],
       drivers: [
-        { label: "Procurement savings", reason: "£214 saved across 3 quote comparisons today", weight: -6 },
-        { label: "Two late payers chased", reason: "ABC School · Greenfield · auto-nudge in queue", weight: 4 },
+        {
+          label: "Procurement savings",
+          reason: "£214 saved across 3 quote comparisons today",
+          weight: -6,
+        },
+        {
+          label: "Two late payers chased",
+          reason: "ABC School · Greenfield · auto-nudge in queue",
+          weight: 4,
+        },
       ],
       actions: [
-        { label: "Approve auto-nudge wave", detail: "5 invoices · day-7 reminder template · est. £4.2k recovered" },
+        {
+          label: "Approve auto-nudge wave",
+          detail: "5 invoices · day-7 reminder template · est. £4.2k recovered",
+        },
         { label: "Open Numbers view", detail: "Full cashflow, P&L and AR ageing" },
       ],
     },
     "pillar:customer": {
-      title: "Customer · 76 / 100", subtitle: "Sentiment, retention, CSAT, NPS", tone: "warning", score: "76 · −2 vs last wk",
+      title: "Customer · 76 / 100",
+      subtitle: "Sentiment, retention, CSAT, NPS",
+      tone: "warning",
+      score: "76 · −2 vs last wk",
       metrics: [
-        { l: "CSAT (7d)", v: "4.4 / 5" }, { l: "NPS", v: "+48" },
-        { l: "Active complaints", v: "1" }, { l: "Lapsed plans", v: "3" },
+        { l: "CSAT (7d)", v: "4.4 / 5" },
+        { l: "NPS", v: "+48" },
+        { l: "Active complaints", v: "1" },
+        { l: "Lapsed plans", v: "3" },
       ],
       drivers: [
-        { label: "ABC School sentiment", reason: "Frustrated · no callback in 2 days · 1 unresolved complaint", weight: 14 },
-        { label: "Quote→book gap (3 wks)", reason: "No touchpoint in window · risks slipping to competitor", weight: 8 },
+        {
+          label: "ABC School sentiment",
+          reason: "Frustrated · no callback in 2 days · 1 unresolved complaint",
+          weight: 14,
+        },
+        {
+          label: "Quote→book gap (3 wks)",
+          reason: "No touchpoint in window · risks slipping to competitor",
+          weight: 8,
+        },
       ],
       actions: [
-        { label: "Trigger recovery sequence", detail: "Mary owns response · call + email + £50 goodwill", owner: "Mary" },
-        { label: "Open Customers view", detail: "Cards ranked by recall count, sentiment, plant-room health" },
+        {
+          label: "Trigger recovery sequence",
+          detail: "Mary owns response · call + email + £50 goodwill",
+          owner: "Mary",
+        },
+        {
+          label: "Open Customers view",
+          detail: "Cards ranked by recall count, sentiment, plant-room health",
+        },
       ],
     },
     "pillar:compliance": {
-      title: "Compliance · 94 / 100", subtitle: "Certifications, audit, safety", tone: "success", score: "94 · stable",
+      title: "Compliance · 94 / 100",
+      subtitle: "Certifications, audit, safety",
+      tone: "success",
+      score: "94 · stable",
       metrics: [
-        { l: "Certs valid", v: "26 / 27" }, { l: "RAMS coverage", v: "92%" },
-        { l: "Audit gaps", v: "0" }, { l: "Open NCRs", v: "1" },
+        { l: "Certs valid", v: "26 / 27" },
+        { l: "RAMS coverage", v: "92%" },
+        { l: "Audit gaps", v: "0" },
+        { l: "Open NCRs", v: "1" },
       ],
       drivers: [
-        { label: "1 Unvented HW cert expiring", reason: "S. Walsh · expires in 21 days · reminder scheduled", weight: 4 },
-        { label: "RAMS missing on J-3402", reason: "Prison wing job · blocker until paperwork lands", weight: 2 },
+        {
+          label: "1 Unvented HW cert expiring",
+          reason: "S. Walsh · expires in 21 days · reminder scheduled",
+          weight: 4,
+        },
+        {
+          label: "RAMS missing on J-3402",
+          reason: "Prison wing job · blocker until paperwork lands",
+          weight: 2,
+        },
       ],
       actions: [
-        { label: "Send cert renewal pack", detail: "Pre-filled application · S. Walsh · ready to dispatch" },
+        {
+          label: "Send cert renewal pack",
+          detail: "Pre-filled application · S. Walsh · ready to dispatch",
+        },
         { label: "Chase RAMS on J-3402", detail: "Auto-DM Larne · sample RAMS attached" },
       ],
     },
     "health:Operations": {
-      title: "Operations · 78", subtitle: "Engineer 04 over-running · 28 min behind", tone: "warning",
-      metrics: [{ l: "Score", v: "78" }, { l: "Trend 24h", v: "▲ 4 pts" }, { l: "Open issues", v: "2" }],
+      title: "Operations · 78",
+      subtitle: "Engineer 04 over-running · 28 min behind",
+      tone: "warning",
+      metrics: [
+        { l: "Score", v: "78" },
+        { l: "Trend 24h", v: "▲ 4 pts" },
+        { l: "Open issues", v: "2" },
+      ],
       drivers: [
         { label: "Engineer 04 over-run", reason: "Knock-on impact on 14:30 Marlborough Rd slot" },
         { label: "Goods-in verification", reason: "2 part-numbers awaiting Mary's check" },
@@ -550,35 +892,77 @@ function Dashboard() {
       actions: [{ label: "Re-route slot", detail: "Scheduling Agent ready · 1 click" }],
     },
     "health:Quoting": {
-      title: "Quoting · 71", subtitle: "Follow-ups overdue ×7 · Alan queue 4", tone: "warning",
-      metrics: [{ l: "Score", v: "71" }, { l: "Quotes out", v: "23" }, { l: "Win rate (30d)", v: "42%" }],
+      title: "Quoting · 71",
+      subtitle: "Follow-ups overdue ×7 · Alan queue 4",
+      tone: "warning",
+      metrics: [
+        { l: "Score", v: "71" },
+        { l: "Quotes out", v: "23" },
+        { l: "Win rate (30d)", v: "42%" },
+      ],
       drivers: [
-        { label: "Day-20 nudge waiting", reason: "7 quotes past 20-day threshold · ~70% reply rate historically" },
-        { label: "Alan approval queue", reason: "4 quotes parked > £5k · drained from 8 this morning" },
+        {
+          label: "Day-20 nudge waiting",
+          reason: "7 quotes past 20-day threshold · ~70% reply rate historically",
+        },
+        {
+          label: "Alan approval queue",
+          reason: "4 quotes parked > £5k · drained from 8 this morning",
+        },
       ],
       actions: [{ label: "Send nudge wave", detail: "One-click · uses spam-drift line" }],
     },
     "health:Comms": {
-      title: "Comms · 62", subtitle: "office@ unread climbing · oldest 47m", tone: "destructive",
-      metrics: [{ l: "Score", v: "62" }, { l: "Oldest unread", v: "47 min" }, { l: "Unrouted today", v: "8" }],
+      title: "Comms · 62",
+      subtitle: "office@ unread climbing · oldest 47m",
+      tone: "destructive",
+      metrics: [
+        { l: "Score", v: "62" },
+        { l: "Oldest unread", v: "47 min" },
+        { l: "Unrouted today", v: "8" },
+      ],
       drivers: [
-        { label: "3 routable to scheduling", reason: "Reception Agent can auto-classify if enabled" },
+        {
+          label: "3 routable to scheduling",
+          reason: "Reception Agent can auto-classify if enabled",
+        },
         { label: "Rudi callbacks owed ×3", reason: "Falling on Mary's plate · ack-flow ready" },
       ],
       actions: [{ label: "Enable auto-route", detail: "Inbox classifier · draft mode ready" }],
     },
     "health:Customer": {
-      title: "Customer · 58", subtitle: "ABC School sentiment turned frustrated", tone: "destructive",
-      metrics: [{ l: "Score", v: "58" }, { l: "At-risk accounts", v: "1" }, { l: "Days since touch", v: "2" }],
+      title: "Customer · 58",
+      subtitle: "ABC School sentiment turned frustrated",
+      tone: "destructive",
+      metrics: [
+        { l: "Score", v: "58" },
+        { l: "At-risk accounts", v: "1" },
+        { l: "Days since touch", v: "2" },
+      ],
       drivers: [
-        { label: "ABC School · unresolved complaint", reason: "Frustrated tone + cert renewal due" },
+        {
+          label: "ABC School · unresolved complaint",
+          reason: "Frustrated tone + cert renewal due",
+        },
         { label: "Quote→book gap", reason: "3 weeks without contact on £12.8k boiler swap" },
       ],
-      actions: [{ label: "Recovery sequence", detail: "Mary owns · template + £50 goodwill", owner: "Mary" }],
+      actions: [
+        {
+          label: "Recovery sequence",
+          detail: "Mary owns · template + £50 goodwill",
+          owner: "Mary",
+        },
+      ],
     },
     "health:Cashflow": {
-      title: "Cashflow · 92", subtitle: "Margin +3.4% vs week · £214 saved today", tone: "success",
-      metrics: [{ l: "Score", v: "92" }, { l: "Cash on hand", v: "£127k" }, { l: "AR > 30d", v: "£6.4k" }],
+      title: "Cashflow · 92",
+      subtitle: "Margin +3.4% vs week · £214 saved today",
+      tone: "success",
+      metrics: [
+        { l: "Score", v: "92" },
+        { l: "Cash on hand", v: "£127k" },
+        { l: "AR > 30d", v: "£6.4k" },
+      ],
       drivers: [
         { label: "Procurement saves", reason: "3 supplier comparisons · £214 captured" },
         { label: "Margin tracking", reason: "+3.4% vs trailing week · driven by labour fit" },
@@ -586,60 +970,131 @@ function Dashboard() {
       actions: [{ label: "Auto-nudge late payers", detail: "5 invoices · est. £4.2k recovered" }],
     },
     "insight:0": {
-      title: "Supplier delay affecting 3 jobs", subtitle: "Operations · open", tone: "warning",
-      metrics: [{ l: "Jobs blocked", v: "3" }, { l: "Reorder window", v: "closes 16:00" }, { l: "Switch cost", v: "+£0" }],
+      title: "Supplier delay affecting 3 jobs",
+      subtitle: "Operations · open",
+      tone: "warning",
+      metrics: [
+        { l: "Jobs blocked", v: "3" },
+        { l: "Reorder window", v: "closes 16:00" },
+        { l: "Switch cost", v: "+£0" },
+      ],
       drivers: [
-        { label: "Heaton Spares lead time", reason: "5 days vs Plumb Base's 2 - knock-on to 3 confirmed jobs" },
-        { label: "Procurement Agent ready", reason: "Substitution comparison built and waiting on approval" },
+        {
+          label: "Heaton Spares lead time",
+          reason: "5 days vs Plumb Base's 2 - knock-on to 3 confirmed jobs",
+        },
+        {
+          label: "Procurement Agent ready",
+          reason: "Substitution comparison built and waiting on approval",
+        },
       ],
       actions: [
-        { label: "Switch to Plumb Base", detail: "Confirm substitution · ETA pulls in by 2 days", owner: "Rudi" },
-        { label: "Notify affected customers", detail: "Mary template · 3 personalised emails drafted" },
+        {
+          label: "Switch to Plumb Base",
+          detail: "Confirm substitution · ETA pulls in by 2 days",
+          owner: "Rudi",
+        },
+        {
+          label: "Notify affected customers",
+          detail: "Mary template · 3 personalised emails drafted",
+        },
       ],
     },
     "insight:1": {
-      title: "Quote follow-up overdue ×7", subtitle: "Quoting · ready", tone: "accent",
-      metrics: [{ l: "Quotes overdue", v: "7" }, { l: "Avg age", v: "22 days" }, { l: "Reply rate", v: "~70%" }],
-      drivers: [
-        { label: "Day-20 threshold crossed", reason: "Historic data shows day-20 nudge converts best" },
-        { label: "Spam-drift line warm", reason: "From-address rotation healthy · no deliverability issues" },
+      title: "Quote follow-up overdue ×7",
+      subtitle: "Quoting · ready",
+      tone: "accent",
+      metrics: [
+        { l: "Quotes overdue", v: "7" },
+        { l: "Avg age", v: "22 days" },
+        { l: "Reply rate", v: "~70%" },
       ],
-      actions: [{ label: "Send nudge wave", detail: "7 personalised follow-ups · ~£18k pipeline", owner: "Larne" }],
-    },
-    "insight:2": {
-      title: "Complaint risk · ABC School", subtitle: "Customer · urgent", tone: "destructive",
-      metrics: [{ l: "Sentiment", v: "Frustrated" }, { l: "Days since callback", v: "2" }, { l: "LTV at risk", v: "£84.2k" }],
       drivers: [
-        { label: "No callback in 2 days", reason: "Mary's queue · slipped past the 24h protocol" },
-        { label: "Janet (Estates) tone", reason: "Last 3 emails flagged frustrated by sentiment model" },
+        {
+          label: "Day-20 threshold crossed",
+          reason: "Historic data shows day-20 nudge converts best",
+        },
+        {
+          label: "Spam-drift line warm",
+          reason: "From-address rotation healthy · no deliverability issues",
+        },
       ],
       actions: [
-        { label: "Trigger recovery sequence", detail: "Call + email + goodwill credit · template ready", owner: "Mary" },
+        {
+          label: "Send nudge wave",
+          detail: "7 personalised follow-ups · ~£18k pipeline",
+          owner: "Larne",
+        },
+      ],
+    },
+    "insight:2": {
+      title: "Complaint risk · ABC School",
+      subtitle: "Customer · urgent",
+      tone: "destructive",
+      metrics: [
+        { l: "Sentiment", v: "Frustrated" },
+        { l: "Days since callback", v: "2" },
+        { l: "LTV at risk", v: "£84.2k" },
+      ],
+      drivers: [
+        { label: "No callback in 2 days", reason: "Mary's queue · slipped past the 24h protocol" },
+        {
+          label: "Janet (Estates) tone",
+          reason: "Last 3 emails flagged frustrated by sentiment model",
+        },
+      ],
+      actions: [
+        {
+          label: "Trigger recovery sequence",
+          detail: "Call + email + goodwill credit · template ready",
+          owner: "Mary",
+        },
         { label: "Escalate to Heidi", detail: "MD touch-base · history of high-value account" },
       ],
     },
     "insight:3": {
-      title: "office@ unread climbing", subtitle: "Comms · routable", tone: "warning",
-      metrics: [{ l: "Unread", v: "11" }, { l: "Oldest", v: "47 min" }, { l: "Auto-route candidates", v: "3" }],
+      title: "office@ unread climbing",
+      subtitle: "Comms · routable",
+      tone: "warning",
+      metrics: [
+        { l: "Unread", v: "11" },
+        { l: "Oldest", v: "47 min" },
+        { l: "Auto-route candidates", v: "3" },
+      ],
       drivers: [
         { label: "3 routable to scheduling", reason: "Reception Agent confident classifications" },
         { label: "Mary capacity", reason: "Cover load building · Rudi callbacks falling here too" },
       ],
-      actions: [{ label: "Enable auto-route", detail: "Inbox classifier · draft mode · 1-click promote" }],
+      actions: [
+        { label: "Enable auto-route", detail: "Inbox classifier · draft mode · 1-click promote" },
+      ],
     },
     "insight:4": {
-      title: "Margin tracking +3.4% vs week", subtitle: "Cashflow · healthy", tone: "success",
-      metrics: [{ l: "Saved today", v: "£214" }, { l: "Comparisons", v: "3" }, { l: "Margin lift", v: "+3.4%" }],
-      drivers: [
-        { label: "Procurement Agent", reason: "Normalised SKUs across 3 suppliers · picked best price" },
-        { label: "Labour fit on services", reason: "Avg 0.94 ratio actual vs quoted on plant rooms" },
+      title: "Margin tracking +3.4% vs week",
+      subtitle: "Cashflow · healthy",
+      tone: "success",
+      metrics: [
+        { l: "Saved today", v: "£214" },
+        { l: "Comparisons", v: "3" },
+        { l: "Margin lift", v: "+3.4%" },
       ],
-      actions: [{ label: "Promote agent to live", detail: "Currently in draft · sign-off pending" }],
+      drivers: [
+        {
+          label: "Procurement Agent",
+          reason: "Normalised SKUs across 3 suppliers · picked best price",
+        },
+        {
+          label: "Labour fit on services",
+          reason: "Avg 0.94 ratio actual vs quoted on plant rooms",
+        },
+      ],
+      actions: [
+        { label: "Promote agent to live", detail: "Currently in draft · sign-off pending" },
+      ],
     },
   };
 
   const active = detail ? DETAILS[detail] : null;
-
 
   return (
     <div className="space-y-6">
@@ -657,7 +1112,8 @@ function Dashboard() {
               Drummond Heating, at a glance.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              One clean snapshot of the business · jobs in flight, money on the move, and where attention is needed next.
+              One clean snapshot of the business · jobs in flight, money on the move, and where
+              attention is needed next.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -674,7 +1130,9 @@ function Dashboard() {
                 <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
+                {k.v}
+              </div>
               <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
@@ -685,8 +1143,12 @@ function Dashboard() {
       <div className="rounded-2xl border border-hairline bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Pillar health · live</div>
-            <div className="text-display mt-1 text-lg font-semibold">Where the business stands right now.</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Pillar health · live
+            </div>
+            <div className="text-display mt-1 text-lg font-semibold">
+              Where the business stands right now.
+            </div>
           </div>
           <div className="text-[11px] text-muted-foreground">Recalculated hourly</div>
         </div>
@@ -703,7 +1165,9 @@ function Dashboard() {
                   <div className="text-[10px] font-medium uppercase tracking-wider">{p.label}</div>
                   <p.icon className="h-3.5 w-3.5" />
                 </div>
-                <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{h.score}</div>
+                <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
+                  {h.score}
+                </div>
                 <div className="mt-2 flex h-4 items-center justify-between text-[10px] leading-none text-muted-foreground">
                   <span>{h.trend}</span>
                   <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-100" />
@@ -712,7 +1176,6 @@ function Dashboard() {
             );
           })}
         </div>
-
       </div>
 
       {/* Company Health + insights */}
@@ -721,24 +1184,34 @@ function Dashboard() {
           {/* Header row: score · trend · status */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Company health · snapshot</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Company health · snapshot
+              </div>
               <div className="mt-1 flex items-baseline gap-2">
-                <div className="text-display text-3xl font-bold tabular leading-none">{overall}</div>
+                <div className="text-display text-3xl font-bold tabular leading-none">
+                  {overall}
+                </div>
                 <div className="text-xs text-muted-foreground">/ 100 · last 24h</div>
-                <div className={cn(
-                  "ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                  trend >= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
-                )}>
+                <div
+                  className={cn(
+                    "ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                    trend >= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
+                  )}
+                >
                   {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)} pts
                 </div>
               </div>
             </div>
-            <span className={cn(
-              "rounded-full border px-2.5 py-1 text-[10px] font-medium",
-              overall >= 85 ? "border-success/20 bg-success/10 text-success" :
-              overall >= 70 ? "border-warning/20 bg-warning/10 text-warning" :
-                              "border-destructive/20 bg-destructive/10 text-destructive",
-            )}>
+            <span
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-[10px] font-medium",
+                overall >= 85
+                  ? "border-success/20 bg-success/10 text-success"
+                  : overall >= 70
+                    ? "border-warning/20 bg-warning/10 text-warning"
+                    : "border-destructive/20 bg-destructive/10 text-destructive",
+              )}
+            >
               {overall >= 85 ? "Healthy" : overall >= 70 ? "Watching" : "Attention"}
             </span>
           </div>
@@ -747,7 +1220,9 @@ function Dashboard() {
           <div className="mt-4 rounded-xl border border-hairline bg-surface-alt/40 p-3">
             <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
               <span>24h trend</span>
-              <span className="font-mono normal-case tracking-normal">{health[0].score} → {health[health.length - 1].score}</span>
+              <span className="font-mono normal-case tracking-normal">
+                {health[0].score} → {health[health.length - 1].score}
+              </span>
             </div>
             <svg viewBox="0 0 240 48" preserveAspectRatio="none" className="mt-2 h-12 w-full">
               <defs>
@@ -762,12 +1237,20 @@ function Dashboard() {
                   const y = 48 - (p.score / 100) * 44 - 2;
                   return { x, y, p };
                 });
-                const line = pts.map((q, i) => `${i === 0 ? "M" : "L"} ${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join(" ");
+                const line = pts
+                  .map((q, i) => `${i === 0 ? "M" : "L"} ${q.x.toFixed(1)} ${q.y.toFixed(1)}`)
+                  .join(" ");
                 const area = `${line} L 240 48 L 0 48 Z`;
                 return (
                   <>
                     <path d={area} fill="url(#healthFill)" />
-                    <path d={line} fill="none" stroke="var(--color-foreground)" strokeWidth="1.5" strokeLinejoin="round" />
+                    <path
+                      d={line}
+                      fill="none"
+                      stroke="var(--color-foreground)"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                    />
                     {pts.map((q, i) => (
                       <circle
                         key={i}
@@ -775,9 +1258,11 @@ function Dashboard() {
                         cy={q.y}
                         r={i === pts.length - 1 ? 3 : 1.5}
                         fill={
-                          q.p.score >= 85 ? "var(--color-success)" :
-                          q.p.score >= 70 ? "var(--color-warning)" :
-                                            "var(--color-destructive)"
+                          q.p.score >= 85
+                            ? "var(--color-success)"
+                            : q.p.score >= 70
+                              ? "var(--color-warning)"
+                              : "var(--color-destructive)"
                         }
                       />
                     ))}
@@ -786,23 +1271,52 @@ function Dashboard() {
               })()}
             </svg>
             <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
-              <span>00:00</span><span>12:00</span><span>now</span>
+              <span>00:00</span>
+              <span>12:00</span>
+              <span>now</span>
             </div>
           </div>
 
           {/* Pillar snapshot · the actual story, with reasons inline */}
           <div className="mt-4 space-y-2">
             {[
-              { l: "Operations", v: 78, icon: Workflow,       reason: "Engineer 04 over-running · 28 min behind" },
-              { l: "Quoting",    v: 71, icon: FileText,       reason: "Follow-ups overdue ×7 · Alan queue 4" },
-              { l: "Comms",      v: 62, icon: MessageSquare,  reason: "office@ unread climbing · oldest 47m" },
-              { l: "Customer",   v: 58, icon: Users,          reason: "ABC School sentiment turned frustrated" },
-              { l: "Cashflow",   v: 92, icon: Banknote,       reason: "Margin +3.4% vs week · £214 saved today" },
+              {
+                l: "Operations",
+                v: 78,
+                icon: Workflow,
+                reason: "Engineer 04 over-running · 28 min behind",
+              },
+              {
+                l: "Quoting",
+                v: 71,
+                icon: FileText,
+                reason: "Follow-ups overdue ×7 · Alan queue 4",
+              },
+              {
+                l: "Comms",
+                v: 62,
+                icon: MessageSquare,
+                reason: "office@ unread climbing · oldest 47m",
+              },
+              {
+                l: "Customer",
+                v: 58,
+                icon: Users,
+                reason: "ABC School sentiment turned frustrated",
+              },
+              {
+                l: "Cashflow",
+                v: 92,
+                icon: Banknote,
+                reason: "Margin +3.4% vs week · £214 saved today",
+              },
             ].map((p) => {
               const tone =
-                p.v >= 85 ? { text: "text-success", bar: "bg-success" } :
-                p.v >= 70 ? { text: "text-warning", bar: "bg-warning" } :
-                            { text: "text-destructive", bar: "bg-destructive" };
+                p.v >= 85
+                  ? { text: "text-success", bar: "bg-success" }
+                  : p.v >= 70
+                    ? { text: "text-warning", bar: "bg-warning" }
+                    : { text: "text-destructive", bar: "bg-destructive" };
               return (
                 <button
                   key={p.l}
@@ -813,12 +1327,19 @@ function Dashboard() {
                     <div className="flex items-center gap-2">
                       <p.icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       <span className="text-xs font-semibold">{p.l}</span>
-                      <span className={cn("text-display text-sm font-bold tabular", tone.text)}>{p.v}</span>
+                      <span className={cn("text-display text-sm font-bold tabular", tone.text)}>
+                        {p.v}
+                      </span>
                     </div>
                     <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-alt">
-                      <div className={cn("h-full rounded-full", tone.bar)} style={{ width: `${p.v}%` }} />
+                      <div
+                        className={cn("h-full rounded-full", tone.bar)}
+                        style={{ width: `${p.v}%` }}
+                      />
                     </div>
-                    <div className="mt-1 truncate text-[11px] text-muted-foreground">{p.reason}</div>
+                    <div className="mt-1 truncate text-[11px] text-muted-foreground">
+                      {p.reason}
+                    </div>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 </button>
@@ -827,11 +1348,12 @@ function Dashboard() {
           </div>
         </div>
 
-
         <div className="rounded-2xl border border-hairline bg-white p-5">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">AI insights</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                AI insights
+              </div>
               <div className="text-display mt-1 text-sm font-semibold">What's moving the score</div>
             </div>
             <Sparkles className="h-4 w-4 text-accent" />
@@ -844,19 +1366,25 @@ function Dashboard() {
                 className="group/insight w-full rounded-lg border border-hairline p-2.5 text-left transition hover:border-foreground/30 hover:bg-surface-alt"
               >
                 <div className="flex items-start gap-2">
-                  <span className={cn(
-                    "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                    x.tone === "warning" && "bg-warning",
-                    x.tone === "accent" && "bg-accent",
-                    x.tone === "destructive" && "bg-destructive",
-                    x.tone === "success" && "bg-success",
-                  )} />
+                  <span
+                    className={cn(
+                      "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                      x.tone === "warning" && "bg-warning",
+                      x.tone === "accent" && "bg-accent",
+                      x.tone === "destructive" && "bg-destructive",
+                      x.tone === "success" && "bg-success",
+                    )}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-medium leading-snug">{x.text}</span>
-                      <span className="shrink-0 rounded-full bg-surface-alt px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">{x.pillar}</span>
+                      <span className="shrink-0 rounded-full bg-surface-alt px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
+                        {x.pillar}
+                      </span>
                     </div>
-                    <div className="mt-1 text-[11px] leading-snug text-muted-foreground">{x.detail}</div>
+                    <div className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                      {x.detail}
+                    </div>
                   </div>
                 </div>
               </button>
@@ -865,13 +1393,16 @@ function Dashboard() {
         </div>
       </div>
 
-
       {/* Live activity */}
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live activity</div>
-            <div className="text-display mt-0.5 text-sm font-semibold">Agents and automations, in real time</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Live activity
+            </div>
+            <div className="text-display mt-0.5 text-sm font-semibold">
+              Agents and automations, in real time
+            </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-success">
             <Activity className="h-3.5 w-3.5" /> streaming
@@ -895,9 +1426,16 @@ function Dashboard() {
             <>
               <DialogHeader>
                 <div className="flex items-center justify-between gap-3">
-                  <DialogTitle className="text-display text-lg font-semibold">{active.title}</DialogTitle>
+                  <DialogTitle className="text-display text-lg font-semibold">
+                    {active.title}
+                  </DialogTitle>
                   {active.score && (
-                    <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-medium", toneClass(active.tone))}>
+                    <span
+                      className={cn(
+                        "rounded-full border px-2.5 py-0.5 text-[10px] font-medium",
+                        toneClass(active.tone),
+                      )}
+                    >
                       {active.score}
                     </span>
                   )}
@@ -908,26 +1446,34 @@ function Dashboard() {
               <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {active.metrics.map((m) => (
                   <div key={m.l} className="rounded-lg border border-hairline bg-surface-alt p-3">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{m.l}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {m.l}
+                    </div>
                     <div className="text-display mt-1 text-base font-bold tabular">{m.v}</div>
                   </div>
                 ))}
               </div>
 
               <div className="mt-4">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What's driving the score</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  What's driving the score
+                </div>
                 <div className="mt-2 space-y-2">
                   {active.drivers.map((d) => (
                     <div key={d.label} className="rounded-lg border border-hairline p-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="text-sm font-semibold">{d.label}</div>
                         {typeof d.weight === "number" && (
-                          <span className={cn(
-                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                            d.weight > 0 ? "bg-destructive/10 text-destructive" :
-                            d.weight < 0 ? "bg-success/10 text-success" :
-                                           "bg-surface-alt text-muted-foreground",
-                          )}>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
+                              d.weight > 0
+                                ? "bg-destructive/10 text-destructive"
+                                : d.weight < 0
+                                  ? "bg-success/10 text-success"
+                                  : "bg-surface-alt text-muted-foreground",
+                            )}
+                          >
                             {d.weight > 0 ? `−${d.weight}` : `+${Math.abs(d.weight)}`} pts
                           </span>
                         )}
@@ -939,10 +1485,15 @@ function Dashboard() {
               </div>
 
               <div className="mt-4">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Next best actions</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Next best actions
+                </div>
                 <div className="mt-2 space-y-2">
                   {active.actions.map((a) => (
-                    <div key={a.label} className="flex items-start gap-3 rounded-lg border border-hairline bg-surface-alt p-3">
+                    <div
+                      key={a.label}
+                      className="flex items-start gap-3 rounded-lg border border-hairline bg-surface-alt p-3"
+                    >
                       <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
@@ -974,10 +1525,34 @@ function Dashboard() {
 function Operations() {
   const jobs = [
     { id: "J-3402", customer: "ABC School", engineer: "Tony", status: "Urgent", value: "£1,840" },
-    { id: "J-3401", customer: "Greenfield Care Home", engineer: "M. Patel", status: "In progress", value: "£640" },
-    { id: "J-3400", customer: "12 Marlborough Rd", engineer: "S. Walsh", status: "Scheduled", value: "£320" },
-    { id: "J-3399", customer: "Highbridge Foods Ltd", engineer: "-", status: "Awaiting parts", value: "£2,120" },
-    { id: "J-3398", customer: "Crestmont Apartments", engineer: "L. Bryan", status: "Completed", value: "£480" },
+    {
+      id: "J-3401",
+      customer: "Greenfield Care Home",
+      engineer: "M. Patel",
+      status: "In progress",
+      value: "£640",
+    },
+    {
+      id: "J-3400",
+      customer: "12 Marlborough Rd",
+      engineer: "S. Walsh",
+      status: "Scheduled",
+      value: "£320",
+    },
+    {
+      id: "J-3399",
+      customer: "Highbridge Foods Ltd",
+      engineer: "-",
+      status: "Awaiting parts",
+      value: "£2,120",
+    },
+    {
+      id: "J-3398",
+      customer: "Crestmont Apartments",
+      engineer: "L. Bryan",
+      status: "Completed",
+      value: "£480",
+    },
   ];
   return (
     <div className="rounded-2xl border border-hairline bg-white">
@@ -989,19 +1564,26 @@ function Operations() {
         <div className="col-span-1 text-right">Value</div>
       </div>
       {jobs.map((j) => (
-        <div key={j.id} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
+        <div
+          key={j.id}
+          className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt"
+        >
           <div className="col-span-2 font-mono text-xs">{j.id}</div>
           <div className="col-span-4 font-medium">{j.customer}</div>
           <div className="col-span-3 text-muted-foreground">{j.engineer}</div>
           <div className="col-span-2">
-            <span className={cn(
-              "rounded-full px-2.5 py-0.5 text-[11px] font-medium",
-              j.status === "Urgent" && "bg-destructive/10 text-destructive",
-              j.status === "In progress" && "bg-accent/10 text-accent",
-              j.status === "Scheduled" && "bg-surface-alt text-muted-foreground",
-              j.status === "Awaiting parts" && "bg-warning/10 text-warning",
-              j.status === "Completed" && "bg-success/10 text-success",
-            )}>{j.status}</span>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[11px] font-medium",
+                j.status === "Urgent" && "bg-destructive/10 text-destructive",
+                j.status === "In progress" && "bg-accent/10 text-accent",
+                j.status === "Scheduled" && "bg-surface-alt text-muted-foreground",
+                j.status === "Awaiting parts" && "bg-warning/10 text-warning",
+                j.status === "Completed" && "bg-success/10 text-success",
+              )}
+            >
+              {j.status}
+            </span>
           </div>
           <div className="col-span-1 text-right font-mono tabular">{j.value}</div>
         </div>
@@ -1013,19 +1595,48 @@ function Operations() {
 /* ────── CALLS ────── */
 function Calls() {
   const calls = [
-    { time: "14:22", caller: "ABC School", urgency: "High", sentiment: "Frustrated", intent: "No heating" },
-    { time: "13:51", caller: "M. Greene", urgency: "Med", sentiment: "Neutral", intent: "Annual service" },
-    { time: "13:30", caller: "Highbridge Foods", urgency: "Low", sentiment: "Positive", intent: "Quote query" },
-    { time: "12:48", caller: "Crestmont Apts.", urgency: "High", sentiment: "Frustrated", intent: "Leak" },
+    {
+      time: "14:22",
+      caller: "ABC School",
+      urgency: "High",
+      sentiment: "Frustrated",
+      intent: "No heating",
+    },
+    {
+      time: "13:51",
+      caller: "M. Greene",
+      urgency: "Med",
+      sentiment: "Neutral",
+      intent: "Annual service",
+    },
+    {
+      time: "13:30",
+      caller: "Highbridge Foods",
+      urgency: "Low",
+      sentiment: "Positive",
+      intent: "Quote query",
+    },
+    {
+      time: "12:48",
+      caller: "Crestmont Apts.",
+      urgency: "High",
+      sentiment: "Frustrated",
+      intent: "Leak",
+    },
   ];
   return (
     <div className="space-y-5">
       <RecurringIssuesPanel />
       <div className="grid gap-3 md:grid-cols-12">
         <div className="rounded-2xl border border-hairline bg-white md:col-span-7">
-          <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">Recent calls</div>
+          <div className="border-b border-hairline px-5 py-3 text-sm font-semibold">
+            Recent calls
+          </div>
           {calls.map((c, i) => (
-            <div key={i} className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt">
+            <div
+              key={i}
+              className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt"
+            >
               <div className="col-span-2 font-mono text-xs text-muted-foreground">{c.time}</div>
               <div className="col-span-4 font-medium">{c.caller}</div>
               <div className="col-span-2 text-xs">{c.urgency}</div>
@@ -1035,11 +1646,21 @@ function Calls() {
           ))}
         </div>
         <div className="rounded-2xl border border-hairline bg-white p-5 md:col-span-5">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Live transcript</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Live transcript
+          </div>
           <div className="mt-3 text-sm font-semibold">ABC School · 14:22</div>
           <div className="mt-4 space-y-3 text-sm">
-            <p><span className="font-mono text-xs text-muted-foreground">caller</span><br />Our heating's been out since this morning, three classrooms…</p>
-            <p><span className="font-mono text-xs text-accent">agent</span><br />Understood. I'm escalating now and dispatching the nearest engineer.</p>
+            <p>
+              <span className="font-mono text-xs text-muted-foreground">caller</span>
+              <br />
+              Our heating's been out since this morning, three classrooms…
+            </p>
+            <p>
+              <span className="font-mono text-xs text-accent">agent</span>
+              <br />
+              Understood. I'm escalating now and dispatching the nearest engineer.
+            </p>
           </div>
           <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
             <div className="font-semibold text-accent">Recommended action</div>
@@ -1050,9 +1671,6 @@ function Calls() {
     </div>
   );
 }
-
-
-
 
 /* ────── AGENTS ────── */
 type AgentCat = "ops" | "finance" | "customer" | "compliance" | "cross";
@@ -1087,120 +1705,212 @@ const AGENT_CATS: { key: AgentCat; label: string; tone: string }[] = [
 
 const AGENTS: AgentItem[] = [
   {
-    id: "a1", name: "Reception Agent", cat: "ops", icon: Phone,
+    id: "a1",
+    name: "Reception Agent",
+    cat: "ops",
+    icon: Phone,
     purpose: "Triage every inbound call, route to the right queue, summarise for dispatch.",
     task: "Handling 2 live calls · routing to dispatch",
-    mode: "Execute", status: "Active", confidence: 96, runs7d: "1,284", saved: "31 hrs/wk",
+    mode: "Execute",
+    status: "Active",
+    confidence: 96,
+    runs7d: "1,284",
+    saved: "31 hrs/wk",
     tools: ["Voice AI", "Commusoft", "Calendar"],
     allowed: ["Classify intent", "Draft callback notes", "Route to engineer queue"],
     forbidden: ["Confirm pricing", "Promise SLAs to customers"],
     escalate: "Hands off to duty manager on complaint sentiment > 0.7 or contract VIP flag.",
   },
   {
-    id: "a2", name: "Inbox Agent", cat: "ops", icon: Mail,
+    id: "a2",
+    name: "Inbox Agent",
+    cat: "ops",
+    icon: Mail,
     purpose: "Classify inbound email, draft replies, attach to the right job.",
     task: "Sorting 41 unread · 12 drafts ready",
-    mode: "Draft", status: "Active", confidence: 91, runs7d: "612", saved: "14 hrs/wk",
+    mode: "Draft",
+    status: "Active",
+    confidence: 91,
+    runs7d: "612",
+    saved: "14 hrs/wk",
     tools: ["Gmail", "Commusoft", "Templates"],
     allowed: ["Classify and label", "Draft replies for approval", "Link to job record"],
     forbidden: ["Send without approval", "Edit invoices"],
     escalate: "Escalates anything tagged dispute, refund or legal.",
   },
   {
-    id: "a3", name: "Scheduling Agent", cat: "ops", icon: Workflow,
+    id: "a3",
+    name: "Scheduling Agent",
+    cat: "ops",
+    icon: Workflow,
     purpose: "Optimise the daily board by skill, location, urgency and SLA.",
     task: "Optimising 11 routes · saving 2h 18m today",
-    mode: "Execute", status: "Active", confidence: 92, runs7d: "318", saved: "9 hrs/wk",
+    mode: "Execute",
+    status: "Active",
+    confidence: 92,
+    runs7d: "318",
+    saved: "9 hrs/wk",
     tools: ["Calendar", "Maps", "Commusoft"],
-    allowed: ["Re-sequence non-VIP jobs", "Suggest engineer swaps", "Auto-confirm under 30 min slips"],
+    allowed: [
+      "Re-sequence non-VIP jobs",
+      "Suggest engineer swaps",
+      "Auto-confirm under 30 min slips",
+    ],
     forbidden: ["Cancel a job", "Move a contract SLA job without approval"],
     escalate: "Asks dispatcher when a move breaks a contract SLA window.",
   },
   {
-    id: "a4", name: "Quote Agent", cat: "finance", icon: FileText,
+    id: "a4",
+    name: "Quote Agent",
+    cat: "finance",
+    icon: FileText,
     purpose: "Prepare quote drafts, chase missing info, check supplier pricing.",
     task: "Preparing 7 quote drafts · 2 awaiting parts",
-    mode: "Draft", status: "Active", confidence: 87, runs7d: "94", saved: "11 hrs/wk",
+    mode: "Draft",
+    status: "Active",
+    confidence: 87,
+    runs7d: "94",
+    saved: "11 hrs/wk",
     tools: ["Commusoft", "Supplier APIs", "PDF builder"],
     allowed: ["Pull part pricing", "Draft quote PDF", "Send chase emails for missing info"],
     forbidden: ["Send the quote", "Apply discount over 5%"],
     escalate: "Owner approval required on quotes > £5,000.",
   },
   {
-    id: "a5", name: "Procurement Agent", cat: "finance", icon: Network,
+    id: "a5",
+    name: "Procurement Agent",
+    cat: "finance",
+    icon: Network,
     purpose: "Compare supplier pricing across catalogues, normalise parts, flag savings.",
     task: "Comparing 3 supplier quotes · saved £214 today",
-    mode: "Execute", status: "Active", confidence: 91, runs7d: "212", saved: "£6.4k/mo",
+    mode: "Execute",
+    status: "Active",
+    confidence: 91,
+    runs7d: "212",
+    saved: "£6.4k/mo",
     tools: ["Wolseley", "City Plumbing", "Plumbase"],
     allowed: ["Place orders < £400", "Switch supplier on >5% saving", "Consolidate weekly orders"],
     forbidden: ["Open new supplier accounts", "Pay invoices"],
     escalate: "Escalates stock-outs that put a same-day job at risk.",
   },
   {
-    id: "a6", name: "Finance Agent", cat: "finance", icon: Banknote,
+    id: "a6",
+    name: "Finance Agent",
+    cat: "finance",
+    icon: Banknote,
     purpose: "Track overdue invoices, reconcile payments, prepare chase workflows.",
     task: "Reconciling 47 invoices · 6 chases queued",
-    mode: "Draft", status: "Active", confidence: 88, runs7d: "188", saved: "£12k cash unlocked",
+    mode: "Draft",
+    status: "Active",
+    confidence: 88,
+    runs7d: "188",
+    saved: "£12k cash unlocked",
     tools: ["Xero", "Stripe", "Commusoft"],
     allowed: ["Match payments to invoices", "Draft chase letters", "Tag disputed invoices"],
     forbidden: ["Write-off debt", "Refund a customer"],
     escalate: "Hands off chases > 60 days to the owner.",
   },
   {
-    id: "a7", name: "Customer Care Agent", cat: "customer", icon: Sparkles,
+    id: "a7",
+    name: "Customer Care Agent",
+    cat: "customer",
+    icon: Sparkles,
     purpose: "Post-job follow-ups, review requests, sentiment monitoring.",
     task: "Sending 14 post-job follow-ups · 3 risk alerts",
-    mode: "Execute", status: "Active", confidence: 84, runs7d: "402", saved: "+8pt CSAT",
+    mode: "Execute",
+    status: "Active",
+    confidence: 84,
+    runs7d: "402",
+    saved: "+8pt CSAT",
     tools: ["SMS", "Email", "Reviews.io"],
     allowed: ["Send follow-up SMS / email", "Request reviews on 5-star jobs", "Open care ticket"],
     forbidden: ["Issue refunds", "Promise rebooking"],
     escalate: "Escalates sentiment < 0.4 or any mention of 'complaint'.",
   },
   {
-    id: "a8", name: "Compliance Agent", cat: "compliance", icon: ShieldCheck,
+    id: "a8",
+    name: "Compliance Agent",
+    cat: "compliance",
+    icon: ShieldCheck,
     purpose: "Flag missing certs, RAMS, photos and audit gaps before they bite.",
     task: "Checking 22 job records · 4 gaps flagged",
-    mode: "Advisory", status: "Active", confidence: 95, runs7d: "146", saved: "0 audit gaps",
+    mode: "Advisory",
+    status: "Active",
+    confidence: 95,
+    runs7d: "146",
+    saved: "0 audit gaps",
     tools: ["Commusoft", "Drive", "Gas Safe register"],
-    allowed: ["Open gap tickets", "Notify engineer of missing doc", "Block invoice on missing cert"],
+    allowed: [
+      "Open gap tickets",
+      "Notify engineer of missing doc",
+      "Block invoice on missing cert",
+    ],
     forbidden: ["Sign off compliance documents"],
     escalate: "Escalates expiring Gas Safe ID to office manager 30 days out.",
   },
   {
-    id: "a9", name: "Job Health Agent", cat: "ops", icon: Gauge,
+    id: "a9",
+    name: "Job Health Agent",
+    cat: "ops",
+    icon: Gauge,
     purpose: "Score every live job by risk, delay, sentiment and financial exposure.",
     task: "Scoring 42 live jobs · 3 amber, 1 red",
-    mode: "Advisory", status: "Active", confidence: 89, runs7d: "1,012", saved: "−18% overruns",
+    mode: "Advisory",
+    status: "Active",
+    confidence: 89,
+    runs7d: "1,012",
+    saved: "−18% overruns",
     tools: ["Commusoft", "Calls", "Email"],
     allowed: ["Surface job risk score", "Notify owner of red jobs", "Suggest interventions"],
     forbidden: ["Cancel or reschedule jobs"],
     escalate: "Pings owner the moment a job turns red.",
   },
   {
-    id: "a10", name: "Asset Health Agent", cat: "compliance", icon: HardDrive,
+    id: "a10",
+    name: "Asset Health Agent",
+    cat: "compliance",
+    icon: HardDrive,
     purpose: "Predictive view of customer assets, service due dates and failure risk.",
     task: "Watching 1,840 assets · 42 due in 30 days",
-    mode: "Draft", status: "Active", confidence: 86, runs7d: "204", saved: "+£18k recurring",
+    mode: "Draft",
+    status: "Active",
+    confidence: 86,
+    runs7d: "204",
+    saved: "+£18k recurring",
     tools: ["Commusoft", "IoT feeds", "Service history"],
     allowed: ["Draft service-due reminders", "Flag failing assets", "Suggest contract upsell"],
     forbidden: ["Book service slots directly"],
     escalate: "Escalates assets with two faults in 90 days.",
   },
   {
-    id: "a11", name: "Workflow Intelligence", cat: "cross", icon: Brain,
+    id: "a11",
+    name: "Workflow Intelligence",
+    cat: "cross",
+    icon: Brain,
     purpose: "Watch how work actually flows and surface new automation candidates.",
     task: "Tracking 38 workflows · 4 new candidates today",
-    mode: "Advisory", status: "Active", confidence: 93, runs7d: "-", saved: "12 upgrades shipped",
+    mode: "Advisory",
+    status: "Active",
+    confidence: 93,
+    runs7d: "-",
+    saved: "12 upgrades shipped",
     tools: ["Event stream", "Audit log", "Pattern miner"],
     allowed: ["Detect repeat patterns", "Score automation impact", "Propose to Intelligence layer"],
     forbidden: ["Deploy automations on its own"],
     escalate: "Sends every candidate to the Intelligence review queue.",
   },
   {
-    id: "a12", name: "Voice Analytics", cat: "customer", icon: Radio,
+    id: "a12",
+    name: "Voice Analytics",
+    cat: "customer",
+    icon: Radio,
     purpose: "Listen to every call, extract intent, sentiment and coaching moments.",
     task: "Analysed 84 calls today · 6 coaching clips",
-    mode: "Advisory", status: "Training", confidence: 81, runs7d: "598", saved: "+11pt first-call resolution",
+    mode: "Advisory",
+    status: "Training",
+    confidence: 81,
+    runs7d: "598",
+    saved: "+11pt first-call resolution",
     tools: ["Voice AI", "Transcripts", "CRM"],
     allowed: ["Score sentiment", "Tag call intent", "Flag coaching moments"],
     forbidden: ["Action on calls directly", "Share recordings externally"],
@@ -1260,7 +1970,8 @@ function Agents() {
               AI workers with a role, a policy and an audit trail.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Every agent has scoped permissions, clear escalation rules and a full run log. Click any agent to inspect its policy and recent work.
+              Every agent has scoped permissions, clear escalation rules and a full run log. Click
+              any agent to inspect its policy and recent work.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -1276,7 +1987,9 @@ function Agents() {
                 <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
+                {k.v}
+              </div>
               <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
@@ -1287,8 +2000,12 @@ function Agents() {
       <div className="rounded-2xl border border-hairline bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Filter by category</div>
-            <div className="text-display mt-1 text-sm font-semibold">Pick a slice of the workforce.</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Filter by category
+            </div>
+            <div className="text-display mt-1 text-sm font-semibold">
+              Pick a slice of the workforce.
+            </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {(["all", ...AGENT_CATS.map((c) => c.key)] as ("all" | AgentCat)[]).map((k) => {
@@ -1313,7 +2030,9 @@ function Agents() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-hairline pt-4">
-          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Approval mode</span>
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Approval mode
+          </span>
           {modeOptions.map((m) => (
             <button
               key={m}
@@ -1349,32 +2068,66 @@ function Agents() {
                     <a.icon className="h-4 w-4 text-foreground" />
                   </span>
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{catMeta.label}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {catMeta.label}
+                    </div>
                     <div className="text-display text-sm font-semibold leading-tight">{a.name}</div>
                   </div>
                 </div>
-                <span className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-wider", STATUS_TONE[a.status])}>
-                  <span className={cn("h-1.5 w-1.5 rounded-full", a.status === "Active" ? "bg-success animate-pulse" : a.status === "Training" ? "bg-accent" : a.status === "Paused" ? "bg-warning" : "bg-muted-foreground")} />
+                <span
+                  className={cn(
+                    "flex items-center gap-1.5 text-[10px] uppercase tracking-wider",
+                    STATUS_TONE[a.status],
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      a.status === "Active"
+                        ? "bg-success animate-pulse"
+                        : a.status === "Training"
+                          ? "bg-accent"
+                          : a.status === "Paused"
+                            ? "bg-warning"
+                            : "bg-muted-foreground",
+                    )}
+                  />
                   {a.status}
                 </span>
               </div>
 
-              <p className="mt-4 text-xs leading-relaxed text-muted-foreground line-clamp-2">{a.task}</p>
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                {a.task}
+              </p>
 
               <div className="mt-4 flex items-center justify-between">
-                <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider", MODE_TONE[a.mode])}>
+                <span
+                  className={cn(
+                    "rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                    MODE_TONE[a.mode],
+                  )}
+                >
                   {a.mode}
                 </span>
-                <span className="font-mono text-[11px] tabular text-muted-foreground">{a.confidence}% conf.</span>
+                <span className="font-mono text-[11px] tabular text-muted-foreground">
+                  {a.confidence}% conf.
+                </span>
               </div>
 
               <div className="mt-3 h-1 rounded-full bg-surface-alt">
-                <div className="h-full rounded-full bg-foreground" style={{ width: `${a.confidence}%` }} />
+                <div
+                  className="h-full rounded-full bg-foreground"
+                  style={{ width: `${a.confidence}%` }}
+                />
               </div>
 
               <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px]">
-                <span className="text-muted-foreground">Runs · 7d <span className="font-mono tabular text-foreground">{a.runs7d}</span></span>
-                <span className="text-muted-foreground">Impact <span className="font-mono tabular text-foreground">{a.saved}</span></span>
+                <span className="text-muted-foreground">
+                  Runs · 7d <span className="font-mono tabular text-foreground">{a.runs7d}</span>
+                </span>
+                <span className="text-muted-foreground">
+                  Impact <span className="font-mono tabular text-foreground">{a.saved}</span>
+                </span>
               </div>
             </button>
           );
@@ -1383,88 +2136,126 @@ function Agents() {
 
       <Dialog open={!!open} onOpenChange={(v) => !v && setOpen(null)}>
         <DialogContent className="max-w-2xl">
-          {open && (() => {
-            const catMeta = AGENT_CATS.find((c) => c.key === open.cat)!;
-            return (
-              <>
-                <DialogHeader>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <open.icon className="h-3.5 w-3.5" />
-                    {catMeta.label} · {open.mode}
-                  </div>
-                  <DialogTitle className="text-display text-xl font-semibold">{open.name}</DialogTitle>
-                  <DialogDescription className="text-sm">{open.purpose}</DialogDescription>
-                </DialogHeader>
-
-                <div className="grid grid-cols-3 gap-3 border-y border-hairline py-4">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                    <div className="text-display mt-1 text-lg font-bold tabular">{open.confidence}%</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
-                    <div className="text-display mt-1 text-lg font-bold tabular">{open.runs7d}</div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Impact</div>
-                    <div className="text-display mt-1 text-lg font-bold tabular">{open.saved}</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Right now</div>
-                    <div className="mt-1 rounded-lg border border-hairline bg-surface-alt p-3 text-xs">{open.task}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Tools</div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {open.tools.map((t) => (
-                        <span key={t} className="rounded-full border border-hairline bg-surface-alt px-2.5 py-1 text-[11px] font-medium">{t}</span>
-                      ))}
+          {open &&
+            (() => {
+              const catMeta = AGENT_CATS.find((c) => c.key === open.cat)!;
+              return (
+                <>
+                  <DialogHeader>
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+                      <open.icon className="h-3.5 w-3.5" />
+                      {catMeta.label} · {open.mode}
                     </div>
-                  </div>
+                    <DialogTitle className="text-display text-xl font-semibold">
+                      {open.name}
+                    </DialogTitle>
+                    <DialogDescription className="text-sm">{open.purpose}</DialogDescription>
+                  </DialogHeader>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-3 gap-3 border-y border-hairline py-4">
                     <div>
-                      <div className="text-[11px] uppercase tracking-wider text-success">Allowed</div>
-                      <ul className="mt-2 space-y-1.5">
-                        {open.allowed.map((x) => (
-                          <li key={x} className="flex items-start gap-2 text-xs">
-                            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                            <span>{x}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Confidence
+                      </div>
+                      <div className="text-display mt-1 text-lg font-bold tabular">
+                        {open.confidence}%
+                      </div>
                     </div>
                     <div>
-                      <div className="text-[11px] uppercase tracking-wider text-destructive">Forbidden</div>
-                      <ul className="mt-2 space-y-1.5">
-                        {open.forbidden.map((x) => (
-                          <li key={x} className="flex items-start gap-2 text-xs">
-                            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                            <span>{x}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Runs · 7d
+                      </div>
+                      <div className="text-display mt-1 text-lg font-bold tabular">
+                        {open.runs7d}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Impact
+                      </div>
+                      <div className="text-display mt-1 text-lg font-bold tabular">
+                        {open.saved}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-warning/20 bg-warning/5 p-3">
-                    <div className="text-[11px] uppercase tracking-wider text-warning">Escalation policy</div>
-                    <p className="mt-1 text-xs text-foreground">{open.escalate}</p>
-                  </div>
-                </div>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        Right now
+                      </div>
+                      <div className="mt-1 rounded-lg border border-hairline bg-surface-alt p-3 text-xs">
+                        {open.task}
+                      </div>
+                    </div>
 
-                <div className="flex justify-end gap-2 border-t border-hairline pt-4">
-                  <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">Inspect run log</button>
-                  <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">Adjust policy</button>
-                  <button className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90">{open.status === "Paused" ? "Activate" : "Pause"}</button>
-                </div>
-              </>
-            );
-          })()}
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        Tools
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {open.tools.map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-full border border-hairline bg-surface-alt px-2.5 py-1 text-[11px] font-medium"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <div className="text-[11px] uppercase tracking-wider text-success">
+                          Allowed
+                        </div>
+                        <ul className="mt-2 space-y-1.5">
+                          {open.allowed.map((x) => (
+                            <li key={x} className="flex items-start gap-2 text-xs">
+                              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                              <span>{x}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase tracking-wider text-destructive">
+                          Forbidden
+                        </div>
+                        <ul className="mt-2 space-y-1.5">
+                          {open.forbidden.map((x) => (
+                            <li key={x} className="flex items-start gap-2 text-xs">
+                              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                              <span>{x}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-warning/20 bg-warning/5 p-3">
+                      <div className="text-[11px] uppercase tracking-wider text-warning">
+                        Escalation policy
+                      </div>
+                      <p className="mt-1 text-xs text-foreground">{open.escalate}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 border-t border-hairline pt-4">
+                    <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">
+                      Inspect run log
+                    </button>
+                    <button className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:bg-surface-alt">
+                      Adjust policy
+                    </button>
+                    <button className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90">
+                      {open.status === "Paused" ? "Activate" : "Pause"}
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
         </DialogContent>
       </Dialog>
     </div>
@@ -1503,7 +2294,9 @@ function Finance() {
     { v: "27", l: "Automations live", sub: "running every day, every job" },
   ];
 
-  const w = 600, h = 200, pad = 8;
+  const w = 600,
+    h = 200,
+    pad = 8;
   const max = Math.max(...revenue);
   const linePath = revenue
     .map((p, i) => {
@@ -1530,7 +2323,8 @@ function Finance() {
               The business, before and after.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Every metric below is a like-for-like comparison · the three months before ServiceOS went live, against the latest run-rate today.
+              Every metric below is a like-for-like comparison · the three months before ServiceOS
+              went live, against the latest run-rate today.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -1547,7 +2341,9 @@ function Finance() {
                 <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.after}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
+                {k.after}
+              </div>
               <div className="mt-2 flex h-4 items-center justify-between text-[10px] leading-none">
                 <span className="text-muted-foreground line-through">{k.before}</span>
                 <span className="font-mono tabular text-success">{k.delta}</span>
@@ -1561,10 +2357,15 @@ function Finance() {
       <div className="rounded-2xl border border-hairline bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Revenue trajectory</div>
-            <div className="text-display mt-1 text-lg font-semibold">From £188k/mo to £344k/mo.</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Revenue trajectory
+            </div>
+            <div className="text-display mt-1 text-lg font-semibold">
+              From £188k/mo to £344k/mo.
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Margin climbed in lockstep · from 22% to 36% · as automation cut admin and procurement leakage.
+              Margin climbed in lockstep · from 22% to 36% · as automation cut admin and procurement
+              leakage.
             </p>
           </div>
           <div className="flex items-center gap-3 text-[11px]">
@@ -1585,16 +2386,32 @@ function Finance() {
             </linearGradient>
           </defs>
           <g className="text-foreground">
-            <path d={`${linePath} L${w - pad},${h - pad} L${pad},${h - pad} Z`} fill="url(#numbers-grad)" />
+            <path
+              d={`${linePath} L${w - pad},${h - pad} L${pad},${h - pad} Z`}
+              fill="url(#numbers-grad)"
+            />
             <path d={linePath} fill="none" stroke="currentColor" strokeWidth="1.75" />
           </g>
           {/* deploy marker */}
-          <line x1={deployX} x2={deployX} y1={pad} y2={h - pad} strokeDasharray="3 3" strokeWidth="1" className="text-accent" stroke="currentColor" />
+          <line
+            x1={deployX}
+            x2={deployX}
+            y1={pad}
+            y2={h - pad}
+            strokeDasharray="3 3"
+            strokeWidth="1"
+            className="text-accent"
+            stroke="currentColor"
+          />
           <circle cx={deployX} cy={pad + 4} r="3" className="fill-accent" />
         </svg>
 
         <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
-          <span>M1</span><span>M3 · go-live</span><span>M6</span><span>M9</span><span>M12 · today</span>
+          <span>M1</span>
+          <span>M3 · go-live</span>
+          <span>M6</span>
+          <span>M9</span>
+          <span>M12 · today</span>
         </div>
       </div>
 
@@ -1602,20 +2419,33 @@ function Finance() {
       <div className="rounded-2xl border border-hairline bg-white">
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Operational gains</div>
-            <div className="text-display mt-0.5 text-sm font-semibold">Where the lift actually came from</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Operational gains
+            </div>
+            <div className="text-display mt-0.5 text-sm font-semibold">
+              Where the lift actually came from
+            </div>
           </div>
-          <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[10px] font-medium text-success">All metrics improved</span>
+          <span className="rounded-full border border-success/20 bg-success/10 px-2.5 py-1 text-[10px] font-medium text-success">
+            All metrics improved
+          </span>
         </div>
         <div className="divide-y divide-hairline">
           {operational.map((o) => {
             return (
               <div key={o.l} className="grid grid-cols-12 items-center gap-3 px-5 py-3 text-sm">
                 <div className="col-span-5 font-medium">{o.l}</div>
-                <div className="col-span-3 font-mono text-xs tabular text-muted-foreground line-through">{o.before}</div>
+                <div className="col-span-3 font-mono text-xs tabular text-muted-foreground line-through">
+                  {o.before}
+                </div>
                 <div className="col-span-3 font-mono text-sm tabular font-semibold">{o.after}</div>
                 <div className="col-span-1 flex justify-end">
-                  <ArrowUpRight className={cn("h-4 w-4", o.tone === "success" ? "text-success" : "text-muted-foreground")} />
+                  <ArrowUpRight
+                    className={cn(
+                      "h-4 w-4",
+                      o.tone === "success" ? "text-success" : "text-muted-foreground",
+                    )}
+                  />
                 </div>
               </div>
             );
@@ -1643,12 +2473,17 @@ function SettingsView() {
     <div className="space-y-5">
       <SystemsInventoryPanel />
       <div className="max-w-2xl space-y-3">
-        {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map((s) => (
-          <div key={s} className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt">
-            <div className="text-sm font-medium">{s}</div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </div>
-        ))}
+        {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map(
+          (s) => (
+            <div
+              key={s}
+              className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt"
+            >
+              <div className="text-sm font-medium">{s}</div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          ),
+        )}
       </div>
     </div>
   );
@@ -1677,11 +2512,17 @@ type SourceDetail = {
 
 const SOURCES: SourceDetail[] = [
   {
-    name: "Phone Calls", icon: Phone, status: "Live", events: "1,284", tone: "success",
+    name: "Phone Calls",
+    icon: Phone,
+    status: "Live",
+    events: "1,284",
+    tone: "success",
     desc: "Inbound · outbound · voicemail · transcripts",
-    connection: "Twilio + ServiceOS Voice · 4 numbers", lastSync: "live · 12s ago",
+    connection: "Twilio + ServiceOS Voice · 4 numbers",
+    lastSync: "live · 12s ago",
     retention: "Transcripts 180d · audio 30d",
-    coverage: 96, accuracy: 92,
+    coverage: 96,
+    accuracy: 92,
     signals: [
       { l: "Calls captured (30d)", v: "1,284", sub: "↑ 14% vs prior" },
       { l: "Avg handle time", v: "4m 12s" },
@@ -1705,14 +2546,24 @@ const SOURCES: SourceDetail[] = [
       "Trigger callback-SLA timer when caller leaves voicemail",
       "Escalate to account manager on 2+ negative-sentiment calls in 14d",
     ],
-    privacy: ["PII redacted from transcripts", "Audio purged after 30 days", "Caller opt-out honoured"],
+    privacy: [
+      "PII redacted from transcripts",
+      "Audio purged after 30 days",
+      "Caller opt-out honoured",
+    ],
   },
   {
-    name: "Email", icon: Mail, status: "Live", events: "8,412", tone: "success",
+    name: "Email",
+    icon: Mail,
+    status: "Live",
+    events: "8,412",
+    tone: "success",
     desc: "office@ · invoicing@ · scheduling@",
-    connection: "Google Workspace · 6 shared mailboxes", lastSync: "live · 4s ago",
+    connection: "Google Workspace · 6 shared mailboxes",
+    lastSync: "live · 4s ago",
     retention: "Bodies 365d · attachments referenced not stored",
-    coverage: 99, accuracy: 94,
+    coverage: 99,
+    accuracy: 94,
     signals: [
       { l: "Threads ingested (30d)", v: "8,412" },
       { l: "Avg first response", v: "1h 48m" },
@@ -1736,14 +2587,24 @@ const SOURCES: SourceDetail[] = [
       "Draft follow-up if customer hasn't replied to a quote in 72h",
       "Extract PO numbers + line items into Commusoft automatically",
     ],
-    privacy: ["Mailbox-scoped access", "No personal inboxes ingested", "Attachments scanned in-place"],
+    privacy: [
+      "Mailbox-scoped access",
+      "No personal inboxes ingested",
+      "Attachments scanned in-place",
+    ],
   },
   {
-    name: "Slack", icon: MessageSquare, status: "Live", events: "3,902", tone: "success",
+    name: "Slack",
+    icon: MessageSquare,
+    status: "Live",
+    events: "3,902",
+    tone: "success",
     desc: "Operational channels · DMs · escalations",
-    connection: "Slack workspace · 14 channels indexed", lastSync: "live · 2s ago",
+    connection: "Slack workspace · 14 channels indexed",
+    lastSync: "live · 2s ago",
     retention: "Messages 180d · files referenced",
-    coverage: 88, accuracy: 90,
+    coverage: 88,
+    accuracy: 90,
     signals: [
       { l: "Messages ingested", v: "3,902" },
       { l: "Escalations detected", v: "63" },
@@ -1767,14 +2628,24 @@ const SOURCES: SourceDetail[] = [
       "Mirror Slack decisions into the relevant job/customer record",
       "Daily digest of unresolved escalations to ops lead",
     ],
-    privacy: ["DMs excluded unless user opts in", "Bot messages filtered", "Channel-level allowlist"],
+    privacy: [
+      "DMs excluded unless user opts in",
+      "Bot messages filtered",
+      "Channel-level allowlist",
+    ],
   },
   {
-    name: "Commusoft", icon: Database, status: "Syncing", events: "12,640", tone: "success",
+    name: "Commusoft",
+    icon: Database,
+    status: "Syncing",
+    events: "12,640",
+    tone: "success",
     desc: "Jobs · estimates · invoices · assets · PPM",
-    connection: "Commusoft API · bi-directional", lastSync: "3m ago",
+    connection: "Commusoft API · bi-directional",
+    lastSync: "3m ago",
     retention: "Live mirror · change history 2y",
-    coverage: 100, accuracy: 97,
+    coverage: 100,
+    accuracy: 97,
     signals: [
       { l: "Records mirrored", v: "12,640" },
       { l: "Open jobs", v: "184" },
@@ -1797,14 +2668,24 @@ const SOURCES: SourceDetail[] = [
       "Smooth PPM scheduling across the month using capacity model",
       "Flag stale 'awaiting parts' jobs after 5 days",
     ],
-    privacy: ["Role-scoped reads", "PII never leaves Commusoft + ServiceOS", "Audit log on every write"],
+    privacy: [
+      "Role-scoped reads",
+      "PII never leaves Commusoft + ServiceOS",
+      "Audit log on every write",
+    ],
   },
   {
-    name: "QuickBooks", icon: Banknote, status: "Live", events: "4,118", tone: "success",
+    name: "QuickBooks",
+    icon: Banknote,
+    status: "Live",
+    events: "4,118",
+    tone: "success",
     desc: "Invoices · payments · debt · cash flow",
-    connection: "QuickBooks Online · OAuth", lastSync: "8m ago",
+    connection: "QuickBooks Online · OAuth",
+    lastSync: "8m ago",
     retention: "Live mirror · ledger snapshots daily",
-    coverage: 100, accuracy: 99,
+    coverage: 100,
+    accuracy: 99,
     signals: [
       { l: "Invoices (30d)", v: "1,104" },
       { l: "Overdue value", v: "£48.2k" },
@@ -1827,14 +2708,24 @@ const SOURCES: SourceDetail[] = [
       "Match payments to invoices via reference + amount + customer",
       "Forecast 30/60/90 cash position daily",
     ],
-    privacy: ["Read-only by default", "Writes require approval", "Books reconciled, never overwritten"],
+    privacy: [
+      "Read-only by default",
+      "Writes require approval",
+      "Books reconciled, never overwritten",
+    ],
   },
   {
-    name: "Google Workspace", icon: Mail, status: "Live", events: "6,221", tone: "success",
+    name: "Google Workspace",
+    icon: Mail,
+    status: "Live",
+    events: "6,221",
+    tone: "success",
     desc: "Calendar · contacts · shared drives",
-    connection: "Google Workspace · domain-wide delegation", lastSync: "live",
+    connection: "Google Workspace · domain-wide delegation",
+    lastSync: "live",
     retention: "Calendar 365d · contacts mirrored",
-    coverage: 97, accuracy: 95,
+    coverage: 97,
+    accuracy: 95,
     signals: [
       { l: "Events captured", v: "4,118" },
       { l: "Engineers tracked", v: "11" },
@@ -1857,14 +2748,24 @@ const SOURCES: SourceDetail[] = [
       "Reflow engineer day when a visit overruns by 20+ mins",
       "Deduplicate contacts across Workspace + Commusoft",
     ],
-    privacy: ["Calendar metadata only by default", "Personal events ignored", "Per-user opt-in for body capture"],
+    privacy: [
+      "Calendar metadata only by default",
+      "Personal events ignored",
+      "Per-user opt-in for body capture",
+    ],
   },
   {
-    name: "Google Drive", icon: HardDrive, status: "Indexing", events: "2,847", tone: "warning",
+    name: "Google Drive",
+    icon: HardDrive,
+    status: "Indexing",
+    events: "2,847",
+    tone: "warning",
     desc: "Documents · supplier files · certificates",
-    connection: "Shared drives · 6 root folders", lastSync: "indexing · 64% complete",
+    connection: "Shared drives · 6 root folders",
+    lastSync: "indexing · 64% complete",
     retention: "Metadata + embeddings · file bodies fetched on demand",
-    coverage: 64, accuracy: 88,
+    coverage: 64,
+    accuracy: 88,
     signals: [
       { l: "Files indexed", v: "2,847" },
       { l: "Certificates extracted", v: "412" },
@@ -1887,14 +2788,24 @@ const SOURCES: SourceDetail[] = [
       "Sync supplier price list updates into quote builder",
       "Suggest canonical file when a near-duplicate is opened",
     ],
-    privacy: ["Per-folder scope", "No personal Drive access", "Embeddings stored, file bodies not retained"],
+    privacy: [
+      "Per-folder scope",
+      "No personal Drive access",
+      "Embeddings stored, file bodies not retained",
+    ],
   },
   {
-    name: "Perplexity", icon: Brain, status: "Live", events: "184", tone: "success",
+    name: "Perplexity",
+    icon: Brain,
+    status: "Live",
+    events: "184",
+    tone: "success",
     desc: "Market · supplier · regulatory research",
-    connection: "Perplexity API · scheduled + on-demand", lastSync: "today 06:00",
+    connection: "Perplexity API · scheduled + on-demand",
+    lastSync: "today 06:00",
     retention: "Research briefs 365d · sources cited",
-    coverage: 100, accuracy: 90,
+    coverage: 100,
+    accuracy: 90,
     signals: [
       { l: "Briefs generated", v: "184" },
       { l: "Reg / standards watch", v: "12 topics" },
@@ -1920,11 +2831,17 @@ const SOURCES: SourceDetail[] = [
     privacy: ["Outbound queries scrubbed of customer data", "Sources logged with every brief"],
   },
   {
-    name: "Website Forms", icon: Globe, status: "Live", events: "342", tone: "success",
+    name: "Website Forms",
+    icon: Globe,
+    status: "Live",
+    events: "342",
+    tone: "success",
     desc: "Enquiries · booking · quote requests",
-    connection: "drummonds.co.uk · 4 forms", lastSync: "live",
+    connection: "drummonds.co.uk · 4 forms",
+    lastSync: "live",
     retention: "Submissions 2y",
-    coverage: 100, accuracy: 96,
+    coverage: 100,
+    accuracy: 96,
     signals: [
       { l: "Submissions (30d)", v: "342" },
       { l: "Quote requests", v: "188" },
@@ -1950,11 +2867,17 @@ const SOURCES: SourceDetail[] = [
     privacy: ["GDPR consent enforced", "Marketing tracking opt-in only"],
   },
   {
-    name: "Desktop Workflow", icon: Monitor, status: "Learning", events: "21,408", tone: "accent",
+    name: "Desktop Workflow",
+    icon: Monitor,
+    status: "Learning",
+    events: "21,408",
+    tone: "accent",
     desc: "App usage · sequences · copy/paste · forms",
-    connection: "ServiceOS Desktop Agent · 11 installs", lastSync: "live",
+    connection: "ServiceOS Desktop Agent · 11 installs",
+    lastSync: "live",
     retention: "Event metadata 90d · screenshots OCR'd then deleted",
-    coverage: 78, accuracy: 86,
+    coverage: 78,
+    accuracy: 86,
     signals: [
       { l: "Events captured", v: "21,408" },
       { l: "Distinct workflows", v: "412" },
@@ -1978,14 +2901,25 @@ const SOURCES: SourceDetail[] = [
       "One-click 'job → invoice' macro across Commusoft + QuickBooks",
       "Suggest the right file based on the active customer context",
     ],
-    privacy: ["Metadata-first", "Screenshots deleted post-OCR", "No keystroke logging", "Pause anytime"],
+    privacy: [
+      "Metadata-first",
+      "Screenshots deleted post-OCR",
+      "No keystroke logging",
+      "Pause anytime",
+    ],
   },
   {
-    name: "Documents & PDFs", icon: FileText, status: "Live", events: "1,920", tone: "success",
+    name: "Documents & PDFs",
+    icon: FileText,
+    status: "Live",
+    events: "1,920",
+    tone: "success",
     desc: "Quotes · job sheets · certifications · OCR",
-    connection: "Drive + email attachments + uploads", lastSync: "live",
+    connection: "Drive + email attachments + uploads",
+    lastSync: "live",
     retention: "Extracted fields kept · originals referenced",
-    coverage: 92, accuracy: 91,
+    coverage: 92,
+    accuracy: 91,
     signals: [
       { l: "Docs processed", v: "1,920" },
       { l: "OCR pages", v: "8,140" },
@@ -2011,11 +2945,17 @@ const SOURCES: SourceDetail[] = [
     privacy: ["OCR on-platform", "No third-party doc AI by default"],
   },
   {
-    name: "IoT Telemetry", icon: Radio, status: "Planned", events: "-", tone: "muted",
+    name: "IoT Telemetry",
+    icon: Radio,
+    status: "Planned",
+    events: "-",
+    tone: "muted",
     desc: "Boilers · sensors · fault codes · energy",
-    connection: "Not yet connected", lastSync: "-",
+    connection: "Not yet connected",
+    lastSync: "-",
     retention: "Planned: 365d telemetry · fault events permanent",
-    coverage: 0, accuracy: 0,
+    coverage: 0,
+    accuracy: 0,
     signals: [
       { l: "Assets eligible", v: "412" },
       { l: "Vendor protocols", v: "BACnet · Modbus · OEM cloud" },
@@ -2046,13 +2986,35 @@ function Learn() {
   const [openSource, setOpenSource] = useState<SourceDetail | null>(null);
   const sources = SOURCES;
 
-  
-
   const insights = [
-    { icon: AlertTriangle, tone: "warning", title: "Delayed post-visit comms", body: "37% of complaint calls in the last 14 days involve delayed communication after engineer visits.", action: "Auto-send visit summary within 30 mins" },
-    { icon: TrendingUp, tone: "accent", title: "Quote → Approval bottleneck", body: "Supplier quote prep takes ~22 mins on average across 184 observations. 74% of steps are repeatable.", action: "Spin up Procurement Agent" },
-    { icon: CheckCircle2, tone: "success", title: "Missed revenue detection", body: "11 callbacks last week never converted to a follow-up job. Estimated value £7,840.", action: "Add callback SLA + reminder" },
-    { icon: Brain, tone: "accent", title: "Customer risk pattern", body: "ABC School · 4 frustrated calls in 6 weeks. Sentiment trending down.", action: "Flag for account manager review" },
+    {
+      icon: AlertTriangle,
+      tone: "warning",
+      title: "Delayed post-visit comms",
+      body: "37% of complaint calls in the last 14 days involve delayed communication after engineer visits.",
+      action: "Auto-send visit summary within 30 mins",
+    },
+    {
+      icon: TrendingUp,
+      tone: "accent",
+      title: "Quote → Approval bottleneck",
+      body: "Supplier quote prep takes ~22 mins on average across 184 observations. 74% of steps are repeatable.",
+      action: "Spin up Procurement Agent",
+    },
+    {
+      icon: CheckCircle2,
+      tone: "success",
+      title: "Missed revenue detection",
+      body: "11 callbacks last week never converted to a follow-up job. Estimated value £7,840.",
+      action: "Add callback SLA + reminder",
+    },
+    {
+      icon: Brain,
+      tone: "accent",
+      title: "Customer risk pattern",
+      body: "ABC School · 4 frustrated calls in 6 weeks. Sentiment trending down.",
+      action: "Flag for account manager review",
+    },
   ];
 
   const workflows = [
@@ -2061,7 +3023,6 @@ function Learn() {
     { name: "Customer follow-up", obs: 246, save: 82 },
     { name: "PPM scheduling", obs: 96, save: 67 },
   ];
-
 
   return (
     <div className="space-y-6">
@@ -2074,7 +3035,9 @@ function Learn() {
           <div className="text-display mt-4 flex items-baseline gap-3 text-5xl font-bold tabular">
             87<span className="text-xl font-medium text-muted-foreground">/ 100</span>
           </div>
-          <div className="mt-2 text-sm text-muted-foreground">Strong operational signal · 3 risks tracked · 12 automation candidates</div>
+          <div className="mt-2 text-sm text-muted-foreground">
+            Strong operational signal · 3 risks tracked · 12 automation candidates
+          </div>
           <div className="mt-5 grid grid-cols-4 gap-3 text-xs">
             {[
               { l: "Ops", v: 92 },
@@ -2093,18 +3056,24 @@ function Learn() {
           </div>
         </div>
 
-
         <div className="rounded-2xl border border-hairline bg-white p-6 md:col-span-5">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Learning state</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Learning state
+          </div>
           <div className="text-display mt-3 text-2xl font-semibold">Actively learning</div>
-          <div className="mt-1 text-xs text-muted-foreground">Week 3 of 4 · desktop + voice + comms active</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            Week 3 of 4 · desktop + voice + comms active
+          </div>
           <div className="mt-5 space-y-3">
             {[
               { l: "Signals captured", v: "63,290", sub: "last 30 days" },
               { l: "Workflows reconstructed", v: "412", sub: "across 11 staff" },
               { l: "Automation candidates", v: "12", sub: "ROI > 60%" },
             ].map((x) => (
-              <div key={x.l} className="flex items-baseline justify-between border-b border-hairline pb-2 last:border-0">
+              <div
+                key={x.l}
+                className="flex items-baseline justify-between border-b border-hairline pb-2 last:border-0"
+              >
                 <div>
                   <div className="text-sm font-medium">{x.l}</div>
                   <div className="text-[11px] text-muted-foreground">{x.sub}</div>
@@ -2116,17 +3085,20 @@ function Learn() {
         </div>
       </div>
 
-
-
-
       {/* Inputs grid */}
       <div>
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <div className="text-display text-lg font-semibold">Capture Layer · learning inputs</div>
-            <div className="text-xs text-muted-foreground">Every operational signal flowing into ServiceOS</div>
+            <div className="text-display text-lg font-semibold">
+              Capture Layer · learning inputs
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Every operational signal flowing into ServiceOS
+            </div>
           </div>
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{sources.length} sources</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            {sources.length} sources
+          </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sources.map((s) => (
@@ -2136,39 +3108,49 @@ function Learn() {
               onClick={() => setOpenSource(s)}
               className="rounded-2xl border border-hairline bg-white p-4 text-left transition hover:border-foreground/30 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
             >
-
               <div className="flex items-start justify-between">
-                <div className={cn(
-                  "grid h-9 w-9 place-items-center rounded-lg",
-                  s.tone === "muted" ? "bg-surface-alt text-muted-foreground" : "bg-foreground text-background",
-                )}>
+                <div
+                  className={cn(
+                    "grid h-9 w-9 place-items-center rounded-lg",
+                    s.tone === "muted"
+                      ? "bg-surface-alt text-muted-foreground"
+                      : "bg-foreground text-background",
+                  )}
+                >
                   <s.icon className="h-4 w-4" />
                 </div>
-                <span className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
-                  s.tone === "success" && "bg-success/10 text-success",
-                  s.tone === "warning" && "bg-warning/10 text-warning",
-                  s.tone === "accent" && "bg-accent/10 text-accent",
-                  s.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
-                  {s.tone !== "muted" && <span className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    s.tone === "success" && "bg-success animate-pulse",
-                    s.tone === "warning" && "bg-warning",
-                    s.tone === "accent" && "bg-accent animate-pulse",
-                  )} />}
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                    s.tone === "success" && "bg-success/10 text-success",
+                    s.tone === "warning" && "bg-warning/10 text-warning",
+                    s.tone === "accent" && "bg-accent/10 text-accent",
+                    s.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
+                  {s.tone !== "muted" && (
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        s.tone === "success" && "bg-success animate-pulse",
+                        s.tone === "warning" && "bg-warning",
+                        s.tone === "accent" && "bg-accent animate-pulse",
+                      )}
+                    />
+                  )}
                   {s.status}
                 </span>
               </div>
               <div className="text-display mt-4 text-sm font-semibold">{s.name}</div>
               <div className="mt-1 text-[11px] leading-snug text-muted-foreground">{s.desc}</div>
               <div className="mt-3 flex items-baseline justify-between border-t border-hairline pt-3">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Events 30d</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Events 30d
+                </span>
                 <span className="font-mono text-sm tabular">{s.events}</span>
               </div>
             </button>
           ))}
-
         </div>
       </div>
 
@@ -2180,17 +3162,21 @@ function Learn() {
             {insights.map((i) => (
               <div key={i.title} className="rounded-2xl border border-hairline bg-white p-5">
                 <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-                    i.tone === "warning" && "bg-warning/10 text-warning",
-                    i.tone === "accent" && "bg-accent/10 text-accent",
-                    i.tone === "success" && "bg-success/10 text-success",
-                  )}>
+                  <div
+                    className={cn(
+                      "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                      i.tone === "warning" && "bg-warning/10 text-warning",
+                      i.tone === "accent" && "bg-accent/10 text-accent",
+                      i.tone === "success" && "bg-success/10 text-success",
+                    )}
+                  >
                     <i.icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold">{i.title}</div>
-                    <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{i.body}</div>
+                    <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {i.body}
+                    </div>
                     <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium">
                       <Sparkles className="h-3 w-3 text-accent" />
                       {i.action}
@@ -2209,9 +3195,13 @@ function Learn() {
               <div key={w.name} className="rounded-2xl border border-hairline bg-white p-4">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium">{w.name}</div>
-                  <span className="text-display text-lg font-bold tabular text-accent">{w.save}%</span>
+                  <span className="text-display text-lg font-bold tabular text-accent">
+                    {w.save}%
+                  </span>
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">{w.obs} observations · automatable</div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  {w.obs} observations · automatable
+                </div>
                 <div className="mt-3 h-1.5 rounded-full bg-surface-alt">
                   <div className="h-full rounded-full bg-accent" style={{ width: `${w.save}%` }} />
                 </div>
@@ -2220,12 +3210,25 @@ function Learn() {
           </div>
 
           <div className="mt-3 rounded-2xl border border-hairline bg-surface-alt p-4">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Privacy posture</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Privacy posture
+            </div>
             <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
-              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Metadata-first capture</li>
-              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Screenshots deleted after OCR</li>
-              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> No keystroke logging</li>
-              <li className="flex gap-2"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Learning mode · pausable</li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Metadata-first
+                capture
+              </li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Screenshots deleted
+                after OCR
+              </li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> No keystroke logging
+              </li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" /> Learning mode ·
+                pausable
+              </li>
             </ul>
           </div>
         </div>
@@ -2238,25 +3241,39 @@ function Learn() {
             <>
               <DialogHeader>
                 <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "grid h-11 w-11 place-items-center rounded-xl",
-                    openSource.tone === "muted" ? "bg-surface-alt text-muted-foreground" : "bg-foreground text-background",
-                  )}>
+                  <div
+                    className={cn(
+                      "grid h-11 w-11 place-items-center rounded-xl",
+                      openSource.tone === "muted"
+                        ? "bg-surface-alt text-muted-foreground"
+                        : "bg-foreground text-background",
+                    )}
+                  >
                     <openSource.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <DialogTitle className="text-display text-xl font-semibold">{openSource.name}</DialogTitle>
-                    <DialogDescription className="mt-1 text-xs">{openSource.desc}</DialogDescription>
+                    <DialogTitle className="text-display text-xl font-semibold">
+                      {openSource.name}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-xs">
+                      {openSource.desc}
+                    </DialogDescription>
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium uppercase tracking-wider",
-                        openSource.tone === "success" && "bg-success/10 text-success",
-                        openSource.tone === "warning" && "bg-warning/10 text-warning",
-                        openSource.tone === "accent" && "bg-accent/10 text-accent",
-                        openSource.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                      )}>{openSource.status}</span>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium uppercase tracking-wider",
+                          openSource.tone === "success" && "bg-success/10 text-success",
+                          openSource.tone === "warning" && "bg-warning/10 text-warning",
+                          openSource.tone === "accent" && "bg-accent/10 text-accent",
+                          openSource.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                        )}
+                      >
+                        {openSource.status}
+                      </span>
                       <span className="text-muted-foreground">· {openSource.connection}</span>
-                      <span className="text-muted-foreground">· Last sync {openSource.lastSync}</span>
+                      <span className="text-muted-foreground">
+                        · Last sync {openSource.lastSync}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2266,7 +3283,9 @@ function Learn() {
               <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
                 {openSource.signals.map((sig) => (
                   <div key={sig.l} className="rounded-xl border border-hairline bg-surface-alt p-3">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{sig.l}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {sig.l}
+                    </div>
                     <div className="text-display mt-1 text-lg font-bold tabular">{sig.v}</div>
                     {sig.sub && <div className="text-[10px] text-muted-foreground">{sig.sub}</div>}
                   </div>
@@ -2285,7 +3304,10 @@ function Learn() {
                       <div className="font-mono text-sm tabular">{m.v}%</div>
                     </div>
                     <div className="mt-2 h-1.5 rounded-full bg-hairline">
-                      <div className="h-full rounded-full bg-foreground" style={{ width: `${m.v}%` }} />
+                      <div
+                        className="h-full rounded-full bg-foreground"
+                        style={{ width: `${m.v}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -2293,7 +3315,9 @@ function Learn() {
 
               {/* Topics */}
               <div className="mt-4 rounded-xl border border-hairline p-4">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">What we're seeing</div>
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  What we're seeing
+                </div>
                 <div className="mt-3 space-y-2">
                   {openSource.topics.map((t) => (
                     <div key={t.label}>
@@ -2302,7 +3326,10 @@ function Learn() {
                         <span className="font-mono tabular text-muted-foreground">{t.pct}%</span>
                       </div>
                       <div className="mt-1 h-1 rounded-full bg-hairline">
-                        <div className="h-full rounded-full bg-accent" style={{ width: `${t.pct}%` }} />
+                        <div
+                          className="h-full rounded-full bg-accent"
+                          style={{ width: `${t.pct}%` }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -2342,12 +3369,17 @@ function Learn() {
               {/* Privacy + retention */}
               <div className="mt-4 rounded-xl border border-hairline p-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Privacy & retention</div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                    Privacy & retention
+                  </div>
                   <div className="text-[11px] text-muted-foreground">{openSource.retention}</div>
                 </div>
                 <ul className="mt-2 flex flex-wrap gap-2 text-[11px]">
                   {openSource.privacy.map((p) => (
-                    <li key={p} className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1">
+                    <li
+                      key={p}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-1"
+                    >
                       <CheckCircle2 className="h-3 w-3 text-success" /> {p}
                     </li>
                   ))}
@@ -2361,8 +3393,6 @@ function Learn() {
   );
 }
 
-
-
 /* ────── INTELLIGENCE ────── */
 type Pillar = "ops" | "finance" | "customer" | "compliance";
 
@@ -2370,11 +3400,11 @@ type Upgrade = {
   id: string;
   pillar: Pillar;
   title: string;
-  insight: string;            // what we observed
-  recommendation: string;     // what to do
+  insight: string; // what we observed
+  recommendation: string; // what to do
   via: "Automation" | "AI Agent" | "ServiceOS Workflow" | "Voice AI" | "Process Change";
   effort: "Low" | "Med" | "High";
-  confidence: number;         // 0-100
+  confidence: number; // 0-100
   uplift: {
     timeSaved?: string;
     profit?: string;
@@ -2387,136 +3417,225 @@ type Upgrade = {
 };
 
 const PILLARS: { key: Pillar; label: string; icon: typeof Brain; tone: string; desc: string }[] = [
-  { key: "ops", label: "Operations", icon: Workflow, tone: "accent", desc: "Time, throughput, engineer utilisation" },
-  { key: "finance", label: "Finance", icon: Banknote, tone: "success", desc: "Cash, margin, debt, forecasting" },
-  { key: "customer", label: "Customer", icon: Brain, tone: "warning", desc: "Sentiment, retention, CSAT, NPS" },
-  { key: "compliance", label: "Compliance", icon: ShieldCheck, tone: "muted", desc: "Certifications, audit, safety" },
+  {
+    key: "ops",
+    label: "Operations",
+    icon: Workflow,
+    tone: "accent",
+    desc: "Time, throughput, engineer utilisation",
+  },
+  {
+    key: "finance",
+    label: "Finance",
+    icon: Banknote,
+    tone: "success",
+    desc: "Cash, margin, debt, forecasting",
+  },
+  {
+    key: "customer",
+    label: "Customer",
+    icon: Brain,
+    tone: "warning",
+    desc: "Sentiment, retention, CSAT, NPS",
+  },
+  {
+    key: "compliance",
+    label: "Compliance",
+    icon: ShieldCheck,
+    tone: "muted",
+    desc: "Certifications, audit, safety",
+  },
 ];
 
-const PILLAR_HEALTH: Record<Pillar, { score: number; trend: string; openUpgrades: number; potential: string }> = {
-  ops:        { score: 81, trend: "+3 vs last wk", openUpgrades: 6, potential: "~32 hrs/wk saved" },
-  finance:    { score: 88, trend: "+2 vs last wk", openUpgrades: 4, potential: "£48k cash unlocked" },
-  customer:   { score: 76, trend: "−2 vs last wk", openUpgrades: 5, potential: "+8pt CSAT" },
-  compliance: { score: 94, trend: "stable",         openUpgrades: 3, potential: "0 audit gaps" },
+const PILLAR_HEALTH: Record<
+  Pillar,
+  { score: number; trend: string; openUpgrades: number; potential: string }
+> = {
+  ops: { score: 81, trend: "+3 vs last wk", openUpgrades: 6, potential: "~32 hrs/wk saved" },
+  finance: { score: 88, trend: "+2 vs last wk", openUpgrades: 4, potential: "£48k cash unlocked" },
+  customer: { score: 76, trend: "−2 vs last wk", openUpgrades: 5, potential: "+8pt CSAT" },
+  compliance: { score: 94, trend: "stable", openUpgrades: 3, potential: "0 audit gaps" },
 };
 
 const UPGRADES: Upgrade[] = [
   {
-    id: "u1", pillar: "ops",
+    id: "u1",
+    pillar: "ops",
     title: "Auto-triage Monday voicemail before 09:00",
     insight: "34% of Monday jobs overran > 30 mins · correlates with untriaged weekend voicemail",
-    recommendation: "Reception Agent classifies + drafts callbacks at 07:30 Monday so dispatch starts from a clean board",
-    via: "AI Agent", effort: "Low", confidence: 88,
+    recommendation:
+      "Reception Agent classifies + drafts callbacks at 07:30 Monday so dispatch starts from a clean board",
+    via: "AI Agent",
+    effort: "Low",
+    confidence: 88,
     uplift: { timeSaved: "9 hrs/wk", profit: "+£4.2k/mo", csat: "+4pt" },
-    sources: ["Phone Calls", "Calendar", "Commusoft"], status: "ready",
+    sources: ["Phone Calls", "Calendar", "Commusoft"],
+    status: "ready",
   },
   {
-    id: "u2", pillar: "ops",
+    id: "u2",
+    pillar: "ops",
     title: "Procurement Agent for supplier quote prep",
     insight: "22 mins avg across 184 obs · 74% deterministic steps across 3 apps",
-    recommendation: "Spin up Procurement Agent in draft mode · gather pricing, normalise SKUs, pre-fill quote",
-    via: "AI Agent", effort: "Med", confidence: 91,
+    recommendation:
+      "Spin up Procurement Agent in draft mode · gather pricing, normalise SKUs, pre-fill quote",
+    via: "AI Agent",
+    effort: "Med",
+    confidence: 91,
     uplift: { timeSaved: "14 hrs/wk", profit: "+£2.8k/mo", turnover: "+6% quote velocity" },
-    sources: ["Desktop Workflow", "Email", "Drive"], status: "ready",
+    sources: ["Desktop Workflow", "Email", "Drive"],
+    status: "ready",
   },
   {
-    id: "u3", pillar: "ops",
+    id: "u3",
+    pillar: "ops",
     title: "One-click 'job → invoice' across Commusoft + QuickBooks",
     insight: "Path crosses 4 apps and 11 clicks · runs 412×/month per engineer cohort",
-    recommendation: "ServiceOS workflow stitches the path; engineer signs off, invoice issues automatically",
-    via: "ServiceOS Workflow", effort: "Low", confidence: 95,
+    recommendation:
+      "ServiceOS workflow stitches the path; engineer signs off, invoice issues automatically",
+    via: "ServiceOS Workflow",
+    effort: "Low",
+    confidence: 95,
     uplift: { timeSaved: "11 hrs/wk", profit: "+£1.9k/mo", turnover: "Invoice day −2.4d" },
-    sources: ["Commusoft", "QuickBooks", "Desktop Workflow"], status: "draft",
+    sources: ["Commusoft", "QuickBooks", "Desktop Workflow"],
+    status: "draft",
   },
   {
-    id: "u4", pillar: "finance",
+    id: "u4",
+    pillar: "finance",
     title: "Tone-aware aged debt chase",
     insight: "Top 3 debtors = 54% of >60d debt · two unanswered chases > 14 days",
-    recommendation: "Finance Agent runs personalised chase cadence; escalates after 2 ignored steps",
-    via: "AI Agent", effort: "Low", confidence: 96,
+    recommendation:
+      "Finance Agent runs personalised chase cadence; escalates after 2 ignored steps",
+    via: "AI Agent",
+    effort: "Low",
+    confidence: 96,
     uplift: { profit: "+£26.1k cash", turnover: "DSO −9 days" },
-    sources: ["QuickBooks", "Email"], status: "ready",
+    sources: ["QuickBooks", "Email"],
+    status: "ready",
   },
   {
-    id: "u5", pillar: "finance",
+    id: "u5",
+    pillar: "finance",
     title: "Shift invoice-send to Tue/Wed",
     insight: "Friday invoices paid 4.2d slower on average",
-    recommendation: "Workflow change: schedule invoice send mid-week unless customer explicitly prefers Friday",
-    via: "Process Change", effort: "Low", confidence: 84,
+    recommendation:
+      "Workflow change: schedule invoice send mid-week unless customer explicitly prefers Friday",
+    via: "Process Change",
+    effort: "Low",
+    confidence: 84,
     uplift: { profit: "+£3.4k/mo cashflow", turnover: "DSO −2 days" },
-    sources: ["QuickBooks"], status: "ready",
+    sources: ["QuickBooks"],
+    status: "ready",
   },
   {
-    id: "u6", pillar: "finance",
+    id: "u6",
+    pillar: "finance",
     title: "Daily 30/60/90 cash forecast",
     insight: "No live cash position · finance reviews weekly",
-    recommendation: "ServiceOS auto-publishes morning cash + pipeline-weighted forecast to leadership",
-    via: "ServiceOS Workflow", effort: "Low", confidence: 92,
+    recommendation:
+      "ServiceOS auto-publishes morning cash + pipeline-weighted forecast to leadership",
+    via: "ServiceOS Workflow",
+    effort: "Low",
+    confidence: 92,
     uplift: { profit: "Earlier decisions", risk: "−1 surprise/qtr" },
-    sources: ["QuickBooks", "Commusoft"], status: "draft",
+    sources: ["QuickBooks", "Commusoft"],
+    status: "draft",
   },
   {
-    id: "u7", pillar: "customer",
+    id: "u7",
+    pillar: "customer",
     title: "30-min post-visit summary SMS + email",
     insight: "37% of complaint calls in 14d involve delayed post-visit comms",
-    recommendation: "Voice AI summarises engineer notes + sends visit summary within 30 mins of job close",
-    via: "Voice AI", effort: "Low", confidence: 92,
+    recommendation:
+      "Voice AI summarises engineer notes + sends visit summary within 30 mins of job close",
+    via: "Voice AI",
+    effort: "Low",
+    confidence: 92,
     uplift: { csat: "+9pt", timeSaved: "4 hrs/wk", risk: "−40% complaint volume" },
-    sources: ["Phone Calls", "Commusoft"], status: "ready",
+    sources: ["Phone Calls", "Commusoft"],
+    status: "ready",
   },
   {
-    id: "u8", pillar: "customer",
+    id: "u8",
+    pillar: "customer",
     title: "Account-risk alerts for sentiment drift",
     insight: "ABC School · 4 frustrated calls in 6 wks · tone score 0.62→0.21",
-    recommendation: "Customer Care Agent flags accounts on 2+ negative signals in 14d · books review call",
-    via: "AI Agent", effort: "Low", confidence: 84,
+    recommendation:
+      "Customer Care Agent flags accounts on 2+ negative signals in 14d · books review call",
+    via: "AI Agent",
+    effort: "Low",
+    confidence: 84,
     uplift: { turnover: "Protect £18k contract", csat: "+5pt" },
-    sources: ["Phone Calls", "Email", "Commusoft"], status: "ready",
+    sources: ["Phone Calls", "Email", "Commusoft"],
+    status: "ready",
   },
   {
-    id: "u9", pillar: "customer",
+    id: "u9",
+    pillar: "customer",
     title: "Sub-60s acknowledge for web enquiries",
     insight: "Avg first-response 4h 12m · mobile converts 28% better when replied < 30 mins",
-    recommendation: "Inbox Agent auto-acknowledges + qualifies enquiry within 60s · routes to right owner",
-    via: "AI Agent", effort: "Low", confidence: 90,
+    recommendation:
+      "Inbox Agent auto-acknowledges + qualifies enquiry within 60s · routes to right owner",
+    via: "AI Agent",
+    effort: "Low",
+    confidence: 90,
     uplift: { turnover: "+12% web conversion", csat: "+6pt" },
-    sources: ["Website Forms", "Email"], status: "ready",
+    sources: ["Website Forms", "Email"],
+    status: "ready",
   },
   {
-    id: "u10", pillar: "customer",
+    id: "u10",
+    pillar: "customer",
     title: "Missed callback recovery SLA",
     insight: "11 callbacks last wk never converted · est. £7,840 value",
     recommendation: "Auto-create callback task with 4-hour SLA + reminder · escalates after breach",
-    via: "Automation", effort: "Low", confidence: 82,
+    via: "Automation",
+    effort: "Low",
+    confidence: 82,
     uplift: { turnover: "+£7.8k/wk recovered", csat: "+3pt" },
-    sources: ["Phone Calls", "Commusoft"], status: "ready",
+    sources: ["Phone Calls", "Commusoft"],
+    status: "ready",
   },
   {
-    id: "u11", pillar: "compliance",
+    id: "u11",
+    pillar: "compliance",
     title: "Certification expiry → auto-scheduled renewals",
     insight: "27 customer certs expire in 60d across 19 sites · none surfaced in Commusoft",
-    recommendation: "Compliance Agent watches expiry · auto-books renewal visit + notifies customer",
-    via: "AI Agent", effort: "Low", confidence: 98,
+    recommendation:
+      "Compliance Agent watches expiry · auto-books renewal visit + notifies customer",
+    via: "AI Agent",
+    effort: "Low",
+    confidence: 98,
     uplift: { turnover: "Renewal revenue captured", risk: "0 audit gaps" },
-    sources: ["Google Drive", "Commusoft"], status: "ready",
+    sources: ["Google Drive", "Commusoft"],
+    status: "ready",
   },
   {
-    id: "u12", pillar: "compliance",
+    id: "u12",
+    pillar: "compliance",
     title: "Block job-close on missing signatures",
     insight: "6% of cert PDFs missing engineer signature at close",
     recommendation: "Workflow: job cannot be marked complete until required cert + sig present",
-    via: "ServiceOS Workflow", effort: "Low", confidence: 95,
+    via: "ServiceOS Workflow",
+    effort: "Low",
+    confidence: 95,
     uplift: { risk: "−100% missing-sig defect", csat: "+2pt" },
-    sources: ["Documents", "Commusoft"], status: "draft",
+    sources: ["Documents", "Commusoft"],
+    status: "draft",
   },
   {
-    id: "u13", pillar: "ops",
+    id: "u13",
+    pillar: "ops",
     title: "PPM scheduling smoothing across the month",
     insight: "PPM clusters in last week of month · capacity strain + travel reschedules",
     recommendation: "Scheduling Agent reflows PPM evenly using engineer capacity model",
-    via: "AI Agent", effort: "Med", confidence: 78,
+    via: "AI Agent",
+    effort: "Med",
+    confidence: 78,
     uplift: { timeSaved: "6 hrs/wk", profit: "+£1.6k/mo utilisation", csat: "+3pt" },
-    sources: ["Calendar", "Commusoft"], status: "review",
+    sources: ["Calendar", "Commusoft"],
+    status: "review",
   },
 ];
 
@@ -2537,7 +3656,14 @@ function Intelligence() {
     csat: "+8pt",
   };
 
-  const viaOptions: ("all" | Upgrade["via"])[] = ["all", "AI Agent", "Automation", "ServiceOS Workflow", "Voice AI", "Process Change"];
+  const viaOptions: ("all" | Upgrade["via"])[] = [
+    "all",
+    "AI Agent",
+    "Automation",
+    "ServiceOS Workflow",
+    "Voice AI",
+    "Process Change",
+  ];
 
   const statTiles = [
     { l: "Open upgrades", v: String(totals.upgrades), sub: "across 4 pillars", icon: Sparkles },
@@ -2563,7 +3689,8 @@ function Intelligence() {
               Performance upgrades, synthesised from everything ServiceOS sees.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Click any upgrade to see the full recommendation, projected impact and the path to shipping it.
+              Click any upgrade to see the full recommendation, projected impact and the path to
+              shipping it.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface-alt px-3 py-1.5 text-[11px] font-medium">
@@ -2575,35 +3702,63 @@ function Intelligence() {
         {/* Aligned stat row · labels, numbers and subs sit on the same baselines */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {statTiles.map((k) => (
-            <div key={k.l} className="flex flex-col rounded-xl border border-hairline bg-surface-alt p-4">
+            <div
+              key={k.l}
+              className="flex flex-col rounded-xl border border-hairline bg-surface-alt p-4"
+            >
               <div className="flex items-start justify-between gap-2 text-muted-foreground">
-                <div className="text-[10px] font-medium uppercase tracking-wider leading-tight">{k.l}</div>
+                <div className="text-[10px] font-medium uppercase tracking-wider leading-tight">
+                  {k.l}
+                </div>
                 <k.icon className="h-3.5 w-3.5 shrink-0" />
               </div>
-              <div className="text-display mt-3 text-xl font-bold leading-tight tabular text-foreground break-words">{k.v}</div>
+              <div className="text-display mt-3 text-xl font-bold leading-tight tabular text-foreground break-words">
+                {k.v}
+              </div>
               <div className="mt-2 text-[10px] leading-tight text-muted-foreground">{k.sub}</div>
             </div>
           ))}
         </div>
       </div>
 
-
       {/* Pillar score infographic */}
       <div className="rounded-2xl border border-hairline bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-xl">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">How the pillar score works</div>
-            <div className="text-display mt-1 text-lg font-semibold">0-100 health rating, recalculated hourly.</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              How the pillar score works
+            </div>
+            <div className="text-display mt-1 text-lg font-semibold">
+              0-100 health rating, recalculated hourly.
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              ServiceOS blends live signals - throughput, cash flow, sentiment, audit gaps - into one score so you can see, at a glance, where the business is strong and where upgrades will have the biggest impact.
+              ServiceOS blends live signals - throughput, cash flow, sentiment, audit gaps - into
+              one score so you can see, at a glance, where the business is strong and where upgrades
+              will have the biggest impact.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { band: "0-49", label: "At risk", tone: "bg-destructive/10 text-destructive border-destructive/20" },
-              { band: "50-69", label: "Needs work", tone: "bg-warning/10 text-warning border-warning/20" },
-              { band: "70-84", label: "Healthy", tone: "bg-accent/10 text-accent border-accent/20" },
-              { band: "85-100", label: "Excellent", tone: "bg-success/10 text-success border-success/20" },
+              {
+                band: "0-49",
+                label: "At risk",
+                tone: "bg-destructive/10 text-destructive border-destructive/20",
+              },
+              {
+                band: "50-69",
+                label: "Needs work",
+                tone: "bg-warning/10 text-warning border-warning/20",
+              },
+              {
+                band: "70-84",
+                label: "Healthy",
+                tone: "bg-accent/10 text-accent border-accent/20",
+              },
+              {
+                band: "85-100",
+                label: "Excellent",
+                tone: "bg-success/10 text-success border-success/20",
+              },
             ].map((b) => (
               <div key={b.band} className={cn("rounded-lg border px-3 py-2", b.tone)}>
                 <div className="text-display text-sm font-bold tabular">{b.band}</div>
@@ -2664,16 +3819,20 @@ function Intelligence() {
               )}
             >
               <div className="flex items-start justify-between gap-3">
-                <span className={cn(
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-                  p.tone === "accent" && "bg-accent/10 text-accent",
-                  p.tone === "success" && "bg-success/10 text-success",
-                  p.tone === "warning" && "bg-warning/10 text-warning",
-                  p.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
+                <span
+                  className={cn(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                    p.tone === "accent" && "bg-accent/10 text-accent",
+                    p.tone === "success" && "bg-success/10 text-success",
+                    p.tone === "warning" && "bg-warning/10 text-warning",
+                    p.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
                   <p.icon className="h-4 w-4" />
                 </span>
-                <div className="text-display text-2xl font-bold leading-none tabular">{h.score}</div>
+                <div className="text-display text-2xl font-bold leading-none tabular">
+                  {h.score}
+                </div>
               </div>
               <div className="mt-4 text-sm font-semibold">{p.label}</div>
               <div className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.desc}</div>
@@ -2691,7 +3850,9 @@ function Intelligence() {
         <div>
           <div className="text-display text-lg font-semibold">Recommended performance upgrades</div>
           <div className="text-xs text-muted-foreground">
-            Ranked by confidence · {filtered.length} matching {pillar === "all" ? "all pillars" : pillar}{via !== "all" && ` · ${via}`}
+            Ranked by confidence · {filtered.length} matching{" "}
+            {pillar === "all" ? "all pillars" : pillar}
+            {via !== "all" && ` · ${via}`}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -2702,7 +3863,9 @@ function Intelligence() {
                 onClick={() => setPillar(t)}
                 className={cn(
                   "rounded-full px-2.5 py-1 capitalize transition",
-                  pillar === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                  pillar === t
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {t}
@@ -2716,7 +3879,9 @@ function Intelligence() {
                 onClick={() => setVia(v)}
                 className={cn(
                   "rounded-full px-2.5 py-1 transition",
-                  via === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                  via === v
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {v === "all" ? "All delivery" : v}
@@ -2733,12 +3898,12 @@ function Intelligence() {
           const headline = u.uplift.profit
             ? { label: "Profit", value: u.uplift.profit, tone: "text-success" }
             : u.uplift.turnover
-            ? { label: "Turnover", value: u.uplift.turnover, tone: "text-accent" }
-            : u.uplift.timeSaved
-            ? { label: "Time saved", value: u.uplift.timeSaved, tone: "text-foreground" }
-            : u.uplift.csat
-            ? { label: "CSAT", value: u.uplift.csat, tone: "text-warning" }
-            : { label: "Risk", value: u.uplift.risk ?? "-", tone: "text-muted-foreground" };
+              ? { label: "Turnover", value: u.uplift.turnover, tone: "text-accent" }
+              : u.uplift.timeSaved
+                ? { label: "Time saved", value: u.uplift.timeSaved, tone: "text-foreground" }
+                : u.uplift.csat
+                  ? { label: "CSAT", value: u.uplift.csat, tone: "text-warning" }
+                  : { label: "Risk", value: u.uplift.risk ?? "-", tone: "text-muted-foreground" };
           return (
             <button
               key={u.id}
@@ -2746,34 +3911,55 @@ function Intelligence() {
               className="group flex flex-col rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                  pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
-                  pillarMeta.tone === "success" && "bg-success/10 text-success",
-                  pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
-                  pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                    pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                    pillarMeta.tone === "success" && "bg-success/10 text-success",
+                    pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                    pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
                   <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
                 </span>
-                <span className={cn(
-                  "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                  u.status === "ready" && "bg-success/10 text-success",
-                  u.status === "draft" && "bg-accent/10 text-accent",
-                  u.status === "review" && "bg-surface-alt text-muted-foreground",
-                )}>{u.status}</span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                    u.status === "ready" && "bg-success/10 text-success",
+                    u.status === "draft" && "bg-accent/10 text-accent",
+                    u.status === "review" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
+                  {u.status}
+                </span>
               </div>
 
-              <div className="text-display mt-4 text-base font-semibold leading-snug">{u.title}</div>
+              <div className="text-display mt-4 text-base font-semibold leading-snug">
+                {u.title}
+              </div>
               <div className="mt-1 text-xs text-muted-foreground">via {u.via}</div>
 
               <div className="mt-5 flex items-end justify-between border-t border-hairline pt-3">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{headline.label}</div>
-                  <div className={cn("text-display text-lg font-bold tabular leading-none", headline.tone)}>{headline.value}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {headline.label}
+                  </div>
+                  <div
+                    className={cn(
+                      "text-display text-lg font-bold tabular leading-none",
+                      headline.tone,
+                    )}
+                  >
+                    {headline.value}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                  <div className="font-mono text-sm font-semibold tabular leading-none">{u.confidence}%</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Confidence
+                  </div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">
+                    {u.confidence}%
+                  </div>
                 </div>
               </div>
 
@@ -2788,110 +3974,142 @@ function Intelligence() {
       {/* Upgrade detail modal */}
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent className="max-w-2xl">
-          {open && (() => {
-            const pillarMeta = PILLARS.find((p) => p.key === open.pillar)!;
-            return (
-              <div>
-                <DialogHeader>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                      pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
-                      pillarMeta.tone === "success" && "bg-success/10 text-success",
-                      pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
-                      pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                    )}>
-                      <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
-                    </span>
-                    <span className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                      open.status === "ready" && "bg-success/10 text-success",
-                      open.status === "draft" && "bg-accent/10 text-accent",
-                      open.status === "review" && "bg-surface-alt text-muted-foreground",
-                    )}>{open.status}</span>
-                  </div>
-                  <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">{open.title}</DialogTitle>
-                  <DialogDescription className="text-xs">Delivered via {open.via} · effort {open.effort} · confidence {open.confidence}%</DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4 space-y-4 text-sm">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">What we observed</div>
-                    <p className="mt-1 leading-relaxed text-foreground/80">{open.insight}</p>
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommendation</div>
-                    <p className="mt-1 leading-relaxed">{open.recommendation}</p>
-                  </div>
-
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Projected uplift</div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {open.uplift.timeSaved && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[11px]">
-                          <Clock className="h-3 w-3" /> {open.uplift.timeSaved}
-                        </span>
-                      )}
-                      {open.uplift.profit && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
-                          <Banknote className="h-3 w-3" /> Profit {open.uplift.profit}
-                        </span>
-                      )}
-                      {open.uplift.turnover && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
-                          <TrendingUp className="h-3 w-3" /> Turnover {open.uplift.turnover}
-                        </span>
-                      )}
-                      {open.uplift.csat && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
-                          <Brain className="h-3 w-3" /> CSAT {open.uplift.csat}
-                        </span>
-                      )}
-                      {open.uplift.risk && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[11px] text-muted-foreground">
-                          <ShieldCheck className="h-3 w-3" /> Risk {open.uplift.risk}
-                        </span>
-                      )}
+          {open &&
+            (() => {
+              const pillarMeta = PILLARS.find((p) => p.key === open.pillar)!;
+              return (
+                <div>
+                  <DialogHeader>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                          pillarMeta.tone === "accent" && "bg-accent/10 text-accent",
+                          pillarMeta.tone === "success" && "bg-success/10 text-success",
+                          pillarMeta.tone === "warning" && "bg-warning/10 text-warning",
+                          pillarMeta.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                        )}
+                      >
+                        <pillarMeta.icon className="h-3 w-3" /> {pillarMeta.label}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                          open.status === "ready" && "bg-success/10 text-success",
+                          open.status === "draft" && "bg-accent/10 text-accent",
+                          open.status === "review" && "bg-surface-alt text-muted-foreground",
+                        )}
+                      >
+                        {open.status}
+                      </span>
                     </div>
-                  </div>
+                    <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">
+                      {open.title}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Delivered via {open.via} · effort {open.effort} · confidence {open.confidence}
+                      %
+                    </DialogDescription>
+                  </DialogHeader>
 
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 rounded-full bg-hairline">
-                        <div className="h-full rounded-full bg-foreground" style={{ width: `${open.confidence}%` }} />
+                  <div className="mt-4 space-y-4 text-sm">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        What we observed
                       </div>
-                      <span className="font-mono text-xs tabular">{open.confidence}%</span>
+                      <p className="mt-1 leading-relaxed text-foreground/80">{open.insight}</p>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Recommendation
+                      </div>
+                      <p className="mt-1 leading-relaxed">{open.recommendation}</p>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Projected uplift
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {open.uplift.timeSaved && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-surface-alt px-2 py-0.5 text-[11px]">
+                            <Clock className="h-3 w-3" /> {open.uplift.timeSaved}
+                          </span>
+                        )}
+                        {open.uplift.profit && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
+                            <Banknote className="h-3 w-3" /> Profit {open.uplift.profit}
+                          </span>
+                        )}
+                        {open.uplift.turnover && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+                            <TrendingUp className="h-3 w-3" /> Turnover {open.uplift.turnover}
+                          </span>
+                        )}
+                        {open.uplift.csat && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] text-warning">
+                            <Brain className="h-3 w-3" /> CSAT {open.uplift.csat}
+                          </span>
+                        )}
+                        {open.uplift.risk && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[11px] text-muted-foreground">
+                            <ShieldCheck className="h-3 w-3" /> Risk {open.uplift.risk}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Confidence
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 rounded-full bg-hairline">
+                          <div
+                            className="h-full rounded-full bg-foreground"
+                            style={{ width: `${open.confidence}%` }}
+                          />
+                        </div>
+                        <span className="font-mono text-xs tabular">{open.confidence}%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Signal sources
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {open.sources.map((s) => (
+                          <span
+                            key={s}
+                            className="rounded-full bg-surface-alt px-2 py-0.5 text-[11px] text-muted-foreground"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Signal sources</div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {open.sources.map((s) => (
-                        <span key={s} className="rounded-full bg-surface-alt px-2 py-0.5 text-[11px] text-muted-foreground">{s}</span>
-                      ))}
-                    </div>
+                  <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
+                    <button
+                      onClick={() => setOpen(null)}
+                      className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Close
+                    </button>
+                    <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
+                      <Sparkles className="h-3 w-3" /> Ship upgrade
+                    </button>
                   </div>
                 </div>
-
-                <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
-                  <button onClick={() => setOpen(null)} className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-                    Close
-                  </button>
-                  <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
-                    <Sparkles className="h-3 w-3" /> Ship upgrade
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
 
 /* ────── AUTOMATIONS ────── */
 type AutoCat = "ops" | "finance" | "customer" | "compliance" | "cross";
@@ -2907,91 +4125,283 @@ type AutomationItem = {
   desc: string;
   trigger: string;
   actions: string[];
-  health: number;          // 0-100
+  health: number; // 0-100
   runs7d: number;
-  successRate: number;     // 0-100
+  successRate: number; // 0-100
   lastRun: string;
   impact: string;
   owner: string;
 };
 
 const AUTO_CATS: { key: AutoCat; label: string; icon: typeof Brain; tone: string }[] = [
-  { key: "ops",        label: "Operations", icon: Workflow,    tone: "accent" },
-  { key: "finance",    label: "Finance",    icon: Banknote,    tone: "success" },
-  { key: "customer",   label: "Customer",   icon: MessageSquare, tone: "warning" },
+  { key: "ops", label: "Operations", icon: Workflow, tone: "accent" },
+  { key: "finance", label: "Finance", icon: Banknote, tone: "success" },
+  { key: "customer", label: "Customer", icon: MessageSquare, tone: "warning" },
   { key: "compliance", label: "Compliance", icon: ShieldCheck, tone: "muted" },
-  { key: "cross",      label: "Cross-cutting", icon: Network,   tone: "muted" },
+  { key: "cross", label: "Cross-cutting", icon: Network, tone: "muted" },
 ];
 
 const AUTOMATIONS: AutomationItem[] = [
-  { id: "a1", name: "Monday voicemail auto-triage", cat: "ops", status: "live", source: "Intelligence",
+  {
+    id: "a1",
+    name: "Monday voicemail auto-triage",
+    cat: "ops",
+    status: "live",
+    source: "Intelligence",
     desc: "Classify weekend voicemails, draft callbacks, hand dispatch a clean board by 08:00.",
-    trigger: "Mon 07:30 · new voicemails", actions: ["Transcribe", "Classify", "Draft callback", "Assign to dispatch"],
-    health: 96, runs7d: 18, successRate: 98, lastRun: "2h ago", impact: "9 hrs/wk saved", owner: "Reception Agent" },
-  { id: "a2", name: "Job → invoice stitch (Commusoft + QuickBooks)", cat: "ops", status: "live", source: "Intelligence",
+    trigger: "Mon 07:30 · new voicemails",
+    actions: ["Transcribe", "Classify", "Draft callback", "Assign to dispatch"],
+    health: 96,
+    runs7d: 18,
+    successRate: 98,
+    lastRun: "2h ago",
+    impact: "9 hrs/wk saved",
+    owner: "Reception Agent",
+  },
+  {
+    id: "a2",
+    name: "Job → invoice stitch (Commusoft + QuickBooks)",
+    cat: "ops",
+    status: "live",
+    source: "Intelligence",
     desc: "Engineer signs off; ServiceOS issues invoice across both systems in one click.",
-    trigger: "Job marked complete", actions: ["Pull line items", "Match SKU", "Issue invoice", "Notify customer"],
-    health: 92, runs7d: 412, successRate: 99, lastRun: "9m ago", impact: "11 hrs/wk · DSO −2.4d", owner: "ServiceOS Workflow" },
-  { id: "a3", name: "PPM month-end smoothing", cat: "ops", status: "review", source: "Intelligence",
+    trigger: "Job marked complete",
+    actions: ["Pull line items", "Match SKU", "Issue invoice", "Notify customer"],
+    health: 92,
+    runs7d: 412,
+    successRate: 99,
+    lastRun: "9m ago",
+    impact: "11 hrs/wk · DSO −2.4d",
+    owner: "ServiceOS Workflow",
+  },
+  {
+    id: "a3",
+    name: "PPM month-end smoothing",
+    cat: "ops",
+    status: "review",
+    source: "Intelligence",
     desc: "Reflow PPM bookings across the month using engineer capacity model.",
-    trigger: "Daily 02:00", actions: ["Read PPM queue", "Score capacity", "Propose reflow", "Await approval"],
-    health: 78, runs7d: 7, successRate: 86, lastRun: "yesterday", impact: "6 hrs/wk", owner: "Scheduling Agent" },
-  { id: "a4", name: "Stock low → supplier RFQ", cat: "ops", status: "draft", source: "User-built",
+    trigger: "Daily 02:00",
+    actions: ["Read PPM queue", "Score capacity", "Propose reflow", "Await approval"],
+    health: 78,
+    runs7d: 7,
+    successRate: 86,
+    lastRun: "yesterday",
+    impact: "6 hrs/wk",
+    owner: "Scheduling Agent",
+  },
+  {
+    id: "a4",
+    name: "Stock low → supplier RFQ",
+    cat: "ops",
+    status: "draft",
+    source: "User-built",
     desc: "When part stock falls below threshold, send pre-filled RFQ to top 3 suppliers.",
-    trigger: "Stock < min level", actions: ["Compose RFQ", "Email suppliers", "Log responses"],
-    health: 70, runs7d: 0, successRate: 0, lastRun: "never", impact: "Pending first run", owner: "Chris D." },
+    trigger: "Stock < min level",
+    actions: ["Compose RFQ", "Email suppliers", "Log responses"],
+    health: 70,
+    runs7d: 0,
+    successRate: 0,
+    lastRun: "never",
+    impact: "Pending first run",
+    owner: "Chris D.",
+  },
 
-  { id: "a5", name: "Aged debt tone-aware chase", cat: "finance", status: "live", source: "Intelligence",
+  {
+    id: "a5",
+    name: "Aged debt tone-aware chase",
+    cat: "finance",
+    status: "live",
+    source: "Intelligence",
     desc: "Personalised chase cadence on >30d invoices; escalates after 2 ignored steps.",
-    trigger: "Invoice age > 30d", actions: ["Pick tone", "Send email", "Log reply", "Escalate"],
-    health: 94, runs7d: 64, successRate: 91, lastRun: "23m ago", impact: "+£26.1k cash · DSO −9d", owner: "Finance Agent" },
-  { id: "a6", name: "Mid-week invoice send", cat: "finance", status: "live", source: "Intelligence",
+    trigger: "Invoice age > 30d",
+    actions: ["Pick tone", "Send email", "Log reply", "Escalate"],
+    health: 94,
+    runs7d: 64,
+    successRate: 91,
+    lastRun: "23m ago",
+    impact: "+£26.1k cash · DSO −9d",
+    owner: "Finance Agent",
+  },
+  {
+    id: "a6",
+    name: "Mid-week invoice send",
+    cat: "finance",
+    status: "live",
+    source: "Intelligence",
     desc: "Hold Friday invoices, batch send Tue/Wed for 4.2d faster payment.",
-    trigger: "Invoice ready", actions: ["Defer", "Send Tue/Wed"],
-    health: 90, runs7d: 38, successRate: 100, lastRun: "1h ago", impact: "+£3.4k/mo cashflow", owner: "ServiceOS Workflow" },
-  { id: "a7", name: "Daily cash + 30/60/90 forecast", cat: "finance", status: "live", source: "Intelligence",
+    trigger: "Invoice ready",
+    actions: ["Defer", "Send Tue/Wed"],
+    health: 90,
+    runs7d: 38,
+    successRate: 100,
+    lastRun: "1h ago",
+    impact: "+£3.4k/mo cashflow",
+    owner: "ServiceOS Workflow",
+  },
+  {
+    id: "a7",
+    name: "Daily cash + 30/60/90 forecast",
+    cat: "finance",
+    status: "live",
+    source: "Intelligence",
     desc: "Morning cash position + pipeline-weighted forecast published to leadership.",
-    trigger: "Daily 07:00", actions: ["Pull QB", "Weight pipeline", "Publish brief"],
-    health: 99, runs7d: 7, successRate: 100, lastRun: "today 07:00", impact: "Earlier decisions", owner: "ServiceOS Workflow" },
-  { id: "a8", name: "Margin drift alert", cat: "finance", status: "paused", source: "User-built",
+    trigger: "Daily 07:00",
+    actions: ["Pull QB", "Weight pipeline", "Publish brief"],
+    health: 99,
+    runs7d: 7,
+    successRate: 100,
+    lastRun: "today 07:00",
+    impact: "Earlier decisions",
+    owner: "ServiceOS Workflow",
+  },
+  {
+    id: "a8",
+    name: "Margin drift alert",
+    cat: "finance",
+    status: "paused",
+    source: "User-built",
     desc: "Notify when job margin falls below 18% on 3 jobs in 7 days.",
-    trigger: "Job closed", actions: ["Compute margin", "Notify ops"],
-    health: 60, runs7d: 0, successRate: 0, lastRun: "8d ago", impact: "Paused by owner", owner: "Chris D." },
+    trigger: "Job closed",
+    actions: ["Compute margin", "Notify ops"],
+    health: 60,
+    runs7d: 0,
+    successRate: 0,
+    lastRun: "8d ago",
+    impact: "Paused by owner",
+    owner: "Chris D.",
+  },
 
-  { id: "a9", name: "30-min post-visit summary", cat: "customer", status: "live", source: "Intelligence",
+  {
+    id: "a9",
+    name: "30-min post-visit summary",
+    cat: "customer",
+    status: "live",
+    source: "Intelligence",
     desc: "Voice AI summarises engineer notes, sends SMS + email within 30 mins of job close.",
-    trigger: "Job complete", actions: ["Summarise notes", "Send SMS", "Send email", "Log to CRM"],
-    health: 95, runs7d: 188, successRate: 97, lastRun: "12m ago", impact: "+9 CSAT · −40% complaints", owner: "Voice AI" },
-  { id: "a10", name: "Sub-60s enquiry acknowledgement", cat: "customer", status: "live", source: "Intelligence",
+    trigger: "Job complete",
+    actions: ["Summarise notes", "Send SMS", "Send email", "Log to CRM"],
+    health: 95,
+    runs7d: 188,
+    successRate: 97,
+    lastRun: "12m ago",
+    impact: "+9 CSAT · −40% complaints",
+    owner: "Voice AI",
+  },
+  {
+    id: "a10",
+    name: "Sub-60s enquiry acknowledgement",
+    cat: "customer",
+    status: "live",
+    source: "Intelligence",
     desc: "Inbox Agent qualifies + acknowledges web enquiries in under a minute.",
-    trigger: "Web form submitted", actions: ["Qualify", "Reply", "Route to owner"],
-    health: 91, runs7d: 73, successRate: 96, lastRun: "4m ago", impact: "+12% web conversion", owner: "Inbox Agent" },
-  { id: "a11", name: "Account sentiment drift alert", cat: "customer", status: "live", source: "Intelligence",
+    trigger: "Web form submitted",
+    actions: ["Qualify", "Reply", "Route to owner"],
+    health: 91,
+    runs7d: 73,
+    successRate: 96,
+    lastRun: "4m ago",
+    impact: "+12% web conversion",
+    owner: "Inbox Agent",
+  },
+  {
+    id: "a11",
+    name: "Account sentiment drift alert",
+    cat: "customer",
+    status: "live",
+    source: "Intelligence",
     desc: "Flag accounts on 2+ negative signals in 14 days, book review call.",
-    trigger: "Sentiment score change", actions: ["Score account", "Flag risk", "Book call"],
-    health: 84, runs7d: 11, successRate: 90, lastRun: "5h ago", impact: "Protects £18k contract", owner: "Customer Care Agent" },
-  { id: "a12", name: "Missed callback recovery SLA", cat: "customer", status: "draft", source: "User-built",
+    trigger: "Sentiment score change",
+    actions: ["Score account", "Flag risk", "Book call"],
+    health: 84,
+    runs7d: 11,
+    successRate: 90,
+    lastRun: "5h ago",
+    impact: "Protects £18k contract",
+    owner: "Customer Care Agent",
+  },
+  {
+    id: "a12",
+    name: "Missed callback recovery SLA",
+    cat: "customer",
+    status: "draft",
+    source: "User-built",
     desc: "Auto-create callback task with 4h SLA, escalate on breach.",
-    trigger: "Missed call", actions: ["Create task", "Set SLA", "Escalate"],
-    health: 72, runs7d: 0, successRate: 0, lastRun: "never", impact: "+£7.8k/wk recoverable", owner: "Chris D." },
+    trigger: "Missed call",
+    actions: ["Create task", "Set SLA", "Escalate"],
+    health: 72,
+    runs7d: 0,
+    successRate: 0,
+    lastRun: "never",
+    impact: "+£7.8k/wk recoverable",
+    owner: "Chris D.",
+  },
 
-  { id: "a13", name: "Certification expiry auto-renewal", cat: "compliance", status: "live", source: "Intelligence",
+  {
+    id: "a13",
+    name: "Certification expiry auto-renewal",
+    cat: "compliance",
+    status: "live",
+    source: "Intelligence",
     desc: "Watch cert expiry; auto-book renewal visit + notify customer.",
-    trigger: "Cert expires < 60d", actions: ["Detect expiry", "Book visit", "Notify customer"],
-    health: 98, runs7d: 9, successRate: 100, lastRun: "yesterday", impact: "0 audit gaps", owner: "Compliance Agent" },
-  { id: "a14", name: "Block job-close on missing signature", cat: "compliance", status: "live", source: "ServiceOS template",
+    trigger: "Cert expires < 60d",
+    actions: ["Detect expiry", "Book visit", "Notify customer"],
+    health: 98,
+    runs7d: 9,
+    successRate: 100,
+    lastRun: "yesterday",
+    impact: "0 audit gaps",
+    owner: "Compliance Agent",
+  },
+  {
+    id: "a14",
+    name: "Block job-close on missing signature",
+    cat: "compliance",
+    status: "live",
+    source: "ServiceOS template",
     desc: "Prevent job completion until required cert + engineer signature are present.",
-    trigger: "Engineer marks complete", actions: ["Check cert", "Check signature", "Hold or release"],
-    health: 96, runs7d: 121, successRate: 99, lastRun: "18m ago", impact: "−100% missing-sig defect", owner: "ServiceOS Workflow" },
-  { id: "a15", name: "RAMS auto-attach on PPM", cat: "compliance", status: "review", source: "ServiceOS template",
+    trigger: "Engineer marks complete",
+    actions: ["Check cert", "Check signature", "Hold or release"],
+    health: 96,
+    runs7d: 121,
+    successRate: 99,
+    lastRun: "18m ago",
+    impact: "−100% missing-sig defect",
+    owner: "ServiceOS Workflow",
+  },
+  {
+    id: "a15",
+    name: "RAMS auto-attach on PPM",
+    cat: "compliance",
+    status: "review",
+    source: "ServiceOS template",
     desc: "Attach correct RAMS to PPM visits based on site profile.",
-    trigger: "PPM scheduled", actions: ["Match site", "Attach RAMS", "Notify engineer"],
-    health: 80, runs7d: 22, successRate: 92, lastRun: "3h ago", impact: "Audit-ready packs", owner: "Compliance Agent" },
+    trigger: "PPM scheduled",
+    actions: ["Match site", "Attach RAMS", "Notify engineer"],
+    health: 80,
+    runs7d: 22,
+    successRate: 92,
+    lastRun: "3h ago",
+    impact: "Audit-ready packs",
+    owner: "Compliance Agent",
+  },
 
-  { id: "a16", name: "End-of-day operations brief", cat: "cross", status: "live", source: "ServiceOS template",
+  {
+    id: "a16",
+    name: "End-of-day operations brief",
+    cat: "cross",
+    status: "live",
+    source: "ServiceOS template",
     desc: "Compose a single brief: jobs done, calls handled, cash in, risks open.",
-    trigger: "Daily 18:00", actions: ["Aggregate", "Summarise", "Publish"],
-    health: 99, runs7d: 7, successRate: 100, lastRun: "today 18:00", impact: "1 view of the day", owner: "ServiceOS Workflow" },
+    trigger: "Daily 18:00",
+    actions: ["Aggregate", "Summarise", "Publish"],
+    health: 99,
+    runs7d: 7,
+    successRate: 100,
+    lastRun: "today 18:00",
+    impact: "1 view of the day",
+    owner: "ServiceOS Workflow",
+  },
 ];
 
 function Automations() {
@@ -3016,13 +4426,22 @@ function Automations() {
   };
 
   const statusTone = (s: AutoStatus) =>
-    s === "live" ? "bg-success/10 text-success border-success/20"
-    : s === "draft" ? "bg-surface-alt text-muted-foreground border-hairline"
-    : s === "paused" ? "bg-warning/10 text-warning border-warning/20"
-    : "bg-accent/10 text-accent border-accent/20";
+    s === "live"
+      ? "bg-success/10 text-success border-success/20"
+      : s === "draft"
+        ? "bg-surface-alt text-muted-foreground border-hairline"
+        : s === "paused"
+          ? "bg-warning/10 text-warning border-warning/20"
+          : "bg-accent/10 text-accent border-accent/20";
 
   const healthTone = (h: number) =>
-    h >= 90 ? "text-success" : h >= 75 ? "text-accent" : h >= 60 ? "text-warning" : "text-destructive";
+    h >= 90
+      ? "text-success"
+      : h >= 75
+        ? "text-accent"
+        : h >= 60
+          ? "text-warning"
+          : "text-destructive";
 
   const catMeta = (k: AutoCat) => AUTO_CATS.find((c) => c.key === k)!;
 
@@ -3031,7 +4450,12 @@ function Automations() {
     { l: "Live", v: String(totals.live), sub: "running on schedule", icon: Activity },
     { l: "Runs · last 7d", v: totals.runs7d.toLocaleString(), sub: "executions", icon: Zap },
     { l: "Average health", v: `${totals.avgHealth}`, sub: "0-100 across fleet", icon: Gauge },
-    { l: "From Intelligence", v: String(totals.fromIntel), sub: "recommended + shipped", icon: Brain },
+    {
+      l: "From Intelligence",
+      v: String(totals.fromIntel),
+      sub: "recommended + shipped",
+      icon: Brain,
+    },
   ];
 
   return (
@@ -3050,7 +4474,8 @@ function Automations() {
               Every automation in one place - shipped from Intelligence or built by your team.
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Click any automation to inspect its trigger, actions and impact, then pause, tune or promote it.
+              Click any automation to inspect its trigger, actions and impact, then pause, tune or
+              promote it.
             </p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background">
@@ -3066,7 +4491,9 @@ function Automations() {
                 <div className="text-[10px] font-medium uppercase tracking-wider">{k.l}</div>
                 <k.icon className="h-3.5 w-3.5" />
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">{k.v}</div>
+              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
+                {k.v}
+              </div>
               <div className="mt-2 h-4 text-[10px] leading-none text-muted-foreground">{k.sub}</div>
             </div>
           ))}
@@ -3078,7 +4505,9 @@ function Automations() {
         {AUTO_CATS.map((c) => {
           const items = AUTOMATIONS.filter((a) => a.cat === c.key);
           const live = items.filter((a) => a.status === "live").length;
-          const avg = items.length ? Math.round(items.reduce((s, a) => s + a.health, 0) / items.length) : 0;
+          const avg = items.length
+            ? Math.round(items.reduce((s, a) => s + a.health, 0) / items.length)
+            : 0;
           const active = cat === c.key;
           return (
             <button
@@ -3090,21 +4519,32 @@ function Automations() {
               )}
             >
               <div className="flex items-start justify-between gap-2">
-                <span className={cn(
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-                  c.tone === "accent" && "bg-accent/10 text-accent",
-                  c.tone === "success" && "bg-success/10 text-success",
-                  c.tone === "warning" && "bg-warning/10 text-warning",
-                  c.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
+                <span
+                  className={cn(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                    c.tone === "accent" && "bg-accent/10 text-accent",
+                    c.tone === "success" && "bg-success/10 text-success",
+                    c.tone === "warning" && "bg-warning/10 text-warning",
+                    c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
                   <c.icon className="h-4 w-4" />
                 </span>
-                <div className={cn("text-display text-2xl font-bold leading-none tabular", healthTone(avg))}>{avg || "-"}</div>
+                <div
+                  className={cn(
+                    "text-display text-2xl font-bold leading-none tabular",
+                    healthTone(avg),
+                  )}
+                >
+                  {avg || "-"}
+                </div>
               </div>
               <div className="mt-4 text-sm font-semibold leading-tight">{c.label}</div>
               <div className="mt-4 flex items-center justify-between border-t border-hairline pt-3 text-[11px] text-muted-foreground">
                 <span>{items.length} total</span>
-                <span><span className="font-medium text-success">{live}</span> live</span>
+                <span>
+                  <span className="font-medium text-success">{live}</span> live
+                </span>
               </div>
             </button>
           );
@@ -3116,8 +4556,10 @@ function Automations() {
         <div>
           <div className="text-display text-lg font-semibold">Automation fleet</div>
           <div className="text-xs text-muted-foreground">
-            {filtered.length} matching {cat === "all" ? "all categories" : catMeta(cat as AutoCat).label}
-            {status !== "all" && ` · ${status}`}{source !== "all" && ` · ${source}`}
+            {filtered.length} matching{" "}
+            {cat === "all" ? "all categories" : catMeta(cat as AutoCat).label}
+            {status !== "all" && ` · ${status}`}
+            {source !== "all" && ` · ${source}`}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -3128,7 +4570,9 @@ function Automations() {
                 onClick={() => setStatus(s)}
                 className={cn(
                   "rounded-full px-2.5 py-1 capitalize transition",
-                  status === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                  status === s
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {s}
@@ -3142,7 +4586,9 @@ function Automations() {
                 onClick={() => setSource(s)}
                 className={cn(
                   "rounded-full px-2.5 py-1 transition",
-                  source === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                  source === s
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {s}
@@ -3163,23 +4609,32 @@ function Automations() {
               className="group flex flex-col rounded-2xl border border-hairline bg-white p-5 text-left transition hover:border-foreground/30 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                  c.tone === "accent" && "bg-accent/10 text-accent",
-                  c.tone === "success" && "bg-success/10 text-success",
-                  c.tone === "warning" && "bg-warning/10 text-warning",
-                  c.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                )}>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                    c.tone === "accent" && "bg-accent/10 text-accent",
+                    c.tone === "success" && "bg-success/10 text-success",
+                    c.tone === "warning" && "bg-warning/10 text-warning",
+                    c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                  )}
+                >
                   <c.icon className="h-3 w-3" /> {c.label}
                 </span>
-                <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize", statusTone(a.status))}>
-                  <span className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    a.status === "live" && "bg-success animate-pulse",
-                    a.status === "draft" && "bg-muted-foreground",
-                    a.status === "paused" && "bg-warning",
-                    a.status === "review" && "bg-accent",
-                  )} />
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize",
+                    statusTone(a.status),
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      a.status === "live" && "bg-success animate-pulse",
+                      a.status === "draft" && "bg-muted-foreground",
+                      a.status === "paused" && "bg-warning",
+                      a.status === "review" && "bg-accent",
+                    )}
+                  />
                   {a.status}
                 </span>
               </div>
@@ -3189,16 +4644,33 @@ function Automations() {
 
               <div className="mt-5 flex items-end justify-between border-t border-hairline pt-3">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Health</div>
-                  <div className={cn("text-display text-lg font-bold tabular leading-none", healthTone(a.health))}>{a.health}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Health
+                  </div>
+                  <div
+                    className={cn(
+                      "text-display text-lg font-bold tabular leading-none",
+                      healthTone(a.health),
+                    )}
+                  >
+                    {a.health}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Runs · 7d</div>
-                  <div className="font-mono text-sm font-semibold tabular leading-none">{a.runs7d}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Runs · 7d
+                  </div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">
+                    {a.runs7d}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Success</div>
-                  <div className="font-mono text-sm font-semibold tabular leading-none">{a.successRate}%</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Success
+                  </div>
+                  <div className="font-mono text-sm font-semibold tabular leading-none">
+                    {a.successRate}%
+                  </div>
                 </div>
               </div>
 
@@ -3213,86 +4685,123 @@ function Automations() {
       {/* Automation detail modal */}
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent className="max-w-2xl">
-          {open && (() => {
-            const c = catMeta(open.cat);
-            return (
-              <div>
-                <DialogHeader>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
-                      c.tone === "accent" && "bg-accent/10 text-accent",
-                      c.tone === "success" && "bg-success/10 text-success",
-                      c.tone === "warning" && "bg-warning/10 text-warning",
-                      c.tone === "muted" && "bg-surface-alt text-muted-foreground",
-                    )}>
-                      <c.icon className="h-3 w-3" /> {c.label}
-                    </span>
-                    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize", statusTone(open.status))}>
-                      {open.status}
-                    </span>
-                    <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">{open.source}</span>
-                  </div>
-                  <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">{open.name}</DialogTitle>
-                  <DialogDescription className="text-xs">{open.desc}</DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4 space-y-4 text-sm">
-                  {/* Trigger → actions chain */}
-                  <div className="rounded-xl border border-hairline bg-surface-alt p-3">
-                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                      <Radio className="h-3 w-3" /> Trigger
+          {open &&
+            (() => {
+              const c = catMeta(open.cat);
+              return (
+                <div>
+                  <DialogHeader>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                          c.tone === "accent" && "bg-accent/10 text-accent",
+                          c.tone === "success" && "bg-success/10 text-success",
+                          c.tone === "warning" && "bg-warning/10 text-warning",
+                          c.tone === "muted" && "bg-surface-alt text-muted-foreground",
+                        )}
+                      >
+                        <c.icon className="h-3 w-3" /> {c.label}
+                      </span>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider capitalize",
+                          statusTone(open.status),
+                        )}
+                      >
+                        {open.status}
+                      </span>
+                      <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {open.source}
+                      </span>
                     </div>
-                    <div className="mt-1 text-xs font-medium">{open.trigger}</div>
-                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                      {open.actions.map((act, i) => (
-                        <span key={act} className="flex items-center gap-1.5">
-                          <span className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]">{act}</span>
-                          {i < open.actions.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
-                        </span>
+                    <DialogTitle className="text-display mt-2 text-xl font-semibold leading-snug">
+                      {open.name}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">{open.desc}</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="mt-4 space-y-4 text-sm">
+                    {/* Trigger → actions chain */}
+                    <div className="rounded-xl border border-hairline bg-surface-alt p-3">
+                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <Radio className="h-3 w-3" /> Trigger
+                      </div>
+                      <div className="mt-1 text-xs font-medium">{open.trigger}</div>
+                      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                        {open.actions.map((act, i) => (
+                          <span key={act} className="flex items-center gap-1.5">
+                            <span className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]">
+                              {act}
+                            </span>
+                            {i < open.actions.length - 1 && (
+                              <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Activity stats */}
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {[
+                        { l: "Health", v: String(open.health), tone: healthTone(open.health) },
+                        { l: "Runs · 7d", v: String(open.runs7d), tone: "text-foreground" },
+                        { l: "Success", v: `${open.successRate}%`, tone: "text-foreground" },
+                        { l: "Last run", v: open.lastRun, tone: "text-foreground" },
+                      ].map((s) => (
+                        <div
+                          key={s.l}
+                          className="rounded-lg border border-hairline bg-surface-alt p-3"
+                        >
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {s.l}
+                          </div>
+                          <div
+                            className={cn(
+                              "text-display mt-1 text-base font-bold tabular leading-none",
+                              s.tone,
+                            )}
+                          >
+                            {s.v}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </div>
 
-                  {/* Activity stats */}
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {[
-                      { l: "Health", v: String(open.health), tone: healthTone(open.health) },
-                      { l: "Runs · 7d", v: String(open.runs7d), tone: "text-foreground" },
-                      { l: "Success", v: `${open.successRate}%`, tone: "text-foreground" },
-                      { l: "Last run", v: open.lastRun, tone: "text-foreground" },
-                    ].map((s) => (
-                      <div key={s.l} className="rounded-lg border border-hairline bg-surface-alt p-3">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.l}</div>
-                        <div className={cn("text-display mt-1 text-base font-bold tabular leading-none", s.tone)}>{s.v}</div>
+                    <div className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <TrendingUp className="h-3.5 w-3.5 text-success" />
+                        <span className="font-medium">{open.impact}</span>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
-                    <div className="flex items-center gap-2 text-xs">
-                      <TrendingUp className="h-3.5 w-3.5 text-success" />
-                      <span className="font-medium">{open.impact}</span>
+                      <div className="text-[11px] text-muted-foreground">Owner · {open.owner}</div>
                     </div>
-                    <div className="text-[11px] text-muted-foreground">Owner · {open.owner}</div>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
+                    <button
+                      onClick={() => setOpen(null)}
+                      className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Close
+                    </button>
+                    <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">
+                      {open.status === "paused"
+                        ? "Resume"
+                        : open.status === "draft" || open.status === "review"
+                          ? "Activate"
+                          : "Pause"}
+                    </button>
+                    <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">
+                      Tune
+                    </button>
+                    <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
+                      <Eye className="h-3 w-3" /> Edit automation
+                    </button>
                   </div>
                 </div>
-
-                <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-hairline pt-4">
-                  <button onClick={() => setOpen(null)} className="rounded-full border border-hairline px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
-                    Close
-                  </button>
-                  <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">
-                    {open.status === "paused" ? "Resume" : open.status === "draft" || open.status === "review" ? "Activate" : "Pause"}
-                  </button>
-                  <button className="rounded-full border border-hairline px-3 py-1.5 text-xs hover:text-foreground">Tune</button>
-                  <button className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background">
-                    <Eye className="h-3 w-3" /> Edit automation
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </DialogContent>
       </Dialog>
     </div>
