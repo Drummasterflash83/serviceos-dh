@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Branch note.** The "What this is" section below describes the `main` branch (a
+> front-end prototype with no backend). The `serviceos-backend-foundation` branch has
+> a **real Supabase Intelligence → Automation backend** (54 migrations, ~45 edge
+> functions). The definitive architecture for that platform — what ServiceOS is as an
+> AI operating system, its Core Loop, engines, and the eight-screen product — is the
+> manual at **[docs/README.md](docs/README.md)**. Read it before doing backend or
+> product work on that branch.
+
 ## What this is
 
 **ServiceOS** — a bespoke, SSR React marketing + product-demo site built for Drummond Heating ("Drummonds"). It is a **presentation/prototype**, not a live system: there is no backend, database, or auth. Every view renders hard-coded demo data (jobs, calls, agents, health scores) defined inline in the components. When editing, you are shaping a pitch narrative, not wiring real data — keep the copy and numbers internally consistent with the "New Dawn engine" story in [.lovable/plan.md](.lovable/plan.md).

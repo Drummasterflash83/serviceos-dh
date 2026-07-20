@@ -442,3 +442,10 @@ once. Names may change. The following should not:
 If a future version of us has quietly abandoned these while keeping the logo, they
 have built a different company. This document exists so that they at least have to
 do it on purpose.
+
+---
+
+*Where this leads: the [documentation index](../README.md) is the map of the whole
+platform. Read [01_PLATFORM](../architecture/01_PLATFORM.md) next, then
+[02_CORE_LOOP](../architecture/02_CORE_LOOP.md) — the engineering expression of
+everything above.*

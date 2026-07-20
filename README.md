@@ -6,6 +6,11 @@ backend foundation.
 
 For engineering conventions, architecture, and commands see [CLAUDE.md](CLAUDE.md).
 
+> **The architecture manual — the single source of truth for the platform — lives at
+> [docs/README.md](docs/README.md).** Start there to understand ServiceOS from first
+> principles (the AI operating system) through to implementation. The rest of this
+> file is the phone/email backend setup runbook.
+
 ## Development workflow: Lovable → GitHub → Claude Code → Supabase → Vercel
 
 ServiceOS moves through a fixed pipeline. Each stage owns a distinct concern;

@@ -318,3 +318,10 @@ Names, models and code will change. These should not:
 If a future version of us is proud of how much it automates while its customers'
 objectives sit still, it has forgotten what the product is. This document exists
 so that it has to forget on purpose.
+
+---
+
+*The five maturity stages above are the same five [Operational
+Modes](../reference/DECISION_ENGINE.md) the engine enforces, and the slow loop is the
+[Core Loop](../architecture/02_CORE_LOOP.md) at a higher altitude. See the
+[documentation index](../README.md) for the whole platform.*
