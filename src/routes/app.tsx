@@ -83,6 +83,7 @@ import { Communications } from "@/components/app/Communications";
 import { LearningCentre } from "@/components/app/LearningCentre";
 import { CommandCentre } from "@/components/app/CommandCentre";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
+import { Operations } from "@/components/app/Operations";
 import { LiveCallCard } from "@/components/app/LiveCallCard";
 import { MyDayDashboard } from "@/components/app/MyDay";
 import { SystemHealth } from "@/components/app/SystemHealth";
@@ -483,7 +484,7 @@ function AppShell() {
           {view === "command" && <CommandCentre />}
           {/* OPERATE */}
           {view === "customers" && <Customers />}
-          {view === "operations" && <OperationsCentre />}
+          {view === "operations" && <Operations />}
           {view === "communications" && <Communications />}
           {/* INTELLIGENCE */}
           {view === "learning" && <LearningCentre />}
@@ -1521,77 +1522,6 @@ function Dashboard() {
   );
 }
 
-/* ────── OPERATIONS ────── */
-function Operations() {
-  const jobs = [
-    { id: "J-3402", customer: "ABC School", engineer: "Tony", status: "Urgent", value: "£1,840" },
-    {
-      id: "J-3401",
-      customer: "Greenfield Care Home",
-      engineer: "M. Patel",
-      status: "In progress",
-      value: "£640",
-    },
-    {
-      id: "J-3400",
-      customer: "12 Marlborough Rd",
-      engineer: "S. Walsh",
-      status: "Scheduled",
-      value: "£320",
-    },
-    {
-      id: "J-3399",
-      customer: "Highbridge Foods Ltd",
-      engineer: "-",
-      status: "Awaiting parts",
-      value: "£2,120",
-    },
-    {
-      id: "J-3398",
-      customer: "Crestmont Apartments",
-      engineer: "L. Bryan",
-      status: "Completed",
-      value: "£480",
-    },
-  ];
-  return (
-    <div className="rounded-2xl border border-hairline bg-white">
-      <div className="grid grid-cols-12 border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-        <div className="col-span-2">Job</div>
-        <div className="col-span-4">Customer</div>
-        <div className="col-span-3">Engineer</div>
-        <div className="col-span-2">Status</div>
-        <div className="col-span-1 text-right">Value</div>
-      </div>
-      {jobs.map((j) => (
-        <div
-          key={j.id}
-          className="grid grid-cols-12 items-center border-b border-hairline px-5 py-4 text-sm last:border-0 hover:bg-surface-alt"
-        >
-          <div className="col-span-2 font-mono text-xs">{j.id}</div>
-          <div className="col-span-4 font-medium">{j.customer}</div>
-          <div className="col-span-3 text-muted-foreground">{j.engineer}</div>
-          <div className="col-span-2">
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-[11px] font-medium",
-                j.status === "Urgent" && "bg-destructive/10 text-destructive",
-                j.status === "In progress" && "bg-accent/10 text-accent",
-                j.status === "Scheduled" && "bg-surface-alt text-muted-foreground",
-                j.status === "Awaiting parts" && "bg-warning/10 text-warning",
-                j.status === "Completed" && "bg-success/10 text-success",
-              )}
-            >
-              {j.status}
-            </span>
-          </div>
-          <div className="col-span-1 text-right font-mono tabular">{j.value}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ────── CALLS ────── */
 function Calls() {
   const calls = [
@@ -2469,12 +2399,49 @@ function Finance() {
 
 /* ────── SETTINGS ────── */
 function SettingsView() {
+  const [pane, setPane] = useState<"settings" | "system-health">("settings");
+  if (pane === "system-health") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setPane("settings")}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Settings
+        </button>
+        <div>
+          <div className="text-display text-xl font-semibold">System Health</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Platform infrastructure — connectors, jobs, queues, scheduler and sync health.
+          </p>
+        </div>
+        <OperationsCentre />
+      </div>
+    );
+  }
+  const sections = [
+    "Workspace",
+    "Members & roles",
+    "Integrations",
+    "System Health",
+    "Security & audit",
+    "Billing",
+  ];
   return (
     <div className="space-y-5">
       <SystemsInventoryPanel />
       <div className="max-w-2xl space-y-3">
-        {["Workspace", "Members & roles", "Integrations", "Security & audit", "Billing"].map(
-          (s) => (
+        {sections.map((s) =>
+          s === "System Health" ? (
+            <button
+              key={s}
+              onClick={() => setPane("system-health")}
+              className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 text-left hover:bg-surface-alt"
+            >
+              <div className="text-sm font-medium">{s}</div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+          ) : (
             <div
               key={s}
               className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt"
