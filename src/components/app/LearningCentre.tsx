@@ -11,6 +11,7 @@ import {
   type GraphEdge,
   type GraphSummary,
 } from "@/lib/business-graph";
+import { liveConnectors, plannedConnectors } from "@/lib/connector-status";
 
 type Data = {
   learning: LearningSnapshot;
@@ -63,6 +64,15 @@ export function LearningCentre() {
     );
   if (!data) return <Panel>Loading the company learning pipeline…</Panel>;
   const healthySchedulers = data.schedulers.filter((s) => s.status === "healthy").length;
+  const live = liveConnectors();
+  const plannedByCategory = plannedConnectors().reduce<Record<string, string[]>>((acc, c) => {
+    (acc[c.category] ??= []).push(c.name);
+    return acc;
+  }, {});
+  const plannedGroups = Object.entries(plannedByCategory).map(([category, names]) => ({
+    category,
+    names: names.slice(0, 4).join(" · ") + (names.length > 4 ? ` +${names.length - 4}` : ""),
+  }));
   return (
     <div className="space-y-6">
       <div>
@@ -93,10 +103,12 @@ export function LearningCentre() {
       <section>
         <Title icon={Radio}>Sources</Title>
         <div className="grid gap-2 md:grid-cols-2">
-          <Source name="Simwood phone" status="Live" />
-          <Source name="Gmail / Google Workspace" status="Live" />
-          <Source name="Commusoft · Microsoft 365 · Slack" status="Available to connect" />
-          <Source name="Documents / RAG · QuickBooks" status="Planned" />
+          {live.map((c) => (
+            <Source key={c.id} name={c.name} status="Live" />
+          ))}
+          {plannedGroups.map((g) => (
+            <Source key={g.category} name={`${g.category}: ${g.names}`} status="Planned" />
+          ))}
         </div>
       </section>
       <section>

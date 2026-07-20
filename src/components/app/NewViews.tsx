@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getConnectorStatuses } from "@/lib/connector-status";
 import {
   ShieldCheck,
   Clock,
@@ -108,287 +109,75 @@ function StatTiles({
 }
 
 /* ────── PROTOCOL ────── */
-type Thread = {
-  id: string;
-  caller: string;
-  channel: string;
-  param: string;
-  target: string;
-  elapsed: string;
-  owner: string;
-  status: "Inside" | "At risk" | "Breached";
-};
-
-const PROTOCOL_PARAMS = [
-  { l: "Complaint response", target: "24h", avg: "11h", pct: 94, icon: AlertTriangle },
-  { l: "Quote follow-up", target: "3 days", avg: "2.1d", pct: 88, icon: FileText },
-  { l: "Emergency call-back", target: "15 min", avg: "9 min", pct: 97, icon: Phone },
-  { l: "Warranty callback", target: "48h", avg: "31h", pct: 91, icon: ShieldCheck },
-];
-
-const THREADS: Thread[] = [
+const PROTOCOL_AREAS: { name: string; desc: string }[] = [
   {
-    id: "T-204",
-    caller: "ABC School",
-    channel: "Phone",
-    param: "Emergency call-back",
-    target: "15m",
-    elapsed: "08:14",
-    owner: "Heidi",
-    status: "Inside",
+    name: "Business rules",
+    desc: "Which interactions matter, who owns what, and what good looks like.",
   },
   {
-    id: "T-203",
-    caller: "Greenfield Care Home",
-    channel: "Email",
-    param: "Complaint response",
-    target: "24h",
-    elapsed: "18:42",
-    owner: "Mary",
-    status: "At risk",
+    name: "Response windows & SLAs",
+    desc: "How quickly the business commits to respond and complete, by channel and customer tier.",
   },
   {
-    id: "T-202",
-    caller: "Crestmont Apartments",
-    channel: "Phone",
-    param: "Warranty callback",
-    target: "48h",
-    elapsed: "51:00",
-    owner: "Tony",
-    status: "Breached",
+    name: "Escalation",
+    desc: "Where work goes when it cannot be handled where it is — on-call, senior, OpenFolk, or the customer.",
   },
   {
-    id: "T-201",
-    caller: "Highbridge Foods",
-    channel: "Email",
-    param: "Quote follow-up",
-    target: "3d",
-    elapsed: "1d 04h",
-    owner: "Sam",
-    status: "Inside",
+    name: "Risk thresholds",
+    desc: "The bar above which the platform must stop and ask a human before acting.",
   },
   {
-    id: "T-200",
-    caller: "12 Marlborough Rd",
-    channel: "Web form",
-    param: "Quote follow-up",
-    target: "3d",
-    elapsed: "2d 11h",
-    owner: "Sam",
-    status: "At risk",
+    name: "Confidence & approval",
+    desc: "The confidence an action must clear, and which actions always require human approval.",
   },
   {
-    id: "T-199",
-    caller: "Bridgewater Homes",
-    channel: "Phone",
-    param: "Complaint response",
-    target: "24h",
-    elapsed: "04:22",
-    owner: "Heidi",
-    status: "Inside",
+    name: "Compliance",
+    desc: "Obligations, certifications, deadlines and their current state.",
   },
 ];
-
-const STATUS_TONE = {
-  Inside: "bg-success/10 text-success border-success/20",
-  "At risk": "bg-warning/10 text-warning border-warning/20",
-  Breached: "bg-destructive/10 text-destructive border-destructive/20",
-};
 
 export function Protocol() {
-  const [open, setOpen] = useState<Thread | null>(null);
-  const inside = THREADS.filter((t) => t.status === "Inside").length;
-
   return (
     <div className="space-y-6">
-      <Hero
-        eyebrow="Response Protocol · live"
-        title={`Inside protocol · ${inside} of ${THREADS.length} active threads.`}
-        sub="The parameters Heidi set in our discovery call - every inbound thread is timed against them. Anything drifting outside its window surfaces here, with the owner and what to do next."
-        icon={ShieldCheck}
-        pill="Live · streaming"
-      />
-
-      {/* Parameter tiles */}
-      <div className="rounded-2xl border border-hairline bg-white p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Parameters
-            </div>
-            <div className="text-display mt-1 text-lg font-semibold">
-              The windows we operate inside.
-            </div>
-          </div>
-          <div className="text-[11px] text-muted-foreground">Defined with Heidi · 12 Mar</div>
+      <div>
+        <div className="flex items-center gap-2">
+          <div className="text-display text-xl font-semibold">Protocol</div>
+          <span className="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            Preview
+          </span>
         </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {PROTOCOL_PARAMS.map((p) => (
-            <div key={p.l} className="rounded-xl border border-hairline bg-surface-alt p-4">
-              <div className="flex h-5 items-center justify-between text-muted-foreground">
-                <div className="text-[10px] font-medium uppercase tracking-wider">{p.l}</div>
-                <p.icon className="h-3.5 w-3.5" />
+        <p className="mt-1 text-sm text-muted-foreground">
+          The rules that govern how ServiceOS behaves — the boundary every agent, decision and
+          action must stay inside.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-hairline bg-surface-alt p-5 text-sm text-muted-foreground">
+        Protocol is governed server-side today by the operational-modes and policy engine. This
+        surface will read those real parameters directly — operational mode, response windows, SLAs,
+        escalation paths, risk thresholds and per-rule owners — once they are exposed to the client.
+        Until then it shows the structure it governs, never sample data.
+      </div>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold">What Protocol governs</h2>
+        <div className="grid gap-2 md:grid-cols-2">
+          {PROTOCOL_AREAS.map((a) => (
+            <div key={a.name} className="rounded-xl border border-hairline bg-white p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-medium">{a.name}</div>
+                <span className="shrink-0 rounded-full bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  Preview
+                </span>
               </div>
-              <div className="text-display mt-3 h-8 text-2xl font-bold leading-none tabular text-foreground">
-                {p.pct}%
-              </div>
-              <div className="mt-2 flex h-4 items-center justify-between text-[10px] leading-none text-muted-foreground">
-                <span>target {p.target}</span>
-                <span className="font-mono tabular">avg {p.avg}</span>
-              </div>
-              <div className="mt-3 h-1 rounded-full bg-white">
-                <div className="h-full rounded-full bg-foreground" style={{ width: `${p.pct}%` }} />
-              </div>
+              <div className="mt-1 text-xs text-muted-foreground">{a.desc}</div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Live threads */}
-      <div className="rounded-2xl border border-hairline bg-white">
-        <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Live threads
-            </div>
-            <div className="text-display mt-0.5 text-sm font-semibold">
-              Click any thread to see the timeline and act
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-success">
-            <Activity className="h-3.5 w-3.5" /> streaming
-          </div>
-        </div>
-        <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-          <div className="col-span-3 min-w-0">Caller</div>
-          <div className="col-span-2 min-w-0">Channel</div>
-          <div className="col-span-3 min-w-0">Parameter</div>
-          <div className="col-span-2 min-w-0">Elapsed</div>
-          <div className="col-span-1 min-w-0">Owner</div>
-          <div className="col-span-1 text-right min-w-0">Status</div>
-        </div>
-        {THREADS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setOpen(t)}
-            className="grid w-full grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-4 text-left text-sm last:border-0 hover:bg-surface-alt"
-          >
-            <div className="col-span-3 font-medium min-w-0">{t.caller}</div>
-            <div className="col-span-2 text-xs text-muted-foreground min-w-0">{t.channel}</div>
-            <div className="col-span-3 text-xs min-w-0">
-              {t.param} <span className="text-muted-foreground">· {t.target}</span>
-            </div>
-            <div className="col-span-2 font-mono text-xs tabular min-w-0">{t.elapsed}</div>
-            <div className="col-span-1 text-xs text-muted-foreground min-w-0">{t.owner}</div>
-            <div className="col-span-1 flex justify-end min-w-0">
-              <span
-                className={cn(
-                  "rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                  STATUS_TONE[t.status],
-                )}
-              >
-                {t.status}
-              </span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <Dialog open={!!open} onOpenChange={(v) => !v && setOpen(null)}>
-        <DialogContent className="max-w-2xl">
-          {open && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5" /> {open.channel} · {open.param}
-                </div>
-                <DialogTitle className="text-display text-xl font-semibold">
-                  {open.caller}
-                </DialogTitle>
-                <DialogDescription>
-                  Target window {open.target} · elapsed {open.elapsed} · owner {open.owner}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="grid grid-cols-3 gap-3 border-y border-hairline py-4">
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Status
-                  </div>
-                  <div
-                    className={cn(
-                      "mt-1 inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
-                      STATUS_TONE[open.status],
-                    )}
-                  >
-                    {open.status}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Elapsed
-                  </div>
-                  <div className="text-display mt-1 text-lg font-bold tabular">{open.elapsed}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Target
-                  </div>
-                  <div className="text-display mt-1 text-lg font-bold tabular">{open.target}</div>
-                </div>
-              </div>
-
-              <div className="space-y-3 text-sm">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  Timeline
-                </div>
-                <ol className="space-y-2 text-xs">
-                  <li className="flex gap-3">
-                    <span className="w-16 font-mono text-muted-foreground">14:08</span>
-                    <span>Inbound {open.channel.toLowerCase()} received · auto-classified</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-16 font-mono text-muted-foreground">14:09</span>
-                    <span>Routed to {open.owner} · clock started</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-16 font-mono text-muted-foreground">14:14</span>
-                    <span>Acknowledgement sent to customer</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="w-16 font-mono text-accent">now</span>
-                    <span>Awaiting engineer dispatch confirmation</span>
-                  </li>
-                </ol>
-
-                <div className="mt-4 rounded-lg border border-accent/30 bg-accent-soft p-3 text-xs">
-                  <div className="font-semibold text-accent">Suggested next action</div>
-                  <div className="mt-1 text-foreground">
-                    Confirm Tony ETA and send customer update to bring thread back inside protocol.
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
-                <button className="rounded-full border border-hairline px-3 py-1.5 text-xs">
-                  Reassign
-                </button>
-                <button className="rounded-full border border-hairline px-3 py-1.5 text-xs">
-                  Escalate
-                </button>
-                <button className="rounded-full bg-foreground px-3 py-1.5 text-xs text-background">
-                  Mark handled
-                </button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      </section>
     </div>
   );
 }
-
-/* ────── OPERATIONS HUB (tabs) ────── */
 type OpTab = "jobs" | "rota" | "inbox" | "parts" | "suppliers" | "warranty" | "ppm";
 const OP_TABS: { key: OpTab; label: string; icon: typeof Briefcase }[] = [
   { key: "jobs", label: "Jobs", icon: Briefcase },
@@ -2536,28 +2325,21 @@ export function RecurringIssuesPanel() {
 
 /* ────── SYSTEMS INVENTORY (panel, used inside Settings) ────── */
 export function SystemsInventoryPanel() {
-  const rows = [
-    {
-      sys: "Commusoft",
-      owner: "Sam",
-      purpose: "Jobs, scheduling, invoicing",
-      status: "In use" as const,
-    },
-    { sys: "QuickBooks", owner: "Heidi", purpose: "Books & VAT", status: "In use" as const },
-    { sys: "Google Drive", owner: "All", purpose: "Docs, photos, RAMS", status: "In use" as const },
-    { sys: "Perplexity", owner: "Heidi", purpose: "Research", status: "In use" as const },
-    { sys: "Trello", owner: "Mary", purpose: "Office tasks", status: "Sunset" as const },
-    { sys: "Slack", owner: "All", purpose: "Internal comms", status: "In use" as const },
-    { sys: "Notion", owner: "Heidi", purpose: "SOPs & playbooks", status: "Pilot" as const },
-  ];
+  // Canonical connector status — identical source to the Learning Centre Sources, so
+  // no connector can show two different states on two screens. No demo owners: where
+  // ownership is not configured we show "Not assigned".
+  const all = getConnectorStatuses();
+  const live = all.filter((c) => c.state === "Live");
+  const planned = all.filter((c) => c.state === "Planned");
+  const plannedCats = Array.from(new Set(planned.map((c) => c.category)));
   return (
     <div className="rounded-2xl border border-hairline bg-white">
       <div className="border-b border-hairline px-5 py-3">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-          Systems inventory
+          Connected systems
         </div>
         <div className="text-display mt-0.5 text-sm font-semibold">
-          What we actually use, who owns it, why it exists
+          Integrations and their live connection status
         </div>
       </div>
       <div className="grid grid-cols-12 gap-x-3 border-b border-hairline px-5 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -2566,28 +2348,26 @@ export function SystemsInventoryPanel() {
         <div className="col-span-5 min-w-0">Purpose</div>
         <div className="col-span-2 text-right min-w-0">Status</div>
       </div>
-      {rows.map((r) => (
+      {live.map((r) => (
         <div
-          key={r.sys}
-          className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm last:border-0"
+          key={r.id}
+          className="grid grid-cols-12 gap-x-3 items-center border-b border-hairline px-5 py-3 text-sm"
         >
-          <div className="col-span-3 font-medium min-w-0">{r.sys}</div>
-          <div className="col-span-2 text-xs text-muted-foreground min-w-0">{r.owner}</div>
+          <div className="col-span-3 font-medium min-w-0">{r.name}</div>
+          <div className="col-span-2 text-xs text-muted-foreground min-w-0">Not assigned</div>
           <div className="col-span-5 text-xs min-w-0">{r.purpose}</div>
           <div className="col-span-2 flex justify-end min-w-0">
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                r.status === "In use" && "bg-success/10 text-success",
-                r.status === "Sunset" && "bg-muted/40 text-muted-foreground",
-                r.status === "Pilot" && "bg-accent/10 text-accent",
-              )}
-            >
-              {r.status}
+            <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+              Live
             </span>
           </div>
         </div>
       ))}
+      <div className="px-5 py-3 text-xs text-muted-foreground">
+        {planned.length} more connectors in the catalogue are planned and not yet connected
+        {plannedCats.length ? ` (${plannedCats.join(", ")})` : ""}. They appear as Preview until a
+        real ingestion pipeline exists.
+      </div>
     </div>
   );
 }
