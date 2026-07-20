@@ -11,6 +11,7 @@ import {
   Briefcase,
   Search,
   Bell,
+  Menu,
   ArrowUpRight,
   Activity,
   ChevronRight,
@@ -320,8 +321,10 @@ function AppShell() {
       ? candidate
       : "command";
   });
+  const [navOpen, setNavOpen] = useState(false);
   const setView = (next: ViewKey) => {
     setViewState(next);
+    setNavOpen(false);
     if (typeof window !== "undefined")
       window.history.replaceState(
         null,
@@ -354,8 +357,20 @@ function AppShell() {
     <div className="flex min-h-screen bg-surface-alt text-foreground">
       {/* Real-time live call surface — floats for the assigned logged-in user only */}
       <LiveCallCard />
-      {/* Sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:flex">
+      {/* Mobile nav overlay */}
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 md:hidden"
+          onClick={() => setNavOpen(false)}
+        />
+      )}
+      {/* Sidebar — static on desktop, slide-over drawer on mobile */}
+      <aside
+        className={cn(
+          "z-50 h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:sticky md:top-0 md:flex",
+          navOpen ? "fixed inset-y-0 left-0 flex" : "hidden md:flex",
+        )}
+      >
         <Link
           to="/"
           className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold"
@@ -452,6 +467,13 @@ function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-hairline bg-white/80 px-6 py-3 backdrop-blur-xl">
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setNavOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-full border border-hairline md:hidden"
+              aria-label="Open navigation"
+            >
+              <Menu className="h-4 w-4 text-muted-foreground" />
+            </button>
             <div className="text-display text-lg font-semibold capitalize">{viewTitle}</div>
             <span className="hidden text-xs text-muted-foreground md:inline">·</span>
             <span className="hidden font-mono text-xs text-muted-foreground md:inline">
