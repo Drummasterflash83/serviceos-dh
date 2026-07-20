@@ -81,12 +81,32 @@ function impactFor(priority: CommandPriority, status: StoryStatus): string {
   }
 }
 
+/** Canonical presentation key: when an item is anchored to a known customer, group it
+ *  by customer + the normalised issue so near-identical items for one underlying problem
+ *  (e.g. "…(report 1/2/3)") collapse into a single story. Items with no customer keep their
+ *  lineage `storyKey`, so unrelated work is never merged. Presentation-only — this changes
+ *  what is shown, never the underlying rows or feed counts. */
+function groupKeyFor(it: CommandItem): string {
+  if (it.customerName && it.customerName.trim()) {
+    const issue = headline(it.title)
+      .toLowerCase()
+      .replace(/\(report\s*\d+\)/g, "")
+      .replace(/\breport\s*\d+\b/g, "")
+      .replace(/[0-9#]+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return `cust:${it.customerName.toLowerCase().trim()}|${issue}`;
+  }
+  return it.storyKey;
+}
+
 export function buildStories(items: CommandItem[]): Story[] {
   const groups = new Map<string, CommandItem[]>();
   for (const it of items) {
-    const arr = groups.get(it.storyKey);
+    const key = groupKeyFor(it);
+    const arr = groups.get(key);
     if (arr) arr.push(it);
-    else groups.set(it.storyKey, [it]);
+    else groups.set(key, [it]);
   }
 
   const stories: Story[] = [];

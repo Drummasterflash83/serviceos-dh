@@ -81,6 +81,19 @@ export function Communications() {
               row.phone_from ||
               row.phone_to ||
               "Unknown identity";
+            const primary =
+              row.subject ||
+              row.summary ||
+              (channel === "phone_call" ? "Phone call" : "Email message");
+            const norm = (value?: string | null) => (value ?? "").trim().toLowerCase();
+            // Only show a secondary line when it adds distinct information — never
+            // repeat the primary summary (phone rows set body_preview = summary).
+            const secondary =
+              row.body_preview &&
+              norm(row.body_preview) !== norm(primary) &&
+              norm(row.body_preview) !== norm(row.summary)
+                ? row.body_preview
+                : null;
             return (
               <article key={row.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
@@ -92,20 +105,14 @@ export function Communications() {
                       <span>·</span>
                       <span className="truncate">{identity}</span>
                     </div>
-                    <div className="mt-1 truncate text-sm">
-                      {row.subject ||
-                        row.summary ||
-                        (channel === "phone_call" ? "Phone call" : "Email message")}
-                    </div>
+                    <div className="mt-1 truncate text-sm">{primary}</div>
                   </div>
                   <time className="shrink-0 text-xs text-muted-foreground">
                     {when(row.occurred_at)}
                   </time>
                 </div>
-                {row.body_preview && (
-                  <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
-                    {row.body_preview}
-                  </p>
+                {secondary && (
+                  <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{secondary}</p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
                   <span className="rounded-full bg-surface-alt px-2 py-1">
