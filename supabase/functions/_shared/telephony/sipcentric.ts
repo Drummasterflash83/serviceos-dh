@@ -15,6 +15,51 @@ import {
   type DiscoveredObject,
   type ProviderAdapter,
 } from "./adapter.ts";
+import type { ConnectionSpec } from "./connection_spec.ts";
+
+// Sipcentric/Birchills is a PROVIDER-ASSISTED connection: the live API credentials are
+// held as platform secrets and managed by the operator with the provider — they are NOT
+// entered through this UI (and must never be copied into ordinary tables). The connection
+// spec therefore declares a manual path with only a NON-secret account reference.
+const SIPCENTRIC_SPEC: ConnectionSpec = {
+  provider: "sipcentric",
+  label: "Sipcentric / Birchills",
+  description:
+    "Hosted PBX / SIP telephony. Call history, recordings and transcripts are ingested; " +
+    "endpoints are derived from call metadata.",
+  iconKey: "sipcentric",
+  regions: ["uk"],
+  authMode: "account_credentials",
+  fields: [
+    {
+      name: "account_reference",
+      label: "Provider account reference",
+      type: "text",
+      secret: false,
+      required: false,
+      placeholder: "e.g. customer id",
+      help: "Your Sipcentric/Birchills customer/account id. Used to recognise the existing connection — not a secret.",
+      validation: { pattern: "^[A-Za-z0-9_-]{1,32}$", message: "Letters, digits, - and _ only" },
+    },
+  ],
+  oauth: { supported: false, pkce: false, scopes: [] },
+  webhook: {
+    required: false,
+    inbound: true,
+    note: "Inbound call webhooks are configured by the operator with the provider.",
+  },
+  accountRefField: "account_reference",
+  accountRefFormat: "Provider customer id",
+  helpText:
+    "This connection is provider-assisted. Live API access is managed by your operator with " +
+    "Sipcentric/Birchills; you do not enter API credentials here.",
+  docsUrl: "https://www.sipcentric.com/",
+  manual: true,
+  manualNote:
+    "Provider-assisted: ServiceOS ingests call history, recordings and transcripts through an " +
+    "operator-managed connection. Extensions/devices/DDIs are not exposed by the feed and are " +
+    "mapped manually.",
+};
 
 function internalEndpoint(raw: Record<string, unknown>): string | null {
   const dir = String(raw.direction ?? "").toUpperCase();
@@ -28,6 +73,7 @@ export const sipcentricAdapter: ProviderAdapter = {
   provider: "sipcentric",
   label: "Sipcentric / Birchills",
   authMode: "account_credentials",
+  getConnectionSpec: () => SIPCENTRIC_SPEC,
   getCapabilityStatus: () => providerCapabilities("sipcentric"),
 
   async testConnection(ctx: AdapterContext): Promise<ConnectionTestResult> {

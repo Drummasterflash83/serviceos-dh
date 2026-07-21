@@ -8,8 +8,27 @@
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
 import { requireTenantUser, assertSameTenant } from "../_shared/authz.ts";
-import { getAdapter, availableProviders } from "../_shared/telephony/registry.ts";
-import { DISCOVERY_ORDER, type CanonicalType } from "../_shared/telephony/adapter.ts";
+import { getAdapter, availableProviders, getConnectionSpec } from "../_shared/telephony/registry.ts";
+import {
+  DISCOVERY_ORDER,
+  type AdapterContext,
+  type CanonicalType,
+} from "../_shared/telephony/adapter.ts";
+import {
+  validateConnectionInput,
+  partitionValues,
+} from "../_shared/telephony/connection_spec.ts";
+import {
+  storeCredential,
+  getConnectionStatus,
+  connectionSnapshot,
+  resolveCredential,
+  revokeCredential,
+  recordConnectionTest,
+  logConnectionEvent,
+  listConnectionEvents,
+} from "../_shared/telephony/credential_broker.ts";
+import { startOAuth } from "../_shared/telephony/oauth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,7 +72,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return fail("invalid_json", "Body must be JSON", 400);
   }
   const action = String(body.action ?? "state");
-  const readOnly = action === "state" || action === "dashboard" || action === "test_connection";
+  const READ_ONLY_ACTIONS = new Set([
+    "state",
+    "dashboard",
+    "test_connection",
+    "diagnostics",
+    "providers",
+    "spec",
+    "connection_status",
+    "audit",
+  ]);
+  const readOnly = READ_ONLY_ACTIONS.has(action);
   const auth = await requireTenantUser(
     req,
     db,
@@ -65,8 +94,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const tenantId = auth.ctx.tenantId;
   const provider = String(body.provider ?? "sipcentric");
   const adapter = getAdapter(provider);
-  const ctx = { db, tenantId };
+  // Server-side secret resolver — wired to the Vault broker. Adapters may use it inside
+  // testConnection/discover; secrets are NEVER returned to the client.
+  const ctx: AdapterContext = {
+    db,
+    tenantId,
+    resolveSecret: (field: string) => resolveCredential(db, tenantId, provider, field),
+  };
   const nowIso = new Date().toISOString();
+  const actorId = auth.ctx.userId === "service" ? null : auth.ctx.userId;
 
   async function loadState() {
     const { data } = await db
@@ -84,6 +120,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .eq("tenant_id", tenantId)
       .eq("provider", provider);
   }
+  async function ensureOnboarding() {
+    const existing = await loadState();
+    if (existing) return existing;
+    await db.from("telephony_onboarding").insert({
+      tenant_id: tenantId,
+      provider,
+      stage: "provider_selected",
+      completion_pct: pctFor("provider_selected"),
+      started_by: auth.ctx.userId,
+      updated_by: auth.ctx.userId,
+    });
+    return loadState();
+  }
 
   // ── state: get or create (resume) ───────────────────────────────────────────
   if (action === "state") {
@@ -99,24 +148,47 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
       state = await loadState();
     }
+    const includeDev = body.include_dev === true;
     return json({
       success: true,
       state: state ? maskState(state) : null,
-      available_providers: availableProviders(),
+      available_providers: availableProviders(includeDev),
       capabilities: adapter?.getCapabilityStatus() ?? null,
+      connection_spec: getConnectionSpec(provider),
+      connection: await getConnectionStatus(db, tenantId, provider),
     });
+  }
+
+  // ── providers (gallery) ─────────────────────────────────────────────────────
+  if (action === "providers") {
+    return json({ success: true, providers: availableProviders(body.include_dev === true) });
   }
 
   if (!adapter) return fail("unknown_provider", `No adapter for '${provider}'`, 400);
 
+  // ── spec / connection_status (adapter-driven form + secret-free status) ──────
+  if (action === "spec" || action === "connection_status") {
+    return json({
+      success: true,
+      provider,
+      connection_spec: adapter.getConnectionSpec(),
+      capabilities: adapter.getCapabilityStatus(),
+      connection: await getConnectionStatus(db, tenantId, provider),
+    });
+  }
+
   // ── test_connection (diagnostics) ───────────────────────────────────────────
   if (action === "test_connection") {
+    ctx.connection = await connectionSnapshot(db, tenantId, provider);
     const result = await adapter.testConnection(ctx);
+    await recordConnectionTest(db, tenantId, provider, result.ok, { checks: result.checks }, actorId);
     return json({ success: true, provider, ...result });
   }
 
   // ── discover (idempotent inventory import) ──────────────────────────────────
   if (action === "discover") {
+    ctx.connection = await connectionSnapshot(db, tenantId, provider);
+    await logConnectionEvent(db, tenantId, provider, "discovery_started", actorId, {});
     let discovered = 0;
     let imported = 0;
     const perType: Array<{ type: string; supported: boolean; count?: number; reason?: string }> =
@@ -160,6 +232,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       last_success_action: "discover",
       last_error: null,
     });
+    await logConnectionEvent(db, tenantId, provider, "discovery_completed", actorId, {
+      discovered,
+      imported,
+      per_type: perType,
+    });
     return json({ success: true, provider, discovered, imported, per_type: perType });
   }
 
@@ -191,7 +268,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
       accepted_gaps: body.accepted_gaps === true,
       last_success_action: "complete",
     });
+    if (body.accepted_gaps === true) {
+      await logConnectionEvent(db, tenantId, provider, "gaps_accepted", actorId, {});
+    }
+    await logConnectionEvent(db, tenantId, provider, "onboarding_completed", actorId, {
+      accepted_gaps: body.accepted_gaps === true,
+    });
     return json({ success: true, stage: "complete", accepted_gaps: body.accepted_gaps === true });
+  }
+
+  // ── reopen onboarding (after completion) ────────────────────────────────────
+  if (action === "reopen") {
+    await ensureOnboarding();
+    await patchState({
+      stage: String(body.stage ?? "mappings_reviewed"),
+      stage_status: "in_progress",
+      completion_pct: pctFor(String(body.stage ?? "mappings_reviewed")),
+      last_success_action: "reopen",
+    });
+    await logConnectionEvent(db, tenantId, provider, "onboarding_reopened", actorId, {});
+    return json({ success: true, reopened: true });
   }
 
   // ── dashboard (real calibration metrics) ────────────────────────────────────
@@ -280,6 +376,258 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
     return json({ success: true, call: mask(cid), steps });
+  }
+
+  // ── configure_connection (adapter-schema-driven, secure) ────────────────────
+  if (action === "configure_connection") {
+    const spec = adapter.getConnectionSpec();
+    const values = (body.values ?? {}) as Record<string, unknown>;
+    const existing = await getConnectionStatus(db, tenantId, provider);
+    const errors = validateConnectionInput(spec, values, existing.configuredFields);
+    if (errors.length) {
+      return json(
+        { success: false, error: { code: "validation_failed", message: "Invalid connection details" }, field_errors: errors },
+        400,
+      );
+    }
+    const { secrets, nonSecret } = partitionValues(spec, values);
+    const manual = spec.manual && Object.keys(secrets).length === 0;
+    const status = await storeCredential(db, tenantId, provider, {
+      authMode: spec.authMode,
+      secrets,
+      nonSecret,
+      accountRefField: spec.accountRefField ?? null,
+      manual,
+      actorId,
+    });
+    await ensureOnboarding();
+    await patchState({
+      stage: "connection_configured",
+      stage_status: "done",
+      completion_pct: pctFor("connection_configured"),
+      connection_ref: status.accountRef,
+      last_success_action: "configure_connection",
+      last_error: null,
+    });
+    return json({ success: true, provider, connection: status });
+  }
+
+  // ── import_existing (recognise a pre-existing operator connection, e.g. Drummond) ──
+  if (action === "import_existing") {
+    const { data: accts } = await db
+      .from("connector_accounts")
+      .select("account_key, display_name")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    const acct = (accts ?? [])[0];
+    if (!acct) {
+      return json({ success: true, provider, imported: false, reason: "no existing connector account found" });
+    }
+    // Import WITHOUT copying credentials: mark manual/provider-assisted, masked account ref.
+    const { data: existing } = await db
+      .from("provider_connections")
+      .select("status")
+      .eq("tenant_id", tenantId)
+      .eq("provider", provider)
+      .maybeSingle();
+    await db.from("provider_connections").upsert(
+      {
+        tenant_id: tenantId,
+        provider,
+        status: "manual",
+        auth_mode: adapter.authMode,
+        account_ref: acct.account_key ? `…${String(acct.account_key).slice(-4)}` : null,
+        non_secret_config: { provider_account: acct.display_name ?? null, imported: true },
+        updated_by: actorId,
+        created_by: existing ? undefined : actorId,
+      },
+      { onConflict: "tenant_id,provider" },
+    );
+    await ensureOnboarding();
+    await patchState({
+      stage: "connection_verified",
+      stage_status: "done",
+      completion_pct: pctFor("connection_verified"),
+      connection_ref: acct.account_key ? `…${String(acct.account_key).slice(-4)}` : null,
+      last_success_action: "import_existing",
+    });
+    await logConnectionEvent(db, tenantId, provider, "credentials_configured", actorId, {
+      imported: true,
+      manual: true,
+    });
+    return json({ success: true, provider, imported: true, connection: await getConnectionStatus(db, tenantId, provider) });
+  }
+
+  // ── diagnostics (structured, honest) ────────────────────────────────────────
+  if (action === "diagnostics") {
+    ctx.connection = await connectionSnapshot(db, tenantId, provider);
+    const status = await getConnectionStatus(db, tenantId, provider);
+    const test = await adapter.testConnection(ctx);
+    const caps = adapter.getCapabilityStatus();
+    const { count: inv } = await db
+      .from("telephony_inventory")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("provider", provider)
+      .eq("status", "active");
+    const remediation: Record<string, { likely_cause: string; recommended_action: string }> = {
+      credentials_present: {
+        likely_cause: "No credentials have been configured for this provider yet.",
+        recommended_action: "Enter connection details in the connection step.",
+      },
+      authentication_accepted: {
+        likely_cause: "The stored credential was rejected or could not be resolved.",
+        recommended_action: "Replace the credential, then retry the connection test.",
+      },
+      provider_reachable: {
+        likely_cause: "The provider endpoint could not be reached or authorised.",
+        recommended_action: "Check the account reference and credentials; retry.",
+      },
+      call_history_permission: {
+        likely_cause: "The account lacks call-history access, or no calls have synced yet.",
+        recommended_action: "Confirm call-history permission with the provider; wait for the next sync.",
+      },
+    };
+    const checks = test.checks.map((c) => ({
+      ...c,
+      likely_cause: c.ok ? null : (remediation[c.name]?.likely_cause ?? "This check did not pass."),
+      recommended_action: c.ok ? null : (remediation[c.name]?.recommended_action ?? "Retry, or contact your operator."),
+    }));
+    return json({
+      success: true,
+      provider,
+      connection_status: status.status,
+      account_ref: status.accountRef,
+      ok: test.ok,
+      checks,
+      capabilities: caps,
+      active_inventory: inv ?? 0,
+      manual: adapter.getConnectionSpec().manual,
+    });
+  }
+
+  // ── behaviour (manual pickup / shared-device configuration) ─────────────────
+  if (action === "behaviour") {
+    const entries = Array.isArray(body.entries) ? (body.entries as Array<Record<string, unknown>>) : [];
+    let saved = 0;
+    for (const e of entries) {
+      const t = String(e.canonical_type ?? "");
+      if (!t) continue;
+      const pid = String(e.provider_object_id ?? `manual:${t}:${String(e.label ?? crypto.randomUUID())}`);
+      const { error } = await db.from("telephony_inventory").upsert(
+        {
+          tenant_id: tenantId,
+          provider,
+          provider_object_id: pid,
+          canonical_type: t,
+          label: (e.label as string | null) ?? null,
+          status: "active",
+          discovery_source: "manual",
+          provisioning_state: "manual",
+          confidence: 1.0,
+          capabilities: (e.capabilities as Record<string, unknown>) ?? {},
+          provider_metadata: { note: e.note ?? null },
+          last_seen: nowIso,
+          synced_at: nowIso,
+        },
+        { onConflict: "tenant_id,provider,provider_object_id", ignoreDuplicates: false },
+      );
+      if (!error) saved++;
+    }
+    const config = (body.config ?? {}) as Record<string, unknown>;
+    await ensureOnboarding();
+    await patchState({
+      stage: "behaviour_configured",
+      stage_status: "done",
+      completion_pct: pctFor("behaviour_configured"),
+      behaviour_config: config,
+      last_success_action: "behaviour",
+    });
+    if (saved) await logConnectionEvent(db, tenantId, provider, "inventory_imported", actorId, { manual_entries: saved });
+    return json({ success: true, provider, saved, config });
+  }
+
+  // ── disconnect / reconnect (connected-state management) ──────────────────────
+  if (action === "disconnect") {
+    const status = await revokeCredential(db, tenantId, provider, actorId);
+    return json({ success: true, provider, connection: status });
+  }
+  if (action === "reconnect") {
+    return json({
+      success: true,
+      provider,
+      connection_spec: adapter.getConnectionSpec(),
+      connection: await getConnectionStatus(db, tenantId, provider),
+    });
+  }
+
+  // ── audit (connection event history — secret-free) ──────────────────────────
+  if (action === "audit") {
+    const events = await listConnectionEvents(db, tenantId, provider, Number(body.limit ?? 50));
+    return json({ success: true, provider, events });
+  }
+
+  // ── oauth_start (reusable delegated-authorization framework) ─────────────────
+  if (action === "oauth_start") {
+    const spec = adapter.getConnectionSpec();
+    if (!spec.oauth?.supported) {
+      return fail("oauth_unsupported", `${provider} does not support OAuth`, 400);
+    }
+    const values = (body.values ?? {}) as Record<string, unknown>;
+    const errors = validateConnectionInput(spec, values, []);
+    if (errors.length) {
+      return json(
+        { success: false, error: { code: "validation_failed", message: "Invalid connection details" }, field_errors: errors },
+        400,
+      );
+    }
+    const { nonSecret } = partitionValues(spec, values);
+    const up = provider.toUpperCase();
+    const authorizeBase =
+      Deno.env.get(`PROVIDER_OAUTH_${up}_AUTHORIZE_URL`) ?? "https://oauth-demo.serviceos.local/authorize";
+    const clientId = Deno.env.get(`PROVIDER_OAUTH_${up}_CLIENT_ID`) ?? "serviceos-demo";
+    const redirectUri = String(
+      body.redirect_uri ?? Deno.env.get(`PROVIDER_OAUTH_${up}_REDIRECT_URI`) ?? "",
+    );
+    // Persist non-secret config early (do not disturb an existing configured row's status).
+    const { data: existing } = await db
+      .from("provider_connections")
+      .select("status")
+      .eq("tenant_id", tenantId)
+      .eq("provider", provider)
+      .maybeSingle();
+    if (existing) {
+      await db
+        .from("provider_connections")
+        .update({ non_secret_config: nonSecret, auth_mode: spec.authMode, updated_by: actorId })
+        .eq("tenant_id", tenantId)
+        .eq("provider", provider);
+    } else {
+      await db.from("provider_connections").insert({
+        tenant_id: tenantId,
+        provider,
+        status: "not_configured",
+        auth_mode: spec.authMode,
+        non_secret_config: nonSecret,
+        created_by: actorId,
+        updated_by: actorId,
+      });
+    }
+    const { authorizeUrl, state } = await startOAuth({
+      db,
+      tenantId,
+      provider,
+      userId: actorId,
+      scopes: spec.oauth.scopes,
+      redirectUri,
+      authorizeBase,
+      clientId,
+      usePkce: spec.oauth.pkce,
+    });
+    await ensureOnboarding();
+    await logConnectionEvent(db, tenantId, provider, "oauth_started", actorId, { scopes: spec.oauth.scopes });
+    return json({ success: true, provider, authorize_url: authorizeUrl, state });
   }
 
   return fail("unknown_action", `Unknown action '${action}'`, 400);
