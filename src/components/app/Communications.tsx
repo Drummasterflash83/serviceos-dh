@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Mail, Phone, MessageSquare, AlertTriangle } from "lucide-react";
+import { Mail, Phone, MessageSquare, AlertTriangle, ChevronRight } from "lucide-react";
 import { listInteractions, type Interaction } from "@/lib/interactions";
 import { cn } from "@/lib/utils";
+import { CallDetail } from "./CallDetail";
 
 type Channel = "phone_call" | "email_message";
 
@@ -12,6 +13,7 @@ export function Communications() {
   const [channel, setChannel] = useState<Channel>("phone_call");
   const [rows, setRows] = useState<Interaction[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCall, setSelectedCall] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +31,12 @@ export function Communications() {
       active = false;
     };
   }, [channel]);
+
+  // Selecting a phone call opens its full detail (summary, participants, transcript,
+  // corrections + a persistent action). Deselect returns to the list.
+  if (selectedCall) {
+    return <CallDetail callId={selectedCall} onBack={() => setSelectedCall(null)} />;
+  }
 
   return (
     <div className="space-y-5">
@@ -94,8 +102,13 @@ export function Communications() {
               norm(row.body_preview) !== norm(row.summary)
                 ? row.body_preview
                 : null;
+            const openable = channel === "phone_call" && !!row.source_id;
             return (
-              <article key={row.id} className="p-4">
+              <article
+                key={row.id}
+                onClick={openable ? () => setSelectedCall(row.source_id) : undefined}
+                className={cn("p-4", openable && "cursor-pointer hover:bg-surface-alt/40")}
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -107,9 +120,10 @@ export function Communications() {
                     </div>
                     <div className="mt-1 truncate text-sm">{primary}</div>
                   </div>
-                  <time className="shrink-0 text-xs text-muted-foreground">
-                    {when(row.occurred_at)}
-                  </time>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <time className="text-xs text-muted-foreground">{when(row.occurred_at)}</time>
+                    {openable && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                  </div>
                 </div>
                 {secondary && (
                   <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{secondary}</p>
