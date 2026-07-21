@@ -41,6 +41,13 @@ export async function handleCustomerCardSync(
   const { supabaseAdmin: admin, tenantId, payload } = ctx;
   const limit = clampLimit(payload.limit);
   const nowMs = Date.now();
+  // A full-coverage sweep uses a STABLE cursor (sweep_since) carried across the
+  // self-continuation chain, so each batch takes the oldest-refreshed cards and the
+  // sweep drains ALL of them exactly once, then stops — instead of repeatedly
+  // reprojecting the same most-active subset and never reaching stale cards.
+  const sweepSince =
+    (typeof payload.sweep_since === "string" && payload.sweep_since) || new Date().toISOString();
+  let isSweep = false;
 
   try {
     // ── Resolve the target card set ─────────────────────────────────────────
@@ -66,8 +73,11 @@ export async function handleCustomerCardSync(
       else if (gnode?.node_type === "company" && sid) cardQuery = cardQuery.eq("company_id", sid);
       else cardQuery = cardQuery.eq("id", "00000000-0000-0000-0000-000000000000"); // no match
     } else {
+      isSweep = true;
       cardQuery = cardQuery
-        .order("latest_activity_at", { ascending: false, nullsFirst: false })
+        .neq("status", "archived") // archived cards are never reprojected/resurrected
+        .lt("updated_at", sweepSince) // only cards not yet refreshed in this sweep
+        .order("updated_at", { ascending: true }) // oldest-refreshed first → full coverage
         .limit(limit);
     }
 
@@ -157,7 +167,17 @@ export async function handleCustomerCardSync(
         // reserved @example.invalid domain must not reappear in a live tenant view.
         // (RFC 6761 reserves .invalid; it can never be a real customer address.)
         const personEmail = (person?.primary_email as string | null) ?? null;
-        if (personEmail && /@example\.invalid$/i.test(personEmail)) continue;
+        if (personEmail && /@example\.invalid$/i.test(personEmail)) {
+          // Skip synthetic fixtures, but bump updated_at so the sweep cursor advances
+          // past them (a stale synthetic card must never stall a full sweep).
+          if (isSweep)
+            await admin
+              .from("customer_cards")
+              .update({ status: card.status })
+              .eq("tenant_id", tenantId)
+              .eq("id", cardId);
+          continue;
+        }
         // Respect an operator archive: never resurrect a card explicitly archived.
         if (card.status === "archived") continue;
 
@@ -355,10 +375,29 @@ export async function handleCustomerCardSync(
       }
     }
 
+    // Self-continue the sweep while a full batch was taken (more stale cards remain);
+    // stops automatically when the final batch is short. Strictly serial via the
+    // idempotent job_key.
+    const moreToSweep = isSweep && (cardRows?.length ?? 0) >= limit;
     return {
       success: failed === 0,
       recordsProcessed: cardsProjected,
-      result: { cards_projected: cardsProjected, skipped, failed, health_counts: healthCounts },
+      result: {
+        cards_projected: cardsProjected,
+        skipped,
+        failed,
+        health_counts: healthCounts,
+        swept: cardRows?.length ?? 0,
+      },
+      ...(moreToSweep
+        ? {
+            continuation: {
+              jobType: "customer_card.sync",
+              jobKey: `customer_card.sync:${tenantId}`,
+              payload: { limit, sweep_since: sweepSince },
+            },
+          }
+        : {}),
       ...(failed > 0
         ? {
             error: {
