@@ -711,9 +711,32 @@ export interface PhoneCallDetailRaw {
   risk_flags: string[];
 }
 
+/** Resolved Phone Intelligence for one call (direction, participants, corrections). */
+export interface PhoneCallCorrection {
+  from: string;
+  to: string;
+  category: string;
+  confidence: number;
+  applied: boolean;
+}
+export interface PhoneCallIntelligence {
+  direction: string | null;
+  direction_confidence: number | null;
+  /** null ⇒ "Unknown team member" (no confirmed extension mapping). */
+  internal_name: string | null;
+  internal_confidence: number | null;
+  /** null ⇒ unresolved external caller. */
+  external_name: string | null;
+  external_confidence: number | null;
+  has_conflict: boolean;
+  normalised_text: string | null;
+  corrections: PhoneCallCorrection[];
+}
+
 /** Lazily-loaded detail for one call (full transcript + raw insight fields). */
 export interface PhoneCallDetail {
   transcript_text: string | null;
   transcript_status: string | null;
   raw: PhoneCallDetailRaw | null;
+  intelligence: PhoneCallIntelligence | null;
 }

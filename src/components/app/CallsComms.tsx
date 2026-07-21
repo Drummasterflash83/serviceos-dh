@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Sparkles,
   FileText,
+  Brain,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -371,6 +372,136 @@ function RawRow({ label, value }: { label: string; value: string | null }) {
   );
 }
 
+/** Mask a phone number for the default UI (never show it in full). */
+function maskNumber(n: string | null): string {
+  if (!n) return "—";
+  const s = n.trim();
+  if (s.length <= 5) return s;
+  return `${s.slice(0, 3)}…${s.slice(-2)}`;
+}
+
+function ConfDot({ c }: { c: number | null }) {
+  const v = c ?? 0;
+  const tone = v >= 0.85 ? "bg-success" : v >= 0.5 ? "bg-warning" : "bg-muted-foreground/40";
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+      <span className={cn("h-1.5 w-1.5 rounded-full", tone)} />
+      {c != null ? `${Math.round(v * 100)}%` : "—"}
+    </span>
+  );
+}
+
+function CallIntelligence({
+  intel,
+  rawTranscript,
+}: {
+  intel: import("@/lib/types").PhoneCallIntelligence;
+  rawTranscript: string | null;
+}) {
+  const [showNormalised, setShowNormalised] = useState(true);
+  const hasNormalised = !!intel.normalised_text && intel.normalised_text !== rawTranscript;
+  const applied = intel.corrections.filter((c) => c.applied);
+  const shown = showNormalised && hasNormalised ? intel.normalised_text : rawTranscript;
+
+  return (
+    <div className="rounded-2xl border border-hairline bg-white p-5">
+      <div className="flex items-center gap-2">
+        <Brain className="h-4 w-4 text-accent" />
+        <div className="text-sm font-semibold">Call intelligence</div>
+        {intel.direction && (
+          <span className="ml-auto rounded-full border border-hairline bg-surface-alt px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+            {intel.direction}
+          </span>
+        )}
+      </div>
+
+      {intel.has_conflict && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11px] text-warning">
+          <AlertTriangle className="h-3.5 w-3.5" /> Identity conflict — metadata and the spoken
+          introduction disagree.
+        </div>
+      )}
+
+      <dl className="mt-3 grid grid-cols-1 gap-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-xs text-muted-foreground">Internal</dt>
+          <dd className="flex items-center gap-2 text-xs font-medium">
+            {intel.internal_name ?? (
+              <span className="text-muted-foreground">Unknown team member</span>
+            )}
+            {intel.internal_name && <ConfDot c={intel.internal_confidence} />}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt className="text-xs text-muted-foreground">External</dt>
+          <dd className="flex items-center gap-2 text-xs font-medium">
+            {intel.external_name ?? (
+              <span className="text-muted-foreground">Unresolved caller</span>
+            )}
+            {intel.external_name && <ConfDot c={intel.external_confidence} />}
+          </dd>
+        </div>
+      </dl>
+
+      {/* Transcript with raw / normalised toggle */}
+      {shown && (
+        <div className="mt-4 border-t border-hairline pt-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[11px] font-medium text-muted-foreground">Transcript</div>
+            {hasNormalised && (
+              <div className="inline-flex overflow-hidden rounded-lg border border-hairline text-[10px]">
+                <button
+                  onClick={() => setShowNormalised(true)}
+                  className={cn(
+                    "px-2 py-0.5",
+                    showNormalised ? "bg-accent/10 text-accent" : "text-muted-foreground",
+                  )}
+                >
+                  Normalised
+                </button>
+                <button
+                  onClick={() => setShowNormalised(false)}
+                  className={cn(
+                    "px-2 py-0.5",
+                    !showNormalised ? "bg-accent/10 text-accent" : "text-muted-foreground",
+                  )}
+                >
+                  Raw
+                </button>
+              </div>
+            )}
+          </div>
+          <p className="mt-2 max-h-56 overflow-y-auto whitespace-pre-wrap rounded-lg border border-hairline bg-surface-alt/50 p-3 text-xs leading-relaxed text-foreground">
+            {shown}
+          </p>
+        </div>
+      )}
+
+      {/* Corrections */}
+      {applied.length > 0 && (
+        <div className="mt-3 border-t border-hairline pt-3">
+          <div className="text-[11px] font-medium text-muted-foreground">
+            Corrections ({applied.length})
+          </div>
+          <ul className="mt-2 space-y-1">
+            {applied.map((c, i) => (
+              <li key={i} className="flex items-center gap-2 text-[11px]">
+                <span className="text-muted-foreground line-through">{c.from}</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="font-medium">{c.to}</span>
+                <span className="rounded-full border border-hairline bg-surface-alt px-1.5 text-[9px] capitalize text-muted-foreground">
+                  {c.category}
+                </span>
+                <ConfDot c={c.confidence} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CallDetail({
   item,
   detail,
@@ -382,6 +513,7 @@ function CallDetail({
 }) {
   const raw = detail && detail.ok ? detail.data.raw : null;
   const transcript = detail && detail.ok ? detail.data.transcript_text : null;
+  const intel = detail && detail.ok ? detail.data.intelligence : null;
 
   return (
     <div className="space-y-4">
@@ -395,14 +527,17 @@ function CallDetail({
         </div>
         <div className="text-display mt-3 text-lg font-semibold">{counterparty(item)}</div>
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
-          <MetaRow label="From" value={item.from_number ?? "—"} />
-          <MetaRow label="To" value={item.to_number ?? "—"} />
+          <MetaRow label="From" value={maskNumber(item.from_number)} />
+          <MetaRow label="To" value={maskNumber(item.to_number)} />
           <MetaRow label="Started" value={fmtDateTime(item.started_at)} />
           <MetaRow label="Duration" value={fmtDuration(item.duration_seconds)} />
           <MetaRow label="Outcome" value={item.outcome ?? "—"} />
           <MetaRow label="Recording" value={item.recording_id ? "stored" : "none"} />
         </dl>
       </div>
+
+      {/* Call Intelligence — resolved identity + normalised transcript */}
+      {intel && <CallIntelligence intel={intel} rawTranscript={transcript} />}
 
       {/* AI intelligence */}
       <div className="rounded-2xl border border-hairline bg-white p-5">

@@ -262,7 +262,7 @@ export async function getPhoneCallDetail(recordingId: string): Promise<ApiResult
 
   const { data: t, error: tErr } = await supabase
     .from("phone_transcripts")
-    .select("transcript_text, status")
+    .select("id, transcript_text, status")
     .eq("recording_id", recordingId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -271,12 +271,16 @@ export async function getPhoneCallDetail(recordingId: string): Promise<ApiResult
 
   const { data: ins, error: iErr } = await supabase
     .from("phone_ai_insights")
-    .select("raw_payload")
+    .select("raw_payload, identity_summary")
     .eq("recording_id", recordingId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (iErr) return { ok: false, error: { code: "query_error", message: iErr.message } };
+
+  // Phone Intelligence: resolve the call via recording → provider_call_id → call, then
+  // load direction, participants and transcript normalisation. All RLS tenant-scoped.
+  const intelligence = await loadCallIntelligence(supabase, recordingId, (t?.id as string) ?? null);
 
   const rp = (ins?.raw_payload ?? null) as Record<string, unknown> | null;
   const raw = rp
@@ -299,6 +303,83 @@ export async function getPhoneCallDetail(recordingId: string): Promise<ApiResult
       transcript_text: (t?.transcript_text as string | null) ?? null,
       transcript_status: (t?.status as string | null) ?? null,
       raw,
+      intelligence,
     },
+  };
+}
+
+/** Load resolved Phone Intelligence for a recording's call (RLS tenant-scoped). */
+async function loadCallIntelligence(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  recordingId: string,
+  transcriptId: string | null,
+): Promise<import("./types").PhoneCallIntelligence | null> {
+  const { data: rec } = await supabase
+    .from("phone_recordings")
+    .select("provider_call_id, linked_id")
+    .eq("id", recordingId)
+    .maybeSingle();
+  if (!rec) return null;
+  const keys = [rec.provider_call_id, rec.linked_id].filter(Boolean) as string[];
+  if (!keys.length) return null;
+  const { data: call } = await supabase
+    .from("phone_calls")
+    .select("id")
+    .in("provider_call_id", keys)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!call) return null;
+  const callId = call.id as string;
+
+  const [{ data: dir }, { data: parts }, { data: norm }] = await Promise.all([
+    supabase
+      .from("call_directions")
+      .select("direction, direction_confidence")
+      .eq("call_id", callId)
+      .maybeSingle(),
+    supabase
+      .from("call_participants")
+      .select("participant_role, display_name, confidence, conflicts")
+      .eq("call_id", callId),
+    transcriptId
+      ? supabase
+          .from("call_transcript_normalisations")
+          .select("normalised_text, corrections")
+          .eq("transcript_id", transcriptId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  if (!dir && !(parts && parts.length) && !norm) return null;
+
+  const internal = (parts ?? []).find((p) => p.participant_role === "internal");
+  const external = (parts ?? []).find((p) => p.participant_role === "external");
+  const hasConflict = (parts ?? []).some(
+    (p) => Array.isArray(p.conflicts) && p.conflicts.length > 0,
+  );
+  const corrections = Array.isArray(norm?.corrections)
+    ? (norm!.corrections as unknown[]).map((c) => {
+        const o = c as Record<string, unknown>;
+        return {
+          from: String(o.from ?? ""),
+          to: String(o.to ?? ""),
+          category: String(o.category ?? ""),
+          confidence: Number(o.confidence ?? 0),
+          applied: o.applied === true,
+        };
+      })
+    : [];
+
+  return {
+    direction: (dir?.direction as string | null) ?? null,
+    direction_confidence: (dir?.direction_confidence as number | null) ?? null,
+    internal_name: (internal?.display_name as string | null) ?? null,
+    internal_confidence: (internal?.confidence as number | null) ?? null,
+    external_name: (external?.display_name as string | null) ?? null,
+    external_confidence: (external?.confidence as number | null) ?? null,
+    has_conflict: hasConflict,
+    normalised_text: (norm?.normalised_text as string | null) ?? null,
+    corrections,
   };
 }
