@@ -200,15 +200,24 @@ export function buildSummaryContext(
   const external = computed.external.resolvedEntityId
     ? `${computed.external.displayName} — confidence ${computed.external.confidence.toFixed(2)}`
     : `Unresolved external caller${computed.canonical.externalNumber ? " (number on file)" : ""}`;
+  const company = companyName ?? "the company";
   const lines = [
     `Call direction: ${computed.direction.direction} (confidence ${computed.direction.confidence.toFixed(2)})`,
-    `Tenant company: ${companyName ?? "the company"}`,
+    `Tenant company: ${company}`,
     `Internal participant: ${internal}`,
     `External participant: ${external}`,
     computed.identity.hasConflict
       ? "Identity conflict: metadata and the spoken introduction disagree — do not assert a single internal name."
       : "Identity conflict: none",
-  ];
+    // Ground the tenant's own identity so the model never casts it as an external party.
+    `IMPORTANT: "${company}" is OUR side. A company name in the transcript that IS "${company}" — or an` +
+      ` obvious mishearing of it (ASR often mangles the tenant's own name in the greeting) — is the tenant,` +
+      ` never the external caller's company. Never attribute "${company}" to the person on the other end.`,
+    !computed.external.resolvedEntityId
+      ? 'The external party is NOT identified — refer to them as "the caller"/"the customer" and do NOT state a name or company for them as fact.'
+      : "",
+    "If who is speaking or which company they represent is uncertain, say so plainly rather than guessing.",
+  ].filter(Boolean);
   return lines.join("\n");
 }
 

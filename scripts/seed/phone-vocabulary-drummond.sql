@@ -21,7 +21,8 @@ from t, (values
   -- Company identity (the flagship confirmed ASR mishear).
   ('Drummond Heating', 'org',
      array['Drummonds']::text[],
-     array['John and Teething', 'Drummond eating']::text[], 0.92),
+     array['John and Teething', 'Drummond eating',
+           'German Heating', 'German Teaching', 'German Tutoring', 'German Teating']::text[], 0.92),
   -- Service software + telephony providers (confirmed proper nouns ASR mangles).
   ('Commusoft',  'service', array[]::text[], array['Comue soft', 'Commu soft']::text[], 0.85),
   ('Birchills',  'service', array[]::text[], array['Birch hills']::text[], 0.8),
