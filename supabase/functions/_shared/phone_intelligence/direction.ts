@@ -84,10 +84,13 @@ export function classifyCallDirection(input: DirectionInput): DirectionResult {
   const fromNum = scalar(raw.from) ?? scalar(raw.callerId);
   const toNum = scalar(raw.to);
 
-  const id = scalar(raw.id) ?? scalar(raw.callId);
-  const parent = scalar(raw.parent);
-  const transferred = !!(parent && id && parent !== id);
-
+  // NOTE (audited real data): with the Sipcentric/Birchills feed, srcEndpoint/
+  // dstEndpoint are opaque API resource URIs (not extensions), and `parent` differs
+  // from `id` on EVERY call — so parent≠id is structural, NOT a transfer signal.
+  // Transfer/pickup requires cross-leg correlation (multiple call rows sharing a
+  // group id) which is a documented V1+ item; the pure classifier therefore never
+  // infers a transfer from a single leg, and only trusts extension roles the caller
+  // supplies explicitly (input.internalExtensions) or that appear as clean extensions.
   const srcIsExt = looksLikeExtension(src, internal);
   const dstIsExt = looksLikeExtension(dst, internal);
 
@@ -149,18 +152,10 @@ export function classifyCallDirection(input: DirectionInput): DirectionResult {
     evidence.push({ signal: "outcome", value: outcome, weight: 0.05 });
   }
 
-  // Transferred leg (parent ≠ id) ⇒ classify as transferred, retaining the from/to legs.
-  let transferredFromExtension: string | null = null;
-  let transferredToExtension: string | null = null;
-  if (transferred) {
-    transferredFromExtension = srcIsExt ? src : null;
-    transferredToExtension = dstIsExt ? dst : null;
-    if (direction !== "missed") {
-      direction = "transferred";
-      confidence = Math.max(confidence, 0.8);
-    }
-    evidence.push({ signal: "transfer_parent", value: `${parent}!=${id}`, weight: 0.3 });
-  }
+  // Transfer/pickup is intentionally NOT inferred here (no reliable single-leg signal
+  // in the audited provider feed). These stay null until cross-leg correlation lands.
+  const transferredFromExtension: string | null = null;
+  const transferredToExtension: string | null = null;
 
   if (scope) evidence.push({ signal: "scope", value: scope, weight: 0.02 });
 

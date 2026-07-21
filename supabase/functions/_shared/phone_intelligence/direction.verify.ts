@@ -68,22 +68,23 @@ ok("inbound NO_ANSWER → missed", () => {
   assert.equal(r.direction, "missed");
 });
 
-// 4) Transfer leg (parent ≠ id) → transferred.
-ok("transferred leg → transferred", () => {
+// 4) REGRESSION (real-data audit): parent≠id is structural on EVERY Sipcentric call,
+// so it must NOT be read as a transfer. An answered inbound stays inbound.
+ok("parent≠id alone is NOT classified as transferred", () => {
   const r = classifyCallDirection({
     rawPayload: {
       direction: "IN",
-      srcEndpoint: "200",
-      dstEndpoint: "103",
+      from: "+447700900123",
+      dstEndpoint: "200",
       id: "leg-2",
       parent: "leg-1",
       outcome: "ANSWERED",
     },
-    internalExtensions: ["200", "103"],
+    internalExtensions: ["200"],
   });
-  assert.equal(r.direction, "transferred");
-  assert.equal(r.transferredFromExtension, "200");
-  assert.equal(r.transferredToExtension, "103");
+  assert.equal(r.direction, "inbound");
+  assert.equal(r.transferredFromExtension, null);
+  assert.equal(r.transferredToExtension, null);
 });
 
 // 5) No metadata → unknown with zero confidence (never a guess).
