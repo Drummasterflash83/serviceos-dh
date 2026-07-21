@@ -15,6 +15,21 @@ export function Communications() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCall, setSelectedCall] = useState<string | null>(null);
 
+  // Deep-link: a Command Centre call story stashes the target call id, then routes
+  // here. Open that call detail once on mount, then clear the hint.
+  useEffect(() => {
+    try {
+      const pending = window.sessionStorage.getItem("serviceos:openCall");
+      if (pending) {
+        window.sessionStorage.removeItem("serviceos:openCall");
+        setChannel("phone_call");
+        setSelectedCall(pending);
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  }, []);
+
   useEffect(() => {
     let active = true;
     setRows(null);

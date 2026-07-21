@@ -62,6 +62,111 @@ export interface ProjectedCard {
   projection: CardProjection | null;
 }
 
+/**
+ * Honest, evidence-based card state — replaces the misleading "everything is
+ * Critical" presentation. Derived purely from the projection the engine already
+ * produced, so it stays explainable. A card only reads "critical" when there is a
+ * differentiated, confident signal; otherwise it says what is actually true —
+ * identity unresolved, still processing, or insufficient evidence.
+ */
+export type HonestState =
+  "unresolved" | "processing" | "insufficient" | "attention" | "critical" | "normal";
+
+export interface HonestCardState {
+  state: HonestState;
+  label: string;
+  /** One-line "why" — the actual evidence, never a constant. */
+  reason: string;
+  interactionCount: number;
+  lastInteractionAt: string | null;
+}
+
+// The generic, self-reinforcing recommendation shells the engine emits for every
+// un-enriched card. Their presence is NOT differentiated evidence.
+const GENERIC_REC_TITLES = new Set([
+  "Customer needs attention",
+  "Review new customer",
+  "Card needs review",
+]);
+
+/** A display name is "resolved" only when it is a real person/company name —
+ *  not an email fallback, a phone number, or an explicit unresolved placeholder. */
+function isResolvedName(name: string | null | undefined): boolean {
+  if (!name) return false;
+  if (name === "Unresolved contact" || name === "Unknown contact") return false;
+  if (name.includes("@")) return false;
+  if (/^\+?[\d ()-]{7,}$/.test(name)) return false;
+  return true;
+}
+
+/** True for synthetic/demo fixtures (reserved @example.invalid domain). */
+export function isSyntheticCard(card: ProjectedCard): boolean {
+  const emails = card.projection?.identity.emails ?? [];
+  return (
+    emails.some((e) => /@example\.invalid$/i.test(e)) ||
+    /@example\.invalid$/i.test(card.title ?? "")
+  );
+}
+
+export function deriveHonestState(card: ProjectedCard): HonestCardState {
+  const p = card.projection;
+  const base = {
+    interactionCount: p?.communication.interaction_count ?? 0,
+    lastInteractionAt: p?.communication.last_interaction_at ?? card.latest_activity_at ?? null,
+  };
+  if (!p) {
+    return {
+      state: "processing",
+      label: "Processing",
+      reason: "Awaiting first enrichment pass",
+      ...base,
+    };
+  }
+  const conf = p.business.confidence ?? 0;
+  const urgent = p.operations.urgent ?? [];
+  const waiting = p.operations.waiting ?? [];
+  const differentiatedUrgent = urgent.filter((u) => u.title && !GENERIC_REC_TITLES.has(u.title));
+  const differentiatedWaiting = waiting.filter((w) => w.title && !GENERIC_REC_TITLES.has(w.title));
+  const hasRealSignal =
+    differentiatedUrgent.length > 0 ||
+    differentiatedWaiting.length > 0 ||
+    p.business.sentiment === "negative";
+
+  if (!isResolvedName(p.identity.display_name)) {
+    return {
+      state: "unresolved",
+      label: "Identity unresolved",
+      reason: "Auto-created from an interaction — not yet matched to a known customer",
+      ...base,
+    };
+  }
+  if (hasRealSignal) {
+    const top =
+      differentiatedUrgent[0]?.title ??
+      differentiatedWaiting[0]?.title ??
+      (p.business.sentiment === "negative"
+        ? "Recent sentiment is negative"
+        : "Recent activity needs a response");
+    if (differentiatedUrgent.length > 0 && conf >= 0.6) {
+      return { state: "critical", label: "Verified critical", reason: top, ...base };
+    }
+    return { state: "attention", label: "Needs attention", reason: top, ...base };
+  }
+  // Only the generic shells so far → be honest that there is no real evidence yet.
+  if (conf < 0.3) {
+    return {
+      state: "insufficient",
+      label: "Insufficient evidence",
+      reason:
+        base.interactionCount > 0
+          ? "Only default signals so far — awaiting differentiated enrichment"
+          : "No interactions enriched yet",
+      ...base,
+    };
+  }
+  return { state: "normal", label: "Normal", reason: "No open issues", ...base };
+}
+
 export interface CustomerCardSummary {
   total: number;
   projected: number; // cards that have a projection
@@ -151,10 +256,15 @@ export async function getCustomerCards(limit = 100): Promise<ApiResult<Projected
   const { data, error } = await supabase
     .from("customer_cards")
     .select(CARD_COLUMNS)
+    .neq("status", "archived") // never surface operator-archived cards in a live view
     .order("latest_activity_at", { ascending: false, nullsFirst: false })
     .limit(Math.max(1, Math.min(500, limit)));
   if (error) return { ok: false, error: { code: "cards_unavailable", message: error.message } };
-  return { ok: true, data: ((data ?? []) as Record<string, unknown>[]).map(toProjectedCard) };
+  // Also drop synthetic @example.invalid fixtures (belt-and-suspenders to the archive).
+  const cards = ((data ?? []) as Record<string, unknown>[])
+    .map(toProjectedCard)
+    .filter((c) => !isSyntheticCard(c));
+  return { ok: true, data: cards };
 }
 
 /** One projected customer card by id. */

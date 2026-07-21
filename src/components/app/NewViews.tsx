@@ -44,7 +44,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { getCustomerCards, type ProjectedCard } from "@/lib/customer-cards";
+import {
+  getCustomerCards,
+  deriveHonestState,
+  type ProjectedCard,
+  type HonestState,
+} from "@/lib/customer-cards";
 import { listRecommendations, type Recommendation } from "@/lib/recommendations";
 
 /* ───── Shared bits ───── */
@@ -1810,6 +1815,16 @@ const HEALTH_BADGE: Record<string, string> = {
   critical: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
+// Honest evidence-based state → badge style + label.
+const STATE_BADGE: Record<HonestState, string> = {
+  unresolved: "border-muted-foreground/30 bg-muted text-muted-foreground",
+  processing: "border-accent/30 bg-accent/10 text-accent",
+  insufficient: "border-muted-foreground/30 bg-muted text-muted-foreground",
+  attention: "border-warning/30 bg-warning/10 text-warning",
+  critical: "border-destructive/30 bg-destructive/10 text-destructive",
+  normal: "border-success/20 bg-success/10 text-success",
+};
+
 function fmtWhen(iso: string | null): string {
   if (!iso) return "—";
   const t = Date.parse(iso);
@@ -1901,7 +1916,8 @@ export function Customers() {
         <div className="grid gap-3 md:grid-cols-2">
           {cards.map((c) => {
             const p = c.projection;
-            const health = p?.business.health ?? null;
+            const hs = deriveHonestState(c);
+            const displayName = p?.identity.display_name ?? c.title ?? "Unresolved contact";
             return (
               <button
                 key={c.id}
@@ -1913,50 +1929,32 @@ export function Customers() {
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       Customer
                     </div>
-                    <div className="text-display truncate text-sm font-semibold">
-                      {p?.identity.display_name ?? c.title ?? "Unknown contact"}
-                    </div>
+                    <div className="text-display truncate text-sm font-semibold">{displayName}</div>
                     {p?.identity.company_name && (
                       <div className="truncate text-xs text-muted-foreground">
                         {p.identity.company_name}
                       </div>
                     )}
                   </div>
-                  {health && (
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize",
-                        HEALTH_BADGE[health],
-                      )}
-                    >
-                      {health}
-                    </span>
-                  )}
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                      STATE_BADGE[hs.state],
+                    )}
+                  >
+                    {hs.label}
+                  </span>
                 </div>
-                {p ? (
-                  <div className="mt-4 grid grid-cols-3 gap-2 border-t border-hairline pt-3 text-[11px]">
-                    <div>
-                      <div className="text-muted-foreground">Activity</div>
-                      <div className="text-display text-base font-bold tabular">
-                        {p.business.activity_score}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Open actions</div>
-                      <div className="text-display text-base font-bold tabular">
-                        {p.operations.open_recommendations}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Last contact</div>
-                      <div className="text-sm">{fmtWhen(p.communication.last_interaction_at)}</div>
-                    </div>
+                <div className="mt-4 border-t border-hairline pt-3 text-[11px]">
+                  <div className="text-muted-foreground">{hs.reason}</div>
+                  <div className="mt-2 flex items-center gap-2 text-muted-foreground tabular">
+                    <span>
+                      {hs.interactionCount} interaction{hs.interactionCount === 1 ? "" : "s"}
+                    </span>
+                    <span>·</span>
+                    <span>Last contact {fmtWhen(hs.lastInteractionAt)}</span>
                   </div>
-                ) : (
-                  <div className="mt-4 border-t border-hairline pt-3 text-[11px] text-muted-foreground">
-                    Projection pending — not yet built for this card.
-                  </div>
-                )}
+                </div>
               </button>
             );
           })}
@@ -1972,20 +1970,21 @@ export function Customers() {
                   <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
                     Customer card
                   </div>
-                  {proj && (
-                    <span
-                      className={cn(
-                        "rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize",
-                        HEALTH_BADGE[proj.business.health],
-                      )}
-                    >
-                      {proj.business.health}
-                    </span>
-                  )}
+                  <span
+                    className={cn(
+                      "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                      STATE_BADGE[deriveHonestState(open).state],
+                    )}
+                  >
+                    {deriveHonestState(open).label}
+                  </span>
                 </div>
                 <DialogTitle className="text-display text-xl font-semibold">
-                  {proj?.identity.display_name ?? open.title ?? "Customer"}
+                  {proj?.identity.display_name ?? open.title ?? "Unresolved contact"}
                 </DialogTitle>
+                <div className="text-xs text-muted-foreground">
+                  {deriveHonestState(open).reason}
+                </div>
                 <DialogDescription>
                   {proj?.identity.company_name ? `${proj.identity.company_name} · ` : ""}Read-only
                   projection of the Business Graph.

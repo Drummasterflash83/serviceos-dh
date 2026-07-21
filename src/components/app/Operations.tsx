@@ -33,6 +33,14 @@ type Data = {
   failures: PlatformJob[];
 };
 
+// The generic, self-reinforcing recommendation shells the engine emits for every
+// un-enriched card. Operations shows REAL work, so these are filtered out here.
+const GENERIC_REC_TITLES = new Set([
+  "Customer needs attention",
+  "Review new customer",
+  "Card needs review",
+]);
+
 export function Operations() {
   const [data, setData] = useState<Data | null>(null);
 
@@ -41,14 +49,15 @@ export function Operations() {
     void Promise.all([
       getRecommendationSummary(),
       getPlatformJobSummary(),
-      listRecommendations({ status: "open", limit: 8 }),
+      // Fetch a wider set, then keep only differentiated (non-shell) recommendations.
+      listRecommendations({ status: "open", limit: 40 }),
       listPlatformJobs({ status: ["dead_letter", "failed"], limit: 8 }),
     ]).then(([rs, js, recs, fails]) => {
       if (!active) return;
       setData({
         recSummary: rs.ok ? rs.data : null,
         jobSummary: js.ok ? js.data : null,
-        recs: recs.ok ? recs.data : [],
+        recs: recs.ok ? recs.data.filter((r) => !GENERIC_REC_TITLES.has(r.title)).slice(0, 8) : [],
         failures: fails.ok ? fails.data : [],
       });
     });

@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Sparkles,
   ShieldCheck,
+  Phone,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -37,7 +38,8 @@ import {
 import { buildStories, buildBriefing, type Story, type StoryStatus } from "@/lib/command-stories";
 import { approveAutomationIntent } from "@/lib/command-actions";
 import { DailyBriefing } from "./DailyBriefing";
-import { SystemHealth } from "./SystemHealth";
+import { getSystemHealth } from "@/lib/system-health";
+import { getCallStories, openCallDetail, type CallStory } from "@/lib/command-call-stories";
 import { AuthDiagnostics } from "./AuthDiagnostics";
 import type { ApiResult } from "@/lib/types";
 
@@ -501,6 +503,94 @@ export function CommandCentreView({
  * widgets above the shared <CommandCentreView>. This is the ONLY place the browser
  * touches Supabase; the presentation is identical to the demo harness.
  */
+/**
+ * Compact health warning — shown ONLY when a source materially needs attention, so
+ * infrastructure status never dominates the operating view. Full detail lives under
+ * Settings → System Health.
+ */
+function CompactHealth() {
+  const [issues, setIssues] = useState<{ component: string; label: string }[]>([]);
+  useEffect(() => {
+    void getSystemHealth().then((r) => {
+      if (!r.ok) return;
+      setIssues(
+        r.data.components
+          .filter((c) => c.light === "failed" || c.light === "attention")
+          .map((c) => ({ component: c.component, label: c.label })),
+      );
+    });
+  }, []);
+  if (issues.length === 0) return null;
+  const describe = (i: { component: string; label: string }) =>
+    i.component === "email_gmail" ? "Gmail reconnect required" : i.label;
+  return (
+    <a
+      href="#/settings"
+      className="flex items-center justify-between gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-xs transition hover:bg-warning/10"
+    >
+      <span className="flex items-center gap-2 text-foreground">
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
+        {issues.length} source{issues.length === 1 ? "" : "s"} need
+        {issues.length === 1 ? "s" : ""} attention: {issues.map(describe).join(", ")}
+      </span>
+      <span className="shrink-0 font-medium text-muted-foreground">System Health →</span>
+    </a>
+  );
+}
+
+/**
+ * Live business stories from actionable calls — the reusable call-insight model.
+ * Each story is a real call (named event, context, owner, action, confidence) and
+ * clicking it opens the exact source call detail. No hard-coded call ids.
+ */
+function CallStories() {
+  const [stories, setStories] = useState<CallStory[] | null>(null);
+  useEffect(() => {
+    void getCallStories(6).then((r) => setStories(r.ok ? r.data : []));
+  }, []);
+  if (!stories || stories.length === 0) return null;
+  const owner = (o: string | null) => (o ? o.charAt(0).toUpperCase() + o.slice(1) : "Unassigned");
+  return (
+    <div className="rounded-2xl border border-hairline bg-white p-5">
+      <div className="mb-3 flex items-center gap-2">
+        <Phone className="h-4 w-4 text-accent" />
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          From your calls · action needed
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {stories.map((s) => (
+          <button
+            key={s.callId}
+            onClick={() => openCallDetail(s.callId)}
+            className="rounded-xl border border-hairline p-4 text-left transition hover:border-foreground/40"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
+                {s.event}
+              </span>
+              {s.confidence != null && <ConfidenceMeter v={s.confidence} />}
+            </div>
+            <div className="mt-2 line-clamp-2 text-sm text-foreground">{s.summary}</div>
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-hairline pt-2 text-[11px] text-muted-foreground">
+              <div>
+                <span className="text-muted-foreground/70">Owner</span>{" "}
+                <span className="font-medium text-foreground">{owner(s.owner)}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-accent">Open call →</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-muted-foreground/70">Do</span> {s.action}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CommandCentre() {
   const { profile } = useAuth();
   const [feed, setFeed] = useState<ApiResult<CommandFeed> | null>(null);
@@ -521,8 +611,11 @@ export function CommandCentre() {
 
   return (
     <div className="space-y-5">
-      {/* Sensor health first — "can I trust my AI today?" (independent of the story feed) */}
-      <SystemHealth />
+      {/* Business items lead the operating view. Live call stories first, then a
+          compact health warning only when something materially needs attention —
+          full health detail lives under Settings → System Health. */}
+      <CallStories />
+      <CompactHealth />
       <AuthDiagnostics />
 
       {loading && !feed && (
