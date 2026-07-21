@@ -153,6 +153,14 @@ export async function handleCustomerCardSync(
         const person = personId ? peopleById.get(personId) : null;
         const company = companyId ? companyById.get(companyId) : null;
 
+        // Guard: never (re)project synthetic fixtures — demo/test contacts on the
+        // reserved @example.invalid domain must not reappear in a live tenant view.
+        // (RFC 6761 reserves .invalid; it can never be a real customer address.)
+        const personEmail = (person?.primary_email as string | null) ?? null;
+        if (personEmail && /@example\.invalid$/i.test(personEmail)) continue;
+        // Respect an operator archive: never resurrect a card explicitly archived.
+        if (card.status === "archived") continue;
+
         // Interactions for this person or company (recent window, ascending).
         const filters: string[] = [];
         if (personId) filters.push(`related_person_id.eq.${personId}`);
@@ -233,12 +241,16 @@ export async function handleCustomerCardSync(
         });
 
         // ── Identity ──────────────────────────────────────────────────────
+        // Honest identity: resolved name → email → company → explicitly unresolved.
+        // We deliberately do NOT fall back to the stored card.title, which can hold a
+        // stale mislabel (e.g. the tenant's own name from a pre-fix outbound-email
+        // projection); the corrected value is written back to the title below.
         const displayName =
           (person?.display_name as string | null) ||
           [person?.first_name, person?.last_name].filter(Boolean).join(" ") ||
           (person?.primary_email as string | null) ||
-          (card.title as string | null) ||
-          "Unknown contact";
+          (company?.name as string | null) ||
+          "Unresolved contact";
         const emails = [person?.primary_email as string | null].filter(Boolean);
         const phones = [
           person?.primary_phone as string | null,
@@ -320,6 +332,9 @@ export async function handleCustomerCardSync(
         // ── Write the projection — respecting locked fields ───────────────
         const existingContext = (card.context as Record<string, unknown> | null) ?? {};
         const patch: Record<string, unknown> = { context: { ...existingContext, projection } };
+        // Refresh the stored title from the corrected identity so a stale mislabel
+        // (e.g. the tenant name) can never persist on the card.
+        if (!locked.includes("title")) patch.title = displayName;
         if (!locked.includes("status")) patch.status = healthToCardStatus(health);
         if (!locked.includes("latest_activity_at") && lastInteractionAt) {
           patch.latest_activity_at = lastInteractionAt;
