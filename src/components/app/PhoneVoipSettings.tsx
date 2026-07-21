@@ -13,12 +13,132 @@ import {
   confirmEndpointMapping,
   rejectEndpoint,
   setEndpointUnknown,
+  getOnboardingState,
+  runDiscovery,
+  testConnection,
+  getDashboard,
   type TelephonyInventory,
   type TelephonyEndpoint,
   type TenantPerson,
   type CapabilityState,
+  type OnboardingStateResult,
+  type DashboardMetrics,
+  type ConnectionCheck,
 } from "@/lib/telephony";
 import type { ApiResult } from "@/lib/types";
+
+/** Onboarding status + calibration dashboard + connection diagnostics. */
+function OnboardingPanel({ onChanged }: { onChanged: () => void }) {
+  const [state, setState] = useState<OnboardingStateResult | null>(null);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [checks, setChecks] = useState<ConnectionCheck[] | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const [s, d] = await Promise.all([getOnboardingState(), getDashboard()]);
+    if (s.ok) setState(s.data);
+    if (d.ok) setMetrics(d.data.metrics);
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const run = async (key: string, fn: () => Promise<unknown>) => {
+    setBusy(key);
+    await fn();
+    setBusy(null);
+    await load();
+    onChanged();
+  };
+
+  const st = state?.state;
+  const connected = (metrics?.calls_processed ?? 0) > 0 || !!st;
+  const M: Array<[string, number | string]> = metrics
+    ? [
+        ["Endpoints", metrics.active_endpoints],
+        ["Confirmed", metrics.confirmed_mappings],
+        ["Unresolved", metrics.unresolved_endpoints],
+        ["Shared", metrics.shared_devices],
+        ["Calls processed", metrics.calls_processed],
+        ["Internal resolved", `${metrics.internal_resolution_rate}%`],
+      ]
+    : [];
+
+  return (
+    <div className="rounded-2xl border border-hairline bg-white p-5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-sm font-semibold">
+          Onboarding {connected ? "· connected" : "· not connected"}
+        </div>
+        {st && (
+          <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+            {st.stage.replace(/_/g, " ")} · {st.completion_pct}%
+          </span>
+        )}
+      </div>
+      {st && (
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-alt">
+          <div
+            className="h-full rounded-full bg-accent"
+            style={{ width: `${st.completion_pct}%` }}
+          />
+        </div>
+      )}
+
+      {metrics && (
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {M.map(([k, v]) => (
+            <div
+              key={k}
+              className="rounded-lg border border-hairline bg-surface-alt/40 p-2 text-center"
+            >
+              <div className="text-sm font-semibold tabular">{v}</div>
+              <div className="text-[9px] uppercase tracking-wide text-muted-foreground">{k}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <button
+          disabled={!!busy}
+          onClick={() => run("discover", async () => await runDiscovery())}
+          className="inline-flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-surface-alt disabled:opacity-50"
+        >
+          {busy === "discover" && <Loader2 className="h-3 w-3 animate-spin" />} Rescan inventory
+        </button>
+        <button
+          disabled={!!busy}
+          onClick={() =>
+            run("diag", async () => {
+              const r = await testConnection();
+              setChecks(r.ok ? r.data.checks : null);
+            })
+          }
+          className="inline-flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-surface-alt disabled:opacity-50"
+        >
+          {busy === "diag" && <Loader2 className="h-3 w-3 animate-spin" />} Test connection
+        </button>
+      </div>
+
+      {checks && (
+        <div className="mt-2 space-y-1">
+          {checks.map((c) => (
+            <div key={c.name} className="flex items-center gap-2 text-[11px]">
+              {c.ok ? (
+                <Check className="h-3 w-3 text-success" />
+              ) : (
+                <X className="h-3 w-3 text-destructive" />
+              )}
+              <span className="capitalize text-muted-foreground">{c.name.replace(/_/g, " ")}</span>
+              <span className="ml-auto text-muted-foreground">{c.detail}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Search + select ANY active tenant person to assign/replace a mapping. */
 function PersonPicker({
@@ -146,6 +266,8 @@ export function PhoneVoipSettings() {
           <AlertTriangle className="h-3.5 w-3.5" /> {inv.error.message}
         </div>
       )}
+      <OnboardingPanel onChanged={load} />
+
       {loading && !data && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading telephony inventory…

@@ -87,6 +87,64 @@ export function rejectEndpoint(endpointRef: string): Promise<ApiResult<{ success
 export function setEndpointUnknown(endpointRef: string): Promise<ApiResult<{ success: boolean }>> {
   return invoke({ action: "unknown", endpoint_ref: endpointRef });
 }
+
+// ── Onboarding + diagnostics + dashboard ────────────────────────────────────
+export interface OnboardingState {
+  provider: string;
+  stage: string;
+  stage_status: string;
+  completion_pct: number;
+  discovered_count: number;
+  imported_count: number;
+  confirmed_mappings: number;
+  unresolved_mappings: number;
+  accepted_gaps: boolean;
+  last_error: string | null;
+}
+export interface OnboardingStateResult {
+  state: OnboardingState | null;
+  available_providers: Array<{ provider: string; label: string; authMode: string }>;
+  capabilities: { label: string; capabilities: Record<string, CapabilityState> } | null;
+}
+export interface ConnectionCheck {
+  name: string;
+  ok: boolean;
+  detail: string;
+}
+export interface DashboardMetrics {
+  active_endpoints: number;
+  confirmed_mappings: number;
+  shared_devices: number;
+  unresolved_endpoints: number;
+  calls_processed: number;
+  internal_resolved_calls: number;
+  internal_resolution_rate: number;
+}
+
+async function onboardInvoke<T>(body: Record<string, unknown>): Promise<ApiResult<T>> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: { code: "config_error", message: "Supabase is not configured" } };
+  }
+  const { data, error } = await getSupabaseClient().functions.invoke("telephony-onboarding", {
+    body,
+  });
+  if (error) return { ok: false, error: { code: "onboarding_error", message: error.message } };
+  if (data && (data as { success?: boolean }).success === false) {
+    const e = (data as { error?: { code?: string; message?: string } }).error;
+    return { ok: false, error: { code: e?.code ?? "error", message: e?.message ?? "failed" } };
+  }
+  return { ok: true, data: data as T };
+}
+
+export const getOnboardingState = () => onboardInvoke<OnboardingStateResult>({ action: "state" });
+export const runDiscovery = () =>
+  onboardInvoke<{ discovered: number; imported: number }>({ action: "discover" });
+export const testConnection = () =>
+  onboardInvoke<{ ok: boolean; checks: ConnectionCheck[] }>({ action: "test_connection" });
+export const getDashboard = () =>
+  onboardInvoke<{ metrics: DashboardMetrics }>({ action: "dashboard" });
+export const completeOnboarding = (acceptedGaps: boolean) =>
+  onboardInvoke<{ stage: string }>({ action: "complete", accepted_gaps: acceptedGaps });
 export function deactivateEndpoint(endpointRef: string): Promise<ApiResult<{ success: boolean }>> {
   return invoke({ action: "deactivate", endpoint_ref: endpointRef });
 }
