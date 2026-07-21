@@ -12,11 +12,62 @@ import {
   getTelephonyInventory,
   confirmEndpointMapping,
   rejectEndpoint,
+  setEndpointUnknown,
   type TelephonyInventory,
   type TelephonyEndpoint,
+  type TenantPerson,
   type CapabilityState,
 } from "@/lib/telephony";
 import type { ApiResult } from "@/lib/types";
+
+/** Search + select ANY active tenant person to assign/replace a mapping. */
+function PersonPicker({
+  people,
+  disabled,
+  onSelect,
+}: {
+  people: TenantPerson[];
+  disabled: boolean;
+  onSelect: (personId: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const matches = q
+    ? people.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())).slice(0, 6)
+    : [];
+  return (
+    <div className="relative mt-1.5">
+      <input
+        value={q}
+        disabled={disabled}
+        onChange={(e) => {
+          setQ(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder="Assign another person…"
+        className="w-full rounded-lg border border-hairline bg-white px-2.5 py-1 text-[11px] outline-none focus:border-accent disabled:opacity-50"
+      />
+      {open && matches.length > 0 && (
+        <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-hairline bg-white shadow-sm">
+          {matches.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => {
+                setQ("");
+                setOpen(false);
+                onSelect(p.id);
+              }}
+              className="block w-full px-2.5 py-1 text-left text-[11px] hover:bg-surface-alt"
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const CAP_TONE: Record<CapabilityState, string> = {
   supported: "bg-success/10 text-success border-success/20",
@@ -233,10 +284,35 @@ export function PhoneVoipSettings() {
                       >
                         <X className="h-3 w-3" /> Reject
                       </button>
+                      <button
+                        disabled={busy === e.endpoint_ref}
+                        onClick={() =>
+                          act(() => setEndpointUnknown(e.endpoint_ref), e.endpoint_ref)
+                        }
+                        className="inline-flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-white disabled:opacity-50"
+                      >
+                        Unknown
+                      </button>
                       {busy === e.endpoint_ref && (
                         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                       )}
                     </div>
+
+                    {/* Assign / replace with any active tenant person */}
+                    <PersonPicker
+                      people={data.people}
+                      disabled={busy === e.endpoint_ref}
+                      onSelect={(personId) =>
+                        act(
+                          () =>
+                            confirmEndpointMapping({
+                              endpointRef: e.endpoint_ref,
+                              personNodeId: personId,
+                            }),
+                          e.endpoint_ref,
+                        )
+                      }
+                    />
                   </div>
                 );
               })}

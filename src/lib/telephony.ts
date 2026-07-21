@@ -36,9 +36,14 @@ export interface TelephonyEndpoint {
   suggestion: EndpointSuggestion;
   mapping: EndpointMapping | null;
 }
+export interface TenantPerson {
+  id: string;
+  name: string;
+}
 export interface TelephonyInventory {
   provider: string;
   capabilities: { provider: string; label: string; capabilities: Record<string, CapabilityState> };
+  people: TenantPerson[];
   endpoints: TelephonyEndpoint[];
   counts: { endpoints: number; confirmed: number; suggested: number; conflicts: number };
 }
@@ -78,6 +83,9 @@ export function confirmEndpointMapping(input: {
 
 export function rejectEndpoint(endpointRef: string): Promise<ApiResult<{ success: boolean }>> {
   return invoke({ action: "reject", endpoint_ref: endpointRef });
+}
+export function setEndpointUnknown(endpointRef: string): Promise<ApiResult<{ success: boolean }>> {
+  return invoke({ action: "unknown", endpoint_ref: endpointRef });
 }
 export function deactivateEndpoint(endpointRef: string): Promise<ApiResult<{ success: boolean }>> {
   return invoke({ action: "deactivate", endpoint_ref: endpointRef });

@@ -63,46 +63,72 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
+  const nowIso = new Date().toISOString();
+  // Deactivate the current active mapping for an endpoint (kept for history, stamped
+  // with an effective_to). Returns nothing — best-effort.
+  async function retireActive(endpointRef: string, status: string) {
+    await supabase
+      .from("telephony_directory")
+      .update({ active: false, status, effective_to: nowIso })
+      .eq("tenant_id", tenantId)
+      .eq("endpoint_ref", endpointRef)
+      .eq("active", true);
+  }
+
   // ── writes ────────────────────────────────────────────────────────────────
   if (action === "confirm") {
     const endpointRef = String(body.endpoint_ref ?? "");
     const personId = body.person_node_id ? String(body.person_node_id) : null;
     if (!endpointRef) return fail("invalid_input", "endpoint_ref required", 400);
     const shared = body.is_shared_device === true;
-    const { error } = await supabase.from("telephony_directory").upsert(
-      {
-        tenant_id: tenantId,
-        endpoint_ref: endpointRef,
-        extension: body.extension ? String(body.extension) : null,
-        person_node_id: shared ? null : personId,
-        role: body.role ? String(body.role) : null,
-        is_shared_device: shared,
-        active: true,
-        confidence: 1.0,
-        source: "configured",
-        status: shared ? "shared" : "confirmed",
-        metadata: { confirmed_by: auth.ctx.userId, endpoint_ref: endpointRef },
-      },
-      { onConflict: "tenant_id,endpoint_ref" },
-    );
+
+    // Cross-tenant guard: a chosen person MUST be an active person in THIS tenant.
+    if (!shared && personId) {
+      const { data: person } = await supabase
+        .from("graph_nodes")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("id", personId)
+        .eq("node_type", "person")
+        .maybeSingle();
+      if (!person) return fail("invalid_person", "Person not found in this tenant", 400);
+    }
+
+    // Replace (history-preserving): retire the prior active mapping, insert the new one.
+    await retireActive(endpointRef, "inactive");
+    const { error } = await supabase.from("telephony_directory").insert({
+      tenant_id: tenantId,
+      endpoint_ref: endpointRef,
+      extension: body.extension ? String(body.extension) : null,
+      person_node_id: shared ? null : personId,
+      role: body.role ? String(body.role) : null,
+      is_shared_device: shared,
+      active: true,
+      confidence: 1.0,
+      source: "configured",
+      status: shared ? "shared" : "confirmed",
+      effective_from: nowIso,
+      metadata: { confirmed_by: auth.ctx.userId, endpoint_ref: endpointRef },
+    });
     if (error) return fail("db_error", error.message, 500);
     return json({ success: true, action, endpoint: maskEndpoint(endpointRef) });
   }
-  if (action === "reject" || action === "deactivate") {
+  if (action === "reject" || action === "deactivate" || action === "unknown") {
     const endpointRef = String(body.endpoint_ref ?? "");
     if (!endpointRef) return fail("invalid_input", "endpoint_ref required", 400);
-    await supabase.from("telephony_directory").upsert(
-      {
-        tenant_id: tenantId,
-        endpoint_ref: endpointRef,
-        extension: null,
-        active: false,
-        status: action === "reject" ? "rejected" : "inactive",
-        source: "configured",
-        metadata: { endpoint_ref: endpointRef, by: auth.ctx.userId },
-      },
-      { onConflict: "tenant_id,endpoint_ref" },
-    );
+    const status = action === "reject" ? "rejected" : action === "unknown" ? "unknown" : "inactive";
+    await retireActive(endpointRef, status);
+    // Record the review outcome so the endpoint isn't re-suggested endlessly.
+    await supabase.from("telephony_directory").insert({
+      tenant_id: tenantId,
+      endpoint_ref: endpointRef,
+      extension: null,
+      active: false,
+      status,
+      source: "configured",
+      effective_from: nowIso,
+      metadata: { endpoint_ref: endpointRef, by: auth.ctx.userId },
+    });
     return json({ success: true, action, endpoint: maskEndpoint(endpointRef) });
   }
 
@@ -208,7 +234,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
-  const mappingByEp = new Map((mappings ?? []).map((m) => [m.endpoint_ref as string, m]));
+  // Prefer the ACTIVE mapping per endpoint (there can be inactive history rows).
+  const mappingByEp = new Map<string, (typeof mappings)[number]>();
+  for (const m of mappings ?? []) {
+    const ep = m.endpoint_ref as string;
+    const cur = mappingByEp.get(ep);
+    if (!cur || (m.active && !cur.active)) mappingByEp.set(ep, m);
+  }
   const endpoints = [...byEndpoint.entries()].map(([ep, a]) => {
     const nameTally: NameTally[] = [...a.names.values()].map((n) => ({
       name: nameById.get(n.personId ?? "") ?? "?",
@@ -245,10 +277,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
   });
   endpoints.sort((a, b) => b.inbound + b.outbound - (a.inbound + a.outbound));
 
+  // Deduplicated active tenant people for the mapping picker (tenant-scoped — never
+  // another tenant's people). Deduped by display name (the graph has duplicate nodes).
+  const peopleByName = new Map<string, { id: string; name: string }>();
+  for (const p of knownPeople) if (!peopleByName.has(p.name)) peopleByName.set(p.name, p);
+  const peopleList = [...peopleByName.values()].sort((a, b) => a.name.localeCompare(b.name));
+
   return json({
     success: true,
     provider,
     capabilities: providerCapabilities(provider),
+    people: peopleList,
     endpoints,
     counts: {
       endpoints: endpoints.length,
