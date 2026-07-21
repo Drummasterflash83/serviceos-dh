@@ -142,7 +142,7 @@ export async function loadCallIntelligenceInput(
   const { data: dirRows } = await db
     .from("telephony_directory")
     .select(
-      "extension, e164_number, person_node_id, role, is_shared_device, confidence, source, metadata",
+      "extension, e164_number, endpoint_ref, person_node_id, role, is_shared_device, confidence, source, metadata",
     )
     .eq("tenant_id", tenantId)
     .eq("active", true);
@@ -150,7 +150,9 @@ export async function loadCallIntelligenceInput(
     extension: (d.extension as string) ?? "",
     e164Number: (d.e164_number as string | null) ?? null,
     endpointRef:
-      ((d.metadata as Record<string, unknown> | null)?.endpoint_ref as string | null) ?? null,
+      (d.endpoint_ref as string | null) ??
+      ((d.metadata as Record<string, unknown> | null)?.endpoint_ref as string | null) ??
+      null,
     personId: (d.person_node_id as string | null) ?? null,
     displayName: null, // filled from people below
     role: (d.role as string | null) ?? null,

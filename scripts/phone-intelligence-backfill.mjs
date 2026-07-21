@@ -74,6 +74,33 @@ async function targetTranscriptIds() {
       .in("recording_id", recIds);
     return (trs ?? []).map((t) => t.id);
   }
+  // recalibrate all calls on one endpoint (after confirming its mapping)
+  const ENDPOINT_REF = arg("ENDPOINT_REF", "");
+  if (ENDPOINT_REF) {
+    const { data: calls } = await db
+      .from("phone_calls")
+      .select("provider_call_id, linked_id")
+      .eq("tenant_id", TENANT)
+      .or(
+        `raw_payload->>srcEndpoint.eq.${ENDPOINT_REF},raw_payload->>dstEndpoint.eq.${ENDPOINT_REF}`,
+      );
+    const pcids = (calls ?? []).flatMap((c) => [c.provider_call_id, c.linked_id]).filter(Boolean);
+    if (!pcids.length) return [];
+    const { data: recs } = await db
+      .from("phone_recordings")
+      .select("id")
+      .eq("tenant_id", TENANT)
+      .in("provider_call_id", pcids);
+    const recIds = (recs ?? []).map((r) => r.id);
+    if (!recIds.length) return [];
+    const { data: trs } = await db
+      .from("phone_transcripts")
+      .select("id")
+      .eq("tenant_id", TENANT)
+      .in("recording_id", recIds);
+    return (trs ?? []).map((t) => t.id);
+  }
+
   // recent window
   let q = db
     .from("phone_transcripts")
