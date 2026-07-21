@@ -485,6 +485,29 @@ export async function materialiseActions(
 ): Promise<string[]> {
   const ids: string[] = [];
   for (const a of drafts) {
+    // Semantic de-dup: at most one PENDING intent per (tenant, intent_type, primary
+    // entity, day). Prevents the queue flooding with an identical generic action (e.g.
+    // "record a controlled internal note") once per signal for the same customer/day.
+    // Computed BEFORE creating the Action so a duplicate skips both — no orphan Action.
+    const intentPlan = automationIntentFor(a);
+    let dedupKey: string | null = null;
+    if (intentPlan) {
+      const primaryEntity =
+        (Array.isArray(a.source_entities) && a.source_entities[0]) ||
+        (Array.isArray(a.source_interactions) && a.source_interactions[0]) ||
+        "none";
+      const day = new Date().toISOString().slice(0, 10);
+      dedupKey = `${intentPlan.intent_type}:${primaryEntity}:${day}`;
+      const { data: existingDup } = await db
+        .from("automation_intents")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("dedup_key", dedupKey)
+        .eq("status", "pending")
+        .limit(1)
+        .maybeSingle();
+      if (existingDup) continue; // duplicate active intent → skip Action + intent entirely
+    }
     const { data: row } = await db
       .from("intelligence_objects")
       .insert({
@@ -536,7 +559,7 @@ export async function materialiseActions(
       "Action created from observation",
     );
 
-    const intent = automationIntentFor(a);
+    const intent = intentPlan;
     if (intent) {
       // EMIT intent only — the Automation Engine decides execution. Stamp the controlled
       // connector + capability so the verified guard can run an INTERNAL (no-external-
@@ -597,6 +620,7 @@ export async function materialiseActions(
           decision_id: decisionId,
           connector_id: internal && capabilityKey ? DEFAULT_INTERNAL_CONNECTOR : null,
           capability_key: capabilityKey,
+          dedup_key: dedupKey,
         })
         .select("id")
         .single();
