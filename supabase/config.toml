@@ -14,6 +14,13 @@ verify_jwt = true
 [functions.gmail-oauth-callback]
 verify_jwt = false
 
+# Provider (telephony) OAuth callback — the provider redirects the browser here with
+# NO Supabase JWT, so gateway JWT verification MUST be off. Trust comes from the
+# one-time, expiring, tenant/user-bound `state` consumed inside the function
+# (see _shared/telephony/oauth.ts). No secret is ever returned to the browser.
+[functions.provider-oauth-callback]
+verify_jwt = false
+
 # Scheduled phone sync — invoked by cron with NO Supabase JWT, so gateway JWT
 # verification MUST be off. Trust comes from the `x-schedule-secret` header
 # checked inside the function against PHONE_SCHEDULE_SECRET.
