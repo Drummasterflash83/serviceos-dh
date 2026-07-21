@@ -16,7 +16,8 @@ export type HealthComponent =
   | "transcription"
   | "email_sync"
   | "intelligence_processing"
-  | "automation_execution";
+  | "automation_execution"
+  | "phone_intelligence";
 
 export type HealthStatus = "healthy" | "degraded" | "failed" | "unknown";
 

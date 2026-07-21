@@ -26,6 +26,15 @@ import {
   jsonResponse,
 } from "../_shared/simwood.ts";
 import { analyseTranscript, getAnalysisModel, getOpenAiKey } from "../_shared/openai.ts";
+import { loadCallIntelligenceInput } from "../_shared/phone_intelligence/loader.ts";
+import {
+  computeCallIntelligence,
+  persistComputed,
+  buildSummaryContext,
+  type ComputedIntelligence,
+} from "../_shared/phone_intelligence/persist.ts";
+import type { LoadedIds } from "../_shared/phone_intelligence/loader.ts";
+import { recordHealthCheck } from "../_shared/system_health.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const PROVIDER = "openai";
@@ -342,8 +351,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
+  // --- Phone Intelligence: resolve identity + normalise transcript FIRST, so the
+  // summary is generated with resolved context. Best-effort: any failure falls back to
+  // plain analysis and never blocks the call/transcript. -------------------------
+  let piComputed: ComputedIntelligence | null = null;
+  let piIds: LoadedIds | null = null;
+  let analysisText = text;
+  let piContext: string | undefined;
+  try {
+    const loaded = await loadCallIntelligenceInput(supabase, {
+      tenantId,
+      transcriptId: transcriptId as string,
+    });
+    if (loaded) {
+      piComputed = computeCallIntelligence(loaded.input);
+      piIds = loaded.ids;
+      if (piComputed.normalisation?.normalised) analysisText = piComputed.normalisation.normalised;
+      piContext = buildSummaryContext(piComputed, loaded.input.companyName);
+    }
+  } catch (_e) {
+    piComputed = null; // fall back to raw-transcript analysis
+  }
+
   // --- analyse (server-side, provider-isolated) ----------------------------
-  const result = await analyseTranscript({ apiKey, model, transcript: text });
+  const result = await analyseTranscript({
+    apiKey,
+    model,
+    transcript: analysisText,
+    context: piContext,
+  });
   if (!result.ok) {
     return await finishFailed(result.code, result.message, result.httpStatus);
   }
@@ -409,6 +445,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
     insightId = created.id as string;
   }
 
+  // --- persist Phone Intelligence (idempotent) + emit its OWN health signal, kept
+  // distinct from phone ingestion so a PI failure never makes ingestion look healthy.
+  if (piComputed && piIds) {
+    const r = await persistComputed(supabase, { ...piIds, insightId }, piComputed);
+    await recordHealthCheck(supabase, {
+      tenantId,
+      component: "phone_intelligence",
+      status: r.ok ? "healthy" : "degraded",
+      error: r.ok ? null : (r.error ?? "persist failed"),
+      metadata: {
+        call_id: piIds.callId,
+        direction: piComputed.direction.direction,
+        internal_resolved: !!piComputed.internal.resolvedEntityId,
+        external_resolved: !!piComputed.external.resolvedEntityId,
+        conflicts: piComputed.identity.hasConflict,
+        corrections: piComputed.normalisation?.corrections.filter((c) => c.applied).length ?? 0,
+      },
+    });
+  }
+
   await finish(
     "success",
     1,
@@ -417,6 +473,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       intent: insight.intent,
       urgency: insight.urgency,
       action_required: insight.action_required,
+      phone_intelligence: piComputed ? "computed" : "skipped",
     },
     null,
   );

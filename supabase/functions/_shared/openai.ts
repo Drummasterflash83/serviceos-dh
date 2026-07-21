@@ -139,6 +139,9 @@ export async function analyseTranscript(opts: {
   apiKey: string;
   model: string;
   transcript: string;
+  /** Resolved Phone Intelligence context (direction, company, participants). Used for
+   *  the summary ONLY as far as it is supported — never to invent an identity. */
+  context?: string;
 }): Promise<AnalyseResult> {
   const system =
     "You are an operations analyst for a UK heating & plumbing company. " +
@@ -149,13 +152,24 @@ export async function analyseTranscript(opts: {
     "confidence (number between 0 and 1), customer_name (string or null), phone_number (string or null), " +
     "address_or_postcode (string or null), appliance_or_system (string or null), " +
     "fault_or_reason (string or null), promised_action (string or null), risk_flags (array of strings). " +
-    "Base everything only on the transcript; do not invent details. Use null when unknown.";
+    "Base everything only on the transcript; do not invent details. Use null when unknown." +
+    (opts.context
+      ? " A RESOLVED CONTEXT block (verified call direction, the tenant company, and " +
+        "resolved participants with confidence) precedes the transcript. Prefer it for the " +
+        "summary's direction and participant names. When a participant is 'Unknown team " +
+        "member' or unresolved, say so honestly — never guess a name. Never present an " +
+        "unverified spoken name as certain."
+      : "");
+
+  const userContent = opts.context
+    ? `[RESOLVED CONTEXT]\n${opts.context}\n\n[TRANSCRIPT]\n${opts.transcript}`
+    : opts.transcript;
 
   const requestBody = {
     model: opts.model,
     messages: [
       { role: "system", content: system },
-      { role: "user", content: opts.transcript },
+      { role: "user", content: userContent },
     ],
     response_format: { type: "json_object" },
     temperature: 0,

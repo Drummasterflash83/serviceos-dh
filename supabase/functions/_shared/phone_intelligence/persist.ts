@@ -185,6 +185,33 @@ export function computeCallIntelligence(input: ComputeInput): ComputedIntelligen
   };
 }
 
+/**
+ * Build the honest RESOLVED CONTEXT block fed to the summary generator. States only
+ * what is supported; unresolved/unknown participants are labelled as such so the model
+ * never invents a name. Company name grounds "our side" without asserting the speaker.
+ */
+export function buildSummaryContext(
+  computed: ComputedIntelligence,
+  companyName?: string | null,
+): string {
+  const internal = computed.internal.resolvedEntityId
+    ? `${computed.internal.displayName}${computed.internal.staffRole ? ` (${computed.internal.staffRole})` : ""} — confidence ${computed.internal.confidence.toFixed(2)}`
+    : "Unknown team member (no confirmed extension mapping)";
+  const external = computed.external.resolvedEntityId
+    ? `${computed.external.displayName} — confidence ${computed.external.confidence.toFixed(2)}`
+    : `Unresolved external caller${computed.canonical.externalNumber ? " (number on file)" : ""}`;
+  const lines = [
+    `Call direction: ${computed.direction.direction} (confidence ${computed.direction.confidence.toFixed(2)})`,
+    `Tenant company: ${companyName ?? "the company"}`,
+    `Internal participant: ${internal}`,
+    `External participant: ${external}`,
+    computed.identity.hasConflict
+      ? "Identity conflict: metadata and the spoken introduction disagree — do not assert a single internal name."
+      : "Identity conflict: none",
+  ];
+  return lines.join("\n");
+}
+
 // ── DB persistence (idempotent, tenant-scoped, failure-isolated) ─────────────
 // The caller passes a service-role client and the already-validated tenant/call/
 // transcript ids. Every write is scoped by tenant_id and keyed so re-processing

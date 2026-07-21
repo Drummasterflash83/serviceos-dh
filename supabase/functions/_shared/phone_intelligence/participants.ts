@@ -141,23 +141,28 @@ export function resolveInternalParticipant(input: InternalResolveInput): Resolve
     return r;
   }
 
-  // No extension mapping → can we lean on a confidently-matched spoken name? Only as a
-  // PROBABLE internal (low confidence), never definitive.
-  const strong = spoken.find((s) => s.matchedPersonId && s.confidence >= 0.7);
-  if (strong) {
-    r.resolvedEntityId = strong.matchedPersonId;
-    r.displayName = strong.matchedPersonName;
-    r.confidence = Math.min(0.6, strong.confidence * 0.7);
-    r.evidence.push({
-      type: "spoken_name_only",
-      value: strong.name,
-      weight: strong.confidence,
+  // No extension mapping. A spoken name is NOT enough to assign an internal identity
+  // (the core rule: never assign a speaker from transcript text alone). We return an
+  // honest UNKNOWN and record the spoken name only as a SUGGESTION — evidence that
+  // feeds endpoint-mapping discovery/review, never a resolved identity.
+  const u = empty("unknown");
+  const suggestion = spoken.find((s) => s.matchedPersonId && s.confidence >= 0.7);
+  if (suggestion) {
+    u.evidence.push({
+      type: "spoken_name_suggestion",
+      value: suggestion.name,
+      weight: suggestion.confidence,
       source: "transcript",
     });
-    r.sourceFields.note = "probable internal (spoken-name only, no extension mapping)";
-    return r;
+    u.sourceFields.spokenNameSuggestion = {
+      personId: suggestion.matchedPersonId,
+      name: suggestion.matchedPersonName,
+      confidence: suggestion.confidence,
+    };
+    u.sourceFields.note =
+      "spoken name suggests an internal person, but no extension mapping is configured — identity remains unknown";
   }
-  return empty("unknown");
+  return u;
 }
 
 /** An external-number → canonical entity match (caller-fetched via interactions/graph). */

@@ -111,6 +111,21 @@ ok("unknown: no mapping + poor transcript → unknown", () => {
   assert.equal(internal.resolvedEntityId, null);
 });
 
+// 5b) Spoken name WITHOUT an extension mapping → honest unknown + a discovery
+// suggestion (never a resolved internal identity from transcript alone).
+ok("spoken-name without mapping → unknown, recorded as suggestion only", () => {
+  const spoken = detectSpokenNames({
+    transcript: "hi it's Liz",
+    transcriptQuality: 0.85,
+    knownPeople: [{ id: "person-liz", name: "Liz" }],
+  });
+  const internal = resolveInternalParticipant({ extensionMapping: null, spokenNames: spoken });
+  assert.equal(internal.resolvedEntityId, null, "no identity assigned from transcript alone");
+  assert.equal(internal.role, "unknown");
+  const s = internal.sourceFields.spokenNameSuggestion;
+  assert.ok(s && s.personId === "person-liz", "suggestion recorded for endpoint discovery");
+});
+
 // 6) Orchestration — combined identity surfaces confidence, conflict, unresolved.
 ok("orchestration surfaces confidence, conflict and unresolved", () => {
   const internal = resolveInternalParticipant({ extensionMapping: LIZ, spokenNames: [] });
