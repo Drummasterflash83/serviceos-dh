@@ -30,6 +30,7 @@ run "discovery suggestions"   node supabase/functions/_shared/telephony/discover
 
 echo "── Vault broker (real supabase_vault) ───────────────────────"
 run "broker SQL properties"   bash -c "out=\$(docker exec -i supabase_db_serviceos-dh psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/provider_secret_broker.test.sql 2>&1); echo \"\$out\" | grep -q 'ALL PROVIDER-SECRET-BROKER TESTS PASSED'"
+run "oauth-state cleanup"     bash -c "out=\$(docker exec -i supabase_db_serviceos-dh psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/provider_oauth_state_cleanup.test.sql 2>&1); echo \"\$out\" | grep -q 'OAUTH-STATE CLEANUP: ALL PASSED'"
 run "vault probe (Data API)"  node scripts/provider-vault-probe.test.mjs
 run "credential broker"       node scripts/provider-credential-broker.test.mjs
 
