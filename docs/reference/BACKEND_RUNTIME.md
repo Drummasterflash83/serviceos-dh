@@ -67,7 +67,10 @@ adds only the missing lease and claim machinery, additively:
 - **RPC `platform_jobs_claim(p_worker, p_batch, p_lease_seconds, p_job_types[])`** —
   the atomic claim function (see below).
 - **Unique index `platform_jobs_active_job_key_uk (tenant_id, job_key)
-  WHERE status IN ('queued','running')`** — the one-active-row invariant.
+  WHERE status IN ('queued','running','retrying')`** — the one-active-row invariant.
+  `retrying` is included (migration `20260804120000`) because the worker claims
+  `queued`/`retrying` jobs, so a job in retry backoff is still active and must not be
+  enqueued again as a duplicate.
 
 Status lifecycle: `queued → running → succeeded`, on failure
 `running → retrying → running → …`, exhausted or terminal `→ dead_letter`, operator
@@ -81,8 +84,8 @@ constraint changed.
 `enqueueJob()` (in [`_shared/platform_queue.ts`](../../supabase/functions/_shared/platform_queue.ts))
 inserts a `queued` row keyed by `job_key`. The partial unique index
 `platform_jobs_active_job_key_uk` means a second enqueue with the same
-`(tenant_id, job_key)` while one is still `queued` or `running` is not inserted; the
-existing job is returned (`duplicate: true`).
+`(tenant_id, job_key)` while one is still `queued`, `running`, or `retrying` is not
+inserted; the existing job is returned (`duplicate: true`).
 
 Each scheduler enqueues with the *same* `job_key` its handler already uses (for
 example `phone.process_pending:<tenant>`). So exactly one `platform_jobs` row exists

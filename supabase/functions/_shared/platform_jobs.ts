@@ -14,7 +14,11 @@
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
-const ACTIVE_STATUSES = ["queued", "running"];
+// A 'retrying' job is ACTIVE — the worker claims status IN ('queued','retrying'),
+// so it WILL run. It is covered by platform_jobs_active_job_key_uk (see migration
+// 20260804120000). Keep this list aligned with that index's predicate so the
+// duplicate-recovery lookup below resolves the existing active row.
+const ACTIVE_STATUSES = ["queued", "running", "retrying"];
 
 export interface CreatePlatformJobInput {
   tenantId: string;
