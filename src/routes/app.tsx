@@ -82,6 +82,7 @@ import { CardsView } from "@/components/app/Cards";
 import { EngineersView } from "@/components/app/Engineers";
 import { Communications } from "@/components/app/Communications";
 import { LearningCentre } from "@/components/app/LearningCentre";
+import { PhoneVoipSettings } from "@/components/app/PhoneVoipSettings";
 import { CommandCentre } from "@/components/app/CommandCentre";
 import { OperationsCentre } from "@/components/ops/centre/OperationsCentre";
 import { Operations } from "@/components/app/Operations";
@@ -2421,7 +2422,20 @@ function Finance() {
 
 /* ────── SETTINGS ────── */
 function SettingsView() {
-  const [pane, setPane] = useState<"settings" | "system-health">("settings");
+  const [pane, setPane] = useState<"settings" | "system-health" | "phone-voip">("settings");
+  if (pane === "phone-voip") {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setPane("settings")}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Settings
+        </button>
+        <PhoneVoipSettings />
+      </div>
+    );
+  }
   if (pane === "system-health") {
     return (
       <div className="space-y-4">
@@ -2441,10 +2455,15 @@ function SettingsView() {
       </div>
     );
   }
+  const paneFor: Record<string, "system-health" | "phone-voip"> = {
+    "System Health": "system-health",
+    "Phone / VoIP": "phone-voip",
+  };
   const sections = [
     "Workspace",
     "Members & roles",
     "Integrations",
+    "Phone / VoIP",
     "System Health",
     "Security & audit",
     "Billing",
@@ -2454,10 +2473,10 @@ function SettingsView() {
       <SystemsInventoryPanel />
       <div className="max-w-2xl space-y-3">
         {sections.map((s) =>
-          s === "System Health" ? (
+          paneFor[s] ? (
             <button
               key={s}
-              onClick={() => setPane("system-health")}
+              onClick={() => setPane(paneFor[s])}
               className="flex w-full items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 text-left hover:bg-surface-alt"
             >
               <div className="text-sm font-medium">{s}</div>
