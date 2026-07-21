@@ -18,7 +18,8 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import type { ConnectionSnapshot } from "./adapter.ts";
 
-export type ConnectionStatusValue = "not_configured" | "configured" | "manual" | "revoked" | "error";
+export type ConnectionStatusValue =
+  "not_configured" | "configured" | "manual" | "revoked" | "error";
 
 export interface ConnectionStatus {
   provider: string;
@@ -202,12 +203,19 @@ export async function storeCredential(
   if (upErr) throw new Error("connection_metadata_write_failed");
 
   // 3. Audit — field NAMES only, never values.
-  await logConnectionEvent(db, tenantId, provider, isReplace ? "credentials_replaced" : "credentials_configured", input.actorId, {
-    auth_mode: input.authMode,
-    fields_set: Object.keys(input.secrets),
-    non_secret_keys: Object.keys(input.nonSecret),
-    manual: !!input.manual,
-  });
+  await logConnectionEvent(
+    db,
+    tenantId,
+    provider,
+    isReplace ? "credentials_replaced" : "credentials_configured",
+    input.actorId,
+    {
+      auth_mode: input.authMode,
+      fields_set: Object.keys(input.secrets),
+      non_secret_keys: Object.keys(input.nonSecret),
+      manual: !!input.manual,
+    },
+  );
 
   return getConnectionStatus(db, tenantId, provider);
 }
@@ -271,7 +279,11 @@ export async function recordConnectionTest(
 ): Promise<void> {
   await db
     .from("provider_connections")
-    .update({ verified_at: ok ? new Date().toISOString() : null, last_test: summary, updated_by: actorId })
+    .update({
+      verified_at: ok ? new Date().toISOString() : null,
+      last_test: summary,
+      updated_by: actorId,
+    })
     .eq("tenant_id", tenantId)
     .eq("provider", provider);
   await logConnectionEvent(db, tenantId, provider, "connection_tested", actorId, { ok });
@@ -309,5 +321,12 @@ export async function listConnectionEvents(
     .eq("provider", provider)
     .order("created_at", { ascending: false })
     .limit(limit);
-  return (data as Array<{ event: string; actor_id: string | null; detail: unknown; created_at: string }>) ?? [];
+  return (
+    (data as Array<{
+      event: string;
+      actor_id: string | null;
+      detail: unknown;
+      created_at: string;
+    }>) ?? []
+  );
 }

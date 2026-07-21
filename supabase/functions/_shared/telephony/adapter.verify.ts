@@ -49,7 +49,9 @@ await ok("testConnection is honest: not-configured fails, configured passes", as
   // Unconfigured (stub ctx has no connection) → structured checks, overall not ok.
   const unconfigured = await getAdapter("mock")!.testConnection(ctx);
   assert.equal(unconfigured.ok, false);
-  assert.ok(unconfigured.checks.length >= 1 && unconfigured.checks.every((c) => typeof c.ok === "boolean"));
+  assert.ok(
+    unconfigured.checks.length >= 1 && unconfigured.checks.every((c) => typeof c.ok === "boolean"),
+  );
   assert.ok(unconfigured.checks.some((c) => c.name === "credentials_present" && c.ok === false));
 
   // Configured: connection snapshot + a resolver that returns a secret → overall ok.
@@ -100,30 +102,51 @@ await ok("connection schema genuinely differs per adapter (form is adapter-drive
   assert.equal(oauth.oauth?.supported, true);
   assert.equal(oauth.oauth?.pkce, true);
   // different field sets → different rendered forms
-  const mockNames = mock.fields.map((f) => f.name).sort().join(",");
-  const oauthNames = oauth.fields.map((f) => f.name).sort().join(",");
+  const mockNames = mock.fields
+    .map((f) => f.name)
+    .sort()
+    .join(",");
+  const oauthNames = oauth.fields
+    .map((f) => f.name)
+    .sort()
+    .join(",");
   assert.notEqual(mockNames, oauthNames);
 });
 
-await ok("validateConnectionInput enforces required + pattern; keeps existing secret on edit", () => {
-  const mock = getConnectionSpec("mock")!;
-  // missing everything → errors for the required fields
-  const e1 = validateConnectionInput(mock, {});
-  assert.ok(e1.some((e) => e.field === "account_id"));
-  assert.ok(e1.some((e) => e.field === "api_key"));
-  // bad pattern
-  const e2 = validateConnectionInput(mock, { account_id: "!!", api_key: "longenough", region: "eu" });
-  assert.ok(e2.some((e) => e.field === "account_id"));
-  // valid
-  const e3 = validateConnectionInput(mock, { account_id: "acct_1", api_key: "longenough", region: "eu" });
-  assert.equal(e3.length, 0);
-  // editing: api_key omitted but already stored → OK
-  const e4 = validateConnectionInput(mock, { account_id: "acct_1", region: "eu" }, ["api_key"]);
-  assert.equal(e4.length, 0);
-  // invalid region option rejected
-  const e5 = validateConnectionInput(mock, { account_id: "acct_1", api_key: "longenough", region: "moon" });
-  assert.ok(e5.some((e) => e.field === "region"));
-});
+await ok(
+  "validateConnectionInput enforces required + pattern; keeps existing secret on edit",
+  () => {
+    const mock = getConnectionSpec("mock")!;
+    // missing everything → errors for the required fields
+    const e1 = validateConnectionInput(mock, {});
+    assert.ok(e1.some((e) => e.field === "account_id"));
+    assert.ok(e1.some((e) => e.field === "api_key"));
+    // bad pattern
+    const e2 = validateConnectionInput(mock, {
+      account_id: "!!",
+      api_key: "longenough",
+      region: "eu",
+    });
+    assert.ok(e2.some((e) => e.field === "account_id"));
+    // valid
+    const e3 = validateConnectionInput(mock, {
+      account_id: "acct_1",
+      api_key: "longenough",
+      region: "eu",
+    });
+    assert.equal(e3.length, 0);
+    // editing: api_key omitted but already stored → OK
+    const e4 = validateConnectionInput(mock, { account_id: "acct_1", region: "eu" }, ["api_key"]);
+    assert.equal(e4.length, 0);
+    // invalid region option rejected
+    const e5 = validateConnectionInput(mock, {
+      account_id: "acct_1",
+      api_key: "longenough",
+      region: "moon",
+    });
+    assert.ok(e5.some((e) => e.field === "region"));
+  },
+);
 
 await ok("partitionValues routes secrets vs non-secret per the spec", () => {
   const mock = getConnectionSpec("mock")!;

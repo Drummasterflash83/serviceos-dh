@@ -12,13 +12,7 @@
 import type { AuthMode } from "./adapter.ts";
 
 export type ConnectionFieldType =
-  | "text"
-  | "secret"
-  | "select"
-  | "url"
-  | "region"
-  | "textarea"
-  | "boolean";
+  "text" | "secret" | "select" | "url" | "region" | "textarea" | "boolean";
 
 export interface ConnectionFieldOption {
   value: string;

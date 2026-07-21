@@ -42,7 +42,8 @@ const OAUTH_DEMO_CAPS: ProviderCapabilities = {
 const OAUTH_DEMO_SPEC: ConnectionSpec = {
   provider: "oauth_demo",
   label: "OAuth Demo Provider",
-  description: "Synthetic OAuth provider for proving the delegated-authorization framework. Dev only.",
+  description:
+    "Synthetic OAuth provider for proving the delegated-authorization framework. Dev only.",
   iconKey: "oauth_demo",
   regions: ["global"],
   authMode: "oauth",
@@ -68,22 +69,47 @@ const OAUTH_DEMO_SPEC: ConnectionSpec = {
   webhook: { required: false, inbound: true },
   accountRefField: "workspace",
   accountRefFormat: "workspace slug",
-  helpText: "Connect by authorizing ServiceOS with the provider. Tokens are stored encrypted; never shown.",
+  helpText:
+    "Connect by authorizing ServiceOS with the provider. Tokens are stored encrypted; never shown.",
   manual: false,
 };
 
 const FIXTURES: Partial<Record<CanonicalType, DiscoveredObject[]>> = {
   provider_account: [
-    { providerObjectId: "oauth-acct-1", canonicalType: "provider_account", label: "OAuth Demo Account", confidence: 1, discoverySource: "api" },
+    {
+      providerObjectId: "oauth-acct-1",
+      canonicalType: "provider_account",
+      label: "OAuth Demo Account",
+      confidence: 1,
+      discoverySource: "api",
+    },
   ],
   ddi: [
-    { providerObjectId: "+441134960001", canonicalType: "ddi", label: "DDI …0001", confidence: 1, discoverySource: "api" },
+    {
+      providerObjectId: "+441134960001",
+      canonicalType: "ddi",
+      label: "DDI …0001",
+      confidence: 1,
+      discoverySource: "api",
+    },
   ],
   endpoint: [
-    { providerObjectId: "oauth-ep-1", canonicalType: "endpoint", label: "Endpoint 1", confidence: 1, discoverySource: "api" },
+    {
+      providerObjectId: "oauth-ep-1",
+      canonicalType: "endpoint",
+      label: "Endpoint 1",
+      confidence: 1,
+      discoverySource: "api",
+    },
   ],
   queue: [
-    { providerObjectId: "oauth-q-1", canonicalType: "queue", label: "Support queue", confidence: 1, discoverySource: "api" },
+    {
+      providerObjectId: "oauth-q-1",
+      canonicalType: "queue",
+      label: "Support queue",
+      confidence: 1,
+      discoverySource: "api",
+    },
   ],
 };
 
@@ -102,16 +128,29 @@ export const oauthDemoAdapter: ProviderAdapter = {
       tokenResolves = typeof t === "string" && t.length > 0;
     }
     const checks = [
-      { name: "credentials_present", ok: hasToken, detail: hasToken ? "access token present" : "not authorized" },
-      { name: "authentication_accepted", ok: tokenResolves, detail: tokenResolves ? "token resolved from secure store" : "no valid token" },
-      { name: "provider_reachable", ok: tokenResolves, detail: tokenResolves ? "authorized session active" : "authorize required" },
+      {
+        name: "credentials_present",
+        ok: hasToken,
+        detail: hasToken ? "access token present" : "not authorized",
+      },
+      {
+        name: "authentication_accepted",
+        ok: tokenResolves,
+        detail: tokenResolves ? "token resolved from secure store" : "no valid token",
+      },
+      {
+        name: "provider_reachable",
+        ok: tokenResolves,
+        detail: tokenResolves ? "authorized session active" : "authorize required",
+      },
     ];
     return { ok: checks.every((c) => c.ok), checks };
   },
   discover(type: CanonicalType, ctx: AdapterContext): Promise<DiscoverResult> {
     // Only serve inventory once authorized (token configured) — honest otherwise.
     const authorized = (ctx.connection?.configuredFields ?? []).includes("oauth_access_token");
-    if (!authorized) return Promise.resolve(unsupported("OAuth authorization required before discovery."));
+    if (!authorized)
+      return Promise.resolve(unsupported("OAuth authorization required before discovery."));
     const objects = FIXTURES[type];
     if (!objects) return Promise.resolve(unsupported(`oauth_demo does not expose ${type}`));
     return Promise.resolve({ supported: true, ok: true, objects });

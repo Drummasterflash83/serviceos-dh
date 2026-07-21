@@ -19,9 +19,10 @@ function redirect(to: string): Response {
 }
 
 function returnUrl(provider: string, ok: boolean, code?: string): string {
-  const base = Deno.env.get(`PROVIDER_OAUTH_${provider.toUpperCase()}_RETURN_URL`)
-    ?? Deno.env.get("PROVIDER_OAUTH_RETURN_URL")
-    ?? "/#/settings";
+  const base =
+    Deno.env.get(`PROVIDER_OAUTH_${provider.toUpperCase()}_RETURN_URL`) ??
+    Deno.env.get("PROVIDER_OAUTH_RETURN_URL") ??
+    "/#/settings";
   const sep = base.includes("?") ? "&" : "?";
   const status = ok ? "connected" : "error";
   return `${base}${sep}provider=${encodeURIComponent(provider)}&oauth=${status}${code ? `&reason=${encodeURIComponent(code)}` : ""}`;
@@ -45,17 +46,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const { tenantId, provider, codeVerifier, userId } = consumed;
 
   if (providerError) {
-    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, { reason: "provider_denied" });
+    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, {
+      reason: "provider_denied",
+    });
     return redirect(returnUrl(provider, false, "denied"));
   }
   if (!code) {
-    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, { reason: "missing_code" });
+    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, {
+      reason: "missing_code",
+    });
     return redirect(returnUrl(provider, false, "missing_code"));
   }
 
   const spec = getConnectionSpec(provider);
   if (!spec?.oauth?.supported) {
-    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, { reason: "oauth_unsupported" });
+    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, {
+      reason: "oauth_unsupported",
+    });
     return redirect(returnUrl(provider, false, "unsupported"));
   }
 
@@ -85,7 +92,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
       if (resp.ok) {
         const j = (await resp.json()) as { access_token?: string; refresh_token?: string };
-        if (j.access_token) tokens = { access_token: j.access_token, refresh_token: j.refresh_token };
+        if (j.access_token)
+          tokens = { access_token: j.access_token, refresh_token: j.refresh_token };
       }
     } catch {
       tokens = null; // sanitised — never surface upstream error bodies
@@ -93,11 +101,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } else if (provider === "oauth_demo") {
     // Dev-only synthetic issuance to exercise the framework end to end (clearly not a real
     // provider). Real providers must configure PROVIDER_OAUTH_<P>_TOKEN_URL above.
-    tokens = { access_token: `demo-access-${state.slice(0, 8)}`, refresh_token: `demo-refresh-${state.slice(0, 8)}` };
+    tokens = {
+      access_token: `demo-access-${state.slice(0, 8)}`,
+      refresh_token: `demo-refresh-${state.slice(0, 8)}`,
+    };
   }
 
   if (!tokens) {
-    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, { reason: "token_exchange_failed" });
+    await logConnectionEvent(db, tenantId, provider, "oauth_failed", userId, {
+      reason: "token_exchange_failed",
+    });
     return redirect(returnUrl(provider, false, "token_exchange"));
   }
 
@@ -115,7 +128,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // Advance onboarding to connection_verified.
   await db
     .from("telephony_onboarding")
-    .update({ stage: "connection_verified", stage_status: "done", completion_pct: 33, last_success_action: "oauth", updated_by: userId })
+    .update({
+      stage: "connection_verified",
+      stage_status: "done",
+      completion_pct: 33,
+      last_success_action: "oauth",
+      updated_by: userId,
+    })
     .eq("tenant_id", tenantId)
     .eq("provider", provider);
   await logConnectionEvent(db, tenantId, provider, "oauth_completed", userId, {});

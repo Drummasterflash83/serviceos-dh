@@ -23,7 +23,8 @@ import type { ConnectionSpec } from "./connection_spec.ts";
 const MOCK_SPEC: ConnectionSpec = {
   provider: "mock",
   label: "Mock Provider",
-  description: "Synthetic development provider for onboarding/isolation proofs. Not a real integration.",
+  description:
+    "Synthetic development provider for onboarding/isolation proofs. Not a real integration.",
   iconKey: "mock",
   regions: ["eu", "us"],
   authMode: "api_key",
@@ -161,16 +162,32 @@ export const mockAdapter: ProviderAdapter = {
       const v = await ctx.resolveSecret("api_key");
       keyResolves = typeof v === "string" && v.length > 0;
     }
-    const accountId = ctx.connection?.config?.account_id ? String(ctx.connection.config.account_id) : null;
+    const accountId = ctx.connection?.config?.account_id
+      ? String(ctx.connection.config.account_id)
+      : null;
     const checks = [
-      { name: "credentials_present", ok: hasKeyRef, detail: hasKeyRef ? "API key configured" : "no API key configured" },
+      {
+        name: "credentials_present",
+        ok: hasKeyRef,
+        detail: hasKeyRef ? "API key configured" : "no API key configured",
+      },
       {
         name: "authentication_accepted",
         ok: keyResolves,
-        detail: keyResolves ? "credential resolved from secure store" : "credential could not be resolved",
+        detail: keyResolves
+          ? "credential resolved from secure store"
+          : "credential could not be resolved",
       },
-      { name: "provider_reachable", ok: keyResolves, detail: keyResolves ? "mock endpoint reachable" : "not connected" },
-      { name: "account_accessible", ok: !!accountId, detail: accountId ? `account ${accountId}` : "no account id" },
+      {
+        name: "provider_reachable",
+        ok: keyResolves,
+        detail: keyResolves ? "mock endpoint reachable" : "not connected",
+      },
+      {
+        name: "account_accessible",
+        ok: !!accountId,
+        detail: accountId ? `account ${accountId}` : "no account id",
+      },
     ];
     return { ok: checks.every((c) => c.ok), checks };
   },

@@ -8,16 +8,17 @@
 
 import { createSupabaseAdmin } from "../_shared/simwood.ts";
 import { requireTenantUser, assertSameTenant } from "../_shared/authz.ts";
-import { getAdapter, availableProviders, getConnectionSpec } from "../_shared/telephony/registry.ts";
+import {
+  getAdapter,
+  availableProviders,
+  getConnectionSpec,
+} from "../_shared/telephony/registry.ts";
 import {
   DISCOVERY_ORDER,
   type AdapterContext,
   type CanonicalType,
 } from "../_shared/telephony/adapter.ts";
-import {
-  validateConnectionInput,
-  partitionValues,
-} from "../_shared/telephony/connection_spec.ts";
+import { validateConnectionInput, partitionValues } from "../_shared/telephony/connection_spec.ts";
 import {
   storeCredential,
   getConnectionStatus,
@@ -181,7 +182,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (action === "test_connection") {
     ctx.connection = await connectionSnapshot(db, tenantId, provider);
     const result = await adapter.testConnection(ctx);
-    await recordConnectionTest(db, tenantId, provider, result.ok, { checks: result.checks }, actorId);
+    await recordConnectionTest(
+      db,
+      tenantId,
+      provider,
+      result.ok,
+      { checks: result.checks },
+      actorId,
+    );
     return json({ success: true, provider, ...result });
   }
 
@@ -386,7 +394,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const errors = validateConnectionInput(spec, values, existing.configuredFields);
     if (errors.length) {
       return json(
-        { success: false, error: { code: "validation_failed", message: "Invalid connection details" }, field_errors: errors },
+        {
+          success: false,
+          error: { code: "validation_failed", message: "Invalid connection details" },
+          field_errors: errors,
+        },
         400,
       );
     }
@@ -422,7 +434,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .limit(1);
     const acct = (accts ?? [])[0];
     if (!acct) {
-      return json({ success: true, provider, imported: false, reason: "no existing connector account found" });
+      return json({
+        success: true,
+        provider,
+        imported: false,
+        reason: "no existing connector account found",
+      });
     }
     // Import WITHOUT copying credentials: mark manual/provider-assisted, masked account ref.
     const { data: existing } = await db
@@ -456,7 +473,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       imported: true,
       manual: true,
     });
-    return json({ success: true, provider, imported: true, connection: await getConnectionStatus(db, tenantId, provider) });
+    return json({
+      success: true,
+      provider,
+      imported: true,
+      connection: await getConnectionStatus(db, tenantId, provider),
+    });
   }
 
   // ── diagnostics (structured, honest) ────────────────────────────────────────
@@ -486,13 +508,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
       call_history_permission: {
         likely_cause: "The account lacks call-history access, or no calls have synced yet.",
-        recommended_action: "Confirm call-history permission with the provider; wait for the next sync.",
+        recommended_action:
+          "Confirm call-history permission with the provider; wait for the next sync.",
       },
     };
     const checks = test.checks.map((c) => ({
       ...c,
       likely_cause: c.ok ? null : (remediation[c.name]?.likely_cause ?? "This check did not pass."),
-      recommended_action: c.ok ? null : (remediation[c.name]?.recommended_action ?? "Retry, or contact your operator."),
+      recommended_action: c.ok
+        ? null
+        : (remediation[c.name]?.recommended_action ?? "Retry, or contact your operator."),
     }));
     return json({
       success: true,
@@ -509,12 +534,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // ── behaviour (manual pickup / shared-device configuration) ─────────────────
   if (action === "behaviour") {
-    const entries = Array.isArray(body.entries) ? (body.entries as Array<Record<string, unknown>>) : [];
+    const entries = Array.isArray(body.entries)
+      ? (body.entries as Array<Record<string, unknown>>)
+      : [];
     let saved = 0;
     for (const e of entries) {
       const t = String(e.canonical_type ?? "");
       if (!t) continue;
-      const pid = String(e.provider_object_id ?? `manual:${t}:${String(e.label ?? crypto.randomUUID())}`);
+      const pid = String(
+        e.provider_object_id ?? `manual:${t}:${String(e.label ?? crypto.randomUUID())}`,
+      );
       const { error } = await db.from("telephony_inventory").upsert(
         {
           tenant_id: tenantId,
@@ -544,7 +573,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       behaviour_config: config,
       last_success_action: "behaviour",
     });
-    if (saved) await logConnectionEvent(db, tenantId, provider, "inventory_imported", actorId, { manual_entries: saved });
+    if (saved)
+      await logConnectionEvent(db, tenantId, provider, "inventory_imported", actorId, {
+        manual_entries: saved,
+      });
     return json({ success: true, provider, saved, config });
   }
 
@@ -578,14 +610,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const errors = validateConnectionInput(spec, values, []);
     if (errors.length) {
       return json(
-        { success: false, error: { code: "validation_failed", message: "Invalid connection details" }, field_errors: errors },
+        {
+          success: false,
+          error: { code: "validation_failed", message: "Invalid connection details" },
+          field_errors: errors,
+        },
         400,
       );
     }
     const { nonSecret } = partitionValues(spec, values);
     const up = provider.toUpperCase();
     const authorizeBase =
-      Deno.env.get(`PROVIDER_OAUTH_${up}_AUTHORIZE_URL`) ?? "https://oauth-demo.serviceos.local/authorize";
+      Deno.env.get(`PROVIDER_OAUTH_${up}_AUTHORIZE_URL`) ??
+      "https://oauth-demo.serviceos.local/authorize";
     const clientId = Deno.env.get(`PROVIDER_OAUTH_${up}_CLIENT_ID`) ?? "serviceos-demo";
     const redirectUri = String(
       body.redirect_uri ?? Deno.env.get(`PROVIDER_OAUTH_${up}_REDIRECT_URI`) ?? "",
@@ -626,7 +663,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       usePkce: spec.oauth.pkce,
     });
     await ensureOnboarding();
-    await logConnectionEvent(db, tenantId, provider, "oauth_started", actorId, { scopes: spec.oauth.scopes });
+    await logConnectionEvent(db, tenantId, provider, "oauth_started", actorId, {
+      scopes: spec.oauth.scopes,
+    });
     return json({ success: true, provider, authorize_url: authorizeUrl, state });
   }
 
