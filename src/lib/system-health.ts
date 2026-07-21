@@ -66,10 +66,19 @@ const SURFACED: {
   },
   {
     component: "email_sync",
-    cadenceSec: CADENCE_SEC.emailGmail,
+    cadenceSec: CADENCE_SEC.emailWorkspace,
     countTable: "email_messages",
     countColumn: "created_at",
     countLabel: "emails processed today",
+  },
+  {
+    // Personal Gmail OAuth — distinct from Workspace, so a reconnect condition surfaces
+    // truthfully instead of being masked by a healthy Workspace sync.
+    component: "email_gmail",
+    cadenceSec: CADENCE_SEC.emailGmail,
+    countTable: null,
+    countColumn: "created_at",
+    countLabel: "Gmail OAuth",
   },
   {
     component: "intelligence_processing",

@@ -33,6 +33,7 @@ const LIGHT: Record<HealthLight, { dot: string; label: string; text: string }> =
 const ICON: Record<string, typeof Phone> = {
   phone_ingestion: Phone,
   email_sync: Mail,
+  email_gmail: Mail,
   intelligence_processing: Brain,
   automation_execution: Bot,
   auth: ShieldCheck,

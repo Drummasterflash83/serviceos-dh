@@ -15,6 +15,7 @@ export type HealthComponent =
   | "recording_extraction"
   | "transcription"
   | "email_sync"
+  | "email_gmail"
   | "intelligence_processing"
   | "automation_execution"
   | "phone_intelligence";
@@ -24,7 +25,9 @@ export type HealthStatus = "healthy" | "degraded" | "failed" | "unknown";
 /** job_type → the health component it exercises. One place; the worker maps every job. */
 const JOB_COMPONENT: Record<string, HealthComponent> = {
   "phone.process_pending": "phone_ingestion",
-  "email.gmail_sync": "email_sync",
+  // Gmail personal-OAuth is a DISTINCT signal from Workspace: a Gmail reconnect
+  // condition must never make the Workspace/email tile look healthy.
+  "email.gmail_sync": "email_gmail",
   "email.workspace_sync": "email_sync",
   "email.workspace_backfill": "email_sync",
   "email.mailbox_discovery": "email_sync",
