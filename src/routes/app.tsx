@@ -9,8 +9,6 @@ import {
   Banknote,
   Settings,
   Briefcase,
-  Search,
-  Bell,
   Menu,
   ArrowUpRight,
   Activity,
@@ -52,6 +50,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { getCapability } from "@/lib/capability-registry";
 import { RequireAuth, useAuth } from "@/lib/auth";
 import {
   Dialog,
@@ -486,16 +485,9 @@ function AppShell() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                placeholder="Search jobs, calls, customers…"
-                className="w-72 rounded-full border border-hairline bg-white py-1.5 pl-9 pr-3 text-sm outline-none transition focus:border-accent"
-              />
-            </div>
-            <button className="grid h-9 w-9 place-items-center rounded-full border border-hairline">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-            </button>
+            {/* Global search + notifications removed: they had no backend and were
+                false affordances (capability-registry: global.search / global.notifications
+                = MISSING). They return only when a real search / notifications backend exists. */}
             <div className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">
               DH
             </div>
@@ -2468,6 +2460,16 @@ function SettingsView() {
     "Security & audit",
     "Billing",
   ];
+  // Honest labels for the inert rows, driven by the capability registry — so an
+  // inert row reads as "Preview"/"Requires permission", never as a working link.
+  const sectionCapability: Record<string, string> = {
+    Workspace: "settings.workspace",
+    "Members & roles": "settings.membersRoles",
+    Integrations: "settings.integrations",
+    Billing: "settings.billing",
+  };
+  const inertLabel = (s: string): string =>
+    getCapability(sectionCapability[s] ?? "")?.tenantLabel ?? "Preview";
   return (
     <div className="space-y-5">
       <SystemsInventoryPanel />
@@ -2485,10 +2487,12 @@ function SettingsView() {
           ) : (
             <div
               key={s}
-              className="flex items-center justify-between rounded-2xl border border-hairline bg-white px-5 py-4 hover:bg-surface-alt"
+              className="flex cursor-default items-center justify-between rounded-2xl border border-hairline bg-surface-alt/40 px-5 py-4"
             >
-              <div className="text-sm font-medium">{s}</div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <div className="text-sm font-medium text-muted-foreground">{s}</div>
+              <span className="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                {inertLabel(s)}
+              </span>
             </div>
           ),
         )}
