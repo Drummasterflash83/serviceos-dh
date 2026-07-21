@@ -403,6 +403,15 @@ export async function handleIdentityResolve(
     // was real enrichment work to project.
     if (resolved > 0) triggerGraphSyncBackground(tenantId);
 
+    // Self-continued drain: if this run filled its batch AND made real progress,
+    // more pending interactions almost certainly remain — ask the worker to enqueue
+    // the next batch after this job completes. Strictly serial (idempotent job_key),
+    // bounded (one batch), and self-stopping: a run that isn't full (backlog cleared)
+    // or that resolved nothing (a poison batch — don't hammer it) returns no
+    // continuation, so the chain ends on its own. The `*/5` base scheduler re-primes
+    // if new work arrives later.
+    const moreLikely = rows.length >= batch && resolved > 0;
+
     return {
       success: true,
       recordsProcessed: resolved,
@@ -417,7 +426,20 @@ export async function handleIdentityResolve(
         unknown,
         skipped: 0,
         failed,
+        continued: moreLikely,
       },
+      ...(moreLikely
+        ? {
+            continuation: {
+              jobType: "identity.resolve",
+              jobKey: `identity.resolve:${tenantId}`,
+              payload: { limit: batch },
+              connectorId: "openfolk-core",
+              moduleId: "core.identity",
+              priority: 50,
+            },
+          }
+        : {}),
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : "identity-resolve failed";

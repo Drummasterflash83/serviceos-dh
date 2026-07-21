@@ -60,12 +60,30 @@ export interface WorkerHandlerError {
   failedStep?: string;
 }
 
+/** A follow-on job a handler asks the worker to enqueue AFTER the current row
+ *  reaches a terminal state. Used for self-continued draining of large backlogs:
+ *  strictly serial (the idempotent active job_key means at most one is ever live),
+ *  bounded (one batch per run), and self-stopping (the handler simply stops
+ *  returning it once a run is not full / makes no progress). */
+export interface WorkerHandlerContinuation {
+  jobType: string;
+  jobKey: string;
+  payload?: Record<string, unknown>;
+  connectorId?: string;
+  moduleId?: string;
+  priority?: number;
+}
+
 export interface WorkerHandlerResult {
   success: boolean;
   recordsProcessed?: number;
   result?: Record<string, unknown>;
   /** Present when success === false. */
   error?: WorkerHandlerError;
+  /** Present (on success) when the handler has more bounded work of the same kind
+   *  queued behind it. The worker enqueues it only AFTER completing the current
+   *  job, so the active-key is free and no duplicate active job is created. */
+  continuation?: WorkerHandlerContinuation;
 }
 
 export type WorkerHandler = (ctx: WorkerHandlerContext) => Promise<WorkerHandlerResult>;

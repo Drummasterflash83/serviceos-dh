@@ -28,6 +28,7 @@ import {
   claimJobs,
   completeJob,
   deadLetterJob,
+  enqueueJob,
   failJob,
   releaseExpiredLeases,
   type JobRow,
@@ -125,6 +126,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
           recordsProcessed: r.recordsProcessed,
           result: r.result ?? {},
         });
+        // Self-continued drain: the job is now terminal, so its idempotent active
+        // job_key is free. Enqueue the handler's requested follow-on batch. If a
+        // base-scheduler job is already active for that key, enqueueJob de-dups
+        // (23505) and returns { duplicate: true } — so at most one is ever live and
+        // there is never a stampede. Best-effort: a continuation failure never fails
+        // the completed job.
+        if (r.continuation) {
+          try {
+            await enqueueJob(admin, {
+              tenantId,
+              jobType: r.continuation.jobType,
+              jobKey: r.continuation.jobKey,
+              connectorId: r.continuation.connectorId ?? (job.connector_id as string | null) ?? null,
+              moduleId: r.continuation.moduleId ?? (job.module_id as string | null) ?? null,
+              priority: r.continuation.priority ?? 50,
+              payload: r.continuation.payload ?? {},
+            });
+          } catch (_e) {
+            // swallow — the base scheduler will re-prime on its next tick.
+          }
+        }
         if (component)
           await recordHealthCheck(admin, {
             tenantId,

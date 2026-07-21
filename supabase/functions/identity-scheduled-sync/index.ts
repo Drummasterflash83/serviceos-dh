@@ -78,6 +78,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       jobKey: `identity.resolve:${tenantId}`,
       connectorId: "openfolk-core",
       moduleId: "core.identity",
+      // Prime the drain at the handler's max batch; the worker then self-continues
+      // (chains the next batch after each full run) until the backlog clears.
+      payload: { limit: 50 },
     });
     if (r.duplicate) duplicates += 1;
     else if (r.id) queued += 1;

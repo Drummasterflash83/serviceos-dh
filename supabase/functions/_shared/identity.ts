@@ -105,10 +105,18 @@ function externalIdentifiers(i: ResolvableInteraction): {
   name: string | null;
 } {
   const outbound = i.direction === "outbound";
+  const internal = i.direction === "internal";
   const phone = (outbound ? i.phone_to : i.phone_from) ?? i.phone_from ?? i.phone_to ?? null;
   // Inbound email: the sender is the customer. Outbound: the first recipient.
   const email = outbound ? ((i.to_addresses ?? [])[0] ?? null) : (i.from_address ?? null);
-  return { email: email?.toLowerCase() ?? null, phone, name: i.from_name ?? null };
+  // The display name only ever comes from the SENDER (from_name). That is the
+  // external customer ONLY on inbound. On outbound the sender is the tenant itself,
+  // and on internal neither side is an external customer — attributing from_name in
+  // those cases mislabels the card as the tenant company (e.g. "Drummond Heating").
+  // We know the outbound recipient's email/domain but not their display name, so
+  // leave the name unresolved rather than assert the wrong one.
+  const name = outbound || internal ? null : (i.from_name ?? null);
+  return { email: email?.toLowerCase() ?? null, phone, name };
 }
 
 /** Deterministic level from a 0–1 score (exact evidence only reaches CONFIRMED). */
