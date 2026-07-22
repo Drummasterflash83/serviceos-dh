@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HealthShadowRouteImport } from './routes/health-shadow'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
 import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-centre'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthShadowRoute = HealthShadowRouteImport.update({
+  id: '/health-shadow',
+  path: '/health-shadow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -29,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoCustomerHealthRoute = DemoCustomerHealthRouteImport.update({
+  id: '/demo/customer-health',
+  path: '/demo/customer-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoCommandCentreRoute = DemoCommandCentreRouteImport.update({
   id: '/demo/command-centre',
   path: '/demo/command-centre',
@@ -38,35 +50,62 @@ const DemoCommandCentreRoute = DemoCommandCentreRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
+  '/demo/customer-health': typeof DemoCustomerHealthRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
+  '/demo/customer-health': typeof DemoCustomerHealthRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
+  '/demo/customer-health': typeof DemoCustomerHealthRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/demo/command-centre'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/health-shadow'
+    | '/login'
+    | '/demo/command-centre'
+    | '/demo/customer-health'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/demo/command-centre'
-  id: '__root__' | '/' | '/app' | '/login' | '/demo/command-centre'
+  to:
+    | '/'
+    | '/app'
+    | '/health-shadow'
+    | '/login'
+    | '/demo/command-centre'
+    | '/demo/customer-health'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/health-shadow'
+    | '/login'
+    | '/demo/command-centre'
+    | '/demo/customer-health'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  HealthShadowRoute: typeof HealthShadowRoute
   LoginRoute: typeof LoginRoute
   DemoCommandCentreRoute: typeof DemoCommandCentreRoute
+  DemoCustomerHealthRoute: typeof DemoCustomerHealthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health-shadow': {
+      id: '/health-shadow'
+      path: '/health-shadow'
+      fullPath: '/health-shadow'
+      preLoaderRoute: typeof HealthShadowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -92,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/customer-health': {
+      id: '/demo/customer-health'
+      path: '/demo/customer-health'
+      fullPath: '/demo/customer-health'
+      preLoaderRoute: typeof DemoCustomerHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/command-centre': {
       id: '/demo/command-centre'
       path: '/demo/command-centre'
@@ -105,8 +158,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  HealthShadowRoute: HealthShadowRoute,
   LoginRoute: LoginRoute,
   DemoCommandCentreRoute: DemoCommandCentreRoute,
+  DemoCustomerHealthRoute: DemoCustomerHealthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

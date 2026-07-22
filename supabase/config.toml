@@ -40,6 +40,10 @@ verify_jwt = false
 # Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
 verify_jwt = false
 
+[functions.customer-health-shadow]
+# Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 
