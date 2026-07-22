@@ -100,9 +100,9 @@ ok(r1 === r2, `equal scores tie-break deterministically (${r1})`);
 // ═══ 4. collapse + verification filter (data-provenance guards) ══════════════
 const raw = [
   { id: "v1", subject: "verification controlled action", attributes: { verification: true } },
-  { id: "n1", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T10:00:00Z" },
-  { id: "n2", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T11:00:00Z" },
-  { id: "n3", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T12:00:00Z" },
+  { id: "n1", subject: "Record a controlled internal note", attributes: {}, responsible_ref: { kind: "role", ref: "ops" }, updated_at: "2026-07-22T10:00:00Z" },
+  { id: "n2", subject: "Record a controlled internal note", attributes: {}, responsible_ref: { kind: "role", ref: "ops" }, updated_at: "2026-07-22T11:00:00Z" },
+  { id: "n3", subject: "Record a controlled internal note", attributes: {}, responsible_ref: { kind: "role", ref: "ops" }, updated_at: "2026-07-22T12:00:00Z" },
   { id: "owned", subject: "Chase overdue invoice", attributes: {}, accountable_ref: { kind: "user", ref: "elaine" } },
 ];
 const out = collapseActions(raw);

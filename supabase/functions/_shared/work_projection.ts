@@ -129,8 +129,12 @@ export function collapseActions(actions: Row[]): Row[] {
   const groups = new Map<string, Row[]>();
   const singles: Row[] = [];
   for (const a of kept) {
-    const owned = a.accountable_ref?.ref || a.responsible_ref?.ref;
-    if (owned) { singles.push(a); continue; }
+    // Only a USER-specific owner keeps an action individual. Role/system/default refs
+    // (e.g. {kind:'role',ref:'ops'} from the observe policy) are NOT specific ownership,
+    // so identical role-owned auto-suggested actions collapse.
+    const userOwned = (a.accountable_ref?.kind === "user" && a.accountable_ref?.ref) ||
+      (a.responsible_ref?.kind === "user" && a.responsible_ref?.ref);
+    if (userOwned) { singles.push(a); continue; }
     const key = (a.subject as string) || (a.id as string);
     const arr = groups.get(key) ?? []; arr.push(a); groups.set(key, arr);
   }
