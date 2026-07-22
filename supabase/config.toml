@@ -28,6 +28,18 @@ verify_jwt = false
 # Auths itself: a tenant-user JWT (requireTenantUser) OR the OpenFolk service secret.
 verify_jwt = false
 
+[functions.work-transition]
+# Auths itself via requireTenantUser; enforces work authority from authority_grants.
+verify_jwt = false
+
+[functions.work-projection]
+# Auths itself via requireTenantUser; read-only Command Centre projection.
+verify_jwt = false
+
+[functions.view-as]
+# Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

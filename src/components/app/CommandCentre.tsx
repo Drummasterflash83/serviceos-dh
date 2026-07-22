@@ -42,6 +42,10 @@ import { getSystemHealth } from "@/lib/system-health";
 import { getCallStories, openCallDetail, type CallStory } from "@/lib/command-call-stories";
 import { AuthDiagnostics } from "./AuthDiagnostics";
 import type { ApiResult } from "@/lib/types";
+import { CommandCentreConsole } from "./command-centre/CommandCentreConsole";
+import { useCommandCentre } from "./command-centre/useCommandCentre";
+import { ViewAsBar } from "./command-centre/ViewAsBar";
+import type { WorkItem, WorkVerb } from "@/lib/command-work";
 
 type ViewFilter = "attention" | "recommendations" | "automated" | "completed" | "everything";
 type Triage = "approved" | "dismissed";
@@ -591,59 +595,74 @@ function CallStories() {
   );
 }
 
+/**
+ * The authenticated Command Centre — the LIVE role-specific operating surface. Consumes the
+ * real work-projection Edge Function (role-scoped, ranked, evidence-folded) via
+ * useCommandCentre, renders the shared CommandCentreConsole, persists transitions through
+ * work-transition, and hosts the Tenant-Superadmin View-As lifecycle. Replaces the legacy
+ * channel-led feed as the production default. (The legacy CommandCentreView is retained for
+ * the isolated /demo comparison surface only.)
+ */
 export function CommandCentre() {
-  const { profile } = useAuth();
-  const [feed, setFeed] = useState<ApiResult<CommandFeed> | null>(null);
-  const [loading, setLoading] = useState(false);
+  const cc = useCommandCentre();
+  const { projection, loading, error, viewAs } = cc;
+  const writeCapable = !viewAs && !!projection && !projection.readOnly;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setFeed(await getCommandFeed({ perSource: 60 }));
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const data = feed && feed.ok ? feed.data : null;
-  const unavailable = feed && !feed.ok ? feed.error : null;
+  const handleTransition = (item: WorkItem, verb: WorkVerb) => {
+    let reason: string | undefined;
+    let evidence: unknown;
+    if (verb === "dismiss") {
+      reason =
+        window.prompt("Reason for dismissing? (source evidence is never erased)") ?? undefined;
+      if (!reason) return;
+    } else if (verb === "block") {
+      reason = window.prompt("What is the blocker?") ?? undefined;
+    } else if (verb === "wait") {
+      reason = window.prompt("Waiting on whom/what?") ?? undefined;
+    } else if (verb === "complete") {
+      evidence = window.prompt("Evidence that done_when is satisfied?") ?? undefined;
+      if (!evidence) return;
+    }
+    void cc.transition(item, verb, { reason, evidence }).then((err) => {
+      if (err) window.alert(err);
+    });
+  };
 
   return (
-    <div className="space-y-5">
-      {/* Business items lead the operating view. Live call stories first, then a
-          compact health warning only when something materially needs attention —
-          full health detail lives under Settings → System Health. */}
-      <CallStories />
-      <CompactHealth />
-      <AuthDiagnostics />
+    <div className="space-y-4">
+      <ViewAsBar
+        projection={projection}
+        viewAs={viewAs}
+        onEnter={cc.enterViewAs}
+        onExit={() => void cc.exitViewAs()}
+      />
 
-      {loading && !feed && (
+      {loading && !projection && (
         <div className="flex items-center justify-center rounded-2xl border border-hairline bg-white py-20 text-sm text-muted-foreground">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Reviewing your business…
         </div>
       )}
 
-      {unavailable && (
+      {error && !projection && (
         <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6">
           <div className="flex items-center gap-2 text-sm font-medium text-destructive">
             <AlertTriangle className="h-4 w-4" />
             Command Centre unavailable
           </div>
           <div className="mt-1 font-mono text-xs text-muted-foreground">
-            {unavailable.code}: {unavailable.message}
+            {error.code}: {error.message}
           </div>
         </div>
       )}
 
-      {data && (
-        <CommandCentreView
-          data={data}
-          profileName={profile?.full_name ?? null}
-          onApprove={approveAutomationIntent}
-          onRefresh={load}
-          refreshing={loading}
+      {projection && (
+        <CommandCentreConsole
+          projection={projection}
+          writeCapable={writeCapable}
+          writeLabel={viewAs ? "Read only — viewing as another user" : "Not available"}
+          onTransition={handleTransition}
+          extras={{ health: [] }}
         />
       )}
     </div>
