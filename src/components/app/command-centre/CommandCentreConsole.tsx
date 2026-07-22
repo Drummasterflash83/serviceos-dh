@@ -26,7 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { WorkItem, WorkProjection, WorkVerb } from "@/lib/command-work";
+import type { Oversight, WorkItem, WorkProjection, WorkVerb } from "@/lib/command-work";
 
 // ── honest extras the projection doesn't yet compute live (fixtures populate; live = empty) ─
 export interface ConsoleExtras {
@@ -360,7 +360,7 @@ function DoNextSection({
   return (
     <Panel title="Do next" icon={<ListChecks className="h-4 w-4" />} count={p.doNext.length}>
       {p.doNext.length === 0 ? (
-        <Empty>No ranked work for you right now.</Empty>
+        <Empty>No priority operational actions are currently assigned to you.</Empty>
       ) : (
         <ol className="space-y-2">
           {p.doNext.map((item, i) => (
@@ -633,6 +633,110 @@ function CompactSystemHealth({ extras }: { extras?: ConsoleExtras }) {
 }
 
 // ═══ Console composition ═════════════════════════════════════════════════════
+// ═══ Tenant-Superadmin: input → work intelligence oversight ══════════════════
+function Funnel({ label, n, sub }: { label: string; n: number; sub?: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-2 border-b border-hairline/60 py-1 text-[12px] last:border-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="tabular font-medium text-display">
+        {n.toLocaleString()}
+        {sub && <span className="ml-1 text-[10px] font-normal text-muted-foreground">{sub}</span>}
+      </span>
+    </div>
+  );
+}
+function OversightSection({ o }: { o: Oversight }) {
+  const [open, setOpen] = useState(true);
+  const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : "—");
+  return (
+    <Panel
+      title="Input & intelligence oversight"
+      icon={<Bot className="h-4 w-4" />}
+      count={o.inputs.total}
+    >
+      <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
+        Tenant-Superadmin only · how source inputs convert to work ({o.period.replace("_", " ")})
+      </p>
+      <button
+        onClick={() => setOpen(!open)}
+        className="mb-2 inline-flex items-center gap-1 text-[11px] text-accent"
+      >
+        <ChevronDown className={cn("h-3 w-3 transition-transform", open && "rotate-180")} />{" "}
+        {open ? "hide" : "show"} funnel
+      </button>
+      {open && (
+        <div className="space-y-0.5">
+          <Funnel
+            label="Inputs (calls + emails)"
+            n={o.inputs.total}
+            sub={`${o.inputs.phone} phone · ${o.inputs.email} email`}
+          />
+          <Funnel
+            label="Identity resolved (people)"
+            n={o.identity.peopleIdentified}
+            sub={`${o.identity.unresolvedIdentity} unresolved`}
+          />
+          <Funnel label="Companies matched" n={o.identity.companiesIdentified} />
+          <Funnel
+            label="Jobs / sites matched"
+            n={o.identity.jobsMatched + o.identity.sitesMatched}
+            sub={
+              o.identity.jobsMatched + o.identity.sitesMatched === 0
+                ? "Commusoft not connected"
+                : undefined
+            }
+          />
+          <Funnel
+            label="Observations created"
+            n={o.interpretation.observations}
+            sub={pct(o.interpretation.observations, o.inputs.total)}
+          />
+          <Funnel
+            label="Recommendations"
+            n={o.interpretation.recommendations}
+            sub={`${o.interpretation.recommendationsOpen} open`}
+          />
+          <Funnel
+            label="Meaningful work created"
+            n={o.work.meaningfulActions}
+            sub={`of ${o.work.totalActionObjects} actions`}
+          />
+          <Funnel label="Handled automatically" n={o.work.handledAutomatically} />
+          <Funnel
+            label="Automation active runs"
+            n={o.automation.activeRuns}
+            sub={`${o.automation.awaitingApproval} awaiting`}
+          />
+          <Funnel
+            label="Executions · outcomes"
+            n={o.automation.executions}
+            sub={`${o.work.outcomes} outcomes`}
+          />
+        </div>
+      )}
+      {o.exceptions.fallbackNonActionable.count > 0 && (
+        <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2">
+          <div className="flex items-center gap-1.5 text-[12px] font-medium text-amber-700">
+            <AlertTriangle className="h-3.5 w-3.5" /> Observation fallback policy generated
+            non-actionable records
+          </div>
+          <p className="mt-1 text-[11px] text-amber-700/90">
+            <span className="tabular font-semibold">
+              {o.exceptions.fallbackNonActionable.count.toLocaleString()}
+            </span>{" "}
+            records were created by a now-
+            <span className="font-medium">
+              {o.exceptions.fallbackNonActionable.policyState}
+            </span>{" "}
+            policy. No meaningful operational outcome was resolved. Evidence is preserved; excluded
+            from all normal work.
+          </p>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 export function CommandCentreConsole(props: ConsoleProps) {
   const { projection: p, extras, banner } = props;
   return (
@@ -647,6 +751,7 @@ export function CommandCentreConsole(props: ConsoleProps) {
           {p.user.isLeadership && <ObjectiveMovementSection items={p.all} extras={extras} />}
         </div>
         <div className="space-y-4">
+          {p.oversight && <OversightSection o={p.oversight} />}
           <MyAgentsSection items={p.all} />
           {!p.user.isLeadership && <ObjectiveMovementSection items={p.all} extras={extras} />}
           <AutomationHandledSection p={p} />

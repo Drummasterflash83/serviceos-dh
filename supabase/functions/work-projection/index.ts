@@ -13,7 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import { resolveUserOwnership } from "../_shared/ownership.ts";
 import {
-  foldRecommendations, projectWork, rankWork, collapseActions, DEFAULT_RANK_WEIGHTS,
+  foldRecommendations, projectWork, rankWork, collapseActions, isFallbackAction, DEFAULT_RANK_WEIGHTS,
   type ProjectionOwnership, type ProjectedWork,
 } from "../_shared/work_projection.ts";
 
@@ -119,9 +119,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .select("id, domain, object_type, subject, status, attributes, priority, confidence, deadline, responsible_ref, accountable_ref, waiting_on_ref, source_interactions, source_entities, updated_at")
     .eq("tenant_id", tenantId).order("updated_at", { ascending: false }).limit(3000);
   const active = (rawActions ?? []).filter((a: Row) => typeKeys.has(`${a.domain}:${a.object_type}`) && !TERMINAL.has(a.status));
-  // Exclude verification/test artifacts and collapse repetitive unowned generic actions
-  // (non-destructive — underlying objects untouched) so noise can't wall the Command Centre.
-  const actions = collapseActions(active);
+  // NORMAL work = meaningful only. Exclude verification artifacts AND non-actionable fallback
+  // "controlled internal note" actions (they surface only in Superadmin oversight). Then
+  // collapse any residual duplicates. Non-destructive — underlying objects untouched.
+  const fallbackActiveCount = active.filter((a: Row) => isFallbackAction(a)).length;
+  const meaningful = active.filter((a: Row) => a.attributes?.verification !== true && !isFallbackAction(a));
+  const actions = collapseActions(meaningful);
   const actionIds = actions.map((a: Row) => a.id);
 
   // objective links per action → objectives + health + a metric
@@ -171,8 +174,45 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const dueToday = ranked.filter((w) => w.dueAt && Date.parse(w.dueAt) >= now && Date.parse(w.dueAt) - now < 24 * 3.6e6);
   const waitingOnMe = ranked.filter((w) => mineIds.has(w.id) && (w.state === "waiting" || w.state === "blocked"));
   const blocked = ranked.filter((w) => w.state === "blocked");
-  const activeAutomation = (intents as Row[]).filter((i) => ["pending", "claimed", "executing"].includes(i.status));
+  // ACTIVE automation = a real active run only. Pending/awaiting is NOT active.
+  const activeAutomation = (intents as Row[]).filter((i) => ["claimed", "executing"].includes(i.status));
   const atRiskObjectives = [...healthByObj.values()].filter((h) => /risk|red|off|breach/i.test(h.status ?? "")).length;
+
+  // ── Tenant-Superadmin: input→work intelligence oversight (real counts only) ──
+  const isSuperadmin = perms.has("tenant.superadmin");
+  let oversight: Record<string, unknown> | null = null;
+  if (isSuperadmin) {
+    const cnt = async (t: string, f?: (q: any) => any) => { // deno-lint-ignore-line no-explicit-any
+      let q = admin.from(t).select("*", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      if (f) q = f(q); const { count } = await q; return count ?? 0;
+    };
+    const [phone, email, obs, recsTotal, recsOpen, allActions, intentsPending, intentsSucceeded, executions, outcomesN, unresolvedId] = await Promise.all([
+      cnt("interactions", (q) => q.not("phone_from", "is", null)),
+      cnt("interactions", (q) => q.not("from_address", "is", null)),
+      cnt("intelligence_objects", (q) => q.eq("object_type", "Observation")),
+      cnt("recommendations"),
+      cnt("recommendations", (q) => q.eq("status", "open")),
+      cnt("intelligence_objects", (q) => q.eq("object_type", "Action")),
+      cnt("automation_intents", (q) => q.eq("status", "pending")),
+      cnt("automation_intents", (q) => q.eq("status", "succeeded")),
+      cnt("automation_execution_attempts"),
+      cnt("outcomes"),
+      cnt("interactions", (q) => q.is("related_person_id", null)),
+    ]);
+    const interactionsTotal = await cnt("interactions");
+    oversight = {
+      period: "all_time",
+      inputs: { total: interactionsTotal, phone, email, other: Math.max(0, interactionsTotal - phone - email) },
+      identity: { peopleIdentified: await cnt("people"), companiesIdentified: await cnt("companies"), unresolvedIdentity: unresolvedId, jobsMatched: await cnt("jobs"), sitesMatched: await cnt("sites") },
+      interpretation: { observations: obs, recommendations: recsTotal, recommendationsOpen: recsOpen },
+      work: { meaningfulActions: meaningful.length, totalActionObjects: allActions, handledAutomatically: intentsSucceeded, outcomes: outcomesN },
+      automation: { activeRuns: activeAutomation.length, awaitingApproval: intentsPending, executions },
+      exceptions: {
+        fallbackNonActionable: { count: fallbackActiveCount, policy: "Propose a controlled internal note for inbound communications (vertical)", policyState: "disabled", note: "Created by a now-disabled observe policy. No meaningful outcome resolved. Evidence preserved." },
+        awaitingIdentityResolution: unresolvedId,
+      },
+    };
+  }
 
   return json({
     ok: true,
@@ -198,6 +238,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         standaloneRecommendations: fold.standaloneRecs.length,
         routedToReview: fold.reviewRecs.length,
       },
+      oversight, // Tenant-Superadmin only (null otherwise)
     },
   });
 });

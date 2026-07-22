@@ -82,6 +82,7 @@ function proj(
       objectivesAtRisk: 0,
     },
     user: o.user,
+    oversight: o.oversight ?? null,
     doNext: o.doNext,
     all,
     consolidation: o.consolidation ?? {
@@ -131,6 +132,29 @@ export const ROLE_FIXTURES: Record<string, WorkProjection> = {
         "objective.publish",
         "ownership.confirm",
       ],
+    },
+    oversight: {
+      period: "all_time",
+      inputs: { total: 3690, phone: 1210, email: 2480, other: 0 },
+      identity: {
+        peopleIdentified: 1049,
+        companiesIdentified: 461,
+        unresolvedIdentity: 612,
+        jobsMatched: 0,
+        sitesMatched: 0,
+      },
+      interpretation: { observations: 939, recommendations: 3088, recommendationsOpen: 2530 },
+      work: { meaningfulActions: 3, totalActionObjects: 518, handledAutomatically: 8, outcomes: 6 },
+      automation: { activeRuns: 0, awaitingApproval: 237, executions: 18 },
+      exceptions: {
+        fallbackNonActionable: {
+          count: 513,
+          policy: "Propose a controlled internal note (vertical)",
+          policyState: "disabled",
+          note: "now-disabled observe policy; evidence preserved",
+        },
+        awaitingIdentityResolution: 612,
+      },
     },
     position: {
       urgent: 3,

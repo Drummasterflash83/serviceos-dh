@@ -7,7 +7,7 @@
 //     behind revenue; ties are stable; every ranked item explains itself.
 //
 // Run:  node --experimental-strip-types scripts/work-projection.test.mjs
-import { foldRecommendations, rankWork, collapseActions, DEFAULT_RANK_WEIGHTS } from "../supabase/functions/_shared/work_projection.ts";
+import { foldRecommendations, rankWork, collapseActions, isFallbackAction, DEFAULT_RANK_WEIGHTS } from "../supabase/functions/_shared/work_projection.ts";
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? "  PASS " : "  FAIL ") + m); if (!c) fail++; };
@@ -112,6 +112,12 @@ ok(out.filter((a) => a.subject === "Record a controlled internal note").length =
 ok(note?._collapsedCount === 3, "collapse: representative carries _collapsedCount=3");
 ok(note?.id === "n3", "collapse: representative is the most recent (n3)");
 ok(out.some((a) => a.id === "owned"), "collapse: owned action passes through individually (never merged)");
+
+// ═══ 5. fallback-action exclusion (non-actionable pipeline noise) ════════════
+ok(isFallbackAction({ subject: "Record a controlled internal note" }), "fallback: generic note detected by subject");
+ok(isFallbackAction({ subject: "x", attributes: { action_type: "record_internal_note" } }), "fallback: detected by action_type");
+ok(!isFallbackAction({ subject: "Chase overdue invoice", attributes: {} }), "fallback: real work NOT flagged");
+ok(isFallbackAction({ subject: "x", attributes: { fallback: true } }), "fallback: explicit fallback flag detected");
 
 console.log(fail === 0 ? "\nALL PASS" : `\n${fail} FAILED`);
 process.exit(fail === 0 ? 0 : 1);

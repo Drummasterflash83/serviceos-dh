@@ -132,6 +132,32 @@ export interface WorkProjection {
     standaloneRecommendations: number;
     routedToReview: number;
   };
+  /** Tenant-Superadmin-only input→work pipeline oversight (null for other roles). */
+  oversight?: Oversight | null;
+}
+
+export interface Oversight {
+  period: string;
+  inputs: { total: number; phone: number; email: number; other: number };
+  identity: {
+    peopleIdentified: number;
+    companiesIdentified: number;
+    unresolvedIdentity: number;
+    jobsMatched: number;
+    sitesMatched: number;
+  };
+  interpretation: { observations: number; recommendations: number; recommendationsOpen: number };
+  work: {
+    meaningfulActions: number;
+    totalActionObjects: number;
+    handledAutomatically: number;
+    outcomes: number;
+  };
+  automation: { activeRuns: number; awaitingApproval: number; executions: number };
+  exceptions: {
+    fallbackNonActionable: { count: number; policy: string; policyState: string; note: string };
+    awaitingIdentityResolution: number;
+  };
 }
 
 export type WorkVerb =

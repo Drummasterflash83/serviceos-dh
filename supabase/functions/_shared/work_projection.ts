@@ -118,6 +118,19 @@ const intersects = (a: Set<string>, b: Set<string>): boolean => {
 };
 
 /**
+ * A non-actionable fallback action — a generic "controlled internal note" the (now-disabled)
+ * observe policy minted per observation. These are NOT canonical operational work and are
+ * excluded from the normal Command Centre; they surface only in Tenant-Superadmin oversight
+ * as one pipeline-quality exception. Deterministic signal (never a rename).
+ */
+export function isFallbackAction(a: Row): boolean {
+  const t = String(a.subject ?? "");
+  return t === "Record a controlled internal note" ||
+    a.attributes?.action_type === "record_internal_note" ||
+    a.attributes?.fallback === true;
+}
+
+/**
  * Filter verification/test artifacts and COLLAPSE repetitive unowned generic actions to one
  * representative (non-destructive — the underlying objects are untouched). Excludes
  * attributes.verification===true. Unowned actions sharing a subject are collapsed to the most
