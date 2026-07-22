@@ -7,7 +7,7 @@
 //     behind revenue; ties are stable; every ranked item explains itself.
 //
 // Run:  node --experimental-strip-types scripts/work-projection.test.mjs
-import { foldRecommendations, rankWork, DEFAULT_RANK_WEIGHTS } from "../supabase/functions/_shared/work_projection.ts";
+import { foldRecommendations, rankWork, collapseActions, DEFAULT_RANK_WEIGHTS } from "../supabase/functions/_shared/work_projection.ts";
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? "  PASS " : "  FAIL ") + m); if (!c) fail++; };
@@ -96,6 +96,22 @@ const tie = [mk("zeta", { dueAt: "2026-07-25T00:00:00Z" }), mk("alpha", { dueAt:
 const r1 = rankWork(tie, own(), W, NOW).map((x) => x.id).join(",");
 const r2 = rankWork(tie.slice().reverse(), own(), W, NOW).map((x) => x.id).join(",");
 ok(r1 === r2, `equal scores tie-break deterministically (${r1})`);
+
+// ═══ 4. collapse + verification filter (data-provenance guards) ══════════════
+const raw = [
+  { id: "v1", subject: "verification controlled action", attributes: { verification: true } },
+  { id: "n1", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T10:00:00Z" },
+  { id: "n2", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T11:00:00Z" },
+  { id: "n3", subject: "Record a controlled internal note", attributes: {}, updated_at: "2026-07-22T12:00:00Z" },
+  { id: "owned", subject: "Chase overdue invoice", attributes: {}, accountable_ref: { kind: "user", ref: "elaine" } },
+];
+const out = collapseActions(raw);
+ok(!out.some((a) => a.id.startsWith("v")), "collapse: verification=true artifact excluded");
+const note = out.find((a) => a.subject === "Record a controlled internal note");
+ok(out.filter((a) => a.subject === "Record a controlled internal note").length === 1, "collapse: 3 identical unowned notes → ONE representative");
+ok(note?._collapsedCount === 3, "collapse: representative carries _collapsedCount=3");
+ok(note?.id === "n3", "collapse: representative is the most recent (n3)");
+ok(out.some((a) => a.id === "owned"), "collapse: owned action passes through individually (never merged)");
 
 console.log(fail === 0 ? "\nALL PASS" : `\n${fail} FAILED`);
 process.exit(fail === 0 ? 0 : 1);

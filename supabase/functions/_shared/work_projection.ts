@@ -117,6 +117,32 @@ const intersects = (a: Set<string>, b: Set<string>): boolean => {
   return false;
 };
 
+/**
+ * Filter verification/test artifacts and COLLAPSE repetitive unowned generic actions to one
+ * representative (non-destructive — the underlying objects are untouched). Excludes
+ * attributes.verification===true. Unowned actions sharing a subject are collapsed to the most
+ * recent, carrying `_collapsedCount`; owned actions always pass through individually so real
+ * assigned work is never merged.
+ */
+export function collapseActions(actions: Row[]): Row[] {
+  const kept = actions.filter((a) => a.attributes?.verification !== true);
+  const groups = new Map<string, Row[]>();
+  const singles: Row[] = [];
+  for (const a of kept) {
+    const owned = a.accountable_ref?.ref || a.responsible_ref?.ref;
+    if (owned) { singles.push(a); continue; }
+    const key = (a.subject as string) || (a.id as string);
+    const arr = groups.get(key) ?? []; arr.push(a); groups.set(key, arr);
+  }
+  const collapsed: Row[] = [];
+  for (const arr of groups.values()) {
+    if (arr.length === 1) { collapsed.push(arr[0]); continue; }
+    const rep = arr.slice().sort((x, y) => String(y.updated_at ?? "").localeCompare(String(x.updated_at ?? "")))[0];
+    collapsed.push({ ...rep, _collapsedCount: arr.length });
+  }
+  return [...singles, ...collapsed];
+}
+
 export interface FoldResult {
   evidenceByAction: Map<string, Row[]>;   // action.id → recommendations folded as evidence
   standaloneRecs: Row[];                   // matched no action — remain separate
@@ -173,7 +199,9 @@ export function projectWork(a: Row, ctx: ActionContext, now: number): ProjectedW
   const evidenceAge = evidenceAges.length ? Math.min(...evidenceAges) : hoursBetween(a.updated_at, now);
 
   return {
-    id: a.id, title: a.subject ?? "(untitled action)", outcome: at.outcome ?? null, state: a.status ?? "unknown",
+    id: a.id,
+    title: a._collapsedCount > 1 ? `${a.subject ?? "(untitled)"} (+${a._collapsedCount - 1} similar)` : (a.subject ?? "(untitled action)"),
+    outcome: at.outcome ?? null, state: a.status ?? "unknown",
     accountableOwner: accountable, operationalOwner: responsible, assignee: responsible,
     team: ctx.team?.name ?? null, role: at.role ?? null,
     objectiveId, objectiveTitle: ctx.objective?.title ?? null, kpi, objectiveHealth: health,

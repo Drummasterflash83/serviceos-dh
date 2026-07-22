@@ -13,7 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import { resolveUserOwnership } from "../_shared/ownership.ts";
 import {
-  foldRecommendations, projectWork, rankWork, DEFAULT_RANK_WEIGHTS,
+  foldRecommendations, projectWork, rankWork, collapseActions, DEFAULT_RANK_WEIGHTS,
   type ProjectionOwnership, type ProjectedWork,
 } from "../_shared/work_projection.ts";
 
@@ -117,8 +117,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const typeKeys = new Set(actionTypes.map((t: Row) => `${t.domain}:${t.object_type}`));
   const { data: rawActions } = await admin.from("intelligence_objects")
     .select("id, domain, object_type, subject, status, attributes, priority, confidence, deadline, responsible_ref, accountable_ref, waiting_on_ref, source_interactions, source_entities, updated_at")
-    .eq("tenant_id", tenantId).limit(500);
-  const actions = (rawActions ?? []).filter((a: Row) => typeKeys.has(`${a.domain}:${a.object_type}`) && !TERMINAL.has(a.status));
+    .eq("tenant_id", tenantId).order("updated_at", { ascending: false }).limit(3000);
+  const active = (rawActions ?? []).filter((a: Row) => typeKeys.has(`${a.domain}:${a.object_type}`) && !TERMINAL.has(a.status));
+  // Exclude verification/test artifacts and collapse repetitive unowned generic actions
+  // (non-destructive — underlying objects untouched) so noise can't wall the Command Centre.
+  const actions = collapseActions(active);
   const actionIds = actions.map((a: Row) => a.id);
 
   // objective links per action → objectives + health + a metric

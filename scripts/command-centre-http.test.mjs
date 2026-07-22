@@ -62,7 +62,7 @@ async function cleanup() {
     await db.from("objectives").delete().eq("tenant_id", t);
     await db.from("config_versions").delete().eq("tenant_id", t);
   }
-  for (const e of [SUPER, NORMAL, OTHER]) { const u = await findUser(e); if (u) { await db.from("profiles").delete().eq("id", u.id); } }
+  for (const e of [SUPER, NORMAL, OTHER]) { const u = await findUser(e); if (u) { await db.from("profiles").delete().eq("id", u.id); await db.auth.admin.deleteUser(u.id); } }
   await db.from("tenants").delete().eq("id", T);
   await db.from("tenants").delete().eq("id", T2);
 }
