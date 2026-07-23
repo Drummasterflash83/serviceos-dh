@@ -44,6 +44,11 @@ verify_jwt = false
 # Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
 verify_jwt = false
 
+[functions.openfolk-control-plane]
+# Auths itself via requirePlatformOperator; requires OpenFolk role + active
+# platform.controlplane grant (view to read, admin to write). NOT tenant-accessible.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 
