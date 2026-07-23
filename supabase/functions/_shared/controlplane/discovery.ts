@@ -101,12 +101,93 @@ export async function discoverTelephonyEndpoints(
   return { scanned, upserted, skipped };
 }
 
-/** Idempotently mirror discovered Google Workspace mailboxes into communication_endpoints. */
+/**
+ * Tenant email-domain boundary (DEFAULT-DENY).
+ *
+ * A connected directory may legitimately be a shared administrative connection that can
+ * see identities for several domains. Tenant membership must therefore NEVER be inferred
+ * from the authorising account, the operator's email, or merely from the mailbox living on
+ * a connection. Only an explicitly approved domain, recorded as governed tenant config,
+ * makes an identity eligible. Missing configuration means import NOTHING.
+ *
+ * Config lives in the existing governed model (no bespoke table):
+ *   operating_profile_entries(tenant_id, scope_kind='tenant', namespace='controlplane',
+ *                             key='email.approved_domains', value=jsonb)
+ *   value: { approved_domains: string[], connection_ids?: string[], note?: string }
+ * versioned through config_versions (provenance + lifecycle).
+ */
+export async function loadApprovedEmailDomains(
+  admin: SupabaseClient,
+  tenantId: string,
+): Promise<string[]> {
+  const { data } = await admin
+    .from("operating_profile_entries")
+    .select("value")
+    .eq("tenant_id", tenantId)
+    .eq("scope_kind", "tenant")
+    .eq("namespace", "controlplane")
+    .eq("key", "email.approved_domains")
+    .limit(1)
+    .maybeSingle();
+  const raw = (data?.value ?? {}) as Record<string, unknown>;
+  const list = Array.isArray(raw.approved_domains) ? (raw.approved_domains as unknown[]) : [];
+  return list.map((d) => String(d).trim().toLowerCase().replace(/^@/, "")).filter(Boolean);
+}
+
+/** Domain of an email address, lowercased ("" when unparseable). */
+export function emailDomain(addr: string): string {
+  const at = addr.lastIndexOf("@");
+  return at === -1 ? "" : addr.slice(at + 1).trim().toLowerCase();
+}
+
+export type EmailBoundaryReason =
+  | "no_address"
+  | "no_approved_domains"
+  | "outside_approved_domain";
+
+export type EmailBoundary =
+  | { eligible: true; domain: string }
+  | { eligible: false; reason: EmailBoundaryReason; domain: string };
+
+/**
+ * PURE default-deny boundary decision for one directory identity. Eligibility depends
+ * ONLY on the address matching an explicitly approved tenant domain — never on the
+ * connection, the authorising account, or the operator.
+ */
+export function emailBoundaryDecision(
+  addr: string | null | undefined,
+  approved: string[],
+): EmailBoundary {
+  const a = (addr ?? "").trim().toLowerCase();
+  if (!a) return { eligible: false, reason: "no_address", domain: "" };
+  const domain = emailDomain(a);
+  if (approved.length === 0) return { eligible: false, reason: "no_approved_domains", domain };
+  if (!approved.includes(domain)) return { eligible: false, reason: "outside_approved_domain", domain };
+  return { eligible: true, domain };
+}
+
+export interface EmailDiscoveryResult extends DiscoveryResult {
+  approved_domains: string[];
+  default_denied: boolean;
+  excluded: number;
+  excluded_domains: Record<string, number>;
+  ambiguous: { email: string; reason: string }[];
+}
+
+/**
+ * Idempotently mirror APPROVED-DOMAIN Google Workspace mailboxes into
+ * communication_endpoints. Identities outside the tenant's approved domains are excluded
+ * and reported — never imported, never silently cleaned up afterwards.
+ */
 export async function discoverEmailEndpoints(
   admin: SupabaseClient,
   tenantId: string,
   actor: string,
-): Promise<DiscoveryResult> {
+): Promise<EmailDiscoveryResult> {
+  const approved = await loadApprovedEmailDomains(admin, tenantId);
+  const excluded_domains: Record<string, number> = {};
+  const ambiguous: { email: string; reason: string }[] = [];
+
   const { data: mailboxes } = await admin
     .from("google_workspace_mailboxes")
     .select("id, email_address, display_name, mailbox_type")
@@ -115,11 +196,43 @@ export async function discoverEmailEndpoints(
   let scanned = 0;
   let upserted = 0;
   let skipped = 0;
+  let excluded = 0;
+
+  // DEFAULT-DENY: with no approved domain configured we import nothing at all.
+  if (approved.length === 0) {
+    for (const m of mailboxes ?? []) {
+      scanned++;
+      excluded++;
+      const d = emailDomain(String(m.email_address ?? "")) || "(unparseable)";
+      excluded_domains[d] = (excluded_domains[d] ?? 0) + 1;
+    }
+    return {
+      scanned,
+      upserted: 0,
+      skipped,
+      excluded,
+      excluded_domains,
+      ambiguous,
+      approved_domains: approved,
+      default_denied: true,
+    };
+  }
+
   for (const m of mailboxes ?? []) {
     scanned++;
-    const addr = (m.email_address as string | null)?.toLowerCase();
-    if (!addr) {
-      skipped++;
+    const addr = ((m.email_address as string | null) ?? "").toLowerCase();
+    // Boundary check on the PRIMARY address. (This directory source exposes no alias
+    // column; when aliases become available, an out-of-domain primary with an in-domain
+    // alias must surface here as an ambiguous suggestion for review, never an auto-import.)
+    const decision = emailBoundaryDecision(addr, approved);
+    if (!decision.eligible) {
+      if (decision.reason === "no_address") {
+        skipped++;
+      } else {
+        excluded++;
+        const d = decision.domain || "(unparseable)";
+        excluded_domains[d] = (excluded_domains[d] ?? 0) + 1;
+      }
       continue;
     }
     const kind =
@@ -148,5 +261,14 @@ export async function discoverEmailEndpoints(
     if (error) throw new Error(`discoverEmailEndpoints: ${error.message}`);
     upserted++;
   }
-  return { scanned, upserted, skipped };
+  return {
+    scanned,
+    upserted,
+    skipped,
+    excluded,
+    excluded_domains,
+    ambiguous,
+    approved_domains: approved,
+    default_denied: false,
+  };
 }
