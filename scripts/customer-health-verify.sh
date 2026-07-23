@@ -40,6 +40,7 @@ grant usage on schema public to service_role, authenticated;
 grant usage, select on all sequences in schema public to service_role;" >/dev/null 2>&1 || true
 
 echo "── pure engines (deterministic, no DB) ──────────────────────"
+run "excerpt redaction"          node supabase/functions/_shared/health/redact.verify.ts
 run "callback classifier"        node supabase/functions/_shared/health/classifier.verify.ts
 run "ownership resolver"         node supabase/functions/_shared/health/ownership.verify.ts
 run "health evaluator + subject" node supabase/functions/_shared/health/evaluator.verify.ts

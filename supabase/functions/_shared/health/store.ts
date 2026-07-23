@@ -21,6 +21,7 @@ import {
   type ShadowResult,
 } from "./pipeline.ts";
 import { assertShadowSafe, SHADOW_WRITE_ALLOWLIST } from "./shadow_safety.ts";
+import { reassessAggregate } from "./aggregate.ts";
 
 // ── Config loading. ─────────────────────────────────────────────────────────
 export interface CallbackConfig {
@@ -248,15 +249,28 @@ export async function processCandidate(input: {
   // Persist — health_* tables only.
   const healthObjectId = await upsertHealthObject(db, result);
   let assessmentId: string | null = null;
-  if (result.assessment && healthObjectId) {
+  let proposalId: string | null = null;
+
+  if (result.proposal && healthObjectId) {
+    // Candidate obligation: persist the proposal + sources FIRST, then write ONE
+    // AGGREGATE assessment across ALL of this customer's live obligations — so a new
+    // callback never overwrites the truth of older open ones.
+    proposalId = await upsertProposalAndSources(db, healthObjectId, result);
+    const agg = await reassessAggregate(db, tenantId, healthObjectId, {
+      policyVersionId: config.policyVersionId,
+      policy: config.policy,
+      nowMs: input.nowMs,
+      triggeredBy: "candidate",
+      extraEvidence: result.assessment?.evidence,
+      jobId: input.jobId ?? null,
+    });
+    if (!agg.ok) throw new Error(agg.error);
+    assessmentId = agg.assessmentId;
+  } else if (result.assessment && healthObjectId) {
+    // needs_context (uncertain): NO proposal, NO source row — persist the per-candidate
+    // 'unknown' assessment whose evidence explains what could not be established.
     assessmentId = await insertAssessment(db, healthObjectId, result, input.jobId ?? null);
   }
-  let proposalId: string | null = null;
-  if (result.proposal && healthObjectId) {
-    proposalId = await upsertProposalAndSources(db, healthObjectId, result);
-  }
-  // needs_context (uncertain) writes NO proposal and NO source row — the uncertainty
-  // is explained in the assessment's own evidence, exactly as the write plan declares.
 
   return done(result, { healthObjectId, assessmentId, proposalId, folded, shadowSafe: true });
 }

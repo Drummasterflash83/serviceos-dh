@@ -25,6 +25,7 @@ import {
   type OwnershipHint,
 } from "./types.ts";
 import { CALLBACK_CLASSIFIER_VERSION } from "./hash.ts";
+import { redactText } from "./redact.ts";
 
 // ── Phrase banks (lower-cased, matched against normalised text). ────────────
 // Explicit "please call me back" style requests.
@@ -217,10 +218,8 @@ function makeExcerpt(
   const idx = matched ? lower.indexOf(matched) : -1;
   const start = idx >= 0 ? Math.max(0, idx - 24) : 0;
   let slice = raw.slice(start, start + cfg.maxExcerptChars).trim();
-  // Redact obvious contact numbers/emails from the excerpt.
-  slice = slice
-    .replace(/\b(?:\+?\d[\d ()-]{7,}\d)\b/g, "[number]")
-    .replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, "[email]");
+  // Redact obvious PII (emails, postcodes, sort codes, card/phone numbers, addresses).
+  slice = redactText(slice);
   return (start > 0 ? "…" : "") + slice + (start + cfg.maxExcerptChars < raw.length ? "…" : "");
 }
 

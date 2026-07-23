@@ -185,6 +185,148 @@ export function evaluateCallbackHealth(input: {
   };
 }
 
+// ── Aggregate Customer Health (across ALL live obligations for one subject). ─
+// The single-obligation evaluator above answers "how is THIS callback?"; the live
+// Command Centre needs "how is this CUSTOMER?" — which must consider every open
+// callback proposal, never let the last-processed obligation overwrite the truth of
+// older open ones, and never mark a customer recovering while another callback is
+// still open. Pure and deterministic (injected clock, no DB).
+export interface AggregateObligation {
+  /** Stable id (proposal id / group_key) — used only for per-obligation driver detail. */
+  ref: string;
+  /** true while the callback is still owed (not resolved, not rejected/superseded). */
+  open: boolean;
+  resolution: "none" | "possible" | "verified";
+  candidateAt: string | null;
+  dueAt: string | null;
+  repeatContactCount: number;
+  newestEvidenceAt: string | null;
+  ambiguity: number;
+}
+
+export function evaluateAggregateCustomerHealth(input: {
+  obligations: AggregateObligation[];
+  policy?: Partial<CallbackPolicyConfig>;
+  priorState?: HealthState | null;
+  nowMs: number;
+  /** Hours a customer stays 'recovering' after the last resolution before reading 'healthy'. */
+  recoveryStableHours?: number;
+  extraEvidence?: EvidenceItem[];
+}): HealthReading {
+  const cfg: CallbackPolicyConfig = { ...DEFAULT_CALLBACK_POLICY, ...(input.policy ?? {}) };
+  const now = input.nowMs;
+  const recoveryStableHours = input.recoveryStableHours ?? 24;
+  const obligations = input.obligations ?? [];
+
+  const drivers: Driver[] = [];
+  const risks: string[] = [];
+  const opportunities: string[] = [];
+  const evidence: EvidenceItem[] = [...(input.extraEvidence ?? [])];
+
+  const openObligs = obligations.filter((o) => o.open && o.resolution !== "verified");
+  const resolvedObligs = obligations.filter((o) => o.resolution === "verified" || !o.open);
+
+  // Freshest evidence across ALL obligations drives freshness/confidence.
+  const newestAll =
+    obligations
+      .map((o) => o.newestEvidenceAt)
+      .filter((x): x is string => !!x)
+      .sort()
+      .at(-1) ?? null;
+  const fresh = freshnessOf(newestAll, now, cfg.staleAfterHours);
+
+  let state: HealthState;
+  let confidence: number;
+
+  if (openObligs.length > 0) {
+    // Any open callback ⇒ the customer's health is driven by the WORST open obligation.
+    // Resolving one obligation never hides another that is still open.
+    let worst: HealthReading | null = null;
+    for (const o of openObligs) {
+      const reading = evaluateCallbackHealth({
+        obligation: {
+          hasOpenCallback: true,
+          candidateAt: o.candidateAt,
+          dueAt: o.dueAt,
+          repeatContactCount: o.repeatContactCount,
+          resolution: o.resolution,
+          newestEvidenceAt: o.newestEvidenceAt,
+          ambiguity: o.ambiguity,
+        },
+        policy: cfg,
+        nowMs: now,
+      });
+      // Fold this obligation's drivers/risks in, tagged by ref.
+      for (const d of reading.drivers)
+        drivers.push({ code: d.code, detail: `[${o.ref}] ${d.detail}` });
+      for (const r of reading.risks) risks.push(r);
+      if (!worst || CONCERN[reading.state] > CONCERN[worst.state]) worst = reading;
+    }
+    state = worst!.state;
+    confidence = worst!.confidence;
+    if (openObligs.length > 1) {
+      drivers.unshift({
+        code: "multiple_open_obligations",
+        detail: `${openObligs.length} open callback obligations — health reflects the most at-risk.`,
+      });
+    }
+  } else if (resolvedObligs.length > 0) {
+    // Every obligation resolved. Recovering until a stable window passes, then healthy.
+    const newestResolution =
+      resolvedObligs
+        .map((o) => o.newestEvidenceAt)
+        .filter((x): x is string => !!x)
+        .sort()
+        .at(-1) ?? null;
+    const ageH = newestResolution ? (now - Date.parse(newestResolution)) / HOUR_MS : null;
+    if (ageH != null && Number.isFinite(ageH) && ageH >= recoveryStableHours) {
+      state = "healthy";
+      drivers.push({
+        code: "no_open_callback",
+        detail: "All callbacks resolved and stable — no open obligation.",
+      });
+    } else {
+      state = "recovering";
+      drivers.push({
+        code: "resolution_evidence_verified",
+        detail: `${resolvedObligs.length} callback${resolvedObligs.length > 1 ? "s" : ""} resolved — confirming recovery.`,
+      });
+      opportunities.push("Confirm the customer is satisfied and close the loop.");
+    }
+    confidence = 0.85;
+  } else {
+    // No obligations at all. Absence of evidence is UNKNOWN, never assumed healthy.
+    state = "unknown";
+    drivers.push({
+      code: "no_open_callback",
+      detail: "No callback obligations on record for this customer.",
+    });
+    confidence = 0.4;
+  }
+
+  // Freshness tempers confidence; stale never inflates it.
+  if (fresh.label === "stale") confidence = Math.min(confidence, 0.5);
+  if (fresh.label === "aging") confidence = Math.min(confidence, 0.7);
+  confidence = Math.max(0.2, Math.min(0.95, confidence));
+
+  const prev = input.priorState ?? null;
+  const trend = trendFrom(prev, state);
+  const changed: Record<string, unknown> =
+    prev && prev !== state ? { state: { from: prev, to: state } } : {};
+
+  return {
+    state,
+    trend,
+    drivers,
+    risks,
+    opportunities,
+    confidence,
+    freshness: fresh.label,
+    evidence,
+    changed,
+  };
+}
+
 // ── Resolution-evidence matching. ───────────────────────────────────────────
 // A later interaction is POSSIBLE resolution evidence only when it plausibly matches
 // the obligation; it is VERIFIED only when content/authority establishes the callback

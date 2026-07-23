@@ -19,8 +19,8 @@
 // correction/reopen operation (Track B). All other latest decisions can be undone.
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { HEALTH_EVALUATOR_VERSION, stableHash } from "./hash.ts";
 import { assertShadowSafe } from "./shadow_safety.ts";
+import { reassessAggregate } from "./aggregate.ts";
 
 // The review path's COMPLETE write surface, asserted against the shadow allowlist at
 // module load — the same checkable invariant the candidate store enforces per write.
@@ -175,6 +175,8 @@ export interface ReviewInput {
   correctedResponsibility?: Record<string, unknown> | null;
   correctedDueAt?: string | null;
   attachToProposalId?: string | null;
+  /** Injected clock (defaults to Date.now()); keeps the resolution reassessment testable. */
+  nowMs?: number;
 }
 
 // Proposal states from which a shadow resolution confirmation is valid. Terminal
@@ -199,6 +201,7 @@ export async function applyReviewDecision(
   tenantId: string,
   input: ReviewInput,
 ): Promise<ReviewResult> {
+  const nowMs = input.nowMs ?? Date.now();
   // ── Validate the decision verb and its payload BEFORE any write. ──────────
   const isUndo = input.decision === "undo";
   if (!isUndo && !Object.prototype.hasOwnProperty.call(DECISION_TO_STATE, input.decision)) {
@@ -368,7 +371,7 @@ export async function applyReviewDecision(
         if (decErr) return { ok: false, error: `repair decision append failed: ${decErr.message}` };
         decisionId = dec!.id as string;
       }
-      const assessErrMsg = await ensureRecoveringAssessment(db, tenantId, prop, input.actor);
+      const assessErrMsg = await reassessAfterResolution(db, tenantId, prop, input.actor, nowMs);
       if (assessErrMsg) {
         return { ok: false, partial: true, error: assessErrMsg };
       }
@@ -475,9 +478,10 @@ export async function applyReviewDecision(
     };
   }
 
-  // 4) Reassessment follows a verified shadow resolution (recovering).
+  // 4) Reassessment follows a verified shadow resolution — the AGGREGATE Customer
+  //    Health, so a customer with another callback still open is NOT shown recovering.
   if (input.decision === "confirm_resolution") {
-    const assessErrMsg = await ensureRecoveringAssessment(db, tenantId, prop, input.actor);
+    const assessErrMsg = await reassessAfterResolution(db, tenantId, prop, input.actor, nowMs);
     if (assessErrMsg) {
       return { ok: false, partial: true, error: assessErrMsg };
     }
@@ -487,59 +491,28 @@ export async function applyReviewDecision(
 }
 
 /**
- * Ensure the ONE recovering assessment for a verified shadow resolution exists.
- * Deterministic input_hash keyed on (tenant, object, proposal, resolution) makes
- * retries collapse to one snapshot (23505 ⇒ already present ⇒ success); versions come
- * from the shared constants. Returns an error message, or null on success.
+ * Reassess whole-customer Health after a shadow resolution. Delegates to the aggregate
+ * evaluator (all live obligations), so resolving one callback while another remains
+ * open keeps the customer on the remaining risk — recovering only when all are cleared.
+ * Hash-idempotent (retries collapse). Returns an error message, or null on success.
  */
-async function ensureRecoveringAssessment(
+async function reassessAfterResolution(
   db: SupabaseClient,
   tenantId: string,
-  prop: {
-    id: string;
-    health_object_id: string;
-    policy_version_id?: string | null;
-  },
+  prop: { id: string; health_object_id: string; policy_version_id?: string | null },
   actor: string,
+  nowMs: number,
 ): Promise<string | null> {
-  const inputHash = stableHash({
-    t: tenantId,
-    o: prop.health_object_id,
-    p: prop.id,
-    kind: "resolution_verified",
-    ev: HEALTH_EVALUATOR_VERSION,
-  });
-  const { error: assessErr } = await db.from("health_assessments").insert({
-    tenant_id: tenantId,
-    health_object_id: prop.health_object_id,
-    state: "recovering",
-    trend: "improving",
-    drivers: [
-      {
-        code: "resolution_evidence_verified",
-        detail: "Reviewer confirmed the callback occurred.",
-      },
-    ],
-    risks: [],
-    opportunities: ["Confirm the customer is satisfied and close the loop."],
-    confidence: 0.9,
-    freshness: "fresh",
-    evidence: [
+  const res = await reassessAggregate(db, tenantId, prop.health_object_id, {
+    policyVersionId: prop.policy_version_id ?? null,
+    nowMs,
+    triggeredBy: "resolution",
+    extraEvidence: [
       {
         source: "review",
         detail: `Callback confirmed by ${actor} via shadow review — reviewer-verified, not a source-verified outcome.`,
       },
     ],
-    evaluator_version: HEALTH_EVALUATOR_VERSION,
-    policy_version_id: prop.policy_version_id ?? null,
-    mode: "shadow",
-    input_hash: inputHash,
-    triggered_by: "resolution",
-    changed: { resolution: { to: "verified" } },
   });
-  // A duplicate hash means the recovering snapshot already exists — idempotent.
-  if (assessErr && (assessErr as { code?: string }).code !== "23505") {
-    return `resolution recorded but health reassessment failed: ${assessErr.message}`;
-  }
-  return null;
+  return res.ok ? null : `resolution recorded but health reassessment failed: ${res.error}`;
 }

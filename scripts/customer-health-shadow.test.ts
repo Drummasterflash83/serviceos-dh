@@ -779,6 +779,74 @@ async function main() {
     assert.ok(!res.ok && /corrected_title/.test(res.error));
   });
 
+  await ok(
+    "AGGREGATE: resolve one of two open callbacks → customer stays on remaining risk",
+    async () => {
+      const cfg = await loadCallbackConfig(db, TENANT);
+      const person = "a0a0a0a0-0000-0000-0000-0000000000c1";
+      // Obligation 1 — quote, raised 2 days ago ⇒ overdue.
+      const r1 = await processCandidate({
+        db,
+        tenantId: TENANT,
+        communication: comm({
+          interactionId: "m-1",
+          relatedPersonId: person,
+          queue: undefined,
+          occurredAt: "2026-07-20T09:00:00Z",
+          summary: "please call me back about my quote",
+        }),
+        config: cfg,
+        nowMs: NOW,
+      });
+      // Obligation 2 — invoice, in-time (different topic ⇒ separate obligation).
+      const r2 = await processCandidate({
+        db,
+        tenantId: TENANT,
+        communication: comm({
+          interactionId: "m-2",
+          relatedPersonId: person,
+          queue: undefined,
+          occurredAt: "2026-07-22T11:00:00Z",
+          summary: "also please call me back about my invoice",
+        }),
+        config: cfg,
+        nowMs: NOW,
+      });
+      assert.ok(r1.proposalId && r2.proposalId);
+      assert.notEqual(r1.proposalId, r2.proposalId, "two distinct obligations, not folded");
+      const objId = r1.healthObjectId!;
+      const latest = async () => {
+        const { data } = await db
+          .from("health_assessments")
+          .select("state")
+          .eq("health_object_id", objId)
+          .order("evaluated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return data!.state as string;
+      };
+      assert.ok(["watch", "at_risk", "critical"].includes(await latest()), "open ⇒ risk state");
+      // Resolve the invoice callback; the customer must NOT read recovering — quote still open.
+      const res = await applyReviewDecision(db, TENANT, {
+        proposalId: r2.proposalId!,
+        decision: "confirm_resolution",
+        actor: "chris@test",
+        nowMs: NOW,
+      });
+      assert.ok(res.ok);
+      const after = await latest();
+      assert.notEqual(
+        after,
+        "recovering",
+        "must not read recovering while another callback is open",
+      );
+      assert.ok(
+        ["watch", "at_risk", "critical"].includes(after),
+        `remaining risk drives (got ${after})`,
+      );
+    },
+  );
+
   await ok("surface loads for the tenant", async () => {
     const surface = (await loadShadowSurface(db, TENANT)) as { objects: unknown[] };
     assert.ok(Array.isArray(surface.objects) && surface.objects.length >= 1);

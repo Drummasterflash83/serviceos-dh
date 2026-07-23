@@ -1,6 +1,8 @@
 // Run: node supabase/functions/_shared/health/evaluator.verify.ts
 import assert from "node:assert/strict";
 import {
+  type AggregateObligation,
+  evaluateAggregateCustomerHealth,
   evaluateCallbackHealth,
   matchResolutionEvidence,
   resolveHealthSubject,
@@ -138,6 +140,123 @@ ok("deterministic", () => {
   assert.deepEqual(
     evaluateCallbackHealth({ obligation: o, nowMs: NOW }),
     evaluateCallbackHealth({ obligation: o, nowMs: NOW }),
+  );
+});
+
+// ── Aggregate Customer Health (Phase 13 — across all obligations). ──────────
+function oblig(over: Partial<AggregateObligation>): AggregateObligation {
+  return {
+    ref: "p1",
+    open: true,
+    resolution: "none",
+    candidateAt: new Date(NOW - HOUR).toISOString(),
+    dueAt: new Date(NOW + HOUR).toISOString(),
+    repeatContactCount: 1,
+    newestEvidenceAt: new Date(NOW - HOUR).toISOString(),
+    ambiguity: 0.1,
+    ...over,
+  };
+}
+
+ok("AGG: no obligations → unknown (absence of evidence is not health)", () => {
+  const r = evaluateAggregateCustomerHealth({ obligations: [], nowMs: NOW });
+  assert.equal(r.state, "unknown");
+});
+
+ok("AGG: one open in-time callback → watch", () => {
+  const r = evaluateAggregateCustomerHealth({ obligations: [oblig({})], nowMs: NOW });
+  assert.equal(r.state, "watch");
+});
+
+ok("AGG: one overdue callback → at_risk", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [oblig({ dueAt: new Date(NOW - HOUR).toISOString() })],
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "at_risk");
+});
+
+ok("AGG: overdue + repeated → critical", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [oblig({ dueAt: new Date(NOW - HOUR).toISOString(), repeatContactCount: 3 })],
+    policy: { criticalOnRepeatCount: 2 },
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "critical");
+});
+
+ok("AGG: one resolved + one OPEN overdue → driven by the remaining risk (NOT recovering)", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [
+      oblig({ ref: "resolved", open: false, resolution: "verified" }),
+      oblig({ ref: "open", dueAt: new Date(NOW - HOUR).toISOString() }),
+    ],
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "at_risk");
+  assert.ok(!hasDriver(r, "resolution_evidence_verified"), "must not read as recovered");
+});
+
+ok("AGG: two open (watch + critical) → worst drives + multiple-obligations driver", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [
+      oblig({ ref: "a" }),
+      oblig({
+        ref: "b",
+        dueAt: new Date(NOW - HOUR).toISOString(),
+        repeatContactCount: 3,
+      }),
+    ],
+    policy: { criticalOnRepeatCount: 2 },
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "critical");
+  assert.ok(hasDriver(r, "multiple_open_obligations"));
+});
+
+ok("AGG: all resolved recently → recovering", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [
+      oblig({
+        open: false,
+        resolution: "verified",
+        newestEvidenceAt: new Date(NOW - HOUR).toISOString(),
+      }),
+    ],
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "recovering");
+});
+
+ok("AGG: all resolved and stable (past window) → healthy", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [
+      oblig({
+        open: false,
+        resolution: "verified",
+        newestEvidenceAt: new Date(NOW - 48 * HOUR).toISOString(),
+      }),
+    ],
+    recoveryStableHours: 24,
+    nowMs: NOW,
+  });
+  assert.equal(r.state, "healthy");
+});
+
+ok("AGG: trend improving when prior worse than aggregate", () => {
+  const r = evaluateAggregateCustomerHealth({
+    obligations: [oblig({ open: false, resolution: "verified" })],
+    priorState: "at_risk",
+    nowMs: NOW,
+  });
+  assert.equal(r.trend, "improving");
+});
+
+ok("AGG: deterministic", () => {
+  const os = [oblig({}), oblig({ ref: "b", dueAt: new Date(NOW - HOUR).toISOString() })];
+  assert.deepEqual(
+    evaluateAggregateCustomerHealth({ obligations: os, nowMs: NOW }),
+    evaluateAggregateCustomerHealth({ obligations: os, nowMs: NOW }),
   );
 });
 
