@@ -15,9 +15,9 @@ import dhIcon from "@/assets/dh-icon-black.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ServiceOS · Bespoke Operating System for Drummonds" },
+      { title: "OpenFolk · Bespoke Operating System for Drummonds" },
       { name: "description", content: "A bespoke operating system designed around Drummonds' people, systems and workflows. Built from discovery, engineered to operate." },
-      { property: "og:title", content: "ServiceOS · Built for Drummonds" },
+      { property: "og:title", content: "OpenFolk · Built for Drummonds" },
       { property: "og:description", content: "One intelligence layer above every existing system." },
     ],
   }),
@@ -90,7 +90,7 @@ function Hero() {
             aria-hidden
             className="h-[0.72em] w-auto rounded-[0.12em]"
           />
-          <span>ServiceOS</span>
+          <span>OpenFolk</span>
         </motion.h1>
 
         <motion.p
@@ -420,7 +420,7 @@ function WorkflowIntelligence() {
           </Reveal>
           <Reveal delay={0.2}>
             <p className="mt-8 text-lg text-muted-foreground">
-              ServiceOS observes real workflows to discover repetitive admin, bottlenecks, manual handoffs, and automation opportunities.
+              OpenFolk observes real workflows to discover repetitive admin, bottlenecks, manual handoffs, and automation opportunities.
             </p>
           </Reveal>
           <Reveal delay={0.35}>
@@ -636,7 +636,7 @@ function CommandCentrePreview() {
             <div className="bg-white p-6 md:col-span-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">ServiceOS Command Centre</div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">OpenFolk Command Centre</div>
                   <div className="text-display mt-1 text-2xl font-semibold">Today · Tuesday</div>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-success">
@@ -825,7 +825,7 @@ function ROI() {
           <div className="grid grid-cols-12 border-b border-hairline px-8 py-5 text-[11px] uppercase tracking-wider text-muted-foreground">
             <div className="col-span-4">Metric</div>
             <div className="col-span-4">Before</div>
-            <div className="col-span-4">With ServiceOS</div>
+            <div className="col-span-4">With OpenFolk</div>
           </div>
           {rows.map((r, i) => (
             <motion.div
@@ -947,7 +947,7 @@ function Footer() {
   return (
     <footer className="border-t border-background/10 bg-foreground px-6 py-10 text-background/60">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 text-xs md:flex-row">
-        <span>© {new Date().getFullYear()} ServiceOS · Built bespoke for Drummonds</span>
+        <span>© {new Date().getFullYear()} OpenFolk · Built bespoke for Drummonds</span>
         <span className="font-mono">v0.1 · Drummonds Operating System</span>
       </div>
     </footer>
