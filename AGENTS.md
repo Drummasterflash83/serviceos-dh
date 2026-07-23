@@ -1,10 +1,11 @@
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
+> **Lovable is legacy — not the active deployment path.** The live frontend is
+> deployed by **Vercel from Git** (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+> Do not use or publish through Lovable. Do not remove Lovable-origin packages
+> (e.g. `@lovable.dev/vite-tanstack-config`) — they are still load-bearing for the build.
 >
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
+> Still valid regardless of host: avoid rewriting **published git history** — force
+> pushing, or rebasing/amending/squashing commits that are already pushed. Keep the
+> pushed branch in a working state (Vercel builds every push).
 <!-- LOVABLE:END -->
