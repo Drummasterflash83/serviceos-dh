@@ -212,22 +212,36 @@ async function main() {
     },
   );
 
-  await demo("Tenant Superadmin cannot use the Control Plane (role gate)", async () => {
-    // A tenant superadmin has role 'owner' (not 'openfolk') → denied even with a grant.
+  await demo("Tenant Superadmin cannot use the Control Plane (no platform grant)", async () => {
+    // Platform authority comes from the grant ledger, NOT from profiles.role: a tenant
+    // superadmin holds a TENANT grant only, so the platform gate denies them.
     const d = decidePlatformAccess({
       role: "owner",
-      grants: [{ permission: "platform.controlplane.admin" }],
+      profileExists: true,
+      grants: [{ permission: "tenant.superadmin" }],
       requireAdmin: false,
       viewAsActive: false,
       nowMs: NOW,
     });
     assert.equal(d.allow, false);
+    // Conversely, the SAME tenant role WITH an active platform grant is allowed — this is
+    // the operator-bootstrap case (an owner keeps their tenant role and gains platform access).
+    const bootstrapped = decidePlatformAccess({
+      role: "owner",
+      profileExists: true,
+      grants: [{ permission: "platform.controlplane.admin" }],
+      requireAdmin: false,
+      viewAsActive: false,
+      nowMs: NOW,
+    });
+    assert.equal(bootstrapped.allow, true);
     // (DB-level: control_plane.test.sql proves a tenant superadmin reads ZERO Control Plane rows.)
   });
 
   await demo("OpenFolk VIEWER can inspect but not change", async () => {
     const read = decidePlatformAccess({
       role: "openfolk",
+      profileExists: true,
       grants: [{ permission: "platform.controlplane.view" }],
       requireAdmin: false,
       viewAsActive: false,
@@ -235,6 +249,7 @@ async function main() {
     });
     const write = decidePlatformAccess({
       role: "openfolk",
+      profileExists: true,
       grants: [{ permission: "platform.controlplane.view" }],
       requireAdmin: true,
       viewAsActive: false,
@@ -247,6 +262,7 @@ async function main() {
   await demo("OpenFolk ADMIN makes an audited, atomic change", async () => {
     const w = decidePlatformAccess({
       role: "openfolk",
+      profileExists: true,
       grants: [{ permission: "platform.controlplane.admin" }],
       requireAdmin: true,
       viewAsActive: false,

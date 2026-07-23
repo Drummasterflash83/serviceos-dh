@@ -2,7 +2,10 @@
 --   docker exec -i supabase_db_serviceos-dh psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/control_plane.test.sql
 --
 -- Proves OpenFolk Control Plane invariants:
---   • current_user_is_openfolk_operator() (role='openfolk' AND active grant; admin⇒view)
+--   • current_user_is_openfolk_operator() — authenticated + existing profile + ACTIVE
+--     platform.controlplane grant (admin⇒view). profiles.role is NOT consulted, so a
+--     tenant `owner` can be an operator without surrendering their tenant role
+--     (migration 20260822120000). Expired/revoked grants fail closed.
 --   • RLS: OpenFolk operator reads; tenant superadmin / ordinary / anon see ZERO
 --   • tenant isolation: cross-tenant owner/endpoint refs rejected by composite FKs
 --   • effective-dated ownership: overlapping EXCLUSIVE accountable rejected; cover coexists
@@ -18,15 +21,25 @@ insert into auth.users (id, email, is_sso_user, is_anonymous) values
   ('bbbb0000-0000-0000-0000-0000000000c1','op@openfolk.test',false,false),
   ('bbbb0000-0000-0000-0000-0000000000c2','op-nogrant@openfolk.test',false,false),
   ('bbbb0000-0000-0000-0000-0000000000c3','tsa@cp.test',false,false),
-  ('bbbb0000-0000-0000-0000-0000000000c4','ord@cp.test',false,false);
+  ('bbbb0000-0000-0000-0000-0000000000c4','ord@cp.test',false,false),
+  ('bbbb0000-0000-0000-0000-0000000000c5','owner-operator@cp.test',false,false),
+  ('bbbb0000-0000-0000-0000-0000000000c6','owner-expired@cp.test',false,false);
 update profiles set role='openfolk', tenant_id=null where id='bbbb0000-0000-0000-0000-0000000000c1';
 update profiles set role='openfolk', tenant_id=null where id='bbbb0000-0000-0000-0000-0000000000c2';
 update profiles set role='owner', tenant_id='aaaa0000-0000-0000-0000-0000000000c1' where id='bbbb0000-0000-0000-0000-0000000000c3';
 update profiles set role='ops',   tenant_id='aaaa0000-0000-0000-0000-0000000000c1' where id='bbbb0000-0000-0000-0000-0000000000c4';
+-- The operator-bootstrap shape: a TENANT OWNER who keeps role='owner' and holds platform
+-- authority purely via the grant ledger (this is the live Chris case).
+update profiles set role='owner', tenant_id='aaaa0000-0000-0000-0000-0000000000c1' where id='bbbb0000-0000-0000-0000-0000000000c5';
+update profiles set role='owner', tenant_id='aaaa0000-0000-0000-0000-0000000000c1' where id='bbbb0000-0000-0000-0000-0000000000c6';
 
 -- Active platform grant for the operator (admin ⇒ implies view).
 insert into platform_authority_grants (profile_id, permission, granted_by, effective_from) values
-  ('bbbb0000-0000-0000-0000-0000000000c1','platform.controlplane.admin','system', now() - interval '1 hour');
+  ('bbbb0000-0000-0000-0000-0000000000c1','platform.controlplane.admin','system', now() - interval '1 hour'),
+  ('bbbb0000-0000-0000-0000-0000000000c5','platform.controlplane.admin','system', now() - interval '1 hour');
+-- EXPIRED grant (effective_to already past) — must fail closed.
+insert into platform_authority_grants (profile_id, permission, granted_by, effective_from, effective_to) values
+  ('bbbb0000-0000-0000-0000-0000000000c6','platform.controlplane.admin','system', now() - interval '5 hours', now() - interval '1 hour');
 
 -- Tenant superadmin (team_member + tenant.superadmin grant) — must NOT see Control Plane.
 insert into team_members (id, tenant_id, profile_id, display_name) values
@@ -52,6 +65,25 @@ begin
   if current_user_is_openfolk_operator() then raise exception 'FAIL: openfolk WITHOUT grant must NOT be operator'; end if;
   perform set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c3', true);
   if current_user_is_openfolk_operator() then raise exception 'FAIL: tenant superadmin must NOT be operator'; end if;
+
+  -- REGRESSION (authority-model correction, migration 20260822120000):
+  -- ordinary tenant user without a platform grant is denied.
+  perform set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c4', true);
+  if current_user_is_openfolk_operator() then raise exception 'FAIL: ordinary tenant user must NOT be operator'; end if;
+
+  -- A tenant OWNER holding an ACTIVE platform grant IS an operator (role not consulted).
+  perform set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c5', true);
+  if not current_user_is_openfolk_operator() then raise exception 'FAIL: owner WITH active grant must be operator'; end if;
+  if not current_user_is_openfolk_operator('platform.controlplane.admin') then raise exception 'FAIL: owner admin grant must satisfy admin'; end if;
+
+  -- ...and their TENANT role is untouched by holding platform authority.
+  if (select role from profiles where id='bbbb0000-0000-0000-0000-0000000000c5') is distinct from 'owner' then
+    raise exception 'FAIL: operator profile role must remain owner';
+  end if;
+
+  -- An EXPIRED / revoked grant fails closed.
+  perform set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c6', true);
+  if current_user_is_openfolk_operator() then raise exception 'FAIL: EXPIRED platform grant must fail closed'; end if;
 end $$;
 
 -- ── (2) RLS: operator reads; superadmin/ordinary see ZERO. ──────────────────
@@ -78,6 +110,23 @@ declare n int;
 begin
   select count(*) into n from communication_endpoints;
   if n <> 0 then raise exception 'FAIL: ordinary user saw % Control Plane rows (must be 0)', n; end if;
+end $$;
+
+-- REGRESSION: a tenant OWNER holding an ACTIVE platform grant reads Control Plane rows,
+-- while the SAME tenant role with an EXPIRED grant reads ZERO (fails closed).
+select set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c5', true);
+do $$
+declare n int;
+begin
+  select count(*) into n from communication_endpoints;
+  if n < 1 then raise exception 'FAIL: owner WITH active platform grant cannot read Control Plane'; end if;
+end $$;
+select set_config('request.jwt.claim.sub','bbbb0000-0000-0000-0000-0000000000c6', true);
+do $$
+declare n int;
+begin
+  select count(*) into n from communication_endpoints;
+  if n <> 0 then raise exception 'FAIL: EXPIRED grant saw % Control Plane rows (must be 0)', n; end if;
 end $$;
 reset role;
 

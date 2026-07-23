@@ -6,8 +6,10 @@
 # initial platform.controlplane.view / .admin. It records the granting actor, reason,
 # effective start and provenance in platform_authority_grants.
 #
-# The target profile must already exist (the operator has signed in at least once) and
-# have role='openfolk' — this script does NOT elevate a profile's role.
+# The target profile must already exist (the operator has signed in at least once).
+# It does NOT need — and must not be given — role='openfolk': since migration
+# 20260822120000 platform authority is decoupled from profiles.role, which stays the
+# person's TENANT role (e.g. 'owner'). This script never modifies a profile's role.
 #
 # Usage:
 #   scripts/openfolk-grant-operator.sh \
@@ -49,9 +51,9 @@ begin
   if v_pid is null then
     raise exception 'No profile for % — the operator must sign in once before being granted.', :'email';
   end if;
-  if v_role is distinct from 'openfolk' then
-    raise exception 'Profile % has role % (must be openfolk). Set the role first (not done by this script).', :'email', coalesce(v_role,'<null>');
-  end if;
+  -- profiles.role is the TENANT role and is deliberately NOT inspected or changed here:
+  -- platform authority comes solely from this effective-dated grant ledger.
+  raise notice 'Target profile % (tenant role: %) — role left unchanged.', :'email', coalesce(v_role,'<null>');
   -- Idempotent: reactivate/keep one active grant of this permission.
   if exists (select 1 from public.platform_authority_grants
               where profile_id = v_pid and permission = :'perm' and effective_to is null) then

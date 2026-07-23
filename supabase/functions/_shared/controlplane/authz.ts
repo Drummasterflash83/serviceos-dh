@@ -1,8 +1,13 @@
 // ServiceOS — OpenFolk Control Plane: platform-operator authorization.
 //
-// Distinct from tenant authority: a coarse profiles.role='openfolk' is NOT sufficient —
-// an ACTIVE platform.controlplane grant is also required (admin ⇒ view). Reads require
-// view; writes require admin AND no active View-As context (View-As can never configure).
+// Platform authority is DECOUPLED from profiles.role (see migration
+// 20260822120000_platform_authority_decoupled_from_role.sql): access requires an
+// authenticated user, an EXISTING profile, and an ACTIVE platform.controlplane grant
+// (admin ⇒ view). profiles.role is tenant-facing only, so a tenant `owner` can hold
+// platform authority without surrendering their tenant role. A platform grant confers
+// Control Plane access ONLY — never tenant data access (is_openfolk() is untouched).
+// Reads require view; writes require admin AND no active View-As context (View-As can
+// never configure).
 // The real authenticated actor is always retained. Machine callers (discovery workers)
 // use the service-role key plus an explicit x-openfolk-actor header.
 
@@ -32,7 +37,10 @@ export interface ActiveGrant {
 /** PURE decision: given role, grants, whether a write is requested, and View-As state,
  * decide access. Returns a granted context patch or a typed error. Deterministic. */
 export function decidePlatformAccess(input: {
+  /** Tenant-facing role, informational only — it NEVER decides platform access. */
   role: string | null;
+  /** A profile row exists for the authenticated user. */
+  profileExists: boolean;
   grants: ActiveGrant[];
   requireAdmin: boolean;
   viewAsActive: boolean;
@@ -40,11 +48,11 @@ export function decidePlatformAccess(input: {
 }):
   | { allow: true; isAdmin: boolean }
   | { allow: false; code: string; message: string; httpStatus: number } {
-  if (input.role !== "openfolk") {
+  if (!input.profileExists) {
     return {
       allow: false,
       code: "forbidden",
-      message: "OpenFolk operator role required",
+      message: "No profile for the authenticated user",
       httpStatus: 403,
     };
   }
@@ -144,6 +152,7 @@ export async function requirePlatformOperator(
 
   const decision = decidePlatformAccess({
     role: (profile?.role as string | undefined) ?? null,
+    profileExists: !!profile,
     grants: (grants ?? []) as ActiveGrant[],
     requireAdmin,
     viewAsActive,
@@ -156,7 +165,9 @@ export async function requirePlatformOperator(
     ctx: {
       userId,
       actor: email ?? userId,
-      role: "openfolk",
+      // The operator's real tenant-facing role (e.g. 'owner') — platform authority came
+      // from the grant, not from this value.
+      role: (profile?.role as string | undefined) ?? "unknown",
       isAdmin: decision.isAdmin,
       viewAsActive,
     },

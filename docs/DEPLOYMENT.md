@@ -149,6 +149,28 @@ Because no client flow consumes these today, this only affects future email-temp
 
 For now `app.openfolk.ai/openfolk` is the authoritative Control Plane route.
 
+## Platform authority (who can open `/openfolk`)
+
+Platform authority is **decoupled from `profiles.role`** (migration
+`20260822120000_platform_authority_decoupled_from_role.sql`). Access to the Control Plane
+requires exactly three things:
+
+1. an authenticated user;
+2. an existing `public.profiles` row;
+3. an **active `platform.controlplane` grant** (`admin` implies `view`) in
+   `platform_authority_grants` (effective-dated, auditable, reversible).
+
+`profiles.role` is the **tenant-facing role only** (`owner|admin|ops|viewer|openfolk`) and is
+never consulted by the gate — so a tenant **`owner` can hold platform authority without
+surrendering their tenant role**. `is_openfolk()` is deliberately unchanged: it still means
+`role='openfolk'` and still governs cross-tenant access in tenant RLS, so **a platform grant
+confers Control Plane access only, never tenant data access**.
+
+Grant an operator with `scripts/openfolk-grant-operator.sh` (it never modifies a profile's
+role). Both enforcement points must be in sync in production: the SQL gate
+`current_user_is_openfolk_operator()` **and** the deployed `openfolk-control-plane` edge
+function (`_shared/controlplane/authz.ts`).
+
 ## Backend (Supabase) — separate track
 
 Supabase migrations and edge functions deploy via the Supabase CLI against project
