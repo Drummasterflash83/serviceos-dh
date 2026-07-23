@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import dhIcon from "@/assets/dh-icon-black.png.asset.json";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
 const SIGNUP_ENABLED = import.meta.env.VITE_ENABLE_SIGNUP === "true";
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/login")({
     redirect: safeRedirect(search.redirect),
   }),
   head: () => ({
-    meta: [{ title: "Sign in · ServiceOS" }],
+    meta: [{ title: "Sign in · OpenFolk" }],
   }),
   component: LoginPage,
 });
@@ -70,9 +69,9 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <img src={dhIcon.url} alt="Drummonds" className="h-10 w-10 rounded-md object-contain" />
+          <img src="/brand/openfolk-icon.svg" alt="OpenFolk" className="h-10 w-10 rounded-md" />
           <h1 className="text-display mt-4 text-xl font-semibold tracking-tight text-foreground">
-            Sign in to ServiceOS
+            Sign in to OpenFolk
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">Access is invite-only.</p>
         </div>
@@ -94,7 +93,7 @@ function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@drummonds.co.uk"
+                placeholder="you@company.com"
                 disabled={pending || !configured}
               />
             </div>

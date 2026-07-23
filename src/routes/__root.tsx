@@ -78,20 +78,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ServiceOS · Bespoke Operating System for Drummonds" },
+      { title: "OpenFolk" },
       {
         name: "description",
         content:
           "A bespoke operating system designed around Drummonds' people, systems and workflows - built from discovery, engineered to operate.",
       },
-      { property: "og:title", content: "ServiceOS · Built for Drummonds" },
+      { property: "og:title", content: "OpenFolk" },
       {
         property: "og:description",
         content:
           "The intelligence layer above every system Drummonds already uses - shaped by discovery, tuned to your standards.",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "ServiceOS · Built for Drummonds" },
+      { name: "twitter:title", content: "OpenFolk" },
       { name: "description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
       { property: "og:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
       { name: "twitter:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
@@ -100,8 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/brand/drummond-logo.png" },
-      { rel: "apple-touch-icon", href: "/brand/drummond-logo.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/brand/openfolk-icon.svg" },
+      { rel: "apple-touch-icon", href: "/brand/openfolk-icon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

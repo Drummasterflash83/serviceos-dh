@@ -84,6 +84,71 @@ Instant rollback: `vercel rollback` (or `vercel promote <previous-prod-url>`).
 - **From the CLI:** `vercel inspect https://serviceos-dh.vercel.app --scope allkin` and
   `vercel ls serviceos-dh --scope allkin`.
 
+## Custom domain — `app.openfolk.ai`
+
+The **canonical user-facing production hostname** is **`https://app.openfolk.ai`**, attached to
+the same `allkin/serviceos-dh` project (no second project). **`serviceos-dh.vercel.app` stays
+attached** as a temporary fallback + deployment-diagnostic hostname.
+
+| Item | Value |
+|------|-------|
+| Canonical domain | `https://app.openfolk.ai` |
+| Fallback domain | `https://serviceos-dh.vercel.app` (keep working) |
+| DNS provider | **GoDaddy** (`ns11/ns12.domaincontrol.com`) — nameservers unchanged |
+| **DNS record to add** | `CNAME` host `app` → `b7083fbc113bbb6d.vercel-dns-017.com` (Vercel A-record alt: `76.76.21.21`) |
+| Ownership verification | Automatic — domain is under the same Vercel scope (`attached: true, verified: true`); **no TXT record** |
+| SSL | Auto-issued by Vercel (Let's Encrypt) once the CNAME resolves |
+| Control Plane route | `https://app.openfolk.ai/openfolk` (no hostname-based routing this increment) |
+
+**Do not** change nameservers or touch MX / SPF / DKIM / DMARC (a DMARC record exists at
+`_dmarc.openfolk.ai`). Add only the single `app` CNAME.
+
+### Verify after DNS is added
+
+```bash
+vercel domains inspect app.openfolk.ai --scope allkin   # DNS + SSL status
+dig +short CNAME app.openfolk.ai                         # should show the vercel-dns target
+```
+
+## Application canonical URL / auth origins
+
+The app has **no application-URL / site-URL env var** — it derives origins from
+`window.location.origin` at runtime, so serving it at `app.openfolk.ai` needs **no Vercel env
+change**. Auth is **password-only** (`signInWithPassword` / `signUpWithPassword`,
+`detectSessionInUrl: false`); there are **no magic-link / OAuth / email-redirect client flows**.
+
+### Supabase Auth URL configuration (project `tgbnakbxwcqjeimygroz`)
+
+Set in the Supabase dashboard (Authentication → URL Configuration). Do **not** change the
+Supabase project API URL.
+
+- **Site URL:** `https://app.openfolk.ai`
+- **Redirect allow-list:**
+  - `https://app.openfolk.ai/**`
+  - `https://serviceos-dh.vercel.app/**` (temporary fallback)
+  - `https://*-allkin.vercel.app/**` (preview deployments — narrowest safe pattern)
+  - existing local-dev URLs the team already uses (e.g. `http://localhost:5173/**`)
+
+Because no client flow consumes these today, this only affects future email-template links
+(e.g. signup confirmation, currently gated off by `VITE_ENABLE_SIGNUP`).
+
+## Rollback (no data touched)
+
+1. **Auth:** if sign-in breaks, restore the previous Supabase Auth **Site URL** in the dashboard.
+2. **Frontend:** `serviceos-dh.vercel.app` keeps serving the same deployment — use it while
+   diagnosing. Roll a bad deploy back with `vercel rollback` (never delete deployments).
+3. **Domain:** detach `app.openfolk.ai` only if required (`vercel domains rm` / dashboard);
+   the fallback hostname keeps the app reachable.
+4. All Supabase schema, audit and configuration data is untouched by any of the above.
+
+## Future domain structure (documented, not implemented)
+
+- `control.openfolk.ai` — OpenFolk operator entry point (future)
+- `demo.openfolk.ai` — synthetic commercial demo (future)
+- optional customer-specific subdomains (future)
+
+For now `app.openfolk.ai/openfolk` is the authoritative Control Plane route.
+
 ## Backend (Supabase) — separate track
 
 Supabase migrations and edge functions deploy via the Supabase CLI against project
