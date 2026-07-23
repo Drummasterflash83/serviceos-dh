@@ -19,6 +19,7 @@ import {
   discoverEmailEndpoints,
   discoverTelephonyEndpoints,
 } from "../_shared/controlplane/discovery.ts";
+import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -36,7 +37,14 @@ const fail = (code: string, message: string, s: number) =>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
-const READ_ACTIONS = new Set(["tenants.list", "workspace", "resolve", "data_quality", "audit"]);
+const READ_ACTIONS = new Set([
+  "tenants.list",
+  "workspace",
+  "resolve",
+  "data_quality",
+  "audit",
+  "readiness",
+]);
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -103,6 +111,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       case "data_quality": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         return json({ ok: true, data: { items: await computeDataQuality(admin, tenantId) } });
+      }
+      case "readiness": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        return json({ ok: true, data: await computeSourceReadiness(admin, tenantId) });
       }
       case "audit": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

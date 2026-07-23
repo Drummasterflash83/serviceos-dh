@@ -49,6 +49,11 @@ verify_jwt = false
 # platform.controlplane grant (view to read, admin to write). NOT tenant-accessible.
 verify_jwt = false
 
+[functions.ownership-projection]
+# Tenant-facing DERIVED ownership only (requireTenantUser). Never exposes raw Control
+# Plane tables — the Command Centre consumes this instead of querying them.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

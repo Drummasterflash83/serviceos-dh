@@ -41,6 +41,9 @@ run "control_plane SQL proof"    bash -c "out=\$(docker exec -i supabase_db_serv
 echo "── store / RPC / discovery integration (real local DB) ──────"
 run "control plane integration"  node scripts/control-plane.test.ts
 
+echo "── §5 final proof — 11-step end-to-end demonstration ────────"
+run "control plane demo (11 steps)" node scripts/control-plane-demo.test.ts
+
 echo "─────────────────────────────────────────────────────────────"
 echo "PASS=$pass  FAIL=$fail"
 [ "$fail" -eq 0 ]
