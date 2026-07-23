@@ -11,6 +11,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldAlert, ShieldCheck, ChevronRight } from "lucide-react";
 import { RequireAuth } from "@/lib/auth";
 import { listTenants, type TenantSummary } from "@/lib/openfolk";
+import { BuildBadge } from "@/components/BuildBadge";
 
 export const Route = createFileRoute("/openfolk")({
   component: () => (
@@ -94,6 +95,8 @@ function OpenfolkList() {
             )}
           </div>
         )}
+
+        <BuildBadge />
       </div>
     </div>
   );
