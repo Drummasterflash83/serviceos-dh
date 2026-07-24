@@ -250,6 +250,28 @@ export interface IdentityResolution {
     created_at: string;
   }[];
 }
+// Telephony extension candidate — the phone analogue of an email IdentitySuggestion. Derived
+// provider-neutrally from call activity; carries the supporting evidence the operator needs
+// (labels, call volume, last-seen) and never auto-confirms.
+export interface TelephonyCandidate {
+  endpoint_id: string;
+  endpoint_extension: string;
+  display_value: string | null;
+  suggested_member_id: string | null;
+  suggested_kind: "person" | "shared" | "none";
+  confidence: "high" | "medium" | "low" | "unresolved";
+  evidence: string;
+  provenance: string;
+  ambiguity: string[];
+  named_members: string[];
+  unknown_label_names: string[];
+  observed_labels: string[];
+  call_count: number;
+  last_activity: string | null;
+}
+export interface TelephonyIdentityResolution {
+  candidates: TelephonyCandidate[];
+}
 export interface Workspace {
   summary: TenantSummary;
   members: CpMember[];
@@ -261,6 +283,7 @@ export interface Workspace {
   connections?: Connections;
   phoneEvidence?: PhoneEvidenceItem[];
   identityResolution?: IdentityResolution;
+  telephonyIdentityResolution?: TelephonyIdentityResolution;
 }
 export interface EndpointValidation {
   valid: boolean;

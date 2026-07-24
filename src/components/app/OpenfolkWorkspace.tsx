@@ -41,6 +41,7 @@ import {
 import { projectConnections } from "@/lib/openfolk-connections";
 import { OpenfolkConnections, type DelegatedActions } from "@/components/app/OpenfolkConnections";
 import { OpenfolkCommandCentre } from "@/components/app/OpenfolkCommandCentre";
+import { PersonIntelligenceHub } from "@/components/app/PersonIntelligenceHub";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -245,6 +246,8 @@ export function OpenfolkWorkspace({
   onSectionChange,
   selectedEndpoint = null,
   onSelectEndpoint,
+  selectedPerson = null,
+  onSelectPerson,
   delegatedActions,
 }: {
   tenantName: string;
@@ -262,6 +265,9 @@ export function OpenfolkWorkspace({
   onSectionChange?: (s: Section) => void;
   selectedEndpoint?: string | null;
   onSelectEndpoint?: (endpointId: string | null) => void;
+  // Selected person = durable URL state (?person=), opens the Person Intelligence Hub.
+  selectedPerson?: string | null;
+  onSelectPerson?: (memberId: string | null) => void;
   delegatedActions?: DelegatedActions;
 }) {
   const [localSection, setLocalSection] = useState<Section>(controlledSection ?? "overview");
@@ -274,6 +280,15 @@ export function OpenfolkWorkspace({
   // in the URL). Identity review is reachable via the Communications "Identity review" tab.
   const [commTab, setCommTab] = useState<CommTab>("email");
   const [selectedConn, setSelectedConn] = useState<string | null>(null);
+  // Person selection falls back to local state on the read-only demo (no URL param there).
+  const [localPerson, setLocalPerson] = useState<string | null>(null);
+  const personId = selectedPerson ?? localPerson;
+  const selectPerson = useCallback(
+    (id: string | null) => (onSelectPerson ? onSelectPerson(id) : setLocalPerson(id)),
+    [onSelectPerson],
+  );
+  // Operator preview is read-only and never attributed to the actor (clearly banner-marked).
+  const [previewFor, setPreviewFor] = useState<string | null>(null);
   const {
     summary,
     members,
@@ -467,38 +482,90 @@ export function OpenfolkWorkspace({
           />
         )}
 
-        {/* ── People ───────────────────────────────────────────────── */}
-        {section === "people" && (
-          <Card
-            title="People"
-            right={
-              <span className="text-[11px] text-muted-foreground">{members.length} member(s)</span>
+        {/* ── People / Person Intelligence Hub ─────────────────────── */}
+        {section === "people" &&
+          (() => {
+            const selected = personId ? members.find((m) => m.id === personId) : null;
+            if (selected) {
+              return (
+                <>
+                  {previewFor === selected.id && (
+                    <div
+                      role="status"
+                      className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-accent/40 bg-accent/5 p-3 text-xs"
+                    >
+                      <span className="font-semibold text-accent">Operator preview</span>
+                      <span className="text-muted-foreground">
+                        Previewing the experience generated for {selected.display_name}. Read-only —
+                        actions here are never attributed to them. Their full Command Centre preview
+                        arrives with the operator-preview increment.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewFor(null)}
+                        className="ml-auto rounded-md border border-hairline bg-white px-2 py-0.5 text-[11px] text-muted-foreground hover:border-accent/50"
+                      >
+                        Exit preview
+                      </button>
+                    </div>
+                  )}
+                  <PersonIntelligenceHub
+                    actor={selected}
+                    workspace={workspace}
+                    writeCapable={writeCapable}
+                    busy={busy}
+                    onReviewIdentity={actions.onReviewIdentity}
+                    onBack={() => selectPerson(null)}
+                    onPreview={(id) => setPreviewFor(id)}
+                  />
+                </>
+              );
             }
-          >
-            <p className="mb-3 text-xs text-muted-foreground">
-              Canonical <code className="text-[11px]">team_members</code>. A member may exist
-              without a login. Identity links (Google/Slack/VoIP) are proposals with confidence +
-              provenance — never auto-confirmed from a name match.
-            </p>
-            <div className="divide-y divide-hairline">
-              {members.map((m) => (
-                <PersonRow
-                  key={m.id}
-                  member={m}
-                  identities={identities}
-                  ownership={ownership}
-                  ownershipHistory={ownershipHistory}
-                  endpoints={endpoints}
-                  suggestions={identityResolution?.suggestions ?? []}
-                  reviews={identityResolution?.reviews ?? []}
-                />
-              ))}
-              {members.length === 0 && (
-                <p className="py-2 text-xs italic text-muted-foreground">No members yet.</p>
-              )}
-            </div>
-          </Card>
-        )}
+            return (
+              <Card
+                title="People"
+                right={
+                  <span className="text-[11px] text-muted-foreground">
+                    {members.length} member(s)
+                  </span>
+                }
+              >
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Canonical <code className="text-[11px]">team_members</code>. Open any actor for
+                  the Person Intelligence Hub — what we currently know, organised as evidence with
+                  confidence + provenance. Identity links are never auto-confirmed from a name
+                  match.
+                </p>
+                <div className="divide-y divide-hairline">
+                  {members.map((m) => (
+                    <div key={m.id} className="flex items-center gap-2">
+                      <div className="min-w-0 flex-1">
+                        <PersonRow
+                          member={m}
+                          identities={identities}
+                          ownership={ownership}
+                          ownershipHistory={ownershipHistory}
+                          endpoints={endpoints}
+                          suggestions={identityResolution?.suggestions ?? []}
+                          reviews={identityResolution?.reviews ?? []}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => selectPerson(m.id)}
+                        className="shrink-0 rounded-md border border-hairline bg-white px-2 py-1 text-[11px] font-medium text-accent hover:border-accent/50"
+                      >
+                        Open hub →
+                      </button>
+                    </div>
+                  ))}
+                  {members.length === 0 && (
+                    <p className="py-2 text-xs italic text-muted-foreground">No members yet.</p>
+                  )}
+                </div>
+              </Card>
+            );
+          })()}
 
         {/* ── Communications (re-homes Email / Phone / Slack / Identity review) ── */}
         {section === "communications" && (
@@ -2287,7 +2354,9 @@ function AddEndpointForm({
   const [kind, setKind] = useState("ddi");
   const [value, setValue] = useState("");
   const [display, setDisplay] = useState("");
-  const [ctx, setCtx] = useState("sipcentric:3950");
+  // No tenant identifier is hard-coded in the UI — the operator supplies the provider/account
+  // context (a hint placeholder shows the shape). Discovered connections carry their own.
+  const [ctx, setCtx] = useState("");
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<EndpointValidation | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -2355,6 +2424,7 @@ function AddEndpointForm({
           <input
             value={ctx}
             onChange={(e) => setCtx(e.target.value)}
+            placeholder="provider:account (e.g. from a connected source)"
             className="mt-0.5 w-full rounded-md border border-hairline bg-white px-2 py-1 text-xs"
           />
         </label>

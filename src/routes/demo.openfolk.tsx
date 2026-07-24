@@ -190,6 +190,46 @@ const WORKSPACE: Workspace = {
     },
     slack: { status: "not_connected", note: "Identity model ready — ingestion not connected" },
   },
+  // Email identity suggestion (review-only) — exercises the Person Intelligence Hub email source.
+  identityResolution: {
+    classifications: [],
+    suggestions: [
+      {
+        endpoint_id: "ep-email-carol",
+        endpoint_email: "carol@demo.example",
+        provider_mailbox_type: "user",
+        operational_class: "unknown",
+        suggested_member_id: "m3",
+        suggested_kind: "person",
+        confidence: "high",
+        evidence: 'verified Workspace display name "Carol Vine" exactly matches this member',
+        provenance: "workspace-display-name-exact",
+        ambiguity: [],
+      },
+    ],
+    reviews: [],
+  },
+  // Telephony extension candidates (provider-neutral; labels = evidence, never identity).
+  telephonyIdentityResolution: {
+    candidates: [
+      {
+        endpoint_id: EP_EXT,
+        endpoint_extension: "210",
+        display_value: "Carol - Service",
+        suggested_member_id: "m3",
+        suggested_kind: "person",
+        confidence: "high",
+        evidence: "provider extension label consistently names this member",
+        provenance: "telephony-extension-label",
+        ambiguity: [],
+        named_members: ["m3"],
+        unknown_label_names: [],
+        observed_labels: ["Carol - Service"],
+        call_count: 47,
+        last_activity: "2026-07-21T10:15:00Z",
+      },
+    ],
+  },
 };
 const READINESS: SourceReadiness = {
   channel: "phone",
@@ -316,6 +356,78 @@ function DemoOpenfolk() {
     [withRefresh],
   );
 
+  // Identity confirm/reject in-memory — mirrors the live cp_review_identity: a confirmed_person
+  // creates a verified identity link; the candidate is then cleared from the review queue.
+  const onReviewIdentity = useCallback(
+    (input: {
+      endpoint_id: string;
+      decision: string;
+      team_member_id?: string | null;
+      confidence?: string;
+      reason: string;
+    }) =>
+      void withRefresh(() => {
+        setWorkspace((w) => {
+          const ep = w.endpoints.find((e) => e.id === input.endpoint_id);
+          const identities = [...w.identities];
+          if (input.decision === "confirmed_person" && input.team_member_id) {
+            const provider = ep
+              ? ep.channel === "phone"
+                ? (ep.provider ?? "voip")
+                : "google_workspace"
+              : "google_workspace";
+            identities.push({
+              id: `demo-id-${demoSeq++}`,
+              team_member_id: input.team_member_id,
+              provider,
+              identity_kind: "user",
+              external_ref: ep?.normalized_value ?? input.endpoint_id,
+              display: null,
+              verification_state: "verified",
+            });
+          }
+          const reviews = [
+            {
+              endpoint_id: input.endpoint_id,
+              decision: input.decision,
+              team_member_id: input.team_member_id ?? null,
+              created_at: new Date().toISOString(),
+            },
+            ...(w.identityResolution?.reviews ?? []),
+          ];
+          return {
+            ...w,
+            identities,
+            identityResolution: {
+              classifications: w.identityResolution?.classifications ?? [],
+              suggestions: (w.identityResolution?.suggestions ?? []).filter(
+                (s) => s.endpoint_id !== input.endpoint_id,
+              ),
+              reviews,
+            },
+            telephonyIdentityResolution: {
+              candidates: (w.telephonyIdentityResolution?.candidates ?? []).filter(
+                (c) => c.endpoint_id !== input.endpoint_id,
+              ),
+            },
+          };
+        });
+        setAudit((a) => [
+          {
+            actor: "demo-operator",
+            action: "controlplane.identity.review",
+            resource_type: "communication_endpoint",
+            resource_id: input.endpoint_id,
+            reason: input.reason,
+            view_as_active: false,
+            created_at: new Date().toISOString(),
+          },
+          ...a,
+        ]);
+      }),
+    [withRefresh],
+  );
+
   // Synthetic in-memory delegated setup requests (demo only — the live route calls the
   // gated Control Plane). Mirrors the security model: tokens are never stored; a one-time
   // link is returned at issue.
@@ -394,7 +506,7 @@ function DemoOpenfolk() {
         onSectionChange={setSection}
         selectedEndpoint={search.endpoint ?? null}
         onSelectEndpoint={setEndpoint}
-        actions={{ onAssign }}
+        actions={{ onAssign, onReviewIdentity }}
         delegatedActions={delegatedActions}
       />
     </OpenfolkShell>

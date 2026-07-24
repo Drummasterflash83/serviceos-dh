@@ -44,12 +44,13 @@ import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
 // The active workspace section + selected endpoint are durable URL state, so a mutation
 // refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
 // invalid `?section=` fails safely to Overview.
-type WorkspaceSearch = { section?: WorkspaceSection; endpoint?: string };
+type WorkspaceSearch = { section?: WorkspaceSection; endpoint?: string; person?: string };
 
 export const Route = createFileRoute("/openfolk/$tenantId")({
   validateSearch: (search: Record<string, unknown>): WorkspaceSearch => ({
     section: sectionSearchValue(search.section),
     endpoint: typeof search.endpoint === "string" && search.endpoint ? search.endpoint : undefined,
+    person: typeof search.person === "string" && search.person ? search.person : undefined,
   }),
   component: WorkspacePage,
 });
@@ -78,6 +79,7 @@ function WorkspacePage() {
           ...prev,
           section: sectionSearchValue(s),
           endpoint: s === "ownership" ? prev.endpoint : undefined,
+          person: s === "people" ? prev.person : undefined,
         }),
       }),
     [navigate],
@@ -88,6 +90,14 @@ function WorkspacePage() {
         // Selecting the endpoint you're editing isn't a navigation event — replace, don't push.
         search: (prev) => ({ ...prev, endpoint: endpointId ?? undefined }),
         replace: true,
+      }),
+    [navigate],
+  );
+  const setPerson = useCallback(
+    (memberId: string | null) =>
+      navigate({
+        // Opening a person's hub IS a navigation event (Back returns to the list).
+        search: (prev) => ({ ...prev, person: memberId ?? undefined }),
       }),
     [navigate],
   );
@@ -261,6 +271,8 @@ function WorkspacePage() {
         onSectionChange={setSection}
         selectedEndpoint={search.endpoint ?? null}
         onSelectEndpoint={setEndpoint}
+        selectedPerson={search.person ?? null}
+        onSelectPerson={setPerson}
         delegatedActions={delegatedActions}
       />
     </OpenfolkShell>
