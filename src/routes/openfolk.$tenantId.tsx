@@ -2,21 +2,26 @@
  * OpenFolk Control Plane — tenant workspace (/openfolk/$tenantId). PLATFORM-OPERATOR ONLY.
  *
  * Loads the workspace + readiness + audit from the gated openfolk-control-plane function
- * and renders the real OpenfolkWorkspace. Writes (discover / assign ownership) require an
- * admin grant server-side; a viewer's write returns 403 (surfaced inline). Never in
- * tenant navigation.
+ * and renders the real OpenfolkWorkspace. Writes (discover / manual inventory / assign
+ * ownership) require an admin grant server-side; a viewer's write returns 403 (surfaced
+ * inline). Never in tenant navigation.
  */
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
 import { RequireAuth } from "@/lib/auth";
-import { OpenfolkWorkspace } from "@/components/app/OpenfolkWorkspace";
+import { BuildBadge } from "@/components/BuildBadge";
+import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
 import {
+  archiveEndpoint,
   assignOwnership,
+  createManualEndpoint,
+  discoverEmail,
   discoverTelephony,
   getAudit,
   getReadiness,
   getWorkspace,
+  validateEndpoint,
   type AuditEntry,
   type SourceReadiness,
   type Workspace,
@@ -39,6 +44,7 @@ function WorkspacePage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<string>("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,6 +61,7 @@ function WorkspacePage() {
     }
     if (r.ok) setReadiness(r.data);
     if (a.ok) setAudit(a.data.entries);
+    setLastRefresh(new Date().toISOString());
     setLoading(false);
   }, [tenantId]);
   useEffect(() => {
@@ -62,13 +69,39 @@ function WorkspacePage() {
   }, [load]);
 
   const guard = async (fn: () => Promise<{ ok: boolean; error?: { message: string } }>) => {
-    if (busy) return;
+    if (busy) return false;
     setBusy(true);
     setActionError(null);
     const res = await fn();
     if (!res.ok) setActionError(res.error?.message ?? "Action failed");
     else await load();
     setBusy(false);
+    return res.ok;
+  };
+
+  const actions: WorkspaceActions = {
+    onDiscoverTelephony: (reason) => void guard(() => discoverTelephony(tenantId, reason)),
+    onDiscoverEmail: (reason) => void guard(() => discoverEmail(tenantId, reason)),
+    onAssign: (endpoint_id, owner_member_id, assignment_role, reason) =>
+      void guard(() =>
+        assignOwnership({
+          tenant_id: tenantId,
+          endpoint_id,
+          owner_kind: "person",
+          owner_member_id,
+          assignment_role,
+          confidence: 0.95,
+          reason,
+        }),
+      ),
+    onArchiveEndpoint: (endpoint_id, reason) =>
+      void guard(() => archiveEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
+    onValidateEndpoint: async (input) => {
+      const res = await validateEndpoint({ tenant_id: tenantId, ...input });
+      return res.ok ? res.data : null;
+    },
+    onCreateEndpoint: async (input) =>
+      guard(() => createManualEndpoint({ tenant_id: tenantId, ...input })),
   };
 
   return (
@@ -113,21 +146,10 @@ function WorkspacePage() {
               audit={audit}
               writeCapable={true}
               busy={busy}
-              onDiscoverTelephony={(reason) => guard(() => discoverTelephony(tenantId, reason))}
-              onAssign={(endpoint_id, owner_member_id, assignment_role, reason) =>
-                guard(() =>
-                  assignOwnership({
-                    tenant_id: tenantId,
-                    endpoint_id,
-                    owner_kind: "person",
-                    owner_member_id,
-                    assignment_role,
-                    confidence: 0.95,
-                    reason,
-                  }),
-                )
-              }
+              lastRefresh={lastRefresh}
+              actions={actions}
             />
+            <BuildBadge />
           </>
         )}
       </div>

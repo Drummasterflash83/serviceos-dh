@@ -175,9 +175,8 @@ function DemoOpenfolk() {
           workspace={WORKSPACE}
           readiness={READINESS}
           audit={AUDIT}
-          writeCapable={true}
-          onDiscoverTelephony={() => {}}
-          onAssign={() => {}}
+          writeCapable={false}
+          actions={{}}
         />
       </div>
     </div>
