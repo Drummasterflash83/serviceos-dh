@@ -12,16 +12,20 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import {
   Activity,
   AlertTriangle,
+  Bot,
+  Building2,
   CheckCircle2,
   Database,
+  HeartPulse,
   History,
-  Inbox,
+  Lock,
   Mail,
+  MessagesSquare,
   Phone,
   Plug,
   ShieldCheck,
-  ShieldQuestion,
   Users,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -33,6 +37,8 @@ import {
   type OwnershipRole,
   type WorkspaceSection,
 } from "@/lib/openfolk-workspace-nav";
+import { projectConnections } from "@/lib/openfolk-connections";
+import { OpenfolkConnections } from "@/components/app/OpenfolkConnections";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -71,16 +77,32 @@ const READINESS_META: Record<string, { label: string; cls: string }> = {
 type Section = WorkspaceSection;
 const SECTIONS: { key: Section; label: string; icon: ReactNode }[] = [
   { key: "overview", label: "Overview", icon: <Activity className="h-3.5 w-3.5" /> },
-  { key: "people", label: "People", icon: <Users className="h-3.5 w-3.5" /> },
-  { key: "review", label: "Review queue", icon: <Inbox className="h-3.5 w-3.5" /> },
+  { key: "company", label: "Company", icon: <Building2 className="h-3.5 w-3.5" /> },
   { key: "connections", label: "Connections", icon: <Plug className="h-3.5 w-3.5" /> },
-  { key: "phone", label: "Phone", icon: <Phone className="h-3.5 w-3.5" /> },
-  { key: "email", label: "Email", icon: <Mail className="h-3.5 w-3.5" /> },
-  { key: "slack", label: "Slack", icon: <ShieldQuestion className="h-3.5 w-3.5" /> },
+  { key: "people", label: "People", icon: <Users className="h-3.5 w-3.5" /> },
+  {
+    key: "communications",
+    label: "Communications",
+    icon: <MessagesSquare className="h-3.5 w-3.5" />,
+  },
   { key: "ownership", label: "Ownership", icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+  { key: "agents", label: "Agents", icon: <Bot className="h-3.5 w-3.5" /> },
+  { key: "automations", label: "Automations", icon: <Workflow className="h-3.5 w-3.5" /> },
+  { key: "health", label: "Health", icon: <HeartPulse className="h-3.5 w-3.5" /> },
   { key: "data_quality", label: "Data Quality", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
+  { key: "security", label: "Security", icon: <Lock className="h-3.5 w-3.5" /> },
   { key: "audit", label: "Audit", icon: <History className="h-3.5 w-3.5" /> },
 ];
+// Communications is a container that re-homes the former Email / Phone / Slack / Review
+// sections as sub-tabs (identity review is reachable here and from People).
+const COMM_TABS = ["email", "phone", "slack", "review"] as const;
+type CommTab = (typeof COMM_TABS)[number];
+const COMM_TAB_LABEL: Record<CommTab, string> = {
+  email: "Email",
+  phone: "Phone",
+  slack: "Slack",
+  review: "Identity review",
+};
 
 // Operational classification is DISTINCT from the raw provider mailbox type.
 const OPCLASS_META: Record<OperationalClass, { label: string; cls: string }> = {
@@ -136,6 +158,38 @@ function Stat({ label, n, tone }: { label: string; n: number; tone?: "warn" | "o
       </div>
       <div className="text-[11px] text-muted-foreground">{label}</div>
     </div>
+  );
+}
+
+// A Stat that links to another section (Overview metrics link to their detail section).
+function StatLink({
+  label,
+  n,
+  tone,
+  onGo,
+}: {
+  label: string;
+  n: number;
+  tone?: "warn" | "ok";
+  onGo: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onGo}
+      className="rounded-xl border border-hairline bg-white p-3 text-left transition-colors hover:border-accent/40"
+    >
+      <div
+        className={cn(
+          "text-2xl font-semibold text-display tabular",
+          tone === "warn" && n > 0 && "text-amber-600",
+          tone === "ok" && n > 0 && "text-success",
+        )}
+      >
+        {n}
+      </div>
+      <div className="text-[11px] text-muted-foreground">{label} →</div>
+    </button>
   );
 }
 
@@ -229,6 +283,10 @@ export function OpenfolkWorkspace({
     (s: Section) => (onSectionChange ? onSectionChange(s) : setLocalSection(s)),
     [onSectionChange],
   );
+  // Communications sub-tab + selected connection are local (the main section stays durable
+  // in the URL). Identity review is reachable via the Communications "Identity review" tab.
+  const [commTab, setCommTab] = useState<CommTab>("email");
+  const [selectedConn, setSelectedConn] = useState<string | null>(null);
   const {
     summary,
     members,
@@ -351,6 +409,34 @@ export function OpenfolkWorkspace({
       ),
     [endpoints],
   );
+  // Generic connection projection — reused by Overview, Connections, Security, Data Quality.
+  const connViews = useMemo(
+    () => projectConnections(connections, { endpoints, identities }),
+    [connections, endpoints, identities],
+  );
+  const connectedCount = connViews.filter((c) => c.connected).length;
+  const connActionCount = connViews.filter(
+    (c) => !c.connected || c.warnings.length > 0 || c.health === "degraded",
+  ).length;
+  // Connection-oriented data-quality issues, derived from the projection (§18).
+  const connectionIssues = useMemo(() => {
+    const out: { kind: string; detail: string }[] = [];
+    for (const c of connViews) {
+      if (c.adapterImplemented && !c.connected)
+        out.push({
+          kind: "connection_not_authorised",
+          detail: `${c.providerLabel} is not connected`,
+        });
+      for (const w of c.warnings)
+        out.push({ kind: "outside_boundary_identities", detail: `${c.providerLabel}: ${w}` });
+      if (c.connected && c.readiness === "connected" && c.family === "telephony")
+        out.push({
+          kind: "provider_data_without_canonical",
+          detail: `${c.providerLabel}: ${c.evidenceCount} raw evidence record(s), 0 typed canonical endpoints`,
+        });
+    }
+    return out;
+  }, [connViews]);
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-[190px_1fr]">
@@ -376,39 +462,56 @@ export function OpenfolkWorkspace({
         {/* ── Overview ─────────────────────────────────────────────── */}
         {section === "overview" && (
           <>
-            <Card title={`Configuration readiness — ${tenantName}`}>
-              {readiness ? (
-                <>
-                  <div className="mb-2 flex items-center gap-2">
-                    <span
-                      className={cn("text-sm font-semibold", READINESS_META[readiness.level]?.cls)}
-                    >
-                      {READINESS_META[readiness.level]?.label ?? readiness.level}
-                    </span>
-                    {lastRefresh && (
-                      <span className="ml-auto text-[11px] text-muted-foreground">
-                        refreshed {new Date(lastRefresh).toLocaleTimeString()}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mb-3 text-xs text-muted-foreground">{readiness.summary}</p>
-                  <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                    {readiness.checks.map((c) => (
-                      <li key={c.key} className="flex items-start gap-1.5 text-xs">
-                        {c.ok ? (
-                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                        ) : (
-                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        )}
-                        <span className="text-muted-foreground">{c.detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p className="text-xs text-muted-foreground">Readiness unavailable.</p>
-              )}
+            <Card
+              title={`Managed-service overview — ${tenantName}`}
+              right={
+                lastRefresh ? (
+                  <span className="text-[11px] text-muted-foreground">
+                    refreshed {new Date(lastRefresh).toLocaleTimeString()}
+                  </span>
+                ) : undefined
+              }
+            >
+              <p className="mb-3 text-xs text-muted-foreground">
+                Company configuration, connections and canonical inventory at a glance. Each metric
+                links to its section. Detailed readiness and Health-source status live under{" "}
+                <button
+                  type="button"
+                  className="text-accent underline-offset-2 hover:underline"
+                  onClick={() => setSection("health")}
+                >
+                  Health
+                </button>
+                .
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatLink
+                  label="Active connections"
+                  n={connectedCount}
+                  tone="ok"
+                  onGo={() => setSection("connections")}
+                />
+                <StatLink
+                  label="Connections needing action"
+                  n={connActionCount}
+                  tone="warn"
+                  onGo={() => setSection("connections")}
+                />
+                <StatLink
+                  label="Data-quality items"
+                  n={dataQuality.length}
+                  tone="warn"
+                  onGo={() => setSection("data_quality")}
+                />
+                <StatLink
+                  label="Ownership-complete"
+                  n={ownershipComplete}
+                  tone="ok"
+                  onGo={() => setSection("ownership")}
+                />
+              </div>
             </Card>
+            <SubHead>Canonical inventory</SubHead>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="People" n={summary.people} />
               <Stat label="Canonical endpoints" n={active.length} />
@@ -514,8 +617,29 @@ export function OpenfolkWorkspace({
           </Card>
         )}
 
-        {/* ── Operator review queue ────────────────────────────────── */}
-        {section === "review" && (
+        {/* ── Communications (re-homes Email / Phone / Slack / Identity review) ── */}
+        {section === "communications" && (
+          <nav className="flex flex-wrap gap-1">
+            {COMM_TABS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setCommTab(t)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[11px] font-medium",
+                  commTab === t
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-hairline text-muted-foreground hover:text-display",
+                )}
+              >
+                {COMM_TAB_LABEL[t]}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {/* ── Operator review queue (Communications › Identity review) ── */}
+        {section === "communications" && commTab === "review" && (
           <ReviewQueue
             email={email}
             members={members}
@@ -529,93 +653,18 @@ export function OpenfolkWorkspace({
           />
         )}
 
-        {/* ── Connections ──────────────────────────────────────────── */}
+        {/* ── Connections (generic lifecycle) ──────────────────────── */}
         {section === "connections" && (
-          <div className="space-y-4">
-            <Card title="Google Workspace">
-              {connections ? (
-                <ConnRows
-                  rows={[
-                    ["Status", connections.google_workspace.status],
-                    [
-                      "Tenant-approved domain",
-                      connections.google_workspace.approved_domains.join(", ") || "—",
-                    ],
-                    ["Discovered eligible", String(connections.google_workspace.imported)],
-                    ["Excluded", String(connections.google_workspace.excluded)],
-                    [
-                      "Excluded domains",
-                      Object.entries(connections.google_workspace.excluded_domains)
-                        .map(([d, n]) => `${d} (${n})`)
-                        .join(", ") || "—",
-                    ],
-                    [
-                      "External access",
-                      connections.google_workspace.read_only ? "read-only" : "read/write",
-                    ],
-                  ]}
-                />
-              ) : (
-                <p className="text-xs text-muted-foreground">Connection details unavailable.</p>
-              )}
-              {connections && connections.google_workspace.excluded > 0 && (
-                <Warn>
-                  Connected directory contains identities outside this tenant’s approved domains
-                </Warn>
-              )}
-            </Card>
-
-            <Card title="Telephony">
-              {connections ? (
-                <>
-                  <ConnRows
-                    rows={[
-                      ["Commercial provider", connections.telephony.commercial_provider],
-                      ["Underlying provider / API", connections.telephony.underlying_provider],
-                      ["Customer / account", connections.telephony.account_ref],
-                      ["Credentials", connections.telephony.credentials],
-                      ["External write / provisioning", connections.telephony.external_write],
-                      [
-                        "Unclassified evidence records",
-                        String(connections.telephony.evidence_count),
-                      ],
-                    ]}
-                  />
-                  {connections.telephony.capabilities && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {Object.entries(connections.telephony.capabilities).map(([k, v]) => (
-                        <span
-                          key={k}
-                          className={cn(
-                            "rounded-full border px-2 py-0.5 text-[10px]",
-                            v === "supported"
-                              ? "border-success/30 bg-success/5 text-success"
-                              : v === "manual"
-                                ? "border-hairline bg-surface-alt text-muted-foreground"
-                                : "border-amber-500/30 bg-amber-500/5 text-amber-700",
-                          )}
-                        >
-                          {k.replace(/_/g, " ")}: {v}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-xs text-muted-foreground">Connection details unavailable.</p>
-              )}
-            </Card>
-
-            <Card title="Slack">
-              <p className="text-xs text-muted-foreground">
-                {connections?.slack.note ?? "Identity model ready — ingestion not connected"}
-              </p>
-            </Card>
-          </div>
+          <OpenfolkConnections
+            connections={connections}
+            workspace={{ endpoints, identities }}
+            selectedId={selectedConn}
+            onSelect={setSelectedConn}
+          />
         )}
 
-        {/* ── Phone ────────────────────────────────────────────────── */}
-        {section === "phone" && (
+        {/* ── Phone (Communications › Phone) ───────────────────────── */}
+        {section === "communications" && commTab === "phone" && (
           <div className="space-y-4">
             <Card
               title="Canonical phone inventory"
@@ -731,8 +780,8 @@ export function OpenfolkWorkspace({
           </div>
         )}
 
-        {/* ── Email ────────────────────────────────────────────────── */}
-        {section === "email" && (
+        {/* ── Email (Communications › Email) ───────────────────────── */}
+        {section === "communications" && commTab === "email" && (
           <Card
             title="Email"
             right={
@@ -778,8 +827,8 @@ export function OpenfolkWorkspace({
           </Card>
         )}
 
-        {/* ── Slack ────────────────────────────────────────────────── */}
-        {section === "slack" && (
+        {/* ── Slack (Communications › Slack) ───────────────────────── */}
+        {section === "communications" && commTab === "slack" && (
           <Card title="Slack">
             <p className="text-xs text-muted-foreground">
               {connections?.slack.note ?? "Identity model ready — ingestion not connected"}
@@ -824,68 +873,232 @@ export function OpenfolkWorkspace({
           </Card>
         )}
 
+        {/* ── Company ──────────────────────────────────────────────── */}
+        {section === "company" && (
+          <Card title="Company">
+            <p className="mb-3 text-xs text-muted-foreground">
+              Tenant identity and operating context. Fields not yet captured show as configuration
+              gaps — no value is fabricated.
+            </p>
+            <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
+              <ConnRowsInline k="Display name" v={summary.display_name ?? "—"} />
+              <ConnRowsInline k="Tenant slug" v={summary.slug ?? "—"} />
+              <ConnRowsInline
+                k="Approved email domains"
+                v={connections?.google_workspace.approved_domains.join(", ") || "—"}
+              />
+              <ConnRowsInline k="People" v={String(summary.people)} />
+              <ConnRowsInline k="Locations" v={<Gap />} />
+              <ConnRowsInline k="Business hours" v={<Gap />} />
+              <ConnRowsInline k="Departments / teams" v={<Gap />} />
+              <ConnRowsInline k="Primary / escalation contacts" v={<Gap />} />
+              <ConnRowsInline k="Timezone" v={<Gap />} />
+              <ConnRowsInline k="Data region" v={<Gap />} />
+            </dl>
+            <Warn>
+              Company profile is partially configured — locations, hours, departments, contacts,
+              timezone and data region are not yet captured for this tenant.
+            </Warn>
+          </Card>
+        )}
+
+        {/* ── Agents ───────────────────────────────────────────────── */}
+        {section === "agents" && (
+          <Card title="Agents">
+            <p className="text-xs text-muted-foreground">
+              No agents are configured for this tenant. Agent capabilities are governed by readiness
+              and remain unavailable until their source connections reach production — nothing is
+              active.
+            </p>
+          </Card>
+        )}
+
+        {/* ── Automations ──────────────────────────────────────────── */}
+        {section === "automations" && (
+          <Card title="Automations">
+            <p className="text-xs text-muted-foreground">
+              No automations are active for this tenant. The Automation Engine is frozen for this
+              increment; no automation runs, and no external side effects occur.
+            </p>
+          </Card>
+        )}
+
+        {/* ── Health ───────────────────────────────────────────────── */}
+        {section === "health" && (
+          <div className="space-y-4">
+            <Card title={`Configuration readiness — ${tenantName}`}>
+              {readiness ? (
+                <>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span
+                      className={cn("text-sm font-semibold", READINESS_META[readiness.level]?.cls)}
+                    >
+                      {READINESS_META[readiness.level]?.label ?? readiness.level}
+                    </span>
+                  </div>
+                  <p className="mb-3 text-xs text-muted-foreground">{readiness.summary}</p>
+                  <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                    {readiness.checks.map((c) => (
+                      <li key={c.key} className="flex items-start gap-1.5 text-xs">
+                        {c.ok ? (
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                        ) : (
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                        )}
+                        <span className="text-muted-foreground">{c.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">Readiness unavailable.</p>
+              )}
+            </Card>
+            <Card title="Customer Health source — preparation only (inactive)">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Customer Health is prepared but NOT enabled. No Health objects, commitments,
+                Actions, Outcomes, notifications or customer contact exist.
+              </p>
+              <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
+                <ConnRowsInline k="Policy" v="draft" />
+                <ConnRowsInline k="Source allowlist" v="disabled" />
+                <ConnRowsInline k="Sources" v="empty" />
+                <ConnRowsInline k="Processing" v="inactive" />
+              </dl>
+            </Card>
+          </div>
+        )}
+
+        {/* ── Security ─────────────────────────────────────────────── */}
+        {section === "security" && (
+          <div className="space-y-4">
+            <Card title="Connection security posture">
+              <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
+                <ConnRowsInline k="Active connections" v={String(connectedCount)} />
+                <ConnRowsInline k="Connections needing action" v={String(connActionCount)} />
+                <ConnRowsInline
+                  k="External write / provisioning"
+                  v={connViews.some((c) => c.externalWrite) ? "enabled on some" : "disabled"}
+                />
+                <ConnRowsInline k="Secret storage" v="server-side broker (references only)" />
+                <ConnRowsInline k="Customer-admin invitations" v="0" />
+                <ConnRowsInline k="Processing source" v="inactive" />
+              </dl>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                Raw credentials are never displayed. Revocation / disable are operator-only controls
+                (server-enforced) and are not exposed in this read-only projection.
+              </p>
+            </Card>
+            {connViews.some((c) => c.warnings.length > 0) && (
+              <Card title="Cross-tenant boundary warnings">
+                <ul className="space-y-1.5">
+                  {connViews.flatMap((c) =>
+                    c.warnings.map((w, i) => (
+                      <li
+                        key={`${c.id}-${i}`}
+                        className="flex items-start gap-1.5 text-xs text-amber-700"
+                      >
+                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <span>
+                          <span className="font-medium">{c.providerLabel}:</span> {w}
+                        </span>
+                      </li>
+                    )),
+                  )}
+                </ul>
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* ── Data Quality ─────────────────────────────────────────── */}
         {section === "data_quality" && (
-          <Card
-            title="Data Quality"
-            right={
-              <span className="text-[11px] text-muted-foreground">
-                {new Set(dataQuality.map((d) => d.kind)).size} categories · {dataQuality.length}{" "}
-                items
-              </span>
-            }
-          >
-            {dataQuality.length === 0 ? (
-              <p className="text-xs italic text-muted-foreground">No data-quality issues.</p>
-            ) : (
-              <div className="space-y-2">
-                {Object.entries(
-                  dataQuality.reduce(
-                    (acc, d) => {
-                      (acc[d.kind] ??= []).push(d);
-                      return acc;
-                    },
-                    {} as Record<string, DataQualityItem[]>,
-                  ),
-                )
-                  .sort((a, b) => b[1].length - a[1].length)
-                  .map(([kind, list]) => (
-                    <details
-                      key={kind}
-                      className="rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs"
-                    >
-                      <summary className="flex cursor-pointer list-none items-center justify-between">
-                        <span className="flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                          <span className="font-medium text-display">
-                            {kind.replace(/_/g, " ")}
-                          </span>
-                        </span>
-                        <span className="tabular text-muted-foreground">{list.length}</span>
-                      </summary>
-                      <ul className="mt-1 space-y-0.5 pl-5">
-                        {list.slice(0, 50).map((d, i) => (
-                          <li key={i} className="text-muted-foreground">
-                            {d.detail}
-                            {d.ref && (
-                              <span className="text-muted-foreground/50">
-                                {" "}
-                                · {d.ref.slice(0, 8)}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                        {list.length > 50 && (
-                          <li className="italic text-muted-foreground/60">
-                            +{list.length - 50} more
-                          </li>
-                        )}
-                      </ul>
-                    </details>
+          <div className="space-y-4">
+            {connectionIssues.length > 0 && (
+              <Card
+                title="Connection issues"
+                right={
+                  <span className="text-[11px] text-muted-foreground">
+                    {connectionIssues.length}
+                  </span>
+                }
+              >
+                <ul className="space-y-1.5">
+                  {connectionIssues.map((issue, i) => (
+                    <li key={i} className="flex items-start gap-1.5 text-xs">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <span className="text-muted-foreground">
+                        <span className="font-medium text-display">
+                          {issue.kind.replace(/_/g, " ")}
+                        </span>{" "}
+                        — {issue.detail}
+                      </span>
+                    </li>
                   ))}
-              </div>
+                </ul>
+              </Card>
             )}
-          </Card>
+            <Card
+              title="Data Quality"
+              right={
+                <span className="text-[11px] text-muted-foreground">
+                  {new Set(dataQuality.map((d) => d.kind)).size} categories · {dataQuality.length}{" "}
+                  items
+                </span>
+              }
+            >
+              {dataQuality.length === 0 ? (
+                <p className="text-xs italic text-muted-foreground">No data-quality issues.</p>
+              ) : (
+                <div className="space-y-2">
+                  {Object.entries(
+                    dataQuality.reduce(
+                      (acc, d) => {
+                        (acc[d.kind] ??= []).push(d);
+                        return acc;
+                      },
+                      {} as Record<string, DataQualityItem[]>,
+                    ),
+                  )
+                    .sort((a, b) => b[1].length - a[1].length)
+                    .map(([kind, list]) => (
+                      <details
+                        key={kind}
+                        className="rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs"
+                      >
+                        <summary className="flex cursor-pointer list-none items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                            <span className="font-medium text-display">
+                              {kind.replace(/_/g, " ")}
+                            </span>
+                          </span>
+                          <span className="tabular text-muted-foreground">{list.length}</span>
+                        </summary>
+                        <ul className="mt-1 space-y-0.5 pl-5">
+                          {list.slice(0, 50).map((d, i) => (
+                            <li key={i} className="text-muted-foreground">
+                              {d.detail}
+                              {d.ref && (
+                                <span className="text-muted-foreground/50">
+                                  {" "}
+                                  · {d.ref.slice(0, 8)}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                          {list.length > 50 && (
+                            <li className="italic text-muted-foreground/60">
+                              +{list.length - 50} more
+                            </li>
+                          )}
+                        </ul>
+                      </details>
+                    ))}
+                </div>
+              )}
+            </Card>
+          </div>
         )}
 
         {/* ── Audit ────────────────────────────────────────────────── */}
@@ -895,17 +1108,16 @@ export function OpenfolkWorkspace({
   );
 }
 
-function ConnRows({ rows }: { rows: [string, string][] }) {
+function ConnRowsInline({ k, v }: { k: string; v: ReactNode }) {
   return (
-    <dl className="grid grid-cols-1 gap-y-1.5 text-xs sm:grid-cols-2">
-      {rows.map(([k, v]) => (
-        <div key={k} className="flex gap-2">
-          <dt className="w-40 shrink-0 text-muted-foreground">{k}</dt>
-          <dd className="font-medium text-display">{v}</dd>
-        </div>
-      ))}
-    </dl>
+    <div className="flex gap-2">
+      <dt className="w-44 shrink-0 text-muted-foreground">{k}</dt>
+      <dd className="font-medium text-display">{v}</dd>
+    </div>
   );
+}
+function Gap() {
+  return <span className="italic text-amber-700">not configured</span>;
 }
 function Warn({ children }: { children: ReactNode }) {
   return (
@@ -1868,7 +2080,17 @@ function EmailRow({
 
 const CATS: { key: string; label: string; match: (a: string) => boolean }[] = [
   { key: "all", label: "All", match: () => true },
+  {
+    key: "connection",
+    label: "Connections",
+    match: (a) => a.includes("connection") || a.includes("authoris") || a.includes("verif"),
+  },
   { key: "discovery", label: "Discovery runs", match: (a) => a.includes("discovery") },
+  {
+    key: "delegated",
+    label: "Delegated setup",
+    match: (a) => a.includes("delegat") || a.includes("invitation") || a.includes("setup"),
+  },
   { key: "endpoint", label: "Endpoint changes", match: (a) => a.includes("endpoint") },
   { key: "ownership", label: "Ownership", match: (a) => a.includes("ownership") },
   {
@@ -1878,8 +2100,8 @@ const CATS: { key: string; label: string; match: (a: string) => boolean }[] = [
   },
   {
     key: "config",
-    label: "Config / authority",
-    match: (a) => a.includes("authority") || a.includes("config"),
+    label: "Config / capability",
+    match: (a) => a.includes("authority") || a.includes("config") || a.includes("capability"),
   },
 ];
 function AuditPanel({ audit }: { audit: AuditEntry[] }) {

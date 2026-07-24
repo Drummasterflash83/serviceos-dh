@@ -149,6 +149,39 @@ const WORKSPACE: Workspace = {
     { kind: "unmapped_endpoint", detail: "queue scheduling has no accountable owner", ref: EP_Q },
     { kind: "unverified_identity", detail: "slack U0BOB unverified", ref: "i2" },
   ],
+  // Synthetic connections payload shaped like the real Drummonds tenant, so the generic
+  // Connections projection renders end-to-end without the gated live workspace.
+  connections: {
+    google_workspace: {
+      status: "connected",
+      connections: [{ domain: "drummondheating.co.uk", status: "connected" }],
+      approved_domains: ["drummondheating.co.uk"],
+      imported: 32,
+      excluded: 8,
+      excluded_domains: { "allkin.co": 8 },
+      read_only: true,
+    },
+    telephony: {
+      commercial_provider: "Birchills",
+      underlying_provider: "sipcentric",
+      account_ref: "3950",
+      status: "manual",
+      credentials: "configured (never displayed)",
+      capabilities: {
+        ddi_discovery: "planned",
+        extension_discovery: "manual",
+        device_discovery: "manual",
+        endpoint_discovery: "supported",
+        call_direction: "supported",
+        recording_access: "supported",
+        queue_metadata: "planned",
+        provisioning: "unavailable",
+      },
+      external_write: "disabled",
+      evidence_count: 10,
+    },
+    slack: { status: "not_connected", note: "Identity model ready — ingestion not connected" },
+  },
 };
 const READINESS: SourceReadiness = {
   channel: "phone",

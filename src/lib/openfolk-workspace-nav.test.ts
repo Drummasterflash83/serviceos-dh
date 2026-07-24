@@ -27,7 +27,7 @@ const D = "member-d";
 // ── Section persistence (test 12: refreshing ?section=ownership returns to Ownership) ──
 test("resolveSection keeps a valid section across a refresh", () => {
   assert.equal(resolveSection("ownership"), "ownership");
-  assert.equal(resolveSection("review"), "review");
+  assert.equal(resolveSection("connections"), "connections");
   assert.equal(resolveSection("audit"), "audit");
 });
 
@@ -45,6 +45,28 @@ test("sectionSearchValue omits the default so the URL stays clean, but preserves
   assert.equal(sectionSearchValue("overview"), undefined);
   assert.equal(sectionSearchValue("bogus"), undefined); // invalid collapses to the omitted default
   assert.equal(sectionSearchValue("ownership"), "ownership");
+});
+
+test("new managed-service sections resolve directly", () => {
+  for (const s of [
+    "company",
+    "connections",
+    "communications",
+    "agents",
+    "automations",
+    "health",
+    "security",
+  ])
+    assert.equal(resolveSection(s), s);
+});
+
+test("legacy section URLs re-home to their new section (no broken bookmarks)", () => {
+  assert.equal(resolveSection("email"), "communications");
+  assert.equal(resolveSection("phone"), "communications");
+  assert.equal(resolveSection("slack"), "communications");
+  assert.equal(resolveSection("review"), "people");
+  // and writing back normalises the legacy value to its canonical section
+  assert.equal(sectionSearchValue("email"), "communications");
 });
 
 // ── Ownership role advance (tests 3-9: never returns to Overview; advances role-by-role) ──

@@ -9,27 +9,40 @@
  * exact same rules. See src/lib/openfolk-workspace-nav.test.ts.
  */
 
-// Canonical section keys — the order the sidebar renders them in. `overview` is the
-// safe default: an absent or invalid `?section=` resolves here.
+// Canonical section keys — the managed-service tenant-workspace IA, in sidebar order.
+// `overview` is the safe default: an absent or invalid `?section=` resolves here.
 export const WORKSPACE_SECTIONS = [
   "overview",
-  "people",
-  "review",
+  "company",
   "connections",
-  "phone",
-  "email",
-  "slack",
+  "people",
+  "communications",
   "ownership",
+  "agents",
+  "automations",
+  "health",
   "data_quality",
+  "security",
   "audit",
 ] as const;
 export type WorkspaceSection = (typeof WORKSPACE_SECTIONS)[number];
 
+// Legacy section keys → their new home, so durable URLs and bookmarks from the previous
+// IA keep working (email/phone/slack were re-homed under Communications; review under
+// People). Old keys still shared with the new set (overview, connections, ownership,
+// people, data_quality, audit) resolve directly.
+const LEGACY_SECTION_ALIASES: Record<string, WorkspaceSection> = {
+  email: "communications",
+  phone: "communications",
+  slack: "communications",
+  review: "people",
+};
+
 /** Coerce any untrusted value (URL param, storage) to a valid section. Invalid → overview. */
 export function resolveSection(value: unknown): WorkspaceSection {
-  return typeof value === "string" && (WORKSPACE_SECTIONS as readonly string[]).includes(value)
-    ? (value as WorkspaceSection)
-    : "overview";
+  if (typeof value !== "string") return "overview";
+  if ((WORKSPACE_SECTIONS as readonly string[]).includes(value)) return value as WorkspaceSection;
+  return LEGACY_SECTION_ALIASES[value] ?? "overview";
 }
 
 /** URL form of a section: overview (the default) is omitted so the URL stays clean. */
