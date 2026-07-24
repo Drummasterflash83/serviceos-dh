@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HealthShadowRouteImport } from './routes/health-shadow'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
 import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
 import { Route as DemoOwnershipRouteImport } from './routes/demo.ownership'
 import { Route as DemoOpenfolkRouteImport } from './routes/demo.openfolk'
@@ -44,6 +45,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OpenfolkIndexRoute = OpenfolkIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OpenfolkRoute,
 } as any)
 const OpenfolkTenantIdRoute = OpenfolkTenantIdRouteImport.update({
   id: '/$tenantId',
@@ -82,18 +88,19 @@ export interface FileRoutesByFullPath {
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
+  '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
-  '/openfolk': typeof OpenfolkRouteWithChildren
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
+  '/openfolk': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +114,7 @@ export interface FileRoutesById {
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
+  '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,18 +129,19 @@ export interface FileRouteTypes {
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
+    | '/openfolk/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app'
     | '/health-shadow'
     | '/login'
-    | '/openfolk'
     | '/demo/command-centre'
     | '/demo/customer-health'
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
+    | '/openfolk'
   id:
     | '__root__'
     | '/'
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
+    | '/openfolk/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -196,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/openfolk/': {
+      id: '/openfolk/'
+      path: '/'
+      fullPath: '/openfolk/'
+      preLoaderRoute: typeof OpenfolkIndexRouteImport
+      parentRoute: typeof OpenfolkRoute
+    }
     '/openfolk/$tenantId': {
       id: '/openfolk/$tenantId'
       path: '/$tenantId'
@@ -236,10 +253,12 @@ declare module '@tanstack/react-router' {
 
 interface OpenfolkRouteChildren {
   OpenfolkTenantIdRoute: typeof OpenfolkTenantIdRoute
+  OpenfolkIndexRoute: typeof OpenfolkIndexRoute
 }
 
 const OpenfolkRouteChildren: OpenfolkRouteChildren = {
   OpenfolkTenantIdRoute: OpenfolkTenantIdRoute,
+  OpenfolkIndexRoute: OpenfolkIndexRoute,
 }
 
 const OpenfolkRouteWithChildren = OpenfolkRoute._addFileChildren(

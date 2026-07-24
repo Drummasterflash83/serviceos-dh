@@ -9,7 +9,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
-import { RequireAuth } from "@/lib/auth";
 import { BuildBadge } from "@/components/BuildBadge";
 import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
 import {
@@ -28,11 +27,7 @@ import {
 } from "@/lib/openfolk";
 
 export const Route = createFileRoute("/openfolk/$tenantId")({
-  component: () => (
-    <RequireAuth>
-      <WorkspacePage />
-    </RequireAuth>
-  ),
+  component: WorkspacePage,
 });
 
 function WorkspacePage() {
