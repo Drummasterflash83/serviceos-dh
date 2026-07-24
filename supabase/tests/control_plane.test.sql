@@ -301,5 +301,65 @@ begin
   if n <> 2 then raise exception 'FAIL: material update should total 2 rows, got %', n; end if;
 end $$;
 
+-- ── (11) identity reviews, ownership ending, manual-endpoint editing. ───────
+do $$
+declare r jsonb; eid uuid; upd timestamptz; nlink int; nown int; nrev int; nupd int;
+begin
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','flow@drummonds.example',
+        'Flow', 'directory', null, false, 'manual', null, '{}'::jsonb, 'op@test','create',null,false);
+  eid := (r->>'id')::uuid;
+  select updated_at into upd from communication_endpoints where id = eid;
+
+  -- OPTIMISTIC CONCURRENCY: a stale expected_updated_at is rejected.
+  begin
+    perform cp_update_manual_endpoint('aaaa0000-0000-0000-0000-0000000000c1', eid, 'New label', null, null,
+      upd - interval '1 hour', 'op@test','edit',null,false);
+    raise exception 'FAIL: stale write was allowed';
+  exception when others then if sqlerrm not like 'stale_write%' then raise; end if; end;
+
+  -- correct token → updated (one material audit row).
+  r := cp_update_manual_endpoint('aaaa0000-0000-0000-0000-0000000000c1', eid, 'New label', null, null,
+        upd, 'op@test','edit',null,false);
+  if (r->>'outcome') <> 'updated' then raise exception 'FAIL: expected updated, got %', r->>'outcome'; end if;
+  select updated_at into upd from communication_endpoints where id = eid;
+  select count(*) into nupd from controlplane_change_log where resource_id = eid::text and action='controlplane.endpoint.update';
+
+  -- no-op edit → unchanged, NO material audit row.
+  r := cp_update_manual_endpoint('aaaa0000-0000-0000-0000-0000000000c1', eid, 'New label', null, null,
+        upd, 'op@test','noop',null,false);
+  if (r->>'outcome') <> 'unchanged' then raise exception 'FAIL: expected unchanged, got %', r->>'outcome'; end if;
+  if (select count(*) from controlplane_change_log where resource_id = eid::text and action='controlplane.endpoint.update') <> nupd then
+    raise exception 'FAIL: no-op edit created a material audit row'; end if;
+
+  -- provider-discovered evidence cannot be edited via this path.
+  begin
+    perform cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','disc@drummonds.example',
+      'Disc','google_workspace','gw-x',false,'discovery',null,'{}'::jsonb,'op@test','disc',null,false);
+    perform cp_update_manual_endpoint('aaaa0000-0000-0000-0000-0000000000c1',
+      (select id from communication_endpoints where normalized_value='disc@drummonds.example'), 'x', null, null,
+      null,'op@test','edit',null,false);
+    raise exception 'FAIL: a discovered endpoint was editable as manual';
+  exception when others then if sqlerrm not like '%only manual endpoints%' then raise; end if; end;
+
+  -- IDENTITY REVIEW: confirm creates a LINK but NEVER ownership.
+  select count(*) into nown from endpoint_ownership_assignments where endpoint_id = eid;
+  r := cp_review_identity('aaaa0000-0000-0000-0000-0000000000c1', eid, 'confirmed_person',
+        'cccc0000-0000-0000-0000-0000000000c3', 'high', '{}'::jsonb, 'op@test','confirm',null,false);
+  if (r->>'identity_id') is null then raise exception 'FAIL: confirm did not create an identity link'; end if;
+  if (select count(*) from endpoint_ownership_assignments where endpoint_id = eid) <> nown then
+    raise exception 'FAIL: identity confirmation created ownership (must not)'; end if;
+
+  -- REJECT: no link created; review row preserved (append-only).
+  r := cp_review_identity('aaaa0000-0000-0000-0000-0000000000c1', eid, 'rejected',
+        'cccc0000-0000-0000-0000-0000000000c3', 'low', '{}'::jsonb, 'op@test','reject',null,false);
+  if (r->>'identity_id') is not null then raise exception 'FAIL: reject created an identity link'; end if;
+  select count(*) into nrev from endpoint_identity_reviews where endpoint_id = eid;
+  if nrev < 2 then raise exception 'FAIL: review history not preserved (got %)', nrev; end if;
+  begin
+    delete from endpoint_identity_reviews where endpoint_id = eid;
+    raise exception 'FAIL: review DELETE allowed';
+  exception when others then if sqlerrm not like '%append-only%' then raise; end if; end;
+end $$;
+
 do $$ begin raise notice 'CONTROL-PLANE: ALL PASSED'; end $$;
 rollback;

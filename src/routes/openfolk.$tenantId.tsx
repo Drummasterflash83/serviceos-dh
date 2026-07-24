@@ -17,9 +17,11 @@ import {
   createManualEndpoint,
   discoverEmail,
   discoverTelephony,
+  endOwnership,
   getAudit,
   getReadiness,
   getWorkspace,
+  reviewIdentity,
   validateEndpoint,
   type AuditEntry,
   type SourceReadiness,
@@ -91,6 +93,9 @@ function WorkspacePage() {
       ),
     onArchiveEndpoint: (endpoint_id, reason) =>
       void guard(() => archiveEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
+    onReviewIdentity: (input) => void guard(() => reviewIdentity({ tenant_id: tenantId, ...input })),
+    onEndOwnership: (assignment_id, reason) =>
+      void guard(() => endOwnership({ tenant_id: tenantId, assignment_id, reason })),
     onValidateEndpoint: async (input) => {
       const res = await validateEndpoint({ tenant_id: tenantId, ...input });
       return res.ok ? res.data : null;

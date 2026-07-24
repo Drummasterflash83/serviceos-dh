@@ -241,6 +241,46 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const r = data as { id?: string; outcome?: string } | null;
         return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
       }
+      case "identity.review": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.endpoint_id || !body.decision)
+          return fail("bad_request", "endpoint_id + decision required", 400);
+        const { data, error } = await rpc("cp_review_identity", {
+          p_tenant: tenantId,
+          p_endpoint: String(body.endpoint_id),
+          p_decision: String(body.decision),
+          p_member: body.team_member_id ?? null,
+          p_confidence: body.confidence ?? null,
+          p_evidence: body.evidence ?? {},
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data });
+      }
+      case "endpoint.update": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.endpoint_id) return fail("bad_request", "endpoint_id required", 400);
+        const { data, error } = await rpc("cp_update_manual_endpoint", {
+          p_tenant: tenantId,
+          p_endpoint: String(body.endpoint_id),
+          p_display: body.display_value ?? null,
+          p_provider_context: body.provider_context ?? null,
+          p_metadata: body.metadata ?? null,
+          p_expected_updated_at: body.expected_updated_at ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        const r = data as { id?: string; outcome?: string } | null;
+        return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
+      }
+      case "ownership.end": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.assignment_id) return fail("bad_request", "assignment_id required", 400);
+        const { data, error } = await rpc("cp_end_ownership", {
+          p_tenant: tenantId,
+          p_assignment: String(body.assignment_id),
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data });
+      }
       case "member.upsert": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const { data, error } = await rpc("cp_upsert_member", {

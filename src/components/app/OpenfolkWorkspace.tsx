@@ -29,7 +29,9 @@ import type {
   CpIdentity,
   CpMember,
   DataQualityItem,
+  EmailClassification,
   EndpointValidation,
+  IdentitySuggestion,
   SourceReadiness,
   Workspace,
 } from "@/lib/openfolk";
@@ -118,6 +120,14 @@ export interface WorkspaceActions {
     reason: string;
   }) => Promise<boolean>;
   onArchiveEndpoint?: (endpointId: string, reason: string) => void;
+  onReviewIdentity?: (input: {
+    endpoint_id: string;
+    decision: "confirmed_person" | "shared" | "system" | "rejected" | "unresolved";
+    team_member_id?: string | null;
+    confidence?: string;
+    reason: string;
+  }) => void;
+  onEndOwnership?: (assignmentId: string, reason: string) => void;
 }
 
 export function OpenfolkWorkspace({
@@ -140,8 +150,40 @@ export function OpenfolkWorkspace({
   actions?: WorkspaceActions;
 }) {
   const [section, setSection] = useState<Section>("overview");
-  const { summary, members, identities, endpoints, ownership, dataQuality, connections, phoneEvidence } =
-    workspace;
+  const {
+    summary,
+    members,
+    identities,
+    endpoints,
+    ownership,
+    dataQuality,
+    connections,
+    phoneEvidence,
+    identityResolution,
+  } = workspace;
+
+  const suggestionByEndpoint = useMemo(
+    () => new Map((identityResolution?.suggestions ?? []).map((s) => [s.endpoint_id, s])),
+    [identityResolution],
+  );
+  const classByEndpoint = useMemo(
+    () => new Map((identityResolution?.classifications ?? []).map((c) => [c.endpoint_id, c])),
+    [identityResolution],
+  );
+  const reviewByEndpoint = useMemo(() => {
+    const m = new Map<string, { decision: string; team_member_id: string | null }>();
+    for (const r of identityResolution?.reviews ?? []) if (!m.has(r.endpoint_id)) m.set(r.endpoint_id, r);
+    return m;
+  }, [identityResolution]);
+  const confirmedIdentityCount = (identityResolution?.reviews ?? []).filter(
+    (r) => r.decision === "confirmed_person" || r.decision === "shared" || r.decision === "system",
+  ).length;
+  const sharedCount = (identityResolution?.classifications ?? []).filter(
+    (c) => c.class === "shared" || c.class === "group",
+  ).length;
+  const suspendedCount = (identityResolution?.classifications ?? []).filter(
+    (c) => c.class === "suspended",
+  ).length;
 
   const active = useMemo(() => endpoints.filter((e) => e.status === "active"), [endpoints]);
   const phone = active.filter((e) => e.channel === "phone");
@@ -154,6 +196,14 @@ export function OpenfolkWorkspace({
         o.review_state !== "rejected",
     ) ?? null;
   const mapped = active.filter((e) => accountableFor(e.id)).length;
+  const rolesFor = (id: string) =>
+    new Set(
+      ownership.filter((o) => o.endpoint_id === id && o.review_state !== "rejected").map((o) => o.assignment_role),
+    );
+  const ownershipComplete = active.filter((e) => {
+    const s = rolesFor(e.id);
+    return ["accountable", "primary_handler", "cover", "escalation"].every((r) => s.has(r));
+  }).length;
   const evidence = phoneEvidence ?? [];
 
   return (
@@ -221,10 +271,16 @@ export function OpenfolkWorkspace({
               <Stat label="Unclassified phone metadata" n={evidence.length} tone="warn" />
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Stat label="Confirmed identity links" n={confirmedIdentityCount} tone="ok" />
+              <Stat label="Unresolved identities" n={Math.max(0, email.length - confirmedIdentityCount)} tone="warn" />
+              <Stat label="Ownership-complete" n={ownershipComplete} tone="ok" />
+              <Stat label="Ownership-incomplete" n={active.length - ownershipComplete} tone="warn" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Ownership assignments" n={ownership.length} />
+              <Stat label="Shared mailboxes" n={sharedCount} />
+              <Stat label="Suspended mailboxes" n={suspendedCount} tone="warn" />
               <Stat label="Data-quality issues" n={dataQuality.length} tone="warn" />
-              <Stat label="Unverified IDs" n={summary.identities_unverified} tone="warn" />
-              <Stat label="Conflicts" n={summary.ambiguous_assignments} tone="warn" />
             </div>
           </>
         )}
@@ -404,17 +460,23 @@ export function OpenfolkWorkspace({
               )
             }
           >
-            <div className="divide-y divide-hairline">
+            <p className="mb-3 text-xs text-muted-foreground">
+              Classification is from provider metadata (not the address text). Identity links are
+              <strong> review-only</strong> — confirming a link records who the mailbox represents and
+              never creates ownership. Ownership is configured separately.
+            </p>
+            <div className="space-y-2">
               {email.map((e) => (
-                <EndpointRow
+                <EmailRow
                   key={e.id}
                   e={e}
-                  acc={accountableFor(e.id)}
+                  cls={classByEndpoint.get(e.id)}
+                  suggestion={suggestionByEndpoint.get(e.id)}
+                  review={reviewByEndpoint.get(e.id)}
                   members={members}
                   writeCapable={writeCapable}
                   busy={busy}
-                  onArchive={actions.onArchiveEndpoint}
-                  onAssign={actions.onAssign}
+                  onReview={actions.onReviewIdentity}
                 />
               ))}
               {email.length === 0 && (
@@ -484,26 +546,49 @@ export function OpenfolkWorkspace({
         {section === "data_quality" && (
           <Card
             title="Data Quality"
-            right={<span className="text-[11px] text-muted-foreground">{dataQuality.length} item(s)</span>}
+            right={
+              <span className="text-[11px] text-muted-foreground">
+                {new Set(dataQuality.map((d) => d.kind)).size} categories · {dataQuality.length} items
+              </span>
+            }
           >
             {dataQuality.length === 0 ? (
               <p className="text-xs italic text-muted-foreground">No data-quality issues.</p>
             ) : (
-              <ul className="space-y-1.5">
-                {dataQuality.map((d: DataQualityItem, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-1.5 rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs"
-                  >
-                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                    <span>
-                      <span className="font-medium text-display">{d.kind}</span>
-                      <span className="text-muted-foreground"> — {d.detail}</span>
-                      {d.ref && <span className="text-muted-foreground/60"> · {d.ref.slice(0, 8)}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-2">
+                {Object.entries(
+                  dataQuality.reduce(
+                    (acc, d) => {
+                      (acc[d.kind] ??= []).push(d);
+                      return acc;
+                    },
+                    {} as Record<string, DataQualityItem[]>,
+                  ),
+                )
+                  .sort((a, b) => b[1].length - a[1].length)
+                  .map(([kind, list]) => (
+                    <details key={kind} className="rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs">
+                      <summary className="flex cursor-pointer list-none items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                          <span className="font-medium text-display">{kind.replace(/_/g, " ")}</span>
+                        </span>
+                        <span className="tabular text-muted-foreground">{list.length}</span>
+                      </summary>
+                      <ul className="mt-1 space-y-0.5 pl-5">
+                        {list.slice(0, 50).map((d, i) => (
+                          <li key={i} className="text-muted-foreground">
+                            {d.detail}
+                            {d.ref && <span className="text-muted-foreground/50"> · {d.ref.slice(0, 8)}</span>}
+                          </li>
+                        ))}
+                        {list.length > 50 && (
+                          <li className="italic text-muted-foreground/60">+{list.length - 50} more</li>
+                        )}
+                      </ul>
+                    </details>
+                  ))}
+              </div>
             )}
           </Card>
         )}
@@ -654,6 +739,148 @@ function EndpointRow({
       </div>
       {writeCapable && onAssign && !acc && (
         <MapControl endpointId={e.id} members={members} onAssign={onAssign} busy={busy} />
+      )}
+    </div>
+  );
+}
+
+const CLASS_META: Record<string, string> = {
+  personal: "border-hairline text-muted-foreground",
+  shared: "border-accent/40 text-accent",
+  group: "border-accent/40 text-accent",
+  service: "border-hairline text-muted-foreground",
+  suspended: "border-amber-500/40 text-amber-700",
+  unknown: "border-hairline text-muted-foreground",
+};
+const CONF_META: Record<string, string> = {
+  high: "text-success",
+  medium: "text-amber-600",
+  low: "text-amber-600",
+  unresolved: "text-muted-foreground",
+};
+
+function RButton({
+  label,
+  onClick,
+  disabled,
+  tone,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+  tone?: "ok" | "warn";
+}) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "rounded-md border px-2 py-0.5 text-[10px] font-medium disabled:opacity-40",
+        tone === "ok"
+          ? "border-accent bg-accent text-white"
+          : tone === "warn"
+            ? "border-amber-500/40 text-amber-700"
+            : "border-hairline text-muted-foreground hover:text-display",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function EmailRow({
+  e,
+  cls,
+  suggestion,
+  review,
+  members,
+  writeCapable,
+  busy,
+  onReview,
+}: {
+  e: CpEndpoint;
+  cls?: EmailClassification;
+  suggestion?: IdentitySuggestion;
+  review?: { decision: string; team_member_id: string | null };
+  members: CpMember[];
+  writeCapable: boolean;
+  busy: boolean;
+  onReview?: NonNullable<WorkspaceActions["onReviewIdentity"]>;
+}) {
+  const [reason, setReason] = useState("");
+  const [person, setPerson] = useState("");
+  const suggestedName = suggestion?.suggested_member_id
+    ? memberName(members, suggestion.suggested_member_id)
+    : null;
+  const decided = review?.decision;
+  const chosen = person || suggestion?.suggested_member_id || null;
+  const doReview = (
+    decision: "confirmed_person" | "shared" | "system" | "rejected" | "unresolved",
+    member: string | null,
+  ) => {
+    if (!onReview || !reason.trim()) return;
+    onReview({ endpoint_id: e.id, decision, team_member_id: member, confidence: suggestion?.confidence, reason });
+    setReason("");
+  };
+  return (
+    <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-medium text-display">{e.display_value ?? e.normalized_value}</span>
+        <span className="flex items-center gap-1.5">
+          {cls && (
+            <span className={cn("rounded-full border px-2 py-0.5 text-[10px]", CLASS_META[cls.class])}>
+              {cls.class}
+            </span>
+          )}
+          {decided ? (
+            <span className="rounded-full border border-success/30 px-2 py-0.5 text-[10px] text-success">
+              identity: {decided}
+            </span>
+          ) : (
+            <span className="rounded-full border border-amber-500/30 px-2 py-0.5 text-[10px] text-amber-700">
+              identity: unreviewed
+            </span>
+          )}
+        </span>
+      </div>
+      {suggestion && !decided && (
+        <div className="mt-1 text-[11px] text-muted-foreground">
+          Suggestion:{" "}
+          {suggestion.suggested_kind === "person" && suggestedName ? (
+            <span className="font-medium text-display">{suggestedName}</span>
+          ) : (
+            <span>{suggestion.suggested_kind}</span>
+          )}{" "}
+          · <span className={CONF_META[suggestion.confidence]}>{suggestion.confidence}</span> ·{" "}
+          {suggestion.evidence}
+        </div>
+      )}
+      {writeCapable && onReview && !decided && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <input
+            value={reason}
+            onChange={(ev) => setReason(ev.target.value)}
+            placeholder="reason (required)"
+            className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+          />
+          <select
+            value={person}
+            onChange={(ev) => setPerson(ev.target.value)}
+            className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+          >
+            <option value="">{suggestedName ? `use ${suggestedName}` : "choose person…"}</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.display_name}
+              </option>
+            ))}
+          </select>
+          <RButton label="Confirm person" tone="ok" disabled={busy || !reason.trim() || !chosen} onClick={() => doReview("confirmed_person", chosen)} />
+          <RButton label="Shared" disabled={busy || !reason.trim()} onClick={() => doReview("shared", null)} />
+          <RButton label="System" disabled={busy || !reason.trim()} onClick={() => doReview("system", null)} />
+          <RButton label="Reject" tone="warn" disabled={busy || !reason.trim()} onClick={() => doReview("rejected", chosen)} />
+          <RButton label="Unresolved" disabled={busy || !reason.trim()} onClick={() => doReview("unresolved", null)} />
+        </div>
       )}
     </div>
   );
