@@ -12,11 +12,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   OWNERSHIP_ROLES,
+  activeNavKey,
   evaluateConcentration,
   isOwnershipComplete,
   nextMissingRole,
   resolveSection,
   sectionSearchValue,
+  summariseActivity,
 } from "./openfolk-workspace-nav.ts";
 
 const A = "member-a";
@@ -64,9 +66,17 @@ test("legacy section URLs re-home to their new section (no broken bookmarks)", (
   assert.equal(resolveSection("email"), "communications");
   assert.equal(resolveSection("phone"), "communications");
   assert.equal(resolveSection("slack"), "communications");
-  assert.equal(resolveSection("review"), "people");
   // and writing back normalises the legacy value to its canonical section
   assert.equal(sectionSearchValue("email"), "communications");
+});
+
+test("directory sections (people/review/ownership) are canonical + front the Directory nav item", () => {
+  for (const s of ["people", "review", "ownership"] as const) {
+    assert.equal(resolveSection(s), s); // deep link preserved
+    assert.equal(activeNavKey(s), "directory"); // sidebar highlights Directory
+  }
+  assert.equal(activeNavKey("overview"), "overview");
+  assert.equal(activeNavKey("agents"), null); // hidden section → no highlighted nav item
 });
 
 // ── Ownership role advance (tests 3-9: never returns to Overview; advances role-by-role) ──
@@ -171,4 +181,46 @@ test("explicit stricter policy threshold flags a 2-role holder", () => {
     { maxRolesPerPerson: 1 },
   );
   assert.ok(f.some((x) => x.code === "threshold_exceeded" && x.member_id === A));
+});
+
+// ── Command Centre: meaningful activity ──
+test("summariseActivity drops idempotent discovery-refresh noise and humanises codes", () => {
+  const entries = [
+    {
+      action: "controlplane.ownership.assign",
+      resource_type: "x",
+      reason: "map",
+      created_at: "2026-07-24T09:44:31Z",
+    },
+    {
+      action: "controlplane.identity.review",
+      resource_type: "x",
+      reason: "confirmed",
+      created_at: "2026-07-24T09:35:08Z",
+    },
+    // 20 noisy idempotent-refresh upserts — must be dropped entirely
+    ...Array.from({ length: 20 }, (_, i) => ({
+      action: "controlplane.endpoint.upsert",
+      resource_type: "communication_endpoint",
+      reason: "email discovery refresh (idempotency re-run)",
+      created_at: `2026-07-23T22:53:${String(i).padStart(2, "0")}Z`,
+    })),
+  ];
+  const out = summariseActivity(entries);
+  assert.ok(out.length <= 8);
+  assert.equal(out[0].title, "Ownership assigned");
+  assert.equal(out[1].title, "Identity reviewed");
+  assert.ok(!out.some((s) => /upsert/i.test(s.title))); // noise gone
+});
+
+test("summariseActivity collapses identical same-day events into a count", () => {
+  const entries = Array.from({ length: 4 }, (_, i) => ({
+    action: "controlplane.ownership.assign",
+    resource_type: "x",
+    reason: "map",
+    created_at: `2026-07-24T09:4${i}:00Z`,
+  }));
+  const out = summariseActivity(entries);
+  assert.equal(out.length, 1);
+  assert.match(out[0].meta, /×4/);
 });

@@ -9,7 +9,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
-import { BuildBadge } from "@/components/BuildBadge";
+import { useAuth } from "@/lib/auth";
+import { OpenfolkShell } from "@/components/app/OpenfolkShell";
 import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
 import {
   resolveSection,
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/openfolk/$tenantId")({
 
 function WorkspacePage() {
   const { tenantId } = Route.useParams();
+  const { user } = useAuth();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -201,60 +203,66 @@ function WorkspacePage() {
     },
   };
 
-  return (
-    <div className="min-h-screen bg-surface-alt/30">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-        <Link
-          to="/openfolk"
-          className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-display"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" /> All tenants
-        </Link>
-
-        {loading && <p className="px-1 text-sm text-muted-foreground">Loading…</p>}
-        {!loading && error && (
-          <div className="rounded-xl border border-hairline bg-white p-5">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-display">
-              <ShieldAlert className="h-4 w-4 text-destructive" />
-              {error.code === "forbidden" || error.code.startsWith("http_403")
-                ? "Platform authority required"
-                : "Could not load"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Restricted to authorised OpenFolk operators (server-enforced).
-            </p>
-          </div>
-        )}
-        {!loading && !error && workspace && (
-          <>
-            {actionError && (
-              <div
-                role="alert"
-                className="mb-3 rounded-xl border border-destructive/30 bg-white p-3 text-xs text-muted-foreground"
-              >
-                <span className="font-semibold text-display">Action failed — </span>
-                {actionError}
-              </div>
-            )}
-            <OpenfolkWorkspace
-              tenantName={workspace.summary.display_name ?? tenantId.slice(0, 8)}
-              workspace={workspace}
-              readiness={readiness}
-              audit={audit}
-              writeCapable={true}
-              busy={busy}
-              lastRefresh={lastRefresh}
-              actions={actions}
-              section={section}
-              onSectionChange={setSection}
-              selectedEndpoint={search.endpoint ?? null}
-              onSelectEndpoint={setEndpoint}
-              delegatedActions={delegatedActions}
-            />
-            <BuildBadge />
-          </>
-        )}
+  // Loading / access-denied render without the shell (there is no tenant to frame yet).
+  if (loading)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-alt/30">
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
-    </div>
+    );
+  if (error || !workspace)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-alt/30 p-6">
+        <div className="max-w-md rounded-xl border border-hairline bg-white p-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-display">
+            <ShieldAlert className="h-4 w-4 text-destructive" />
+            {error && (error.code === "forbidden" || error.code.startsWith("http_403"))
+              ? "Platform authority required"
+              : "Could not load"}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Restricted to authorised OpenFolk operators (server-enforced).
+          </p>
+          <Link to="/openfolk" className="mt-3 inline-flex items-center gap-1 text-xs text-accent">
+            <ChevronLeft className="h-3.5 w-3.5" /> All tenants
+          </Link>
+        </div>
+      </div>
+    );
+
+  const tenantName = workspace.summary.display_name ?? tenantId.slice(0, 8);
+  return (
+    <OpenfolkShell
+      tenantName={tenantName}
+      section={section}
+      onSectionChange={setSection}
+      readiness={readiness}
+      operatorLabel={user?.email ?? undefined}
+    >
+      {actionError && (
+        <div
+          role="alert"
+          className="mb-3 rounded-xl border border-destructive/30 bg-white p-3 text-xs text-muted-foreground"
+        >
+          <span className="font-semibold text-display">Action failed — </span>
+          {actionError}
+        </div>
+      )}
+      <OpenfolkWorkspace
+        tenantName={tenantName}
+        workspace={workspace}
+        readiness={readiness}
+        audit={audit}
+        writeCapable={true}
+        busy={busy}
+        lastRefresh={lastRefresh}
+        actions={actions}
+        section={section}
+        onSectionChange={setSection}
+        selectedEndpoint={search.endpoint ?? null}
+        onSelectEndpoint={setEndpoint}
+        delegatedActions={delegatedActions}
+      />
+    </OpenfolkShell>
   );
 }

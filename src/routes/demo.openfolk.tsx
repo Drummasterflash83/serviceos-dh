@@ -14,6 +14,7 @@ import { useCallback, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import { OpenfolkWorkspace } from "@/components/app/OpenfolkWorkspace";
+import { OpenfolkShell } from "@/components/app/OpenfolkShell";
 import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
 import {
   resolveSection,
@@ -370,29 +371,32 @@ function DemoOpenfolk() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-alt/30">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-        <div className="mb-4 flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-          OpenFolk Control Plane — Demo Heating workspace (demo fixtures · in-memory ·
-          OpenFolk-operated)
-        </div>
-        <OpenfolkWorkspace
-          tenantName="Demo Heating"
-          workspace={workspace}
-          readiness={READINESS}
-          audit={audit}
-          writeCapable={true}
-          busy={busy}
-          lastRefresh={lastRefresh}
-          section={section}
-          onSectionChange={setSection}
-          selectedEndpoint={search.endpoint ?? null}
-          onSelectEndpoint={setEndpoint}
-          actions={{ onAssign }}
-          delegatedActions={delegatedActions}
-        />
+    <OpenfolkShell
+      tenantName="Demo Heating"
+      section={section}
+      onSectionChange={setSection}
+      readiness={READINESS}
+      operatorLabel="demo-operator"
+    >
+      <div className="mb-4 flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
+        <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+        Demo fixtures · in-memory · OpenFolk-operated
       </div>
-    </div>
+      <OpenfolkWorkspace
+        tenantName="Demo Heating"
+        workspace={workspace}
+        readiness={READINESS}
+        audit={audit}
+        writeCapable={true}
+        busy={busy}
+        lastRefresh={lastRefresh}
+        section={section}
+        onSectionChange={setSection}
+        selectedEndpoint={search.endpoint ?? null}
+        onSelectEndpoint={setEndpoint}
+        actions={{ onAssign }}
+        delegatedActions={delegatedActions}
+      />
+    </OpenfolkShell>
   );
 }

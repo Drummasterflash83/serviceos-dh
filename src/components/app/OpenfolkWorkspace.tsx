@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  DIRECTORY_SECTIONS,
   OWNERSHIP_ROLES,
   evaluateConcentration,
   isOwnershipComplete,
@@ -39,6 +40,7 @@ import {
 } from "@/lib/openfolk-workspace-nav";
 import { projectConnections } from "@/lib/openfolk-connections";
 import { OpenfolkConnections, type DelegatedActions } from "@/components/app/OpenfolkConnections";
+import { OpenfolkCommandCentre } from "@/components/app/OpenfolkCommandCentre";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -74,34 +76,17 @@ const READINESS_META: Record<string, { label: string; cls: string }> = {
   ready_for_staff_pilot: { label: "Ready for staff pilot", cls: "text-success" },
 };
 
+// The section keys are shared with the route's URL `validateSearch` and the shell's grouped
+// sidebar; this component renders only the CONTENT for the active section (the shell owns nav).
 type Section = WorkspaceSection;
-const SECTIONS: { key: Section; label: string; icon: ReactNode }[] = [
-  { key: "overview", label: "Overview", icon: <Activity className="h-3.5 w-3.5" /> },
-  { key: "company", label: "Company", icon: <Building2 className="h-3.5 w-3.5" /> },
-  { key: "connections", label: "Connections", icon: <Plug className="h-3.5 w-3.5" /> },
-  { key: "people", label: "People", icon: <Users className="h-3.5 w-3.5" /> },
-  {
-    key: "communications",
-    label: "Communications",
-    icon: <MessagesSquare className="h-3.5 w-3.5" />,
-  },
-  { key: "ownership", label: "Ownership", icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-  { key: "agents", label: "Agents", icon: <Bot className="h-3.5 w-3.5" /> },
-  { key: "automations", label: "Automations", icon: <Workflow className="h-3.5 w-3.5" /> },
-  { key: "health", label: "Health", icon: <HeartPulse className="h-3.5 w-3.5" /> },
-  { key: "data_quality", label: "Data Quality", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
-  { key: "security", label: "Security", icon: <Lock className="h-3.5 w-3.5" /> },
-  { key: "audit", label: "Audit", icon: <History className="h-3.5 w-3.5" /> },
-];
-// Communications is a container that re-homes the former Email / Phone / Slack / Review
-// sections as sub-tabs (identity review is reachable here and from People).
-const COMM_TABS = ["email", "phone", "slack", "review"] as const;
+// Communications re-homes the former Email / Phone / Slack sub-tabs (identity review now lives
+// under the Directory nav group).
+const COMM_TABS = ["email", "phone", "slack"] as const;
 type CommTab = (typeof COMM_TABS)[number];
 const COMM_TAB_LABEL: Record<CommTab, string> = {
   email: "Email",
   phone: "Phone",
   slack: "Slack",
-  review: "Identity review",
 };
 
 // Operational classification is DISTINCT from the raw provider mailbox type.
@@ -441,149 +426,45 @@ export function OpenfolkWorkspace({
   }, [connViews]);
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-[190px_1fr]">
-      <nav className="flex flex-row gap-1 overflow-x-auto md:flex-col">
-        {SECTIONS.map((s) => (
-          <button
-            key={s.key}
-            type="button"
-            onClick={() => setSection(s.key)}
-            className={cn(
-              "flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-              section === s.key
-                ? "bg-accent/10 text-accent"
-                : "text-muted-foreground hover:bg-surface-alt",
-            )}
-          >
-            {s.icon} {s.label}
-          </button>
-        ))}
-      </nav>
+    <div>
+      {/* Directory sub-nav (People / Identity review / Ownership share one nav home). */}
+      {DIRECTORY_SECTIONS.includes(section) && (
+        <nav className="mb-3 flex flex-wrap gap-1">
+          {(
+            [
+              ["people", "People"],
+              ["review", "Identity review"],
+              ["ownership", "Ownership"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setSection(key)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-[11px] font-medium",
+                section === key
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-hairline text-muted-foreground hover:text-display",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       <div className="space-y-4">
-        {/* ── Overview ─────────────────────────────────────────────── */}
+        {/* ── Command Centre (was the Overview stat wall) ───────────── */}
         {section === "overview" && (
-          <>
-            <Card
-              title={`Managed-service overview — ${tenantName}`}
-              right={
-                lastRefresh ? (
-                  <span className="text-[11px] text-muted-foreground">
-                    refreshed {new Date(lastRefresh).toLocaleTimeString()}
-                  </span>
-                ) : undefined
-              }
-            >
-              <p className="mb-3 text-xs text-muted-foreground">
-                Company configuration, connections and canonical inventory at a glance. Each metric
-                links to its section. Detailed readiness and Health-source status live under{" "}
-                <button
-                  type="button"
-                  className="text-accent underline-offset-2 hover:underline"
-                  onClick={() => setSection("health")}
-                >
-                  Health
-                </button>
-                .
-              </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <StatLink
-                  label="Active connections"
-                  n={connectedCount}
-                  tone="ok"
-                  onGo={() => setSection("connections")}
-                />
-                <StatLink
-                  label="Connections needing action"
-                  n={connActionCount}
-                  tone="warn"
-                  onGo={() => setSection("connections")}
-                />
-                <StatLink
-                  label="Data-quality items"
-                  n={dataQuality.length}
-                  tone="warn"
-                  onGo={() => setSection("data_quality")}
-                />
-                <StatLink
-                  label="Ownership-complete"
-                  n={ownershipComplete}
-                  tone="ok"
-                  onGo={() => setSection("ownership")}
-                />
-              </div>
-            </Card>
-            <SubHead>Canonical inventory</SubHead>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="People" n={summary.people} />
-              <Stat label="Canonical endpoints" n={active.length} />
-              <Stat label="Email endpoints" n={email.length} />
-              <Stat label="Typed phone endpoints" n={phone.length} />
-            </div>
-
-            <SubHead>Provider mailbox type — raw provider fact</SubHead>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-              <Stat label="user" n={providerTypeCounts.user} />
-              <Stat label="group" n={providerTypeCounts.group} />
-              <Stat label="alias" n={providerTypeCounts.alias} />
-              <Stat label="shared" n={providerTypeCounts.shared} />
-              <Stat label="suspended" n={providerTypeCounts.suspended} tone="warn" />
-              <Stat label="unknown" n={providerTypeCounts.unknown} />
-            </div>
-
-            <SubHead>
-              Operational classification — from reviewed evidence (a provider “user” box is NOT
-              assumed personal; it stays unknown until reviewed)
-            </SubHead>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-              <Stat label="personal" n={opClassCounts.personal} tone="ok" />
-              <Stat label="shared responsibility" n={opClassCounts.shared} />
-              <Stat label="team/group" n={opClassCounts.team} />
-              <Stat label="service/system" n={opClassCounts.service} />
-              <Stat label="inactive" n={opClassCounts.inactive} tone="warn" />
-              <Stat label="unknown" n={opClassCounts.unknown} tone="warn" />
-            </div>
-
-            <SubHead>Identity links — separate from ownership</SubHead>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Confirmed identity links" n={confirmedIdentityCount} tone="ok" />
-              <Stat label="Unresolved identities" n={unresolvedIdentityCount} tone="warn" />
-              <Stat label="Rejected suggestions" n={rejectedCount} tone="warn" />
-              <Stat label="Suspended mailboxes" n={suspendedCount} tone="warn" />
-            </div>
-
-            <SubHead>Operational ownership completeness</SubHead>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Ownership-complete endpoints" n={ownershipComplete} tone="ok" />
-              <Stat
-                label="Ownership-incomplete endpoints"
-                n={active.length - ownershipComplete}
-                tone="warn"
-              />
-              <Stat label="Ownership-mapped (accountable)" n={mapped} tone="ok" />
-              <Stat label="Active ownership assignments" n={ownership.length} />
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Missing accountable" n={missingRole.accountable} tone="warn" />
-              <Stat label="Missing primary handler" n={missingRole.primary_handler} tone="warn" />
-              <Stat label="Missing cover" n={missingRole.cover} tone="warn" />
-              <Stat label="Missing escalation" n={missingRole.escalation} tone="warn" />
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat
-                label="Excluded identities (domain)"
-                n={connections?.google_workspace.excluded ?? 0}
-                tone="warn"
-              />
-              <Stat label="Unclassified phone metadata" n={evidence.length} tone="warn" />
-              <Stat
-                label="Data-quality categories"
-                n={new Set(dataQuality.map((d) => d.kind)).size}
-                tone="warn"
-              />
-              <Stat label="Data-quality items" n={dataQuality.length} tone="warn" />
-            </div>
-          </>
+          <OpenfolkCommandCentre
+            tenantName={tenantName}
+            workspace={workspace}
+            readiness={readiness}
+            audit={audit}
+            onGo={setSection}
+            delegated={delegatedActions}
+          />
         )}
 
         {/* ── People ───────────────────────────────────────────────── */}
@@ -640,8 +521,8 @@ export function OpenfolkWorkspace({
           </nav>
         )}
 
-        {/* ── Operator review queue (Communications › Identity review) ── */}
-        {section === "communications" && commTab === "review" && (
+        {/* ── Operator review queue (Directory › Identity review) ── */}
+        {section === "review" && (
           <ReviewQueue
             email={email}
             members={members}

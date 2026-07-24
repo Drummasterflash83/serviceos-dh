@@ -9,13 +9,16 @@
  * exact same rules. See src/lib/openfolk-workspace-nav.test.ts.
  */
 
-// Canonical section keys — the managed-service tenant-workspace IA, in sidebar order.
-// `overview` is the safe default: an absent or invalid `?section=` resolves here.
+// Canonical section keys — every deep-linkable workspace surface. `overview` (the Command
+// Centre) is the safe default: an absent or invalid `?section=` resolves here. `people`,
+// `review` and `ownership` are grouped under "Directory" in the sidebar but keep their own
+// URLs so legacy bookmarks resolve.
 export const WORKSPACE_SECTIONS = [
   "overview",
   "company",
   "connections",
   "people",
+  "review",
   "communications",
   "ownership",
   "agents",
@@ -27,15 +30,12 @@ export const WORKSPACE_SECTIONS = [
 ] as const;
 export type WorkspaceSection = (typeof WORKSPACE_SECTIONS)[number];
 
-// Legacy section keys → their new home, so durable URLs and bookmarks from the previous
-// IA keep working (email/phone/slack were re-homed under Communications; review under
-// People). Old keys still shared with the new set (overview, connections, ownership,
-// people, data_quality, audit) resolve directly.
+// Legacy section keys → their new home, so durable URLs from the previous IA keep working
+// (email/phone/slack were re-homed under Communications).
 const LEGACY_SECTION_ALIASES: Record<string, WorkspaceSection> = {
   email: "communications",
   phone: "communications",
   slack: "communications",
-  review: "people",
 };
 
 /** Coerce any untrusted value (URL param, storage) to a valid section. Invalid → overview. */
@@ -43,6 +43,137 @@ export function resolveSection(value: unknown): WorkspaceSection {
   if (typeof value !== "string") return "overview";
   if ((WORKSPACE_SECTIONS as readonly string[]).includes(value)) return value as WorkspaceSection;
   return LEGACY_SECTION_ALIASES[value] ?? "overview";
+}
+
+// ── Grouped information architecture (OPERATE / CONFIGURE / GOVERN) ────────────
+// The sidebar item key is a nav concept, not always a section: "directory" is one nav item
+// that fronts the people/review/ownership sections. Icon + rendering live in the component.
+export type NavItemKey =
+  | "overview"
+  | "connections"
+  | "directory"
+  | "communications"
+  | "company"
+  | "health"
+  | "data_quality"
+  | "security"
+  | "audit";
+export interface NavItem {
+  key: NavItemKey;
+  label: string;
+  section: WorkspaceSection; // where clicking the item navigates
+}
+export interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+export const NAV_GROUPS: NavGroup[] = [
+  {
+    title: "Operate",
+    items: [
+      { key: "overview", label: "Command Centre", section: "overview" },
+      { key: "connections", label: "Connections", section: "connections" },
+      { key: "directory", label: "Directory", section: "people" },
+      { key: "communications", label: "Communications", section: "communications" },
+    ],
+  },
+  {
+    title: "Configure",
+    items: [
+      { key: "company", label: "Company", section: "company" },
+      { key: "health", label: "Health & Readiness", section: "health" },
+    ],
+  },
+  {
+    title: "Govern",
+    items: [
+      { key: "data_quality", label: "Data Quality", section: "data_quality" },
+      { key: "security", label: "Security", section: "security" },
+      { key: "audit", label: "Audit", section: "audit" },
+    ],
+  },
+];
+// Sections fronted by the "Directory" nav item (sub-navigated in the content area).
+export const DIRECTORY_SECTIONS: WorkspaceSection[] = ["people", "review", "ownership"];
+// Sections kept OUT of primary navigation until they hold something useful. Routes still
+// resolve (direct links / a future Labs area), they just aren't advertised in the sidebar.
+export const HIDDEN_SECTIONS: WorkspaceSection[] = ["agents", "automations"];
+
+/** Which sidebar nav item should read as active for a given section. */
+export function activeNavKey(section: WorkspaceSection): NavItemKey | null {
+  if (DIRECTORY_SECTIONS.includes(section)) return "directory";
+  if (HIDDEN_SECTIONS.includes(section)) return null; // hidden section → no highlighted item
+  return section as NavItemKey;
+}
+
+// ── Command Centre: meaningful activity (drop idempotent-refresh noise) ────────
+export interface AuditLike {
+  action: string;
+  resource_type: string;
+  reason: string | null;
+  created_at: string;
+}
+export interface ActivitySignal {
+  title: string;
+  meta: string;
+  tone: "ok" | "attention" | "risk" | "neutral" | "info";
+}
+const ACTIVITY_LABEL: {
+  match: (a: string) => boolean;
+  title: string;
+  tone: ActivitySignal["tone"];
+}[] = [
+  { match: (a) => a.includes("ownership.assign"), title: "Ownership assigned", tone: "ok" },
+  { match: (a) => a.includes("ownership.end"), title: "Ownership ended", tone: "attention" },
+  { match: (a) => a.includes("identity.review"), title: "Identity reviewed", tone: "info" },
+  { match: (a) => a.includes("delegated.issue"), title: "Setup request issued", tone: "info" },
+  {
+    match: (a) => a.includes("delegated.revoke"),
+    title: "Setup request revoked",
+    tone: "attention",
+  },
+  {
+    match: (a) => a.includes("discovery") || a.includes("discover"),
+    title: "Discovery run",
+    tone: "neutral",
+  },
+  {
+    match: (a) => a.includes("connection") || a.includes("authoris"),
+    title: "Connection changed",
+    tone: "info",
+  },
+  { match: (a) => a.includes("endpoint.archive"), title: "Endpoint archived", tone: "attention" },
+  { match: (a) => a.includes("endpoint"), title: "Endpoint changed", tone: "neutral" },
+];
+
+/**
+ * Turn the raw change-log into a concise Command-Centre activity view: drop the noisy
+ * idempotent discovery-refresh upserts, humanise action codes, and collapse identical
+ * back-to-back events into a single "· ×N" row. `limit` caps the output.
+ */
+export function summariseActivity(entries: AuditLike[], limit = 8): ActivitySignal[] {
+  const isNoise = (e: AuditLike) =>
+    e.action.includes("endpoint.upsert") &&
+    /idempotency re-run|discovery refresh/i.test(e.reason ?? "");
+  const meaningful = entries.filter((e) => !isNoise(e));
+  const out: (ActivitySignal & { key: string; count: number })[] = [];
+  for (const e of meaningful) {
+    const spec = ACTIVITY_LABEL.find((l) => l.match(e.action)) ?? {
+      title: e.action.replace(/^controlplane\./, "").replace(/[._]/g, " "),
+      tone: "neutral" as const,
+    };
+    const day = e.created_at.slice(0, 10);
+    const key = `${spec.title}|${day}`;
+    const prev = out[out.length - 1];
+    if (prev && prev.key === key) {
+      prev.count += 1;
+      prev.meta = `${day} · ×${prev.count}`;
+    } else {
+      out.push({ title: spec.title, tone: spec.tone, meta: day, key, count: 1 });
+    }
+    if (out.length >= limit + 5) break; // read a little ahead before capping
+  }
+  return out.slice(0, limit).map(({ title, meta, tone }) => ({ title, meta, tone }));
 }
 
 /** URL form of a section: overview (the default) is omitted so the URL stays clean. */
