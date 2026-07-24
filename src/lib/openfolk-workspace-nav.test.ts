@@ -12,11 +12,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   OWNERSHIP_ROLES,
+  evaluateConcentration,
   isOwnershipComplete,
   nextMissingRole,
   resolveSection,
   sectionSearchValue,
 } from "./openfolk-workspace-nav.ts";
+
+const A = "member-a";
+const B = "member-b";
+const C = "member-c";
+const D = "member-d";
 
 // ── Section persistence (test 12: refreshing ?section=ownership returns to Ownership) ──
 test("resolveSection keeps a valid section across a refresh", () => {
@@ -80,4 +86,67 @@ test("isOwnershipComplete only when all four governed roles are present", () => 
   assert.equal(isOwnershipComplete([...OWNERSHIP_ROLES]), true);
   // extra/unknown roles do not break completeness
   assert.equal(isOwnershipComplete([...OWNERSHIP_ROLES, "observer"]), true);
+});
+
+// ── Concentration semantics (separation of duties) ──
+test("accountable + primary_handler (same person) does NOT warn — the Heidi case", () => {
+  const f = evaluateConcentration({ accountable: A, primary_handler: A });
+  assert.deepEqual(f, []);
+});
+
+test("accountable + primary + escalation held by one person warns", () => {
+  const f = evaluateConcentration({ accountable: A, primary_handler: A, escalation: A });
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, "warning");
+  assert.equal(f[0].code, "holds_three_roles");
+  assert.equal(f[0].member_id, A);
+});
+
+test("primary_handler == cover warns (no handling fallback)", () => {
+  const f = evaluateConcentration({ accountable: A, primary_handler: B, cover: B, escalation: C });
+  assert.ok(f.some((x) => x.code === "primary_equals_cover" && x.member_id === B));
+});
+
+test("cover == escalation warns (no independent escalation fallback)", () => {
+  const f = evaluateConcentration({ accountable: A, primary_handler: B, cover: C, escalation: C });
+  assert.ok(f.some((x) => x.code === "cover_equals_escalation" && x.member_id === C));
+});
+
+test("all four roles one person → single critical finding, no redundant pair noise", () => {
+  const f = evaluateConcentration({
+    accountable: A,
+    primary_handler: A,
+    cover: A,
+    escalation: A,
+  });
+  assert.equal(f.length, 1);
+  assert.equal(f[0].severity, "critical");
+  assert.equal(f[0].code, "single_person_all");
+  assert.equal(f[0].roles.length, 4);
+});
+
+test("separate primary, cover and escalation → no warning", () => {
+  const f = evaluateConcentration({
+    accountable: A,
+    primary_handler: B,
+    cover: C,
+    escalation: D,
+  });
+  assert.deepEqual(f, []);
+});
+
+test("team-owned / unassigned roles (null) never count toward concentration", () => {
+  // accountable is a team (null owner), only primary+cover assigned to one person → still
+  // catches primary==cover but the null role is ignored.
+  const f = evaluateConcentration({ accountable: null, primary_handler: A, cover: A });
+  assert.ok(f.some((x) => x.code === "primary_equals_cover"));
+  assert.ok(!f.some((x) => x.code === "single_person_all"));
+});
+
+test("explicit stricter policy threshold flags a 2-role holder", () => {
+  const f = evaluateConcentration(
+    { accountable: A, primary_handler: A, cover: B, escalation: C },
+    { maxRolesPerPerson: 1 },
+  );
+  assert.ok(f.some((x) => x.code === "threshold_exceeded" && x.member_id === A));
 });

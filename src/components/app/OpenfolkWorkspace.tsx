@@ -26,8 +26,10 @@ import {
 import { cn } from "@/lib/utils";
 import {
   OWNERSHIP_ROLES,
+  evaluateConcentration,
   isOwnershipComplete,
   nextMissingRole,
+  type ConcentrationFinding,
   type OwnershipRole,
   type WorkspaceSection,
 } from "@/lib/openfolk-workspace-nav";
@@ -950,15 +952,13 @@ function OwnershipEndpoint({
   const byRole = new Map<string, CpOwnership>();
   for (const a of assignments) if (!byRole.has(a.assignment_role)) byRole.set(a.assignment_role, a);
   const complete = isOwnershipComplete(byRole.keys());
-  // Concentration: one member holding more than one role on this endpoint.
-  const perMember = new Map<string, string[]>();
-  for (const a of assignments)
-    if (a.owner_member_id)
-      perMember.set(a.owner_member_id, [
-        ...(perMember.get(a.owner_member_id) ?? []),
-        a.assignment_role,
-      ]);
-  const concentrated = [...perMember.entries()].filter(([, roles]) => roles.length > 1);
+  // Separation-of-duties: warn only on genuine concentration — NOT for the expected
+  // accountable == primary_handler pairing on a personal mailbox. Team-owned roles
+  // (owner_member_id null) never count toward person concentration.
+  const roleOwners = Object.fromEntries(
+    REQUIRED_ROLES.map((r) => [r, byRole.get(r)?.owner_member_id ?? null]),
+  ) as Partial<Record<OwnRole, string | null>>;
+  const concentration = evaluateConcentration(roleOwners);
 
   // Which role's assign-form is open, which role just succeeded (inline success + autofocus).
   const [openRole, setOpenRole] = useState<OwnRole | null>(null);
@@ -1078,19 +1078,49 @@ function OwnershipEndpoint({
           );
         })}
       </div>
-      {concentrated.length > 0 && (
-        <Warn>
-          Concentration:{" "}
-          {concentrated
-            .map(
-              ([mid, roles]) =>
-                `${memberName(members, mid)} holds ${roles.length} roles (${roles.join(", ")})`,
-            )
-            .join("; ")}
-        </Warn>
+      {concentration.length > 0 && (
+        <div className="mt-3 space-y-1.5">
+          {concentration.map((f, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex items-start gap-1.5 rounded-md border px-2.5 py-1.5 text-xs",
+                f.severity === "critical"
+                  ? "border-destructive/40 bg-destructive/5 text-destructive"
+                  : "border-amber-500/30 bg-amber-500/5 text-amber-700",
+              )}
+            >
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>
+                <span className="font-medium">
+                  {f.severity === "critical" ? "Critical concentration: " : "Concentration: "}
+                </span>
+                {concentrationReason(f, members)}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
+}
+
+// Precise, human reason for a concentration finding — names the person and roles involved.
+function concentrationReason(f: ConcentrationFinding, members: CpMember[]): string {
+  const name = memberName(members, f.member_id);
+  const roleList = f.roles.map((r) => r.replace(/_/g, " ")).join(", ");
+  switch (f.code) {
+    case "single_person_all":
+      return `${name} holds all four ownership roles — no separation of duties`;
+    case "holds_three_roles":
+      return `${name} holds three roles (${roleList}) — limited separation of duties`;
+    case "primary_equals_cover":
+      return `Primary handler and cover are both ${name} — no handling fallback`;
+    case "cover_equals_escalation":
+      return `Cover and escalation are both ${name} — escalation has no independent fallback`;
+    case "threshold_exceeded":
+      return `${name} holds ${f.roles.length} ownership roles (${roleList}), over the configured limit`;
+  }
 }
 
 function AssignRole({
