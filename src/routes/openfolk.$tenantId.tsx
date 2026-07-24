@@ -21,7 +21,9 @@ import {
   getAudit,
   getReadiness,
   getWorkspace,
+  restoreEndpoint,
   reviewIdentity,
+  updateManualEndpoint,
   validateEndpoint,
   type AuditEntry,
   type SourceReadiness,
@@ -93,15 +95,31 @@ function WorkspacePage() {
       ),
     onArchiveEndpoint: (endpoint_id, reason) =>
       void guard(() => archiveEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
-    onReviewIdentity: (input) => void guard(() => reviewIdentity({ tenant_id: tenantId, ...input })),
-    onEndOwnership: (assignment_id, reason) =>
-      void guard(() => endOwnership({ tenant_id: tenantId, assignment_id, reason })),
+    onReviewIdentity: (input) =>
+      void guard(() => reviewIdentity({ tenant_id: tenantId, ...input })),
+    onEndOwnership: (input) => void guard(() => endOwnership({ tenant_id: tenantId, ...input })),
+    onRestoreEndpoint: (endpoint_id, reason) =>
+      void guard(() => restoreEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
     onValidateEndpoint: async (input) => {
       const res = await validateEndpoint({ tenant_id: tenantId, ...input });
       return res.ok ? res.data : null;
     },
     onCreateEndpoint: async (input) =>
       guard(() => createManualEndpoint({ tenant_id: tenantId, ...input })),
+    onUpdateEndpoint: async (input) => {
+      if (busy) return { ok: false, error: "busy" };
+      setBusy(true);
+      setActionError(null);
+      const res = await updateManualEndpoint({ tenant_id: tenantId, ...input });
+      if (!res.ok) {
+        setActionError(res.error?.message ?? "Update failed");
+        setBusy(false);
+        return { ok: false, error: res.error?.message };
+      }
+      await load();
+      setBusy(false);
+      return { ok: true, outcome: res.data.outcome };
+    },
   };
 
   return (

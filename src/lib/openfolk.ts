@@ -73,6 +73,8 @@ export interface CpEndpoint {
   provider: string | null;
   is_shared: boolean;
   status: string;
+  source: string; // 'manual' endpoints are operator-editable; provider evidence is not
+  updated_at: string; // optimistic-concurrency token for manual edits
 }
 export interface CpOwnership {
   id: string;
@@ -83,8 +85,10 @@ export interface CpOwnership {
   owner_role: string | null;
   assignment_role: string;
   effective_from: string;
+  effective_to: string | null;
   confidence: number | null;
   review_state: string;
+  updated_at?: string;
 }
 export interface CpIdentity {
   id: string;
@@ -131,18 +135,26 @@ export interface PhoneEvidenceItem {
   status: string;
   discovery_source: string | null;
 }
-export type MailboxClass = "personal" | "shared" | "group" | "service" | "suspended" | "unknown";
+// Provider mailbox type = raw provider fact; operational class = how it's actually used
+// (set only from reviewed evidence). These are DELIBERATELY separate — a provider `user`
+// mailbox may still be operationally shared/team, and defaults to `unknown` until reviewed.
+export type ProviderMailboxType = "user" | "group" | "alias" | "shared" | "suspended" | "unknown";
+export type OperationalClass = "personal" | "shared" | "team" | "service" | "inactive" | "unknown";
 export interface EmailClassification {
   endpoint_id: string;
   email: string;
-  class: MailboxClass;
+  provider_mailbox_type: ProviderMailboxType;
+  operational_class: OperationalClass;
+  operational_reviewed: boolean;
+  provider_display_name: string | null;
   evidence: string;
   status: string | null;
 }
 export interface IdentitySuggestion {
   endpoint_id: string;
   endpoint_email: string;
-  mailbox_class: MailboxClass;
+  provider_mailbox_type: ProviderMailboxType;
+  operational_class: OperationalClass;
   suggested_member_id: string | null;
   suggested_kind: "person" | "shared" | "none";
   confidence: "high" | "medium" | "low" | "unresolved";
@@ -153,7 +165,12 @@ export interface IdentitySuggestion {
 export interface IdentityResolution {
   classifications: EmailClassification[];
   suggestions: IdentitySuggestion[];
-  reviews: { endpoint_id: string; decision: string; team_member_id: string | null; created_at: string }[];
+  reviews: {
+    endpoint_id: string;
+    decision: string;
+    team_member_id: string | null;
+    created_at: string;
+  }[];
 }
 export interface Workspace {
   summary: TenantSummary;
@@ -161,6 +178,7 @@ export interface Workspace {
   identities: CpIdentity[];
   endpoints: CpEndpoint[];
   ownership: CpOwnership[];
+  ownershipHistory?: CpOwnership[];
   dataQuality: DataQualityItem[];
   connections?: Connections;
   phoneEvidence?: PhoneEvidenceItem[];
@@ -230,14 +248,20 @@ export const createManualEndpoint = (p: {
 }) => invoke<{ id: string; outcome: string }>({ action: "endpoint.manual_create", ...p });
 export const archiveEndpoint = (p: { tenant_id: string; endpoint_id: string; reason: string }) =>
   invoke<{ id: string; outcome: string }>({ action: "endpoint.archive", ...p });
+export type ReviewDecision =
+  "confirmed_person" | "shared" | "team" | "system" | "rejected" | "unresolved";
 export const reviewIdentity = (p: {
   tenant_id: string;
   endpoint_id: string;
-  decision: "confirmed_person" | "shared" | "system" | "rejected" | "unresolved";
+  decision: ReviewDecision;
   team_member_id?: string | null;
   confidence?: string;
   reason: string;
-}) => invoke<{ review_id: string; identity_id: string | null; decision: string }>({ action: "identity.review", ...p });
+}) =>
+  invoke<{ review_id: string; identity_id: string | null; decision: string }>({
+    action: "identity.review",
+    ...p,
+  });
 export const updateManualEndpoint = (p: {
   tenant_id: string;
   endpoint_id: string;
@@ -246,8 +270,16 @@ export const updateManualEndpoint = (p: {
   expected_updated_at?: string | null;
   reason: string;
 }) => invoke<{ id: string; outcome: string }>({ action: "endpoint.update", ...p });
-export const endOwnership = (p: { tenant_id: string; assignment_id: string; reason: string }) =>
-  invoke<{ id: string; outcome: string }>({ action: "ownership.end", ...p });
+export const endOwnership = (p: {
+  tenant_id: string;
+  assignment_id: string;
+  effective_to?: string | null;
+  expected_updated_at?: string | null;
+  reason: string;
+}) =>
+  invoke<{ id: string; outcome: string; effective_to?: string }>({ action: "ownership.end", ...p });
+export const restoreEndpoint = (p: { tenant_id: string; endpoint_id: string; reason: string }) =>
+  invoke<{ id: string; outcome: string }>({ action: "endpoint.restore", ...p });
 export const assignOwnership = (p: {
   tenant_id: string;
   endpoint_id: string;

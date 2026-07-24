@@ -361,5 +361,69 @@ begin
   exception when others then if sqlerrm not like '%append-only%' then raise; end if; end;
 end $$;
 
+-- ── (12) operator workflow: team classification, ownership ending (explicit date +
+--        optimistic concurrency), manual restore. ───────────────────────────────────
+do $$
+declare r jsonb; eid uuid; aid uuid; aupd timestamptz; discid uuid;
+begin
+  -- TEAM decision: records an operational classification, creates NO identity link.
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','team@drummonds.example',
+        'Team', 'directory', null, false, 'manual', null, '{}'::jsonb, 'op@test','create',null,false);
+  eid := (r->>'id')::uuid;
+  r := cp_review_identity('aaaa0000-0000-0000-0000-0000000000c1', eid, 'team', null, 'unresolved',
+        '{}'::jsonb, 'op@test','mark team',null,false);
+  if (r->>'identity_id') is not null then raise exception 'FAIL: team decision created an identity link'; end if;
+  if (r->>'decision') <> 'team' then raise exception 'FAIL: team decision not recorded'; end if;
+  if (select count(*) from endpoint_identity_reviews where endpoint_id = eid and decision='team') <> 1 then
+    raise exception 'FAIL: team review row not appended'; end if;
+
+  -- OWNERSHIP ENDING: create a cover assignment, end it with an explicit date + concurrency token.
+  insert into endpoint_ownership_assignments
+    (id, tenant_id, endpoint_id, owner_kind, owner_member_id, assignment_role, effective_from, review_state, provenance)
+  values (gen_random_uuid(), 'aaaa0000-0000-0000-0000-0000000000c1','dddd0000-0000-0000-0000-0000000000c1',
+    'person','cccc0000-0000-0000-0000-0000000000c1','cover', now() - interval '2 days','confirmed','test')
+  returning id, updated_at into aid, aupd;
+
+  -- stale token → rejected safely.
+  begin
+    perform cp_end_ownership('aaaa0000-0000-0000-0000-0000000000c1', aid, now(), aupd - interval '1 hour',
+      'op@test','end',null,false);
+    raise exception 'FAIL: stale ownership end was allowed';
+  exception when others then if sqlerrm not like 'stale_write%' then raise; end if; end;
+
+  -- correct token + explicit effective_to → ended; history remains (no hard-delete).
+  r := cp_end_ownership('aaaa0000-0000-0000-0000-0000000000c1', aid, now(), aupd, 'op@test','end',null,false);
+  if (r->>'outcome') <> 'ended' then raise exception 'FAIL: expected ended, got %', r->>'outcome'; end if;
+  if (select effective_to from endpoint_ownership_assignments where id = aid) is null then
+    raise exception 'FAIL: effective_to not set on end'; end if;
+  if (select count(*) from endpoint_ownership_assignments where id = aid) <> 1 then
+    raise exception 'FAIL: assignment was hard-deleted (must be preserved)'; end if;
+
+  -- already-ended → safe no-op.
+  r := cp_end_ownership('aaaa0000-0000-0000-0000-0000000000c1', aid, now(), null, 'op@test','end again',null,false);
+  if (r->>'outcome') <> 'already_ended' then raise exception 'FAIL: re-end outcome=% (want already_ended)', r->>'outcome'; end if;
+
+  -- MANUAL RESTORE: archive then restore a manual endpoint.
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','phone','ddi','+441111000999',
+        'Restore line', 'sipcentric', null, false, 'manual', null, '{}'::jsonb, 'op@test','create',null,false);
+  eid := (r->>'id')::uuid;
+  perform cp_archive_endpoint('aaaa0000-0000-0000-0000-0000000000c1', eid, 'op@test','archive',null,false);
+  if (select status from communication_endpoints where id = eid) <> 'inactive' then
+    raise exception 'FAIL: archive did not deactivate'; end if;
+  r := cp_restore_endpoint('aaaa0000-0000-0000-0000-0000000000c1', eid, 'op@test','restore',null,false);
+  if (r->>'outcome') <> 'restored' then raise exception 'FAIL: expected restored, got %', r->>'outcome'; end if;
+  if (select status from communication_endpoints where id = eid) <> 'active' then
+    raise exception 'FAIL: restore did not reactivate'; end if;
+
+  -- provider-discovered endpoints are NOT restorable via this path.
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','disc2@drummonds.example',
+        'Disc2','google_workspace','gw-y',false,'discovery',null,'{}'::jsonb,'op@test','disc',null,false);
+  discid := (r->>'id')::uuid;
+  begin
+    perform cp_restore_endpoint('aaaa0000-0000-0000-0000-0000000000c1', discid, 'op@test','restore',null,false);
+    raise exception 'FAIL: a discovered endpoint was restorable as manual';
+  exception when others then if sqlerrm not like '%only manual endpoints%' then raise; end if; end;
+end $$;
+
 do $$ begin raise notice 'CONTROL-PLANE: ALL PASSED'; end $$;
 rollback;

@@ -82,6 +82,8 @@ const WORKSPACE: Workspace = {
       provider: "simwood",
       is_shared: false,
       status: "active",
+      source: "discovery",
+      updated_at: "2026-07-23T00:00:00Z",
     },
     {
       id: EP_EXT,
@@ -92,6 +94,8 @@ const WORKSPACE: Workspace = {
       provider: "simwood",
       is_shared: false,
       status: "active",
+      source: "discovery",
+      updated_at: "2026-07-23T00:00:00Z",
     },
     {
       id: EP_Q,
@@ -102,6 +106,8 @@ const WORKSPACE: Workspace = {
       provider: "simwood",
       is_shared: true,
       status: "active",
+      source: "discovery",
+      updated_at: "2026-07-23T00:00:00Z",
     },
   ],
   ownership: [
@@ -114,6 +120,7 @@ const WORKSPACE: Workspace = {
       owner_role: null,
       assignment_role: "accountable",
       effective_from: "2026-07-23T00:00:00Z",
+      effective_to: null,
       confidence: 0.95,
       review_state: "confirmed",
     },

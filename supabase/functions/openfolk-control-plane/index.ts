@@ -277,9 +277,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const { data, error } = await rpc("cp_end_ownership", {
           p_tenant: tenantId,
           p_assignment: String(body.assignment_id),
+          p_effective_to: body.effective_to ?? null,
+          p_expected_updated_at: body.expected_updated_at ?? null,
         });
         if (error) return fail("write_failed", error.message, 400);
         return json({ ok: true, data });
+      }
+      case "endpoint.restore": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.endpoint_id) return fail("bad_request", "endpoint_id required", 400);
+        const { data, error } = await rpc("cp_restore_endpoint", {
+          p_tenant: tenantId,
+          p_endpoint_id: String(body.endpoint_id),
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        const r = data as { id?: string; outcome?: string } | null;
+        return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
       }
       case "member.upsert": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
@@ -328,10 +341,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const r = data as { id?: string; outcome?: string } | string | null;
         return json({
           ok: true,
-          data:
-            r && typeof r === "object"
-              ? { id: r.id, outcome: r.outcome }
-              : { id: r },
+          data: r && typeof r === "object" ? { id: r.id, outcome: r.outcome } : { id: r },
         });
       }
       case "ownership.assign": {

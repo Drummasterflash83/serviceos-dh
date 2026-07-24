@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Database,
   History,
+  Inbox,
   Mail,
   Phone,
   Plug,
@@ -28,13 +29,26 @@ import type {
   CpEndpoint,
   CpIdentity,
   CpMember,
+  CpOwnership,
   DataQualityItem,
   EmailClassification,
   EndpointValidation,
   IdentitySuggestion,
+  OperationalClass,
+  ProviderMailboxType,
+  ReviewDecision,
   SourceReadiness,
   Workspace,
 } from "@/lib/openfolk";
+
+const REQUIRED_ROLES = ["accountable", "primary_handler", "cover", "escalation"] as const;
+type OwnRole = (typeof REQUIRED_ROLES)[number];
+type ReviewRow = {
+  endpoint_id: string;
+  decision: string;
+  team_member_id: string | null;
+  created_at: string;
+};
 
 const READINESS_META: Record<string, { label: string; cls: string }> = {
   not_ready: { label: "Not ready", cls: "text-destructive" },
@@ -46,6 +60,7 @@ const READINESS_META: Record<string, { label: string; cls: string }> = {
 type Section =
   | "overview"
   | "people"
+  | "review"
   | "connections"
   | "phone"
   | "email"
@@ -56,6 +71,7 @@ type Section =
 const SECTIONS: { key: Section; label: string; icon: ReactNode }[] = [
   { key: "overview", label: "Overview", icon: <Activity className="h-3.5 w-3.5" /> },
   { key: "people", label: "People", icon: <Users className="h-3.5 w-3.5" /> },
+  { key: "review", label: "Review queue", icon: <Inbox className="h-3.5 w-3.5" /> },
   { key: "connections", label: "Connections", icon: <Plug className="h-3.5 w-3.5" /> },
   { key: "phone", label: "Phone", icon: <Phone className="h-3.5 w-3.5" /> },
   { key: "email", label: "Email", icon: <Mail className="h-3.5 w-3.5" /> },
@@ -65,9 +81,35 @@ const SECTIONS: { key: Section; label: string; icon: ReactNode }[] = [
   { key: "audit", label: "Audit", icon: <History className="h-3.5 w-3.5" /> },
 ];
 
+// Operational classification is DISTINCT from the raw provider mailbox type.
+const OPCLASS_META: Record<OperationalClass, { label: string; cls: string }> = {
+  personal: { label: "personal", cls: "border-hairline text-muted-foreground" },
+  shared: { label: "shared responsibility", cls: "border-accent/40 text-accent" },
+  team: { label: "team/group", cls: "border-accent/40 text-accent" },
+  service: { label: "service/system", cls: "border-hairline text-muted-foreground" },
+  inactive: { label: "inactive", cls: "border-amber-500/40 text-amber-700" },
+  unknown: { label: "unknown", cls: "border-amber-500/40 text-amber-700" },
+};
+const PROVIDER_TYPE_LABEL: Record<ProviderMailboxType, string> = {
+  user: "user",
+  group: "group",
+  alias: "alias",
+  shared: "shared",
+  suspended: "suspended",
+  unknown: "unknown",
+};
+
 const MANUAL_KINDS = ["ddi", "extension", "queue", "ring_group", "voicemail", "sip", "device"];
 
-function Card({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
+function Card({
+  title,
+  children,
+  right,
+}: {
+  title: string;
+  children: ReactNode;
+  right?: ReactNode;
+}) {
   return (
     <section className="rounded-xl border border-hairline bg-white p-4 sm:p-5">
       <header className="mb-3 flex items-center gap-2">
@@ -122,12 +164,25 @@ export interface WorkspaceActions {
   onArchiveEndpoint?: (endpointId: string, reason: string) => void;
   onReviewIdentity?: (input: {
     endpoint_id: string;
-    decision: "confirmed_person" | "shared" | "system" | "rejected" | "unresolved";
+    decision: ReviewDecision;
     team_member_id?: string | null;
     confidence?: string;
     reason: string;
   }) => void;
-  onEndOwnership?: (assignmentId: string, reason: string) => void;
+  onEndOwnership?: (input: {
+    assignment_id: string;
+    effective_to?: string | null;
+    expected_updated_at?: string | null;
+    reason: string;
+  }) => void;
+  onUpdateEndpoint?: (input: {
+    endpoint_id: string;
+    display_value?: string;
+    provider_context?: string;
+    expected_updated_at?: string | null;
+    reason: string;
+  }) => Promise<{ ok: boolean; outcome?: string; error?: string }>;
+  onRestoreEndpoint?: (endpointId: string, reason: string) => void;
 }
 
 export function OpenfolkWorkspace({
@@ -156,6 +211,7 @@ export function OpenfolkWorkspace({
     identities,
     endpoints,
     ownership,
+    ownershipHistory = [],
     dataQuality,
     connections,
     phoneEvidence,
@@ -172,22 +228,65 @@ export function OpenfolkWorkspace({
   );
   const reviewByEndpoint = useMemo(() => {
     const m = new Map<string, { decision: string; team_member_id: string | null }>();
-    for (const r of identityResolution?.reviews ?? []) if (!m.has(r.endpoint_id)) m.set(r.endpoint_id, r);
+    for (const r of identityResolution?.reviews ?? [])
+      if (!m.has(r.endpoint_id)) m.set(r.endpoint_id, r);
     return m;
   }, [identityResolution]);
-  const confirmedIdentityCount = (identityResolution?.reviews ?? []).filter(
-    (r) => r.decision === "confirmed_person" || r.decision === "shared" || r.decision === "system",
-  ).length;
-  const sharedCount = (identityResolution?.classifications ?? []).filter(
-    (c) => c.class === "shared" || c.class === "group",
-  ).length;
-  const suspendedCount = (identityResolution?.classifications ?? []).filter(
-    (c) => c.class === "suspended",
-  ).length;
+
+  const classifications = useMemo(
+    () => identityResolution?.classifications ?? [],
+    [identityResolution],
+  );
+  // Provider mailbox-type counts (raw provider fact) — kept SEPARATE from operational class.
+  const providerTypeCounts = useMemo(() => {
+    const c = { user: 0, group: 0, alias: 0, shared: 0, suspended: 0, unknown: 0 } as Record<
+      ProviderMailboxType,
+      number
+    >;
+    for (const x of classifications)
+      c[x.provider_mailbox_type] = (c[x.provider_mailbox_type] ?? 0) + 1;
+    return c;
+  }, [classifications]);
+  // Operational-classification counts (how the box is actually used) — from reviewed evidence.
+  const opClassCounts = useMemo(() => {
+    const c = { personal: 0, shared: 0, team: 0, service: 0, inactive: 0, unknown: 0 } as Record<
+      OperationalClass,
+      number
+    >;
+    for (const x of classifications) c[x.operational_class] = (c[x.operational_class] ?? 0) + 1;
+    return c;
+  }, [classifications]);
+
+  // Latest decision per endpoint (reviews arrive newest-first). Only a confirmed PERSON
+  // decision creates an identity LINK.
+  const latestDecisionCounts = useMemo(() => {
+    const seen = new Set<string>();
+    const c = {
+      confirmed_person: 0,
+      shared: 0,
+      team: 0,
+      system: 0,
+      rejected: 0,
+      unresolved: 0,
+    } as Record<string, number>;
+    for (const r of identityResolution?.reviews ?? []) {
+      if (seen.has(r.endpoint_id)) continue;
+      seen.add(r.endpoint_id);
+      c[r.decision] = (c[r.decision] ?? 0) + 1;
+    }
+    return c;
+  }, [identityResolution]);
+  const confirmedIdentityCount = latestDecisionCounts.confirmed_person;
+  const rejectedCount = latestDecisionCounts.rejected;
+  const suspendedCount = opClassCounts.inactive;
 
   const active = useMemo(() => endpoints.filter((e) => e.status === "active"), [endpoints]);
   const phone = active.filter((e) => e.channel === "phone");
   const email = active.filter((e) => e.channel === "email");
+  const unresolvedIdentityCount = email.filter((e) => {
+    const d = reviewByEndpoint.get(e.id)?.decision;
+    return !d || d === "unresolved" || d === "rejected";
+  }).length;
   const accountableFor = (endpointId: string) =>
     ownership.find(
       (o) =>
@@ -198,13 +297,36 @@ export function OpenfolkWorkspace({
   const mapped = active.filter((e) => accountableFor(e.id)).length;
   const rolesFor = (id: string) =>
     new Set(
-      ownership.filter((o) => o.endpoint_id === id && o.review_state !== "rejected").map((o) => o.assignment_role),
+      ownership
+        .filter((o) => o.endpoint_id === id && o.review_state !== "rejected")
+        .map((o) => o.assignment_role),
     );
-  const ownershipComplete = active.filter((e) => {
-    const s = rolesFor(e.id);
-    return ["accountable", "primary_handler", "cover", "escalation"].every((r) => s.has(r));
-  }).length;
+  const ownershipComplete = active.filter((e) =>
+    REQUIRED_ROLES.every((r) => rolesFor(e.id).has(r)),
+  ).length;
+  // Missing-role counts across active endpoints — distinct categories, never one flat total.
+  const missingRole = useMemo(() => {
+    const m: Record<OwnRole, number> = {
+      accountable: 0,
+      primary_handler: 0,
+      cover: 0,
+      escalation: 0,
+    };
+    for (const e of active) {
+      const s = rolesFor(e.id);
+      for (const r of REQUIRED_ROLES) if (!s.has(r)) m[r]++;
+    }
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, ownership]);
   const evidence = phoneEvidence ?? [];
+  const archivedManualPhone = useMemo(
+    () =>
+      endpoints.filter(
+        (e) => e.channel === "phone" && e.status === "inactive" && e.source === "manual",
+      ),
+    [endpoints],
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-[190px_1fr]">
@@ -233,7 +355,9 @@ export function OpenfolkWorkspace({
               {readiness ? (
                 <>
                   <div className="mb-2 flex items-center gap-2">
-                    <span className={cn("text-sm font-semibold", READINESS_META[readiness.level]?.cls)}>
+                    <span
+                      className={cn("text-sm font-semibold", READINESS_META[readiness.level]?.cls)}
+                    >
                       {READINESS_META[readiness.level]?.label ?? readiness.level}
                     </span>
                     {lastRefresh && (
@@ -265,43 +389,119 @@ export function OpenfolkWorkspace({
               <Stat label="Canonical endpoints" n={active.length} />
               <Stat label="Email endpoints" n={email.length} />
               <Stat label="Typed phone endpoints" n={phone.length} />
-              <Stat label="Ownership-mapped" n={mapped} tone="ok" />
-              <Stat label="Unmapped" n={active.length - mapped} tone="warn" />
-              <Stat label="Excluded identities" n={connections?.google_workspace.excluded ?? 0} tone="warn" />
-              <Stat label="Unclassified phone metadata" n={evidence.length} tone="warn" />
             </div>
+
+            <SubHead>Provider mailbox type — raw provider fact</SubHead>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+              <Stat label="user" n={providerTypeCounts.user} />
+              <Stat label="group" n={providerTypeCounts.group} />
+              <Stat label="alias" n={providerTypeCounts.alias} />
+              <Stat label="shared" n={providerTypeCounts.shared} />
+              <Stat label="suspended" n={providerTypeCounts.suspended} tone="warn" />
+              <Stat label="unknown" n={providerTypeCounts.unknown} />
+            </div>
+
+            <SubHead>
+              Operational classification — from reviewed evidence (a provider “user” box is NOT
+              assumed personal; it stays unknown until reviewed)
+            </SubHead>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+              <Stat label="personal" n={opClassCounts.personal} tone="ok" />
+              <Stat label="shared responsibility" n={opClassCounts.shared} />
+              <Stat label="team/group" n={opClassCounts.team} />
+              <Stat label="service/system" n={opClassCounts.service} />
+              <Stat label="inactive" n={opClassCounts.inactive} tone="warn" />
+              <Stat label="unknown" n={opClassCounts.unknown} tone="warn" />
+            </div>
+
+            <SubHead>Identity links — separate from ownership</SubHead>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Confirmed identity links" n={confirmedIdentityCount} tone="ok" />
-              <Stat label="Unresolved identities" n={Math.max(0, email.length - confirmedIdentityCount)} tone="warn" />
-              <Stat label="Ownership-complete" n={ownershipComplete} tone="ok" />
-              <Stat label="Ownership-incomplete" n={active.length - ownershipComplete} tone="warn" />
+              <Stat label="Unresolved identities" n={unresolvedIdentityCount} tone="warn" />
+              <Stat label="Rejected suggestions" n={rejectedCount} tone="warn" />
+              <Stat label="Suspended mailboxes" n={suspendedCount} tone="warn" />
+            </div>
+
+            <SubHead>Operational ownership completeness</SubHead>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Stat label="Ownership-complete endpoints" n={ownershipComplete} tone="ok" />
+              <Stat
+                label="Ownership-incomplete endpoints"
+                n={active.length - ownershipComplete}
+                tone="warn"
+              />
+              <Stat label="Ownership-mapped (accountable)" n={mapped} tone="ok" />
+              <Stat label="Active ownership assignments" n={ownership.length} />
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Ownership assignments" n={ownership.length} />
-              <Stat label="Shared mailboxes" n={sharedCount} />
-              <Stat label="Suspended mailboxes" n={suspendedCount} tone="warn" />
-              <Stat label="Data-quality issues" n={dataQuality.length} tone="warn" />
+              <Stat label="Missing accountable" n={missingRole.accountable} tone="warn" />
+              <Stat label="Missing primary handler" n={missingRole.primary_handler} tone="warn" />
+              <Stat label="Missing cover" n={missingRole.cover} tone="warn" />
+              <Stat label="Missing escalation" n={missingRole.escalation} tone="warn" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Stat
+                label="Excluded identities (domain)"
+                n={connections?.google_workspace.excluded ?? 0}
+                tone="warn"
+              />
+              <Stat label="Unclassified phone metadata" n={evidence.length} tone="warn" />
+              <Stat
+                label="Data-quality categories"
+                n={new Set(dataQuality.map((d) => d.kind)).size}
+                tone="warn"
+              />
+              <Stat label="Data-quality items" n={dataQuality.length} tone="warn" />
             </div>
           </>
         )}
 
         {/* ── People ───────────────────────────────────────────────── */}
         {section === "people" && (
-          <Card title="People" right={<span className="text-[11px] text-muted-foreground">{members.length} member(s)</span>}>
+          <Card
+            title="People"
+            right={
+              <span className="text-[11px] text-muted-foreground">{members.length} member(s)</span>
+            }
+          >
             <p className="mb-3 text-xs text-muted-foreground">
-              Canonical <code className="text-[11px]">team_members</code>. A member may exist without a
-              login. Identity links (Google/Slack/VoIP) are proposals with confidence + provenance —
-              never auto-confirmed from a name match.
+              Canonical <code className="text-[11px]">team_members</code>. A member may exist
+              without a login. Identity links (Google/Slack/VoIP) are proposals with confidence +
+              provenance — never auto-confirmed from a name match.
             </p>
             <div className="divide-y divide-hairline">
               {members.map((m) => (
-                <PersonRow key={m.id} member={m} identities={identities} ownership={ownership} />
+                <PersonRow
+                  key={m.id}
+                  member={m}
+                  identities={identities}
+                  ownership={ownership}
+                  ownershipHistory={ownershipHistory}
+                  endpoints={endpoints}
+                  suggestions={identityResolution?.suggestions ?? []}
+                  reviews={identityResolution?.reviews ?? []}
+                />
               ))}
               {members.length === 0 && (
                 <p className="py-2 text-xs italic text-muted-foreground">No members yet.</p>
               )}
             </div>
           </Card>
+        )}
+
+        {/* ── Operator review queue ────────────────────────────────── */}
+        {section === "review" && (
+          <ReviewQueue
+            email={email}
+            members={members}
+            classByEndpoint={classByEndpoint}
+            suggestionByEndpoint={suggestionByEndpoint}
+            reviewByEndpoint={reviewByEndpoint}
+            accountableFor={accountableFor}
+            writeCapable={writeCapable}
+            busy={busy}
+            onReview={actions.onReviewIdentity}
+          />
         )}
 
         {/* ── Connections ──────────────────────────────────────────── */}
@@ -312,7 +512,10 @@ export function OpenfolkWorkspace({
                 <ConnRows
                   rows={[
                     ["Status", connections.google_workspace.status],
-                    ["Tenant-approved domain", connections.google_workspace.approved_domains.join(", ") || "—"],
+                    [
+                      "Tenant-approved domain",
+                      connections.google_workspace.approved_domains.join(", ") || "—",
+                    ],
                     ["Discovered eligible", String(connections.google_workspace.imported)],
                     ["Excluded", String(connections.google_workspace.excluded)],
                     [
@@ -321,14 +524,19 @@ export function OpenfolkWorkspace({
                         .map(([d, n]) => `${d} (${n})`)
                         .join(", ") || "—",
                     ],
-                    ["External access", connections.google_workspace.read_only ? "read-only" : "read/write"],
+                    [
+                      "External access",
+                      connections.google_workspace.read_only ? "read-only" : "read/write",
+                    ],
                   ]}
                 />
               ) : (
                 <p className="text-xs text-muted-foreground">Connection details unavailable.</p>
               )}
               {connections && connections.google_workspace.excluded > 0 && (
-                <Warn>Connected directory contains identities outside this tenant’s approved domains</Warn>
+                <Warn>
+                  Connected directory contains identities outside this tenant’s approved domains
+                </Warn>
               )}
             </Card>
 
@@ -342,7 +550,10 @@ export function OpenfolkWorkspace({
                       ["Customer / account", connections.telephony.account_ref],
                       ["Credentials", connections.telephony.credentials],
                       ["External write / provisioning", connections.telephony.external_write],
-                      ["Unclassified evidence records", String(connections.telephony.evidence_count)],
+                      [
+                        "Unclassified evidence records",
+                        String(connections.telephony.evidence_count),
+                      ],
                     ]}
                   />
                   {connections.telephony.capabilities && (
@@ -383,7 +594,11 @@ export function OpenfolkWorkspace({
           <div className="space-y-4">
             <Card
               title="Canonical phone inventory"
-              right={<span className="text-[11px] text-muted-foreground">{phone.length} endpoint(s)</span>}
+              right={
+                <span className="text-[11px] text-muted-foreground">
+                  {phone.length} endpoint(s)
+                </span>
+              }
             >
               {writeCapable && actions.onValidateEndpoint && actions.onCreateEndpoint && (
                 <AddEndpointForm
@@ -403,6 +618,8 @@ export function OpenfolkWorkspace({
                     busy={busy}
                     onArchive={actions.onArchiveEndpoint}
                     onAssign={actions.onAssign}
+                    onUpdate={actions.onUpdateEndpoint}
+                    onValidate={actions.onValidateEndpoint}
                   />
                 ))}
                 {phone.length === 0 && (
@@ -415,9 +632,55 @@ export function OpenfolkWorkspace({
               </div>
             </Card>
 
+            {archivedManualPhone.length > 0 && (
+              <Card
+                title="Archived manual phone endpoints"
+                right={
+                  <span className="text-[11px] text-muted-foreground">
+                    {archivedManualPhone.length}
+                  </span>
+                }
+              >
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Deactivated (history kept, never deleted). Manual endpoints can be restored.
+                </p>
+                <div className="space-y-2">
+                  {archivedManualPhone.map((e) => (
+                    <div
+                      key={e.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-hairline bg-surface-alt/40 p-3"
+                    >
+                      <span className="text-sm text-muted-foreground">
+                        <span>{e.endpoint_kind}</span> · {e.display_value ?? e.normalized_value}
+                        <span className="ml-1 text-[11px]">(inactive)</span>
+                      </span>
+                      {writeCapable && actions.onRestoreEndpoint && (
+                        <ConfirmButton
+                          label="Restore"
+                          variant="ghost"
+                          confirm={`Restore ${e.display_value ?? e.normalized_value} to active?`}
+                          busy={busy}
+                          onGo={() =>
+                            actions.onRestoreEndpoint?.(
+                              e.id,
+                              "operator restored from Control Plane UI",
+                            )
+                          }
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             <Card
               title="Unclassified provider metadata — not eligible for canonical endpoint import"
-              right={<span className="text-[11px] text-muted-foreground">{evidence.length} record(s)</span>}
+              right={
+                <span className="text-[11px] text-muted-foreground">
+                  {evidence.length} record(s)
+                </span>
+              }
             >
               <p className="mb-2 text-xs text-muted-foreground">
                 Raw provider references seen in call metadata. These are API URLs/opaque ids, not
@@ -453,17 +716,21 @@ export function OpenfolkWorkspace({
                   label="Run email discovery"
                   confirm="Re-run approved-domain email discovery? (read-only against Google Workspace)"
                   busy={busy}
-                  onGo={() => actions.onDiscoverEmail?.("operator email discovery from Control Plane UI")}
+                  onGo={() =>
+                    actions.onDiscoverEmail?.("operator email discovery from Control Plane UI")
+                  }
                 />
               ) : (
-                <span className="text-[11px] text-muted-foreground">{email.length} endpoint(s)</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {email.length} endpoint(s)
+                </span>
               )
             }
           >
             <p className="mb-3 text-xs text-muted-foreground">
               Classification is from provider metadata (not the address text). Identity links are
-              <strong> review-only</strong> — confirming a link records who the mailbox represents and
-              never creates ownership. Ownership is configured separately.
+              <strong> review-only</strong> — confirming a link records who the mailbox represents
+              and never creates ownership. Ownership is configured separately.
             </p>
             <div className="space-y-2">
               {email.map((e) => (
@@ -497,48 +764,36 @@ export function OpenfolkWorkspace({
 
         {/* ── Ownership ────────────────────────────────────────────── */}
         {section === "ownership" && (
-          <Card title="Ownership" right={<span className="text-[11px] text-muted-foreground">{mapped}/{active.length} mapped</span>}>
+          <Card
+            title="Ownership"
+            right={
+              <span className="text-[11px] text-muted-foreground">
+                {ownershipComplete}/{active.length} ownership-complete
+              </span>
+            }
+          >
             <p className="mb-3 text-xs text-muted-foreground">
-              Identity linking and operational ownership are distinct. Suggestions are never
-              auto-saved. <code className="text-[11px]">waiting_on</code> is dynamic operational state,
-              not endpoint configuration.
+              Ownership is <strong>separate</strong> from identity. An endpoint is
+              ownership-complete only when all four roles — accountable, primary handler, cover,
+              escalation — are actively assigned. Each role is its own governed assignment.
             </p>
-            {(() => {
-              const complete = active.filter((e) => accountableFor(e.id));
-              const incomplete = active.filter((e) => !accountableFor(e.id));
-              return (
-                <div className="space-y-4">
-                  <OwnGroup title="Incomplete — no accountable owner" tone="warn">
-                    {incomplete.map((e) => (
-                      <EndpointRow
-                        key={e.id}
-                        e={e}
-                        acc={null}
-                        members={members}
-                        writeCapable={writeCapable}
-                        busy={busy}
-                        onAssign={actions.onAssign}
-                        onArchive={undefined}
-                      />
-                    ))}
-                    {incomplete.length === 0 && <Empty>All endpoints have an accountable owner.</Empty>}
-                  </OwnGroup>
-                  <OwnGroup title="Complete" tone="ok">
-                    {complete.map((e) => (
-                      <EndpointRow
-                        key={e.id}
-                        e={e}
-                        acc={accountableFor(e.id)}
-                        members={members}
-                        writeCapable={false}
-                        busy={busy}
-                      />
-                    ))}
-                    {complete.length === 0 && <Empty>No endpoints have an accountable owner yet.</Empty>}
-                  </OwnGroup>
-                </div>
-              );
-            })()}
+            <div className="space-y-3">
+              {active.map((e) => (
+                <OwnershipEndpoint
+                  key={e.id}
+                  e={e}
+                  assignments={ownership.filter(
+                    (o) => o.endpoint_id === e.id && o.review_state !== "rejected",
+                  )}
+                  members={members}
+                  writeCapable={writeCapable}
+                  busy={busy}
+                  onAssign={actions.onAssign}
+                  onEnd={actions.onEndOwnership}
+                />
+              ))}
+              {active.length === 0 && <Empty>No active endpoints.</Empty>}
+            </div>
           </Card>
         )}
 
@@ -548,7 +803,8 @@ export function OpenfolkWorkspace({
             title="Data Quality"
             right={
               <span className="text-[11px] text-muted-foreground">
-                {new Set(dataQuality.map((d) => d.kind)).size} categories · {dataQuality.length} items
+                {new Set(dataQuality.map((d) => d.kind)).size} categories · {dataQuality.length}{" "}
+                items
               </span>
             }
           >
@@ -567,11 +823,16 @@ export function OpenfolkWorkspace({
                 )
                   .sort((a, b) => b[1].length - a[1].length)
                   .map(([kind, list]) => (
-                    <details key={kind} className="rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs">
+                    <details
+                      key={kind}
+                      className="rounded-md bg-surface-alt/50 px-2.5 py-1.5 text-xs"
+                    >
                       <summary className="flex cursor-pointer list-none items-center justify-between">
                         <span className="flex items-center gap-1.5">
                           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                          <span className="font-medium text-display">{kind.replace(/_/g, " ")}</span>
+                          <span className="font-medium text-display">
+                            {kind.replace(/_/g, " ")}
+                          </span>
                         </span>
                         <span className="tabular text-muted-foreground">{list.length}</span>
                       </summary>
@@ -579,11 +840,18 @@ export function OpenfolkWorkspace({
                         {list.slice(0, 50).map((d, i) => (
                           <li key={i} className="text-muted-foreground">
                             {d.detail}
-                            {d.ref && <span className="text-muted-foreground/50"> · {d.ref.slice(0, 8)}</span>}
+                            {d.ref && (
+                              <span className="text-muted-foreground/50">
+                                {" "}
+                                · {d.ref.slice(0, 8)}
+                              </span>
+                            )}
                           </li>
                         ))}
                         {list.length > 50 && (
-                          <li className="italic text-muted-foreground/60">+{list.length - 50} more</li>
+                          <li className="italic text-muted-foreground/60">
+                            +{list.length - 50} more
+                          </li>
                         )}
                       </ul>
                     </details>
@@ -622,14 +890,226 @@ function Warn({ children }: { children: ReactNode }) {
 function Empty({ children }: { children: ReactNode }) {
   return <p className="py-1 text-xs italic text-muted-foreground">{children}</p>;
 }
-function OwnGroup({ title, tone, children }: { title: string; tone: "warn" | "ok"; children: ReactNode }) {
+function SubHead({ children }: { children: ReactNode }) {
   return (
-    <div>
-      <div className={cn("mb-1.5 text-xs font-semibold", tone === "warn" ? "text-amber-600" : "text-success")}>
-        {title}
-      </div>
-      <div className="space-y-2">{children}</div>
+    <div className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {children}
     </div>
+  );
+}
+// ── Ownership: one endpoint with its four required roles + governed end/assign. ──
+function OwnershipEndpoint({
+  e,
+  assignments,
+  members,
+  writeCapable,
+  busy,
+  onAssign,
+  onEnd,
+}: {
+  e: CpEndpoint;
+  assignments: CpOwnership[];
+  members: CpMember[];
+  writeCapable: boolean;
+  busy: boolean;
+  onAssign?: (endpointId: string, memberId: string, role: string, reason: string) => void;
+  onEnd?: NonNullable<WorkspaceActions["onEndOwnership"]>;
+}) {
+  const byRole = new Map<string, CpOwnership>();
+  for (const a of assignments) if (!byRole.has(a.assignment_role)) byRole.set(a.assignment_role, a);
+  const complete = REQUIRED_ROLES.every((r) => byRole.has(r));
+  // Concentration: one member holding more than one role on this endpoint.
+  const perMember = new Map<string, string[]>();
+  for (const a of assignments)
+    if (a.owner_member_id)
+      perMember.set(a.owner_member_id, [
+        ...(perMember.get(a.owner_member_id) ?? []),
+        a.assignment_role,
+      ]);
+  const concentrated = [...perMember.entries()].filter(([, roles]) => roles.length > 1);
+
+  return (
+    <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-medium text-display">
+          <span className="text-muted-foreground">{e.endpoint_kind}</span> ·{" "}
+          {e.display_value ?? e.normalized_value}
+        </span>
+        {complete ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-success/30 px-2 py-0.5 text-[11px] text-success">
+            <CheckCircle2 className="h-3 w-3" /> ownership-complete
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/5 px-2 py-0.5 text-[11px] text-amber-700">
+            <AlertTriangle className="h-3 w-3" /> incomplete
+          </span>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        {REQUIRED_ROLES.map((role) => {
+          const a = byRole.get(role);
+          return (
+            <div key={role} className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="w-28 shrink-0 font-medium text-display">
+                {role.replace(/_/g, " ")}
+              </span>
+              {a ? (
+                <>
+                  <span className="text-muted-foreground">
+                    {a.owner_kind === "team" ? "team" : memberName(members, a.owner_member_id)}
+                  </span>
+                  {writeCapable && onEnd && (
+                    <EndAssignmentControl a={a} busy={busy} onEnd={onEnd} />
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-amber-700">missing</span>
+                  {writeCapable && onAssign && (
+                    <AssignRole
+                      endpointId={e.id}
+                      role={role}
+                      members={members}
+                      busy={busy}
+                      onAssign={onAssign}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {concentrated.length > 0 && (
+        <Warn>
+          Concentration:{" "}
+          {concentrated
+            .map(
+              ([mid, roles]) =>
+                `${memberName(members, mid)} holds ${roles.length} roles (${roles.join(", ")})`,
+            )
+            .join("; ")}
+        </Warn>
+      )}
+    </div>
+  );
+}
+
+function AssignRole({
+  endpointId,
+  role,
+  members,
+  busy,
+  onAssign,
+}: {
+  endpointId: string;
+  role: string;
+  members: CpMember[];
+  busy: boolean;
+  onAssign: (endpointId: string, memberId: string, role: string, reason: string) => void;
+}) {
+  const [member, setMember] = useState("");
+  const [reason, setReason] = useState("");
+  const [open, setOpen] = useState(false);
+  if (!open)
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px] text-muted-foreground hover:text-display"
+      >
+        Assign
+      </button>
+    );
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <select
+        value={member}
+        onChange={(e) => setMember(e.target.value)}
+        className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+      >
+        <option value="">person…</option>
+        {members.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.display_name}
+          </option>
+        ))}
+      </select>
+      <input
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="reason"
+        className="w-28 rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+      />
+      <button
+        disabled={busy || !member || !reason.trim()}
+        onClick={() => onAssign(endpointId, member, role, reason)}
+        className="rounded-md border border-accent bg-accent px-2 py-0.5 text-[10px] font-medium text-white disabled:opacity-50"
+      >
+        Confirm
+      </button>
+      <button onClick={() => setOpen(false)} className="text-[10px] text-muted-foreground">
+        cancel
+      </button>
+    </span>
+  );
+}
+
+// End an OWNERSHIP assignment: explicit effective-end date, reason, confirmation. The
+// assignment's updated_at is the optimistic-concurrency token; history is never deleted.
+function EndAssignmentControl({
+  a,
+  busy,
+  onEnd,
+}: {
+  a: CpOwnership;
+  busy: boolean;
+  onEnd: NonNullable<WorkspaceActions["onEndOwnership"]>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState("");
+  const [reason, setReason] = useState("");
+  if (!open)
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px] text-muted-foreground hover:text-display"
+      >
+        End
+      </button>
+    );
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        className="rounded-md border border-hairline bg-white px-1.5 py-0.5 text-[10px]"
+        title="effective end date (defaults to now)"
+      />
+      <input
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="reason"
+        className="w-28 rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px]"
+      />
+      <button
+        disabled={busy || !reason.trim()}
+        onClick={() =>
+          onEnd({
+            assignment_id: a.id,
+            effective_to: date ? new Date(date).toISOString() : null,
+            expected_updated_at: a.updated_at ?? null,
+            reason,
+          })
+        }
+        className="rounded-md border border-amber-500/40 px-2 py-0.5 text-[10px] font-medium text-amber-700 disabled:opacity-50"
+      >
+        Confirm end
+      </button>
+      <button onClick={() => setOpen(false)} className="text-[10px] text-muted-foreground">
+        cancel
+      </button>
+    </span>
   );
 }
 
@@ -637,53 +1117,167 @@ function PersonRow({
   member,
   identities,
   ownership,
+  ownershipHistory,
+  endpoints,
+  suggestions,
+  reviews,
 }: {
   member: CpMember;
   identities: CpIdentity[];
-  ownership: Workspace["ownership"];
+  ownership: CpOwnership[];
+  ownershipHistory: CpOwnership[];
+  endpoints: CpEndpoint[];
+  suggestions: IdentitySuggestion[];
+  reviews: ReviewRow[];
 }) {
   const [open, setOpen] = useState(false);
-  const ids = identities.filter((i) => i.team_member_id === member.id);
-  const owns = ownership.filter((o) => o.owner_member_id === member.id).length;
+  const epLabel = (id: string) => {
+    const e = endpoints.find((x) => x.id === id);
+    return e ? (e.display_value ?? e.normalized_value) : id.slice(0, 8);
+  };
+  // ── Identity (who this endpoint represents) — kept visibly separate from ownership. ──
+  const confirmedIds = identities.filter((i) => i.team_member_id === member.id);
+  const latestReviewByEp = new Map<string, string>();
+  for (const r of reviews)
+    if (!latestReviewByEp.has(r.endpoint_id)) latestReviewByEp.set(r.endpoint_id, r.decision);
+  const pending = suggestions.filter(
+    (s) =>
+      s.suggested_member_id === member.id &&
+      s.suggested_kind === "person" &&
+      !latestReviewByEp.has(s.endpoint_id),
+  );
+  const rejected = reviews.filter(
+    (r) => r.team_member_id === member.id && r.decision === "rejected",
+  );
+  // ── Ownership (who is accountable) — the OTHER axis. ──
+  const activeOwn = ownership.filter((o) => o.owner_member_id === member.id);
+  const histOwn = ownershipHistory.filter((o) => o.owner_member_id === member.id);
+  const warnings: string[] = [];
+  if (confirmedIds.length === 0) warnings.push("no confirmed identity link");
+  if (activeOwn.length === 0) warnings.push("holds no active ownership role");
+  // concentration: multiple roles on the same endpoint
+  const perEp = new Map<string, number>();
+  for (const o of activeOwn) perEp.set(o.endpoint_id, (perEp.get(o.endpoint_id) ?? 0) + 1);
+  const concentrated = [...perEp.values()].some((n) => n >= 3);
+  if (concentrated) warnings.push("holds 3+ roles on one endpoint (concentration)");
+
   return (
     <div className="py-2 text-sm">
-      <button className="flex w-full items-center justify-between text-left" onClick={() => setOpen((v) => !v)}>
+      <button
+        className="flex w-full items-center justify-between text-left"
+        onClick={() => setOpen((v) => !v)}
+      >
         <span className="font-medium text-display">{member.display_name}</span>
         <span className="text-xs text-muted-foreground">
-          {member.formal_role ?? "—"} · {ids.length} identity · {owns} owned
+          {member.formal_role ?? "—"} · {confirmedIds.length} identity · {activeOwn.length} role(s)
+          {warnings.length > 0 && <span className="text-amber-600"> · ⚠ {warnings.length}</span>}
         </span>
       </button>
       {open && (
-        <div className="mt-2 rounded-md bg-surface-alt/50 p-2.5 text-xs">
-          <div className="mb-1 text-muted-foreground">
-            {member.effective_to ? "Inactive" : "Active"} · linked profile:{" "}
+        <div className="mt-2 space-y-2 text-xs">
+          <div className="text-muted-foreground">
+            {member.effective_to ? "Inactive member" : "Active member"} · linked profile:{" "}
             {member.org_unit_id ? "team unit set" : "—"}
           </div>
-          {ids.length === 0 ? (
-            <p className="italic text-muted-foreground">
-              No linked identities. Identity matches are proposed with confidence + evidence, never
-              auto-confirmed from a name.
-            </p>
-          ) : (
-            <ul className="space-y-1">
-              {ids.map((i) => (
-                <li key={i.id} className="flex items-center gap-2">
-                  <span className="font-medium text-display">{i.provider}</span>
-                  <span className="text-muted-foreground">{i.external_ref}</span>
-                  <span
-                    className={cn(
-                      "ml-auto rounded-full border px-1.5 py-0.5 text-[10px]",
-                      i.verification_state === "verified"
-                        ? "border-success/30 text-success"
-                        : "border-amber-500/30 text-amber-700",
-                    )}
-                  >
-                    {i.verification_state}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+
+          {/* IDENTITY panel */}
+          <div className="rounded-md border border-hairline bg-surface-alt/40 p-2.5">
+            <div className="mb-1 font-semibold text-display">
+              Identity — who endpoints represent
+            </div>
+            <div className="mb-1 text-[11px] text-muted-foreground">Confirmed identity links</div>
+            {confirmedIds.length === 0 ? (
+              <p className="italic text-muted-foreground">
+                None. Matches are proposed with confidence + evidence, never auto-confirmed.
+              </p>
+            ) : (
+              <ul className="space-y-1">
+                {confirmedIds.map((i) => (
+                  <li key={i.id} className="flex items-center gap-2">
+                    <span className="font-medium text-display">{i.provider}</span>
+                    <span className="text-muted-foreground">{i.external_ref}</span>
+                    <span
+                      className={cn(
+                        "ml-auto rounded-full border px-1.5 py-0.5 text-[10px]",
+                        i.verification_state === "verified"
+                          ? "border-success/30 text-success"
+                          : "border-amber-500/30 text-amber-700",
+                      )}
+                    >
+                      {i.verification_state}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {pending.length > 0 && (
+              <>
+                <div className="mb-1 mt-2 text-[11px] text-muted-foreground">
+                  Pending suggestions
+                </div>
+                <ul className="space-y-0.5">
+                  {pending.map((s) => (
+                    <li key={s.endpoint_id} className="text-amber-700">
+                      {s.endpoint_email} · {s.confidence} · {s.evidence}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {rejected.length > 0 && (
+              <>
+                <div className="mb-1 mt-2 text-[11px] text-muted-foreground">
+                  Rejected suggestions
+                </div>
+                <ul className="space-y-0.5">
+                  {rejected.map((r, i) => (
+                    <li key={i} className="text-muted-foreground line-through">
+                      {epLabel(r.endpoint_id)}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+
+          {/* OWNERSHIP panel */}
+          <div className="rounded-md border border-hairline bg-surface-alt/40 p-2.5">
+            <div className="mb-1 font-semibold text-display">
+              Ownership — operational accountability
+            </div>
+            <div className="mb-1 text-[11px] text-muted-foreground">Active roles</div>
+            {activeOwn.length === 0 ? (
+              <p className="italic text-muted-foreground">No active ownership roles.</p>
+            ) : (
+              <ul className="space-y-0.5">
+                {activeOwn.map((o) => (
+                  <li key={o.id} className="flex items-center gap-2">
+                    <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[10px] text-display">
+                      {o.assignment_role}
+                    </span>
+                    <span className="text-muted-foreground">{epLabel(o.endpoint_id)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {histOwn.length > 0 && (
+              <>
+                <div className="mb-1 mt-2 text-[11px] text-muted-foreground">
+                  Historical (ended) roles
+                </div>
+                <ul className="space-y-0.5">
+                  {histOwn.map((o) => (
+                    <li key={o.id} className="text-muted-foreground">
+                      {o.assignment_role} · {epLabel(o.endpoint_id)} · ended{" "}
+                      {o.effective_to ? new Date(o.effective_to).toLocaleDateString() : "—"}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+
+          {warnings.length > 0 && <Warn>Unresolved: {warnings.join("; ")}</Warn>}
         </div>
       )}
     </div>
@@ -698,6 +1292,8 @@ function EndpointRow({
   busy,
   onArchive,
   onAssign,
+  onUpdate,
+  onValidate,
 }: {
   e: CpEndpoint;
   acc: Workspace["ownership"][number] | null;
@@ -706,14 +1302,21 @@ function EndpointRow({
   busy: boolean;
   onArchive?: (endpointId: string, reason: string) => void;
   onAssign?: (endpointId: string, memberId: string, role: string, reason: string) => void;
+  onUpdate?: NonNullable<WorkspaceActions["onUpdateEndpoint"]>;
+  onValidate?: NonNullable<WorkspaceActions["onValidateEndpoint"]>;
 }) {
+  const [editing, setEditing] = useState(false);
+  const editable = e.source === "manual"; // provider-discovered evidence is NOT editable
   return (
     <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-medium text-display">
           <span className="text-muted-foreground">{e.endpoint_kind}</span> ·{" "}
           {e.display_value ?? e.normalized_value}
-          {e.provider && <span className="ml-1 text-[11px] text-muted-foreground">({e.provider})</span>}
+          {e.provider && (
+            <span className="ml-1 text-[11px] text-muted-foreground">({e.provider})</span>
+          )}
+          <span className="ml-1 text-[10px] text-muted-foreground/70">[{e.source}]</span>
         </span>
         <span className="flex items-center gap-1.5">
           {acc ? (
@@ -726,6 +1329,15 @@ function EndpointRow({
               <AlertTriangle className="h-3 w-3" /> unmapped
             </span>
           )}
+          {writeCapable && onUpdate && editable && !editing && (
+            <button
+              disabled={busy}
+              onClick={() => setEditing(true)}
+              className="rounded-md border border-hairline bg-white px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-display disabled:opacity-50"
+            >
+              Edit
+            </button>
+          )}
           {writeCapable && onArchive && (
             <ConfirmButton
               label="Archive"
@@ -737,6 +1349,20 @@ function EndpointRow({
           )}
         </span>
       </div>
+      {writeCapable && onUpdate && editable && editing && (
+        <EditEndpointForm
+          e={e}
+          busy={busy}
+          onValidate={onValidate}
+          onUpdate={onUpdate}
+          onClose={() => setEditing(false)}
+        />
+      )}
+      {writeCapable && onUpdate && !editable && editing && (
+        <p className="mt-2 text-[11px] text-amber-700">
+          Provider-discovered evidence is not editable.
+        </p>
+      )}
       {writeCapable && onAssign && !acc && (
         <MapControl endpointId={e.id} members={members} onAssign={onAssign} busy={busy} />
       )}
@@ -744,14 +1370,158 @@ function EndpointRow({
   );
 }
 
-const CLASS_META: Record<string, string> = {
-  personal: "border-hairline text-muted-foreground",
-  shared: "border-accent/40 text-accent",
-  group: "border-accent/40 text-accent",
-  service: "border-hairline text-muted-foreground",
-  suspended: "border-amber-500/40 text-amber-700",
-  unknown: "border-hairline text-muted-foreground",
-};
+// Edit a MANUAL endpoint: validation preview, optimistic-concurrency token (updated_at),
+// save/cancel, explicit stale-write + no-op handling.
+function EditEndpointForm({
+  e,
+  busy,
+  onValidate,
+  onUpdate,
+  onClose,
+}: {
+  e: CpEndpoint;
+  busy: boolean;
+  onValidate?: NonNullable<WorkspaceActions["onValidateEndpoint"]>;
+  onUpdate: NonNullable<WorkspaceActions["onUpdateEndpoint"]>;
+  onClose: () => void;
+}) {
+  const [display, setDisplay] = useState(e.display_value ?? "");
+  const [ctx, setCtx] = useState(e.provider ?? "");
+  const [reason, setReason] = useState("");
+  const [preview, setPreview] = useState<EndpointValidation | null>(null);
+  const [result, setResult] = useState<{ tone: "ok" | "warn" | "err"; msg: string } | null>(null);
+
+  const dirty = display !== (e.display_value ?? "") || ctx !== (e.provider ?? "");
+
+  const doValidate = async () => {
+    if (!onValidate) return;
+    setResult(null);
+    setPreview(
+      await onValidate({
+        endpoint_kind: e.endpoint_kind,
+        value: e.normalized_value,
+        display_value: display,
+        provider_context: ctx,
+      }),
+    );
+  };
+  const doSave = async () => {
+    setResult(null);
+    const res = await onUpdate({
+      endpoint_id: e.id,
+      display_value: display,
+      provider_context: ctx,
+      expected_updated_at: e.updated_at, // optimistic-concurrency token
+      reason,
+    });
+    if (!res.ok) {
+      const stale = /stale_write/i.test(res.error ?? "");
+      setResult({
+        tone: "err",
+        msg: stale
+          ? "Stale write — this endpoint changed since you opened it. Reload and retry."
+          : (res.error ?? "Save failed"),
+      });
+      return;
+    }
+    if (res.outcome === "unchanged")
+      setResult({ tone: "warn", msg: "No changes — nothing to save (no audit written)." });
+    else {
+      setResult({ tone: "ok", msg: "Saved." });
+      onClose();
+    }
+  };
+
+  return (
+    <div className="mt-2 rounded-lg border border-hairline bg-white p-3">
+      <div className="mb-2 text-xs font-semibold text-display">Edit manual endpoint</div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label className="text-[11px] text-muted-foreground">
+          Display label
+          <input
+            value={display}
+            onChange={(ev) => setDisplay(ev.target.value)}
+            className="mt-0.5 w-full rounded-md border border-hairline bg-white px-2 py-1 text-xs"
+          />
+        </label>
+        <label className="text-[11px] text-muted-foreground">
+          Provider / account context
+          <input
+            value={ctx}
+            onChange={(ev) => setCtx(ev.target.value)}
+            className="mt-0.5 w-full rounded-md border border-hairline bg-white px-2 py-1 text-xs"
+          />
+        </label>
+      </div>
+      <p className="mt-1 text-[10px] text-muted-foreground/70">
+        Dialable value ({e.normalized_value}) is immutable — archive + re-add to change it.
+      </p>
+      {preview && (
+        <div
+          className={cn(
+            "mt-2 rounded-md border px-2.5 py-1.5 text-xs",
+            preview.valid
+              ? "border-success/30 bg-success/5 text-success"
+              : "border-destructive/30 bg-destructive/5 text-destructive",
+          )}
+        >
+          {preview.valid ? (
+            <>
+              Valid → {preview.canonical} ({preview.kind})
+            </>
+          ) : (
+            <>Rejected: {(preview.errors ?? []).join("; ")}</>
+          )}
+        </div>
+      )}
+      {result && (
+        <div
+          className={cn(
+            "mt-2 text-xs",
+            result.tone === "ok"
+              ? "text-success"
+              : result.tone === "warn"
+                ? "text-amber-600"
+                : "text-destructive",
+          )}
+        >
+          {result.msg}
+        </div>
+      )}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {onValidate && (
+          <button
+            disabled={busy}
+            onClick={doValidate}
+            className="rounded-md border border-hairline bg-white px-2.5 py-1 text-[11px] font-medium hover:bg-surface-alt disabled:opacity-50"
+          >
+            Validation preview
+          </button>
+        )}
+        <input
+          value={reason}
+          onChange={(ev) => setReason(ev.target.value)}
+          placeholder="reason (required)"
+          className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+        />
+        <button
+          disabled={busy || !reason.trim() || !dirty}
+          onClick={doSave}
+          className="rounded-md border border-accent bg-accent px-2.5 py-1 text-[11px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+        >
+          Save
+        </button>
+        <button
+          onClick={onClose}
+          className="ml-auto rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:text-display"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const CONF_META: Record<string, string> = {
   high: "text-success",
   medium: "text-amber-600",
@@ -819,17 +1589,40 @@ function EmailRow({
     member: string | null,
   ) => {
     if (!onReview || !reason.trim()) return;
-    onReview({ endpoint_id: e.id, decision, team_member_id: member, confidence: suggestion?.confidence, reason });
+    onReview({
+      endpoint_id: e.id,
+      decision,
+      team_member_id: member,
+      confidence: suggestion?.confidence,
+      reason,
+    });
     setReason("");
   };
   return (
     <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm font-medium text-display">{e.display_value ?? e.normalized_value}</span>
+        <span className="text-sm font-medium text-display">
+          {e.display_value ?? e.normalized_value}
+        </span>
         <span className="flex items-center gap-1.5">
           {cls && (
-            <span className={cn("rounded-full border px-2 py-0.5 text-[10px]", CLASS_META[cls.class])}>
-              {cls.class}
+            <span
+              className="rounded-full border border-hairline px-2 py-0.5 text-[10px] text-muted-foreground"
+              title="raw provider mailbox type"
+            >
+              {PROVIDER_TYPE_LABEL[cls.provider_mailbox_type]}
+            </span>
+          )}
+          {cls && (
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[10px]",
+                OPCLASS_META[cls.operational_class].cls,
+              )}
+              title="operational classification (from reviewed evidence)"
+            >
+              {OPCLASS_META[cls.operational_class].label}
+              {!cls.operational_reviewed && "?"}
             </span>
           )}
           {decided ? (
@@ -875,11 +1668,33 @@ function EmailRow({
               </option>
             ))}
           </select>
-          <RButton label="Confirm person" tone="ok" disabled={busy || !reason.trim() || !chosen} onClick={() => doReview("confirmed_person", chosen)} />
-          <RButton label="Shared" disabled={busy || !reason.trim()} onClick={() => doReview("shared", null)} />
-          <RButton label="System" disabled={busy || !reason.trim()} onClick={() => doReview("system", null)} />
-          <RButton label="Reject" tone="warn" disabled={busy || !reason.trim()} onClick={() => doReview("rejected", chosen)} />
-          <RButton label="Unresolved" disabled={busy || !reason.trim()} onClick={() => doReview("unresolved", null)} />
+          <RButton
+            label="Confirm person"
+            tone="ok"
+            disabled={busy || !reason.trim() || !chosen}
+            onClick={() => doReview("confirmed_person", chosen)}
+          />
+          <RButton
+            label="Shared"
+            disabled={busy || !reason.trim()}
+            onClick={() => doReview("shared", null)}
+          />
+          <RButton
+            label="System"
+            disabled={busy || !reason.trim()}
+            onClick={() => doReview("system", null)}
+          />
+          <RButton
+            label="Reject"
+            tone="warn"
+            disabled={busy || !reason.trim()}
+            onClick={() => doReview("rejected", chosen)}
+          />
+          <RButton
+            label="Unresolved"
+            disabled={busy || !reason.trim()}
+            onClick={() => doReview("unresolved", null)}
+          />
         </div>
       )}
     </div>
@@ -891,15 +1706,26 @@ const CATS: { key: string; label: string; match: (a: string) => boolean }[] = [
   { key: "discovery", label: "Discovery runs", match: (a) => a.includes("discovery") },
   { key: "endpoint", label: "Endpoint changes", match: (a) => a.includes("endpoint") },
   { key: "ownership", label: "Ownership", match: (a) => a.includes("ownership") },
-  { key: "identity", label: "Identity", match: (a) => a.includes("identity") || a.includes("member") },
-  { key: "config", label: "Config / authority", match: (a) => a.includes("authority") || a.includes("config") },
+  {
+    key: "identity",
+    label: "Identity",
+    match: (a) => a.includes("identity") || a.includes("member"),
+  },
+  {
+    key: "config",
+    label: "Config / authority",
+    match: (a) => a.includes("authority") || a.includes("config"),
+  },
 ];
 function AuditPanel({ audit }: { audit: AuditEntry[] }) {
   const [cat, setCat] = useState("all");
   const m = CATS.find((c) => c.key === cat)!;
   const rows = audit.filter((a) => m.match(a.action));
   return (
-    <Card title="Audit — configuration changes" right={<Database className="h-4 w-4 text-muted-foreground" />}>
+    <Card
+      title="Audit — configuration changes"
+      right={<Database className="h-4 w-4 text-muted-foreground" />}
+    >
       <div className="mb-3 flex flex-wrap gap-1">
         {CATS.map((c) => (
           <button
@@ -907,7 +1733,9 @@ function AuditPanel({ audit }: { audit: AuditEntry[] }) {
             onClick={() => setCat(c.key)}
             className={cn(
               "rounded-full border px-2 py-0.5 text-[11px]",
-              cat === c.key ? "border-accent bg-accent/10 text-accent" : "border-hairline text-muted-foreground",
+              cat === c.key
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-hairline text-muted-foreground",
             )}
           >
             {c.label}
@@ -919,7 +1747,9 @@ function AuditPanel({ audit }: { audit: AuditEntry[] }) {
           <div key={i} className="py-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-medium text-display">{a.action}</span>
-              <span className="tabular text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+              <span className="tabular text-muted-foreground">
+                {new Date(a.created_at).toLocaleString()}
+              </span>
             </div>
             <div className="text-muted-foreground">
               {a.actor} · {a.resource_type} · {a.reason ?? "—"}
@@ -927,9 +1757,249 @@ function AuditPanel({ audit }: { audit: AuditEntry[] }) {
             </div>
           </div>
         ))}
-        {rows.length === 0 && <p className="py-2 text-xs italic text-muted-foreground">No matching changes.</p>}
+        {rows.length === 0 && (
+          <p className="py-2 text-xs italic text-muted-foreground">No matching changes.</p>
+        )}
       </div>
     </Card>
+  );
+}
+
+// ── Operator review queue: one email endpoint at a time, every decision explicit + audited.
+// No bulk approval. "Next unresolved" jumps to the next undecided item.
+function ReviewQueue({
+  email,
+  members,
+  classByEndpoint,
+  suggestionByEndpoint,
+  reviewByEndpoint,
+  accountableFor,
+  writeCapable,
+  busy,
+  onReview,
+}: {
+  email: CpEndpoint[];
+  members: CpMember[];
+  classByEndpoint: Map<string, EmailClassification>;
+  suggestionByEndpoint: Map<string, IdentitySuggestion>;
+  reviewByEndpoint: Map<string, { decision: string; team_member_id: string | null }>;
+  accountableFor: (endpointId: string) => CpOwnership | null;
+  writeCapable: boolean;
+  busy: boolean;
+  onReview?: NonNullable<WorkspaceActions["onReviewIdentity"]>;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [reason, setReason] = useState("");
+  const [person, setPerson] = useState("");
+  const isUnresolved = (e: CpEndpoint) => {
+    const d = reviewByEndpoint.get(e.id)?.decision;
+    return !d || d === "unresolved" || d === "rejected";
+  };
+  const unresolvedCount = email.filter(isUnresolved).length;
+
+  if (email.length === 0)
+    return (
+      <Card title="Operator review queue">
+        <Empty>No email endpoints to review.</Empty>
+      </Card>
+    );
+
+  const clamp = (n: number) => (n + email.length) % email.length;
+  const e = email[clamp(idx)];
+  const cls = classByEndpoint.get(e.id);
+  const suggestion = suggestionByEndpoint.get(e.id);
+  const review = reviewByEndpoint.get(e.id);
+  const acc = accountableFor(e.id);
+  const suggestedName = suggestion?.suggested_member_id
+    ? memberName(members, suggestion.suggested_member_id)
+    : null;
+  const chosen = person || suggestion?.suggested_member_id || null;
+
+  const gotoNextUnresolved = () => {
+    for (let i = 1; i <= email.length; i++) {
+      const j = clamp(idx + i);
+      if (isUnresolved(email[j])) {
+        setIdx(j);
+        setReason("");
+        setPerson("");
+        return;
+      }
+    }
+  };
+  const decide = (decision: ReviewDecision, member: string | null) => {
+    if (!onReview || !reason.trim()) return;
+    onReview({
+      endpoint_id: e.id,
+      decision,
+      team_member_id: member,
+      confidence: suggestion?.confidence,
+      reason,
+    });
+    setReason("");
+    setPerson("");
+    setTimeout(gotoNextUnresolved, 0);
+  };
+
+  return (
+    <Card
+      title="Operator review queue"
+      right={
+        <span className="text-[11px] text-muted-foreground">
+          {unresolvedCount} unresolved · item {clamp(idx) + 1}/{email.length}
+        </span>
+      }
+    >
+      <div className="mb-3 flex items-center gap-2">
+        <button
+          onClick={() => setIdx(clamp(idx - 1))}
+          className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px] text-muted-foreground hover:text-display"
+        >
+          ← Prev
+        </button>
+        <button
+          onClick={() => setIdx(clamp(idx + 1))}
+          className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px] text-muted-foreground hover:text-display"
+        >
+          Next →
+        </button>
+        <button
+          onClick={gotoNextUnresolved}
+          className="rounded-md border border-accent bg-accent/10 px-2 py-1 text-[11px] font-medium text-accent"
+        >
+          Next unresolved item
+        </button>
+      </div>
+
+      <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3 text-xs">
+        <div className="mb-2 text-sm font-semibold text-display">
+          {e.display_value ?? e.normalized_value}
+        </div>
+        <dl className="grid grid-cols-1 gap-y-1 sm:grid-cols-2">
+          <Field k="Email address" v={e.normalized_value} />
+          <Field k="Provider display name" v={cls?.provider_display_name ?? "—"} />
+          <Field
+            k="Provider mailbox type"
+            v={cls ? PROVIDER_TYPE_LABEL[cls.provider_mailbox_type] : "—"}
+          />
+          <Field
+            k="Operational classification"
+            v={
+              cls
+                ? `${OPCLASS_META[cls.operational_class].label}${cls.operational_reviewed ? " (reviewed)" : " (unreviewed)"}`
+                : "—"
+            }
+          />
+          <Field
+            k="Suggested"
+            v={
+              suggestion
+                ? suggestion.suggested_kind === "person" && suggestedName
+                  ? suggestedName
+                  : suggestion.suggested_kind
+                : "—"
+            }
+          />
+          <Field k="Confidence" v={suggestion?.confidence ?? "—"} />
+          <Field k="Evidence" v={suggestion?.evidence ?? "—"} wide />
+          <Field
+            k="Ambiguity"
+            v={
+              suggestion && suggestion.ambiguity.length > 0
+                ? suggestion.ambiguity.map((id) => memberName(members, id)).join(", ")
+                : "none"
+            }
+            wide
+          />
+          <Field
+            k="Identity-link state"
+            v={review ? `reviewed: ${review.decision}` : "unreviewed"}
+          />
+          <Field
+            k="Ownership state"
+            v={
+              acc
+                ? `accountable: ${acc.owner_kind === "team" ? "team" : memberName(members, acc.owner_member_id)}`
+                : "no accountable owner"
+            }
+          />
+        </dl>
+
+        {writeCapable && onReview ? (
+          <div className="mt-3 space-y-2 border-t border-hairline pt-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <input
+                value={reason}
+                onChange={(ev) => setReason(ev.target.value)}
+                placeholder="reason (required for every decision)"
+                className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+              />
+              <select
+                value={person}
+                onChange={(ev) => setPerson(ev.target.value)}
+                className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
+                title="Select a different person"
+              >
+                <option value="">
+                  {suggestedName ? `use ${suggestedName}` : "choose person…"}
+                </option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.display_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <RButton
+                label="Confirm identity"
+                tone="ok"
+                disabled={busy || !reason.trim() || !chosen}
+                onClick={() => decide("confirmed_person", chosen)}
+              />
+              <RButton
+                label="Mark shared"
+                disabled={busy || !reason.trim()}
+                onClick={() => decide("shared", null)}
+              />
+              <RButton
+                label="Mark team/group"
+                disabled={busy || !reason.trim()}
+                onClick={() => decide("team", null)}
+              />
+              <RButton
+                label="Mark service/system"
+                disabled={busy || !reason.trim()}
+                onClick={() => decide("system", null)}
+              />
+              <RButton
+                label="Reject suggestion"
+                tone="warn"
+                disabled={busy || !reason.trim()}
+                onClick={() => decide("rejected", chosen)}
+              />
+              <RButton
+                label="Leave unresolved"
+                disabled={busy || !reason.trim()}
+                onClick={() => decide("unresolved", null)}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Confirm identity records who this mailbox represents — it never creates ownership.
+            </p>
+          </div>
+        ) : (
+          <p className="mt-2 text-[11px] text-muted-foreground">Read-only (no write authority).</p>
+        )}
+      </div>
+    </Card>
+  );
+}
+function Field({ k, v, wide }: { k: string; v: string; wide?: boolean }) {
+  return (
+    <div className={cn("flex gap-2", wide && "sm:col-span-2")}>
+      <dt className="w-36 shrink-0 text-muted-foreground">{k}</dt>
+      <dd className="font-medium text-display">{v}</dd>
+    </div>
   );
 }
 
@@ -953,7 +2023,14 @@ function AddEndpointForm({
 
   const doValidate = async () => {
     setSaved(null);
-    setPreview(await onValidate({ endpoint_kind: kind, value, display_value: display, provider_context: ctx }));
+    setPreview(
+      await onValidate({
+        endpoint_kind: kind,
+        value,
+        display_value: display,
+        provider_context: ctx,
+      }),
+    );
   };
   const doCreate = async () => {
     const ok = await onCreate({
@@ -984,7 +2061,9 @@ function AddEndpointForm({
 
   return (
     <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
-      <div className="mb-2 text-xs font-semibold text-display">Add manual endpoint (source = manual)</div>
+      <div className="mb-2 text-xs font-semibold text-display">
+        Add manual endpoint (source = manual)
+      </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <label className="text-[11px] text-muted-foreground">
           Type
@@ -1013,7 +2092,9 @@ function AddEndpointForm({
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={kind === "ddi" ? "020 7946 0018" : kind === "extension" ? "201" : "identifier"}
+            placeholder={
+              kind === "ddi" ? "020 7946 0018" : kind === "extension" ? "201" : "identifier"
+            }
             className="mt-0.5 w-full rounded-md border border-hairline bg-white px-2 py-1 text-xs"
           />
         </label>
@@ -1040,7 +2121,10 @@ function AddEndpointForm({
             <>
               Valid → <span className="font-mono">{preview.canonical}</span> ({preview.kind})
               {preview.duplicate && (
-                <span className="text-amber-700"> · duplicate of an existing {preview.duplicate.source} endpoint</span>
+                <span className="text-amber-700">
+                  {" "}
+                  · duplicate of an existing {preview.duplicate.source} endpoint
+                </span>
               )}
             </>
           ) : (

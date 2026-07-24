@@ -18,16 +18,19 @@ import {
 import { providerCapabilities } from "../telephony/capabilities.ts";
 import { emailDomain, loadApprovedEmailDomains } from "./discovery.ts";
 import {
-  classifyMailbox,
+  classifyOperational,
+  providerMailboxType,
   suggestIdentity,
   type IdentitySuggestion,
-  type MailboxClass,
+  type OperationalClass,
+  type ProviderMailboxType,
+  type ReviewDecision,
 } from "./identity_resolution.ts";
 
 const EP_COLS =
-  "id, tenant_id, channel, endpoint_kind, normalized_value, display_value, provider, provider_external_ref, is_shared, status";
+  "id, tenant_id, channel, endpoint_kind, normalized_value, display_value, provider, provider_external_ref, is_shared, status, source, updated_at";
 const ASG_COLS =
-  "id, endpoint_id, owner_kind, owner_member_id, owner_org_unit_id, owner_role, assignment_role, effective_from, effective_to, confidence, review_state";
+  "id, endpoint_id, owner_kind, owner_member_id, owner_org_unit_id, owner_role, assignment_role, effective_from, effective_to, confidence, review_state, updated_at";
 
 /** Resolve endpoint ownership for one interaction's evidence at a point in time. */
 export async function resolveForEvidence(
@@ -130,14 +133,22 @@ export interface DataQualityItem {
 export interface EmailClassification {
   endpoint_id: string;
   email: string;
-  class: MailboxClass;
+  provider_mailbox_type: ProviderMailboxType;
+  operational_class: OperationalClass;
+  operational_reviewed: boolean;
+  provider_display_name: string | null;
   evidence: string;
   status: string | null;
 }
 export interface IdentityResolution {
   classifications: EmailClassification[];
   suggestions: (IdentitySuggestion & { endpoint_id: string })[];
-  reviews: { endpoint_id: string; decision: string; team_member_id: string | null; created_at: string }[];
+  reviews: {
+    endpoint_id: string;
+    decision: string;
+    team_member_id: string | null;
+    created_at: string;
+  }[];
 }
 
 /**
@@ -149,31 +160,48 @@ export async function computeIdentityResolution(
   admin: SupabaseClient,
   tenantId: string,
 ): Promise<IdentityResolution> {
-  const [{ data: endpoints }, { data: members }, { data: identities }, { data: mailboxes }, { data: reviews }] =
-    await Promise.all([
-      admin
-        .from("communication_endpoints")
-        .select("id, endpoint_kind, normalized_value, provider")
-        .eq("tenant_id", tenantId)
-        .eq("channel", "email")
-        .eq("status", "active"),
-      admin.from("team_members").select("id, display_name").eq("tenant_id", tenantId).is("effective_to", null),
-      admin
-        .from("member_integration_identities")
-        .select("team_member_id, primary_login, external_ref, verification_state")
-        .eq("tenant_id", tenantId)
-        .is("effective_to", null),
-      admin.from("google_workspace_mailboxes").select("email_address, mailbox_type, status").eq("tenant_id", tenantId),
-      admin
-        .from("endpoint_identity_reviews")
-        .select("endpoint_id, decision, team_member_id, created_at")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: endpoints },
+    { data: members },
+    { data: identities },
+    { data: mailboxes },
+    { data: reviews },
+  ] = await Promise.all([
+    admin
+      .from("communication_endpoints")
+      .select("id, endpoint_kind, normalized_value, provider")
+      .eq("tenant_id", tenantId)
+      .eq("channel", "email")
+      .eq("status", "active"),
+    admin
+      .from("team_members")
+      .select("id, display_name")
+      .eq("tenant_id", tenantId)
+      .is("effective_to", null),
+    admin
+      .from("member_integration_identities")
+      .select("team_member_id, primary_login, external_ref, verification_state")
+      .eq("tenant_id", tenantId)
+      .is("effective_to", null),
+    admin
+      .from("google_workspace_mailboxes")
+      .select("email_address, mailbox_type, status, display_name")
+      .eq("tenant_id", tenantId),
+    admin
+      .from("endpoint_identity_reviews")
+      .select("endpoint_id, decision, team_member_id, created_at")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const mbByEmail = new Map(
     (mailboxes ?? []).map((m) => [String(m.email_address).toLowerCase(), m]),
   );
+  // Latest review decision per endpoint (rows are ordered newest-first).
+  const latestReview = new Map<string, ReviewDecision>();
+  for (const r of reviews ?? [])
+    if (!latestReview.has(r.endpoint_id as string))
+      latestReview.set(r.endpoint_id as string, r.decision as ReviewDecision);
   const confirmed = (identities ?? [])
     .filter((i) => i.verification_state === "verified")
     .map((i) => ({
@@ -181,7 +209,10 @@ export async function computeIdentityResolution(
       primary_login: i.primary_login as string | null,
       external_ref: i.external_ref as string | null,
     }));
-  const memberList = (members ?? []).map((m) => ({ id: m.id as string, display_name: m.display_name as string }));
+  const memberList = (members ?? []).map((m) => ({
+    id: m.id as string,
+    display_name: m.display_name as string,
+  }));
 
   const classifications: EmailClassification[] = [];
   const suggestions: (IdentitySuggestion & { endpoint_id: string })[] = [];
@@ -190,12 +221,35 @@ export async function computeIdentityResolution(
     const mb = mbByEmail.get(email);
     const meta = {
       email,
-      mailbox_type: (mb?.mailbox_type as string | null) ?? (e.endpoint_kind === "shared_mailbox" ? "shared" : e.endpoint_kind === "group_address" ? "group" : "user"),
+      // PROVIDER type, from provider metadata (falling back to the endpoint kind the discovery
+      // adapter recorded); NEVER inferred from the address text.
+      mailbox_type:
+        (mb?.mailbox_type as string | null) ??
+        (e.endpoint_kind === "shared_mailbox"
+          ? "shared"
+          : e.endpoint_kind === "group_address"
+            ? "group"
+            : "user"),
       status: (mb?.status as string | null) ?? null,
+      display_name: (mb?.display_name as string | null) ?? null,
     };
-    const cls = classifyMailbox(meta);
-    classifications.push({ endpoint_id: e.id as string, email, class: cls.class, evidence: cls.evidence, status: meta.status });
-    suggestions.push({ ...suggestIdentity(meta, memberList, confirmed), endpoint_id: e.id as string });
+    // Operational classification is set ONLY from the operator's latest review (or an
+    // unambiguous provider signal); a plain user box stays UNKNOWN until reviewed.
+    const op = classifyOperational(meta, latestReview.get(e.id as string) ?? null);
+    classifications.push({
+      endpoint_id: e.id as string,
+      email,
+      provider_mailbox_type: providerMailboxType(meta),
+      operational_class: op.class,
+      operational_reviewed: op.reviewed,
+      provider_display_name: meta.display_name,
+      evidence: op.evidence,
+      status: meta.status,
+    });
+    suggestions.push({
+      ...suggestIdentity(meta, memberList, confirmed),
+      endpoint_id: e.id as string,
+    });
   }
   return {
     classifications,
@@ -295,44 +349,95 @@ export async function computeDataQuality(
     ownRoles.set(o.endpoint_id as string, s);
   }
   const confirmedEmails = new Set(
-    (identities ?? []).filter((i) => i.verification_state === "verified").map((i) => String(i.external_ref).toLowerCase()),
+    (identities ?? [])
+      .filter((i) => i.verification_state === "verified")
+      .map((i) => String(i.external_ref).toLowerCase()),
   );
   const confirmedMembers = new Set(
-    (identities ?? []).filter((i) => i.verification_state === "verified").map((i) => i.team_member_id as string),
+    (identities ?? [])
+      .filter((i) => i.verification_state === "verified")
+      .map((i) => i.team_member_id as string),
   );
   const memberWithPhone = new Set(
     (ownership ?? []).filter((o) => o.owner_member_id).map((o) => o.owner_member_id as string),
   );
   const [{ data: mailboxes }, { data: telInv }] = await Promise.all([
-    admin.from("google_workspace_mailboxes").select("email_address, status").eq("tenant_id", tenantId),
-    admin.from("telephony_inventory").select("id, canonical_type").eq("tenant_id", tenantId).eq("status", "active"),
+    admin
+      .from("google_workspace_mailboxes")
+      .select("email_address, status")
+      .eq("tenant_id", tenantId),
+    admin
+      .from("telephony_inventory")
+      .select("id, canonical_type")
+      .eq("tenant_id", tenantId)
+      .eq("status", "active"),
   ]);
   const suspended = new Set(
-    (mailboxes ?? []).filter((m) => String(m.status).toLowerCase() === "suspended").map((m) => String(m.email_address).toLowerCase()),
+    (mailboxes ?? [])
+      .filter((m) => String(m.status).toLowerCase() === "suspended")
+      .map((m) => String(m.email_address).toLowerCase()),
   );
 
   for (const e of endpoints ?? []) {
     const val = String(e.normalized_value).toLowerCase();
-    if (e.endpoint_kind !== "shared_mailbox" && e.endpoint_kind !== "group_address" && String(e.endpoint_kind).includes("email")) {
+    if (
+      e.endpoint_kind !== "shared_mailbox" &&
+      e.endpoint_kind !== "group_address" &&
+      String(e.endpoint_kind).includes("email")
+    ) {
       if (!confirmedEmails.has(val))
-        items.push({ kind: "email_no_confirmed_identity", detail: `${e.normalized_value} has no confirmed person/team identity`, ref: e.id as string });
+        items.push({
+          kind: "email_no_confirmed_identity",
+          detail: `${e.normalized_value} has no confirmed person/team identity`,
+          ref: e.id as string,
+        });
     }
     if (suspended.has(val))
-      items.push({ kind: "suspended_mailbox", detail: `${e.normalized_value} is suspended`, ref: e.id as string });
+      items.push({
+        kind: "suspended_mailbox",
+        detail: `${e.normalized_value} is suspended`,
+        ref: e.id as string,
+      });
     const roles = ownRoles.get(e.id as string) ?? new Set();
-    if (!roles.has("cover")) items.push({ kind: "endpoint_no_cover", detail: `${e.normalized_value} has no cover`, ref: e.id as string });
-    if (!roles.has("escalation")) items.push({ kind: "endpoint_no_escalation", detail: `${e.normalized_value} has no escalation`, ref: e.id as string });
+    if (!roles.has("cover"))
+      items.push({
+        kind: "endpoint_no_cover",
+        detail: `${e.normalized_value} has no cover`,
+        ref: e.id as string,
+      });
+    if (!roles.has("escalation"))
+      items.push({
+        kind: "endpoint_no_escalation",
+        detail: `${e.normalized_value} has no escalation`,
+        ref: e.id as string,
+      });
   }
   for (const m of members ?? []) {
     if (!confirmedMembers.has(m.id as string))
-      items.push({ kind: "person_no_email_identity", detail: `member ${(m.id as string).slice(0, 8)} has no confirmed email identity`, ref: m.id as string });
+      items.push({
+        kind: "person_no_email_identity",
+        detail: `member ${(m.id as string).slice(0, 8)} has no confirmed email identity`,
+        ref: m.id as string,
+      });
     if (!memberWithPhone.has(m.id as string))
-      items.push({ kind: "person_no_phone", detail: `member ${(m.id as string).slice(0, 8)} has no phone endpoint`, ref: m.id as string });
+      items.push({
+        kind: "person_no_phone",
+        detail: `member ${(m.id as string).slice(0, 8)} has no phone endpoint`,
+        ref: m.id as string,
+      });
   }
   const unclassified = (telInv ?? []).filter((r) => r.canonical_type === "endpoint").length;
   if (unclassified > 0)
-    items.push({ kind: "unclassified_phone_metadata", detail: `${unclassified} provider metadata records not importable as endpoints`, ref: null });
-  items.push({ kind: "provider_capability_unavailable", detail: "telephony DDI/queue discovery unavailable (planned); extensions/devices manual", ref: null });
+    items.push({
+      kind: "unclassified_phone_metadata",
+      detail: `${unclassified} provider metadata records not importable as endpoints`,
+      ref: null,
+    });
+  items.push({
+    kind: "provider_capability_unavailable",
+    detail: "telephony DDI/queue discovery unavailable (planned); extensions/devices manual",
+    ref: null,
+  });
 
   return items;
 }
@@ -354,7 +459,10 @@ export async function loadConnectionsAndEvidence(admin: SupabaseClient, tenantId
       .from("provider_connections")
       .select("provider, status, auth_mode, account_ref, verified_at")
       .eq("tenant_id", tenantId),
-    admin.from("google_workspace_mailboxes").select("email_address, status").eq("tenant_id", tenantId),
+    admin
+      .from("google_workspace_mailboxes")
+      .select("email_address, status")
+      .eq("tenant_id", tenantId),
     admin
       .from("telephony_inventory")
       .select("id, provider, provider_object_id, canonical_type, label, status, discovery_source")
@@ -375,7 +483,9 @@ export async function loadConnectionsAndEvidence(admin: SupabaseClient, tenantId
   const telProv =
     (prov.data ?? []).find((p) =>
       ["sipcentric", "birchills", "simwood"].includes(String(p.provider)),
-    ) ?? (prov.data ?? [])[0] ?? null;
+    ) ??
+    (prov.data ?? [])[0] ??
+    null;
   const caps = providerCapabilities(telProv?.provider ?? null);
 
   return {
@@ -447,6 +557,14 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     loadTenantSummary(admin, tenantId),
     computeDataQuality(admin, tenantId),
   ]);
+  // Ended (historical) ownership — kept separate so `ownership` stays "currently active".
+  const { data: ownershipHistory } = await admin
+    .from("endpoint_ownership_assignments")
+    .select(ASG_COLS + ", endpoint_id")
+    .eq("tenant_id", tenantId)
+    .not("effective_to", "is", null)
+    .order("effective_to", { ascending: false })
+    .limit(200);
   const [conn, identityResolution] = await Promise.all([
     loadConnectionsAndEvidence(admin, tenantId),
     computeIdentityResolution(admin, tenantId),
@@ -457,6 +575,7 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     identities: identities ?? [],
     endpoints: endpoints ?? [],
     ownership: ownership ?? [],
+    ownershipHistory: ownershipHistory ?? [],
     dataQuality,
     connections: conn.connections,
     phoneEvidence: conn.phoneEvidence,
