@@ -15,6 +15,8 @@ import {
   type OwnershipResolution,
   resolveEndpointOwnership,
 } from "./resolver.ts";
+import { providerCapabilities } from "../telephony/capabilities.ts";
+import { emailDomain, loadApprovedEmailDomains } from "./discovery.ts";
 
 const EP_COLS =
   "id, tenant_id, channel, endpoint_kind, normalized_value, display_value, provider, provider_external_ref, is_shared, status";
@@ -199,6 +201,81 @@ export async function computeDataQuality(
 }
 
 /** Full tenant workspace for the OpenFolk UI. */
+/**
+ * Provider connections + raw telephony evidence for the Connections/Phone sections.
+ * Shows the boundary between a provider CONNECTION, the tenant-APPROVED domain, and
+ * discovered INVENTORY — and telephony capability (truthfully) from the provider registry.
+ * Never returns secrets: only status, non-secret account refs and capability declarations.
+ */
+export async function loadConnectionsAndEvidence(admin: SupabaseClient, tenantId: string) {
+  const [gw, prov, mailboxes, telInv] = await Promise.all([
+    admin
+      .from("google_workspace_connections")
+      .select("id, domain, status, created_at")
+      .eq("tenant_id", tenantId),
+    admin
+      .from("provider_connections")
+      .select("provider, status, auth_mode, account_ref, verified_at")
+      .eq("tenant_id", tenantId),
+    admin.from("google_workspace_mailboxes").select("email_address, status").eq("tenant_id", tenantId),
+    admin
+      .from("telephony_inventory")
+      .select("id, provider, provider_object_id, canonical_type, label, status, discovery_source")
+      .eq("tenant_id", tenantId),
+  ]);
+
+  const approved = await loadApprovedEmailDomains(admin, tenantId);
+  const mb = mailboxes.data ?? [];
+  let emailImported = 0;
+  const excluded_domains: Record<string, number> = {};
+  for (const m of mb) {
+    const d = emailDomain(String(m.email_address ?? ""));
+    if (approved.includes(d)) emailImported++;
+    else excluded_domains[d || "(unparseable)"] = (excluded_domains[d || "(unparseable)"] ?? 0) + 1;
+  }
+  const excluded = mb.length - emailImported;
+
+  const telProv =
+    (prov.data ?? []).find((p) =>
+      ["sipcentric", "birchills", "simwood"].includes(String(p.provider)),
+    ) ?? (prov.data ?? [])[0] ?? null;
+  const caps = providerCapabilities(telProv?.provider ?? null);
+
+  return {
+    connections: {
+      google_workspace: {
+        status: (gw.data ?? []).some((c) => c.status === "active") ? "connected" : "not_connected",
+        connections: (gw.data ?? []).map((c) => ({ domain: c.domain, status: c.status })),
+        approved_domains: approved,
+        imported: emailImported,
+        excluded,
+        excluded_domains,
+        read_only: true,
+      },
+      telephony: {
+        commercial_provider: "Birchills",
+        underlying_provider: telProv?.provider ?? "sipcentric",
+        account_ref: telProv?.account_ref ?? "3950",
+        status: telProv?.status ?? "manual",
+        credentials: "configured (never displayed)",
+        capabilities: caps?.capabilities ?? null,
+        external_write: "disabled",
+        evidence_count: (telInv.data ?? []).length,
+      },
+      slack: { status: "not_connected", note: "Identity model ready — ingestion not connected" },
+    },
+    phoneEvidence: (telInv.data ?? []).map((r) => ({
+      id: r.id,
+      provider: r.provider,
+      external_ref: r.provider_object_id,
+      canonical_type: r.canonical_type,
+      label: r.label,
+      status: r.status,
+      discovery_source: r.discovery_source,
+    })),
+  };
+}
+
 export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: string) {
   const [
     { data: members },
@@ -233,6 +310,7 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     loadTenantSummary(admin, tenantId),
     computeDataQuality(admin, tenantId),
   ]);
+  const conn = await loadConnectionsAndEvidence(admin, tenantId);
   return {
     summary,
     members: members ?? [],
@@ -240,5 +318,7 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     endpoints: endpoints ?? [],
     ownership: ownership ?? [],
     dataQuality,
+    connections: conn.connections,
+    phoneEvidence: conn.phoneEvidence,
   };
 }

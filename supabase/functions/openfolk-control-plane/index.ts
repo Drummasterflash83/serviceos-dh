@@ -20,6 +20,11 @@ import {
   discoverTelephonyEndpoints,
 } from "../_shared/controlplane/discovery.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
+import {
+  validateManualEndpoint,
+  findDuplicate,
+  type ExistingEndpoint,
+} from "../_shared/controlplane/telephony_validation.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +49,22 @@ const READ_ACTIONS = new Set([
   "data_quality",
   "audit",
   "readiness",
+  "endpoint.validate",
+]);
+
+// Machine mode (x-openfolk-machine-key) may invoke ONLY these named operations — never
+// arbitrary writes, ownership assignment, or a generic query. Interactive operators are
+// governed by the platform-grant model instead.
+const MACHINE_ACTIONS = new Set([
+  "tenants.list",
+  "workspace",
+  "resolve",
+  "data_quality",
+  "audit",
+  "readiness",
+  "endpoint.validate",
+  "discover.email",
+  "discover.telephony",
 ]);
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -68,6 +89,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const auth = await requirePlatformOperator(req, admin, { requireAdmin: isWrite });
   if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
   const ctx = auth.ctx;
+
+  // Machine mode is restricted to an explicit allowlist of named operations.
+  if (ctx.role === "machine" && !MACHINE_ACTIONS.has(action)) {
+    return fail("forbidden", `Machine mode may not invoke '${action}'`, 403);
+  }
 
   // Every write requires a reason (audit completeness).
   if (isWrite && !String(body.reason ?? "").trim()) {
@@ -129,7 +155,92 @@ Deno.serve(async (req: Request): Promise<Response> => {
         return json({ ok: true, data: { entries: data ?? [] } });
       }
 
+      case "endpoint.validate": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const v = validateManualEndpoint({
+          kind: body.endpoint_kind,
+          value: body.value,
+          display: body.display_value,
+          providerContext: body.provider_context,
+          providerId: body.provider_id,
+        });
+        if (!v.ok) return json({ ok: true, data: { valid: false, errors: v.errors } });
+        const { data: eps } = await admin
+          .from("communication_endpoints")
+          .select("endpoint_kind, normalized_value, provider, source")
+          .eq("tenant_id", tenantId)
+          .eq("status", "active");
+        const dup = findDuplicate(v, (eps ?? []) as ExistingEndpoint[]);
+        return json({
+          ok: true,
+          data: {
+            valid: true,
+            kind: v.kind,
+            canonical: v.canonical,
+            display: v.display,
+            duplicate: dup
+              ? { normalized_value: dup.normalized_value, source: dup.source ?? null }
+              : null,
+          },
+        });
+      }
+
       // ── Writes (admin, atomic RPCs) ──
+      case "endpoint.manual_create": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const v = validateManualEndpoint({
+          kind: body.endpoint_kind,
+          value: body.value,
+          display: body.display_value,
+          providerContext: body.provider_context,
+          providerId: body.provider_id,
+        });
+        if (!v.ok) return fail("validation_failed", v.errors.join("; "), 400);
+        const { data: eps } = await admin
+          .from("communication_endpoints")
+          .select("endpoint_kind, normalized_value, provider, source")
+          .eq("tenant_id", tenantId)
+          .eq("status", "active");
+        const dup = findDuplicate(v, (eps ?? []) as ExistingEndpoint[]);
+        if (dup)
+          return fail(
+            "duplicate_endpoint",
+            `A ${v.kind} '${v.canonical}' already exists (source: ${dup.source ?? "?"})`,
+            409,
+          );
+        const { data, error } = await rpc("cp_upsert_endpoint", {
+          p_tenant: tenantId,
+          p_channel: v.channel,
+          p_endpoint_kind: v.kind,
+          p_normalized: v.canonical,
+          p_display: v.display,
+          p_provider: body.provider_context ?? null,
+          p_provider_ref: body.provider_id ?? null,
+          p_is_shared: v.is_shared,
+          p_source: "manual",
+          p_source_object_ref: null,
+          p_metadata: {
+            verification: "manual",
+            provider_context: body.provider_context ?? null,
+            notes: body.notes ?? null,
+            created_by: ctx.actor,
+          },
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        const r = data as { id?: string; outcome?: string } | null;
+        return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
+      }
+      case "endpoint.archive": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.endpoint_id) return fail("bad_request", "endpoint_id required", 400);
+        const { data, error } = await rpc("cp_archive_endpoint", {
+          p_tenant: tenantId,
+          p_endpoint_id: String(body.endpoint_id),
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        const r = data as { id?: string; outcome?: string } | null;
+        return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
+      }
       case "member.upsert": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const { data, error } = await rpc("cp_upsert_member", {

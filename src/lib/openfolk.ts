@@ -100,6 +100,37 @@ export interface DataQualityItem {
   detail: string;
   ref: string | null;
 }
+export interface Connections {
+  google_workspace: {
+    status: string;
+    connections: { domain: string | null; status: string }[];
+    approved_domains: string[];
+    imported: number;
+    excluded: number;
+    excluded_domains: Record<string, number>;
+    read_only: boolean;
+  };
+  telephony: {
+    commercial_provider: string;
+    underlying_provider: string;
+    account_ref: string;
+    status: string;
+    credentials: string;
+    capabilities: Record<string, string> | null;
+    external_write: string;
+    evidence_count: number;
+  };
+  slack: { status: string; note: string };
+}
+export interface PhoneEvidenceItem {
+  id: string;
+  provider: string | null;
+  external_ref: string | null;
+  canonical_type: string;
+  label: string | null;
+  status: string;
+  discovery_source: string | null;
+}
 export interface Workspace {
   summary: TenantSummary;
   members: CpMember[];
@@ -107,6 +138,16 @@ export interface Workspace {
   endpoints: CpEndpoint[];
   ownership: CpOwnership[];
   dataQuality: DataQualityItem[];
+  connections?: Connections;
+  phoneEvidence?: PhoneEvidenceItem[];
+}
+export interface EndpointValidation {
+  valid: boolean;
+  errors?: string[];
+  kind?: string;
+  canonical?: string;
+  display?: string;
+  duplicate?: { normalized_value: string; source: string | null } | null;
 }
 export interface AuditEntry {
   actor: string;
@@ -131,6 +172,39 @@ export const discoverTelephony = (tenant_id: string, reason: string) =>
     tenant_id,
     reason,
   });
+export interface EmailDiscoverySummary {
+  scanned: number;
+  upserted: number;
+  created: number;
+  updated: number;
+  unchanged: number;
+  excluded: number;
+  excluded_domains: Record<string, number>;
+  approved_domains: string[];
+  default_denied: boolean;
+}
+export const discoverEmail = (tenant_id: string, reason: string) =>
+  invoke<EmailDiscoverySummary>({ action: "discover.email", tenant_id, reason });
+export const validateEndpoint = (p: {
+  tenant_id: string;
+  endpoint_kind: string;
+  value?: string;
+  display_value?: string;
+  provider_context?: string;
+  provider_id?: string;
+}) => invoke<EndpointValidation>({ action: "endpoint.validate", ...p });
+export const createManualEndpoint = (p: {
+  tenant_id: string;
+  endpoint_kind: string;
+  value?: string;
+  display_value?: string;
+  provider_context?: string;
+  provider_id?: string;
+  notes?: string;
+  reason: string;
+}) => invoke<{ id: string; outcome: string }>({ action: "endpoint.manual_create", ...p });
+export const archiveEndpoint = (p: { tenant_id: string; endpoint_id: string; reason: string }) =>
+  invoke<{ id: string; outcome: string }>({ action: "endpoint.archive", ...p });
 export const assignOwnership = (p: {
   tenant_id: string;
   endpoint_id: string;
