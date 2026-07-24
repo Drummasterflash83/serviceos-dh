@@ -7,10 +7,15 @@
  * inline). Never in tenant navigation.
  */
 import { useCallback, useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
 import { BuildBadge } from "@/components/BuildBadge";
 import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
+import {
+  resolveSection,
+  sectionSearchValue,
+  type WorkspaceSection,
+} from "@/lib/openfolk-workspace-nav";
 import {
   archiveEndpoint,
   assignOwnership,
@@ -30,12 +35,23 @@ import {
   type Workspace,
 } from "@/lib/openfolk";
 
+// The active workspace section + selected endpoint are durable URL state, so a mutation
+// refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
+// invalid `?section=` fails safely to Overview.
+type WorkspaceSearch = { section?: WorkspaceSection; endpoint?: string };
+
 export const Route = createFileRoute("/openfolk/$tenantId")({
+  validateSearch: (search: Record<string, unknown>): WorkspaceSearch => ({
+    section: sectionSearchValue(search.section),
+    endpoint: typeof search.endpoint === "string" && search.endpoint ? search.endpoint : undefined,
+  }),
   component: WorkspacePage,
 });
 
 function WorkspacePage() {
   const { tenantId } = Route.useParams();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [readiness, setReadiness] = useState<SourceReadiness | null>(null);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
@@ -45,8 +61,34 @@ function WorkspacePage() {
   const [busy, setBusy] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<string>("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const section = resolveSection(search.section);
+  const setSection = useCallback(
+    (s: WorkspaceSection) =>
+      navigate({
+        // Push a history entry so Back/Forward move between sections. Drop the endpoint
+        // selection when leaving Ownership so it doesn't leak into other sections.
+        search: (prev) => ({
+          ...prev,
+          section: sectionSearchValue(s),
+          endpoint: s === "ownership" ? prev.endpoint : undefined,
+        }),
+      }),
+    [navigate],
+  );
+  const setEndpoint = useCallback(
+    (endpointId: string | null) =>
+      navigate({
+        // Selecting the endpoint you're editing isn't a navigation event — replace, don't push.
+        search: (prev) => ({ ...prev, endpoint: endpointId ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+
+  // fetchAll refreshes data IN PLACE. It never toggles `loading`, so the workspace is
+  // not unmounted on a mutation refetch — the durable section/endpoint, expanded role
+  // form, and scroll position all survive. Only the first load gates the render.
+  const fetchAll = useCallback(async () => {
     const [w, r, a] = await Promise.all([
       getWorkspace(tenantId),
       getReadiness(tenantId),
@@ -61,11 +103,18 @@ function WorkspacePage() {
     if (r.ok) setReadiness(r.data);
     if (a.ok) setAudit(a.data.entries);
     setLastRefresh(new Date().toISOString());
-    setLoading(false);
   }, [tenantId]);
+
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    setLoading(true);
+    void fetchAll().finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchAll]);
 
   const guard = async (fn: () => Promise<{ ok: boolean; error?: { message: string } }>) => {
     if (busy) return false;
@@ -73,7 +122,7 @@ function WorkspacePage() {
     setActionError(null);
     const res = await fn();
     if (!res.ok) setActionError(res.error?.message ?? "Action failed");
-    else await load();
+    else await fetchAll(); // in-place refresh — no unmount, section/endpoint preserved
     setBusy(false);
     return res.ok;
   };
@@ -82,7 +131,7 @@ function WorkspacePage() {
     onDiscoverTelephony: (reason) => void guard(() => discoverTelephony(tenantId, reason)),
     onDiscoverEmail: (reason) => void guard(() => discoverEmail(tenantId, reason)),
     onAssign: (endpoint_id, owner_member_id, assignment_role, reason) =>
-      void guard(() =>
+      guard(() =>
         assignOwnership({
           tenant_id: tenantId,
           endpoint_id,
@@ -116,7 +165,7 @@ function WorkspacePage() {
         setBusy(false);
         return { ok: false, error: res.error?.message };
       }
-      await load();
+      await fetchAll();
       setBusy(false);
       return { ok: true, outcome: res.data.outcome };
     },
@@ -166,6 +215,10 @@ function WorkspacePage() {
               busy={busy}
               lastRefresh={lastRefresh}
               actions={actions}
+              section={section}
+              onSectionChange={setSection}
+              selectedEndpoint={search.endpoint ?? null}
+              onSelectEndpoint={setEndpoint}
             />
             <BuildBadge />
           </>

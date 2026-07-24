@@ -20,7 +20,8 @@
     "verify:automation:dry-run": "node scripts/verify/index.ts automation --dry-run",
     "verify:intelligence-ingest:dry-run": "node scripts/verify/index.ts intelligence-ingest --dry-run",
     "verify:test": "node scripts/verify/lib.verify.ts",
-    "verify:product": "node scripts/product-alignment.test.mjs"
+    "verify:product": "node scripts/product-alignment.test.mjs",
+    "test:openfolk": "node --test src/lib/openfolk-workspace-nav.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -4,13 +4,32 @@
  * Renders the REAL OpenfolkWorkspace against clearly-synthetic fixtures (no login, no
  * Supabase). The live workspace at /openfolk/$tenantId is gated by platform authority
  * (OpenFolk role + active platform.controlplane grant) and is never in tenant navigation.
+ *
+ * The demo is write-capable against IN-MEMORY state (no backend calls): it exercises the
+ * exact ownership-confirmation flow — durable `?section=`/`?endpoint=` URL state, in-place
+ * refresh (never a section reset), inline success, and auto-advance to the next missing
+ * role — so the behaviour is verifiable without the gated live workspace.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import { OpenfolkWorkspace } from "@/components/app/OpenfolkWorkspace";
-import type { AuditEntry, SourceReadiness, Workspace } from "@/lib/openfolk";
+import {
+  resolveSection,
+  sectionSearchValue,
+  type WorkspaceSection,
+} from "@/lib/openfolk-workspace-nav";
+import type { AuditEntry, CpOwnership, SourceReadiness, Workspace } from "@/lib/openfolk";
 
-export const Route = createFileRoute("/demo/openfolk")({ component: DemoOpenfolk });
+type DemoSearch = { section?: WorkspaceSection; endpoint?: string };
+
+export const Route = createFileRoute("/demo/openfolk")({
+  validateSearch: (search: Record<string, unknown>): DemoSearch => ({
+    section: sectionSearchValue(search.section),
+    endpoint: typeof search.endpoint === "string" && search.endpoint ? search.endpoint : undefined,
+  }),
+  component: DemoOpenfolk,
+});
 
 const M_ALICE = "11111111-0000-0000-0000-0000000000a1";
 const M_BOB = "11111111-0000-0000-0000-0000000000a2";
@@ -169,21 +188,114 @@ const AUDIT: AuditEntry[] = [
   },
 ];
 
+let demoSeq = 1000;
+
 function DemoOpenfolk() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const section = resolveSection(search.section);
+
+  // In-memory workspace state — synthetic mutations mirror what the live route does after a
+  // successful server write, so the demo proves the same in-place-refresh behaviour.
+  const [workspace, setWorkspace] = useState<Workspace>(WORKSPACE);
+  const [audit, setAudit] = useState<AuditEntry[]>(AUDIT);
+  const [busy, setBusy] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<string>("");
+
+  const setSection = useCallback(
+    (s: WorkspaceSection) =>
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          section: sectionSearchValue(s),
+          endpoint: s === "ownership" ? prev.endpoint : undefined,
+        }),
+      }),
+    [navigate],
+  );
+  const setEndpoint = useCallback(
+    (endpointId: string | null) =>
+      navigate({
+        search: (prev) => ({ ...prev, endpoint: endpointId ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+
+  // Simulate the network round-trip + in-place refresh (no unmount, no section reset).
+  const withRefresh = useCallback(async (mutate: () => void): Promise<boolean> => {
+    setBusy(true);
+    await new Promise((r) => setTimeout(r, 150));
+    mutate();
+    setLastRefresh(new Date().toISOString());
+    setBusy(false);
+    return true;
+  }, []);
+
+  const onAssign = useCallback(
+    (endpointId: string, memberId: string, role: string, reason: string) =>
+      withRefresh(() => {
+        const row: CpOwnership = {
+          id: `demo-own-${demoSeq++}`,
+          endpoint_id: endpointId,
+          owner_kind: "person",
+          owner_member_id: memberId,
+          owner_org_unit_id: null,
+          owner_role: null,
+          assignment_role: role,
+          effective_from: new Date().toISOString(),
+          effective_to: null,
+          confidence: 0.95,
+          review_state: "confirmed",
+        };
+        setWorkspace((w) => {
+          // Idempotent per (endpoint, role): never create a duplicate active assignment.
+          const exists = w.ownership.some(
+            (o) =>
+              o.endpoint_id === endpointId &&
+              o.assignment_role === role &&
+              o.review_state !== "rejected",
+          );
+          if (exists) return w;
+          return { ...w, ownership: [...w.ownership, row] };
+        });
+        setAudit((a) => [
+          {
+            actor: "demo-operator",
+            action: "controlplane.ownership.assign",
+            resource_type: "endpoint_ownership_assignment",
+            resource_id: endpointId,
+            reason,
+            view_as_active: false,
+            created_at: new Date().toISOString(),
+          },
+          ...a,
+        ]);
+      }),
+    [withRefresh],
+  );
+
   return (
     <div className="min-h-screen bg-surface-alt/30">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <div className="mb-4 flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-          OpenFolk Control Plane — Demo Heating workspace (demo fixtures · OpenFolk-operated)
+          OpenFolk Control Plane — Demo Heating workspace (demo fixtures · in-memory ·
+          OpenFolk-operated)
         </div>
         <OpenfolkWorkspace
           tenantName="Demo Heating"
-          workspace={WORKSPACE}
+          workspace={workspace}
           readiness={READINESS}
-          audit={AUDIT}
-          writeCapable={false}
-          actions={{}}
+          audit={audit}
+          writeCapable={true}
+          busy={busy}
+          lastRefresh={lastRefresh}
+          section={section}
+          onSectionChange={setSection}
+          selectedEndpoint={search.endpoint ?? null}
+          onSelectEndpoint={setEndpoint}
+          actions={{ onAssign }}
         />
       </div>
     </div>

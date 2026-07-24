@@ -8,7 +8,7 @@
  * function; this component only renders + emits actions (a demo route feeds synthetic data,
  * so every callback and the connections/phoneEvidence payloads are optional).
  */
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -24,6 +24,13 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  OWNERSHIP_ROLES,
+  isOwnershipComplete,
+  nextMissingRole,
+  type OwnershipRole,
+  type WorkspaceSection,
+} from "@/lib/openfolk-workspace-nav";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -41,8 +48,10 @@ import type {
   Workspace,
 } from "@/lib/openfolk";
 
-const REQUIRED_ROLES = ["accountable", "primary_handler", "cover", "escalation"] as const;
-type OwnRole = (typeof REQUIRED_ROLES)[number];
+// Roles + section keys are shared with the route's URL `validateSearch` via the pure
+// navigation module, so both agree on order, completeness, and the safe default.
+const REQUIRED_ROLES = OWNERSHIP_ROLES;
+type OwnRole = OwnershipRole;
 type ReviewRow = {
   endpoint_id: string;
   decision: string;
@@ -57,17 +66,7 @@ const READINESS_META: Record<string, { label: string; cls: string }> = {
   ready_for_staff_pilot: { label: "Ready for staff pilot", cls: "text-success" },
 };
 
-type Section =
-  | "overview"
-  | "people"
-  | "review"
-  | "connections"
-  | "phone"
-  | "email"
-  | "slack"
-  | "ownership"
-  | "data_quality"
-  | "audit";
+type Section = WorkspaceSection;
 const SECTIONS: { key: Section; label: string; icon: ReactNode }[] = [
   { key: "overview", label: "Overview", icon: <Activity className="h-3.5 w-3.5" /> },
   { key: "people", label: "People", icon: <Users className="h-3.5 w-3.5" /> },
@@ -146,7 +145,14 @@ function memberName(members: CpMember[], id: string | null): string {
 export interface WorkspaceActions {
   onDiscoverTelephony?: (reason: string) => void;
   onDiscoverEmail?: (reason: string) => void;
-  onAssign?: (endpointId: string, memberId: string, role: string, reason: string) => void;
+  // Resolves true on a successful assignment so the caller can advance focus to the next
+  // missing role and show an inline success state without unmounting/resetting the view.
+  onAssign?: (
+    endpointId: string,
+    memberId: string,
+    role: string,
+    reason: string,
+  ) => Promise<boolean> | void;
   onValidateEndpoint?: (input: {
     endpoint_kind: string;
     value?: string;
@@ -194,6 +200,10 @@ export function OpenfolkWorkspace({
   busy = false,
   lastRefresh,
   actions = {},
+  section: controlledSection,
+  onSectionChange,
+  selectedEndpoint = null,
+  onSelectEndpoint,
 }: {
   tenantName: string;
   workspace: Workspace;
@@ -203,8 +213,20 @@ export function OpenfolkWorkspace({
   busy?: boolean;
   lastRefresh?: string;
   actions?: WorkspaceActions;
+  // The active section is durable state, owned by the URL on the live route. When these
+  // controlled props are supplied the section lives in the URL (survives refresh, mutation
+  // refetch, Back/Forward); otherwise it falls back to local state (e.g. the read-only demo).
+  section?: Section;
+  onSectionChange?: (s: Section) => void;
+  selectedEndpoint?: string | null;
+  onSelectEndpoint?: (endpointId: string | null) => void;
 }) {
-  const [section, setSection] = useState<Section>("overview");
+  const [localSection, setLocalSection] = useState<Section>(controlledSection ?? "overview");
+  const section = controlledSection ?? localSection;
+  const setSection = useCallback(
+    (s: Section) => (onSectionChange ? onSectionChange(s) : setLocalSection(s)),
+    [onSectionChange],
+  );
   const {
     summary,
     members,
@@ -334,6 +356,7 @@ export function OpenfolkWorkspace({
         {SECTIONS.map((s) => (
           <button
             key={s.key}
+            type="button"
             onClick={() => setSection(s.key)}
             className={cn(
               "flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium transition-colors",
@@ -788,6 +811,8 @@ export function OpenfolkWorkspace({
                   members={members}
                   writeCapable={writeCapable}
                   busy={busy}
+                  selected={selectedEndpoint === e.id}
+                  onSelect={onSelectEndpoint}
                   onAssign={actions.onAssign}
                   onEnd={actions.onEndOwnership}
                 />
@@ -898,12 +923,17 @@ function SubHead({ children }: { children: ReactNode }) {
   );
 }
 // ── Ownership: one endpoint with its four required roles + governed end/assign. ──
+// The active role-form + inline success live here (not in the route), so confirming a role
+// refreshes the data in place, keeps this endpoint selected/expanded, shows success, and
+// moves focus to the next missing role — never back to Overview.
 function OwnershipEndpoint({
   e,
   assignments,
   members,
   writeCapable,
   busy,
+  selected,
+  onSelect,
   onAssign,
   onEnd,
 }: {
@@ -912,12 +942,14 @@ function OwnershipEndpoint({
   members: CpMember[];
   writeCapable: boolean;
   busy: boolean;
-  onAssign?: (endpointId: string, memberId: string, role: string, reason: string) => void;
+  selected: boolean;
+  onSelect?: (endpointId: string | null) => void;
+  onAssign?: WorkspaceActions["onAssign"];
   onEnd?: NonNullable<WorkspaceActions["onEndOwnership"]>;
 }) {
   const byRole = new Map<string, CpOwnership>();
   for (const a of assignments) if (!byRole.has(a.assignment_role)) byRole.set(a.assignment_role, a);
-  const complete = REQUIRED_ROLES.every((r) => byRole.has(r));
+  const complete = isOwnershipComplete(byRole.keys());
   // Concentration: one member holding more than one role on this endpoint.
   const perMember = new Map<string, string[]>();
   for (const a of assignments)
@@ -928,8 +960,53 @@ function OwnershipEndpoint({
       ]);
   const concentrated = [...perMember.entries()].filter(([, roles]) => roles.length > 1);
 
+  // Which role's assign-form is open, which role just succeeded (inline success + autofocus).
+  const [openRole, setOpenRole] = useState<OwnRole | null>(null);
+  const [savedRole, setSavedRole] = useState<OwnRole | null>(null);
+  const [focusRole, setFocusRole] = useState<OwnRole | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Keep the endpoint the operator is working on in view after a confirmation, without a
+  // jarring jump (block:'nearest' preserves scroll where practical).
+  useEffect(() => {
+    if (savedRole) cardRef.current?.scrollIntoView({ block: "nearest" });
+  }, [savedRole]);
+
+  const openFor = (role: OwnRole) => {
+    onSelect?.(e.id);
+    setSavedRole(null);
+    setFocusRole(null);
+    setOpenRole(role);
+  };
+  const handleAssign = useCallback(
+    async (role: OwnRole, memberId: string, reason: string): Promise<boolean> => {
+      if (!onAssign) return false;
+      onSelect?.(e.id);
+      const ok = (await onAssign(e.id, memberId, role, reason)) !== false;
+      if (ok) {
+        setSavedRole(role);
+        // Optimistically advance: byRole doesn't yet include `role` until the refetch lands.
+        const next = nextMissingRole(byRole.keys(), role);
+        setOpenRole(next);
+        setFocusRole(next);
+      }
+      return ok;
+    },
+    // byRole is derived each render from the latest assignments prop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onAssign, onSelect, e.id, assignments],
+  );
+
+  const savedNext = savedRole ? nextMissingRole(byRole.keys()) : null;
+
   return (
-    <div className="rounded-lg border border-hairline bg-surface-alt/40 p-3">
+    <div
+      ref={cardRef}
+      className={cn(
+        "rounded-lg border bg-surface-alt/40 p-3 transition-colors",
+        selected ? "border-accent/60 ring-1 ring-accent/30" : "border-hairline",
+      )}
+    >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-medium text-display">
           <span className="text-muted-foreground">{e.endpoint_kind}</span> ·{" "}
@@ -937,7 +1014,7 @@ function OwnershipEndpoint({
         </span>
         {complete ? (
           <span className="inline-flex items-center gap-1 rounded-full border border-success/30 px-2 py-0.5 text-[11px] text-success">
-            <CheckCircle2 className="h-3 w-3" /> ownership-complete
+            <CheckCircle2 className="h-3 w-3" /> ownership complete
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/5 px-2 py-0.5 text-[11px] text-amber-700">
@@ -945,6 +1022,21 @@ function OwnershipEndpoint({
           </span>
         )}
       </div>
+      {/* Inline success state — persists after the in-place refresh (no page/section reset). */}
+      {savedRole && (
+        <div
+          role="status"
+          className="mb-2 flex items-center gap-1.5 rounded-md border border-success/30 bg-success/5 px-2.5 py-1 text-[11px] text-success"
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          {savedRole.replace(/_/g, " ")} confirmed
+          {savedNext
+            ? ` — next: ${savedNext.replace(/_/g, " ")}`
+            : complete
+              ? " — ownership complete"
+              : ""}
+        </div>
+      )}
       <div className="space-y-1.5">
         {REQUIRED_ROLES.map((role) => {
           const a = byRole.get(role);
@@ -958,6 +1050,9 @@ function OwnershipEndpoint({
                   <span className="text-muted-foreground">
                     {a.owner_kind === "team" ? "team" : memberName(members, a.owner_member_id)}
                   </span>
+                  {savedRole === role && (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-label="just assigned" />
+                  )}
                   {writeCapable && onEnd && (
                     <EndAssignmentControl a={a} busy={busy} onEnd={onEnd} />
                   )}
@@ -967,11 +1062,14 @@ function OwnershipEndpoint({
                   <span className="text-amber-700">missing</span>
                   {writeCapable && onAssign && (
                     <AssignRole
-                      endpointId={e.id}
                       role={role}
                       members={members}
                       busy={busy}
-                      onAssign={onAssign}
+                      open={openRole === role}
+                      autoFocus={focusRole === role}
+                      onOpen={() => openFor(role)}
+                      onCancel={() => setOpenRole(null)}
+                      onSubmit={handleAssign}
                     />
                   )}
                 </>
@@ -996,35 +1094,64 @@ function OwnershipEndpoint({
 }
 
 function AssignRole({
-  endpointId,
   role,
   members,
   busy,
-  onAssign,
+  open,
+  autoFocus,
+  onOpen,
+  onCancel,
+  onSubmit,
 }: {
-  endpointId: string;
-  role: string;
+  role: OwnRole;
   members: CpMember[];
   busy: boolean;
-  onAssign: (endpointId: string, memberId: string, role: string, reason: string) => void;
+  open: boolean;
+  autoFocus: boolean;
+  onOpen: () => void;
+  onCancel: () => void;
+  onSubmit: (role: OwnRole, memberId: string, reason: string) => Promise<boolean>;
 }) {
   const [member, setMember] = useState("");
   const [reason, setReason] = useState("");
-  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  // When this form is opened by advancing from the previous role, move focus straight here.
+  useEffect(() => {
+    if (open && autoFocus) selectRef.current?.focus();
+  }, [open, autoFocus]);
+
   if (!open)
     return (
       <button
-        onClick={() => setOpen(true)}
+        type="button"
+        onClick={onOpen}
         className="rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px] text-muted-foreground hover:text-display"
       >
         Assign
       </button>
     );
+
+  const disabled = busy || pending || !member || !reason.trim();
+  const submit = async () => {
+    if (disabled) return;
+    setPending(true);
+    const ok = await onSubmit(role, member, reason);
+    setPending(false);
+    // Clear only THIS role's temporary form state after a successful confirm.
+    if (ok) {
+      setMember("");
+      setReason("");
+    }
+  };
+
   return (
     <span className="flex flex-wrap items-center gap-1.5">
       <select
+        ref={selectRef}
         value={member}
-        onChange={(e) => setMember(e.target.value)}
+        onChange={(ev) => setMember(ev.target.value)}
         className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
       >
         <option value="">person…</option>
@@ -1036,18 +1163,19 @@ function AssignRole({
       </select>
       <input
         value={reason}
-        onChange={(e) => setReason(e.target.value)}
+        onChange={(ev) => setReason(ev.target.value)}
         placeholder="reason"
         className="w-28 rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
       />
       <button
-        disabled={busy || !member || !reason.trim()}
-        onClick={() => onAssign(endpointId, member, role, reason)}
+        type="button"
+        disabled={disabled}
+        onClick={submit}
         className="rounded-md border border-accent bg-accent px-2 py-0.5 text-[10px] font-medium text-white disabled:opacity-50"
       >
-        Confirm
+        {pending ? "Confirming…" : "Confirm"}
       </button>
-      <button onClick={() => setOpen(false)} className="text-[10px] text-muted-foreground">
+      <button type="button" onClick={onCancel} className="text-[10px] text-muted-foreground">
         cancel
       </button>
     </span>
@@ -1071,6 +1199,7 @@ function EndAssignmentControl({
   if (!open)
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px] text-muted-foreground hover:text-display"
       >
@@ -1093,6 +1222,7 @@ function EndAssignmentControl({
         className="w-28 rounded-md border border-hairline bg-white px-2 py-0.5 text-[10px]"
       />
       <button
+        type="button"
         disabled={busy || !reason.trim()}
         onClick={() =>
           onEnd({
@@ -1106,7 +1236,11 @@ function EndAssignmentControl({
       >
         Confirm end
       </button>
-      <button onClick={() => setOpen(false)} className="text-[10px] text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="text-[10px] text-muted-foreground"
+      >
         cancel
       </button>
     </span>
@@ -1542,6 +1676,7 @@ function RButton({
 }) {
   return (
     <button
+      type="button"
       disabled={disabled}
       onClick={onClick}
       className={cn(
@@ -2186,6 +2321,7 @@ function ConfirmButton({
         sure?
       </span>
       <button
+        type="button"
         disabled={busy}
         onClick={() => {
           onGo();
@@ -2195,12 +2331,17 @@ function ConfirmButton({
       >
         yes
       </button>
-      <button onClick={() => setArmed(false)} className="text-[10px] text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => setArmed(false)}
+        className="text-[10px] text-muted-foreground"
+      >
         no
       </button>
     </span>
   ) : (
     <button
+      type="button"
       disabled={busy}
       onClick={() => setArmed(true)}
       className={cn(
@@ -2261,6 +2402,7 @@ function MapControl({
         className="rounded-md border border-hairline bg-white px-2 py-1 text-[11px]"
       />
       <button
+        type="button"
         disabled={busy || !member || !reason.trim()}
         onClick={() => onAssign(endpointId, member, role, reason)}
         className="rounded-md border border-accent bg-accent px-2.5 py-1 text-[11px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
