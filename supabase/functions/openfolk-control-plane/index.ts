@@ -20,6 +20,7 @@ import {
   discoverEmailEndpoints,
   discoverTelephonyEndpoints,
 } from "../_shared/controlplane/discovery.ts";
+import { discoverTelephonyExtensionsFromActivity } from "../_shared/controlplane/telephony_discovery.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 import {
   validateManualEndpoint,
@@ -414,10 +415,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
       case "discover.telephony": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
-        return json({
-          ok: true,
-          data: await discoverTelephonyEndpoints(admin, tenantId, ctx.actor),
-        });
+        // Two complementary, endpoints-only discovery passes (neither touches ownership):
+        //  (a) provider inventory objects (addressable extensions/DDIs), and
+        //  (b) internal seats derived from observed call activity (caller-ID labels), which
+        //      is where sipcentric's per-person extensions actually surface.
+        const [inventory, activity] = await Promise.all([
+          discoverTelephonyEndpoints(admin, tenantId, ctx.actor),
+          discoverTelephonyExtensionsFromActivity(admin, tenantId, ctx.actor),
+        ]);
+        return json({ ok: true, data: { inventory, activity } });
       }
       case "discover.email": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

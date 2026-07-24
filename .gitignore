@@ -40,3 +40,9 @@ supabase/.branches/
 *.sw?
 .vercel
 .env*
+
+# Commusoft backup exports — raw customer data, NEVER commit (kept outside repo under ~/commusoft-analysis)
+commusoft-analysis/
+commusoft-*.zip
+*-commusoft-backup*.csv
+excel-backup.zip

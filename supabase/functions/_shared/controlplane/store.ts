@@ -26,6 +26,7 @@ import {
   type ProviderMailboxType,
   type ReviewDecision,
 } from "./identity_resolution.ts";
+import { computeTelephonyIdentityResolution } from "./telephony_discovery.ts";
 
 const EP_COLS =
   "id, tenant_id, channel, endpoint_kind, normalized_value, display_value, provider, provider_external_ref, is_shared, status, source, updated_at";
@@ -837,9 +838,10 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     .not("effective_to", "is", null)
     .order("effective_to", { ascending: false })
     .limit(200);
-  const [conn, identityResolution] = await Promise.all([
+  const [conn, identityResolution, telephonyIdentityResolution] = await Promise.all([
     loadConnectionsAndEvidence(admin, tenantId),
     computeIdentityResolution(admin, tenantId),
+    computeTelephonyIdentityResolution(admin, tenantId),
   ]);
   return {
     summary,
@@ -852,5 +854,8 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     connections: conn.connections,
     phoneEvidence: conn.phoneEvidence,
     identityResolution,
+    // Telephony extension candidates (Discover→Review→Confirm), parallel to the email
+    // identityResolution above. Provider-neutral suggestions with evidence + confidence.
+    telephonyIdentityResolution,
   };
 }
