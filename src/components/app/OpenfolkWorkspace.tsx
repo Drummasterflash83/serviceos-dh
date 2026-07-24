@@ -42,6 +42,7 @@ import { projectConnections } from "@/lib/openfolk-connections";
 import { OpenfolkConnections, type DelegatedActions } from "@/components/app/OpenfolkConnections";
 import { OpenfolkCommandCentre } from "@/components/app/OpenfolkCommandCentre";
 import { PersonIntelligenceHub } from "@/components/app/PersonIntelligenceHub";
+import { TeamMemberPreview } from "@/components/app/TeamMemberPreview";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -487,38 +488,27 @@ export function OpenfolkWorkspace({
           (() => {
             const selected = personId ? members.find((m) => m.id === personId) : null;
             if (selected) {
-              return (
-                <>
-                  {previewFor === selected.id && (
-                    <div
-                      role="status"
-                      className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-accent/40 bg-accent/5 p-3 text-xs"
-                    >
-                      <span className="font-semibold text-accent">Operator preview</span>
-                      <span className="text-muted-foreground">
-                        Previewing the experience generated for {selected.display_name}. Read-only —
-                        actions here are never attributed to them. Their full Command Centre preview
-                        arrives with the operator-preview increment.
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPreviewFor(null)}
-                        className="ml-auto rounded-md border border-hairline bg-white px-2 py-0.5 text-[11px] text-muted-foreground hover:border-accent/50"
-                      >
-                        Exit preview
-                      </button>
-                    </div>
-                  )}
-                  <PersonIntelligenceHub
+              // Directory → Person Intelligence Hub → (Preview) → generated ServiceOS experience →
+              // exit returns to the SAME hub. Preview keeps auth context untouched (never impersonates).
+              if (previewFor === selected.id) {
+                return (
+                  <TeamMemberPreview
                     actor={selected}
                     workspace={workspace}
-                    writeCapable={writeCapable}
-                    busy={busy}
-                    onReviewIdentity={actions.onReviewIdentity}
-                    onBack={() => selectPerson(null)}
-                    onPreview={(id) => setPreviewFor(id)}
+                    onExit={() => setPreviewFor(null)}
                   />
-                </>
+                );
+              }
+              return (
+                <PersonIntelligenceHub
+                  actor={selected}
+                  workspace={workspace}
+                  writeCapable={writeCapable}
+                  busy={busy}
+                  onReviewIdentity={actions.onReviewIdentity}
+                  onBack={() => selectPerson(null)}
+                  onPreview={(id) => setPreviewFor(id)}
+                />
               );
             }
             return (
