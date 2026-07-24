@@ -24,16 +24,21 @@ import {
   discoverTelephony,
   endOwnership,
   getAudit,
+  getDelegatedSubmission,
   getReadiness,
   getWorkspace,
+  issueDelegatedTask,
+  listDelegatedTasks,
   restoreEndpoint,
   reviewIdentity,
+  revokeDelegatedTask,
   updateManualEndpoint,
   validateEndpoint,
   type AuditEntry,
   type SourceReadiness,
   type Workspace,
 } from "@/lib/openfolk";
+import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
 
 // The active workspace section + selected endpoint are durable URL state, so a mutation
 // refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
@@ -125,6 +130,31 @@ function WorkspacePage() {
     else await fetchAll(); // in-place refresh — no unmount, section/endpoint preserved
     setBusy(false);
     return res.ok;
+  };
+
+  // Delegated setup-request operator actions → the gated Control Plane. Raw tokens are
+  // generated server-side and returned once by `issue`; the client never stores the hash.
+  const delegatedActions: DelegatedActions = {
+    list: async () => {
+      const r = await listDelegatedTasks(tenantId);
+      return r.ok ? r.data.tasks : [];
+    },
+    issue: async (input) => {
+      const r = await issueDelegatedTask({ tenant_id: tenantId, ...input });
+      return r.ok ? r.data : { error: r.error.message };
+    },
+    revoke: async (taskId, reasonText) => {
+      const r = await revokeDelegatedTask({
+        tenant_id: tenantId,
+        task_id: taskId,
+        reason: reasonText,
+      });
+      return r.ok && r.data.revoked;
+    },
+    getSubmission: async (taskId) => {
+      const r = await getDelegatedSubmission({ tenant_id: tenantId, task_id: taskId });
+      return r.ok ? (r.data.task.submission ?? null) : null;
+    },
   };
 
   const actions: WorkspaceActions = {
@@ -219,6 +249,7 @@ function WorkspacePage() {
               onSectionChange={setSection}
               selectedEndpoint={search.endpoint ?? null}
               onSelectEndpoint={setEndpoint}
+              delegatedActions={delegatedActions}
             />
             <BuildBadge />
           </>

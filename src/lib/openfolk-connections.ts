@@ -16,7 +16,7 @@
  *
  * Kept pure + unit-tested (see openfolk-connections.test.ts); the UI renders these views.
  */
-import type { Connections, Workspace } from "./openfolk";
+import type { Connections, ConnectionLifecycle, Workspace } from "./openfolk";
 
 // ── Lifecycle / discovery / readiness states (kept DISTINCT — never collapsed) ──
 export const CONNECTION_STATES = [
@@ -149,6 +149,7 @@ export interface ConnectionView {
   lastDiscovery: string | null;
   inventoryCount: number; // canonical records attributable to this connection (best-effort)
   evidenceCount: number; // raw provider evidence (non-canonical)
+  lifecycleDetail: ConnectionLifecycle | null; // real backend lifecycle (present once enriched)
 }
 
 // ── Provider template registry (§13) — declares each provider's expected shape. Placeholders
@@ -299,6 +300,7 @@ function buildView(
     lastDiscovery: null,
     inventoryCount: 0,
     evidenceCount: 0,
+    lifecycleDetail: null,
   };
 
   if (tpl.family === "google_workspace" && connections?.google_workspace) {
@@ -332,6 +334,9 @@ function buildView(
       warnings,
       notConnectedReason: connected ? null : tpl.placeholderReason,
       inventoryCount: g.imported,
+      lifecycleDetail: g.lifecycle ?? null,
+      lastVerified: g.lifecycle?.verified_at ?? null,
+      lastDiscovery: g.lifecycle?.last_successful_discovery ?? null,
     };
   }
 
@@ -374,6 +379,9 @@ function buildView(
       notConnectedReason: connected ? null : tpl.placeholderReason,
       inventoryCount: typedPhone,
       evidenceCount: t.evidence_count,
+      lifecycleDetail: t.lifecycle ?? null,
+      lastVerified: t.lifecycle?.verified_at ?? null,
+      lastDiscovery: t.lifecycle?.last_successful_discovery ?? null,
     };
   }
 

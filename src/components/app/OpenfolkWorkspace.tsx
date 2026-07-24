@@ -38,7 +38,7 @@ import {
   type WorkspaceSection,
 } from "@/lib/openfolk-workspace-nav";
 import { projectConnections } from "@/lib/openfolk-connections";
-import { OpenfolkConnections } from "@/components/app/OpenfolkConnections";
+import { OpenfolkConnections, type DelegatedActions } from "@/components/app/OpenfolkConnections";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -260,6 +260,7 @@ export function OpenfolkWorkspace({
   onSectionChange,
   selectedEndpoint = null,
   onSelectEndpoint,
+  delegatedActions,
 }: {
   tenantName: string;
   workspace: Workspace;
@@ -276,6 +277,7 @@ export function OpenfolkWorkspace({
   onSectionChange?: (s: Section) => void;
   selectedEndpoint?: string | null;
   onSelectEndpoint?: (endpointId: string | null) => void;
+  delegatedActions?: DelegatedActions;
 }) {
   const [localSection, setLocalSection] = useState<Section>(controlledSection ?? "overview");
   const section = controlledSection ?? localSection;
@@ -660,6 +662,7 @@ export function OpenfolkWorkspace({
             workspace={{ endpoints, identities }}
             selectedId={selectedConn}
             onSelect={setSelectedConn}
+            delegated={delegatedActions}
           />
         )}
 

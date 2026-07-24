@@ -11,6 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requirePlatformOperator } from "../_shared/controlplane/authz.ts";
 import {
   computeDataQuality,
+  loadDiscoveryHistory,
   loadTenantSummary,
   loadTenantWorkspace,
   resolveForEvidence,
@@ -32,6 +33,52 @@ const cors = {
     "authorization, x-client-info, apikey, content-type, x-openfolk-actor",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+// ── Delegated-setup helpers ──────────────────────────────────────────────────
+// Which fields a customer admin may submit per task type (purpose scope). Enforced again
+// server-side by delegated_task_submit; validated here at issue time.
+const DELEGATED_TASK_TYPES = new Set([
+  "authorise_google_workspace",
+  "authorise_microsoft_365",
+  "provide_telephony_inventory",
+  "authorise_slack",
+  "provide_provider_admin_contact",
+  "confirm_company_domains",
+]);
+const DELEGATED_ALLOWED_FIELDS: Record<string, string[]> = {
+  provide_telephony_inventory: [
+    "endpoint_type",
+    "value",
+    "display_label",
+    "extension",
+    "ddi",
+    "device_label",
+    "queue_or_group_name",
+    "provider",
+    "account_reference",
+    "notes",
+  ],
+  confirm_company_domains: ["domain", "notes"],
+  provide_provider_admin_contact: ["contact_name", "contact_email", "contact_phone", "notes"],
+  authorise_google_workspace: ["notes"],
+  authorise_microsoft_365: ["notes"],
+  authorise_slack: ["notes"],
+};
+const MAX_TTL_SECONDS = 30 * 24 * 3600; // approved expiry ceiling: 30 days
+const b64url = (bytes: Uint8Array) =>
+  btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+async function sha256hex(s: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+// SAFE operator columns — NEVER token_hash / secrets.
+const DELEGATED_SAFE_COLS =
+  "id, tenant_id, provider, connection_id, task_type, requested_action, recipient_email, recipient_name, status, token_last4, single_use, max_uses, use_count, expires_at, opened_at, submitted_at, completed_at, revoked_at, created_by, correlation_id, created_at";
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), {
     status: s,
@@ -50,6 +97,9 @@ const READ_ACTIONS = new Set([
   "audit",
   "readiness",
   "endpoint.validate",
+  "connections.discovery_history",
+  "delegated.list",
+  "delegated.get_submission",
 ]);
 
 // Machine mode (x-openfolk-machine-key) may invoke ONLY these named operations — never
@@ -373,6 +423,165 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         return json({ ok: true, data: await discoverEmailEndpoints(admin, tenantId, ctx.actor) });
       }
+
+      // ── Generic discovery history (read) ──
+      case "connections.discovery_history": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const data = await loadDiscoveryHistory(admin, tenantId, {
+          page: typeof body.page === "number" ? body.page : 0,
+          page_size: typeof body.page_size === "number" ? body.page_size : 25,
+          provider: body.provider ? String(body.provider) : null,
+          status: body.status ? String(body.status) : null,
+        });
+        return json({ ok: true, data });
+      }
+
+      // ── Delegated setup tasks (operator) ──
+      case "delegated.list": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const { data } = await admin
+          .from("delegated_setup_tasks")
+          .select(DELEGATED_SAFE_COLS + ", submission")
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(200);
+        // Never leak the staged payload in the list — only its presence.
+        const tasks = (data ?? []).map((t: Row) => {
+          const { submission, ...safe } = t;
+          return { ...safe, submission_present: submission != null };
+        });
+        return json({ ok: true, data: { tasks } });
+      }
+      case "delegated.get_submission": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const taskId = body.task_id ? String(body.task_id) : null;
+        if (!taskId) return fail("bad_request", "task_id required", 400);
+        const { data: t } = await admin
+          .from("delegated_setup_tasks")
+          .select(DELEGATED_SAFE_COLS + ", submission")
+          .eq("tenant_id", tenantId) // tenant isolation
+          .eq("id", taskId)
+          .maybeSingle();
+        if (!t) return fail("not_found", "task not found for tenant", 404);
+        return json({ ok: true, data: { task: t } });
+      }
+      case "delegated.issue": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const taskType = String(body.task_type ?? "");
+        if (!DELEGATED_TASK_TYPES.has(taskType))
+          return fail("validation_failed", `invalid task_type '${taskType}'`, 400);
+        const requestedAction = String(body.requested_action ?? "").trim();
+        if (!requestedAction) return fail("validation_failed", "requested_action required", 400);
+        const recipientEmail = String(body.recipient_email ?? "")
+          .trim()
+          .toLowerCase();
+        if (!recipientEmail || !recipientEmail.includes("@"))
+          return fail("validation_failed", "valid recipient_email required", 400);
+        const permitted = DELEGATED_ALLOWED_FIELDS[taskType] ?? [];
+        const allowedFields = Array.isArray(body.allowed_fields)
+          ? (body.allowed_fields as unknown[]).map(String)
+          : permitted;
+        const invalid = allowedFields.filter((f) => !permitted.includes(f));
+        if (invalid.length)
+          return fail(
+            "validation_failed",
+            `fields not valid for ${taskType}: ${invalid.join(", ")}`,
+            400,
+          );
+        const ttl = typeof body.ttl_seconds === "number" ? body.ttl_seconds : 7 * 24 * 3600;
+        if (ttl < 60 || ttl > MAX_TTL_SECONDS)
+          return fail("validation_failed", `ttl_seconds must be 60..${MAX_TTL_SECONDS}`, 400);
+        const connectionId = body.connection_id ? String(body.connection_id) : null;
+        if (connectionId) {
+          const { data: c } = await admin
+            .from("provider_connections")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .eq("id", connectionId)
+            .maybeSingle();
+          if (!c) return fail("validation_failed", "connection does not belong to tenant", 400);
+        }
+        // Generate the RAW token HERE. It never touches the DB and is returned exactly once.
+        const raw = b64url(crypto.getRandomValues(new Uint8Array(32)));
+        const tokenHash = await sha256hex(raw);
+        const last4 = raw.slice(-4);
+        const { data: taskId, error } = await admin.rpc("delegated_task_issue", {
+          p_tenant: tenantId,
+          p_task_type: taskType,
+          p_requested_action: requestedAction,
+          p_allowed_fields: allowedFields,
+          p_recipient_email: recipientEmail,
+          p_recipient_name: body.recipient_name ? String(body.recipient_name) : null,
+          p_provider: body.provider ? String(body.provider) : null,
+          p_connection_id: connectionId,
+          p_token_hash: tokenHash,
+          p_token_last4: last4,
+          p_ttl_seconds: ttl,
+          p_single_use: body.single_use === false ? false : true,
+          p_max_uses: typeof body.max_uses === "number" ? body.max_uses : 1,
+          p_created_by: null,
+        });
+        if (error) return fail("issue_failed", error.message, 500);
+        // Audit WITHOUT the raw token or URL.
+        await admin.from("controlplane_change_log").insert({
+          tenant_id: tenantId,
+          actor: ctx.actor,
+          action: "controlplane.delegated.issue",
+          resource_type: "delegated_setup_task",
+          resource_id: String(taskId),
+          reason,
+          correlation_id: correlation,
+          view_as_active: ctx.viewAsActive,
+          source: "controlplane",
+          after: { task_type: taskType, recipient_email: recipientEmail, token_last4: last4 },
+        });
+        // Build the one-time setup URL from a request-provided origin; do NOT log it.
+        const origin = body.origin ? String(body.origin) : "";
+        return json({
+          ok: true,
+          data: {
+            task_id: taskId,
+            task_type: taskType,
+            recipient_email: recipientEmail,
+            token_last4: last4,
+            setup_url: origin ? `${origin.replace(/\/$/, "")}/setup/${raw}` : `/setup/${raw}`,
+            warning: "This setup link is shown once and cannot be recovered. Copy it now.",
+          },
+        });
+      }
+      case "delegated.revoke": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const taskId = body.task_id ? String(body.task_id) : null;
+        if (!taskId) return fail("bad_request", "task_id required", 400);
+        const { data: t } = await admin
+          .from("delegated_setup_tasks")
+          .select("id, status")
+          .eq("tenant_id", tenantId) // tenant isolation
+          .eq("id", taskId)
+          .maybeSingle();
+        if (!t) return fail("not_found", "task not found for tenant", 404);
+        if (t.status === "completed")
+          return fail("illegal_transition", "a completed task cannot be revoked", 409);
+        const { data: ok, error } = await admin.rpc("delegated_task_revoke", {
+          p_task_id: taskId,
+          p_actor: null,
+        });
+        if (error) return fail("revoke_failed", error.message, 500);
+        if (ok !== true) return fail("noop", "task was not revoked (already revoked?)", 409);
+        await admin.from("controlplane_change_log").insert({
+          tenant_id: tenantId,
+          actor: ctx.actor,
+          action: "controlplane.delegated.revoke",
+          resource_type: "delegated_setup_task",
+          resource_id: taskId,
+          reason,
+          correlation_id: correlation,
+          view_as_active: ctx.viewAsActive,
+          source: "controlplane",
+        });
+        return json({ ok: true, data: { revoked: true } });
+      }
+
       default:
         return fail("bad_request", `unknown action '${action}'`, 400);
     }

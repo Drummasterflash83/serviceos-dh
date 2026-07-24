@@ -14,12 +14,19 @@ import { useCallback, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import { OpenfolkWorkspace } from "@/components/app/OpenfolkWorkspace";
+import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
 import {
   resolveSection,
   sectionSearchValue,
   type WorkspaceSection,
 } from "@/lib/openfolk-workspace-nav";
-import type { AuditEntry, CpOwnership, SourceReadiness, Workspace } from "@/lib/openfolk";
+import type {
+  AuditEntry,
+  CpOwnership,
+  DelegatedTask,
+  SourceReadiness,
+  Workspace,
+} from "@/lib/openfolk";
 
 type DemoSearch = { section?: WorkspaceSection; endpoint?: string };
 
@@ -308,6 +315,60 @@ function DemoOpenfolk() {
     [withRefresh],
   );
 
+  // Synthetic in-memory delegated setup requests (demo only — the live route calls the
+  // gated Control Plane). Mirrors the security model: tokens are never stored; a one-time
+  // link is returned at issue.
+  const [demoTasks, setDemoTasks] = useState<DelegatedTask[]>([]);
+  const delegatedActions: DelegatedActions = {
+    list: async () => demoTasks,
+    issue: async (input) => {
+      const id = `demo-task-${demoSeq++}`;
+      const last4 = Math.random().toString(36).slice(-4);
+      const task: DelegatedTask = {
+        id,
+        tenant_id: "demo",
+        provider: null,
+        connection_id: null,
+        task_type: input.task_type,
+        requested_action: input.requested_action,
+        recipient_email: input.recipient_email.toLowerCase(),
+        recipient_name: input.recipient_name ?? null,
+        status: "created",
+        token_last4: last4,
+        single_use: true,
+        max_uses: 1,
+        use_count: 0,
+        expires_at: new Date(Date.now() + (input.ttl_seconds ?? 604800) * 1000).toISOString(),
+        opened_at: null,
+        submitted_at: null,
+        completed_at: null,
+        revoked_at: null,
+        created_by: null,
+        correlation_id: id,
+        created_at: new Date().toISOString(),
+        submission_present: false,
+      };
+      setDemoTasks((t) => [task, ...t]);
+      return {
+        task_id: id,
+        task_type: input.task_type,
+        recipient_email: task.recipient_email,
+        token_last4: last4,
+        setup_url: `${input.origin ?? ""}/setup/demo-${Math.random().toString(36).slice(2, 10)}`,
+        warning: "This setup link is shown once and cannot be recovered. Copy it now.",
+      };
+    },
+    revoke: async (taskId) => {
+      setDemoTasks((t) =>
+        t.map((x) =>
+          x.id === taskId ? { ...x, status: "revoked", revoked_at: new Date().toISOString() } : x,
+        ),
+      );
+      return true;
+    },
+    getSubmission: async () => null,
+  };
+
   return (
     <div className="min-h-screen bg-surface-alt/30">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
@@ -329,6 +390,7 @@ function DemoOpenfolk() {
           selectedEndpoint={search.endpoint ?? null}
           onSelectEndpoint={setEndpoint}
           actions={{ onAssign }}
+          delegatedActions={delegatedActions}
         />
       </div>
     </div>

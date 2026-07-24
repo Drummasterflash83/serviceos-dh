@@ -104,6 +104,28 @@ export interface DataQualityItem {
   detail: string;
   ref: string | null;
 }
+// Real per-connection lifecycle from provider_connections + events + sync runs. Additive;
+// present only when the backend projection supplies it. NEVER contains secret refs/tokens.
+export interface ConnectionLifecycle {
+  connection_id: string | null;
+  provider: string | null;
+  status: string | null;
+  auth_mode: string | null;
+  account_ref: string | null;
+  configured_fields: string[];
+  has_secrets: boolean;
+  verified_at: string | null;
+  last_test_status: string | null;
+  last_test_at: string | null;
+  revoked_at: string | null;
+  latest_event: string | null;
+  latest_event_at: string | null;
+  last_successful_discovery: string | null;
+  last_failed_discovery: string | null;
+  discovery_counts: { last_run_processed: number | null };
+  is_fallback: boolean;
+  fallback_reason: string | null;
+}
 export interface Connections {
   google_workspace: {
     status: string;
@@ -113,6 +135,7 @@ export interface Connections {
     excluded: number;
     excluded_domains: Record<string, number>;
     read_only: boolean;
+    lifecycle?: ConnectionLifecycle;
   };
   telephony: {
     commercial_provider: string;
@@ -123,8 +146,63 @@ export interface Connections {
     capabilities: Record<string, string> | null;
     external_write: string;
     evidence_count: number;
+    lifecycle?: ConnectionLifecycle;
   };
   slack: { status: string; note: string };
+}
+export interface DiscoveryRun {
+  run_id: string;
+  connection_id: string | null;
+  provider: string | null;
+  capability: string | null;
+  source: string;
+  trigger: string | null;
+  actor: string | null;
+  status: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  scanned: number | null;
+  created: number | null;
+  updated: number | null;
+  unchanged: number | null;
+  excluded: number | null;
+  ambiguous: number | null;
+  failed: number | null;
+  warnings: number | null;
+  error: string | null;
+  correlation_id: string | null;
+}
+export interface DelegatedTask {
+  id: string;
+  tenant_id: string;
+  provider: string | null;
+  connection_id: string | null;
+  task_type: string;
+  requested_action: string;
+  recipient_email: string;
+  recipient_name: string | null;
+  status: string;
+  token_last4: string | null;
+  single_use: boolean;
+  max_uses: number;
+  use_count: number;
+  expires_at: string;
+  opened_at: string | null;
+  submitted_at: string | null;
+  completed_at: string | null;
+  revoked_at: string | null;
+  created_by: string | null;
+  correlation_id: string;
+  created_at: string;
+  submission_present?: boolean;
+}
+export interface DelegatedIssueResult {
+  task_id: string;
+  task_type: string;
+  recipient_email: string;
+  token_last4: string;
+  setup_url: string; // shown ONCE — never persisted
+  warning: string;
 }
 export interface PhoneEvidenceItem {
   id: string;
@@ -298,3 +376,38 @@ export const upsertMember = (p: {
   formal_role?: string;
   reason: string;
 }) => invoke<{ id: string }>({ action: "member.upsert", ...p });
+
+// ── Connections: discovery history + delegated setup tasks (operator) ──
+export const getDiscoveryHistory = (
+  tenant_id: string,
+  opts: { page?: number; page_size?: number; provider?: string; status?: string } = {},
+) =>
+  invoke<{
+    runs: DiscoveryRun[];
+    page: number;
+    page_size: number;
+    total: number;
+    has_more: boolean;
+  }>({ action: "connections.discovery_history", tenant_id, ...opts });
+export const listDelegatedTasks = (tenant_id: string) =>
+  invoke<{ tasks: DelegatedTask[] }>({ action: "delegated.list", tenant_id });
+export const issueDelegatedTask = (p: {
+  tenant_id: string;
+  task_type: string;
+  requested_action: string;
+  recipient_email: string;
+  recipient_name?: string;
+  allowed_fields?: string[];
+  provider?: string;
+  connection_id?: string;
+  ttl_seconds?: number;
+  origin?: string;
+  reason: string;
+}) => invoke<DelegatedIssueResult>({ action: "delegated.issue", ...p });
+export const revokeDelegatedTask = (p: { tenant_id: string; task_id: string; reason: string }) =>
+  invoke<{ revoked: boolean }>({ action: "delegated.revoke", ...p });
+export const getDelegatedSubmission = (p: { tenant_id: string; task_id: string }) =>
+  invoke<{ task: DelegatedTask & { submission: Record<string, unknown> | null } }>({
+    action: "delegated.get_submission",
+    ...p,
+  });
