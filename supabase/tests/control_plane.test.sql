@@ -274,5 +274,32 @@ begin
   end loop;
 end $$;
 
+-- ── (10) audit idempotency (migration 20260823120000). ─────────────────────
+-- A no-op discovery refresh must NOT append a change-log row; a material change must.
+do $$
+declare r jsonb; eid uuid; n int;
+begin
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','idem@drummonds.example',
+        'Idem Test', null, 'gw-ref-idem', false, 'discovery', 'src-idem', '{}'::jsonb, 'op@openfolk.test', 'run 1', null, false);
+  if (r->>'outcome') <> 'created' then raise exception 'FAIL: first upsert outcome=% (want created)', r->>'outcome'; end if;
+  eid := (r->>'id')::uuid;
+  select count(*) into n from controlplane_change_log where resource_id = eid::text and action = 'controlplane.endpoint.upsert';
+  if n <> 1 then raise exception 'FAIL: created should log exactly 1 row, got %', n; end if;
+
+  -- identical re-run → unchanged, NO new change-log row (the 64-row bug).
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','idem@drummonds.example',
+        'Idem Test', null, 'gw-ref-idem', false, 'discovery', 'src-idem', '{}'::jsonb, 'op@openfolk.test', 'run 2', null, false);
+  if (r->>'outcome') <> 'unchanged' then raise exception 'FAIL: identical re-run outcome=% (want unchanged)', r->>'outcome'; end if;
+  select count(*) into n from controlplane_change_log where resource_id = eid::text and action = 'controlplane.endpoint.upsert';
+  if n <> 1 then raise exception 'FAIL: unchanged must NOT add a change-log row, got %', n; end if;
+
+  -- material change (display_value) → updated, exactly one additional row.
+  r := cp_upsert_endpoint('aaaa0000-0000-0000-0000-0000000000c1','email','email','idem@drummonds.example',
+        'Idem Test RENAMED', null, 'gw-ref-idem', false, 'discovery', 'src-idem', '{}'::jsonb, 'op@openfolk.test', 'run 3', null, false);
+  if (r->>'outcome') <> 'updated' then raise exception 'FAIL: material change outcome=% (want updated)', r->>'outcome'; end if;
+  select count(*) into n from controlplane_change_log where resource_id = eid::text and action = 'controlplane.endpoint.upsert';
+  if n <> 2 then raise exception 'FAIL: material update should total 2 rows, got %', n; end if;
+end $$;
+
 do $$ begin raise notice 'CONTROL-PLANE: ALL PASSED'; end $$;
 rollback;

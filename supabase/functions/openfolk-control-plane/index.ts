@@ -173,7 +173,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
           p_metadata: body.metadata ?? {},
         });
         if (error) return fail("write_failed", error.message, 400);
-        return json({ ok: true, data: { id: data } });
+        // cp_upsert_endpoint now returns { id, outcome } (created|updated|unchanged).
+        const r = data as { id?: string; outcome?: string } | string | null;
+        return json({
+          ok: true,
+          data:
+            r && typeof r === "object"
+              ? { id: r.id, outcome: r.outcome }
+              : { id: r },
+        });
       }
       case "ownership.assign": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

@@ -7,7 +7,7 @@
 //   platform access — so a tenant `owner` can be a platform operator without
 //   surrendering their tenant role.
 import assert from "node:assert/strict";
-import { decidePlatformAccess } from "./authz.ts";
+import { decidePlatformAccess, verifyMachineKey } from "./authz.ts";
 
 let failed = 0;
 function ok(name: string, fn: () => void) {
@@ -121,6 +121,34 @@ ok("ADMIN with active View-As MAY still read", () => {
 });
 ok("future-dated grant not yet active", () => {
   assert.equal(decide({ grants: futureAdmin }).allow, false);
+});
+
+// ── Machine-auth (dedicated secret; NOT the service-role key). ──────────────
+const SECRET = "of_cp_" + "a".repeat(48); // a stand-in dedicated secret for the test
+ok("MACHINE: valid dedicated secret authenticates", () => {
+  assert.equal(verifyMachineKey(SECRET, SECRET), true);
+});
+ok("MACHINE: wrong secret fails", () => {
+  assert.equal(verifyMachineKey("of_cp_" + "b".repeat(48), SECRET), false);
+});
+ok("MACHINE: missing provided key fails", () => {
+  assert.equal(verifyMachineKey(null, SECRET), false);
+  assert.equal(verifyMachineKey("", SECRET), false);
+});
+ok("MACHINE: unconfigured secret disables machine mode (fail closed)", () => {
+  assert.equal(verifyMachineKey(SECRET, null), false);
+  assert.equal(verifyMachineKey(SECRET, ""), false);
+});
+ok("MACHINE: a publishable key cannot pass as the machine secret", () => {
+  assert.equal(verifyMachineKey("sb_publishable_" + "x".repeat(40), SECRET), false);
+});
+ok("MACHINE: a service-role key cannot pass as the machine secret", () => {
+  assert.equal(verifyMachineKey("sb_secret_" + "y".repeat(44), SECRET), false);
+  assert.equal(verifyMachineKey("eyJhbGciOi.legacy.jwt", SECRET), false);
+});
+ok("MACHINE: length mismatch fails without confusion", () => {
+  assert.equal(verifyMachineKey(SECRET + "z", SECRET), false);
+  assert.equal(verifyMachineKey(SECRET.slice(0, -1), SECRET), false);
 });
 
 console.log(failed === 0 ? "\nauthz.verify: ALL PASSED" : `\nauthz.verify: ${failed} FAILED`);

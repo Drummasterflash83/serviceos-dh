@@ -47,6 +47,44 @@ export interface DiscoveryResult {
   scanned: number;
   upserted: number;
   skipped: number;
+  created?: number;
+  updated?: number;
+  unchanged?: number;
+}
+
+/** Outcome returned by cp_upsert_endpoint ({id, outcome}). */
+type UpsertOutcome = "created" | "updated" | "unchanged";
+function outcomeOf(data: unknown): UpsertOutcome {
+  const o = (data as { outcome?: string } | null)?.outcome;
+  return o === "created" || o === "updated" || o === "unchanged" ? o : "unchanged";
+}
+
+/**
+ * Append ONE governed change-log row summarising a discovery run (created/updated/
+ * unchanged/excluded counts). This is the per-run audit entry; individual no-op endpoints
+ * no longer generate their own rows (see migration 20260823120000).
+ */
+async function writeDiscoveryRunSummary(
+  admin: SupabaseClient,
+  tenantId: string,
+  actor: string,
+  channel: string,
+  summary: Record<string, unknown>,
+  correlation: string | null,
+): Promise<void> {
+  await admin.from("controlplane_change_log").insert({
+    tenant_id: tenantId,
+    actor,
+    action: "controlplane.discovery.run",
+    resource_type: "discovery_run",
+    resource_id: channel,
+    before: {},
+    after: summary,
+    reason: `${channel} discovery run`,
+    correlation_id: correlation,
+    view_as_active: false,
+    source: "discovery",
+  });
 }
 
 /** Idempotently mirror discovered telephony endpoints into communication_endpoints.
@@ -63,22 +101,31 @@ export async function discoverTelephonyEndpoints(
     .eq("status", "active");
 
   let scanned = 0;
-  let upserted = 0;
   let skipped = 0;
+  let created = 0;
+  let updated = 0;
+  let unchanged = 0;
+  const skipped_types: Record<string, number> = {};
+  const correlation = crypto.randomUUID();
   for (const row of inv ?? []) {
     scanned++;
     const kind = telephonyKind(row.canonical_type as string);
     if (!kind) {
+      // Not an addressable endpoint (generic provider metadata from call_metadata):
+      // preserved as raw evidence, never coerced into a canonical endpoint.
       skipped++;
+      const t = String(row.canonical_type ?? "unknown");
+      skipped_types[t] = (skipped_types[t] ?? 0) + 1;
       continue;
     }
     const raw = (row.label as string | null) ?? (row.provider_object_id as string);
     const normalized = normalizeEndpointValue(kind, raw);
     if (!normalized) {
       skipped++;
+      skipped_types["unnormalizable"] = (skipped_types["unnormalizable"] ?? 0) + 1;
       continue;
     }
-    const { error } = await admin.rpc("cp_upsert_endpoint", {
+    const { data, error } = await admin.rpc("cp_upsert_endpoint", {
       p_tenant: tenantId,
       p_channel: "phone",
       p_endpoint_kind: kind,
@@ -92,13 +139,28 @@ export async function discoverTelephonyEndpoints(
       p_metadata: {},
       p_actor: actor,
       p_reason: "telephony discovery refresh",
-      p_correlation: null,
+      p_correlation: correlation,
       p_view_as: false,
     });
     if (error) throw new Error(`discoverTelephonyEndpoints: ${error.message}`);
-    upserted++;
+    const outcome = outcomeOf(data);
+    if (outcome === "created") created++;
+    else if (outcome === "updated") updated++;
+    else unchanged++;
   }
-  return { scanned, upserted, skipped };
+  const upserted = created + updated;
+  await writeDiscoveryRunSummary(admin, tenantId, actor, "phone", {
+    scanned,
+    imported: upserted,
+    created,
+    updated,
+    unchanged,
+    skipped,
+    skipped_types,
+    skipped_reason: "canonical_type is not an addressable endpoint (generic provider metadata)",
+    at: new Date().toISOString(),
+  }, correlation);
+  return { scanned, upserted, skipped, created, updated, unchanged };
 }
 
 /**
@@ -194,9 +256,12 @@ export async function discoverEmailEndpoints(
     .eq("tenant_id", tenantId);
 
   let scanned = 0;
-  let upserted = 0;
   let skipped = 0;
   let excluded = 0;
+  let created = 0;
+  let updated = 0;
+  let unchanged = 0;
+  const correlation = crypto.randomUUID();
 
   // DEFAULT-DENY: with no approved domain configured we import nothing at all.
   if (approved.length === 0) {
@@ -206,10 +271,25 @@ export async function discoverEmailEndpoints(
       const d = emailDomain(String(m.email_address ?? "")) || "(unparseable)";
       excluded_domains[d] = (excluded_domains[d] ?? 0) + 1;
     }
+    await writeDiscoveryRunSummary(admin, tenantId, actor, "email", {
+      scanned,
+      imported: 0,
+      created: 0,
+      updated: 0,
+      unchanged: 0,
+      excluded,
+      excluded_domains,
+      approved_domains: approved,
+      default_denied: true,
+      at: new Date().toISOString(),
+    }, correlation);
     return {
       scanned,
       upserted: 0,
       skipped,
+      created: 0,
+      updated: 0,
+      unchanged: 0,
       excluded,
       excluded_domains,
       ambiguous,
@@ -241,7 +321,7 @@ export async function discoverEmailEndpoints(
         : m.mailbox_type === "group"
           ? "group_address"
           : "email";
-    const { error } = await admin.rpc("cp_upsert_endpoint", {
+    const { data, error } = await admin.rpc("cp_upsert_endpoint", {
       p_tenant: tenantId,
       p_channel: "email",
       p_endpoint_kind: kind,
@@ -255,16 +335,35 @@ export async function discoverEmailEndpoints(
       p_metadata: {},
       p_actor: actor,
       p_reason: "email discovery refresh",
-      p_correlation: null,
+      p_correlation: correlation,
       p_view_as: false,
     });
     if (error) throw new Error(`discoverEmailEndpoints: ${error.message}`);
-    upserted++;
+    const outcome = outcomeOf(data);
+    if (outcome === "created") created++;
+    else if (outcome === "updated") updated++;
+    else unchanged++;
   }
+  const upserted = created + updated;
+  await writeDiscoveryRunSummary(admin, tenantId, actor, "email", {
+    scanned,
+    imported: upserted,
+    created,
+    updated,
+    unchanged,
+    excluded,
+    excluded_domains,
+    approved_domains: approved,
+    ambiguous_count: ambiguous.length,
+    at: new Date().toISOString(),
+  }, correlation);
   return {
     scanned,
     upserted,
     skipped,
+    created,
+    updated,
+    unchanged,
     excluded,
     excluded_domains,
     ambiguous,

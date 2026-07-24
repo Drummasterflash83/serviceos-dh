@@ -7,7 +7,9 @@
 // platform authority without surrendering their tenant role. A platform grant confers
 // Control Plane access ONLY — never tenant data access (is_openfolk() is untouched).
 // Reads require view; writes require admin AND no active View-As context (View-As can
-// never configure).
+// never configure). Machine callers (discovery workers) use a DEDICATED Control Plane
+// secret (OPENFOLK_CONTROLPLANE_KEY) in the x-openfolk-machine-key header plus an explicit
+// x-openfolk-actor — never the Supabase service-role key.
 // The real authenticated actor is always retained. Machine callers (discovery workers)
 // use the service-role key plus an explicit x-openfolk-actor header.
 
@@ -91,6 +93,26 @@ export function decidePlatformAccess(input: {
   return { allow: true, isAdmin };
 }
 
+/**
+ * Constant-time comparison of a provided machine key against the configured dedicated
+ * secret. Fails closed when either is missing (so an unset OPENFOLK_CONTROLPLANE_KEY
+ * disables machine mode) or the lengths differ. This is a dedicated per-function secret,
+ * never the Supabase service-role/publishable key — so a service-role or publishable key
+ * presented here does not authenticate.
+ */
+export function verifyMachineKey(
+  provided: string | null | undefined,
+  expected: string | null | undefined,
+): boolean {
+  if (!provided || !expected) return false;
+  if (provided.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < provided.length; i++) {
+    diff |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 const err = (code: string, message: string, httpStatus: number): PlatformResult => ({
   ok: false,
   error: { code, message, httpStatus },
@@ -103,21 +125,32 @@ export async function requirePlatformOperator(
   opts: { requireAdmin?: boolean } = {},
 ): Promise<PlatformResult> {
   const requireAdmin = opts.requireAdmin === true;
-  const token = getBearerToken(req);
-  if (!token) return err("missing_auth", "Missing bearer token", 401);
   const now = Date.now();
 
-  // Machine/internal path (discovery workers): service key + explicit actor label.
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (serviceKey && token === serviceKey) {
+  // ── Machine/internal path (discovery workers) ────────────────────────────
+  // A DEDICATED Control Plane secret in the x-openfolk-machine-key header — NEVER the
+  // Supabase service-role key (reusing it broke on the project's API-key rotation and
+  // conflated DB access with a caller credential). Validated constant-time against
+  // OPENFOLK_CONTROLPLANE_KEY, a secret scoped to this function. Fails closed when the
+  // secret is unset, the key is wrong, or the actor label is missing. Checked before the
+  // user path so a machine caller needs no user JWT.
+  const machineKey = req.headers.get("x-openfolk-machine-key");
+  if (machineKey !== null) {
+    if (!verifyMachineKey(machineKey, Deno.env.get("OPENFOLK_CONTROLPLANE_KEY"))) {
+      return err("invalid_machine_key", "Invalid Control Plane machine key", 401);
+    }
     const actor = req.headers.get("x-openfolk-actor");
     if (!actor)
       return err("forbidden", "Internal Control Plane call missing x-openfolk-actor", 403);
     return {
       ok: true,
-      ctx: { userId: "service", actor, role: "service", isAdmin: true, viewAsActive: false },
+      ctx: { userId: "machine", actor, role: "machine", isAdmin: true, viewAsActive: false },
     };
   }
+
+  // ── Interactive user path (unchanged authority model) ────────────────────
+  const token = getBearerToken(req);
+  if (!token) return err("missing_auth", "Missing bearer token", 401);
 
   let userId: string;
   let email: string | null;
