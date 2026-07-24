@@ -136,6 +136,18 @@ const WORKSPACE: Workspace = {
       source: "discovery",
       updated_at: "2026-07-23T00:00:00Z",
     },
+    {
+      id: "ep-slack-carol",
+      channel: "slack",
+      endpoint_kind: "slack_user",
+      normalized_value: "U0CAROL",
+      display_value: "carol",
+      provider: "slack",
+      is_shared: false,
+      status: "active",
+      source: "discovery",
+      updated_at: "2026-07-23T00:00:00Z",
+    },
   ],
   ownership: [
     {
@@ -208,6 +220,31 @@ const WORKSPACE: Workspace = {
       },
     ],
     reviews: [],
+  },
+  // Slack identity candidates — discovered read-only from the user directory (never messages).
+  slackIdentityResolution: {
+    workspace: { team_id: "T012DEMO", team_name: "Demo Heating HQ" },
+    candidates: [
+      {
+        endpoint_id: "ep-slack-carol",
+        slack_user_id: "U0CAROL",
+        suggested_member_id: "m3",
+        suggested_kind: "person",
+        confidence: "high",
+        evidence: "Slack email matches this member's confirmed mailbox exactly",
+        provenance: "slack-verified-email",
+        matched_by: "verified_email",
+        ambiguity: [],
+        deactivated: false,
+        classification: "person",
+        display_name: "carol",
+        real_name: "Carol Vine",
+        email: "carol@demo.example",
+        title: "Engineer",
+        tz: "Europe/London",
+        is_guest: false,
+      },
+    ],
   },
   // Telephony extension candidates (provider-neutral; labels = evidence, never identity).
   telephonyIdentityResolution: {
@@ -374,7 +411,9 @@ function DemoOpenfolk() {
             const provider = ep
               ? ep.channel === "phone"
                 ? (ep.provider ?? "voip")
-                : "google_workspace"
+                : ep.channel === "slack"
+                  ? "slack"
+                  : "google_workspace"
               : "google_workspace";
             identities.push({
               id: `demo-id-${demoSeq++}`,
@@ -410,6 +449,14 @@ function DemoOpenfolk() {
                 (c) => c.endpoint_id !== input.endpoint_id,
               ),
             },
+            slackIdentityResolution: w.slackIdentityResolution
+              ? {
+                  workspace: w.slackIdentityResolution.workspace,
+                  candidates: w.slackIdentityResolution.candidates.filter(
+                    (c) => c.endpoint_id !== input.endpoint_id,
+                  ),
+                }
+              : undefined,
           };
         });
         setAudit((a) => [

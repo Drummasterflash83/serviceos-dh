@@ -272,6 +272,31 @@ export interface TelephonyCandidate {
 export interface TelephonyIdentityResolution {
   candidates: TelephonyCandidate[];
 }
+// Slack identity candidate — the Slack analogue. Discovered read-only from the user directory
+// (never message content). A Slack user id is never a canonical person id.
+export interface SlackCandidate {
+  endpoint_id: string | null; // communication_endpoints (channel=slack) — set by discovery
+  slack_user_id: string;
+  suggested_member_id: string | null;
+  suggested_kind: "person" | "system" | "none";
+  confidence: "high" | "medium" | "low" | "unresolved";
+  evidence: string;
+  provenance: string;
+  matched_by: string;
+  ambiguity: string[];
+  deactivated: boolean;
+  classification: "person" | "bot" | "app" | "system";
+  display_name: string | null;
+  real_name: string | null;
+  email: string | null;
+  title: string | null;
+  tz: string | null;
+  is_guest: boolean;
+}
+export interface SlackIdentityResolution {
+  workspace: { team_id: string | null; team_name: string | null } | null;
+  candidates: SlackCandidate[];
+}
 export interface Workspace {
   summary: TenantSummary;
   members: CpMember[];
@@ -284,6 +309,7 @@ export interface Workspace {
   phoneEvidence?: PhoneEvidenceItem[];
   identityResolution?: IdentityResolution;
   telephonyIdentityResolution?: TelephonyIdentityResolution;
+  slackIdentityResolution?: SlackIdentityResolution;
 }
 export interface EndpointValidation {
   valid: boolean;

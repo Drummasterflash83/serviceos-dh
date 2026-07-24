@@ -61,6 +61,7 @@ function ConfidencePill({ level }: { level: string }) {
 function provenanceLabel(p: string): string {
   const s = (p || "").toLowerCase();
   if (s.includes("member_integration_identities")) return "Operator confirmed";
+  if (s.includes("slack")) return "Slack (inference)";
   if (s.includes("telephony") || s.includes("extension-label")) return "Sipcentric (inference)";
   if (s.includes("workspace") || s.includes("directory-name")) return "Google (inference)";
   if (s.includes("resolver") || s.includes("identity")) return "Inference";
@@ -86,7 +87,15 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 // ── Connected-source catalogue (data, so new sources are config not code) ────
-type SourceStatus = "confirmed" | "candidate" | "connected_no_link" | "not_connected" | "planned";
+type SourceStatus =
+  | "confirmed"
+  | "candidate"
+  | "ambiguous"
+  | "deactivated"
+  | "connected_no_link"
+  | "not_connected"
+  | "revoked"
+  | "planned";
 interface SourceView {
   key: string;
   label: string;
@@ -105,8 +114,11 @@ interface SourceView {
 const STATUS_META: Record<SourceStatus, { tone: Tone; label: string }> = {
   confirmed: { tone: "ok", label: "confirmed" },
   candidate: { tone: "attention", label: "candidate — review" },
+  ambiguous: { tone: "attention", label: "ambiguous — resolve" },
+  deactivated: { tone: "attention", label: "candidate · deactivated" },
   connected_no_link: { tone: "info", label: "connected · no link yet" },
   not_connected: { tone: "neutral", label: "not connected" },
+  revoked: { tone: "risk", label: "revoked / error" },
   planned: { tone: "neutral", label: "planned" },
 };
 
@@ -259,14 +271,82 @@ export function PersonIntelligenceHub({
     status: "planned",
     evidence: "operational source of truth — read-only import designed, not yet ingested",
   });
-  sources.push({
-    key: "slack",
-    label: "Slack",
-    icon: <MessageSquare className="h-4 w-4 text-muted-foreground" />,
-    status:
-      workspace.connections?.slack?.status === "connected" ? "connected_no_link" : "not_connected",
-    evidence: workspace.connections?.slack?.note ?? "read-only connection not yet authorised",
-  });
+  // Slack — full state model (identity discovery is read-only; a Slack user id is never canonical).
+  const slackConfirmed = confirmed.filter((i) => i.provider === "slack");
+  const slackCandsForMe = (workspace.slackIdentityResolution?.candidates ?? []).filter(
+    (c) => c.suggested_member_id === actor.id && c.suggested_kind === "person",
+  );
+  const slackConn = workspace.connections?.slack;
+  const slackWorkspace = workspace.slackIdentityResolution?.workspace?.team_name ?? null;
+  const slackIcon = <MessageSquare className="h-4 w-4 text-accent" />;
+  if (slackConfirmed.length) {
+    sources.push({
+      key: "slack",
+      label: "Slack",
+      icon: slackIcon,
+      status: "confirmed",
+      confidence: "high",
+      evidence: `${slackConfirmed[0].external_ref} — operator confirmed`,
+      provenance: "member_integration_identities",
+    });
+  } else if (slackCandsForMe.length) {
+    const c = slackCandsForMe[0];
+    const status: SourceStatus = c.deactivated
+      ? "deactivated"
+      : c.confidence === "unresolved"
+        ? "ambiguous"
+        : "candidate";
+    sources.push({
+      key: "slack",
+      label: "Slack",
+      icon: slackIcon,
+      status,
+      confidence: c.confidence,
+      evidence: [
+        slackWorkspace ? `${slackWorkspace}` : null,
+        c.display_name ?? c.real_name,
+        c.title,
+        c.evidence,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      provenance: c.provenance,
+      conflicts: [
+        ...(c.ambiguity.length ? [`matches ${c.ambiguity.length} members`] : []),
+        ...(c.deactivated ? ["Slack account deactivated"] : []),
+      ],
+      endpointId: c.endpoint_id ?? undefined,
+      suggestedMemberId: actor.id,
+    });
+  } else if (slackConn?.status === "revoked" || slackConn?.status === "error") {
+    sources.push({
+      key: "slack",
+      label: "Slack",
+      icon: slackIcon,
+      status: "revoked",
+      evidence: slackConn.note ?? "Slack connection revoked or errored — reconnect required",
+    });
+  } else if (workspace.slackIdentityResolution) {
+    // Discovery has run but no candidate names this actor.
+    sources.push({
+      key: "slack",
+      label: "Slack",
+      icon: slackIcon,
+      status: "connected_no_link",
+      evidence: "connected — no Slack user candidate names this actor yet",
+    });
+  } else {
+    const connected = slackConn?.status === "connected" || slackConn?.status === "configured";
+    sources.push({
+      key: "slack",
+      label: "Slack",
+      icon: <MessageSquare className="h-4 w-4 text-muted-foreground" />,
+      status: connected ? "connected_no_link" : "not_connected",
+      evidence: connected
+        ? "connection available — run identity discovery"
+        : (slackConn?.note ?? "read-only connection not yet authorised"),
+    });
+  }
 
   // ── Responsibilities ──
   const activeOwn = ownership.filter((o) => o.owner_member_id === actor.id);
@@ -467,36 +547,40 @@ export function PersonIntelligenceHub({
                 {(s.conflicts?.length ?? 0) > 0 && (
                   <p className="mt-1 text-[11px] text-amber-700">⚠ {s.conflicts!.join("; ")}</p>
                 )}
-                {s.status === "candidate" && s.endpointId && writeCapable && (
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() =>
-                        doReview(
-                          s.endpointId!,
-                          "confirmed_person",
-                          s.suggestedMemberId ?? actor.id,
-                          s.confidence,
-                          s.label,
-                        )
-                      }
-                      className="rounded-md border border-success/40 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success hover:bg-success/20 disabled:opacity-50"
-                    >
-                      Confirm link
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() =>
-                        doReview(s.endpointId!, "rejected", null, s.confidence, s.label)
-                      }
-                      className="rounded-md border border-hairline bg-white px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                )}
+                {(s.status === "candidate" ||
+                  s.status === "ambiguous" ||
+                  s.status === "deactivated") &&
+                  s.endpointId &&
+                  writeCapable && (
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          doReview(
+                            s.endpointId!,
+                            "confirmed_person",
+                            s.suggestedMemberId ?? actor.id,
+                            s.confidence,
+                            s.label,
+                          )
+                        }
+                        className="rounded-md border border-success/40 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success hover:bg-success/20 disabled:opacity-50"
+                      >
+                        Confirm link
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          doReview(s.endpointId!, "rejected", null, s.confidence, s.label)
+                        }
+                        className="rounded-md border border-hairline bg-white px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
               </div>
             );
           })}
