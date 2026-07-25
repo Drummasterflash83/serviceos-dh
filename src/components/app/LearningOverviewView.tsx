@@ -73,7 +73,7 @@ export function SourceCard({ s }: { s: LcSourceStatus }) {
         )}
         {s.failedOrPending != null && (
           <span className="text-muted-foreground">
-            failed/pending <span className="tabular text-display">{s.failedOrPending}</span>
+            unprocessed <span className="tabular text-display">{s.failedOrPending}</span>
           </span>
         )}
         {s.coverage.map((c) => (

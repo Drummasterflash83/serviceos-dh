@@ -9,7 +9,7 @@
  * never generating new intelligence. Absent evidence renders as an explicit honest state.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Radio, ListTree, Search, Loader2, Clock, ExternalLink, ChevronRight } from "lucide-react";
+import { Radio, ListTree, Search, Loader2, Clock, ChevronRight } from "lucide-react";
 import { SectionCard, StatusPill, EmptyState } from "./openfolk-ui";
 import { SourceCard, fmt } from "./LearningOverviewView";
 import {
@@ -58,6 +58,49 @@ function duration(ms: number | null): string {
   const m = Math.floor((abs % 3_600_000) / 60_000);
   const parts = d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
   return parts;
+}
+
+// Evidence excerpts come straight from raw email bodies, so they carry HTML entities and the
+// zero-width tracking whitespace marketing senders inject. Decode/strip for a readable excerpt
+// (display-only; the underlying canonical record is never modified).
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&#39;": "'",
+  "&apos;": "'",
+  "&quot;": '"',
+  "&lt;": "<",
+  "&gt;": ">",
+  "&nbsp;": " ",
+  "&pound;": "£",
+  "&euro;": "€",
+  "&hellip;": "…",
+  "&mdash;": "—",
+  "&ndash;": "–",
+};
+function cleanText(s: string): string {
+  // zero-width / soft-hyphen / BOM / combining-grapheme-joiner tracking chars
+  let out = s.replace(/\u00AD|\u200B|\u200C|\u200D|\u2060|\u034F|\uFEFF/g, "");
+  for (let i = 0; i < 2; i++) {
+    out = out
+      .replace(
+        /&(amp|#39|apos|quot|lt|gt|nbsp|pound|euro|hellip|mdash|ndash);/g,
+        (m) => ENTITIES[m] ?? m,
+      )
+      .replace(/&#(\d+);/g, (_, n) => {
+        try {
+          return String.fromCodePoint(Number(n));
+        } catch {
+          return _;
+        }
+      });
+  }
+  return out.replace(/\s+/g, " ").trim();
+}
+
+// The "customer" queue actually links any business-graph entity (often a sender/vendor domain),
+// so present it honestly as a company/entity link rather than asserting "customer".
+function displayQueueLabel(key: string, fallback: string): string {
+  return key === "intel_customer" ? "Intelligence linked to a company / entity" : fallback;
 }
 
 export function LearningSection({ tenantId }: { tenantId: string }) {
@@ -271,12 +314,12 @@ function IntelligenceTab({ overview, tenantId }: { overview: LearningOverview; t
               "flex w-full items-center gap-2 border-b border-hairline py-1.5 text-left last:border-0 " +
               (q.note ? "cursor-default opacity-70" : "hover:bg-surface-alt/40")
             }
-            title={q.note ?? `Open records — ${q.label}`}
+            title={q.note ?? `Open records — ${displayQueueLabel(q.key, q.label)}`}
           >
             <span className="tabular w-14 shrink-0 text-sm font-semibold text-display">
               {q.count}
             </span>
-            <span className="flex-1 text-xs text-display">{q.label}</span>
+            <span className="flex-1 text-xs text-display">{displayQueueLabel(q.key, q.label)}</span>
             {q.note ? (
               <span className="text-[10px] text-muted-foreground">{q.note}</span>
             ) : openKey === q.key ? (
@@ -290,7 +333,7 @@ function IntelligenceTab({ overview, tenantId }: { overview: LearningOverview; t
               loading={drillLoading}
               error={drillError}
               drill={drill}
-              fallbackLabel={q.label}
+              fallbackLabel={displayQueueLabel(q.key, q.label)}
             />
           )}
         </div>
@@ -304,7 +347,7 @@ function IntelligenceTab({ overview, tenantId }: { overview: LearningOverview; t
           ei.repeatedThemes.map((t, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="tabular w-10 text-display">×{t.count}</span>
-              <span className="text-muted-foreground">{t.subject}</span>
+              <span className="text-muted-foreground">{cleanText(t.subject)}</span>
             </div>
           ))
         )}
@@ -344,7 +387,9 @@ function DrillPanel({
       {!loading && !error && drill && (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-semibold text-display">{drill.label}</span>
+            <span className="font-semibold text-display">
+              {displayQueueLabel(drill.queueKey, drill.label)}
+            </span>
             <StatusPill tone="info">
               {drill.returned}
               {drill.truncated ? "+" : ""} shown
@@ -411,26 +456,23 @@ function DrillRow({ r }: { r: LcDrillRecord }) {
         {r.deadline && <Field label="deadline">{fmt(r.deadline)}</Field>}
         {r.occurredAt && <Field label="occurred">{fmt(r.occurredAt)}</Field>}
         {r.elapsedMs != null && <Field label="elapsed">{duration(r.elapsedMs)}</Field>}
-        {r.customer && <Field label="customer">{r.customer}</Field>}
+        {r.customer && <Field label="linked entity">{r.customer}</Field>}
         {r.status && <Field label="status">{r.status}</Field>}
         {r.confidence != null && (
           <Field label="confidence">{Math.round(r.confidence * 100)}%</Field>
         )}
         {r.source?.type && <Field label="source">{r.source.type}</Field>}
       </div>
-      {r.evidenceExcerpt && (
+      {r.evidenceExcerpt && cleanText(r.evidenceExcerpt) && (
         <p className="mt-1 line-clamp-2 border-l-2 border-hairline pl-2 text-muted-foreground">
-          “{r.evidenceExcerpt}”
+          “{cleanText(r.evidenceExcerpt)}”
         </p>
       )}
       <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
         <span>Why: {r.whyQualified}</span>
         {r.source?.interactionId && (
-          <span className="inline-flex items-center gap-0.5" title={r.source.interactionId}>
-            <ExternalLink className="h-3 w-3" /> source{" "}
-            {r.source.ref
-              ? `(${r.source.ref})`
-              : `interaction ${r.source.interactionId.slice(0, 8)}`}
+          <span className="text-muted-foreground/80" title={r.source.interactionId}>
+            source ref {r.source.ref ? r.source.ref : r.source.interactionId.slice(0, 8)}
           </span>
         )}
       </div>
