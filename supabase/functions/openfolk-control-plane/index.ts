@@ -21,6 +21,10 @@ import {
   discoverTelephonyEndpoints,
 } from "../_shared/controlplane/discovery.ts";
 import { discoverTelephonyExtensionsFromActivity } from "../_shared/controlplane/telephony_discovery.ts";
+import {
+  gatherLearningMetrics,
+  buildLearningOverview,
+} from "../_shared/controlplane/learning_centre.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 import {
   validateManualEndpoint,
@@ -101,6 +105,7 @@ const READ_ACTIONS = new Set([
   "connections.discovery_history",
   "delegated.list",
   "delegated.get_submission",
+  "learning.overview",
 ]);
 
 // Machine mode (x-openfolk-machine-key) may invoke ONLY these named operations — never
@@ -192,6 +197,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       case "readiness": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         return json({ ok: true, data: await computeSourceReadiness(admin, tenantId) });
+      }
+      case "learning.overview": {
+        // Learning Centre Stage 1 — read-only projection over tenant-scoped canonical evidence.
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const metrics = await gatherLearningMetrics(admin, tenantId, new Date(now).toISOString());
+        return json({ ok: true, data: buildLearningOverview(metrics) });
       }
       case "audit": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

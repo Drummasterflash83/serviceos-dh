@@ -311,6 +311,60 @@ export interface Workspace {
   telephonyIdentityResolution?: TelephonyIdentityResolution;
   slackIdentityResolution?: SlackIdentityResolution;
 }
+// ── Learning Centre (read-only operator view) — mirrors _shared/controlplane/learning_centre.ts
+export interface LcSourceStatus {
+  key: string;
+  label: string;
+  connectionState: "live" | "foundation" | "planned" | "not_connected";
+  scheduleState: "active" | "dormant" | "not_applicable";
+  latestEvidenceAt: string | null;
+  freshness: "fresh" | "recent" | "stale" | "none";
+  received: number | null;
+  processed: number | null;
+  failedOrPending: number | null;
+  coverage: { label: string; value: string }[];
+  confirmedIdentities: number | null;
+  unresolvedIdentities: number | null;
+  gaps: string[];
+  actionRequired: string | null;
+}
+export interface LcIntelQueue {
+  key: string;
+  label: string;
+  count: number;
+  drill: { table: string; filter: string };
+  note?: string;
+}
+export interface LearningOverview {
+  tenantId: string;
+  generatedAt: string;
+  sourceTruth: {
+    summary: {
+      sourcesLive: string[];
+      sourcesMissing: string[];
+      latestEvidenceAt: string | null;
+      processingHealth: "ok" | "attention" | "unknown";
+      identityCoverage: { confirmed: number; unresolved: number; pct: number | null };
+      majorBlindSpots: string[];
+    };
+    sources: LcSourceStatus[];
+  };
+  existingIntelligence: {
+    totals: {
+      interactions: number;
+      intelligenceObjects: number;
+      observations: number;
+      actions: number;
+      recommendations: number;
+    };
+    queues: LcIntelQueue[];
+    repeatedThemes: { subject: string; count: number }[];
+    waiting: { derived: boolean; note: string };
+  };
+}
+export const getLearningOverview = (tenant_id: string) =>
+  invoke<LearningOverview>({ action: "learning.overview", tenant_id });
+
 export interface EndpointValidation {
   valid: boolean;
   errors?: string[];

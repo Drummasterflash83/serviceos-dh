@@ -18,6 +18,7 @@ import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
 import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
 import { Route as DemoOwnershipRouteImport } from './routes/demo.ownership'
 import { Route as DemoOpenfolkRouteImport } from './routes/demo.openfolk'
+import { Route as DemoLearningCentreRouteImport } from './routes/demo.learning-centre'
 import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
 import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-centre'
 
@@ -66,6 +67,11 @@ const DemoOpenfolkRoute = DemoOpenfolkRouteImport.update({
   path: '/demo/openfolk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoLearningCentreRoute = DemoLearningCentreRouteImport.update({
+  id: '/demo/learning-centre',
+  path: '/demo/learning-centre',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoCustomerHealthRoute = DemoCustomerHealthRouteImport.update({
   id: '/demo/customer-health',
   path: '/demo/customer-health',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/openfolk': typeof OpenfolkRouteWithChildren
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
+  '/demo/learning-centre': typeof DemoLearningCentreRoute
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
+  '/demo/learning-centre': typeof DemoLearningCentreRoute
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/openfolk': typeof OpenfolkRouteWithChildren
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
+  '/demo/learning-centre': typeof DemoLearningCentreRoute
   '/demo/openfolk': typeof DemoOpenfolkRoute
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/openfolk'
     | '/demo/command-centre'
     | '/demo/customer-health'
+    | '/demo/learning-centre'
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/command-centre'
     | '/demo/customer-health'
+    | '/demo/learning-centre'
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/openfolk'
     | '/demo/command-centre'
     | '/demo/customer-health'
+    | '/demo/learning-centre'
     | '/demo/openfolk'
     | '/demo/ownership'
     | '/openfolk/$tenantId'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   OpenfolkRoute: typeof OpenfolkRouteWithChildren
   DemoCommandCentreRoute: typeof DemoCommandCentreRoute
   DemoCustomerHealthRoute: typeof DemoCustomerHealthRoute
+  DemoLearningCentreRoute: typeof DemoLearningCentreRoute
   DemoOpenfolkRoute: typeof DemoOpenfolkRoute
   DemoOwnershipRoute: typeof DemoOwnershipRoute
 }
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoOpenfolkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/learning-centre': {
+      id: '/demo/learning-centre'
+      path: '/demo/learning-centre'
+      fullPath: '/demo/learning-centre'
+      preLoaderRoute: typeof DemoLearningCentreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/customer-health': {
       id: '/demo/customer-health'
       path: '/demo/customer-health'
@@ -273,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpenfolkRoute: OpenfolkRouteWithChildren,
   DemoCommandCentreRoute: DemoCommandCentreRoute,
   DemoCustomerHealthRoute: DemoCustomerHealthRoute,
+  DemoLearningCentreRoute: DemoLearningCentreRoute,
   DemoOpenfolkRoute: DemoOpenfolkRoute,
   DemoOwnershipRoute: DemoOwnershipRoute,
 }
