@@ -35,13 +35,13 @@ const SOURCE_ICON: Record<string, ReactNode> = {
   pipeline: <Brain className="h-4 w-4 text-muted-foreground" />,
 };
 
-function fmt(iso: string | null): string {
+export function fmt(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString();
 }
 
-function SourceCard({ s }: { s: LcSourceStatus }) {
+export function SourceCard({ s }: { s: LcSourceStatus }) {
   return (
     <div className="rounded-lg border border-hairline p-3">
       <div className="flex flex-wrap items-center gap-2">

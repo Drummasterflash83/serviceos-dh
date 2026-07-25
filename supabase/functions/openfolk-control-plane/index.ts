@@ -24,6 +24,7 @@ import { discoverTelephonyExtensionsFromActivity } from "../_shared/controlplane
 import {
   gatherLearningMetrics,
   buildLearningOverview,
+  gatherQueueRecords,
 } from "../_shared/controlplane/learning_centre.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 import {
@@ -106,6 +107,7 @@ const READ_ACTIONS = new Set([
   "delegated.list",
   "delegated.get_submission",
   "learning.overview",
+  "learning.drill",
 ]);
 
 // Machine mode (x-openfolk-machine-key) may invoke ONLY these named operations — never
@@ -203,6 +205,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const metrics = await gatherLearningMetrics(admin, tenantId, new Date(now).toISOString());
         return json({ ok: true, data: buildLearningOverview(metrics) });
+      }
+      case "learning.drill": {
+        // Learning Centre drill-down — read-only record list behind a factual queue.
+        // Displays EXISTING canonical records only; generates no new intelligence.
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const queue = String(body.queue ?? "");
+        if (!queue) return fail("bad_request", "queue required", 400);
+        try {
+          const result = await gatherQueueRecords(
+            admin,
+            tenantId,
+            queue,
+            new Date(now).toISOString(),
+          );
+          return json({ ok: true, data: result });
+        } catch (e) {
+          return fail("bad_request", (e as Error).message, 400);
+        }
       }
       case "audit": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

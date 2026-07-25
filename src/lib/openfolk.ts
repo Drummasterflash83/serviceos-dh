@@ -365,6 +365,38 @@ export interface LearningOverview {
 export const getLearningOverview = (tenant_id: string) =>
   invoke<LearningOverview>({ action: "learning.overview", tenant_id });
 
+// Drill-down — the EXISTING canonical records behind a factual queue (read-only).
+export interface LcDrillRecord {
+  id: string;
+  objectType: string | null;
+  subject: string;
+  status: string | null;
+  deadline: string | null;
+  isOverdue: boolean;
+  overdueMs: number | null;
+  elapsedMs: number | null;
+  confidence: number | null;
+  occurredAt: string | null;
+  owner: { state: "confirmed" | "unresolved"; label: string | null };
+  customer: string | null;
+  source: { type: string | null; ref: string | null; interactionId: string | null } | null;
+  evidenceExcerpt: string | null;
+  whyQualified: string;
+}
+export interface LcDrillResult {
+  queueKey: string;
+  label: string;
+  drillable: boolean;
+  trace: { table: string; filter: string };
+  why: string;
+  records: LcDrillRecord[];
+  returned: number;
+  truncated: boolean;
+  note?: string;
+}
+export const getLearningDrill = (tenant_id: string, queue: string) =>
+  invoke<LcDrillResult>({ action: "learning.drill", tenant_id, queue });
+
 export interface EndpointValidation {
   valid: boolean;
   errors?: string[];

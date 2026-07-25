@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Building2,
   ChevronLeft,
+  GraduationCap,
   HeartPulse,
   History,
   Info,
@@ -38,6 +39,7 @@ import type { SourceReadiness } from "@/lib/openfolk";
 
 const NAV_ICON: Record<NavItemKey, ReactNode> = {
   overview: <Activity className="h-4 w-4" />,
+  learning: <GraduationCap className="h-4 w-4" />,
   connections: <Plug className="h-4 w-4" />,
   directory: <Users className="h-4 w-4" />,
   communications: <MessagesSquare className="h-4 w-4" />,
@@ -56,6 +58,7 @@ const READINESS: Record<string, { label: string; tone: Tone }> = {
 // Human page title for the active section (covers hidden sections too).
 const SECTION_TITLE: Partial<Record<WorkspaceSection, string>> = {
   overview: "Command Centre",
+  learning: "Learning",
   connections: "Connections",
   people: "Directory",
   review: "Directory",

@@ -296,52 +296,112 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
   return { summary, sources };
 }
 
+// ── Queue definitions (SINGLE source of truth for count + drill) ─────────────
+// Each queue's count (from already-gathered PipelineMetrics) and its record-level drill
+// (an executable, tenant-scoped filter) come from ONE definition, so a queue can never show
+// a number that the drill can't reproduce. `filterLabel` is the human trace shown under
+// "Evidence and provenance"; `why` is why an individual record qualified.
+export interface QueueDef {
+  key: string;
+  label: string;
+  table: "intelligence_objects" | "recommendations" | "interactions";
+  filterLabel: string;
+  why: string;
+  count: (p: PipelineMetrics) => number;
+  drillable: boolean; // false = a derived aggregate with no exact per-row query (honest)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  apply?: (q: any, nowIso: string) => any;
+  order?: { col: string; ascending: boolean };
+}
+export const QUEUE_DEFS: QueueDef[] = [
+  {
+    key: "actions_with_deadline",
+    label: "Actions with a deadline",
+    table: "intelligence_objects",
+    filterLabel: "object_type = Action AND deadline IS NOT NULL",
+    why: "This is an Action object carrying a due date.",
+    count: (p) => p.actionsWithDeadline,
+    drillable: true,
+    apply: (q) => q.eq("object_type", "Action").not("deadline", "is", null),
+    order: { col: "deadline", ascending: true },
+  },
+  {
+    key: "overdue_actions",
+    label: "Overdue actions",
+    table: "intelligence_objects",
+    filterLabel: "object_type = Action AND deadline < now()",
+    why: "This Action's deadline has already passed.",
+    count: (p) => p.actionsOverdue,
+    drillable: true,
+    apply: (q, now) => q.eq("object_type", "Action").lt("deadline", now),
+    order: { col: "deadline", ascending: true },
+  },
+  {
+    key: "recs_awaiting_review",
+    label: "Recommendations awaiting review",
+    table: "recommendations",
+    filterLabel: "status = open",
+    why: "This recommendation is still open (not resolved or dismissed).",
+    count: (p) => p.recommendationsAwaitingReview,
+    drillable: true,
+    apply: (q) => q.eq("status", "open"),
+    order: { col: "created_at", ascending: false },
+  },
+  {
+    key: "intel_no_owner",
+    label: "Intelligence without confirmed ownership",
+    table: "intelligence_objects",
+    filterLabel: "accountable_ref IS NULL",
+    why: "No accountable owner is confirmed on this object.",
+    count: (p) => p.intelligenceWithoutOwner,
+    drillable: true,
+    apply: (q) => q.is("accountable_ref", null),
+    order: { col: "created_at", ascending: false },
+  },
+  {
+    key: "intel_customer",
+    label: "Intelligence linked to a customer",
+    table: "intelligence_objects",
+    filterLabel: "source_entities <> '{}' (links a graph entity)",
+    why: "This object is linked to at least one business-graph entity.",
+    count: (p) => p.intelligenceLinkedToCustomer,
+    drillable: true,
+    apply: (q) => q.not("source_entities", "eq", "{}"),
+    order: { col: "created_at", ascending: false },
+  },
+  {
+    key: "intel_low_conf",
+    label: "Low-confidence intelligence",
+    table: "intelligence_objects",
+    filterLabel: "confidence < 0.5",
+    why: "The extractor's confidence for this object is below 0.5.",
+    count: (p) => p.intelligenceLowConfidence,
+    drillable: true,
+    apply: (q) => q.lt("confidence", 0.5),
+    order: { col: "confidence", ascending: true },
+  },
+  {
+    key: "comms_no_intel",
+    label: "Communications that produced no intelligence",
+    table: "interactions",
+    filterLabel: "interactions with no intelligence_ingestion (derived count)",
+    why: "This interaction has no linked intelligence ingestion.",
+    // Derived from a set difference (interactions − ingestions); there is no exact per-row
+    // PostgREST anti-join here, so we never fabricate a record list — the trace is shown instead.
+    count: (p) => p.commsNoIntelligence,
+    drillable: false,
+  },
+];
+
 export function buildExistingIntelligence(input: LearningCentreInput): ExistingIntelligence {
   const p = input.pipeline;
-  const queues: IntelQueue[] = [
-    {
-      key: "actions_with_deadline",
-      label: "Actions with a deadline",
-      count: p.actionsWithDeadline,
-      drill: { table: "intelligence_objects", filter: "object_type=Action & deadline not null" },
-    },
-    {
-      key: "overdue_actions",
-      label: "Overdue actions",
-      count: p.actionsOverdue,
-      drill: { table: "intelligence_objects", filter: "object_type=Action & deadline < now" },
-    },
-    {
-      key: "recs_awaiting_review",
-      label: "Recommendations awaiting review",
-      count: p.recommendationsAwaitingReview,
-      drill: { table: "recommendations", filter: "status=pending" },
-    },
-    {
-      key: "intel_no_owner",
-      label: "Intelligence without confirmed ownership",
-      count: p.intelligenceWithoutOwner,
-      drill: { table: "intelligence_objects", filter: "no accountable_ref" },
-    },
-    {
-      key: "intel_customer",
-      label: "Intelligence linked to a customer",
-      count: p.intelligenceLinkedToCustomer,
-      drill: { table: "intelligence_objects", filter: "source_entities → company" },
-    },
-    {
-      key: "intel_low_conf",
-      label: "Low-confidence intelligence",
-      count: p.intelligenceLowConfidence,
-      drill: { table: "intelligence_objects", filter: "confidence < 0.5" },
-    },
-    {
-      key: "comms_no_intel",
-      label: "Communications that produced no intelligence",
-      count: p.commsNoIntelligence,
-      drill: { table: "interactions", filter: "no intelligence_ingestion" },
-    },
-  ];
+  const queues: IntelQueue[] = QUEUE_DEFS.map((d) => ({
+    key: d.key,
+    label: d.label,
+    count: d.count(p),
+    drill: { table: d.table, filter: d.filterLabel },
+    ...(d.drillable ? {} : { note: "record-level drill not available for this derived aggregate" }),
+  }));
   return {
     totals: {
       interactions: p.interactions,
@@ -485,8 +545,10 @@ export async function gatherLearningMetrics(
   );
   const intelligenceObjects = await n(db, "intelligence_objects", tenantId);
   const recommendations = await n(db, "recommendations", tenantId);
+  // "Awaiting review" = the canonical open state. (The pipeline's recommendations table uses
+  // open|resolved|dismissed — never 'pending'; filtering the wrong value silently read 0.)
   const recommendationsAwaitingReview = await n(db, "recommendations", tenantId, (q) =>
-    q.eq("status", "pending"),
+    q.eq("status", "open"),
   );
   const phoneReceived = await n(db, "phone_calls", tenantId);
   const phoneInsights = await n(db, "phone_ai_insights", tenantId);
@@ -558,4 +620,216 @@ export async function gatherLearningMetrics(
     },
     health: { findings: await n(db, "health_objects", tenantId) },
   };
+}
+
+// ── Drill-down (READ-ONLY record lists) ──────────────────────────────────────
+// Clicking a factual queue opens the EXISTING canonical records behind the number — never
+// new intelligence. Each record carries the operator-useful facts (action/subject/deadline/
+// owner/customer/source/evidence + why it qualified). The canonical table+filter trace is
+// returned too, for the "Evidence and provenance" section. Tenant-scoped; no writes.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Row2 = Record<string, any>;
+
+export interface DrillRecord {
+  id: string;
+  objectType: string | null; // the action or finding type
+  subject: string;
+  status: string | null;
+  deadline: string | null;
+  isOverdue: boolean;
+  overdueMs: number | null; // now − deadline (positive = overdue, negative = time remaining)
+  elapsedMs: number | null; // now − occurredAt
+  confidence: number | null;
+  occurredAt: string | null;
+  owner: { state: "confirmed" | "unresolved"; label: string | null };
+  customer: string | null; // company/customer human label (graph label — never message content)
+  source: { type: string | null; ref: string | null; interactionId: string | null } | null;
+  evidenceExcerpt: string | null;
+  whyQualified: string;
+}
+export interface DrillResult {
+  queueKey: string;
+  label: string;
+  drillable: boolean;
+  trace: { table: string; filter: string };
+  why: string;
+  records: DrillRecord[];
+  returned: number;
+  truncated: boolean;
+  note?: string;
+}
+
+export const DRILL_LIMIT = 25;
+
+function uniq(a: (string | null | undefined)[]): string[] {
+  return [...new Set(a.filter((x): x is string => !!x))];
+}
+/** accountable_ref is a jsonb {kind, ref}; extract the owner id if present. */
+function ownerRefId(ref: unknown): string | null {
+  if (ref && typeof ref === "object") {
+    const r = (ref as Row2).ref ?? (ref as Row2).id ?? null;
+    return typeof r === "string" ? r : null;
+  }
+  return null;
+}
+/** evidence is a jsonb [{source, detail}]; return the first human detail if any. */
+function firstEvidenceDetail(evidence: unknown): string | null {
+  if (Array.isArray(evidence) && evidence.length) {
+    const f = evidence[0] as Row2;
+    const d = f?.detail ?? f?.summary ?? f?.text ?? null;
+    return typeof d === "string" && d.trim() ? d : null;
+  }
+  return null;
+}
+
+export async function gatherQueueRecords(
+  db: SupabaseClient,
+  tenantId: string,
+  queueKey: string,
+  nowIso: string,
+  limit = DRILL_LIMIT,
+): Promise<DrillResult> {
+  const def = QUEUE_DEFS.find((d) => d.key === queueKey);
+  if (!def) throw new Error(`unknown queue '${queueKey}'`);
+  const base: DrillResult = {
+    queueKey: def.key,
+    label: def.label,
+    drillable: def.drillable,
+    trace: { table: def.table, filter: def.filterLabel },
+    why: def.why,
+    records: [],
+    returned: 0,
+    truncated: false,
+  };
+  if (!def.drillable || !def.apply) {
+    return { ...base, note: "record-level drill not available for this derived aggregate" };
+  }
+  const nowMs = Date.parse(nowIso);
+
+  if (def.table === "intelligence_objects") {
+    let q: Q = db
+      .from("intelligence_objects")
+      .select(
+        "id, object_type, subject, status, deadline, confidence, created_at, accountable_ref, source_entities, source_interactions, evidence",
+      )
+      .eq("tenant_id", tenantId);
+    q = def.apply(q, nowIso);
+    if (def.order)
+      q = q.order(def.order.col, { ascending: def.order.ascending, nullsFirst: false });
+    const { data, error } = await q.limit(limit + 1);
+    if (error) return { ...base, note: "records could not be read" };
+    const rows = (data ?? []) as Row2[];
+    const truncated = rows.length > limit;
+    const use = rows.slice(0, limit);
+
+    const entityIds = uniq(use.flatMap((r) => (r.source_entities ?? []) as string[]));
+    const interactionIds = uniq(use.map((r) => (r.source_interactions ?? [])[0] as string));
+    const ownerIds = uniq(use.map((r) => ownerRefId(r.accountable_ref)));
+    const [ent, intr, own] = await Promise.all([
+      entityIds.length
+        ? db
+            .from("graph_nodes")
+            .select("id,node_type,label")
+            .eq("tenant_id", tenantId)
+            .in("id", entityIds)
+        : Promise.resolve({ data: [] as Row2[] }),
+      interactionIds.length
+        ? db
+            .from("interactions")
+            .select(
+              "id,source_type,interaction_type,occurred_at,summary,body_preview,source_table,source_external_id,direction",
+            )
+            .eq("tenant_id", tenantId)
+            .in("id", interactionIds)
+        : Promise.resolve({ data: [] as Row2[] }),
+      ownerIds.length
+        ? db
+            .from("team_members")
+            .select("id,display_name")
+            .eq("tenant_id", tenantId)
+            .in("id", ownerIds)
+        : Promise.resolve({ data: [] as Row2[] }),
+    ]);
+    const entityById = new Map((ent.data ?? []).map((e: Row2) => [e.id, e]));
+    const intById = new Map((intr.data ?? []).map((i: Row2) => [i.id, i]));
+    const ownerById = new Map((own.data ?? []).map((o: Row2) => [o.id, o.display_name as string]));
+
+    const records: DrillRecord[] = use.map((r) => {
+      const company = ((r.source_entities ?? []) as string[])
+        .map((id) => entityById.get(id))
+        .find((e) => e && ["company", "customer_card", "customer"].includes(e.node_type));
+      const intId = (r.source_interactions ?? [])[0] as string | undefined;
+      const it = intId ? intById.get(intId) : undefined;
+      const ownerRef = ownerRefId(r.accountable_ref);
+      const deadlineMs = r.deadline ? Date.parse(r.deadline) : null;
+      const occurred =
+        (it?.occurred_at as string | undefined) ?? (r.created_at as string | undefined) ?? null;
+      const excerpt =
+        firstEvidenceDetail(r.evidence) ??
+        (it?.summary as string | undefined) ??
+        (it?.body_preview as string | undefined) ??
+        null;
+      return {
+        id: r.id,
+        objectType: r.object_type ?? null,
+        subject: r.subject ?? "(no subject)",
+        status: r.status ?? null,
+        deadline: r.deadline ?? null,
+        isOverdue: deadlineMs != null && deadlineMs < nowMs,
+        overdueMs: deadlineMs != null ? nowMs - deadlineMs : null,
+        elapsedMs: occurred ? nowMs - Date.parse(occurred) : null,
+        confidence: r.confidence ?? null,
+        occurredAt: occurred,
+        owner: ownerRef
+          ? { state: "confirmed", label: ownerById.get(ownerRef) ?? String(ownerRef) }
+          : { state: "unresolved", label: null },
+        customer: (company?.label as string | null) ?? null,
+        source: it
+          ? {
+              type: (it.source_type as string) ?? (it.interaction_type as string) ?? null,
+              ref: (it.source_external_id as string) ?? (it.source_table as string) ?? null,
+              interactionId: intId ?? null,
+            }
+          : intId
+            ? { type: null, ref: null, interactionId: intId }
+            : null,
+        evidenceExcerpt: excerpt ? String(excerpt).slice(0, 240) : null,
+        whyQualified: def.why,
+      };
+    });
+    return { ...base, records, returned: records.length, truncated };
+  }
+
+  if (def.table === "recommendations") {
+    let q: Q = db
+      .from("recommendations")
+      .select("id, type, title, detail, severity, status, confidence, created_at, interaction_id")
+      .eq("tenant_id", tenantId);
+    q = def.apply(q, nowIso);
+    if (def.order) q = q.order(def.order.col, { ascending: def.order.ascending });
+    const { data, error } = await q.limit(limit + 1);
+    if (error) return { ...base, note: "records could not be read" };
+    const rows = (data ?? []) as Row2[];
+    const truncated = rows.length > limit;
+    const records: DrillRecord[] = rows.slice(0, limit).map((r) => ({
+      id: r.id,
+      objectType: r.type ?? null,
+      subject: r.title ?? "(no title)",
+      status: r.status ?? null,
+      deadline: null,
+      isOverdue: false,
+      overdueMs: null,
+      elapsedMs: r.created_at ? nowMs - Date.parse(r.created_at) : null,
+      confidence: r.confidence ?? null,
+      occurredAt: r.created_at ?? null,
+      owner: { state: "unresolved", label: null },
+      customer: null,
+      source: r.interaction_id ? { type: null, ref: null, interactionId: r.interaction_id } : null,
+      evidenceExcerpt: r.detail ? String(r.detail).slice(0, 240) : null,
+      whyQualified: def.why,
+    }));
+    return { ...base, records, returned: records.length, truncated };
+  }
+
+  return { ...base, note: "record-level drill not available for this table" };
 }

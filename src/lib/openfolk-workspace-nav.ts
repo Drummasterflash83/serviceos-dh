@@ -15,6 +15,7 @@
 // URLs so legacy bookmarks resolve.
 export const WORKSPACE_SECTIONS = [
   "overview",
+  "learning",
   "company",
   "connections",
   "people",
@@ -50,6 +51,7 @@ export function resolveSection(value: unknown): WorkspaceSection {
 // that fronts the people/review/ownership sections. Icon + rendering live in the component.
 export type NavItemKey =
   | "overview"
+  | "learning"
   | "connections"
   | "directory"
   | "communications"
@@ -72,6 +74,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Operate",
     items: [
       { key: "overview", label: "Command Centre", section: "overview" },
+      { key: "learning", label: "Learning", section: "learning" },
       { key: "connections", label: "Connections", section: "connections" },
       { key: "directory", label: "Directory", section: "people" },
       { key: "communications", label: "Communications", section: "communications" },
