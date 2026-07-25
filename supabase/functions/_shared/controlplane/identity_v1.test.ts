@@ -6,8 +6,40 @@ import {
   unifyCandidates,
   summarise,
   gatherIdentityImpact,
+  classifyMailbox,
 } from "./identity_v1.ts";
 import { decidePlatformAccess } from "./authz.ts";
+
+// ── Mailbox classification (WS1) — precedence: provider > confirmed > role-hint ──
+test("mailbox classification precedence: provider metadata is authoritative", () => {
+  const grp = classifyMailbox({ rawValue: "team@x.co", providerMailboxType: "group", isSharedEndpoint: false, confirmedPersonLink: false });
+  assert.equal(grp.mailboxClass, "group");
+  assert.equal(grp.authoritative, true);
+  assert.equal(grp.authorMayDiffer, true);
+  const usr = classifyMailbox({ rawValue: "jane@x.co", providerMailboxType: "user", isSharedEndpoint: false, confirmedPersonLink: false });
+  assert.equal(usr.mailboxClass, "personal");
+  assert.equal(usr.authoritative, true);
+});
+test("role-address hint is evidence-only, and 'user' type does NOT suppress it (role boxes are user-type)", () => {
+  const hint = classifyMailbox({ rawValue: "finance@x.co", providerMailboxType: null, isSharedEndpoint: false, confirmedPersonLink: false });
+  assert.equal(hint.mailboxClass, "role_hint");
+  assert.equal(hint.authoritative, false); // a hint never asserts shared
+  assert.equal(hint.authorMayDiffer, true);
+  // Google labels role mailboxes as 'user', so 'user' is not a positive personal signal — the
+  // role-name hint still applies (still non-authoritative; operator must confirm).
+  const userTypeRole = classifyMailbox({ rawValue: "finance@x.co", providerMailboxType: "user", isSharedEndpoint: false, confirmedPersonLink: false });
+  assert.equal(userTypeRole.mailboxClass, "role_hint");
+  assert.equal(userTypeRole.authoritative, false);
+  // A POSITIVE provider signal (group/shared) DOES override the hint (authoritative).
+  const overridden = classifyMailbox({ rawValue: "finance@x.co", providerMailboxType: "group", isSharedEndpoint: false, confirmedPersonLink: false });
+  assert.equal(overridden.mailboxClass, "group");
+  assert.equal(overridden.authoritative, true);
+});
+test("a confirmed person link classifies personal (authoritative) over a role-name hint", () => {
+  const c = classifyMailbox({ rawValue: "info@x.co", providerMailboxType: null, isSharedEndpoint: false, confirmedPersonLink: true });
+  assert.equal(c.mailboxClass, "personal");
+  assert.equal(c.authoritative, true);
+});
 
 const NOW_MS = Date.parse("2026-07-25T12:00:00Z");
 
@@ -274,6 +306,10 @@ function unifyFixture() {
     endpointsById,
     membersById: members,
     confirmedEndpointIds: new Set(),
+    mailboxTypeByValue: new Map([
+      ["jane@drummonds.co", "user"],
+      ["office@drummonds.co", "shared"],
+    ]),
   });
 }
 
@@ -283,10 +319,15 @@ test("email: personal address vs shared mailbox are distinguished (shared never 
   const shared = c.find((x) => x.key === "e-shared")!;
   assert.equal(personal.candidateKind, "email_address");
   assert.equal(personal.isShared, false);
+  assert.equal(personal.mailboxClass, "personal"); // provider:user → authoritative personal
+  assert.equal(personal.authoritative, true);
+  assert.equal(personal.authorMayDiffer, false);
   assert.equal(personal.suggestedMemberName, "Jane Doe");
   assert.equal(personal.mappingState, "suggested");
   assert.equal(shared.candidateKind, "mailbox");
   assert.equal(shared.isShared, true);
+  assert.equal(shared.mailboxClass, "shared"); // provider:shared → authoritative
+  assert.equal(shared.authorMayDiffer, true); // author may differ from mailbox owner
   assert.equal(shared.suggestedKind, "shared");
   assert.equal(shared.suggestedMemberId, null); // never assigned to one person
   assert.equal(shared.mappingState, "shared");

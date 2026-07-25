@@ -30,6 +30,7 @@ import {
   gatherIdentityCandidates,
   gatherIdentityImpact,
 } from "../_shared/controlplane/identity_v1.ts";
+import { gatherCommunicationRelevance } from "../_shared/controlplane/comm_relevance.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 import {
   validateManualEndpoint,
@@ -114,6 +115,7 @@ const READ_ACTIONS = new Set([
   "learning.drill",
   "identity.candidates",
   "identity.impact",
+  "comm.relevance",
 ]);
 
 // Confirmation mode (identity WRITES) is DISABLED by default. It only becomes available when
@@ -347,6 +349,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (!body.endpoint_id) return fail("bad_request", "endpoint_id required", 400);
         const impact = await gatherIdentityImpact(admin, tenantId, String(body.endpoint_id));
         return json({ ok: true, data: impact });
+      }
+      case "comm.relevance": {
+        // WS2 — read-only operational-relevance report over the existing eligibility ledger.
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const report = await gatherCommunicationRelevance(
+          admin,
+          tenantId,
+          new Date(now).toISOString(),
+        );
+        return json({ ok: true, data: report });
       }
       case "identity.review": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);

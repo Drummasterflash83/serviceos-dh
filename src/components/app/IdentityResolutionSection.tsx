@@ -38,6 +38,20 @@ const CONF_TONE: Record<string, Tone> = {
   low: "attention",
   unresolved: "neutral",
 };
+const MB_TONE: Record<string, Tone> = {
+  personal: "ok",
+  shared: "info",
+  group: "info",
+  role_hint: "attention",
+  unknown: "neutral",
+};
+const MB_LABEL: Record<string, string> = {
+  personal: "personal",
+  shared: "shared mailbox",
+  group: "group",
+  role_hint: "role address",
+  unknown: "unclassified",
+};
 const CHANNEL_ICON: Record<string, ReactNode> = {
   email: <Mail className="h-4 w-4 text-muted-foreground" />,
   phone: <Phone className="h-4 w-4 text-muted-foreground" />,
@@ -126,6 +140,14 @@ export function IdentityResolutionSection({ tenantId }: { tenantId: string }) {
         </span>
       </div>
 
+      {/* Information architecture pointer — this is the workspace-wide review + audit surface;
+          person-specific connected identities & history live in the Directory / Person hub. */}
+      <p className="text-[11px] text-muted-foreground">
+        This is the workspace-wide identity review, confirmation and audit surface. A single
+        person&apos;s connected identities and history live in{" "}
+        <span className="text-display">Directory → People → Person hub</span>.
+      </p>
+
       {set.candidates.length === 0 ? (
         <EmptyState>No discoverable identity candidates for this tenant yet.</EmptyState>
       ) : (
@@ -140,6 +162,12 @@ export function IdentityResolutionSection({ tenantId }: { tenantId: string }) {
             ))}
           </div>
         </SectionCard>
+      )}
+
+      {!set.candidates.some((c) => c.channel === "phone") && (
+        <p className="rounded-md border border-dashed border-hairline px-2 py-1.5 text-[11px] text-muted-foreground">
+          No extension or DDI candidates have been discovered yet.
+        </p>
       )}
 
       <p className="text-[11px] text-muted-foreground">
@@ -176,7 +204,12 @@ function CandidateRow({ c, tenantId }: { c: IdentityCandidate; tenantId: string 
         <span className="text-sm font-medium text-display">{c.rawExternalIdentity}</span>
         <StatusPill tone="neutral">{c.candidateKind.replace(/_/g, " ")}</StatusPill>
         <StatusPill tone={STATE_TONE[c.mappingState]}>{c.mappingState}</StatusPill>
-        {c.isShared && <StatusPill tone="info">shared</StatusPill>}
+        {c.channel === "email" && (
+          <StatusPill tone={MB_TONE[c.mailboxClass] ?? "neutral"}>
+            {MB_LABEL[c.mailboxClass] ?? c.mailboxClass}
+            {c.authoritative ? "" : " (hint)"}
+          </StatusPill>
+        )}
         <StatusPill tone={CONF_TONE[c.confidence] ?? "neutral"}>{c.confidence}</StatusPill>
         <span className="ml-auto text-[11px] text-muted-foreground">
           {c.provider ?? "—"}
@@ -197,7 +230,21 @@ function CandidateRow({ c, tenantId }: { c: IdentityCandidate; tenantId: string 
             last decision <span className="text-display">{c.latestDecision}</span>
           </span>
         )}
+        {c.channel === "email" && (
+          <span className="text-muted-foreground">
+            classification{" "}
+            <span className="text-display">
+              {c.authoritative ? "authoritative" : "inferred hint"} · {c.classificationSource}
+            </span>
+          </span>
+        )}
       </div>
+      {c.authorMayDiffer && (
+        <p className="mt-0.5 text-[11px] text-amber-700">
+          Shared/role mailbox — the message author may differ from mailbox ownership; operator
+          review required (never assigned to one person automatically).
+        </p>
+      )}
 
       {c.supportingEvidence.length > 0 && (
         <p className="mt-1 text-[11px] text-muted-foreground">

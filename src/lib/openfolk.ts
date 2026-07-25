@@ -323,6 +323,7 @@ export interface LcSourceStatus {
   processed: number | null;
   failedOrPending: number | null;
   coverage: { label: string; value: string }[];
+  measures?: { label: string; value: string }[];
   confirmedIdentities: number | null;
   unresolvedIdentities: number | null;
   gaps: string[];
@@ -520,6 +521,10 @@ export interface IdentityCandidate {
   lastObservedAt: string | null;
   activityCount: number | null;
   latestDecision: string | null;
+  mailboxClass: "personal" | "shared" | "group" | "role_hint" | "unknown";
+  classificationSource: string;
+  authoritative: boolean;
+  authorMayDiffer: boolean;
 }
 export interface IdentityCandidateSet {
   tenantId: string;
@@ -543,6 +548,24 @@ export interface IdentityImpact {
   sampleInteractionIds: string[];
   note: string | null;
 }
+// ── Communication operational-relevance (WS2, read-only) ─────────────────────
+export interface CommRelevanceReport {
+  tenantId: string;
+  generatedAt: string;
+  totalCommunications: number;
+  byClass: Record<string, number>;
+  byRelevance: Record<string, number>;
+  exclusion: {
+    noiseInteractions: number;
+    intelligenceObjectsExcluded: number;
+    recommendationsExcluded: number;
+    recommendationsOpenExcluded: number;
+  };
+  caveat: string;
+}
+export const getCommRelevance = (tenant_id: string) =>
+  invoke<CommRelevanceReport>({ action: "comm.relevance", tenant_id });
+
 export const getIdentityCandidates = (tenant_id: string) =>
   invoke<IdentityCandidateSet>({ action: "identity.candidates", tenant_id });
 export const getIdentityImpact = (tenant_id: string, endpoint_id: string) =>

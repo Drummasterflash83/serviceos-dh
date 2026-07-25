@@ -59,6 +59,70 @@ export interface IdentityCandidate {
   lastObservedAt: string | null;
   activityCount: number | null; // e.g. telephony call_count; null when not tracked
   latestDecision: string | null;
+  // Mailbox classification (WS1) — personal vs shared vs role, with its source + authority.
+  mailboxClass: MailboxClass;
+  classificationSource: string; // e.g. provider:group, confirmed_decision, role_hint, provider:user
+  authoritative: boolean; // true = provider/confirmed metadata; false = an inferred role-name hint
+  authorMayDiffer: boolean; // shared/role/group: the message author may differ from the mailbox owner
+}
+
+export type MailboxClass = "personal" | "shared" | "group" | "role_hint" | "unknown";
+
+// Role-address hint allowlist — used ONLY when authoritative provider metadata is absent. A hint is
+// evidence, never a decision: it never auto-marks shared, assigns a person, or writes a canonical link.
+export const ROLE_LOCALPARTS = new Set([
+  "office",
+  "finance",
+  "accounts",
+  "invoicing",
+  "invoices",
+  "clientinvoices",
+  "supplierinvoices",
+  "parts",
+  "scheduling",
+  "admin",
+  "info",
+  "sales",
+  "support",
+  "enquiries",
+  "noreply",
+  "no-reply",
+  "managingdirector",
+]);
+
+export interface MailboxClassification {
+  mailboxClass: MailboxClass;
+  classificationSource: string;
+  authoritative: boolean;
+  authorMayDiffer: boolean;
+}
+/**
+ * Classify a mailbox by precedence: (1) authoritative provider metadata (Google user/shared/group),
+ * (2) an existing confirmed canonical decision, (3) a conservative role-address hint (evidence only).
+ */
+export function classifyMailbox(input: {
+  rawValue: string;
+  providerMailboxType: string | null; // google_workspace_mailboxes.mailbox_type: user|shared|group
+  isSharedEndpoint: boolean;
+  confirmedPersonLink: boolean;
+}): MailboxClassification {
+  const t = (input.providerMailboxType ?? "").toLowerCase();
+  if (t === "group")
+    return { mailboxClass: "group", classificationSource: "provider:group", authoritative: true, authorMayDiffer: true };
+  if (t === "shared")
+    return { mailboxClass: "shared", classificationSource: "provider:shared", authoritative: true, authorMayDiffer: true };
+  if (input.isSharedEndpoint)
+    return { mailboxClass: "shared", classificationSource: "endpoint:is_shared", authoritative: true, authorMayDiffer: true };
+  // (2) confirmed person → personal, authoritative.
+  if (input.confirmedPersonLink)
+    return { mailboxClass: "personal", classificationSource: "confirmed_decision", authoritative: true, authorMayDiffer: false };
+  // (3) role-address hint (only when provider says nothing authoritative) — evidence only.
+  const local = (input.rawValue.split("@")[0] ?? "").toLowerCase();
+  if (ROLE_LOCALPARTS.has(local))
+    return { mailboxClass: "role_hint", classificationSource: "role_localpart_hint", authoritative: false, authorMayDiffer: true };
+  if (t === "user")
+    return { mailboxClass: "personal", classificationSource: "provider:user", authoritative: true, authorMayDiffer: false };
+  return { mailboxClass: "unknown", classificationSource: "no_metadata", authoritative: false, authorMayDiffer: false };
 }
 
 export interface IdentityCandidateSet {
@@ -119,9 +183,11 @@ export interface UnifyInput {
   endpointsById: Map<string, Row>; // id -> {endpoint_kind, provider, is_shared, normalized_value, status, effective_to}
   membersById: Map<string, string>; // id -> display_name
   confirmedEndpointIds: Set<string>;
+  mailboxTypeByValue: Map<string, string>; // lowercased email -> google_workspace_mailboxes.mailbox_type
 }
 export function unifyCandidates(inp: UnifyInput): IdentityCandidate[] {
-  const { emailRes, telephony, endpointsById, membersById, confirmedEndpointIds } = inp;
+  const { emailRes, telephony, endpointsById, membersById, confirmedEndpointIds, mailboxTypeByValue } =
+    inp;
   const name = (id: string | null) => (id ? (membersById.get(id) ?? null) : null);
   const latestByEndpoint = new Map<string, string>();
   for (const r of emailRes.reviews)
@@ -135,6 +201,12 @@ export function unifyCandidates(inp: UnifyInput): IdentityCandidate[] {
     const active = (ep.status ?? "active") === "active" && !ep.effective_to;
     const latest = latestByEndpoint.get(s.endpoint_id) ?? null;
     const ambiguityNames = (s.ambiguity ?? []).map((id) => name(id) ?? id);
+    const mb = classifyMailbox({
+      rawValue: s.endpoint_email,
+      providerMailboxType: mailboxTypeByValue.get(s.endpoint_email.toLowerCase()) ?? null,
+      isSharedEndpoint: !!ep.is_shared,
+      confirmedPersonLink: confirmedEndpointIds.has(s.endpoint_id) || latest === "confirmed_person",
+    });
     out.push({
       key: s.endpoint_id,
       endpointId: s.endpoint_id,
@@ -142,7 +214,11 @@ export function unifyCandidates(inp: UnifyInput): IdentityCandidate[] {
       candidateKind: EMAIL_KIND[ep.endpoint_kind as string] ?? "email_address",
       provider: (ep.provider as string) ?? "google_workspace",
       rawExternalIdentity: s.endpoint_email,
-      isShared: !!ep.is_shared || s.suggested_kind === "shared",
+      isShared: !!ep.is_shared || s.suggested_kind === "shared" || mb.authorMayDiffer,
+      mailboxClass: mb.mailboxClass,
+      classificationSource: mb.classificationSource,
+      authoritative: mb.authoritative,
+      authorMayDiffer: mb.authorMayDiffer,
       suggestedMemberId: s.suggested_member_id,
       suggestedMemberName: name(s.suggested_member_id),
       suggestedKind: s.suggested_kind,
@@ -187,6 +263,10 @@ export function unifyCandidates(inp: UnifyInput): IdentityCandidate[] {
       provider: (ep.provider as string) ?? "telephony",
       rawExternalIdentity: c.endpoint_extension || (ep.normalized_value as string) || "",
       isShared: !!ep.is_shared || c.suggested_kind === "shared",
+      mailboxClass: (!!ep.is_shared || c.suggested_kind === "shared" ? "shared" : "unknown") as MailboxClass,
+      classificationSource: "n/a:telephony",
+      authoritative: false,
+      authorMayDiffer: !!ep.is_shared || c.suggested_kind === "shared",
       suggestedMemberId: c.suggested_member_id,
       suggestedMemberName: name(c.suggested_member_id),
       suggestedKind: c.suggested_kind,
@@ -239,7 +319,7 @@ export async function gatherIdentityCandidates(
   tenantId: string,
   now: string,
 ): Promise<IdentityCandidateSet> {
-  const [emailRes, telephony, endpoints, members, links] = await Promise.all([
+  const [emailRes, telephony, endpoints, members, links, mailboxes] = await Promise.all([
     computeIdentityResolution(db, tenantId),
     computeTelephonyIdentityResolution(db, tenantId),
     db
@@ -256,12 +336,18 @@ export async function gatherIdentityCandidates(
       .select("external_ref, verification_state")
       .eq("tenant_id", tenantId)
       .is("effective_to", null),
+    db.from("google_workspace_mailboxes").select("email_address, mailbox_type").eq("tenant_id", tenantId),
   ]);
 
   const endpointsById = new Map<string, Row>();
   for (const e of (endpoints.data ?? []) as Row[]) endpointsById.set(e.id, e);
   const membersById = new Map<string, string>();
   for (const m of (members.data ?? []) as Row[]) membersById.set(m.id, m.display_name);
+  // Authoritative provider mailbox type (user|shared|group), keyed by lowercased address.
+  const mailboxTypeByValue = new Map<string, string>();
+  for (const mb of (mailboxes.data ?? []) as Row[])
+    if (mb.email_address && mb.mailbox_type)
+      mailboxTypeByValue.set(String(mb.email_address).toLowerCase(), String(mb.mailbox_type));
 
   // Confirmed = an active verified identity whose external_ref matches an endpoint value.
   const verifiedRefs = new Set(
@@ -279,6 +365,7 @@ export async function gatherIdentityCandidates(
     endpointsById,
     membersById,
     confirmedEndpointIds,
+    mailboxTypeByValue,
   });
   return { tenantId, generatedAt: now, candidates, summary: summarise(candidates) };
 }

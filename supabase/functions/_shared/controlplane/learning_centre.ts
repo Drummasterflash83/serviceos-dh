@@ -27,13 +27,19 @@ export interface EmailMetrics {
   mailboxesActive: number;
   mailboxesPending: number;
   latestMessageAt: string | null;
-  received: number;
-  processed: number; // projected to interactions
+  received: number; // raw messages (email_messages) — a DIFFERENT unit from interactions
+  processed: number; // canonical interactions created (do NOT compare against received)
   failedOrPending: number;
   attachments: number;
   aiInsights: number;
   confirmedIdentities: number;
   unresolvedIdentities: number;
+  // WS4 — distinct, honestly-labelled measures (raw messages vs canonical interactions are
+  // different units, so they are never shown as received/processed of the same thing).
+  rawMessages: number;
+  canonicalInteractions: number;
+  threads: number;
+  processingFailures: number;
 }
 export interface CommusoftMetrics {
   imports: number; // data_imports rows
@@ -93,6 +99,9 @@ export interface SourceStatus {
   processed: number | null;
   failedOrPending: number | null;
   coverage: { label: string; value: string }[];
+  // WS4 — distinct measures with honest labels (used instead of received/processed when the
+  // underlying counts represent different units). When present, the UI shows these, not the pair.
+  measures?: { label: string; value: string }[];
   confirmedIdentities: number | null;
   unresolvedIdentities: number | null;
   gaps: string[];
@@ -189,13 +198,21 @@ export function buildSourceTruth(input: LearningCentreInput): SourceTruth {
     scheduleState: inferSchedule(emFresh),
     latestEvidenceAt: e.latestMessageAt,
     freshness: emFresh,
-    received: e.received,
-    processed: e.processed,
-    failedOrPending: e.failedOrPending,
+    // received/processed intentionally NULL for email — raw messages and canonical interactions
+    // are different units; the honest distinct measures are in `measures` below (WS4).
+    received: null,
+    processed: null,
+    failedOrPending: null,
     coverage: [
       { label: "mailboxes active", value: `${e.mailboxesActive} (+${e.mailboxesPending} pending)` },
       { label: "attachments", value: String(e.attachments) },
       { label: "AI insights", value: String(e.aiInsights) },
+    ],
+    measures: [
+      { label: "raw messages received", value: String(e.rawMessages) },
+      { label: "canonical interactions", value: String(e.canonicalInteractions) },
+      { label: "threads", value: String(e.threads) },
+      { label: "processing failures", value: String(e.processingFailures) },
     ],
     confirmedIdentities: e.confirmedIdentities,
     unresolvedIdentities: e.unresolvedIdentities,
@@ -459,6 +476,30 @@ async function latestTs(
     .limit(1);
   return r.error ? null : ((r.data?.[0]?.[col] as string | undefined) ?? null);
 }
+/** Distinct non-null values of a single column (paginated). READ-ONLY. Used for thread counts. */
+async function distinctCount(
+  db: SupabaseClient,
+  table: string,
+  col: string,
+  tenantId: string,
+  f?: (q: Q) => Q,
+): Promise<number> {
+  const seen = new Set<string>();
+  for (let from = 0; from < 50000; from += 1000) {
+    let q: Q = db
+      .from(table)
+      .select(col)
+      .eq("tenant_id", tenantId)
+      .not(col, "is", null)
+      .range(from, from + 999);
+    if (f) q = f(q);
+    const r = await q;
+    if (r.error || !r.data || r.data.length === 0) break;
+    for (const row of r.data as Row2[]) seen.add(String(row[col]));
+    if (r.data.length < 1000) break;
+  }
+  return seen.size;
+}
 
 export async function gatherLearningMetrics(
   db: SupabaseClient,
@@ -553,6 +594,14 @@ export async function gatherLearningMetrics(
   const phoneReceived = await n(db, "phone_calls", tenantId);
   const phoneInsights = await n(db, "phone_ai_insights", tenantId);
   const emailReceived = await n(db, "email_messages", tenantId);
+  // WS4 — distinct email measures (raw messages vs canonical interactions are different units).
+  const emailInteractions = await n(db, "interactions", tenantId, (q) => q.eq("source_type", "email"));
+  const emailFailures = await n(db, "interactions", tenantId, (q) =>
+    q.eq("source_type", "email").eq("processing_status", "failed"),
+  );
+  const emailThreads = await distinctCount(db, "interactions", "related_thread_id", tenantId, (q) =>
+    q.eq("source_type", "email"),
+  );
 
   return {
     tenantId,
@@ -578,12 +627,16 @@ export async function gatherLearningMetrics(
       mailboxesPending,
       latestMessageAt: await latestTs(db, "email_messages", tenantId, "received_at"),
       received: emailReceived,
-      processed: await n(db, "interactions", tenantId, (q) => q.eq("source_type", "email")),
-      failedOrPending: 0,
+      processed: emailInteractions,
+      failedOrPending: emailFailures,
       attachments: await n(db, "email_attachments", tenantId),
       aiInsights: await n(db, "email_ai_insights", tenantId),
       confirmedIdentities: emailLinks,
       unresolvedIdentities: Math.max(0, mailboxesActive - emailLinks),
+      rawMessages: emailReceived,
+      canonicalInteractions: emailInteractions,
+      threads: emailThreads,
+      processingFailures: emailFailures,
     },
     commusoft: {
       imports: await n(db, "data_imports", tenantId),

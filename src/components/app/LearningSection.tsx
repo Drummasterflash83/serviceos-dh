@@ -9,15 +9,17 @@
  * never generating new intelligence. Absent evidence renders as an explicit honest state.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Radio, ListTree, Search, Loader2, Clock, ChevronRight } from "lucide-react";
+import { Radio, ListTree, Search, Loader2, Clock, ChevronRight, Filter } from "lucide-react";
 import { SectionCard, StatusPill, EmptyState } from "./openfolk-ui";
 import { SourceCard, fmt } from "./LearningOverviewView";
 import {
   getLearningOverview,
   getLearningDrill,
+  getCommRelevance,
   type LearningOverview,
   type LcDrillResult,
   type LcDrillRecord,
+  type CommRelevanceReport,
 } from "@/lib/openfolk";
 
 type Tab =
@@ -179,7 +181,7 @@ export function LearningSection({ tenantId }: { tenantId: string }) {
 
       {!loading && !error && overview && (
         <>
-          {tab === "overview" && <OverviewTab overview={overview} />}
+          {tab === "overview" && <OverviewTab overview={overview} tenantId={tenantId} />}
           {tab === "source_truth" && <SourceTruthTab overview={overview} />}
           {tab === "intelligence" && <IntelligenceTab overview={overview} tenantId={tenantId} />}
           {!TABS.find((t) => t.key === tab)?.ready && (
@@ -230,8 +232,16 @@ function SummaryBar({ overview }: { overview: LearningOverview }) {
   );
 }
 
-function OverviewTab({ overview }: { overview: LearningOverview }) {
+function OverviewTab({ overview, tenantId }: { overview: LearningOverview; tenantId: string }) {
   const ei = overview.existingIntelligence;
+  const [rel, setRel] = useState<CommRelevanceReport | null>(null);
+  useEffect(() => {
+    let on = true;
+    getCommRelevance(tenantId).then((r) => on && r.ok && setRel(r.data));
+    return () => {
+      on = false;
+    };
+  }, [tenantId]);
   return (
     <div className="space-y-4">
       <SummaryBar overview={overview} />
@@ -245,6 +255,38 @@ function OverviewTab({ overview }: { overview: LearningOverview }) {
           </span>
         ))}
       </div>
+
+      {rel && (
+        <SectionCard
+          title="Communication relevance"
+          icon={<Filter className="h-4 w-4 text-muted-foreground" />}
+          right={`${rel.totalCommunications} classified`}
+        >
+          <div className="flex flex-wrap gap-2 text-xs">
+            <StatusPill tone="ok">
+              {rel.byRelevance.relevant ?? 0} operationally relevant
+            </StatusPill>
+            <StatusPill tone="neutral">
+              {rel.byRelevance.not_relevant ?? 0} excluded (marketing/system/internal-noise)
+            </StatusPill>
+            <StatusPill tone="attention">{rel.byRelevance.uncertain ?? 0} uncertain</StatusPill>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-muted-foreground">
+            {Object.entries(rel.byClass)
+              .sort((a, b) => b[1] - a[1])
+              .map(([k, v]) => (
+                <span key={k}>
+                  {k.replace(/_/g, " ")} <span className="tabular text-display">{v}</span>
+                </span>
+              ))}
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Applying relevance would exclude ~{rel.exclusion.recommendationsExcluded}{" "}
+            recommendations ({rel.exclusion.recommendationsOpenExcluded} open) from operational
+            queues. {rel.caveat}
+          </p>
+        </SectionCard>
+      )}
     </div>
   );
 }

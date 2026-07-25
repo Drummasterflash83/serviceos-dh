@@ -76,6 +76,11 @@ export function SourceCard({ s }: { s: LcSourceStatus }) {
             unprocessed <span className="tabular text-display">{s.failedOrPending}</span>
           </span>
         )}
+        {(s.measures ?? []).map((m) => (
+          <span key={m.label} className="text-muted-foreground">
+            {m.label} <span className="tabular text-display">{m.value}</span>
+          </span>
+        ))}
         {s.coverage.map((c) => (
           <span key={c.label} className="text-muted-foreground">
             {c.label} <span className="tabular text-display">{c.value}</span>
