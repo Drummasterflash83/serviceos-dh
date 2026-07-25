@@ -26,6 +26,10 @@ import {
   buildLearningOverview,
   gatherQueueRecords,
 } from "../_shared/controlplane/learning_centre.ts";
+import {
+  gatherIdentityCandidates,
+  gatherIdentityImpact,
+} from "../_shared/controlplane/identity_v1.ts";
 import { computeSourceReadiness } from "../_shared/controlplane/projection.ts";
 import {
   validateManualEndpoint,
@@ -108,7 +112,15 @@ const READ_ACTIONS = new Set([
   "delegated.get_submission",
   "learning.overview",
   "learning.drill",
+  "identity.candidates",
+  "identity.impact",
 ]);
+
+// Confirmation mode (identity WRITES) is DISABLED by default. It only becomes available when
+// the operator platform explicitly sets IDENTITY_CONFIRMATION_ENABLED=true for this function.
+// Review mode (the read actions above) is always available to an authorised operator.
+const identityConfirmationEnabled = () =>
+  (Deno.env.get("IDENTITY_CONFIRMATION_ENABLED") ?? "").toLowerCase() === "true";
 
 // Machine mode (x-openfolk-machine-key) may invoke ONLY these named operations — never
 // arbitrary writes, ownership assignment, or a generic query. Interactive operators are
@@ -323,10 +335,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const r = data as { id?: string; outcome?: string } | null;
         return json({ ok: true, data: { id: r?.id, outcome: r?.outcome } });
       }
+      case "identity.candidates": {
+        // Identity Resolution V1 — Review mode: unified read-only candidate list.
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const set = await gatherIdentityCandidates(admin, tenantId, new Date(now).toISOString());
+        return json({ ok: true, data: set });
+      }
+      case "identity.impact": {
+        // Read-only impact preview for one endpoint (what a confirmation would associate).
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.endpoint_id) return fail("bad_request", "endpoint_id required", 400);
+        const impact = await gatherIdentityImpact(admin, tenantId, String(body.endpoint_id));
+        return json({ ok: true, data: impact });
+      }
       case "identity.review": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         if (!body.endpoint_id || !body.decision)
           return fail("bad_request", "endpoint_id + decision required", 400);
+        // Confirmation mode gate: identity writes are disabled by default and require an
+        // explicit platform capability to be enabled. This keeps V1 review-only in production
+        // until a separate approval turns confirmation on.
+        if (!identityConfirmationEnabled())
+          return fail(
+            "confirmation_mode_disabled",
+            "Identity confirmation is disabled. Review mode is read-only; enable confirmation mode (with approval) to record decisions.",
+            403,
+          );
         const { data, error } = await rpc("cp_review_identity", {
           p_tenant: tenantId,
           p_endpoint: String(body.endpoint_id),

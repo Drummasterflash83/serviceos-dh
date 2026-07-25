@@ -462,7 +462,14 @@ export const createManualEndpoint = (p: {
 export const archiveEndpoint = (p: { tenant_id: string; endpoint_id: string; reason: string }) =>
   invoke<{ id: string; outcome: string }>({ action: "endpoint.archive", ...p });
 export type ReviewDecision =
-  "confirmed_person" | "shared" | "team" | "system" | "rejected" | "unresolved";
+  | "confirmed_person"
+  | "shared"
+  | "team"
+  | "system"
+  | "rejected"
+  | "unresolved"
+  | "deferred"
+  | "unassigned";
 export const reviewIdentity = (p: {
   tenant_id: string;
   endpoint_id: string;
@@ -475,6 +482,71 @@ export const reviewIdentity = (p: {
     action: "identity.review",
     ...p,
   });
+
+// ── Identity Resolution V1 (read-only Review mode) ───────────────────────────
+export type IdentityMappingState =
+  | "discovered"
+  | "suggested"
+  | "conflicting"
+  | "confirmed"
+  | "shared"
+  | "rejected"
+  | "deferred"
+  | "historical"
+  | "unassigned";
+export interface IdentityCandidate {
+  key: string;
+  endpointId: string | null;
+  channel: "email" | "phone" | "slack" | "commusoft";
+  candidateKind:
+    | "email_address"
+    | "email_alias"
+    | "mailbox"
+    | "extension"
+    | "ddi"
+    | "telephony_provider"
+    | "commusoft"
+    | "slack";
+  provider: string | null;
+  rawExternalIdentity: string;
+  isShared: boolean;
+  suggestedMemberId: string | null;
+  suggestedMemberName: string | null;
+  suggestedKind: "person" | "shared" | "none";
+  confidence: "high" | "medium" | "low" | "unresolved";
+  mappingState: IdentityMappingState;
+  supportingEvidence: string[];
+  conflictingEvidence: string[];
+  lastObservedAt: string | null;
+  activityCount: number | null;
+  latestDecision: string | null;
+}
+export interface IdentityCandidateSet {
+  tenantId: string;
+  generatedAt: string;
+  candidates: IdentityCandidate[];
+  summary: {
+    total: number;
+    byState: Record<string, number>;
+    byChannel: Record<string, number>;
+    confirmed: number;
+    needsReview: number;
+  };
+}
+export interface IdentityImpact {
+  endpointId: string;
+  channel: string;
+  rawExternalIdentity: string;
+  interactions: number;
+  intelligenceObjects: number;
+  unresolvedActions: number;
+  sampleInteractionIds: string[];
+  note: string | null;
+}
+export const getIdentityCandidates = (tenant_id: string) =>
+  invoke<IdentityCandidateSet>({ action: "identity.candidates", tenant_id });
+export const getIdentityImpact = (tenant_id: string, endpoint_id: string) =>
+  invoke<IdentityImpact>({ action: "identity.impact", tenant_id, endpoint_id });
 export const updateManualEndpoint = (p: {
   tenant_id: string;
   endpoint_id: string;

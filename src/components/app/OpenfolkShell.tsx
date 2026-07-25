@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Building2,
   ChevronLeft,
+  Fingerprint,
   GraduationCap,
   HeartPulse,
   History,
@@ -46,6 +47,7 @@ const NAV_ICON: Record<NavItemKey, ReactNode> = {
   company: <Building2 className="h-4 w-4" />,
   health: <HeartPulse className="h-4 w-4" />,
   data_quality: <AlertTriangle className="h-4 w-4" />,
+  identity: <Fingerprint className="h-4 w-4" />,
   security: <Lock className="h-4 w-4" />,
   audit: <History className="h-4 w-4" />,
 };
@@ -67,6 +69,7 @@ const SECTION_TITLE: Partial<Record<WorkspaceSection, string>> = {
   company: "Company",
   health: "Health & Readiness",
   data_quality: "Data Quality",
+  identity: "Identity",
   security: "Security",
   audit: "Audit",
   agents: "Agents",

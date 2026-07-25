@@ -26,6 +26,7 @@ export const WORKSPACE_SECTIONS = [
   "automations",
   "health",
   "data_quality",
+  "identity",
   "security",
   "audit",
 ] as const;
@@ -58,6 +59,7 @@ export type NavItemKey =
   | "company"
   | "health"
   | "data_quality"
+  | "identity"
   | "security"
   | "audit";
 export interface NavItem {
@@ -91,6 +93,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Govern",
     items: [
       { key: "data_quality", label: "Data Quality", section: "data_quality" },
+      { key: "identity", label: "Identity", section: "identity" },
       { key: "security", label: "Security", section: "security" },
       { key: "audit", label: "Audit", section: "audit" },
     ],

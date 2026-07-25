@@ -42,6 +42,7 @@ import { projectConnections } from "@/lib/openfolk-connections";
 import { OpenfolkConnections, type DelegatedActions } from "@/components/app/OpenfolkConnections";
 import { OpenfolkCommandCentre } from "@/components/app/OpenfolkCommandCentre";
 import { LearningSection } from "@/components/app/LearningSection";
+import { IdentityResolutionSection } from "@/components/app/IdentityResolutionSection";
 import { PersonIntelligenceHub } from "@/components/app/PersonIntelligenceHub";
 import { TeamMemberPreview } from "@/components/app/TeamMemberPreview";
 import type {
@@ -486,6 +487,9 @@ export function OpenfolkWorkspace({
 
         {/* ── Learning (read-only Source Truth + Existing Intelligence) ─ */}
         {section === "learning" && <LearningSection tenantId={summary.tenant_id} />}
+
+        {/* ── Identity Resolution V1 (governed review, read-only mode) ── */}
+        {section === "identity" && <IdentityResolutionSection tenantId={summary.tenant_id} />}
 
         {/* ── People / Person Intelligence Hub ─────────────────────── */}
         {section === "people" &&
