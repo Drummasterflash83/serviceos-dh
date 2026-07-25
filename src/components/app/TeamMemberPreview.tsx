@@ -8,8 +8,9 @@
  * A persistent banner makes attribution impossible to miss; nothing is attributed to the actor.
  */
 import { Eye, ChevronLeft, ShieldAlert } from "lucide-react";
-import { CommandCentreConsole } from "./command-centre/CommandCentreConsole";
+import { OperationalDay } from "./OperationalDay";
 import { buildTeamMemberPreview, type PreviewCoverage } from "@/lib/preview-projection";
+import { buildOperationalDay, type DayEvidence } from "@/lib/operational-day";
 import type { CpMember, Workspace } from "@/lib/openfolk";
 
 const COVERAGE_TONE: Record<PreviewCoverage["status"], string> = {
@@ -94,22 +95,36 @@ export function TeamMemberPreview({
     );
   }
 
+  // Mary's First Day — derive the operational day from CONFIRMED evidence in the workspace only:
+  // verified identity links + confirmed ownership. Comms/Health-derived areas have no confirmed
+  // evidence yet, so they surface as honest gaps (never fabricated). Display-only ⇒ read-only.
+  const endpoints = workspace.endpoints ?? [];
+  const epLabel = (id: string) => {
+    const e = endpoints.find((x) => x.id === id);
+    return e?.display_value ?? e?.normalized_value ?? id.slice(0, 8);
+  };
+  const dayEvidence: DayEvidence = {
+    member: { id: actor.id, display_name: actor.display_name, formal_role: actor.formal_role },
+    confirmedIdentities: (workspace.identities ?? [])
+      .filter((i) => i.team_member_id === actor.id && i.verification_state === "verified")
+      .map((i) => ({ provider: i.provider, external_ref: i.external_ref })),
+    ownership: (workspace.ownership ?? [])
+      .filter((o) => o.owner_member_id === actor.id)
+      .map((o) => ({
+        id: o.id,
+        assignment_role: o.assignment_role,
+        endpoint_label: epLabel(o.endpoint_id),
+        endpoint_id: o.endpoint_id,
+        review_state: o.review_state,
+      })),
+  };
+  const day = buildOperationalDay(dayEvidence, new Date().toISOString());
+
   return (
     <div>
       <PreviewBanner actor={actor} coverage={result.coverage} onExit={onExit} />
-      {result.confirmedSources.length === 0 && (
-        <p className="mb-3 rounded-lg border border-dashed border-hairline bg-surface-alt/40 px-3 py-2 text-xs text-muted-foreground">
-          No confirmed source contributes yet — confirm this actor&rsquo;s identities in the Person
-          Intelligence Hub to generate a populated experience. Empty sections below are honest gaps,
-          not fabricated activity.
-        </p>
-      )}
-      {/* REAL product surface, explicitly read-only. No onTransition ⇒ no mutation can fire. */}
-      <CommandCentreConsole
-        projection={result.projection}
-        writeCapable={false}
-        writeLabel="Operator preview — read-only"
-      />
+      {/* The generated operational day (seven focus areas). Display-only — no action can fire. */}
+      <OperationalDay day={day} />
     </div>
   );
 }
