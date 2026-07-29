@@ -35,11 +35,10 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { getCapability } from "@/lib/capability-registry";
 import { RequireAuth } from "@/lib/auth";
 import { AppChrome } from "@/components/app/AppChrome";
+import { MarketingContacts } from "@/components/app/MarketingContacts";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
-import type { MarketingLifecycleStage } from "@/lib/marketing/access";
 
 export const Route = createFileRoute("/marketing")({
   head: () => ({
@@ -218,93 +217,30 @@ function MarketingShell() {
   );
 }
 
-/* ── Contacts — Phase-1 foundation: real tenant lifecycle config; the contact
-      projection itself lands in Phase 2 and is honestly labelled Preview. ── */
+/* ── Contacts — the Phase-2 vertical slice: the real server-side projection
+      (list/filters/detail/classify/tags) plus the tenant-config note and the
+      Phase-3 import preview. ── */
 function ContactsSection() {
   const { access, can } = useMarketingAccess();
-  const stages: MarketingLifecycleStage[] = access?.lifecycle_stages ?? [];
   const settings = access?.settings ?? null;
-  // Reality label from the capability registry — never claimed locally.
-  const configState = (getCapability("marketing.lifecycle")?.tenantLabel ?? "Preview") as
-    "Live" | "Read only" | "Preview" | "Not connected" | "Requires permission";
 
   return (
     <div className="space-y-5">
-      <div>
-        <div className="text-display text-xl font-semibold">Contacts</div>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Every person the business knows — one canonical record each, projected from the same
-          People the whole platform uses. No separate marketing database.
-        </p>
-      </div>
+      <MarketingContacts />
 
-      {/* Tenant marketing configuration + lifecycle pipeline. Reality labels come
-          from the capability registry (one source of truth): these stay Preview
-          until the authenticated HTTP path is proven end-to-end, then the registry
-          flips and this surface follows. */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SectionCard icon={ListFilter} title="Contact inclusion" state={configState}>
-          {settings ? (
-            <>
-              This workspace currently includes{" "}
-              <span className="font-medium text-foreground">
-                {settings.include_all_discovered
-                  ? "all discovered people"
-                  : "classified / eligible people only"}
-              </span>{" "}
-              in Marketing Contacts. New contacts default to{" "}
-              <span className="font-medium text-foreground">
-                {settings.default_relationship_type}
-              </span>{" "}
-              at stage{" "}
-              <span className="font-medium text-foreground">
-                {settings.default_lifecycle_stage_key}
-              </span>
-              . Timezone: {settings.timezone}. (Configurable in Settings — admin UI arrives in Phase
-              3.)
-            </>
-          ) : (
-            "Marketing defaults are not initialised for this workspace yet — an owner or admin opening Marketing initialises them."
-          )}
-        </SectionCard>
-
-        <SectionCard icon={Tag} title="Lifecycle pipeline" state={configState}>
-          {stages.length > 0 ? (
-            <span className="flex flex-wrap gap-1.5">
-              {stages
-                .filter((s) => s.active)
-                .map((s) => (
-                  <span
-                    key={s.stage_key}
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                      s.tone === "positive"
-                        ? "border-success/30 bg-success/10 text-success"
-                        : s.tone === "negative"
-                          ? "border-destructive/30 bg-destructive/10 text-destructive"
-                          : s.tone === "attention"
-                            ? "border-warning/30 bg-warning/10 text-warning"
-                            : s.tone === "info"
-                              ? "border-accent/30 bg-accent/10 text-accent"
-                              : "border-hairline bg-surface-alt text-muted-foreground",
-                    )}
-                  >
-                    {s.label}
-                  </span>
-                ))}
-            </span>
-          ) : (
-            "Lifecycle stages are not initialised yet — an owner or admin opening Marketing initialises them."
-          )}
-        </SectionCard>
-      </div>
-
-      {/* What is NOT yet real: the contact list itself. Honest Preview. */}
-      <SectionCard icon={Users} title="Contact list" state="Preview">
-        The searchable, filterable contact projection over canonical People arrives in Phase 2 —
-        with lifecycle, owner, source, communication eligibility and linked interaction history.
-        Nothing is shown here until it reads real data.
-      </SectionCard>
+      {settings && (
+        <div className="rounded-lg border border-hairline bg-surface-alt/50 px-3 py-2 text-xs text-muted-foreground">
+          Inclusion:{" "}
+          <span className="font-medium text-foreground">
+            {settings.include_all_discovered
+              ? "all discovered people"
+              : "classified / eligible people only"}
+          </span>{" "}
+          · new contacts default to {settings.default_relationship_type} /{" "}
+          {settings.default_lifecycle_stage_key} · timezone {settings.timezone}. Configurable in
+          Settings (admin UI arrives in Phase 3).
+        </div>
+      )}
 
       {can("marketing.contacts.import") && (
         <SectionCard icon={Upload} title="Import contacts" state="Preview">

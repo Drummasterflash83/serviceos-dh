@@ -23,7 +23,7 @@ verified. It does **not** replace the code; it explains it._
 |---|---|---|
 | 0 | Audit & design reconciliation | **Done** (this ledger) |
 | 1 | Foundations (shell, route, schema, permissions, config) | **Implemented + security-hardened + DB-proven.** NOT complete as a claim: the `marketing-access` authenticated **HTTP path is unexecuted** (no local edge runtime; deploy gated) — see §7a. Clean full-chain and upgrade-path migration proofs done in disposable databases. |
-| 2 | Contacts vertical slice | Not started |
+| 2 | Contacts vertical slice | **Built, review-hardened and final-correction-passed** (2026-07-29, uncommitted on 7cf1dcf). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). Safe as a LOCAL CHECKPOINT; NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview. |
 | 3 | Settings, segments, imports | Not started |
 | 4 | Workspace sender & governed delivery | Not started |
 | 5 | Broadcasts | Not started |
@@ -480,10 +480,258 @@ edited by hand.
 
 ---
 
+## 11 · Phase 2 — Contacts vertical slice (2026-07-29; built, review-hardened, correctness-passed)
+
+_One consistent record. Phase 2 went through the initial build, an independent
+hardening review, a follow-up correctness review, a verification pass, and a
+FINAL CORRECTION PASS (2026-07-29) that executed the final checkpoint findings
+against the running code. That last pass fixed, structurally: (1) the Edge
+boundary rejected the server's own null-v last-contact cursor; (2) no-op edits
+emitted false `updated` events; (3) the name-only/same-key create race (both
+racers saw an empty key ledger, both committed a Person, the loser converged on
+the stored result but its duplicate Person stayed committed) — the tenant+key
+advisory lock is now taken BEFORE the ledger read, the key and a real
+same-tenant actor are mandatory, and the fingerprint is canonical stored JSON
+over every material field including first/last names; (4) destructive
+`drop table` statements were removed from the release migration (it is a normal
+run-once migration; drifted local draft DBs are reset, never patched by release
+SQL); (5) strict payload shapes and relationship-contract combinations are
+enforced at both boundaries with zero-write proofs; (6) the contact-point
+concurrency token is the exact opaque timestamp and the unprotected
+`set_primary` shorthand was removed; invalid points can never become primary;
+(7) invalid contact-point evidence now beats the scalar fallback in
+eligibility; (8) identity-evidence queries join candidates back to the tenant
+on BOTH sides and stored arrays are bounded (25 + per-identifier truncated
+flag); (9) relationship filters must all match ONE relationship row, which is
+the row projected, and the Customer Card always re-projects the CURRENT
+relationship (with `relationship_id`) after any mutation; (10) event dedup is
+truly key-based (same `k` never re-appends; `current` moves only on a new key).
+All folded into the SAME uncommitted migration
+`20260829120000_marketing_contacts_projection.sql` (never applied to any
+authoritative environment). Superseded interim claims from earlier passes are
+replaced by this section._
+
+### What is implemented
+
+**Server (service-role-only SQL, the testable production boundary):**
+- `marketing_normalize_endpoint(channel, value)` — the ONE channel-aware
+  normaliser (emails format-validated + lowercased; phone/sms/whatsapp reduced to
+  `+digits`, min length; malformed → NULL) used by matching, writes, eligibility
+  and suppression visibility alike.
+- `marketing_endpoint_eligibility(tenant, person, channel, contact_point?,
+  destination?, topic?)` — the AUTHORITATIVE pre-send decision
+  (`subscribed | unsubscribed | suppressed | unknown | invalid | no_contact_point`).
+  Suppression (person/contact-point/destination scope, normalised — formatted
+  scalar phones included) always wins. Preference precedence is SCOPE-RANKED —
+  (endpoint+topic) > endpoint > topic > person/channel; latest within the most
+  specific applicable scope decides, so a newer generic subscribe can never
+  override a specific unsubscribe while a later same-scope resubscribe works.
+  A destination that is not a usable endpoint of the Person is `invalid` (never
+  inherits a generic subscription); invalid points are never usable defaults;
+  INVALID EVIDENCE BEATS THE SCALAR — when a contact point marked invalid
+  carries the same normalised value as the Person's scalar, the scalar IS that
+  known-bad endpoint and the verdict is `invalid` (a different usable endpoint
+  is still selected when one exists); cp+destination inputs must agree.
+  `marketing_contact_eligibility` is only the Person-level LIST SUMMARY
+  delegating to the endpoint fn.
+- `marketing_contacts_list(tenant, args)` — keyset pagination (name/created/
+  last_contact × asc/desc; cursor contract `{v, id}` typed PER SORT: v is a
+  string for name/created and string|NULL only for last_contact — null v is the
+  explicit null-last-contact sentinel, round-tripped end-to-end, and a
+  mistyped/malformed cursor raises 22023 at BOTH the SQL and Edge boundaries
+  rather than being silently ignored); full filter set
+  (search, company, eligibility, classified, tag include/exclude, created +
+  last-contact ranges, plus the RELATIONSHIP predicates — lifecycle, type,
+  status, owner, relationship source — which form ONE contract: when any is
+  supplied, a SINGLE relationship row must satisfy ALL of them together
+  (filters can never be satisfied by different rows) and that matching row IS
+  the projected relationship, chosen deterministically (active > inactive >
+  archived, then oldest); without relationship filters the projection is the
+  documented current/display relationship under the same ordering); one row per
+  Person, never duplicated; `classified` = has an ACTIVE relationship; card
+  next-action; explicit tenant predicates on every join; malformed input →
+  clean 22023.
+- `marketing_contacts_counts`, `marketing_contact_detail` (ALL relationships;
+  per-endpoint eligibility + protected flag per point; destination suppressions
+  matched against normalised endpoints incl. scalars — "suppressed" is never
+  shown with its cause hidden).
+- `marketing_classify_contact` — STRICT SHAPE (array/scalar/empty changes →
+  22023 with zero writes); explicit contract combinations: `expected_version`
+  without `relationship_id` is invalid, `allow_new` applies only to a new
+  classification, a non-active `status` on create is rejected (never silently
+  ignored), booleans must be real JSON booleans. Updates target an EXPLICIT
+  `relationship_id` with MANDATORY `expected_version` (stale → MK409; 40001 is
+  unusable — PostgREST auto-retries it, discovered at the real boundary); no-op
+  mutations are rejected (no false version bumps/phantom transitions);
+  create-classification requires no active relationship and `allow_new` when
+  only historical rows exist (reactivation is an explicit status update by id);
+  owner validated (`marketing_validate_owner`) and stored on BOTH paths;
+  Customer Card `context->marketing` NESTED merge (other engines' subkeys +
+  non-marketing context survive; `locked_fields` respected) is RECOMPUTED from
+  the CURRENT/display relationship after every mutation and includes
+  `relationship_id` — editing a historical row never overwrites the card with
+  non-current state.
+- `marketing_create_contact` — 0 matches → create; exactly 1 Person → `existing`;
+  >1 → `ambiguous` with bounded (≤6, `truncated` flagged) minimal candidates
+  (person_id, display_name, matched_on[]) + durable `marketing_identity_conflicts`
+  record whose `identifiers` field lists, PER supplied identifier, exactly which
+  People matched it (mixed email/phone matches are never mislabelled); every
+  evidence query joins the candidate Person back to the tenant on BOTH sides
+  (corrupt cross-tenant contact-point refs can never leak a foreign Person id)
+  and stored candidate arrays are bounded (25 ids + per-identifier truncated
+  flag). Concurrency & idempotency (mandatory): `p_idempotency_key` and a REAL
+  same-tenant actor are required (null → 22023 before any write); the
+  tenant+key advisory lock is taken FIRST, before the ledger read, so same-key
+  racers — including name-only creates — can never both see an empty ledger
+  and each commit a Person; the ledger returns/conflicts before any identity or
+  Person mutation; only then the per-identifier locks (email then phone,
+  deterministic) serialise overlapping identities; the unique (tenant, key)
+  constraint stays as defence in depth. The fingerprint is canonical stored
+  JSON (jsonb text, sorted keys — collision-free by construction) over EVERY
+  material field: display/first/last name, normalised email/phone, company,
+  owner, relationship type, lifecycle stage; identical retry returns the stored
+  result, any material difference → 55000. Different keys with identical
+  name-only input intentionally remain two People.
+- `marketing_update_contact` — STRICT SHAPES throughout (body and every nested
+  block/item must be its declared shape; arrays/scalars/malformed items and
+  non-boolean flags → 22023 before ANY write, audit or event). Person fields
+  (names blocked on verified People → MK403 PROTECTED_FIELD), company,
+  contact-point ADD / UPDATE. The UPDATE contract: explicit id + EXACT opaque
+  `expected_updated_at` comparison (the client returns the server's own
+  timestamp verbatim; the token is never truncated) → MK409 on any mismatch;
+  the `set_primary` shorthand was REMOVED (it bypassed the optimistic contract)
+  — primary changes go through update items under the same token; an INVALID
+  point can never become primary; value edits only on manual-source unverified
+  points → MK403 otherwise; a value change first takes the SAME
+  tenant+channel+normalised-value advisory lock creates use, then re-runs the
+  identity check (tenant-joined on both sides, bounded 25) and records conflict
+  evidence with BOTH an audit row and an event, without blocking — shared
+  endpoints are legal; audits and events for real changes carry BEFORE/AFTER
+  values. Relationship changes delegated to classify.
+  NO-OP SEMANTICS: sub-operations that change nothing (identical person fields,
+  identical value/label, make_primary on the current primary) update
+  nothing and emit nothing; supplying the CURRENT value of a protected point is
+  a no-op, not MK403 (protection guards changes, so a label-only edit beside an
+  unchanged protected value still lands); a request whose every sub-operation is
+  a no-op raises 22023 — false `updated` transitions are never emitted.
+- `marketing_tag_mutate` (create/assign/remove), `marketing_owners_list`
+  (bounded directory — the UI never accepts a free-form owner UUID).
+- `marketing_identity_conflicts` (identifiers evidence, truncation, idempotency
+  correlation, status-governed) and `marketing_request_keys` tables.
+
+**Events (actual emissions, tested by type + payload):** `marketing.contact.created`
+· `classified` (creation) · `lifecycle_changed` · `owner_changed` ·
+`relationship_type_changed` · `relationship_status_changed` (per-field, with
+from/to/version/actor/relationship_id; only for fields that actually changed) ·
+`contact.updated` · `contact_point.created` · `contact_point.updated` ·
+`tag.created` · `contact.tag_changed` · `identity_conflict.created` — all via
+`marketing_event_append` — dedup is TRULY KEY-BASED: every entry must carry a
+non-empty stable `k` (else 22023); a pending transition with the same `k`
+blocks the append entirely (identical `k` with a different timestamp adds
+nothing and `current` moves only when a genuinely new key is accepted);
+different keys append independently; retries/no-ops emit nothing; bus
+invariant intact — and audited in the same transaction.
+
+**Edge function `marketing-contacts`:** thin canonical-resolver shell; per-action
+permission map; REQUIRED idempotency key on create (missing or explicit null →
+400); STRICT SHAPES mirrored from SQL — the request body and every nested
+changes block (details/changes/person/relationship/contact_points/each
+add-update item) must be a plain object, arrays and scalars → 400; booleans
+(`allow_new`/`clear_owner`/`clear_company`/`make_primary`) must be real
+booleans; relationship contract combinations enforced (`expected_version`
+without `relationship_id`, `allow_new` with `relationship_id` → 400);
+`set_primary` rejected with a pointer to the update-item contract; full input
+validation (uuids/enums/limits/sort/dir/dates/names/labels; cursor typed per
+sort — v: null is ACCEPTED only for last_contact so the server-issued sentinel
+cursor round-trips, and rejected for name/created); stable error contract
+(`INVALID_REQUEST / NOT_FOUND / FORBIDDEN / VERSION_CONFLICT /
+IDEMPOTENCY_CONFLICT / DUPLICATE / PROTECTED_FIELD / INTERNAL`)
+— raw DB messages never reach the browser.
+
+**UI (`MarketingContacts.tsx`):** list with live counts, full filter set
+(search, lifecycle, eligibility, owner, relationship type/status, source,
+company via a server-backed searchable bounded select, classified, tag
+include/exclude, date ranges, sort + direction — every control drives the server
+query and resets pagination); columns incl. last contact, real card next-action
+and an intentional "—" Campaigns column (Phase-5 dependency recorded); detail
+dialog (per-endpoint eligibility, suppression scope+reason, ALL relationships,
+canonical timeline, Customer Card head); quick classify targeting the explicit
+relationship id/version; edit dialog (names/company via searchable directory,
+full relationship editing — lifecycle/type/status/owner —, contact-point ADD +
+EDIT with protected values explained, primary selection); create dialog with the
+idempotency-key LIFECYCLE (transport-failure retry reuses the key; edited inputs
+start a new attempt with a new key; after existing/ambiguous the form freezes
+with "Start another attempt"); VERSION_CONFLICT → reload + "changed elsewhere";
+every mutation result checked with busy/error/retry states.
+
+### Decisions of record
+- `interaction_match_suggestions` deliberately NOT used for manual-create
+  ambiguity (no interaction exists) — `marketing_identity_conflicts` is the
+  smallest governed record.
+- "Classified" = has an ACTIVE relationship; historical rows never silently
+  shadowed (`allow_new` explicit).
+- Custom SQLSTATEs MK409/MK403 (PostgREST retries 40001; protected-field needs a
+  stable non-authz code).
+- Campaigns column stays an honest "—" until the Phase-5 participation model.
+
+### Verification matrix (explicit statuses)
+
+| Boundary / check | Status |
+|---|---|
+| `supabase/tests/marketing_contacts.test.sql` — 20 sections: inclusion + classified definition; SINGLE-ROW relationship filters (all supplied predicates — lifecycle/type/status/owner/relationship-source — on ONE row; cross-row combinations proven non-matching; the matching row is the projected relationship; no duplication); invalid input 22023s incl. the TYPED cursor contract (null v rejected for name/created, non-object and v-less cursors rejected, never ignored); pagination name + NULL-heavy last-contact asc/desc (no gaps/dups, null-v cursors round-trip); eligibility normalisation/linkage/mismatch/malformed/invalid-primary/scope-ranked precedence + same-scope resubscribe + INVALID-SCALAR-EVIDENCE (invalid point matching the scalar → invalid; usable alternative still selected); formatted-scalar suppression visibility; per-identifier ambiguity evidence (mixed email/phone never mislabelled) + conflict event; mandatory-key fingerprint idempotency (all material fields incl. first/last names; payload + actor conflicts; NULL key and NULL actor → 22023 with no writes); §9b STRICT SHAPES + relationship contract (array/scalar/empty changes, expected_version-without-id, allow_new-with-id, non-active status on create, non-boolean flags → 22023 with ZERO writes/audits/events); explicit relationship targeting + mandatory version + no-op rejection + allow_new + reactivation; owner persistence/validation; Customer Card current-relationship projection (relationship_id included; historical-row edit never overwrites the card); per-field event types + payloads + transition accumulation; §11b TRUE key-based event dedup (same k + different timestamps → one transition, current unchanged; new k appends; empty k → 22023); contact-point update with EXACT concurrency token + protection + before/after audit evidence + conflict AUDIT on endpoint edits; §12b no-op edit semantics + removed set_primary shorthand + invalid-primary rejection + stale-token-on-primary MK409; tag events incl. tag.created; corrupted cross-tenant fixtures incl. §15b EVIDENCE leakage (foreign Person ids never in candidates/identifiers/candidate_person_ids on create or edit paths); authenticated RPC denial | **PASS** (local + clean-chain + upgraded DBs) |
+| `scripts/marketing-contacts.test.mjs` — real GoTrue JWTs: 9 RPCs denied 42501 (authenticated + anon); service end-to-end; byte-identical different-key parallel creates → one Person; **OVERLAPPING-identity parallel creates → one Person, one existing**; **SAME-KEY name-only parallel creates → exactly ONE Person, identical results (key lock, no orphan duplicate)**; **same-key identified parallel → one Person**; identical retry returns stored result; same key + changed payload → 55000; **same key + changed first_name → 55000**; **null key → 22023 with no writes**; **different-key identical name-only → two People intentionally allowed**; ambiguity + per-identifier evidence; MK409 stale version; update surface; **concurrent contact-point updates → one winner + one MK409** | **PASS** (42/42) |
+| `scripts/marketing-access.test.mjs` (regression) 25/25 · foundation + hardening SQL suites · unit 6/6 · openfolk 23/23 · product-alignment · lint (changed files) · `tsc --noEmit` clean repo-wide (the one error it found — a too-narrow tag-helper type in `MarketingContacts.tsx` — was a Phase-2 defect, fixed this pass) · production build · `git diff --check` | **PASS** |
+| Clean full chain (82 migrations = 81 tracked + the contacts migration, fresh disposable container; the unrelated untracked telephony migration from a concurrent session is excluded from Phase-2 scope) + 5 SQL suites (foundation, hardening, contacts, control_plane, automation_engine) | **PASS** (re-proven after the verification-pass fixes) |
+| Upgrade path (tracked chain → committed head 7cf1dcf → seed people/relationship/contact-point/preference/suppression → corrected 20260829 applies as a normal RUN-ONCE migration — no destructive drops, no reapplication claim; data preserved; table delta exactly +2; all 3 marketing suites pass on the upgraded DB) | **PASS** (re-proven after the final correction pass) |
+| Authenticated Edge HTTP (`marketing-access-http` / `marketing-contacts-http`, now covering create/retry/fingerprint-conflict/ambiguous/update/cp-update/stale-version/invalid-cursor/**null-v cursor accepted for last_contact + rejected for created**/**wholly no-op update → 400**/**missing AND explicit-null idempotency key → 400**/**array body / array changes / array person → 400**/**expected_version without relationship_id → 400**/per-mutation denials/safe bodies/cross-tenant) | **NOT RUN** — no edge runtime exists locally and none may be installed; scripts exit 3 rather than fake success (re-confirmed this pass: both exit 3). Blocker: deploy or `supabase functions serve` on a machine with the CLI |
+| Populated responsive UI QA | **Preview** — blocked by the same runtime gap (the access gate fail-closes before data loads); fail-closed error state verified in-browser. To complete on staging |
+| Capability registry | `marketing.*` remain **Preview** until the HTTP proofs pass. Phase 2 is safe as a LOCAL CHECKPOINT; it is **not launch-proven** until HTTP + visual gates pass |
+
+### Phase 2 commit scope (reconciled from the working tree, 2026-07-29)
+
+Exactly ten files:
+`docs/product/marketing-crm/IMPLEMENTATION_LEDGER.md` ·
+`scripts/marketing-contacts-http.test.mjs` · `scripts/marketing-contacts.test.mjs` ·
+`src/components/app/MarketingContacts.tsx` · `src/lib/marketing/contacts.ts` ·
+`src/routes/marketing.tsx` · `supabase/config.toml` ·
+`supabase/functions/marketing-contacts/index.ts` ·
+`supabase/migrations/20260829120000_marketing_contacts_projection.sql` ·
+`supabase/tests/marketing_contacts.test.sql`.
+EXCLUDED unrelated areas (other sessions' work, preserved untouched):
+`docs/product-review/`, `docs/run-checkpoints/`,
+`scripts/telephony-capability-probe.mjs`,
+`supabase/functions/telephony-capability-audit/`, and the concurrent session's
+in-flight phone-operations work (migration
+`20260830120000_phone_operations_control.sql`, `supabase/functions/phone-operations/`,
+`_shared/phone_operations.*`, `src/lib/phone-operations.ts`,
+`src/components/app/admin/PhoneOperations.tsx` +
+`PhoneReliabilityControl.tsx`) — not marketing, not staged; the 20260830
+migration sorts AFTER the contacts migration, so committing Contacts first
+keeps chain order.
+
+**`supabase/config.toml` is now a SHARED file** carrying two independent
+working-tree hunks: the `[functions.marketing-contacts]` entry (Phase 2) and an
+unrelated `[functions.phone-operations]` entry (the concurrent session's).
+The Marketing checkpoint must stage ONLY the marketing-contacts hunk — e.g.
+`git add -p supabase/config.toml` (stage the `[functions.marketing-contacts]`
+hunk, skip the phone-operations hunk), or `git diff -- supabase/config.toml`
+→ edit to the marketing hunk → `git apply --cached`. NEVER `git add
+supabase/config.toml` blindly.
+
+
 ## 10 · Restart-safe "next phase"
-**Next: Phase 2 — Contacts vertical slice.** Build the server-side Contact projection
-over `people` + `contact_relationships` + `contact_points`: paginated/sorted/filtered
-query edge function, inclusion-setting behaviour, lifecycle/owner updates (audited), tag
-+ eligibility, suppression visibility, provenance, linked interaction history, and the
-Person detail integration (evolve the Customer Card, never a second profile). Exact
-prompt in the final Phase-1 report.
+**Next: Phase 3 — Settings, segments and imports.** Marketing access administration
+(grant/deny UI over `marketing_access_grants`, owner/admin only, via a governed
+endpoint); lifecycle configuration UI (rename/reorder/tone/add/retire with audited
+changes, safe retirement of in-use stages); contact-inclusion setting UI
+(`include_all_discovered` — the query already follows it, §11); tags governance;
+versioned dynamic segments (`marketing_segments.definition` validated filter AST +
+server-side evaluation reusing `marketing_contact_eligibility` and the list
+projection's filter semantics + evaluated-count storage); the generic contact
+import profile through the existing preview-first `data-import` engine
+(`import_profiles` seed, entity_type contacts, creates/updates/conflicts/invalid +
+provenance + weak-match review); delivery guardrail settings + unsubscribe
+identity/footer configuration. Same discipline: service-role RPCs or the existing
+importer, canonical resolver for authz, SQL + PostgREST proofs, chain proofs,
+ledger update. Before starting: commit the Phase-2 checkpoint, and if either
+marketing fn is deployed, run both staged HTTP scripts first.

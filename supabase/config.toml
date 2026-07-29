@@ -60,6 +60,13 @@ verify_jwt = false
 # defaults idempotently, and returns tenant marketing config. No external side effects.
 verify_jwt = false
 
+[functions.marketing-contacts]
+# Tenant-facing Contacts projection + governed contact writes (requireTenantUser +
+# the canonical marketing permission resolver). Thin shell over service-role-only
+# SQL RPCs (list/detail/classify/create); per-action permission checks; no
+# external side effects.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 
