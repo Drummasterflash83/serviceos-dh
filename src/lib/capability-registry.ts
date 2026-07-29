@@ -14,7 +14,7 @@
  * founding-document alignment audit + the frontend capability audit (2026-07-22).
  */
 
-export const REGISTRY_VERSION = "2026-07-22.1";
+export const REGISTRY_VERSION = "2026-07-29.2";
 
 /** Raw engineering status — the full truth, for OpenFolk/eng only. */
 export type CapabilityStatus =
@@ -125,6 +125,97 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
   { id: "settings.workspace", screen: "Settings", control: "Workspace", backingCapability: null, read: false, write: false, persistence: "none", requiredPermission: "admin", status: "MISSING", tenantLabel: "Preview", explanation: "Inert label row; no workspace settings backend." },
   { id: "settings.integrations", screen: "Settings", control: "Integrations", backingCapability: "tenant_connectors", read: true, write: false, persistence: "none", requiredPermission: "admin", status: "MISSING", tenantLabel: "Preview", explanation: "Inert label row; connector management not built here (registry is read elsewhere)." },
   { id: "settings.billing", screen: "Settings", control: "Billing", backingCapability: null, read: false, write: false, persistence: "none", requiredPermission: "owner", status: "MISSING", tenantLabel: "Preview", explanation: "Inert label row; no billing backend." },
+
+  // ── Marketing (/marketing — Phase 1 foundation; see docs/product/marketing-crm) ──
+  // Honest status: schema, RLS and the DB-level permission resolver are proven by SQL
+  // tests against a real database, but the marketing-access Edge Function's
+  // authenticated HTTP path has NOT executed anywhere (no local edge runtime; deploy
+  // gated). Nothing here is marked LIVE or proven until that end-to-end path runs.
+  {
+    id: "marketing.route",
+    screen: "Marketing",
+    control: "Protected /marketing surface + nav",
+    backingCapability:
+      "marketing-access (marketing_settings, marketing_access_grants, marketing_effective_permissions)",
+    read: true,
+    write: false,
+    persistence: "server",
+    requiredPermission: "any",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Route + server access model built; DB-level resolver/RLS proven by SQL tests. Authenticated HTTP path awaits deployment — until then the surface fail-closes.",
+  },
+  {
+    id: "marketing.lifecycle",
+    screen: "Marketing",
+    control: "Lifecycle pipeline (tenant config)",
+    backingCapability: "marketing_lifecycle_stages",
+    read: true,
+    write: false,
+    persistence: "server",
+    requiredPermission: "any",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Tenant lifecycle schema + template materialisation proven at DB level only; reaches users through marketing-access, whose HTTP path is unproven.",
+  },
+  {
+    id: "marketing.contacts",
+    screen: "Marketing",
+    control: "Contact list (projection)",
+    backingCapability: "people + contact_relationships (query fn not built)",
+    read: false,
+    write: false,
+    persistence: "n/a",
+    requiredPermission: "any",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Foundation tables exist (relationships, contact points, preferences, suppression) but the paginated projection lands in Phase 2.",
+  },
+  {
+    id: "marketing.imports",
+    screen: "Marketing",
+    control: "Contact import",
+    backingCapability: "data-import (contact profile not seeded)",
+    read: false,
+    write: false,
+    persistence: "n/a",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Reuses the preview-first universal importer; the contact profile + UI arrive in Phase 3.",
+  },
+  {
+    id: "marketing.campaigns",
+    screen: "Marketing",
+    control: "Broadcasts / Sequences / Templates / Reporting",
+    backingCapability: "marketing_campaigns, marketing_segments (delivery not built)",
+    read: false,
+    write: false,
+    persistence: "n/a",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Campaign/segment foundations exist; governed delivery via the Automation Engine arrives in Phases 4–5. Nothing sends today.",
+  },
+  {
+    id: "marketing.ads",
+    screen: "Marketing",
+    control: "Ads sources (Meta / Google / LinkedIn)",
+    backingCapability: null,
+    read: false,
+    write: false,
+    persistence: "n/a",
+    requiredPermission: "admin",
+    status: "PREVIEW",
+    tenantLabel: "Not connected",
+    explanation:
+      "No ad provider adapter or credentials exist. Stays Not connected until a real integration is verified (Phase 8).",
+  },
 
   // ── Strategy / ownership (whole-product gaps the reset addresses) ─────────
   { id: "strategy.objectives", screen: "Strategy", control: "Objectives / North Star view & edit", backingCapability: "objectives (exists, unwired/unseeded)", read: false, write: false, persistence: "none", requiredPermission: "owner", status: "MISSING", tenantLabel: "Preview", explanation: "No production surface reads or edits objectives; only a hardcoded Labs preview. Draft strategy seeded for review in step 2A." },

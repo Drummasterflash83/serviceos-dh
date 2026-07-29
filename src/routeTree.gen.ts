@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OpenfolkRouteImport } from './routes/openfolk'
+import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HealthShadowRouteImport } from './routes/health-shadow'
 import { Route as AppRouteImport } from './routes/app'
@@ -25,6 +26,11 @@ import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-cen
 const OpenfolkRoute = OpenfolkRouteImport.update({
   id: '/openfolk',
   path: '/openfolk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
   '/demo/learning-centre': typeof DemoLearningCentreRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
+  '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/health-shadow'
     | '/login'
+    | '/marketing'
     | '/openfolk'
     | '/demo/command-centre'
     | '/demo/customer-health'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/health-shadow'
     | '/login'
+    | '/marketing'
     | '/demo/command-centre'
     | '/demo/customer-health'
     | '/demo/learning-centre'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/health-shadow'
     | '/login'
+    | '/marketing'
     | '/openfolk'
     | '/demo/command-centre'
     | '/demo/customer-health'
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   HealthShadowRoute: typeof HealthShadowRoute
   LoginRoute: typeof LoginRoute
+  MarketingRoute: typeof MarketingRoute
   OpenfolkRoute: typeof OpenfolkRouteWithChildren
   DemoCommandCentreRoute: typeof DemoCommandCentreRoute
   DemoCustomerHealthRoute: typeof DemoCustomerHealthRoute
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/openfolk'
       fullPath: '/openfolk'
       preLoaderRoute: typeof OpenfolkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketing': {
+      id: '/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof MarketingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   HealthShadowRoute: HealthShadowRoute,
   LoginRoute: LoginRoute,
+  MarketingRoute: MarketingRoute,
   OpenfolkRoute: OpenfolkRouteWithChildren,
   DemoCommandCentreRoute: DemoCommandCentreRoute,
   DemoCustomerHealthRoute: DemoCustomerHealthRoute,

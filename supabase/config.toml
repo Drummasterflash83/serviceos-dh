@@ -54,6 +54,12 @@ verify_jwt = false
 # Plane tables — the Command Centre consumes this instead of querying them.
 verify_jwt = false
 
+[functions.marketing-access]
+# Tenant-facing Marketing access + config (requireTenantUser). Resolves the caller's
+# marketing permissions (role defaults + per-user grants), materialises tenant
+# defaults idempotently, and returns tenant marketing config. No external side effects.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

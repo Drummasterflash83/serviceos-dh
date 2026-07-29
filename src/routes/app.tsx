@@ -10,6 +10,7 @@ import {
   Settings,
   Briefcase,
   Menu,
+  Megaphone,
   ArrowUpRight,
   Activity,
   ChevronRight,
@@ -52,6 +53,8 @@ import {
 import { cn } from "@/lib/utils";
 import { getCapability } from "@/lib/capability-registry";
 import { RequireAuth, useAuth } from "@/lib/auth";
+import { AppChrome } from "@/components/app/AppChrome";
+import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import {
   Dialog,
   DialogContent,
@@ -179,7 +182,8 @@ const LABS_MODULES: { key: ViewKey; label: string }[] = [
   { key: "assets", label: "Assets" },
   { key: "furtherworks", label: "Further Works" },
   { key: "arr", label: "ARR Growth" },
-  { key: "marketing", label: "Marketing" },
+  // "Marketing" is no longer a Labs preview — it is a real, protected surface at
+  // /marketing (Phase 1). The redirect below moves any legacy #/marketing link there.
   { key: "campaigns", label: "Campaigns" },
   { key: "automations", label: "Automations" },
   { key: "journeys", label: "Customer Journeys" },
@@ -309,6 +313,35 @@ function OpenFolkShell() {
   );
 }
 
+/* Top-level Marketing nav item. Marketing is a real protected route (/marketing),
+   not a hash view — so it is a router Link, shown only when the SERVER resolves
+   Marketing access for this user (client gate is UX only; RLS + the Edge Function
+   are the real enforcement). */
+function MarketingNavLink({ closeNav }: { closeNav: () => void }) {
+  const { canView } = useMarketingAccess();
+  if (!canView) return null;
+  return (
+    <Link
+      to="/marketing"
+      onClick={closeNav}
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-alt hover:text-foreground"
+    >
+      <Megaphone className="h-4 w-4 shrink-0" />
+      <span className="flex-1 text-left">Marketing</span>
+    </Link>
+  );
+}
+
+/* Legacy #/marketing Labs location — Marketing is now a real surface at /marketing.
+   Redirect any durable link there rather than showing a false duplicate. */
+function MarketingMoved() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate({ to: "/marketing", replace: true });
+  }, [navigate]);
+  return <ComingSoon title="Marketing" subtitle="Opening Marketing…" />;
+}
+
 function AppShell() {
   const [view, setViewState] = useState<ViewKey>(() => {
     if (typeof window === "undefined") return "command";
@@ -321,10 +354,8 @@ function AppShell() {
       ? candidate
       : "command";
   });
-  const [navOpen, setNavOpen] = useState(false);
   const setView = (next: ViewKey) => {
     setViewState(next);
-    setNavOpen(false);
     if (typeof window !== "undefined")
       window.history.replaceState(
         null,
@@ -342,44 +373,23 @@ function AppShell() {
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
   }, []);
-  const { signOut, profile } = useAuth();
-  const navigate = useNavigate();
+  const { profile } = useAuth();
   const platformAdmin = isPlatformAdmin(profile);
   const viewTitle =
-    NAV.find((n) => n.key === view)?.label ??
-    (view === "labs"
-      ? "Labs"
-      : view === "openfolk"
-        ? "Open Folk"
-        : (LABS_MODULES.find((m) => m.key === view)?.label ?? "ServiceOS"));
+    view === "marketing"
+      ? "Marketing"
+      : (NAV.find((n) => n.key === view)?.label ??
+        (view === "labs"
+          ? "Labs"
+          : view === "openfolk"
+            ? "Open Folk"
+            : (LABS_MODULES.find((m) => m.key === view)?.label ?? "ServiceOS")));
 
   return (
-    <div className="flex min-h-screen bg-surface-alt text-foreground">
-      {/* Real-time live call surface — floats for the assigned logged-in user only */}
-      <LiveCallCard />
-      {/* Mobile nav overlay */}
-      {navOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 md:hidden"
-          onClick={() => setNavOpen(false)}
-        />
-      )}
-      {/* Sidebar — static on desktop, slide-over drawer on mobile */}
-      <aside
-        className={cn(
-          "z-50 h-screen w-64 shrink-0 flex-col border-r border-hairline bg-white md:sticky md:top-0 md:flex",
-          navOpen ? "fixed inset-y-0 left-0 flex" : "hidden md:flex",
-        )}
-      >
-        <Link
-          to="/"
-          className="flex items-center gap-2 border-b border-hairline px-5 py-4 text-display text-[15px] font-bold"
-        >
-          <img src={dhIcon.url} alt="Drummonds" className="h-6 w-6 rounded-md object-contain" />
-          ServiceOS
-        </Link>
-
-        <nav className="flex-1 overflow-y-auto p-3">
+    <AppChrome
+      title={viewTitle}
+      nav={({ closeNav }) => (
+        <>
           {(["CORE"] as const).map((group) => (
             <div
               key={group}
@@ -388,7 +398,10 @@ function AppShell() {
               {NAV.filter((n) => n.group === group).map((item) => (
                 <button
                   key={item.key}
-                  onClick={() => setView(item.key)}
+                  onClick={() => {
+                    setView(item.key);
+                    closeNav();
+                  }}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
                     view === item.key
@@ -403,6 +416,9 @@ function AppShell() {
                   {view === item.key && <ChevronRight className="h-3.5 w-3.5" />}
                 </button>
               ))}
+              {/* Marketing — a real top-level surface at its own protected route.
+                  Shown only when the server resolves Marketing access for this user. */}
+              <MarketingNavLink closeNav={closeNav} />
             </div>
           ))}
 
@@ -412,7 +428,10 @@ function AppShell() {
               More
             </div>
             <button
-              onClick={() => setView("labs")}
+              onClick={() => {
+                setView("labs");
+                closeNav();
+              }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
                 view === "labs"
@@ -426,7 +445,10 @@ function AppShell() {
             </button>
             {platformAdmin && (
               <button
-                onClick={() => setView("openfolk")}
+                onClick={() => {
+                  setView("openfolk");
+                  closeNav();
+                }}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
                   view === "openfolk"
@@ -440,184 +462,126 @@ function AppShell() {
               </button>
             )}
           </div>
-        </nav>
-
-        <div className="border-t border-hairline p-4">
-          <div className="rounded-xl bg-surface-alt p-3">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-              All systems live
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">Drummond Heating</div>
-          </div>
-          <button
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/login" });
-            }}
-            className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-surface-alt hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Log out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-hairline bg-white/80 px-6 py-3 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setNavOpen(true)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-hairline md:hidden"
-              aria-label="Open navigation"
-            >
-              <Menu className="h-4 w-4 text-muted-foreground" />
-            </button>
-            <div className="text-display text-lg font-semibold capitalize">{viewTitle}</div>
-            <span className="hidden text-xs text-muted-foreground md:inline">·</span>
-            <span className="hidden font-mono text-xs text-muted-foreground md:inline">
-              {new Date().toLocaleString([], {
-                weekday: "long",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Global search + notifications removed: they had no backend and were
-                false affordances (capability-registry: global.search / global.notifications
-                = MISSING). They return only when a real search / notifications backend exists. */}
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-xs font-semibold text-background">
-              DH
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 p-6">
-          {/* HEARTBEAT */}
-          {view === "command" && <CommandCentre />}
-          {/* OPERATE */}
-          {view === "customers" && <Customers />}
-          {view === "operations" && <Operations />}
-          {view === "communications" && <Communications />}
-          {/* INTELLIGENCE */}
-          {view === "learning" && <LearningCentre />}
-          {view === "agents" && (
-            <ComingSoon title="Agents" subtitle="AI workers — arriving with the agent backend." />
-          )}
-          {view === "protocol" && <Protocol />}
-          {/* GROW */}
-          {view === "growth" && (
-            <ComingSoon
-              title="Growth Intelligence"
-              subtitle="Revenue, retention and opportunities — arriving next."
-            />
-          )}
-          {/* CONTROL */}
-          {view === "settings" && <SettingsView />}
-          {/* More */}
-          {view === "labs" && <LabsGallery onOpen={setView} />}
-          {view === "openfolk" &&
-            (platformAdmin ? (
-              <OpenFolkShell />
-            ) : (
-              <ComingSoon title="Open Folk" subtitle="Super-admin only." />
-            ))}
-          {/* Labs previews — design concepts, reachable via Labs, never faked as production */}
-          {view === "myday" && (
-            <PreviewBanner title="My Day">
-              <MyDayDashboard />
-            </PreviewBanner>
-          )}
-          {view === "northstar" && (
-            <PreviewBanner title="North Star">
-              <NorthStar />
-            </PreviewBanner>
-          )}
-          {view === "cards" && (
-            <PreviewBanner title="Cards">
-              <CardsView />
-            </PreviewBanner>
-          )}
-          {view === "engineers" && (
-            <PreviewBanner title="Engineers">
-              <EngineersView />
-            </PreviewBanner>
-          )}
-          {view === "coordinator" && (
-            <PreviewBanner title="Coordinator">
-              <CoordinatorCockpit />
-            </PreviewBanner>
-          )}
-          {view === "quote" && (
-            <PreviewBanner title="Quote Engine">
-              <QuoteEngine />
-            </PreviewBanner>
-          )}
-          {view === "assets" && (
-            <PreviewBanner title="Assets">
-              <Assets />
-            </PreviewBanner>
-          )}
-          {view === "furtherworks" && (
-            <PreviewBanner title="Further Works">
-              <FurtherWorks />
-            </PreviewBanner>
-          )}
-          {view === "arr" && (
-            <PreviewBanner title="ARR Growth">
-              <ARRGrowth />
-            </PreviewBanner>
-          )}
-          {view === "marketing" && (
-            <PreviewBanner title="Marketing">
-              <ComingSoon title="Marketing" />
-            </PreviewBanner>
-          )}
-          {view === "campaigns" && (
-            <PreviewBanner title="Campaigns">
-              <ComingSoon title="Campaigns" />
-            </PreviewBanner>
-          )}
-          {view === "automations" && (
-            <PreviewBanner title="Automations">
-              <Automations />
-            </PreviewBanner>
-          )}
-          {view === "journeys" && (
-            <PreviewBanner title="Customer Journeys">
-              <ComingSoon title="Customer Journeys" />
-            </PreviewBanner>
-          )}
-          {view === "reviews" && (
-            <PreviewBanner title="Reviews">
-              <ComingSoon title="Reviews" />
-            </PreviewBanner>
-          )}
-          {view === "intelligence" && (
-            <PreviewBanner title="Intelligence">
-              <Intelligence />
-            </PreviewBanner>
-          )}
-          {view === "learn" && (
-            <PreviewBanner title="Knowledge">
-              <Learn />
-            </PreviewBanner>
-          )}
-          {view === "compliance" && (
-            <PreviewBanner title="Compliance">
-              <ComplianceRoadmap />
-            </PreviewBanner>
-          )}
-          {view === "finance" && (
-            <PreviewBanner title="Numbers">
-              <Finance />
-            </PreviewBanner>
-          )}
-        </main>
-      </div>
-    </div>
+        </>
+      )}
+    >
+      {/* HEARTBEAT */}
+      {view === "command" && <CommandCentre />}
+      {/* OPERATE */}
+      {view === "customers" && <Customers />}
+      {view === "operations" && <Operations />}
+      {view === "communications" && <Communications />}
+      {/* INTELLIGENCE */}
+      {view === "learning" && <LearningCentre />}
+      {view === "agents" && (
+        <ComingSoon title="Agents" subtitle="AI workers — arriving with the agent backend." />
+      )}
+      {view === "protocol" && <Protocol />}
+      {/* GROW */}
+      {view === "growth" && (
+        <ComingSoon
+          title="Growth Intelligence"
+          subtitle="Revenue, retention and opportunities — arriving next."
+        />
+      )}
+      {/* CONTROL */}
+      {view === "settings" && <SettingsView />}
+      {/* More */}
+      {view === "labs" && <LabsGallery onOpen={setView} />}
+      {view === "openfolk" &&
+        (platformAdmin ? (
+          <OpenFolkShell />
+        ) : (
+          <ComingSoon title="Open Folk" subtitle="Super-admin only." />
+        ))}
+      {/* Labs previews — design concepts, reachable via Labs, never faked as production */}
+      {view === "myday" && (
+        <PreviewBanner title="My Day">
+          <MyDayDashboard />
+        </PreviewBanner>
+      )}
+      {view === "northstar" && (
+        <PreviewBanner title="North Star">
+          <NorthStar />
+        </PreviewBanner>
+      )}
+      {view === "cards" && (
+        <PreviewBanner title="Cards">
+          <CardsView />
+        </PreviewBanner>
+      )}
+      {view === "engineers" && (
+        <PreviewBanner title="Engineers">
+          <EngineersView />
+        </PreviewBanner>
+      )}
+      {view === "coordinator" && (
+        <PreviewBanner title="Coordinator">
+          <CoordinatorCockpit />
+        </PreviewBanner>
+      )}
+      {view === "quote" && (
+        <PreviewBanner title="Quote Engine">
+          <QuoteEngine />
+        </PreviewBanner>
+      )}
+      {view === "assets" && (
+        <PreviewBanner title="Assets">
+          <Assets />
+        </PreviewBanner>
+      )}
+      {view === "furtherworks" && (
+        <PreviewBanner title="Further Works">
+          <FurtherWorks />
+        </PreviewBanner>
+      )}
+      {view === "arr" && (
+        <PreviewBanner title="ARR Growth">
+          <ARRGrowth />
+        </PreviewBanner>
+      )}
+      {view === "marketing" && <MarketingMoved />}
+      {view === "campaigns" && (
+        <PreviewBanner title="Campaigns">
+          <ComingSoon title="Campaigns" />
+        </PreviewBanner>
+      )}
+      {view === "automations" && (
+        <PreviewBanner title="Automations">
+          <Automations />
+        </PreviewBanner>
+      )}
+      {view === "journeys" && (
+        <PreviewBanner title="Customer Journeys">
+          <ComingSoon title="Customer Journeys" />
+        </PreviewBanner>
+      )}
+      {view === "reviews" && (
+        <PreviewBanner title="Reviews">
+          <ComingSoon title="Reviews" />
+        </PreviewBanner>
+      )}
+      {view === "intelligence" && (
+        <PreviewBanner title="Intelligence">
+          <Intelligence />
+        </PreviewBanner>
+      )}
+      {view === "learn" && (
+        <PreviewBanner title="Knowledge">
+          <Learn />
+        </PreviewBanner>
+      )}
+      {view === "compliance" && (
+        <PreviewBanner title="Compliance">
+          <ComplianceRoadmap />
+        </PreviewBanner>
+      )}
+      {view === "finance" && (
+        <PreviewBanner title="Numbers">
+          <Finance />
+        </PreviewBanner>
+      )}
+    </AppChrome>
   );
 }
 
