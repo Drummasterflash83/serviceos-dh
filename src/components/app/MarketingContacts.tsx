@@ -53,6 +53,9 @@ import {
   removeTag,
   listOwners,
   listCompanies,
+  bulkTagPreflight,
+  bulkTagApply,
+  type BulkTagCounts,
   type ContactListItem,
   type ContactListParams,
   type ContactCounts,
@@ -169,6 +172,55 @@ export function MarketingContacts() {
 
   const [detailId, setDetailId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+
+  // bounded multi-select bulk tagging (marketing.tags.manage)
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkTag, setBulkTag] = useState("");
+  const [bulkOp, setBulkOp] = useState<"assign" | "remove">("assign");
+  const [bulkPreflight, setBulkPreflight] = useState<BulkTagCounts | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMsg, setBulkMsg] = useState<string | null>(null);
+
+  function toggleSelected(id: string) {
+    setBulkPreflight(null);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 200) next.add(id);
+      return next;
+    });
+  }
+
+  async function runBulkPreflight() {
+    if (!bulkTag || selected.size === 0) return;
+    setBulkBusy(true);
+    setBulkMsg(null);
+    const r = await bulkTagPreflight(bulkOp, bulkTag, [...selected]);
+    setBulkBusy(false);
+    if (r.ok) setBulkPreflight(r.data);
+    else setBulkMsg(r.error.message);
+  }
+  async function runBulkApply() {
+    // apply is bound to its preflight by the server-issued contract: the same
+    // tag, op and exact selection — anything else is rejected server-side
+    if (!bulkTag || selected.size === 0 || !bulkPreflight?.contract) return;
+    setBulkBusy(true);
+    const r = await bulkTagApply(bulkOp, bulkTag, [...selected], bulkPreflight.contract);
+    setBulkBusy(false);
+    setBulkPreflight(null);
+    if (r.ok) {
+      setBulkMsg(
+        `${bulkOp === "assign" ? "Tagged" : "Untagged"} ${r.data.applied ?? 0} contact(s)` +
+          (r.data.rejected ? ` · ${r.data.rejected} rejected` : ""),
+      );
+      setSelected(new Set());
+      void load(false, null);
+    } else {
+      if (r.error.code === "VERSION_CONFLICT")
+        setBulkMsg("Selection changed since preflight — run preflight again.");
+      else setBulkMsg(r.error.message);
+    }
+  }
 
   useEffect(() => {
     void listOwners().then((r) => r.ok && setOwners(r.data.owners));
@@ -543,11 +595,85 @@ export function MarketingContacts() {
         </div>
       )}
 
+      {/* bounded bulk tagging: preflight → explicit confirmation → idempotent apply */}
+      {can("marketing.tags.manage") && selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/30 bg-white p-3 text-xs">
+          <span className="font-medium">{selected.size} selected</span>
+          <span className="text-muted-foreground">(max 200)</span>
+          <select
+            value={bulkOp}
+            onChange={(e) => {
+              setBulkOp(e.target.value as "assign" | "remove");
+              setBulkPreflight(null);
+            }}
+            className={inputCls}
+          >
+            <option value="assign">Add tag</option>
+            <option value="remove">Remove tag</option>
+          </select>
+          <select
+            value={bulkTag}
+            onChange={(e) => {
+              setBulkTag(e.target.value);
+              setBulkPreflight(null);
+            }}
+            className={inputCls}
+          >
+            <option value="">Choose tag…</option>
+            {allTags.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          {!bulkPreflight ? (
+            <button
+              disabled={bulkBusy || !bulkTag}
+              onClick={() => void runBulkPreflight()}
+              className="rounded-lg border border-hairline bg-white px-3 py-1.5 font-medium disabled:opacity-40"
+            >
+              {bulkBusy ? "Checking…" : "Preflight"}
+            </button>
+          ) : (
+            <span className="flex items-center gap-2">
+              <span className="text-muted-foreground">
+                {bulkPreflight.applicable} to change · {bulkPreflight.already_assigned} already
+                {bulkPreflight.rejected > 0 ? ` · ${bulkPreflight.rejected} rejected` : ""}
+              </span>
+              <button
+                disabled={bulkBusy || bulkPreflight.applicable === 0}
+                onClick={() => void runBulkApply()}
+                className="rounded-lg bg-foreground px-3 py-1.5 font-medium text-background disabled:opacity-40"
+              >
+                Confirm {bulkOp === "assign" ? "tagging" : "removal"}
+              </button>
+              <button onClick={() => setBulkPreflight(null)} className="underline">
+                Cancel
+              </button>
+            </span>
+          )}
+          <button
+            onClick={() => {
+              setSelected(new Set());
+              setBulkPreflight(null);
+            }}
+            className="ml-auto text-muted-foreground underline"
+          >
+            Clear selection
+          </button>
+          {bulkMsg && <span className="w-full text-muted-foreground">{bulkMsg}</span>}
+        </div>
+      )}
+      {bulkMsg && selected.size === 0 && (
+        <div className="text-xs text-muted-foreground">{bulkMsg}</div>
+      )}
+
       {!loading && !error && items.length > 0 && (
         <div className="overflow-x-auto rounded-xl border border-hairline bg-white">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-hairline text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                {can("marketing.tags.manage") && <th className="w-8 px-2 py-2.5" />}
                 <th className="px-4 py-2.5 font-medium">Person</th>
                 <th className="px-4 py-2.5 font-medium">Company / type</th>
                 <th className="px-4 py-2.5 font-medium">Lifecycle</th>
@@ -571,6 +697,16 @@ export function MarketingContacts() {
                   onClick={() => setDetailId(it.person_id)}
                   className="cursor-pointer border-b border-hairline/60 last:border-0 hover:bg-surface-alt/60"
                 >
+                  {can("marketing.tags.manage") && (
+                    <td className="w-8 px-2 py-2.5" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(it.person_id)}
+                        onChange={() => toggleSelected(it.person_id)}
+                        aria-label={`Select ${it.display_name ?? "person"}`}
+                      />
+                    </td>
+                  )}
                   <td className="max-w-[220px] px-4 py-2.5">
                     <div className="truncate font-medium text-foreground">
                       {it.display_name ?? "Unnamed person"}

@@ -148,6 +148,69 @@ export interface MappedRow {
   rowNumber: number;
 }
 
+// ── deterministic profile choice (PURE) ─────────────────────────────────────
+export interface ImportProfileRowMeta {
+  id: string;
+  tenant_id: string | null; // null = platform profile
+  source_system: string;
+  entity_type: string;
+  name: string;
+  version: number;
+  active: boolean;
+  definition: ImportProfileDef;
+}
+
+export type ProfileChoice =
+  | { kind: "ok"; profile: ImportProfileRowMeta }
+  | { kind: "none" }
+  /** several eligible profiles — an EXPLICIT selection is required */
+  | { kind: "ambiguous"; eligible: ImportProfileRowMeta[] }
+  /** an explicit id exists but cannot serve this request */
+  | { kind: "mismatch"; reason: string };
+
+/**
+ * Choose the import profile DETERMINISTICALLY — never an under-specified
+ * limit(1):
+ *  - an EXPLICIT id must be active and match the requested source_system and
+ *    entity_type (tenant/platform visibility is enforced by the caller's
+ *    query) — anything else is a mismatch, never a silent substitute;
+ *  - with no explicit id, resolve automatically ONLY when unambiguous: exactly
+ *    one eligible tenant profile wins over the platform fallback; exactly one
+ *    platform profile is used when no tenant profile exists; several eligible
+ *    candidates at the preferred level require an explicit selection.
+ */
+export function chooseImportProfile(
+  rows: ImportProfileRowMeta[],
+  requested: { source: string; entity: string; explicitId?: string | null },
+): ProfileChoice {
+  if (requested.explicitId) {
+    const row = rows.find((r) => r.id === requested.explicitId);
+    if (!row) return { kind: "none" };
+    if (!row.active) return { kind: "mismatch", reason: "profile is inactive" };
+    if (row.entity_type !== requested.entity)
+      return {
+        kind: "mismatch",
+        reason: `profile is for entity '${row.entity_type}', not '${requested.entity}'`,
+      };
+    if (row.source_system !== requested.source)
+      return {
+        kind: "mismatch",
+        reason: `profile is for source '${row.source_system}', not '${requested.source}'`,
+      };
+    return { kind: "ok", profile: row };
+  }
+  const eligible = rows.filter(
+    (r) => r.active && r.entity_type === requested.entity && r.source_system === requested.source,
+  );
+  const tenantOwned = eligible.filter((r) => r.tenant_id !== null);
+  if (tenantOwned.length === 1) return { kind: "ok", profile: tenantOwned[0] };
+  if (tenantOwned.length > 1) return { kind: "ambiguous", eligible: tenantOwned };
+  const platform = eligible.filter((r) => r.tenant_id === null);
+  if (platform.length === 1) return { kind: "ok", profile: platform[0] };
+  if (platform.length > 1) return { kind: "ambiguous", eligible: platform };
+  return { kind: "none" };
+}
+
 /** Map + validate one source row (array of cells) into a canonical record. */
 export function mapRow(
   cells: string[],

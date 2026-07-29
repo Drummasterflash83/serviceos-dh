@@ -67,6 +67,17 @@ verify_jwt = false
 # external side effects.
 verify_jwt = false
 
+[functions.marketing-admin]
+# Owner/admin Marketing administration (settings, lifecycle stages, access grants,
+# audit history). requireTenantUser owner/admin + the canonical resolver inside the
+# service-role RPCs. No external side effects.
+verify_jwt = false
+
+[functions.marketing-segments]
+# Versioned dynamic segments (validated filter AST, immutable versions, server-side
+# evaluation). requireTenantUser + canonical resolver; service-role RPCs only.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

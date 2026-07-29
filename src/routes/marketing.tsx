@@ -38,7 +38,13 @@ import { cn } from "@/lib/utils";
 import { RequireAuth } from "@/lib/auth";
 import { AppChrome } from "@/components/app/AppChrome";
 import { MarketingContacts } from "@/components/app/MarketingContacts";
+import { MarketingSegments } from "@/components/app/MarketingSegments";
+import { MarketingTags } from "@/components/app/MarketingTags";
+import { MarketingImports } from "@/components/app/MarketingImports";
+import { MarketingSettings } from "@/components/app/MarketingSettings";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
+import { deriveMarketingGate } from "@/lib/marketing/gate";
+import { Settings as SettingsIcon } from "lucide-react";
 
 export const Route = createFileRoute("/marketing")({
   head: () => ({
@@ -116,10 +122,15 @@ function SectionCard({
 
 function MarketingShell() {
   const [section, setSection] = useState<SectionKey>("contacts");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { access, loading, error, canView, refresh } = useMarketingAccess();
   const navigate = useNavigate();
+  const gate = deriveMarketingGate(loading, error, access);
+  const canAdmin = access?.permissions?.includes("marketing.access.manage") ?? false;
 
-  const title = SECTIONS.find((s) => s.key === section)?.label ?? "Marketing";
+  const title = settingsOpen
+    ? "Settings"
+    : (SECTIONS.find((s) => s.key === section)?.label ?? "Marketing");
 
   return (
     <AppChrome
@@ -145,11 +156,12 @@ function MarketingShell() {
               key={item.key}
               onClick={() => {
                 setSection(item.key);
+                setSettingsOpen(false);
                 closeNav();
               }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-                section === item.key
+                section === item.key && !settingsOpen
                   ? "bg-foreground font-medium text-background"
                   : "font-medium text-muted-foreground hover:bg-surface-alt hover:text-foreground",
               )}
@@ -158,6 +170,24 @@ function MarketingShell() {
               <span className="flex-1 text-left">{item.label}</span>
             </button>
           ))}
+          {/* Settings is a clearly-labelled control, NOT a fourth primary section */}
+          {canAdmin && (
+            <button
+              onClick={() => {
+                setSettingsOpen(true);
+                closeNav();
+              }}
+              className={cn(
+                "mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                settingsOpen
+                  ? "bg-foreground font-medium text-background"
+                  : "font-medium text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+              )}
+            >
+              <SettingsIcon className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">Marketing settings</span>
+            </button>
+          )}
         </>
       )}
     >
@@ -189,17 +219,52 @@ function MarketingShell() {
       )}
 
       {/* Only claim "Requires permission" once the server has actually ANSWERED —
-          an unreachable access check is an error, never a permission verdict. */}
-      {!loading && !error && access && !canView && (
+          an unreachable access check is an error, never a permission verdict.
+          Marketing DISABLED + authenticated owner/admin role → the governed
+          recovery path (the server explicitly permits owner/admin
+          administration while disabled; hiding it would make disabling the
+          module an unrecoverable UI lockout). */}
+      {gate.kind === "disabled_admin" && !settingsOpen && (
         <div className="grid min-h-[50vh] place-items-center">
           <div className="max-w-sm text-center">
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-surface-alt">
               <ShieldAlert className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div className="text-display mt-4 text-xl font-semibold">Requires permission</div>
+            <div className="text-display mt-4 text-xl font-semibold">Marketing is disabled</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {access?.reason === "not_enabled"
-                ? "Marketing is not enabled for this workspace."
+              Marketing is switched off for this workspace. As an owner/admin you can re-enable it
+              from Marketing settings — the change is versioned and audited.
+            </p>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="mt-3 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background"
+            >
+              Open settings to re-enable
+            </button>
+          </div>
+        </div>
+      )}
+      {gate.kind === "disabled_admin" && settingsOpen && (
+        <MarketingSettings
+          onBack={() => {
+            setSettingsOpen(false);
+            refresh();
+          }}
+        />
+      )}
+
+      {(gate.kind === "disabled" || gate.kind === "denied") && (
+        <div className="grid min-h-[50vh] place-items-center">
+          <div className="max-w-sm text-center">
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-surface-alt">
+              <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="text-display mt-4 text-xl font-semibold">
+              {gate.kind === "disabled" ? "Marketing is disabled" : "Requires permission"}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {gate.kind === "disabled"
+                ? "Marketing is not enabled for this workspace. An owner or admin can re-enable it."
                 : "You don't have Marketing access. An owner or admin can grant it in Settings."}
             </p>
           </div>
@@ -208,47 +273,79 @@ function MarketingShell() {
 
       {!loading && !error && canView && (
         <>
-          {section === "contacts" && <ContactsSection />}
-          {section === "campaigns" && <CampaignsSection />}
-          {section === "ads" && <AdsSection />}
+          {settingsOpen ? (
+            <MarketingSettings onBack={() => setSettingsOpen(false)} />
+          ) : (
+            <>
+              {section === "contacts" && <ContactsSection />}
+              {section === "campaigns" && <CampaignsSection />}
+              {section === "ads" && <AdsSection />}
+            </>
+          )}
         </>
       )}
     </AppChrome>
   );
 }
 
-/* ── Contacts — the Phase-2 vertical slice: the real server-side projection
-      (list/filters/detail/classify/tags) plus the tenant-config note and the
-      Phase-3 import preview. ── */
+/* ── Contacts — the Contacts area now carries four coherent tabs:
+      Contacts (Phase-2 projection) · Segments · Tags · Imports (Phase 3). ── */
+type ContactsTab = "contacts" | "segments" | "tags" | "imports";
+
 function ContactsSection() {
   const { access, can } = useMarketingAccess();
   const settings = access?.settings ?? null;
+  const [tab, setTab] = useState<ContactsTab>("contacts");
+
+  const tabs: { key: ContactsTab; label: string; icon: typeof Users; show: boolean }[] = [
+    { key: "contacts", label: "Contacts", icon: Users, show: true },
+    { key: "segments", label: "Segments", icon: ListFilter, show: true },
+    { key: "tags", label: "Tags", icon: Tag, show: can("marketing.tags.manage") },
+    { key: "imports", label: "Imports", icon: Upload, show: can("marketing.contacts.import") },
+  ];
 
   return (
     <div className="space-y-5">
-      <MarketingContacts />
+      <div className="flex flex-wrap items-center gap-1 border-b border-hairline pb-2">
+        {tabs
+          .filter((t) => t.show)
+          .map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
+                tab === t.key
+                  ? "bg-foreground font-medium text-background"
+                  : "font-medium text-muted-foreground hover:bg-surface-alt hover:text-foreground",
+              )}
+            >
+              <t.icon className="h-3.5 w-3.5" /> {t.label}
+            </button>
+          ))}
+      </div>
 
-      {settings && (
-        <div className="rounded-lg border border-hairline bg-surface-alt/50 px-3 py-2 text-xs text-muted-foreground">
-          Inclusion:{" "}
-          <span className="font-medium text-foreground">
-            {settings.include_all_discovered
-              ? "all discovered people"
-              : "classified / eligible people only"}
-          </span>{" "}
-          · new contacts default to {settings.default_relationship_type} /{" "}
-          {settings.default_lifecycle_stage_key} · timezone {settings.timezone}. Configurable in
-          Settings (admin UI arrives in Phase 3).
-        </div>
+      {tab === "contacts" && (
+        <>
+          <MarketingContacts />
+          {settings && (
+            <div className="rounded-lg border border-hairline bg-surface-alt/50 px-3 py-2 text-xs text-muted-foreground">
+              Inclusion:{" "}
+              <span className="font-medium text-foreground">
+                {settings.include_all_discovered
+                  ? "all discovered people"
+                  : "classified / eligible people only"}
+              </span>{" "}
+              · new contacts default to {settings.default_relationship_type} /{" "}
+              {settings.default_lifecycle_stage_key} · timezone {settings.timezone}. Configurable in
+              Marketing settings.
+            </div>
+          )}
+        </>
       )}
-
-      {can("marketing.contacts.import") && (
-        <SectionCard icon={Upload} title="Import contacts" state="Preview">
-          CSV import runs through the platform's preview-first importer (creates, updates, conflicts
-          and invalid rows before anything is applied). The contact import profile and UI arrive in
-          Phase 3.
-        </SectionCard>
-      )}
+      {tab === "segments" && <MarketingSegments />}
+      {tab === "tags" && <MarketingTags />}
+      {tab === "imports" && <MarketingImports />}
     </div>
   );
 }

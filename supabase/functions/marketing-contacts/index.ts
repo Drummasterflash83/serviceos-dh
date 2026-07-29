@@ -77,7 +77,19 @@ const PERMISSION_BY_ACTION: Record<string, string> = {
   tag_create: "marketing.tags.manage",
   tag_assign: "marketing.tags.manage",
   tag_remove: "marketing.tags.manage",
+  tags_admin_list: "marketing.tags.manage",
+  tag_admin: "marketing.tags.manage",
+  tag_bulk_preflight: "marketing.tags.manage",
+  tag_bulk_apply: "marketing.tags.manage",
 };
+
+const TAG_ADMIN_OPS = new Set([
+  "rename",
+  "set_tone",
+  "set_description",
+  "deactivate",
+  "reactivate",
+]);
 
 /** Map a database error to the stable, safe API contract. Never leaks internals. */
 function mapDbError(err: { code?: string; message?: string } | null): Response {
@@ -209,16 +221,33 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let body: Row = {};
   try {
     const parsed = (await req.json()) as unknown;
-    if (parsed !== null && parsed !== undefined && !isPlainObject(parsed)) {
+    if (!isPlainObject(parsed)) {
       return fail("INVALID_REQUEST", "Request body must be a JSON object", 400);
     }
-    body = (parsed ?? {}) as Row;
+    body = parsed;
   } catch {
-    body = {};
+    // malformed JSON is a 400 — never silently treated as an empty read request
+    return fail("INVALID_REQUEST", "Request body must be valid JSON", 400);
   }
-  const action = String(body.action ?? "list");
+  if (body.action !== undefined && typeof body.action !== "string") {
+    return fail("INVALID_REQUEST", "action must be a string", 400);
+  }
+  const action = (body.action as string | undefined) ?? "list";
   const required = PERMISSION_BY_ACTION[action];
   if (!required) return fail("INVALID_REQUEST", `unknown action '${action}'`, 400);
+  // strict top-level allowlists for the Phase-3 tag administration actions
+  const P3_ACTION_KEYS: Record<string, string[]> = {
+    tags_admin_list: ["action"],
+    tag_admin: ["action", "op", "args"],
+    tag_bulk_preflight: ["action", "op", "tag_id", "person_ids"],
+    tag_bulk_apply: ["action", "op", "tag_id", "person_ids", "contract"],
+  };
+  if (P3_ACTION_KEYS[action]) {
+    for (const k of Object.keys(body)) {
+      if (!P3_ACTION_KEYS[action].includes(k))
+        return fail("INVALID_REQUEST", `unknown key '${k}' for action '${action}'`, 400);
+    }
+  }
 
   // ── Canonical permission resolution (fail-closed; never re-implemented). ──
   const resolved = await admin.rpc("marketing_effective_permissions", { p_profile_id: userId });
@@ -466,6 +495,81 @@ Deno.serve(async (req: Request): Promise<Response> => {
           p_actor: userId,
           p_op: "create",
           p_args: { label: body.label.trim(), tone: body.tone ?? "neutral" },
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "tags_admin_list": {
+        const r = await admin.rpc("marketing_tags_admin_list", { p_tenant: tenantId });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: { tags: r.data ?? [] } });
+      }
+      case "tag_admin": {
+        if (!TAG_ADMIN_OPS.has(body.op)) return fail("INVALID_REQUEST", "unknown tag op", 400);
+        if (!isPlainObject(body.args))
+          return fail("INVALID_REQUEST", "args must be an object", 400);
+        // EXACT per-operation argument shape (mirrors the SQL contract) —
+        // unknown nested keys are rejected, never silently discarded
+        const TAG_ADMIN_ARG_KEYS: Record<string, string[]> = {
+          rename: ["tag_id", "expected_updated_at", "label"],
+          set_tone: ["tag_id", "expected_updated_at", "tone"],
+          set_description: ["tag_id", "expected_updated_at", "description"],
+          deactivate: ["tag_id", "expected_updated_at"],
+          reactivate: ["tag_id", "expected_updated_at"],
+        };
+        for (const k of Object.keys(body.args)) {
+          if (!TAG_ADMIN_ARG_KEYS[body.op as string].includes(k))
+            return fail("INVALID_REQUEST", `unknown args key '${k}' for '${body.op}'`, 400);
+        }
+        if (!isUuid(body.args.tag_id)) return fail("INVALID_REQUEST", "tag_id required", 400);
+        if (!isIsoDate(body.args.expected_updated_at))
+          return fail("INVALID_REQUEST", "expected_updated_at required", 400);
+        if (body.op === "rename" && typeof body.args.label !== "string")
+          return fail("INVALID_REQUEST", "label must be a string", 400);
+        if (body.op === "set_tone" && !TONES.has(body.args.tone))
+          return fail("INVALID_REQUEST", "invalid tone", 400);
+        if (
+          body.op === "set_description" &&
+          body.args.description !== undefined &&
+          typeof body.args.description !== "string"
+        )
+          return fail("INVALID_REQUEST", "description must be a string", 400);
+        const r = await admin.rpc("marketing_tag_admin", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_op: body.op,
+          p_args: body.args,
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "tag_bulk_preflight":
+      case "tag_bulk_apply": {
+        if (!isUuid(body.tag_id)) return fail("INVALID_REQUEST", "tag_id required", 400);
+        if (!["assign", "remove"].includes(body.op))
+          return fail("INVALID_REQUEST", "op must be assign|remove", 400);
+        if (
+          !Array.isArray(body.person_ids) ||
+          body.person_ids.length < 1 ||
+          body.person_ids.length > 200 ||
+          !body.person_ids.every(isUuid)
+        )
+          return fail("INVALID_REQUEST", "person_ids must be 1-200 uuids", 400);
+        // apply must present the server-issued preflight contract, so
+        // preflight and apply provably refer to the same tag/op/selection
+        if (
+          action === "tag_bulk_apply" &&
+          (typeof body.contract !== "string" || body.contract.length > 64)
+        )
+          return fail("INVALID_REQUEST", "preflight contract required for apply", 400);
+        const r = await admin.rpc("marketing_tag_bulk", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_op: body.op,
+          p_tag: body.tag_id,
+          p_person_ids: body.person_ids,
+          p_mode: action === "tag_bulk_preflight" ? "preflight" : "apply",
+          p_contract: action === "tag_bulk_apply" ? body.contract : null,
         });
         if (r.error) return mapDbError(r.error);
         return json({ ok: true, data: r.data });

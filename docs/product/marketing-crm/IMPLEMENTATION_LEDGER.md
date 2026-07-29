@@ -23,8 +23,8 @@ verified. It does **not** replace the code; it explains it._
 |---|---|---|
 | 0 | Audit & design reconciliation | **Done** (this ledger) |
 | 1 | Foundations (shell, route, schema, permissions, config) | **Implemented + security-hardened + DB-proven.** NOT complete as a claim: the `marketing-access` authenticated **HTTP path is unexecuted** (no local edge runtime; deploy gated) — see §7a. Clean full-chain and upgrade-path migration proofs done in disposable databases. |
-| 2 | Contacts vertical slice | **Built, review-hardened and final-correction-passed** (2026-07-29, uncommitted on 7cf1dcf). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). Safe as a LOCAL CHECKPOINT; NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview. |
-| 3 | Settings, segments, imports | Not started |
+| 2 | Contacts vertical slice | **COMMITTED as `24b4497`** (`feat(marketing): add governed contacts vertical slice`, 2026-07-29 — partial-staged `supabase/config.toml` marketing hunk only). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview. |
+| 3 | Settings, access admin, lifecycle, tags, segments, imports, audit | **Built + THREE CORRECTION PASSES + DB/PostgREST-proven, UNCOMMITTED on 24b4497** (2026-07-29) — see §12. Pass 3 (§12c, final narrow pass) verified and fixed 3 findings: over-permissive row-results transition guard (identity/lineage now pinned on every update, failed retries counted by exactly one, terminal immutability with a single-reference FK set-null as the only exception — stated honestly as a SHAPE constraint, not caller authentication), an unrecorded "matched person vanished" invalid (now a retryable 40001 → durable failed row → retry re-resolves), and single-contact assignment resurrecting inactive tags (tag_mutate assign now locks + rejects; remove/history/reactivation proven). Review 1 verified 14 defects (broken UI import flow, lossy retry counts, non-converged import identity, viewer-ceiling violation, lockout race, disabled-recovery dead end, default-stage drift, history-rewriting retirement, non-strict validation, unbounded AST recursion, incomplete segment concurrency, definition-destroying builder, false keyset pagination, ambiguous bulk counts). Review 2 verified 10 remaining gaps (live-settings default leak past the sealed contract, under-specified profile resolution, racy row-outcome upserts, incomplete finalize contract, missing external-id identity lock + name-collision review, unbound row-results references, unprotected Phase-2 tag mutations, silently-normalized nested keys, unreachable saved-segment evaluation + fragile builder shapes, leaky sample masking). Every finding was fixed in place in the SAME uncommitted draft (§12b) and proven by extended suites. Safe as a correction-passed LOCAL CHECKPOINT; NOT launch-proven — HTTP proofs NOT RUN (staged, exit 3), populated visual QA Preview. |
 | 4 | Workspace sender & governed delivery | Not started |
 | 5 | Broadcasts | Not started |
 | 6–10 | Sequences, templates/reporting/AI, Ads, platform seams, launch | Not started |
@@ -480,7 +480,7 @@ edited by hand.
 
 ---
 
-## 11 · Phase 2 — Contacts vertical slice (2026-07-29; built, review-hardened, correctness-passed)
+## 11 · Phase 2 — Contacts vertical slice (2026-07-29; committed as `24b4497`)
 
 _One consistent record. Phase 2 went through the initial build, an independent
 hardening review, a follow-up correctness review, a verification pass, and a
@@ -506,10 +506,10 @@ flag); (9) relationship filters must all match ONE relationship row, which is
 the row projected, and the Customer Card always re-projects the CURRENT
 relationship (with `relationship_id`) after any mutation; (10) event dedup is
 truly key-based (same `k` never re-appends; `current` moves only on a new key).
-All folded into the SAME uncommitted migration
-`20260829120000_marketing_contacts_projection.sql` (never applied to any
-authoritative environment). Superseded interim claims from earlier passes are
-replaced by this section._
+All folded into the SAME migration
+`20260829120000_marketing_contacts_projection.sql`, committed at `24b4497`
+(never applied to any authoritative environment — deploy remains gated).
+Superseded interim claims from earlier passes are replaced by this section._
 
 ### What is implemented
 
@@ -719,19 +719,448 @@ hunk, skip the phone-operations hunk), or `git diff -- supabase/config.toml`
 supabase/config.toml` blindly.
 
 
+## 12 · Phase 3 — Settings, access admin, lifecycle, tags, segments, imports, audit (2026-07-29; built, CORRECTION-PASSED, uncommitted on 24b4497)
+
+_One consistent record. The first Phase 3 draft went through an independent
+review that VERIFIED 14 findings; a full correction pass then fixed every one
+IN PLACE (the migration itself was corrected — no follow-up patch migration;
+local/disposable proof databases were rebuilt) and extended the suites so the
+defects cannot recur. Earlier §12 claims that the review disproved — "strict
+nested JSON validation", "depth-bounded segment validation", "fully sealed
+import profile/mapping", "full provenance on every row", "true audit keyset
+pagination", "safe historical lifecycle retirement", "safe local checkpoint",
+and the miscounted file scope (12 created/7 modified/21 paths) — are RETRACTED
+and replaced by this section._
+
+### Verified findings → corrections (all fixed in the same uncommitted draft)
+
+1. **Normal UI import flow could not apply its preview.** Preview stored the
+   Contact provenance source (`csv_upload`) as `data_imports.source_system` and
+   no profile id, so apply re-resolved `csv_upload/contacts` and found nothing.
+   → Preview now resolves the ACTUAL profile row, persists the resolved
+   `profile_id` even when the client supplied none, keeps provenance source
+   separate from profile resolution, and SEALS csv checksum + profile
+   id/version + immutable definition snapshot + sha256 + resolved mapping +
+   reviewed mapping overrides + contact options + provenance source. Apply
+   uses ONLY the sealed contract and demands a new preview when it cannot be
+   honoured. The UI shows the resolved profile and provides a genuine mapping
+   review whose adjustments are validated and re-sealed via re-preview.
+2. **Completion/retry/counts were wrong** (partial failure → `completed`,
+   retry → `already`, retries overwrote real counts). → New
+   `marketing_import_row_results` table records a DURABLE outcome for EVERY
+   source row (terminal `created/updated/conflict/invalid` vs retryable
+   `failed`; invalid/conflict are reviewed terminal outcomes) and
+   `marketing_import_finalize` computes cumulative totals + completion from
+   those durable rows under the locked import row: `completed` means NO
+   retryable failures; retry processes ONLY unapplied/failed rows; applied
+   rows stay idempotent with their original result; concurrent finalisations
+   agree; apply validates the legal status; checksum/sealed mismatches stay
+   rejected. Bounded invalid/conflict/failed downloads (row number + outcome +
+   reason + FIELD NAMES only) via the permission-gated `row_results` action.
+3. **Import identity was first-match-wins** (email→A + phone→B silently chose
+   A and attached B's phone). → `marketing_import_resolve_contact` resolves
+   EVERY strong identifier independently (source+external id, primary AND
+   secondary email/phone), records correctly-labelled bounded per-identifier
+   evidence, ignores explicitly-invalid contact points AND invalid evidence
+   behind matching scalars, matches ONLY when all usable evidence converges on
+   exactly one Person, and turns any ambiguity/disagreement into ONE bounded
+   tenant-joined conflict with ZERO canonical mutations. Name-only never
+   merges. `marketing_import_contact_row` is structurally validated (tenant
+   import lineage, contacts entity, legal status, row range, sealed-options
+   equality, real same-tenant actor with effective contacts.import, strict
+   record allowlist/scalar types, tenant-valid option refs). Invalid
+   row-supplied lifecycle/type values are honest `invalid` outcomes in BOTH
+   preview and apply — never silently defaulted. Companies resolve safely
+   (created only when they will be linked; exact-name single match links;
+   multiple matches are recorded ambiguity; a differing company on a linked
+   Person is conflict evidence). Conflicting-scalar endpoints are never
+   attached after a field conflict; invalid endpoints are never promoted to
+   primary; one-primary and idempotency invariants preserved.
+4. **Viewer write grants violated the role ceiling.** → VIEWER READ CEILING:
+   the resolver lets ONLY `marketing.view`/`marketing.reporting.view` flow to
+   a viewer from grants (hostile raw write-grant rows are inert), the grant
+   RPC rejects viewer write grants, and the tag/segment/import mutation RPCs
+   re-check authority via the canonical resolver at the authoritative
+   boundary. Owner/admin-only restricted permissions and ops defaults
+   unchanged.
+5. **Lockout protection raced.** → `marketing_access_set` takes a per-tenant
+   advisory lock BEFORE reading grant state; two managers concurrently
+   denying themselves can no longer both succeed (proven with a real parallel
+   test: one succeeds, one MK423/MK409, ≥1 manager remains). Exact no-op
+   access changes return idempotently without duplicate audits/events.
+6. **Disabling Marketing removed the re-enable UI.** → `marketing-access`
+   returns the caller's OWN role on denied verdicts; the `/marketing` route
+   derives a governed recovery state (pure `deriveMarketingGate`, unit-tested):
+   owner/admin + `reason='not_enabled'` → "Marketing disabled" + "Open
+   settings to re-enable" (Marketing settings renders while disabled);
+   ops/viewer get no administration path; missing permission stays "Requires
+   permission"; an unreachable server stays an error.
+7. **Default lifecycle stage could drift** between `marketing_settings` and
+   `is_default`. → ONE ATOMIC INVARIANT: both governed paths (settings update
+   and `set_default`, which now carries `expected_updated_at` concurrency
+   evidence) move BOTH representations in one transaction with settings
+   history + version bump; a partial unique index makes dual defaults
+   structurally impossible; retirement checks BOTH representations; the UI
+   keeps ONE control (the settings select is read-only display). Upgrade and
+   clean-chain proofs assert no drift.
+8. **Retirement rewrote history.** → `retire_preview` counts CURRENT ACTIVE
+   relationships (labelled honestly) and reports historical rows separately;
+   retirement locks and remaps ACTIVE rows only, each with a version
+   transition + canonical per-relationship lifecycle event + Customer Card
+   refresh; the remap UPDATE re-checks stage+status under the lock so
+   concurrent reclassifications are never overwritten; inactive/archived rows
+   keep the retired key forever; the retired stage row remains for their
+   labels; bounded durable mapping evidence (relationship ids) in the audit.
+9. **Validation was not fully strict.** → Malformed JSON → 400 in EVERY
+   marketing function (never a silent default read); per-action top-level and
+   nested key allowlists; explicit nulls rejected; exact JSON scalar types
+   checked before casts; `quiet_hours` allows only `{start,end}` whole hours;
+   lifecycle ops have per-op argument allowlists; set_default/reorder carry
+   concurrency evidence; whole-operation no-ops rejected before history/audit/
+   events (settings, lifecycle, tags, segments, access).
+   `marketing_settings_history` is structurally bound: composite
+   `(tenant_id, settings_id)` FK + unique superseded version; UPDATE raises
+   and delete privileges are explicitly REVOKED from client roles in every
+   environment (tenant cascade cleanup still works — a tenant is never
+   undeletable). Guardrail/footer/quiet-hour form state re-syncs after any
+   reload/version conflict.
+10. **Segment validation was vulnerable to unbounded recursion.** → One
+    validator for stored AND ad-hoc definitions enforces depth BEFORE
+    descending and the 32-node budget DURING traversal; unknown keys at every
+    node level, mixed `op`+`field` shapes, non-strict scalars (string "true"),
+    reversed ranges and duplicate tag ids rejected; relationship
+    type/source/status vocabularies validated; explicit unsupported-filter
+    (Preview) errors retained.
+11. **Segment concurrency/versioning was incomplete.** → Archive/reactivate
+    use the observable `updated_at` token with no-op rejection; exact-repeat
+    updates rejected (no misleading versions/audits); evaluation captures the
+    definition version, stores ONLY against that captured version (a
+    concurrent change leaves the stored count untouched), accepts
+    `expected_version` (stale → MK409/VERSION_CONFLICT), returns the ACTUAL
+    stored timestamp, and uses a strict typed cursor with `next_cursor`;
+    actor + permission validated at the authoritative RPC boundary.
+12. **The segment builder destroyed nested definitions.** → A structured
+    NESTED AND/OR/NOT builder over the validated grammar whose state IS the
+    definition tree (deep-cloned, saved verbatim — lossless round-trip proven
+    by pure-state unit tests); definitions outside the grammar render
+    READ-ONLY (name/description editable, definition never sent back) instead
+    of being flattened. Complete structured controls: relationship
+    lifecycle/type/status/source/owner, company, created range, last-contact/
+    never, tag any/all/none with MULTIPLE tags, eligibility, search. Campaign
+    engagement / ad attribution stay visibly disabled Preview.
+13. **Audit pagination was not a true keyset.** → Typed `(created_at, id)`
+    tuple cursor with the exact tuple predicate + `next_cursor`; equal
+    boundary timestamps proven lossless/duplicate-free; audit detail is a
+    bounded allowlisted projection (no raw imported rows, destinations or
+    unnecessary PII); rejected sensitive administration attempts (access_set,
+    sensitive lifecycle ops, settings conflicts) are audited from the Edge
+    AFTER the failed transaction so the rejection audit cannot roll back.
+14. **Bulk tagging counts/evidence were ambiguous.** → Duplicates collapse
+    into `unique` (never counted "rejected"); counts are
+    requested/unique/applicable/already/rejected; preflight issues a
+    server-computed CONTRACT hash over (tenant, tag, op, sorted unique ids)
+    that apply must present (mismatch → conflict); apply locks the tag row so
+    inactive-tag races fail safely; assignments carry actor, source and a
+    stable `bulk:<uuid>` trigger reference; viewer mutation impossible.
+
+### What is implemented (post-correction)
+
+_Pre-implementation audit findings (all verified against code before building):
+the shared importer's person path created NO contact points/relationships,
+matched on RAW (unnormalised) scalar equality, had NO per-row idempotency
+(name-only rows would duplicate on a partial retry), fetched explicit
+profile ids WITHOUT a tenant check, and had no marketing permission gate —
+seeding an `entity_type='contacts'` profile alone would NOT have produced
+canonical contacts. The resolver had no structural owner/admin-only rule for
+restricted permissions, settings had a version integer but NO history, and
+lifecycle/tag/segment administration did not exist._
+
+**Migration `20260831120000_marketing_admin_phase3.sql`** (run-once; next safe
+id after the concurrent untracked `20260830120000`, which is never touched; no
+destructive drops, no draft self-upgrade logic — the corrected draft REPLACED
+the original file and proof databases were rebuilt): three new tables
+(`marketing_settings_history` — append-only, structurally bound;
+`marketing_segment_versions` — immutable definition history;
+`marketing_import_row_results` — durable per-row import outcomes), the
+resolver replacement (restricted owner/admin-only + viewer read ceiling), and
+the governed RPC suite (`marketing_update_settings`,
+`marketing_lifecycle_admin`, `marketing_access_overview/set`,
+`marketing_audit_list`, `marketing_tags_admin_list`, `marketing_tag_admin`,
+`marketing_tag_bulk`, `marketing_segment_validate/match_person/mutate/
+evaluate`, `marketing_import_resolve_stage/validate_contact_row/
+resolve_contact/match_contact/contact_row/finalize`) — every RPC service-role
+only. The EXACT corrected contracts are documented in the migration header and
+in the findings list above; the header comment is kept in lockstep with the
+code.
+
+**Edge Functions:** `marketing-admin` (owner/admin gate; malformed-JSON 400;
+per-action key allowlists; typed audit cursor; Edge-side rejection audits for
+denied sensitive administration) and `marketing-segments` (canonical resolver;
+per-action/args allowlists; archive tokens; expected_version passthrough) —
+both registered in `supabase/config.toml` WITHOUT touching the concurrent
+`[functions.phone-operations]` hunk. `marketing-contacts` extended
+(tags_admin_list / tag_admin / contract-bound tag_bulk_preflight/apply +
+strict parse). `marketing-access` returns the caller's own role on denied
+verdicts (the disabled-recovery signal). `data-import` corrected end-to-end
+for contacts: resolved-profile sealing, mapping-override review, durable
+row-outcome recording, finalize-driven retryable state machine, bounded
+row_results downloads, strict per-action allowlists — while the non-contacts
+importer paths are byte-preserved (regressions rerun).
+
+**UI:** three primary sections unchanged. Contacts carries four tabs —
+Contacts (+ bounded multi-select bulk tagging: server preflight contract →
+explicit confirmation → bound apply) / Segments (structured NESTED AND/OR/NOT
+builder over the validated grammar with lossless round-trip and a read-only
+fallback for unsupported shapes; complete filter controls; honest Preview
+options; evaluate + bounded member preview) / Tags (governance with assignment
+counts) / Imports (CSV wizard: file checks, RESOLVED-PROFILE display, genuine
+column-mapping review with validated sealed overrides + re-preview, preview
+counts + masked samples, duplicate-file warning, reviewed apply against the
+sealed contract, failed-row retry, bounded review-row downloads, history).
+Marketing settings opens from a clearly-labelled sidebar control (owner/admin
+only, NOT a fourth section): Access & permissions matrix, Contact inclusion &
+lifecycle (ONE default-stage control — the stage list's "make default"),
+Delivery guardrails & unsubscribe identity (form state re-synced after
+reload/conflict; plain-text rendering), Notifications (real destinations
+only), governance pointer, Audit history (true keyset "Load older") and
+append-only settings snapshots. `/marketing` derives its gate from the pure
+`deriveMarketingGate`: disabled + owner/admin → governed "Open settings to
+re-enable"; disabled + ops/viewer → no admin path; missing permission →
+"Requires permission"; unreachable server → error. Senders/Workspace and Ads
+stay Preview / Not connected. Loading/empty/error/denied/conflict states
+throughout; nothing fabricated.
+
+### §12b · Correction pass 2 (2026-07-29) — 10 further verified gaps → corrections
+
+1. **Sealed defaults were still live fallbacks.** When the UI left stage/
+   relationship on "Default", the seal carried only `source` and the row RPC
+   read live `marketing_settings` at apply. → Preview now resolves the
+   EFFECTIVE defaults and seals them explicitly; the preview response and UI
+   show the exact resolved values; the row RPC requires the sealed defaults
+   and NEVER reads live settings; an unhonourable sealed stage/tag (retired/
+   deactivated) returns 409 `invalid_preview` at the Edge BEFORE any status
+   change, row processing or failed-outcome write (proven: the rejected apply
+   leaves zero row outcomes); import tags are validated ACTIVE at preview,
+   apply preflight and in the row RPC.
+2. **Profile resolution was under-specified.** → Pure `chooseImportProfile`
+   (unit-proven): explicit ids must be active and match the requested source/
+   entity (foreign/wrong-entity/wrong-source/inactive adversarially rejected);
+   auto-resolution only when unambiguous with one tenant profile preferred
+   over the platform fallback; several eligible profiles → 409
+   `profile_selection_required` with the bounded eligible list; the Imports
+   UI offers the eligible profiles and sends an explicit choice with its own
+   source system. A jobs/customers/staff or inactive profile can never be
+   sealed into a Contacts import.
+3. **The durable ledger had racy writers.** Edge upserts for invalid/failed
+   could overwrite terminal outcomes. → New service-role-only
+   `marketing_import_row_outcome` (invalid|failed only) takes the same
+   per-(import,row) advisory lock, never downgrades or replaces a terminal
+   outcome, increments attempts, permits failed→terminal, and returns the
+   authoritative existing outcome (`already`) when another worker completed
+   the row; the Edge uses ONLY this recorder. Provenance with a missing (or
+   failed-stuck) ledger row is repaired deterministically by the next apply —
+   `already_applied` can never strand an import. A trigger makes terminal
+   rows immutable (only `failed` may transition; FK set-null cascades exempt).
+   *(Refined in §12c: as written in pass 2 the trigger returned NEW
+   unconditionally for any `failed` row — an update shaped like a retry could
+   also rewrite id/tenant/import/row/created_at, and the set-null exemption
+   did not compare those fields either. Pass 3 pins identity/lineage on EVERY
+   update and counts retries; the pass-2 wording overstated what was
+   enforced.)*
+4. **Finalisation returned a bare shape when completed.** → EVERY successful
+   invocation — first, concurrent, already-completed, and apply-on-completed —
+   returns the same complete contract (status + created/updated/conflicts/
+   invalid/failed/unprocessed + the full import row + `already`); proven with
+   a FULLY PROCESSED import finalised concurrently (both callers receive
+   identical full totals).
+5. **No identity lock for external ids + weak-name rule drift.** → The row
+   RPC now locks `ext|<source>|<external_id>` in the same deterministic sorted
+   lock set (two concurrent rows sharing only an external id create at most
+   ONE Person — proven over PostgREST; other source namespaces stay
+   independent). A NAME-ONLY row whose normalised name collides with existing
+   People routes to bounded identity review (one conflict, zero automatic
+   merge) in BOTH preview and apply; only genuinely-new evidence creates.
+6. **Row-results references were not structurally tenant-bound.** → Composite
+   FKs bind `(tenant_id, import_id)` → the same tenant's `data_imports`,
+   `(tenant_id, conflict_id)` → the same tenant's conflicts and
+   `(tenant_id, entity_id)` → the same tenant's People (cross-tenant
+   combinations impossible even under service-role mistakes — proven);
+   delete/truncate revoked from anon/authenticated/service_role; tenant
+   cascade cleanup still works. *(Retracted from this item: "updates only
+   through the governed failed→terminal transition." A trigger cannot know
+   its caller, so it can never restrict updates to the governed RPCs — and
+   the pass-2 trigger did not even constrain a failed row's update shape.
+   §12c states the honest structural guarantee now enforced.)*
+7. **Phase-2 tag mutations bypassed the canonical boundary.** →
+   `marketing_tag_mutate` (create/assign/remove) is REDEFINED in the Phase 3
+   migration: real same-tenant actor + effective `marketing.tags.manage` from
+   the resolver + exact per-operation argument shapes + strict JSON types +
+   unknown keys rejected; `marketing_tag_admin` enforces exact per-operation
+   allowlists (rename/tone/description/deactivate/reactivate) at SQL AND Edge.
+   Proven: a viewer with hostile raw write grants is denied at tag create,
+   assign, remove, administration, bulk apply and segment mutation.
+8. **Hostile nested keys were silently normalized.** → The audit cursor is
+   EXACTLY `{t,id}`, the segment cursor EXACTLY `{v,id}`, tag-admin args match
+   their exact op shape at the Edge; extra keys are 400s (HTTP assertions
+   staged), never quietly dropped.
+9. **Saved-segment evaluation was unreachable from the UI + builder shape
+   gaps.** → Segment cards gained "Evaluate now" (pinned `expected_version`;
+   stores + reloads the count/timestamp; stale → VERSION_CONFLICT notice);
+   draft builder changes keep using ad-hoc evaluation which never stores.
+   `canEditNode` now validates the EXACT editable shape of every leaf/group
+   (required properties, primitive types, enums, arrays, nested relationship
+   keys, unknown keys, tag arrays, date/never combinations) — malformed
+   known-field definitions render read-only and can never crash the editors
+   (23 pure shape tests). The company filter is a bounded server-backed
+   typeahead (`companies_list` search) that preserves saved references beyond
+   the first page.
+10. **Sample masking leaked identifiers.** → Explicit deny-by-default policy
+    in `_shared/imports/redact.ts`: primary/secondary emails, phones, owner
+    email, names, company, address/postcode, external/source refs all masked
+    (unknown fields fully masked; vocabulary fields readable); pure proof that
+    known PII never appears verbatim (13-test module incl. local-part checks)
+    plus a staged HTTP assertion on the real preview response.
+
+### §12c · Correction pass 3 (2026-07-29) — FINAL narrow pass, 3 verified findings
+
+All three fixed in place in the SAME uncommitted migration
+(`20260831120000_marketing_admin_phase3.sql`); no patch migration; no Edge or
+frontend changes were needed; scope membership unchanged.
+
+1. **The row-results transition guard was too permissive.** The pass-2
+   `marketing_import_row_results_guard()` returned NEW unconditionally when
+   `OLD.outcome = 'failed'`, so an update shaped as a failed-row retry could
+   also move the row (`id`, `tenant_id`, `import_id`, `row_number`) or rewrite
+   `created_at`; the terminal set-null exception compared business fields but
+   not those identity/lineage fields either. → Rewritten. The guard now
+   enforces, on EVERY update: (a) `id`/`tenant_id`/`import_id`/`row_number`/
+   `created_at` are immutable; (b) a `failed` row may transition only to an
+   allowed ledger outcome (table CHECK bounds the vocabulary) with `attempt`
+   advancing by EXACTLY one, leaving outcome/reason/fields/entity_id/
+   conflict_id (+ trigger-maintained `updated_at`) as the only mutable
+   columns; (c) terminal rows are immutable; (d) the only terminal-or-failed
+   exception is a genuine FK-driven set-null of exactly one existing
+   entity/conflict reference with every other business and lineage column
+   unchanged; (e) tenant/import cascade cleanup (DELETE) is untouched by this
+   before-UPDATE trigger. **Honest guarantee, stated precisely:** a trigger
+   cannot cryptographically distinguish a governed RPC from a direct
+   service-role UPDATE — what is guaranteed is that NO update of any origin
+   can violate that shape. Writer audit under the stricter guard: the
+   invalid/conflict/terminal upserts and the recorder already carried
+   `attempt = prior + 1`; the PROVENANCE-REPAIR upsert calculated the next
+   attempt but omitted `attempt` from its conflict-update clause — fixed
+   (`attempt = excluded.attempt`), so repairing over a failed-stuck row is
+   itself a counted retry. Adversarial SQL proofs added (suite §7g): moving a
+   failed row to another import, or to another tenant even paired with that
+   tenant's REAL import (a shape the composite FKs alone would accept),
+   renumbering, id rewrite, created_at rewrite, uncounted retry, +2 retry,
+   terminal reason tweak, set-null+move, set-null+reason, set-null+attempt —
+   ALL rejected by the guard (raise_exception asserted, not FK errors);
+   failed→failed and failed→invalid via the recorder count attempts;
+   failed→created/updated/conflict via the row RPC retry with attempt+1;
+   genuine Person-delete entity set-null and conflict-delete set-null
+   preserve outcome/attempt/lineage; import-delete and tenant-delete cascades
+   still remove ledger rows.
+2. **"Matched person vanished" left a source row with no durable outcome.**
+   The matched branch returned `{'action':'invalid','reason':'matched person
+   vanished'}` WITHOUT writing a `marketing_import_row_results` row — the
+   Edge counted it invalid, finalisation saw an unprocessed row, and the
+   "durable outcome for every row" invariant was broken. → The race (Person
+   deleted between evidence resolution and its `FOR UPDATE` lock) now RAISES
+   SQLSTATE `40001`: the row's transaction rolls back atomically, the
+   existing Edge error path records the durable `failed` outcome through
+   `marketing_import_row_outcome`, and a later retry re-resolves identity
+   from live data and completes normally. The RPC can no longer return
+   `action:'invalid'` without its terminal ledger row (the only remaining
+   invalid returns are immediately preceded by the ledger upsert). Proofs:
+   the recorder→retry progression (failed attempt 1 → row-RPC retry →
+   terminal attempt 2) is proven deterministically in §7g — exactly the
+   vanished-person recovery path — plus a source/contract assertion that
+   `marketing_import_contact_row` contains the `40001` raise and no longer
+   contains the unrecorded-invalid return shape. (The in-flight race window
+   itself is not deterministically reproducible from single-session SQL;
+   this is the strongest practical proof for the SQL/HTTP architecture.)
+3. **Single-contact assignment could resurrect an inactive tag.**
+   `marketing_tag_bulk` and imports rejected inactive-tag assignment, but the
+   redefined `marketing_tag_mutate(..., 'assign', ...)` checked only tenant
+   existence. → `assign` now LOCKS the tag row (`FOR UPDATE`, the same
+   discipline as bulk apply, so a concurrent deactivate serialises) and
+   rejects an inactive tag with the existing validation convention (22023,
+   same message as bulk); `remove` intentionally stays legal on an inactive
+   tag so historical assignments can be cleaned up; deactivation continues to
+   preserve existing assignments; reactivation restores assignability.
+   Permission boundary and operation shapes unchanged. Proofs: SQL suite §4
+   (assign→22023 with zero writes, history preserved, remove-while-inactive,
+   reactivate→assignable) and the SAME four behaviours over the service-role
+   PostgREST path in `marketing-admin.test.mjs` (55/55).
+
+### Verification matrix (explicit statuses, post-correction — 2026-07-29)
+
+| Boundary / check | Status |
+|---|---|
+| `supabase/tests/marketing_admin.test.sql` — 14 sections covering EVERY corrected finding across ALL THREE passes (new in pass 3: §7g structural transition guard — a failed row cannot be moved to another import, nor to another tenant even paired with that tenant's REAL import, nor renumbered/re-identified/re-dated; uncounted (+0) and over-counted (+2) retries rejected; recorder failed→failed/invalid and row-RPC failed→created/updated/conflict all counted attempt+1; terminal reason tweaks and set-null-with-smuggled-change rejected; genuine Person/conflict-delete FK set-nulls preserve outcome+attempt+lineage; import- and tenant-delete cascades intact; vanished-person contract — the row RPC source contains the retryable 40001 raise and no longer contains the unrecorded-invalid return shape; §4 pass-3 additions — single-contact assign of an INACTIVE tag → 22023 with zero writes, remove stays legal while inactive, reactivation restores assignability; new in pass 2: §7d sealed-defaults truth — settings changed after preview change nothing, retired sealed stage / deactivated sealed tag → 22023 requiring a new preview with NO failed row outcome, missing sealed defaults rejected; §7e governed ledger — late failed-markers return the authoritative terminal outcome, recorder rejects terminal outcomes, failed→terminal retries with attempts, provenance-with-missing-ledger repair + truthful re-finalisation, name-only collision → bounded conflict with zero merge in preview AND apply, completed finalisation full-shape idempotency; §7f structural tenant binding — cross-tenant import/conflict/person references violate composite FKs, delete/truncate revoked; §3/§4 additions — hostile-grant viewer denied at tag create/assign/remove/admin, tag_mutate/tag_admin exact per-op shapes): settings strictness (explicit nulls, string-"true" booleans, quiet_hours key allowlist + fractional rejection, no-op rejection, IANA timezone, markup footer, unknown stage/keys, non-admin actor) + bound history (composite-FK cross-tenant rejection, duplicate-version rejection, update raise + no client delete privilege) + MK409; lifecycle (per-op arg allowlists, immutable keys, untouched template, ATOMIC dual-representation default via BOTH paths + no-drift assertions, set_default/reorder concurrency evidence + no-op rejection, retire_preview active-vs-historical honesty, ACTIVE-ONLY retirement with version transitions + per-relationship lifecycle events + durable remap evidence + preserved historical rows); access (restricted + hostile-raw-grant inertness, VIEWER CEILING at resolver/grant-RPC/mutation-RPCs, idempotent no-ops without duplicate audits, MK423 lockout, denied-manager rejection, cross-tenant rejection); tags (governance no-ops, duplicate-safe unambiguous bulk counts, preflight→apply CONTRACT enforcement incl. mismatch, bulk_ref + actor/source on assignments, inactive-tag safety, 1-200 bounds); segment AST (depth-5 rejection BEFORE descent, 111-node tree rejected DURING traversal, ad-hoc path same limits, unknown keys at every level, mixed shapes, strict scalars, reversed ranges, duplicate tags, vocabularies, explicit Preview errors); segment lifecycle (immutable versions, update no-ops, archive/reactivate updated_at tokens + no-ops, VERSION-CAPTURED evaluation + stale expected_version leaving stored count untouched, strict cursors + next_cursor paging); imports (structural row-RPC validation: foreign import P0002, unsealed options, out-of-range rows, unknown keys/types; sealed-contract + foreign-sealed-tag rejection; EVIDENCE CONVERGENCE: email→A+phone→B conflict with correctly-labelled evidence and zero mutation, external→A+email→B conflict, ambiguous+unique conflict, invalid-endpoint evidence → safe new Person, secondary-identifier match, honest invalid lifecycle/type rows in preview AND apply, safe company resolution incl. ambiguity + no orphans, verified-field protection, per-row idempotency, durable outcomes for every row); state machine (failed→retryable, retry of ONLY the failed row with attempt tracking, cumulative totals preserved across retries, completed idempotency, no-seal rejection); audit (equal-timestamp full-walk pagination with zero skips/dups, typed-cursor validation, PII-safe detail projection probe); service-role-only boundaries incl. the new RPCs | **PASS** (local dev DB + fresh clean-chain DB + upgraded DB) |
+| `scripts/marketing-admin.test.mjs` — real GoTrue JWTs over PostgREST: 11 RPC denials; settings + history + MK409; **CONCURRENT last-manager self-denial race (exactly one succeeds, one MK423/MK409, ≥1 manager remains)**; viewer ceiling with hostile raw grants (resolver inert + table write denied + RPC execute denied + grant-RPC refusal + tag CREATE/ASSIGN denied through the service-role path); segment version-capture race (stale expected_version → MK409, stored count untouched); contract-bound duplicate-safe bulk tagging; **PARALLEL same-row import applies → exactly ONE Person**; **CONCURRENT apply + failed-marker → the row ends TERMINAL, never downgraded**; **CONCURRENT different rows sharing one source+external id → exactly ONE canonical Person (other namespaces independent)**; **CONCURRENT finalisations → one consistent durable total, and a COMPLETED import finalised concurrently returns identical FULL totals to both callers**; pass-3 single-contact tag lifecycle over the service-role path (deactivate → assign 22023, history survives, remove-while-inactive, reactivate → assignable) | **PASS** (55/55) |
+| Phase 1+2 regressions: `marketing_foundation` + `marketing_hardening` + `marketing_contacts` SQL suites · contacts mjs 42/42 · access mjs 25/25 · unit `node --test` 52/52 (openfolk 23 + segment-builder round-trip/shape 10 + marketing gate 6 + NEW pure import proofs 13: deterministic profile choice incl. foreign/wrong-entity/wrong-source/inactive/ambiguous rejection + masking policy with verbatim-PII denial) · product-alignment · lint on changed files (clean; `capability-registry.ts` deliberately keeps its documented pre-existing non-prettier formatting — this pass REVERTED the accidental 500-line auto-format rewrite) · `tsc --noEmit` clean repo-wide · production build (npm, Vercel parity) · `git diff --check` | **PASS** (pass-3 re-runs: 3 regression SQL suites, contacts + access mjs ALL PASS, import-pure 13/13, segment-builder + gate 16/16, `tsc --noEmit` clean, npm production build, `git diff --check` clean; openfolk/product-alignment/lint were pass-2 results not re-run in the narrow pass 3) |
+| Clean full chain — 83 migrations (82 tracked + corrected Phase 3; the concurrent untracked `20260830120000` phone-ops migration is EXCLUDED from this claim) applied to a fresh disposable container, then all 4 marketing SQL suites + `control_plane` + `automation_engine` regressions | **PASS** (re-proven on the pass-3 migration file) |
+| Upgrade path from committed HEAD `24b4497` — tracked chain + seeded person/contact-point/relationship → corrected Phase 3 applies run-once; seeded data preserved; table delta exactly +3 (`marketing_settings_history`, `marketing_segment_versions`, `marketing_import_row_results`); default-stage invariant holds with NO drift; all 4 marketing suites pass on the upgraded DB | **PASS** (re-proven after pass 3) |
+| Authenticated Edge HTTP — `marketing-admin-http` now also encodes: malformed-JSON 400s, unknown-key 400s, settings no-op 400, audit next_cursor paging, DISABLED→role-aware not_enabled + owner re-enable path, segment version-race 409 + archive token 400, bulk preflight CONTRACT flow, and the **EXACT DEFAULT UI-SHAPED import** (no profile_id, source_system='generic', contact_options.source='csv_upload' → resolved+persisted profile id, sealed contract, successful canonical apply, mapping-override re-preview, row_results download); plus the pre-existing `data-import.test.mjs` | **NOT RUN** — no local edge runtime exists and none may be installed; `marketing-admin-http` exits 3 (re-verified after pass 3: endpoint 503, NOT-RUN, exit 3); `data-import.test.mjs` fails against the absent runtime exactly as before this phase. Blocker: deploy or `supabase functions serve` |
+| Populated responsive visual QA | **Preview** — the access gate fail-closes before data loads without a served runtime; fail-closed states verified; to complete on staging |
+| Capability registry | `marketing.settings` / `marketing.segments` / `marketing.tags` added, `marketing.contacts` / `marketing.imports` updated (correction-pass wording) — ALL **Preview** until the authenticated HTTP + populated visual proofs pass. Nothing delivery-related is marked Live |
+
+### Corrected checkpoint scope (recomputed from Git after the correction pass)
+
+Pass 3 changed no scope membership: its edits live entirely inside four
+already-in-scope paths (`20260831120000_marketing_admin_phase3.sql`,
+`tests/marketing_admin.test.sql`, `scripts/marketing-admin.test.mjs`, this
+ledger).
+
+Exactly **31 paths** (11 modified + 20 created; correction pass 2 added modified `supabase/functions/_shared/imports/profile.ts` — additive pure `chooseImportProfile` — and created `supabase/functions/_shared/imports/redact.ts` + `scripts/import-pure.test.mjs`; the earlier "12 created / 7 modified / 21→22 paths" report was miscounted and is retracted):
+modified — `IMPLEMENTATION_LEDGER.md`, `MarketingContacts.tsx`,
+`capability-registry.ts`, `lib/marketing/access.ts` (+role on denied verdicts),
+`lib/marketing/contacts.ts`, `routes/marketing.tsx`, `supabase/config.toml`
+(**partial-stage: marketing hunks ONLY — the `[functions.phone-operations]`
+hunk belongs to concurrent phone-ops work**),
+`functions/_shared/imports/profile.ts` (additive pure `chooseImportProfile`),
+`functions/data-import/index.ts`,
+`functions/marketing-access/index.ts` (disabled-recovery role),
+`functions/marketing-contacts/index.ts`;
+created — `scripts/import-pure.test.mjs`, `scripts/marketing-admin.test.mjs`,
+`scripts/marketing-admin-http.test.mjs`, `MarketingImports.tsx`,
+`MarketingSegments.tsx`, `MarketingSettings.tsx`, `MarketingTags.tsx`,
+`lib/marketing/{admin,call,gate,imports,segment-builder,segments}.ts`,
+`lib/marketing/{gate,segment-builder}.test.ts`,
+`functions/_shared/imports/redact.ts`,
+`functions/marketing-admin/index.ts`, `functions/marketing-segments/index.ts`,
+`migrations/20260831120000_marketing_admin_phase3.sql`,
+`tests/marketing_admin.test.sql`.
+(The enumeration previously omitted three acknowledged paths — `profile.ts`,
+`import-pure.test.mjs`, `redact.ts` — while correctly counting 31; corrected
+here, documentation-only, at checkpoint time.)
+The concurrent untracked phone-ops/telephony/product-review/run-checkpoint
+work is preserved byte-for-byte and stays OUTSIDE this scope.
+
+**Honest limitations / external configuration still required:** no senders,
+delivery, Gmail scopes, campaign transmission or Ads connectors (Phases 4-8);
+notification routing stores intent only (no delivery mechanism exists to act on
+it yet); import owner mapping remains a safe best-effort exact-email match to a
+same-tenant operational profile (unmatched → no owner, documented); history-row
+retries require re-selecting the previewed file (checksum-verified) — the raw
+CSV is never stored server-side; segment-builder tag pickers list the first
+page of tenant tags; HTTP + populated visual gates blocked on a served edge
+runtime; local mjs/SQL proofs normalise phone identity at the DB layer
+(edge-side UK E.164 normalisation is exercised only by the staged HTTP flow).
+
 ## 10 · Restart-safe "next phase"
-**Next: Phase 3 — Settings, segments and imports.** Marketing access administration
-(grant/deny UI over `marketing_access_grants`, owner/admin only, via a governed
-endpoint); lifecycle configuration UI (rename/reorder/tone/add/retire with audited
-changes, safe retirement of in-use stages); contact-inclusion setting UI
-(`include_all_discovered` — the query already follows it, §11); tags governance;
-versioned dynamic segments (`marketing_segments.definition` validated filter AST +
-server-side evaluation reusing `marketing_contact_eligibility` and the list
-projection's filter semantics + evaluated-count storage); the generic contact
-import profile through the existing preview-first `data-import` engine
-(`import_profiles` seed, entity_type contacts, creates/updates/conflicts/invalid +
-provenance + weak-match review); delivery guardrail settings + unsubscribe
-identity/footer configuration. Same discipline: service-role RPCs or the existing
-importer, canonical resolver for authz, SQL + PostgREST proofs, chain proofs,
-ledger update. Before starting: commit the Phase-2 checkpoint, and if either
-marketing fn is deployed, run both staged HTTP scripts first.
+**Next: Phase 4 — Workspace sender & governed delivery.** Sender profiles over
+discovered Workspace mailboxes (choose permitted Marketing senders, from-name/
+reply-to/signature, default sender, health/capacity, test send, disable without
+history loss); the minimum `gmail.send` scope + re-consent + scope reporting;
+the provider-neutral delivery adapter contract with `email.send_marketing` as
+the FIRST `external_side_effect=true` Automation Engine capability (schema +
+policy + enablement + idempotency + audit + adapter + contract row — never a
+parallel sender); append-only delivery attempts projecting canonical outbound
+Interactions. Before starting: commit the Phase-3 checkpoint (staging only the
+marketing hunks of `supabase/config.toml`), and when any marketing fn is
+deployed, run ALL staged HTTP scripts (`marketing-access-http`,
+`marketing-contacts-http`, `marketing-admin-http`, `data-import.test.mjs`)
+plus populated visual QA before marking anything Live.

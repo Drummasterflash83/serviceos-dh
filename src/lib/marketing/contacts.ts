@@ -303,5 +303,36 @@ export const assignTag = (personId: string, tagId: string) =>
 export const removeTag = (personId: string, tagId: string) =>
   call<{ removed: boolean }>({ action: "tag_remove", person_id: personId, tag_id: tagId });
 export const listOwners = () => call<{ owners: OwnerOption[] }>({ action: "owners_list" });
+
+export interface BulkTagCounts {
+  requested: number;
+  /** Distinct ids after collapsing duplicates (duplicates are NOT "rejected"). */
+  unique: number;
+  applicable: number;
+  already_assigned: number;
+  /** Unique ids that are not this tenant's People (counted, never echoed). */
+  rejected: number;
+  applied?: number;
+  op: "assign" | "remove";
+  /** Server-issued preflight contract — apply must present it back, binding
+   *  apply to the exact same tag/op/selection. */
+  contract?: string;
+  bulk_ref?: string;
+}
+export const bulkTagPreflight = (op: "assign" | "remove", tagId: string, personIds: string[]) =>
+  call<BulkTagCounts>({ action: "tag_bulk_preflight", op, tag_id: tagId, person_ids: personIds });
+export const bulkTagApply = (
+  op: "assign" | "remove",
+  tagId: string,
+  personIds: string[],
+  contract: string,
+) =>
+  call<BulkTagCounts>({
+    action: "tag_bulk_apply",
+    op,
+    tag_id: tagId,
+    person_ids: personIds,
+    contract,
+  });
 export const listCompanies = (search?: string) =>
   call<{ companies: { id: string; name: string }[] }>({ action: "companies_list", search });

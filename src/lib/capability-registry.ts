@@ -14,7 +14,7 @@
  * founding-document alignment audit + the frontend capability audit (2026-07-22).
  */
 
-export const REGISTRY_VERSION = "2026-07-29.2";
+export const REGISTRY_VERSION = "2026-07-29.3";
 
 /** Raw engineering status — the full truth, for OpenFolk/eng only. */
 export type CapabilityStatus =
@@ -164,29 +164,71 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
     id: "marketing.contacts",
     screen: "Marketing",
     control: "Contact list (projection)",
-    backingCapability: "people + contact_relationships (query fn not built)",
-    read: false,
-    write: false,
-    persistence: "n/a",
+    backingCapability: "marketing-contacts (service-role projection/mutation RPCs)",
+    read: true,
+    write: true,
+    persistence: "server",
     requiredPermission: "any",
     status: "PREVIEW",
     tenantLabel: "Preview",
     explanation:
-      "Foundation tables exist (relationships, contact points, preferences, suppression) but the paginated projection lands in Phase 2.",
+      "Phase-2 projection + governed mutations (incl. Phase-3 contract-bound bulk tagging), DB/PostgREST-proven through the correction pass; the authenticated Edge HTTP path is unexecuted, so this stays Preview.",
   },
   {
     id: "marketing.imports",
     screen: "Marketing",
     control: "Contact import",
-    backingCapability: "data-import (contact profile not seeded)",
-    read: false,
-    write: false,
-    persistence: "n/a",
+    backingCapability: "data-import (sealed generic/contacts profile + marketing_import_contact_row/finalize)",
+    read: true,
+    write: true,
+    persistence: "server",
     requiredPermission: "ops",
     status: "PREVIEW",
     tenantLabel: "Preview",
     explanation:
-      "Reuses the preview-first universal importer; the contact profile + UI arrive in Phase 3.",
+      "Preview-first canonical contact imports on the universal importer: sealed profile/mapping/options contract, evidence-converged identity, durable per-row outcomes with failed-row retry (Phase 3 correction pass, DB/PostgREST-proven); the authenticated HTTP path is unexecuted — Preview until it runs.",
+  },
+  {
+    id: "marketing.settings",
+    screen: "Marketing",
+    control: "Marketing settings (inclusion, lifecycle admin, guardrails, access, audit)",
+    backingCapability: "marketing-admin (marketing_update_settings + bound history, lifecycle/access RPCs)",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "admin",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Phase-3 owner/admin administration: strict-typed versioned settings with structurally-bound append-only history, atomic dual-representation lifecycle default, active-only retirement, viewer read ceiling and race-safe lockout-protected access grants — DB/PostgREST-proven through the correction pass; HTTP path unexecuted, so Preview.",
+  },
+  {
+    id: "marketing.segments",
+    screen: "Marketing",
+    control: "Dynamic segments (versioned, server-evaluated)",
+    backingCapability: "marketing-segments (depth/budget-validated AST + marketing_segment_* RPCs)",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Constrained validated filter AST (depth-first + node-budget enforcement), immutable versions, status concurrency and version-captured server-side evaluation, with a lossless nested UI builder (Phase 3 correction pass, DB-proven). Campaign-engagement/ad-attribution filters are honestly unsupported. HTTP path unexecuted — Preview.",
+  },
+  {
+    id: "marketing.tags",
+    screen: "Marketing",
+    control: "Tag governance + bounded bulk assignment",
+    backingCapability: "marketing-contacts (marketing_tag_admin / contract-bound marketing_tag_bulk)",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Tenant tag vocabulary with immutable keys, no hard deletes, assignment counts and duplicate-safe preflight-contracted idempotent bulk tagging (Phase 3 correction pass, DB-proven); HTTP path unexecuted — Preview.",
   },
   {
     id: "marketing.campaigns",

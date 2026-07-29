@@ -80,7 +80,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const enabled = verdict.enabled === true;
   const canView = enabled && permissions.includes("marketing.view");
 
-  // ── 2) Denied: minimal verdict only — no settings, stages, role or grants. ──
+  // ── 2) Denied: minimal verdict only — no settings, stages or grants. The
+  // caller's OWN authenticated role is included (self-information only): when
+  // Marketing is disabled it is what lets the UI offer the governed
+  // owner/admin re-enable path instead of a dead end. ──
   if (!canView) {
     await writeAudit(admin, {
       tenantId,
@@ -92,7 +95,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
     return json({
       ok: true,
-      data: { can_view: false, reason: enabled ? "no_permission" : "not_enabled" },
+      data: { can_view: false, reason: enabled ? "no_permission" : "not_enabled", role },
     });
   }
 
