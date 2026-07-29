@@ -146,11 +146,36 @@ optional `getStatus`) returning a sanitized `ConnectorExecutionResult`
 (`succeeded | failed_transient | failed_permanent | unknown`). Adapters receive
 credentials via secure server-side context (never the payload), and **never** decide
 approval/authority/mode, create Decisions/Actions, mutate lifecycle tables, or publish
-events (conformance G6). v1 ships two **safe, side-effect-free internal** adapters:
-`controlled_test` (`record_controlled_execution`) and `internal` (`record_internal_note`).
-No adapter sends email, spends money, schedules engineers, alters stock, or touches any
-real external system. `schedule_engineer_visit` stays **registered but disabled** —
-unsupported and unexecutable until a real connector + policy are explicitly configured.
+events (conformance G6). The registry holds three **safe, side-effect-free internal**
+adapters — `controlled_test` (`record_controlled_execution`), `internal`
+(`record_internal_note`) and `email_reply_draft` (prepares, never transmits) — plus,
+since Marketing Phase 4, the **first and only registered EXTERNAL adapter**:
+`marketing_email` (`connectors/marketing_email.ts`, connector `google-gmail`, intent
+type `send_marketing_test_email`, capability `email.send_marketing`,
+`external_side_effect = true`, risk `high`). The TEST intent type registers
+`requires_approval = false` — honestly: a bounded test email to a tenant user is an
+explicitly authorised, DELEGATED action under canonical `marketing.campaigns.test`,
+and **no `automation_approvals` row is created or fabricated** (an Operations
+requester is not a tenant senior). The approval guard itself is untouched: any future
+bulk/broadcast intent type or approval-requiring Decision Package still demands a
+matching approval. The adapter executes exactly the claimed immutable envelope —
+the provider message is built from the FROZEN envelope content only (editing a
+sender after the request can never change what is sent) — resolves Gmail OAuth /
+Workspace-DWD credentials server-side, re-validates tenant/actor-authority (via the
+canonical marketing permission resolver)/sender readiness (via the canonical SQL
+derivation)/capability/recipient at execution time **failing closed** — a database or
+resolver read error is a safe retryable pre-provider failure, never conflated with a
+genuine denial and never proceeded past on partial authority data — performs **no
+writes**, and
+classifies conservatively (429 → transient; uncertain 5xx / lost response → **unknown**,
+frozen for review — Gmail offers no send idempotency key, so no automatic resend is ever
+safe; `supports_status_lookup` is honestly `false`). Its per-tenant enablement is never
+seeded — `marketing_sender_capability_sync` flips it only while a verified, enabled
+sender exists. Conformance gate (d) was deliberately evolved for this: every other
+adapter keeps the original dangerous-capability ban, and gate (j) holds the marketing
+adapter to its own stricter contract. `schedule_engineer_visit` stays **registered but
+disabled** — unsupported and unexecutable until a real connector + policy are
+explicitly configured.
 
 ## Approval
 
@@ -227,7 +252,8 @@ executor never changes.
 | --- | --- |
 | `supabase/migrations/20260722120000_automation_engine.sql` | additive schema: registries, execution/guard/approval/outcome tables, intent columns, states/transitions + enforcement trigger |
 | `supabase/functions/_shared/intelligence/automation_guards.ts` (+ `.verify.ts`) | **pure** guard evaluator, idempotency key, retry/result classification, transition legality |
-| `supabase/functions/_shared/connectors/` | adapter contract + registry + `controlled_test` + `internal_note` |
+| `supabase/functions/_shared/connectors/` | adapter contract + registry + `controlled_test` + `internal_note` + `email_reply_draft` + `marketing_email` (the registered external Gmail Marketing adapter) |
+| `supabase/migrations/20260901120000_marketing_sender_delivery.sql` | Marketing Phase 4 registration: `email.send_marketing` capability (external, high risk) + contract + the TEST-ONLY `send_marketing_test_email` intent type + function-gated, trigger-refreshed per-tenant enablement |
 | `supabase/functions/_shared/worker_handlers/automation_execute.ts` | impure executor (guard → claim → execute → attempt → outcome → events) |
 | `supabase/functions/_shared/automation_execution_enqueue.ts` | reusable idempotent enqueue helper |
 | `supabase/functions/automation-execute/` | manual/operator edge function |

@@ -25,7 +25,7 @@ verified. It does **not** replace the code; it explains it._
 | 1 | Foundations (shell, route, schema, permissions, config) | **Implemented + security-hardened + DB-proven.** NOT complete as a claim: the `marketing-access` authenticated **HTTP path is unexecuted** (no local edge runtime; deploy gated) — see §7a. Clean full-chain and upgrade-path migration proofs done in disposable databases. |
 | 2 | Contacts vertical slice | **COMMITTED as `24b4497`** (`feat(marketing): add governed contacts vertical slice`, 2026-07-29 — partial-staged `supabase/config.toml` marketing hunk only). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview. |
 | 3 | Settings, access admin, lifecycle, tags, segments, imports, audit | **Built + THREE CORRECTION PASSES + DB/PostgREST-proven, UNCOMMITTED on 24b4497** (2026-07-29) — see §12. Pass 3 (§12c, final narrow pass) verified and fixed 3 findings: over-permissive row-results transition guard (identity/lineage now pinned on every update, failed retries counted by exactly one, terminal immutability with a single-reference FK set-null as the only exception — stated honestly as a SHAPE constraint, not caller authentication), an unrecorded "matched person vanished" invalid (now a retryable 40001 → durable failed row → retry re-resolves), and single-contact assignment resurrecting inactive tags (tag_mutate assign now locks + rejects; remove/history/reactivation proven). Review 1 verified 14 defects (broken UI import flow, lossy retry counts, non-converged import identity, viewer-ceiling violation, lockout race, disabled-recovery dead end, default-stage drift, history-rewriting retirement, non-strict validation, unbounded AST recursion, incomplete segment concurrency, definition-destroying builder, false keyset pagination, ambiguous bulk counts). Review 2 verified 10 remaining gaps (live-settings default leak past the sealed contract, under-specified profile resolution, racy row-outcome upserts, incomplete finalize contract, missing external-id identity lock + name-collision review, unbound row-results references, unprotected Phase-2 tag mutations, silently-normalized nested keys, unreachable saved-segment evaluation + fragile builder shapes, leaky sample masking). Every finding was fixed in place in the SAME uncommitted draft (§12b) and proven by extended suites. Safe as a correction-passed LOCAL CHECKPOINT; NOT launch-proven — HTTP proofs NOT RUN (staged, exit 3), populated visual QA Preview. |
-| 4 | Workspace sender & governed delivery | Not started |
+| 4 | Workspace sender & governed delivery (test-send vertical) | **Built + CORRECTNESS/SECURITY PASS (14 findings, §13b) + FINAL INTEGRITY PASS (6 findings, §13c: delivery INSERT invariants + terminal-fact pinning; event lineage composite-bound to the exact intent with guarded truthful history; exact auth/scope readiness + trigger-refreshed capability; RFC 2047 folded long-Unicode headers; fail-closed adapter authority reads; stale claims corrected) + §13d micro-correction, **COMMITTED as the local Phase 4 checkpoint on top of `6e64b0b`** (2026-07-29) — see §13. NOT pushed, NOT deployed, NOT launch-proven. Sender profiles composite-FK bound to existing Gmail-OAuth/Workspace-DWD mailboxes (incl. creator/updater binding); CANONICAL LIVE readiness from authoritative source state (per-mailbox connection; drives enable/capability/test/adapter/overview; health honest); `email.send_marketing` external/high with TEST-ONLY intent `send_marketing_test_email` (requires_approval FALSE — a test send is an explicitly authorised DELEGATED action under marketing.campaigns.test; NO approval row exists or is fabricated; the frozen approval guard still protects the Phase-5 broadcast boundary); frozen-envelope-only delivery (sender edits never leak into a requested send) + execution-time actor-authority recheck via the canonical resolver; request-FINGERPRINT idempotency (MK412 on reuse-with-difference, zero side effects); FACTUAL delivery states (fabricated submission structurally impossible, even for the service role); confirmed submission → canonical email row + the STANDARD interactions.sync job (deterministic, idempotent); strict status contract at the DB boundary. Engine untouched (conformance PASS incl. strengthened gate j). NOT deployed; NO real email ever sent; HTTP staged exit 3; mode truth: execution requires trusted/optimisation. |
 | 5 | Broadcasts | Not started |
 | 6–10 | Sequences, templates/reporting/AI, Ads, platform seams, launch | Not started |
 
@@ -1150,8 +1150,386 @@ page of tenant tags; HTTP + populated visual gates blocked on a served edge
 runtime; local mjs/SQL proofs normalise phone identity at the DB layer
 (edge-side UK E.164 normalisation is exercised only by the staged HTTP flow).
 
+## 13 · Phase 4 — Workspace senders & governed test-send delivery (2026-07-29; built + correction passes §13b/§13c/§13d; COMMITTED as the local Phase 4 checkpoint on top of 6e64b0b — not pushed, not deployed, not launch-proven)
+
+One additive run-once migration `20260901120000_marketing_sender_delivery.sql`
+(+ composite tenant uks on `email_accounts` / `google_workspace_mailboxes` /
+`automation_intents` / `profiles` / `automation_execution_attempts` (incl. a
+(tenant, intent, id) key that binds an attempt reference to ITS OWN intent) —
+additive indexes only, no engine behaviour change). The §13b correction pass
+was applied IN PLACE to this uncommitted migration (no corrective follow-up
+migration for never-committed schema).
+
+### Reused seams (audited before design; nothing duplicated)
+`email_accounts` + `email_oauth_tokens` (granted-scope truth), Workspace
+connection/mailboxes + `getDelegatedToken` family (new MINIMAL
+`getDelegatedGmailSendToken`: gmail.send only, mailbox subject), the frozen
+Automation Engine (registries + `automation_claim_and_start` /
+`automation_finalize_execution` / `automation_resolve_unknown_execution` /
+envelope hash — all UNCHANGED, including the approval guard), the adapter
+registry (one import + one entry), `platform_jobs` + `enqueueJob` /
+`enqueueAutomationExecution` + a 17th worker handler
+`marketing.delivery_sync`, `email_messages`
+(tenant/provider/provider_message_id convergence) + the EXISTING
+`interactions.sync` projector (the ONLY Interaction writer), the canonical
+marketing permission resolver (existing keys `marketing.senders.manage` /
+`marketing.campaigns.test`), `marketing_settings.default_sender_profile_id`
+(dangling since Phase 1 — now FK-bound), settings history, audit/event
+conventions.
+
+### What is implemented (post-correction)
+- **HONEST TEST-SEND AUTHORITY.** A Phase-4 test send is an explicitly
+  authorised, DELEGATED test action by an actor holding canonical
+  `marketing.campaigns.test`: intent type **`send_marketing_test_email`**
+  (requires_approval FALSE, external, high-risk), decision
+  **AUTOMATION_AUTHORISED** with all review routing flags false and
+  `automationIntent.requiresApproval` false, and **NO `automation_approvals`
+  row exists or is fabricated** — an Operations requester is not a tenant
+  senior, and the earlier draft's fabricated `tenant_senior` approval is
+  RETRACTED (§13b-1). The actor, tenant, permission basis, recipient, sender,
+  request and irreversible external classification are preserved in the
+  immutable package, intent envelope, Action, event and audit history. The
+  frozen engine approval guard is untouched: Phase-5 broadcasts must register
+  their own bulk intent type and/or approval-requiring package, and the guard
+  still demands a matching approval wherever one is required (guard-proven).
+  The Operational Mode re-check applies unchanged (reversibility honestly
+  IRREVERSIBLE → executes only where the mode permits irreversible work).
+- **`marketing_sender_profiles`** — exactly one immutable source mailbox
+  (composite tenant FKs incl. `created_by`/`updated_by` → profiles; FK
+  set-null on source removal is the only lineage change; never re-pointable/
+  re-addressable/movable); header-bound display fields validated at WRITE
+  time (control chars/CR-LF rejected, reply-to format checked at create AND
+  update); exact updated_at token; no client DELETE.
+- **CANONICAL LIVE READINESS** (`marketing_sender_readiness` / `_all`) — ONE
+  derivation from CURRENT AUTHORITATIVE SOURCE STATE: OAuth = real gmail
+  account row (provider/status/auth_state) + stored token + exact gmail.send
+  in the STORED grant; DWD = the actual mailbox + ITS OWN connection (correct
+  under multiple Workspace connections) + recorded send-scope mint evidence.
+  Used by enablement, capability sync, test-send acceptance, the overview and
+  (via RPC) the adapter at execution time. Cached sender columns are display
+  evidence only. `tenant_connectors.health_status` is 'healthy' ONLY while a
+  READY sender exists; otherwise the capability is disabled and health drops
+  to the bounded 'unknown'.
+- **Default sender** — composite FK; default must be an ENABLED sender
+  (trigger, any caller); the current default cannot be disabled directly
+  (trigger); governed disable clears the default first, versioned + audited.
+- **Registration** — capability `email.send_marketing` (external, high) +
+  operational outcome `marketing_email_submitted` ("submitted ≠ delivered") +
+  contract (adapter v1) + the TEST-ONLY intent type. ZERO tenant enablement
+  seeded (SQL-proven, fixture-scoped locally + globally on the clean chain).
+- **Test send** (`marketing_test_send_request`) — canonical resolver check,
+  STRICT single same-tenant profile recipient, bounded content, DB rate limit
+  (3/min, 10/hour, MK429), and REQUEST-FINGERPRINT idempotency: a canonical
+  sha256 over (request id + actor + sender + recipient + the full frozen
+  content hash) is stored on the delivery and compared transactionally —
+  byte-equivalent replays converge on the same intent/delivery; a reused id
+  with ANY differing frozen input raises stable **MK412** and creates
+  NOTHING (proven: no intent/action/decision/delivery delta).
+- **Adapter** `connectors/marketing_email.ts` — mutation-free; the provider
+  message is built from the **FROZEN ENVELOPE ONLY** (sender edits after the
+  request can never change what is sent — engine-claim proven in SQL +
+  source-scan proven in node); EXACT envelope allowlist (undeclared fields —
+  bcc/html/recipient_emails/anything — rejected before any provider
+  interaction); EXECUTION-TIME ACTOR AUTHORITY recheck through the canonical
+  resolver (removed/moved/denied actors block permanently; pure
+  `evaluateActorAuthority` node-proven for all four cases); canonical
+  readiness recheck via the SQL RPC; hardened MIME (quoted-string display
+  names — quotes/commas/angle-brackets/backslashes can never break or spoof
+  From; RFC 2047 for Unicode; RFC 2045 76-char base64 body wrapping;
+  deterministic Message-ID); conservative classification (429 transient;
+  uncertain 5xx/lost → UNKNOWN frozen, never auto-resent).
+- **Delivery projection** — `marketing_deliveries` (+ request_fingerprint) +
+  append-only events; EVERY reference composite-FK tenant-bound
+  (actor/recipient/person/intent/attempt — the attempt FK also binds THE SAME
+  INTENT; delivery-event attempts and email origin refs likewise). The
+  transition guard is FACTUAL for every caller including the service role:
+  each move must agree with the CURRENT intent state, and 'submitted'
+  additionally requires a same-tenant same-intent SUCCEEDED attempt whose
+  external reference equals the recorded provider message id (thread
+  agreeing) — fabricated submission is structurally impossible (adversarially
+  proven). Provider facts are write-once and settable only by the submitted
+  transition. On confirmed submission the reconciler upserts the canonical
+  outbound `email_messages` row AND enqueues the STANDARD `interactions.sync`
+  job under its existing deterministic key (idempotent against the active-key
+  index; the cron shares the same key) — the canonical projector remains the
+  single Interaction writer; the suite proves one-Interaction convergence via
+  a labelled test-side simulation of the projector's exact upsert contract.
+  Failed/unknown deliveries create NO canonical email row and NO projection
+  job.
+- **`marketing_test_send_status`** — STRICT at the DB boundary: object-only
+  args, `limit` the only key, integer 1–50; fractions/strings/extra keys →
+  22023 (SQL + PostgREST + staged HTTP proofs).
+- **Edge** `marketing-senders` — as before, plus MK412 → REQUEST_MISMATCH
+  (409) and per-sender readiness from `marketing_sender_readiness_all` (each
+  DWD mailbox against ITS OWN connection — finding 9). **UI** — readiness/
+  remediation from the canonical states; per-connection Workspace rows.
+- **Conformance** — gate (d) unchanged in intent (non-marketing adapters keep
+  the original ban); gate (j) strengthened: test-only intent type, no
+  fabricated approval in the migration, one provider call, unknown-freeze, no
+  status claim, full registration. CONFORMANCE PASS.
+
+### §13b · Correctness/security pass (2026-07-29) — 14 findings, all corrected in place
+1. **Fabricated tenant_senior approval** (an Operations actor recorded as a
+   tenant-senior approver) → RETRACTED; delegated-authority model above; no
+   approval row; engine approval guard untouched and re-proven for the
+   broadcast boundary.
+2. **Mutable sender content leaked into "frozen" sends** (adapter substituted
+   current from_name/reply_to/signature) → frozen-envelope-only MIME;
+   adversarial proofs (SQL claim-envelope + node source-scan + MIME tests).
+3. **No execution-time actor authority recheck** → canonical-resolver recheck
+   in the adapter; pure decision helper proven for denied/removed/moved/valid.
+4. **Envelope accepted undeclared fields** → exact allowlist; bcc/html/
+   recipient_emails/sneaky/missing/wrong-type all rejected.
+5. **Unbound tenant references** (created_by/updated_by/actor/recipient/
+   person/attempt/event-attempt/email-origin) → composite tenant FKs
+   everywhere incl. same-intent attempt binding; adversarial FK proofs.
+6. **Service role could fabricate delivery states** → factual transition
+   guard anchored to intent/attempt state + provider-id agreement +
+   write-once-by-submission; adversarial fabrication proofs; legitimate
+   reconciler re-proven.
+7. **Idempotency keyed on request_id alone** → canonical request fingerprint;
+   MK412 stable conflict; zero-side-effect mismatch proof.
+8. **Readiness from cached sender columns** → canonical LIVE readiness (see
+   above) wired through enable/capability/test/adapter/overview; degradation
+   tests (scope stripped/auth revoked/account disabled/token lost).
+9. **Single-connection assumption in overview** → per-mailbox connection
+   resolution; two-connection test (healthy sender unaffected by the degraded
+   connection).
+10. **Weak MIME/display-name handling + unwrapped base64** → quoted-string
+    escaping/RFC 2047 + 76-char wrapping + write-time sender-field validation.
+11. **Lax status RPC** → strict DB-boundary contract.
+12. **"Eligible for projection" claimed as projection** → deterministic
+    standard-job enqueue on confirmed submission + explicit simulation-labelled
+    convergence proof; the Deno worker/projector runtime execution remains a
+    deploy-gated proof and is stated as such.
+13. **Conformance gate** — kept narrow; strengthened (see above).
+14. **Documentation** — this section, SENDER_SETUP, AUTOMATION_ENGINE,
+    capability registry and test headers corrected; no tenant-senior claim, no
+    frozen-send-with-mutable-content claim, no projected-vs-eligible blur, no
+    provider exactly-once claim, no cached-state health claim survives.
+
+### §13c · Final integrity correction (2026-07-29) — 6 findings, corrected in place (still uncommitted)
+
+1. **Fabricated delivery INSERTS + terminal-fact rewrites** — the delivery
+   guard was UPDATE-only, so the service role's INSERT privilege could create
+   a delivery already `submitted`/`failed`/`executing`/`unknown` with
+   arbitrary provider facts, and terminal facts were only checked when status
+   changed. Now `BEFORE INSERT OR UPDATE`: a delivery is BORN `queued` with NO
+   execution attempt, provider facts, submission time or failure
+   classification, must reference a same-tenant PENDING
+   `send_marketing_test_email` / `email.send_marketing` intent, and must
+   AGREE with that intent's frozen envelope (delivery id, sender, recipient
+   profile+email, actor, request id, content hash). On update,
+   `execution_attempt_id` and `failure_class` may only change WITH a factual
+   status transition (terminal facts therefore pinned forever), provider
+   facts may only be set by the transition INTO submitted, `failed` requires
+   a failure classification + a same-intent failure attempt, `submitted`
+   forbids one. Adversarials: direct insert of each fabricated state, birth
+   facts, envelope forgery, non-Phase-4 intent type, succeeded-intent sibling
+   insert, post-terminal attempt swap/detach/rewrite — all rejected.
+2. **Delivery-event lineage** — events carried only a `(tenant, attempt)` FK,
+   so a same-tenant different-intent attempt could be cited and arbitrary
+   history appended. Events now carry `automation_intent_id` (composite FK
+   `(tenant_id, delivery_id, automation_intent_id)` → deliveries' new
+   `(tenant_id, id, automation_intent_id)` unique key) and the attempt FK
+   binds `(tenant_id, automation_intent_id, execution_attempt_id)` — an
+   attempt from another intent is impossible BY SHAPE (catalog-asserted). A
+   guard makes fictional history impossible for every caller: `to_status`
+   must equal the delivery's ACTUAL status, a cited attempt must be the
+   delivery's own recorded attempt, the single initial event is null→queued
+   (also a partial unique index), and every later event must continue the
+   chain (`from_status` = previous `to_status`; guard-assigned `seq`, which
+   also orders the status read deterministically). Both production insertion
+   sites updated; events stay append-only.
+3. **Exact, self-refreshing readiness/capability truth** — OAuth readiness
+   now requires `auth_state` EXACTLY `'ok'` (`unknown`/unrecognised are
+   `auth_invalid`), a SAME-TENANT stored token, and the EXACT
+   whitespace-token `gmail.send` scope via new SQL `marketing_scope_has`
+   (substring `position()` removed everywhere — `gmail.send.extra` /
+   `gmail.sendfoo` can never authorise; matches the TypeScript helper's
+   contract). `email_oauth_tokens` gains a MANDATORY, VALIDATED composite
+   tenant FK to its account — per §13d the migration FAILS LOUDLY (with the
+   row count and an operator-verifiable repair hint) if inconsistent legacy
+   rows exist; it can never complete without the constraint; every Phase-4
+   token read (SQL, adapter, Edge verify) is tenant-filtered regardless. Capability truth is
+   now TRIGGER-REFRESHED from the authoritative source tables (account
+   status/auth-state/address; token insert/update/delete; Workspace mailbox
+   + connection state; sender source FK set-null) — tenants with no sender
+   profile untouched; the overview re-syncs before reading capability/health;
+   the request RPC and adapter still re-derive readiness independently. The
+   degradation batteries (SQL + PostgREST) mutate ONLY source state — zero
+   manual sync calls (scan-proven).
+4. **RFC 2047 long-Unicode headers** — the encoder emitted ONE encoded word
+   per value, breaching the 75-char encoded-word limit for long Unicode
+   subjects/display names. Now: code-point-safe 45-byte chunking (a UTF-8
+   sequence is never split; every word decodes alone under a fatal decoder),
+   every word ≤75 chars including its wrapper, words folded with CRLF+SPACE
+   continuations, no physical line near the 998 hard limit, decoding
+   reconstructs the exact original, short ASCII byte-identical. Proven at the
+   MAXIMUM bounds (300-char subject, 120-char display name, mixed
+   2/3/4-byte characters).
+5. **Stale claims** — AUTOMATION_ENGINE.md's migration row said
+   `send_marketing_email`; corrected to `send_marketing_test_email` (the SQL
+   suite's negative assertion that the OLD name does not exist remains,
+   clearly purposed). The migration comment claiming an "ACTIVE" recipient
+   profile corrected — `profiles` has no active state, so none is claimed.
+   SENDER_SETUP.md now records the trigger-refreshed capability model;
+   AUTOMATION_ENGINE.md records the fail-closed adapter reads.
+6. **Fail-closed authority reads** — the adapter conflated "the database
+   answered NO" with "the database could not answer" on every mandatory
+   pre-provider read. Now settings/actor/resolver/sender/readiness/
+   capability/recipient/token reads each check `.error` explicitly: a read or
+   resolver failure is a SAFE RETRYABLE pre-provider `failed_transient`
+   (nothing was sent; consistent with the engine's retry contract — the
+   previous readiness-error `unknown` over-freeze is corrected to transient),
+   while a genuine missing/moved/denied actor, sender, capability or
+   recipient stays PERMANENT. Proven by MOCKED ADAPTER-BOUNDARY tests running
+   the real `execute()` against a scripted client: 8 read-failure cases →
+   transient with zero provider calls; genuine negatives → permanent; the
+   fully healthy script still submits through exactly one provider call.
+
+#### §13c verification matrix (2026-07-29)
+| Check | Result |
+|---|---|
+| `git diff --check` | **PASS** (clean) |
+| Pure suite `node --test scripts/marketing-senders-pure.test.mjs` (now 24 tests: +3 RFC 2047 long-value, +1 fail-closed source scan, +3 mocked adapter-boundary) | **PASS** 24/24 |
+| SQL suite `supabase/tests/marketing_senders.test.sql` (insert/event adversarials, catalog FK shapes, trigger-driven degradation battery with zero manual sync calls) | **PASS** on the dev DB, the fresh clean chain AND the upgraded 6e64b0b DB |
+| PostgREST suite `scripts/marketing-senders.test.mjs` (+5 trigger-driven capability checks over the real boundary) | **PASS** ×2 (36 checks, re-run-safe) |
+| HTTP suite `scripts/marketing-senders-http.test.mjs` | **NOT RUN — exit 3** (no local Edge runtime; honestly reported) |
+| Engine regressions: `automation_engine` / `execution_reliability` / `email_reliability` / `response_approval_atomicity` | **PASS** on the clean chain AND the dev DB |
+| Marketing Phase 0–3 regressions: `marketing_foundation` / `marketing_hardening` / `marketing_admin` / `marketing_contacts` SQL + `marketing-access` / `marketing-contacts` / `marketing-admin` mjs | **PASS** (SQL on both DBs; mjs ALL PASS) |
+| `bash scripts/intelligence-conformance.sh` | **PASS** |
+| `npx tsc --noEmit` · focused lint (changed files) · production build (npm) | **PASS** |
+| Fresh clean chain — 84 migrations (committed track + corrected Phase 4; untracked phone-ops excluded) on a fresh `supabase/postgres` container (stubbed `storage.buckets` + auth columns the services normally provide) | **PASS** |
+| Upgrade from committed HEAD `6e64b0b` — 83 committed migrations + seeded marketing/email/workspace/intent/message data → corrected Phase 4 applied ONCE (second apply fails loudly); +3 tables; ZERO enablement; pre-existing email rows keep null origin; token tenant FK added (data consistent); sync triggers installed; full SQL suite passes on the upgraded DB | **PASS** |
+| Targeted scans: no fabricated approval · no mutable sender content in MIME · guard is BEFORE INSERT OR UPDATE · event attempt FK binds tenant+intent · no substring scope check remains · auth_state must be exactly 'ok' · zero manual sync calls in the degradation battery · no stale positive `send_marketing_email` reference | **PASS** (8/8) |
+
+Still true after §13c (and, post-§13d, at the local Phase 4 checkpoint
+commit): NOT pushed, NOT deployed; NO real email has ever been sent; the Edge
+HTTP + worker runtime proofs remain deploy-gated; execution still requires a
+mode permitting irreversible external work. (The §13b/§13c/§13d passes all
+ran while the work was still uncommitted, as their headings record.)
+
+### §13d · Micro-correction (2026-07-29) — 2 findings, corrected in place (still uncommitted)
+
+1. **The OAuth tenant FK is never silently skipped.** §13c's do-block warned
+   and continued when inconsistent legacy `email_oauth_tokens` rows existed —
+   leaving the database without the invariant the documentation claims. Now
+   the migration FAILS LOUDLY (errcode 23514, exact mismatched-row count, an
+   operator-verifiable repair hint: copy the redundant token tenant from the
+   canonical account AFTER verification) and can NEVER report success without
+   the validated `(tenant_id, email_account_id) → email_accounts (tenant_id,
+   id)` constraint; the existing-constraint check is scoped to
+   `public.email_oauth_tokens` by `conrelid`, not a global name match; the
+   plain ADD CONSTRAINT validates existing rows (never NOT VALID). Suite now
+   asserts the FK exists, is table-scoped AND `convalidated`, and that
+   mismatched token inserts/updates die on the FK (the insert probe targets a
+   token-less account so the per-account unique key cannot mask the FK).
+   Upgrade proofs: consistent data → validated FK; DIRTY data (a seeded
+   mismatched token) → the migration FAILS with the §13d error and, run
+   `--single-transaction`, leaves nothing behind; after the documented repair
+   the same migration succeeds and the FK is validated.
+2. **Every persisted delivery field binds to the frozen intent.** The §13c
+   insert guard compared ids/request/hash but not the persisted CONTENT — a
+   service-role caller could copy a legitimate `content_hash` while inserting
+   different subject/body/from/reply-to/signature/content-version, plus a
+   free-chosen correlation id and any shape-valid fingerprint, splitting the
+   Marketing/canonical projection from what the adapter actually sends. The
+   guard now requires exact agreement (null semantics included) on purpose,
+   subject, body_text, from_name, reply_to, signature_text, content_version
+   — alongside the existing delivery id/sender/recipient profile+email/
+   actor/request id/content hash — binds `correlation_id` to the INTENT
+   ROW's correlation, and RECOMPUTES the request fingerprint through the new
+   single canonical `marketing_request_fingerprint()` (now also the request
+   RPC's implementation, so the two can never drift); a shape-valid 64-hex
+   forgery is rejected. Adversarials: 8 one-field mutations of a copied
+   legitimate pending delivery (subject, body, from name, reply-to,
+   signature, content version, correlation, fingerprint) all rejected; the
+   EXACT copy passes the guard and dies only on uniqueness (the legitimate
+   request path is untouched); the stored fingerprint equals the canonical
+   recomputation; the reconciled canonical email body is asserted
+   byte-consistent with the frozen content.
+
+#### §13d verification matrix (2026-07-29)
+| Check | Result |
+|---|---|
+| `git diff --check` · `npx tsc --noEmit` · focused lint · production build (npm) | **PASS** |
+| SQL suite on the dev DB, the fresh clean chain (84 migrations) and the upgraded-from-`6e64b0b` DB | **PASS** (all assertions) |
+| Upgrade proof incl. DIRTY-data path: mismatched legacy token → migration FAILS loudly (nothing applied under `--single-transaction`); documented repair → success + validated FK | **PASS** |
+| PostgREST suite ×2 (re-run-safe) · pure suite 24/24 | **PASS** |
+| Engine + email reliability (+ execution reliability, approval atomicity) regressions; Marketing 0–3 SQL + mjs regressions; intelligence conformance | **PASS** |
+| Targeted scans: no warning-only FK path (`raise warning` absent); constraint never NOT VALID; every delivery content field compared in the insert guard; fingerprint recomputed via the single canonical function (definition + 2 call sites); unrelated files untouched | **PASS** |
+
+### Honest limitations
+- Gmail has NO provider idempotency key: exactly-once is OUR machinery
+  (deterministic intent idempotency + single-success unique index +
+  unknown-freeze + human review). The deterministic Message-ID exists for
+  MANUAL reconciliation only — "not found" is never treated as safe-to-resend.
+- Execution requires an operational mode permitting irreversible external
+  work (trusted/optimisation); in discovery/assisted the intent parks
+  mode-blocked with its real reason — recorded, surfaced, and correct.
+- The adapter refreshes an expiring OAuth token in-memory only (it performs no
+  writes); durable refresh persistence stays with the ingestion sync path.
+- The Deno worker shell + Edge HTTP run only when deployed/served: local
+  proofs drive the REAL SQL engine RPCs with stubbed provider results; the
+  adapter transport was never executed against Google and NO email was sent.
+  The end-to-end worker-executed Interaction projection is enqueue-proven +
+  contract-proven locally; its runtime execution is a deploy-gated proof.
+- APPLICATION request idempotency (fingerprint convergence) ≠ PROVIDER
+  delivery semantics: "submitted" = Gmail accepted the request; unknown =
+  frozen for review; canonical email ingestion and Interaction projection are
+  separate, later, canonical stages.
+- `marketing_deliveries.purpose` is 'test' only; Phase 5 extends vocabulary.
+
+### Verification matrix (post-correction — 2026-07-29)
+| Check | Status |
+|---|---|
+| `supabase/tests/marketing_senders.test.sql` — 10 sections incl. §13b adversarials: sources (per-mailbox connections), create (write-time header validation, hostile grant, dup idempotency), structure (creator/updater/actor/recipient/person/attempt/origin composite FKs; same-intent attempt binding; re-point/move rejection), registration honesty (test-only intent, requires_approval FALSE, no bulk intent, zero enablement), LIVE readiness (multi-connection truth, enable gate, capability+health degradation on scope/auth/status/token loss), test send (delegated authority — NO approvals row; fingerprint convergence + MK412 with zero writes; MK429; strict status contract), E2E via REAL engine RPCs (frozen envelope survives sender edits; fabrication adversarials — executing-intent, in-flight attempt, mismatched provider id, missing id — all rejected; legitimate reconcile submits; interactions.sync job enqueued once; ingestion convergence; simulated projector one-Interaction proof; failed/unknown → no email row/no job; unknown frozen + appended resolution + review task), cross-tenant lineage, observability, cascade, service-role-only | **PASS** (dev DB + clean-chain + upgraded DB) |
+| `scripts/marketing-senders-pure.test.mjs` — 17 node tests: exact envelope allowlist (incl. bcc/html/recipient_emails/sneaky + missing/wrong-type), actor authority (denied/removed/moved/valid), display-name quoting (quotes/commas/angles/backslash/Unicode), 76-char base64 wrapping + long body, deterministic Message-ID + frozen reply-to/signature, injection vectors, sanitized responses, conservative classification (5xx = unknown), FROZEN guard × delegated-test package (trusted allows with NO approval; assisted/discovery withhold; BROADCAST boundary distinct — approval still required incl. wrong-kind + type-gate; capability/connector/contract/supersession/unknown/prior-success/cross-tenant), adapter source-scan (env-only MIME, resolver + readiness rechecks, one fetch, no getStatus) | **PASS** (17/17) |
+| `scripts/marketing-senders.test.mjs` — PostgREST + real GoTrue JWTs: 12 RPC denials + table write denied; lifecycle + readiness-gated capability; parallel same-request convergence; NO fabricated approval; MK412 mismatch; strict status at the DB boundary; stubbed claim→finalize→reconcile with ONE canonical email row; disable clears default; history survives; random-id fixtures with honest append-only residue note | **PASS** (31/31, re-run-safe) |
+| `bash scripts/intelligence-conformance.sh` (incl. strengthened gate j) | **PASS** |
+| Marketing regressions (4 SQL suites) + admin 55/55 + access/contacts mjs + `automation_engine` / `execution_reliability` / `email_reliability` / `response_approval_atomicity` + import-pure 13 + builder/gate 16 | **PASS** (`reliability_vertical.test.sql` NOT RUN — pgTAP absent locally, pre-existing) |
+| `npx tsc --noEmit` · focused lint · production build (npm) · `git diff --check` | **PASS** |
+| Clean full chain — 84 migrations (83 committed-track + corrected Phase 4; untracked phone-ops EXCLUDED) + suites on a fresh container | **PASS** (corrected migration) |
+| Upgrade from committed HEAD `6e64b0b` — seeded marketing/email/workspace/interaction/intent data survives; run-once; +3 tables; ZERO enablement; origin columns null for pre-existing rows | **PASS** (corrected migration) |
+| Authenticated Edge HTTP (`marketing-senders-http` + REQUEST_MISMATCH / no-approval / strict-limit additions) | **NOT RUN** — no local edge runtime; exits 3 (verified) |
+| Populated visual QA | **Preview** — fail-closed gate without a served runtime; to complete on staging |
+| REAL provider send | **NEVER EXECUTED** — stubbed results only; live proof requires deploy + re-consent/DWD scope + permitting mode + an explicit user-authorised recipient/send |
+
+### Phase 4 checkpoint scope (COMMITTED locally as one checkpoint on top of 6e64b0b; 23 paths)
+Modified (11): this ledger, `docs/reference/AUTOMATION_ENGINE.md`,
+`docs/reference/BACKEND_RUNTIME.md`, `scripts/intelligence-conformance.sh`,
+`src/components/app/MarketingSettings.tsx`, `src/lib/capability-registry.ts`,
+`supabase/config.toml` (**partial-stage: marketing hunks ONLY**),
+`supabase/functions/_shared/connectors/index.ts`,
+`supabase/functions/_shared/gmail_oauth.ts`,
+`supabase/functions/_shared/google_workspace.ts`,
+`supabase/functions/_shared/worker_handlers/index.ts`.
+Created (12): `docs/product/marketing-crm/SENDER_SETUP.md`,
+`scripts/marketing-senders-http.test.mjs`, `scripts/marketing-senders-pure.test.mjs`,
+`scripts/marketing-senders.test.mjs`, `src/components/app/MarketingSenders.tsx`,
+`src/lib/marketing/senders.ts`,
+`supabase/functions/_shared/connectors/marketing_email.ts`,
+`supabase/functions/_shared/marketing_email.ts`,
+`supabase/functions/_shared/worker_handlers/marketing_delivery_sync.ts`,
+`supabase/functions/marketing-senders/index.ts`,
+`supabase/migrations/20260901120000_marketing_sender_delivery.sql`,
+`supabase/tests/marketing_senders.test.sql`.
+Concurrent phone-ops/telephony/product-review/run-checkpoint work stays
+byte-for-byte outside this scope.
+
 ## 10 · Restart-safe "next phase"
-**Next: Phase 4 — Workspace sender & governed delivery.** Sender profiles over
+**Next: Phase 5 — Broadcasts** (on the proven sender + governed delivery
+foundation): campaign create/revise/approve/schedule/launch/pause/archive,
+audience snapshot + exclusion reasons, per-recipient governed delivery through
+the SAME `email.send_marketing` capability with suppression re-checked at
+execution, retry-safe launch queueing, reporting that distinguishes submitted
+from delivered/opened only when evidence exists. Before starting: commit the
+Phase-4 checkpoint (partial-stage `supabase/config.toml` marketing hunks only);
+when deployed, run the staged HTTP suites and complete the sender setup steps
+in [SENDER_SETUP.md](SENDER_SETUP.md).
+
+**Superseded Phase-4 plan (delivered above):** Sender profiles over
 discovered Workspace mailboxes (choose permitted Marketing senders, from-name/
 reply-to/signature, default sender, health/capacity, test send, disable without
 history loss); the minimum `gmail.send` scope + re-consent + scope reporting;

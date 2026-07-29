@@ -32,6 +32,16 @@ AUTO_WORKER=supabase/functions/_shared/worker_handlers/automation_execute.ts
 AUTO_MIGRATION=supabase/migrations/20260722120000_automation_engine.sql
 CONNECTOR_FILES=$(ls supabase/functions/_shared/connectors/*.ts)
 ADAPTER_IMPLS="supabase/functions/_shared/connectors/controlled_test.ts supabase/functions/_shared/connectors/internal_note.ts"
+# Marketing Phase 4 (deliberate, reviewed evolution of the v1-era assumption
+# "no real connector exists"): email.send_marketing is now the ONE registered
+# external capability, implemented ONLY by this adapter with a full contract
+# (registry row external_side_effect=true, capability contract, intent type,
+# per-tenant enablement gated on a verified sender — never seeded). Gate (d)
+# scans every OTHER adapter with the original ban list unchanged, and gate (j)
+# holds this adapter to its own stricter contract.
+MARKETING_ADAPTER="supabase/functions/_shared/connectors/marketing_email.ts"
+NON_MARKETING_CONNECTOR_FILES=$(ls supabase/functions/_shared/connectors/*.ts | grep -v "/marketing_email\.ts$")
+MARKETING_MIGRATION=supabase/migrations/20260901120000_marketing_sender_delivery.sql
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
@@ -151,11 +161,17 @@ if grep -nE 'from "\.\./intelligence/(decision|modes|policy|authority)\.ts"|auto
 else
   note PASS "connector adapters stay dumb (no policy/lifecycle/events)"
 fi
-# (d) NO dangerous real connector capability is implemented in v1.
-if grep -nEi 'email\.send|purchasing\.|inventory\.adjust|calendar\.create_event|service\.schedule_visit|crm\.update' $CONNECTOR_FILES ; then
-  note FAIL "a dangerous real connector capability appears in an adapter"; fail=1
+# (d) NO unregistered dangerous connector capability. The ONLY permitted
+#     external capability literal is email.send_marketing, and ONLY inside the
+#     registered marketing adapter (whose own contract is gate (j)). Every
+#     other adapter keeps the original v1 ban list, unchanged.
+if grep -nEi 'email\.send|purchasing\.|inventory\.adjust|calendar\.create_event|service\.schedule_visit|crm\.update' $NON_MARKETING_CONNECTOR_FILES ; then
+  note FAIL "a dangerous connector capability appears outside the registered marketing adapter"; fail=1
+elif grep -nEi 'purchasing\.|inventory\.adjust|calendar\.create_event|service\.schedule_visit|crm\.update' "$MARKETING_ADAPTER" \
+  || grep -nEi 'email\.send' "$MARKETING_ADAPTER" | grep -vi 'email\.send_marketing' ; then
+  note FAIL "the marketing adapter implements a capability beyond email.send_marketing"; fail=1
 else
-  note PASS "only safe internal adapters exist (no dangerous real connector)"
+  note PASS "no unregistered dangerous capability (email.send_marketing only, in its registered adapter)"
 fi
 # (e) the pre-existing schedule_engineer_visit intent stays UNSUPPORTED (enabled=false).
 if grep -qE "'schedule_engineer_visit',[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*, *false\)" "$AUTO_MIGRATION" ; then
@@ -187,11 +203,46 @@ elif ! grep -q "buildIdempotencyKey" "$AUTO_PURE" ; then
 else
   note PASS "pure guard is deterministic with a deterministic idempotency key"
 fi
-# (i) the controlled adapters make NO network / external calls (v1 is internal-only).
+# (i) the controlled INTERNAL adapters make NO network / external calls. (The
+#     registered external marketing adapter necessarily performs its single
+#     provider call — held to that by gate (j), never exempted from (c).)
 if grep -nE 'fetch\(|createClient\(|new WebSocket|Deno\.connect|XMLHttpRequest|https?://' $ADAPTER_IMPLS ; then
   note FAIL "a controlled adapter contains a network client / external call"; fail=1
 else
-  note PASS "controlled adapters make no network/external calls (internal-only)"
+  note PASS "controlled internal adapters make no network/external calls"
+fi
+
+# (j) the ONE registered external adapter honours its own stricter contract:
+#     registered in the adapter registry; exactly ONE provider call; an
+#     explicit unknown-freeze path; NO status-lookup claim (Gmail has none we
+#     are willing to register); and the Phase-4 migration registers the full
+#     capability contract with external_side_effect = true and
+#     supports_status_lookup = false. Tenant enablement is function-gated
+#     (marketing_sender_capability_sync) — the SQL suite proves zero seeded rows.
+if ! grep -q 'marketingEmailAdapter' supabase/functions/_shared/connectors/index.ts ; then
+  note FAIL "marketing adapter is not registered in the adapter registry"; fail=1
+elif [ "$(grep -c 'fetch(' "$MARKETING_ADAPTER")" != "1" ] ; then
+  note FAIL "marketing adapter must contain exactly ONE provider call"; fail=1
+elif ! grep -q '"unknown"' "$MARKETING_ADAPTER" ; then
+  note FAIL "marketing adapter lacks the unknown-freeze path"; fail=1
+elif grep -q 'getStatus' "$MARKETING_ADAPTER" ; then
+  note FAIL "marketing adapter claims a status lookup Gmail does not reliably provide"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION" \
+       | grep -qE "insert into automation_connector_capabilities[^;]*'email\.send_marketing'[^;]*true, *'high'" ; then
+  note FAIL "email.send_marketing is not registered external_side_effect=true / risk high"; fail=1
+elif ! grep -q "marketing_email_submitted" "$MARKETING_MIGRATION" ; then
+  note FAIL "email.send_marketing has no registered outcome contract"; fail=1
+elif ! grep -qE "'send_marketing_test_email', 'email\.send_marketing', 'high', true," "$MARKETING_MIGRATION" ; then
+  note FAIL "send_marketing_test_email intent type is not registered with its capability"; fail=1
+elif ! grep -qE "supportedIntentTypes: \[\"send_marketing_test_email\"\]" "$MARKETING_ADAPTER" ; then
+  note FAIL "the marketing adapter must support ONLY the bounded test intent type"; fail=1
+elif ! grep -q "marketing_sender_capability_sync" "$MARKETING_MIGRATION" ; then
+  note FAIL "per-tenant enablement is not function-gated"; fail=1
+elif grep -qE "automation_approvals" "$MARKETING_MIGRATION" && \
+     grep -nE "insert into automation_approvals" "$MARKETING_MIGRATION" >/dev/null ; then
+  note FAIL "the test-send path fabricates an approval row — authority must stay honest"; fail=1
+else
+  note PASS "marketing adapter honours the external-adapter contract (one call, unknown-freeze, no status claim, test-only intent, no fabricated approval, full registration)"
 fi
 
 echo ""

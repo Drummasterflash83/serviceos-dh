@@ -195,9 +195,9 @@ turns a thrown error into the safe contract (length-capped, retryable by default
 
 ---
 
-## The registry (16 handlers)
+## The registry (17 handlers)
 
-`WORKER_HANDLERS` in `index.ts` is the live registry. It holds **sixteen** handlers,
+`WORKER_HANDLERS` in `index.ts` is the live registry. It holds **seventeen** handlers,
 not the "six" that both source notes carried in prose. This is the real, current
 list:
 
@@ -219,6 +219,7 @@ list:
 | `intelligence.review_resolve` | `handleIntelligenceReviewResolve` | Resolve a queued intelligence review back into the loop. |
 | `objective.evaluate` | `handleObjectiveEvaluate` | The Objective Evaluation Worker: turn measurements into immutable `objective_health` snapshots via the pure evaluator. |
 | `automation.execute` | `handleAutomationExecute` | The Automation Engine handler: execute an already-authorised Automation Intent through a connector adapter. |
+| `marketing.delivery_sync` | `handleMarketingDeliverySync` | Project the engine's immutable execution facts into Marketing delivery records (and, on confirmed submission, the canonical outbound `email_messages` row) via the governed SQL reconciler; enqueued after a test-send request, self-continues bounded by a payload ttl. |
 
 Two of these have dedicated app-owned enqueue helpers and repair scanners rather
 than a plain scheduler:

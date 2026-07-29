@@ -7,7 +7,9 @@
  * · Audit/change history. Everything reads/writes through marketing-admin
  * (owner/admin role + canonical resolver); stale writes surface as
  * VERSION_CONFLICT with a reload; footer text renders as plain text only.
- * Senders/Workspace and Ads connectors remain honest Preview / Not connected.
+ * Senders & Workspace (Phase 4) is a REAL section over marketing-senders —
+ * authorised sender profiles + governed test sends through the Automation
+ * Engine. Ads connectors remain honest Not connected.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -36,6 +38,7 @@ import {
   type AccessOverview,
   type MarketingAuditRow,
 } from "@/lib/marketing/admin";
+import { SendersSection } from "@/components/app/MarketingSenders";
 
 const inputCls =
   "rounded-lg border border-hairline bg-white px-2 py-2 text-sm outline-none focus:border-accent";
@@ -160,6 +163,7 @@ export function MarketingSettings({ onBack }: { onBack: () => void }) {
           <InclusionSection settings={settings} stages={stages} onSave={save} />
           <LifecycleSection stages={stages} onChanged={reload} />
           <GuardrailsSection settings={settings} onSave={save} />
+          <SendersSection />
           {canAdmin && <AccessSection />}
           <NotificationsSection settings={settings} onSave={save} />
           <GovernanceNote />

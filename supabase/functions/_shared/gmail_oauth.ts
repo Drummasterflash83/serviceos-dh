@@ -9,11 +9,20 @@
 // the platform-injected service-role key — a server-only value that is never
 // exposed to the frontend and never logged. Tokens themselves are never logged.
 
-// Minimum scopes for a future READ-ONLY sync. Nothing here reads mail yet.
+import { GMAIL_SEND_SCOPE } from "./marketing_email.ts";
+
+// Minimum scopes: read-only sync + identity, PLUS the single gmail.send scope
+// (Marketing Phase 4 — governed sender delivery). No other write scope is ever
+// requested. `prompt=consent` + `include_granted_scopes=true` below mean an
+// existing account RE-AUTHORISES through the same flow to pick up gmail.send;
+// accounts whose stored token grant lacks it are reported as
+// "re-authorisation required" from the STORED granted scopes — never inferred.
 export const GMAIL_SCOPES = [
   "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/userinfo.email",
+  GMAIL_SEND_SCOPE,
 ];
+export { GMAIL_SEND_SCOPE };
 
 const GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";

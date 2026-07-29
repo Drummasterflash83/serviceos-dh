@@ -78,6 +78,12 @@ verify_jwt = false
 # evaluation). requireTenantUser + canonical resolver; service-role RPCs only.
 verify_jwt = false
 
+[functions.marketing-senders]
+# Marketing sender configuration + governed test sends (Phase 4). requireTenantUser +
+# canonical resolver (senders.manage / campaigns.test); sends go ONLY through the
+# Automation Engine (this function never calls Gmail's send API).
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

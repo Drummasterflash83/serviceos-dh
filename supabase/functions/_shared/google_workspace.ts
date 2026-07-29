@@ -223,6 +223,31 @@ export async function getDelegatedGmailToken(mailboxEmail: string): Promise<Dele
   return getDelegatedToken(config, [GMAIL_READONLY_SCOPE]);
 }
 
+const GMAIL_SEND_ONLY_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+
+/**
+ * Mint the SMALLEST practical delegated token for governed Marketing sending:
+ * impersonates ONE specific authorised mailbox with gmail.send ONLY (never the
+ * read scope, never the directory scope, never the admin subject). Used by the
+ * marketing sender verification path (a token mint proves the Workspace admin
+ * actually granted gmail.send to the service account — `authorised_scopes`
+ * records only what was REQUESTED) and by the Gmail Marketing adapter at
+ * execution time. Throws DelegationError with the existing classification
+ * (`scopes_missing` → the DWD grant lacks gmail.send). Token/key never leave
+ * the server.
+ */
+export async function getDelegatedGmailSendToken(mailboxEmail: string): Promise<DelegatedToken> {
+  const cfg = getPlatformWorkspaceConfig();
+  if (!cfg.ok) throw new DelegationError("sa_config_missing", true);
+  const config: WorkspaceConfig = {
+    clientEmail: cfg.config.clientEmail,
+    privateKey: cfg.config.privateKey,
+    subject: mailboxEmail,
+    domain: "",
+  };
+  return getDelegatedToken(config, [GMAIL_SEND_ONLY_SCOPE]);
+}
+
 export interface GmailProfileCheck {
   emailAddress: string | null;
   messagesTotal: number | null;
