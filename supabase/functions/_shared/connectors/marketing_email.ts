@@ -101,7 +101,11 @@ function unknownResult(code: string, message: string): ConnectorExecutionResult 
 
 export const marketingEmailAdapter: AutomationConnectorAdapter = {
   connectorType: "google-gmail",
-  supportedIntentTypes: ["send_marketing_test_email", "send_marketing_broadcast_email"],
+  supportedIntentTypes: [
+    "send_marketing_test_email",
+    "send_marketing_broadcast_email",
+    "send_marketing_sequence_email",
+  ],
   adapterVersion: "1",
 
   validate(input: ConnectorExecutionInput): ValidationResult {
@@ -122,7 +126,9 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     const expected =
       v.envelope.purpose === "broadcast"
         ? "send_marketing_broadcast_email"
-        : "send_marketing_test_email";
+        : v.envelope.purpose === "sequence"
+          ? "send_marketing_sequence_email"
+          : "send_marketing_test_email";
     if (input.intentType !== expected) {
       return {
         ok: false,
@@ -142,6 +148,10 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     if (!parsed.ok) return permanent("payload_invalid", parsed.error);
     const env = parsed.envelope;
     const isBroadcast = env.purpose === "broadcast";
+    const isSequence = env.purpose === "sequence";
+    // both bulk paths execute on the recorded APPROVER's authority; a test
+    // send on the requesting actor's delegated test permission
+    const isGoverned = isBroadcast || isSequence;
 
     // ── execution-time rechecks (CURRENT state, never trusted from request
     // time). FAIL-CLOSED READ DISCIPLINE: every mandatory authority/state read
@@ -189,9 +199,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
         actor: (actorRes.data ?? null) as { id: string; tenant_id: string | null } | null,
         resolverVerdict: verdictRes.data as { enabled?: unknown; permissions?: unknown },
       },
-      // a broadcast executes on the recorded LAUNCH approver's authority; a
-      // test send on the requesting actor's delegated test permission
-      isBroadcast ? "marketing.campaigns.launch" : "marketing.campaigns.test",
+      isGoverned ? "marketing.campaigns.launch" : "marketing.campaigns.test",
     );
     if (!authority.ok) return permanent(authority.code, authority.message);
 
@@ -253,17 +261,19 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       );
     }
 
-    if (isBroadcast) {
-      // RACE CLOSURE (check 3 of 3): the ONE canonical SQL authority —
+    if (isGoverned) {
+      // RACE CLOSURE (check 3 of 3): the ONE canonical SQL authority for this
+      // path — for a broadcast the campaign/snapshot/member binding, for a
+      // sequence the enrolment/revision/step binding —
       // campaign active + exact bound revision/snapshot/member + approval
       // still valid + endpoint/person unchanged + CURRENT eligibility exactly
       // 'subscribed' — IMMEDIATELY before the provider call. A refusal is a
       // pre-provider POLICY SKIP (permanent, policy_-prefixed) so the
       // reconciler records the recipient as skipped, never falsely failed.
-      const authRes = await db.rpc("marketing_broadcast_send_authority", {
-        p_tenant: input.tenantId,
-        p_delivery: env.delivery_id,
-      });
+      const authRes = await db.rpc(
+        isBroadcast ? "marketing_broadcast_send_authority" : "marketing_sequence_send_authority",
+        { p_tenant: input.tenantId, p_delivery: env.delivery_id },
+      );
       if (authRes.error || authRes.data == null) {
         return transient("send_authority_unavailable", "broadcast authority could not be derived");
       }
@@ -271,7 +281,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       if (verdict.allowed !== true) {
         return permanent(
           `policy_${String(verdict.code ?? "blocked")}`,
-          "broadcast policy blocked this recipient before the provider call",
+          "marketing policy blocked this recipient before the provider call",
         );
       }
     } else {
@@ -371,7 +381,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     // ── standards-compliant MIME from the FROZEN ENVELOPE ONLY ──
     let raw: string;
     try {
-      if (env.purpose === "broadcast") {
+      if (env.purpose === "broadcast" || env.purpose === "sequence") {
         const mime = buildBroadcastMime({
           fromAddress: env.mailbox_address,
           fromName: env.from_name,

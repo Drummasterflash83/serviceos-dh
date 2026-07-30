@@ -63,10 +63,15 @@ import { controlledTestAdapter } from "./controlled_test.ts";
 import { internalNoteAdapter } from "./internal_note.ts";
 import { emailReplyDraftAdapter } from "./email_reply_draft.ts";
 import { marketingEmailAdapter } from "./marketing_email.ts";
+import { marketingActionsAdapter } from "./marketing_actions.ts";
 
 // Registry. The three internal adapters are SAFE and side-effect-free
 // (email.reply_draft PREPARES a reply artifact, it never transmits). The
-// marketing email adapter (Marketing Phase 4) is the FIRST — and only —
+// marketing actions adapter (Marketing Phase 6) is likewise INTERNAL: it
+// applies governed tag/lifecycle/owner changes through the existing canonical
+// RPCs and creates follow-ups on the platform work spine — no network, no
+// provider, no external side effect. The
+// marketing email adapter (Marketing Phase 4) remains the FIRST — and only —
 // registered EXTERNAL adapter: the governed Marketing email capability,
 // external_side_effect = true, fully registered (contract row, intent type,
 // per-tenant enablement via verified sender setup only) and executable solely
@@ -77,6 +82,7 @@ export const AUTOMATION_ADAPTERS: AutomationConnectorAdapter[] = [
   internalNoteAdapter,
   emailReplyDraftAdapter,
   marketingEmailAdapter,
+  marketingActionsAdapter,
 ];
 
 /** Resolve the adapter that supports an intent type, or null if none (unsupported

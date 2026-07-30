@@ -24,25 +24,28 @@ if (!SR || !ANON) {
   process.exit(2);
 }
 
+import { classifyProbe, mayReportResults, notRunMessage } from "./lib/edge-probe.mjs";
+
+// Ask the function's OWN gate to answer. The verdict is computed by the shared
+// classifier (scripts/lib/edge-probe.mjs, unit-tested in edge-probe.test.mjs) so
+// the Phase 5 and Phase 6 suites cannot drift apart on the one question that
+// decides whether a run may claim a result at all.
 async function probe() {
   try {
-    const resp = await fetch(`${URL}/functions/v1/marketing-campaigns`, {
+    const resp = await fetch(`${URL}/functions/v1/marketing-broadcasts`, {
       method: "POST",
       headers: { "content-type": "application/json", apikey: ANON },
       body: "{}",
     });
-    // 401/403 means the runtime is SERVING the function (auth gate reached)
-    return resp.status !== 503 && resp.status !== 404;
+    return classifyProbe({ status: resp.status });
   } catch {
-    return false;
+    return classifyProbe({ transportError: true });
   }
 }
 
-if (!(await probe())) {
-  console.error(
-    "NOT-RUN  marketing-campaigns endpoint unreachable.\n" +
-      "Serve the functions (supabase functions serve) or point at a deployed env.",
-  );
+const verdict = await probe();
+if (!mayReportResults(verdict.verdict)) {
+  console.error(notRunMessage("marketing-broadcasts", verdict));
   process.exit(3);
 }
 

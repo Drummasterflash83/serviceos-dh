@@ -43,6 +43,8 @@ MARKETING_ADAPTER="supabase/functions/_shared/connectors/marketing_email.ts"
 NON_MARKETING_CONNECTOR_FILES=$(ls supabase/functions/_shared/connectors/*.ts | grep -v "/marketing_email\.ts$")
 MARKETING_MIGRATION=supabase/migrations/20260901120000_marketing_sender_delivery.sql
 MARKETING_MIGRATION_P5=supabase/migrations/20260902120000_marketing_broadcasts.sql
+MARKETING_MIGRATION_P6=supabase/migrations/20260903120000_marketing_sequences.sql
+MARKETING_ACTIONS_ADAPTER="supabase/functions/_shared/connectors/marketing_actions.ts"
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
@@ -235,8 +237,9 @@ elif ! grep -q "marketing_email_submitted" "$MARKETING_MIGRATION" ; then
   note FAIL "email.send_marketing has no registered outcome contract"; fail=1
 elif ! grep -qE "'send_marketing_test_email', 'email\.send_marketing', 'high', true," "$MARKETING_MIGRATION" ; then
   note FAIL "send_marketing_test_email intent type is not registered with its capability"; fail=1
-elif ! grep -qE "supportedIntentTypes: \[\"send_marketing_test_email\", \"send_marketing_broadcast_email\"\]" "$MARKETING_ADAPTER" ; then
-  note FAIL "the marketing adapter must support EXACTLY the two registered marketing intent types"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_ADAPTER" \
+       | grep -qE 'supportedIntentTypes: \[ *"send_marketing_test_email", *"send_marketing_broadcast_email", *"send_marketing_sequence_email", *\]' ; then
+  note FAIL "the marketing adapter must support EXACTLY the three registered marketing intent types"; fail=1
 elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P5" \
        | grep -qE "\('send_marketing_broadcast_email', 'email\.send_marketing', 'high', true, *true, false, true," ; then
   # the BULK intent type must be registered external + high risk + honestly
@@ -250,13 +253,40 @@ elif ! grep -q "insert into automation_approvals" "$MARKETING_MIGRATION_P5" \
   note FAIL "the broadcast approval path is missing its genuine tenant-senior lineage"; fail=1
 elif ! grep -q "marketing_broadcast_send_authority" "$MARKETING_ADAPTER" ; then
   note FAIL "the broadcast path must recheck the ONE canonical SQL send authority pre-provider"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P6" \
+       | grep -qE "\('send_marketing_sequence_email', 'email\.send_marketing', 'high', true, *true, false, true," ; then
+  # the SEQUENCE step intent type must be registered external + high risk +
+  # honestly no status lookup + REQUIRES APPROVAL (the tenant-senior approval
+  # of the immutable sequence revision)
+  note FAIL "send_marketing_sequence_email is not registered approval-required on email.send_marketing"; fail=1
+elif ! grep -q "insert into automation_approvals" "$MARKETING_MIGRATION_P6" \
+       || ! grep -q "'tenant_senior'" "$MARKETING_MIGRATION_P6" \
+       || ! grep -q "marketing_require_launch_actor" "$MARKETING_MIGRATION_P6" ; then
+  note FAIL "the sequence email path is missing its genuine tenant-senior approval lineage"; fail=1
+elif ! grep -q "marketing_sequence_send_authority" "$MARKETING_ADAPTER" ; then
+  note FAIL "the sequence path must recheck its OWN canonical SQL send authority pre-provider"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P6" \
+       | grep -qE "insert into automation_connector_capabilities[^;]*'marketing\.contact_action'[^;]*false, *'medium'" ; then
+  # the internal contact-action capability must be registered INTERNAL: no
+  # external side effect, so it can never quietly become a second transport
+  note FAIL "marketing.contact_action is not registered external_side_effect=false"; fail=1
+elif ! grep -q "marketing_contact_action_recorded" "$MARKETING_MIGRATION_P6" ; then
+  note FAIL "marketing.contact_action has no registered outcome contract"; fail=1
+elif grep -qE "fetch\(|https?://" "$MARKETING_ACTIONS_ADAPTER" ; then
+  # an INTERNAL adapter makes no network call, ever
+  note FAIL "the marketing actions adapter must make no network call"; fail=1
+elif ! grep -q "marketing_tag_mutate" "$MARKETING_ACTIONS_ADAPTER" \
+       || ! grep -q "marketing_classify_contact" "$MARKETING_ACTIONS_ADAPTER" ; then
+  # internal actions go through the EXISTING governed mutation RPCs, never a
+  # second write path into canonical tenant data
+  note FAIL "the marketing actions adapter must use the canonical governed mutation RPCs"; fail=1
 elif ! grep -q "marketing_sender_capability_sync" "$MARKETING_MIGRATION" ; then
   note FAIL "per-tenant enablement is not function-gated"; fail=1
 elif grep -qE "automation_approvals" "$MARKETING_MIGRATION" && \
      grep -nE "insert into automation_approvals" "$MARKETING_MIGRATION" >/dev/null ; then
   note FAIL "the test-send path fabricates an approval row — authority must stay honest"; fail=1
 else
-  note PASS "marketing adapter honours the external-adapter contract (one call, unknown-freeze, no status claim, exactly the two registered marketing intents, broadcast approval-required with genuine tenant-senior lineage + pre-provider authority recheck, no fabricated approval, full registration)"
+  note PASS "marketing adapters honour their contracts (ONE external transport: one call, unknown-freeze, no status claim, exactly the three registered marketing intents, broadcast AND sequence approval-required with genuine tenant-senior lineage + their own pre-provider authority rechecks, no fabricated approval; the internal contact-action capability is registered non-external, makes no network call and writes only through the canonical governed RPCs)"
 fi
 
 echo ""

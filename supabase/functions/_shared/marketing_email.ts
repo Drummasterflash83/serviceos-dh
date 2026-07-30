@@ -381,14 +381,233 @@ export function validateBroadcastEnvelope(
   };
 }
 
+// ── Sequence envelope (Phase 6) — its OWN exact allowlist, a third disjoint
+//    shape. A sequence send is ONE step of an approved journey, so the
+//    envelope carries the enrolment/revision/step/execution lineage instead of
+//    a broadcast's snapshot/member/dispatch lineage. Neither can smuggle the
+//    other's fields. ─────────────────────────────────────────────────────────
+
+export interface SequenceSendEnvelope {
+  sender_profile_id: string;
+  source_kind: "gmail_oauth" | "workspace_dwd";
+  mailbox_address: string;
+  recipient_profile_id: null;
+  recipient_email: string;
+  subject: string;
+  body_text: string;
+  body_html: string;
+  preview_text: string | null;
+  from_name: string | null;
+  reply_to: string | null;
+  signature_text: string | null;
+  purpose: "sequence";
+  content_version: string;
+  content_hash: string;
+  actor_profile_id: string;
+  request_id: string;
+  delivery_id: string;
+  campaign_id: string;
+  sequence_revision_id: string;
+  sequence_approval_id: string;
+  bundle_hash: string;
+  sequence_enrolment_id: string;
+  sequence_execution_id: string;
+  sequence_step_id: string;
+  step_order: number;
+  generation: number;
+  person_id: string;
+  contact_point_id: string;
+  unsubscribe_token_id: string;
+  unsubscribe_url: string;
+}
+
+/** The ONE declared shape of a frozen sequence-step envelope. Nothing else. */
+export const SEQUENCE_ENVELOPE_KEYS: readonly string[] = [
+  "sender_profile_id",
+  "source_kind",
+  "mailbox_address",
+  "recipient_profile_id",
+  "recipient_email",
+  "subject",
+  "body_text",
+  "body_html",
+  "preview_text",
+  "from_name",
+  "reply_to",
+  "signature_text",
+  "purpose",
+  "content_version",
+  "content_hash",
+  "actor_profile_id",
+  "request_id",
+  "delivery_id",
+  "campaign_id",
+  "sequence_revision_id",
+  "sequence_approval_id",
+  "bundle_hash",
+  "sequence_enrolment_id",
+  "sequence_execution_id",
+  "sequence_step_id",
+  "step_order",
+  "generation",
+  "person_id",
+  "contact_point_id",
+  "unsubscribe_token_id",
+  "unsubscribe_url",
+];
+
+export function validateSequenceEnvelope(
+  p: Record<string, unknown>,
+): { ok: true; envelope: SequenceSendEnvelope } | { ok: false; error: string } {
+  const bad = (error: string) => ({ ok: false as const, error });
+  for (const k of Object.keys(p)) {
+    if (!SEQUENCE_ENVELOPE_KEYS.includes(k)) return bad(`undeclared envelope field ${k}`);
+  }
+  for (const k of SEQUENCE_ENVELOPE_KEYS) {
+    if (!(k in p)) return bad(`missing envelope field ${k}`);
+  }
+  const str = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : null);
+  const optStr = (k: string) =>
+    p[k] === null ? null : typeof p[k] === "string" ? (p[k] as string) : undefined;
+
+  if (p.recipient_profile_id !== null) {
+    return bad("a sequence envelope addresses a Person — recipient_profile_id must be null");
+  }
+  for (const k of [
+    "sender_profile_id",
+    "actor_profile_id",
+    "delivery_id",
+    "campaign_id",
+    "sequence_revision_id",
+    "sequence_approval_id",
+    "sequence_enrolment_id",
+    "sequence_execution_id",
+    "sequence_step_id",
+    "person_id",
+    "contact_point_id",
+    "unsubscribe_token_id",
+  ]) {
+    const v = str(k);
+    if (!v || !UUID_RE.test(v)) return bad(`${k} must be a uuid`);
+  }
+  const sourceKind = str("source_kind");
+  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd") {
+    return bad("source_kind must be gmail_oauth|workspace_dwd");
+  }
+  const mailbox = str("mailbox_address");
+  if (!mailbox || !isPlausibleEmail(mailbox) || mailbox !== mailbox.toLowerCase()) {
+    return bad("mailbox_address must be a lower-cased email address");
+  }
+  const recipient = str("recipient_email");
+  if (!recipient || !isPlausibleEmail(recipient)) return bad("recipient_email invalid");
+  if (hasHeaderInjection(recipient)) return bad("recipient_email contains header material");
+  const subject = str("subject");
+  if (!subject || subject.length < 1 || subject.length > 300) {
+    return bad("subject must be 1-300 chars");
+  }
+  if (hasHeaderInjection(subject)) return bad("subject contains a line break");
+  const body = str("body_text");
+  if (!body || body.length < 1 || body.length > 30000) {
+    return bad("body_text must be 1-30000 chars");
+  }
+  const html = str("body_html");
+  if (!html || html.length < 1 || html.length > 100000) {
+    return bad("body_html must be 1-100000 chars");
+  }
+  const preview = optStr("preview_text");
+  if (preview === undefined || (preview !== null && preview.length > 150)) {
+    return bad("preview_text invalid");
+  }
+  const fromName = optStr("from_name");
+  if (
+    fromName === undefined ||
+    (fromName !== null && (fromName.length > 120 || hasHeaderInjection(fromName)))
+  ) {
+    return bad("from_name invalid");
+  }
+  const replyTo = optStr("reply_to");
+  if (
+    replyTo === undefined ||
+    (replyTo !== null && (!isPlausibleEmail(replyTo) || hasHeaderInjection(replyTo)))
+  ) {
+    return bad("reply_to invalid");
+  }
+  const signature = optStr("signature_text");
+  if (signature === undefined || (signature !== null && signature.length > 2000)) {
+    return bad("signature_text invalid");
+  }
+  if (str("purpose") !== "sequence") return bad("purpose must be sequence");
+  const contentVersion = str("content_version");
+  if (!contentVersion) return bad("content_version required");
+  const contentHash = str("content_hash");
+  if (!contentHash || !/^[0-9a-f]{64}$/.test(contentHash)) return bad("content_hash invalid");
+  const bundleHash = str("bundle_hash");
+  if (!bundleHash || !/^[0-9a-f]{64}$/.test(bundleHash)) return bad("bundle_hash invalid");
+  const requestId = str("request_id");
+  if (!requestId || !/^[A-Za-z0-9_-]{8,64}$/.test(requestId)) return bad("request_id invalid");
+  for (const k of ["step_order", "generation"]) {
+    const v = p[k];
+    if (typeof v !== "number" || !Number.isInteger(v) || v < 1) {
+      return bad(`${k} must be a positive integer`);
+    }
+  }
+  const unsubUrl = str("unsubscribe_url");
+  if (!unsubUrl || !/^https?:\/\/[^\s<>]+$/.test(unsubUrl) || hasHeaderInjection(unsubUrl)) {
+    return bad("unsubscribe_url invalid");
+  }
+  if (!body.includes(unsubUrl) || !html.includes(unsubUrl)) {
+    return bad("the visible unsubscribe link must appear in both bodies");
+  }
+
+  return {
+    ok: true,
+    envelope: {
+      sender_profile_id: str("sender_profile_id") as string,
+      source_kind: sourceKind,
+      mailbox_address: mailbox,
+      recipient_profile_id: null,
+      recipient_email: recipient,
+      subject,
+      body_text: body,
+      body_html: html,
+      preview_text: preview,
+      from_name: fromName,
+      reply_to: replyTo,
+      signature_text: signature,
+      purpose: "sequence",
+      content_version: contentVersion,
+      content_hash: contentHash,
+      actor_profile_id: str("actor_profile_id") as string,
+      request_id: requestId,
+      delivery_id: str("delivery_id") as string,
+      campaign_id: str("campaign_id") as string,
+      sequence_revision_id: str("sequence_revision_id") as string,
+      sequence_approval_id: str("sequence_approval_id") as string,
+      bundle_hash: bundleHash,
+      sequence_enrolment_id: str("sequence_enrolment_id") as string,
+      sequence_execution_id: str("sequence_execution_id") as string,
+      sequence_step_id: str("sequence_step_id") as string,
+      step_order: p.step_order as number,
+      generation: p.generation as number,
+      person_id: str("person_id") as string,
+      contact_point_id: str("contact_point_id") as string,
+      unsubscribe_token_id: str("unsubscribe_token_id") as string,
+      unsubscribe_url: unsubUrl,
+    },
+  };
+}
+
 /** Discriminated dispatcher: the envelope's own declared purpose routes to
  *  its exact validator — the two allowlists are disjoint supersets, so a test
  *  envelope carrying any broadcast field (or vice versa) is refused. */
 export function validateMarketingEnvelope(
   p: Record<string, unknown>,
-): { ok: true; envelope: SendEnvelope | BroadcastSendEnvelope } | { ok: false; error: string } {
+):
+  | { ok: true; envelope: SendEnvelope | BroadcastSendEnvelope | SequenceSendEnvelope }
+  | { ok: false; error: string } {
   if (!p || typeof p !== "object") return { ok: false, error: "parameters missing" };
   if (p.purpose === "broadcast") return validateBroadcastEnvelope(p);
+  if (p.purpose === "sequence") return validateSequenceEnvelope(p);
   return validateSendEnvelope(p);
 }
 

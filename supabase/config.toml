@@ -102,6 +102,18 @@ verify_jwt = false
 # sends email itself.
 verify_jwt = false
 
+[functions.marketing-sequences]
+# Marketing Sequences API (Phase 6). requireTenantUser + canonical resolver
+# (campaigns.draft / campaigns.launch double gate); every step executes ONLY
+# through the Automation Engine (this function never calls Gmail).
+verify_jwt = false
+
+[functions.marketing-sequence-scheduled-sync]
+# Sequence heartbeat (Phase 6): discovers due enrolment steps + drives the
+# bounded advance worker. Secret-gated via MARKETING_SEQUENCE_SECRET; never
+# sends email itself.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

@@ -68,6 +68,7 @@ import {
   type TestRecipient,
 } from "@/lib/marketing/senders";
 import { listSegments } from "@/lib/marketing/segments";
+import { MarketingSequences } from "@/components/app/MarketingSequences";
 
 /* ── shared atoms ─────────────────────────────────────────────────────────── */
 
@@ -1438,12 +1439,7 @@ export function MarketingCampaigns() {
       </div>
 
       {tab === "broadcasts" && <BroadcastsTab />}
-      {tab === "sequences" && (
-        <PreviewCard icon={ListFilter} title="Sequences">
-          Person-based enrolments with send/wait/action steps, pause/resume and safe exits. Arrives
-          in Phase 6 — nothing is enrolled or sent today.
-        </PreviewCard>
-      )}
+      {tab === "sequences" && <MarketingSequences />}
       {tab === "templates" && (
         <PreviewCard icon={FileText} title="Templates">
           Versioned, immutable template revisions with editorial quality checks. Arrives in Phase 7.
