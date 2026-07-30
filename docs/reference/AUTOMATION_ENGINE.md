@@ -151,8 +151,21 @@ adapters — `controlled_test` (`record_controlled_execution`), `internal`
 (`record_internal_note`) and `email_reply_draft` (prepares, never transmits) — plus,
 since Marketing Phase 4, the **first and only registered EXTERNAL adapter**:
 `marketing_email` (`connectors/marketing_email.ts`, connector `google-gmail`, intent
-type `send_marketing_test_email`, capability `email.send_marketing`,
-`external_side_effect = true`, risk `high`). The TEST intent type registers
+types `send_marketing_test_email` AND — since Marketing Phase 5 —
+`send_marketing_broadcast_email`, capability `email.send_marketing`,
+`external_side_effect = true`, risk `high`). The two frozen envelope shapes are
+disjoint exact allowlists discriminated by `purpose`; the intent type must match
+the envelope's declared purpose. The BROADCAST intent type registers
+`requires_approval = true`: every recipient carries an append-only
+`automation_approvals` row (`approver_kind = tenant_senior`) naming the GENUINE
+same-tenant owner/admin who confirmed the launch under canonical
+`marketing.campaigns.launch`, with evidence binding the exact campaign approval,
+revision hash, snapshot, member and dispatch. Before its single provider call the
+broadcast path additionally rechecks the ONE canonical SQL send authority
+(`marketing_broadcast_send_authority`: campaign active, exact bound
+revision/snapshot/member, approval still valid, sender ready, capability enabled,
+endpoint unchanged, CURRENT eligibility exactly 'subscribed'); a refusal is a
+pre-provider POLICY SKIP (permanent `policy_*`), never a false failure. The TEST intent type registers
 `requires_approval = false` — honestly: a bounded test email to a tenant user is an
 explicitly authorised, DELEGATED action under canonical `marketing.campaigns.test`,
 and **no `automation_approvals` row is created or fabricated** (an Operations
@@ -254,6 +267,7 @@ executor never changes.
 | `supabase/functions/_shared/intelligence/automation_guards.ts` (+ `.verify.ts`) | **pure** guard evaluator, idempotency key, retry/result classification, transition legality |
 | `supabase/functions/_shared/connectors/` | adapter contract + registry + `controlled_test` + `internal_note` + `email_reply_draft` + `marketing_email` (the registered external Gmail Marketing adapter) |
 | `supabase/migrations/20260901120000_marketing_sender_delivery.sql` | Marketing Phase 4 registration: `email.send_marketing` capability (external, high risk) + contract + the TEST-ONLY `send_marketing_test_email` intent type + function-gated, trigger-refreshed per-tenant enablement |
+| `supabase/migrations/20260902120000_marketing_broadcasts.sql` | Marketing Phase 5 registration: the APPROVAL-REQUIRED `send_marketing_broadcast_email` intent type on the same capability + the per-recipient Action/Decision/intent/approval lineage builder + the canonical pre-provider send authority |
 | `supabase/functions/_shared/worker_handlers/automation_execute.ts` | impure executor (guard → claim → execute → attempt → outcome → events) |
 | `supabase/functions/_shared/automation_execution_enqueue.ts` | reusable idempotent enqueue helper |
 | `supabase/functions/automation-execute/` | manual/operator edge function |

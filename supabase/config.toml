@@ -84,6 +84,24 @@ verify_jwt = false
 # Automation Engine (this function never calls Gmail's send API).
 verify_jwt = false
 
+[functions.marketing-campaigns]
+# Marketing Broadcasts API (Phase 5). requireTenantUser + canonical resolver
+# (campaigns.draft / campaigns.test / campaigns.launch double gate); every send
+# goes ONLY through the Automation Engine (this function never calls Gmail).
+verify_jwt = false
+
+[functions.marketing-unsubscribe]
+# PUBLIC one-click/visible-link unsubscribe (Phase 5). Deliberately
+# unauthenticated: opaque digest-verified tokens, generic non-enumerating
+# responses, idempotent. Shares NO tenant-user auth code.
+verify_jwt = false
+
+[functions.marketing-broadcast-scheduled-sync]
+# Scheduled broadcast heartbeat (Phase 5): discovers due campaigns + drives the
+# bounded dispatch worker. Secret-gated via MARKETING_BROADCAST_SECRET; never
+# sends email itself.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

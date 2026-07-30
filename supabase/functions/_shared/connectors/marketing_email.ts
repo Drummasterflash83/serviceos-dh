@@ -1,5 +1,15 @@
-// Gmail Marketing adapter — the FIRST real external-side-effect connector
-// (the governed Marketing email capability, intent type send_marketing_test_email).
+// Gmail Marketing adapter — the ONE registered external-side-effect connector
+// (the governed Marketing email capability). It executes exactly two intent
+// types through the same single provider call: the Phase-4 delegated TEST
+// send (send_marketing_test_email) and the Phase-5 approval-required
+// BROADCAST recipient send (send_marketing_broadcast_email). The two frozen
+// envelope shapes are disjoint exact allowlists discriminated by `purpose` —
+// neither can smuggle the other's fields. Broadcast sends additionally
+// recheck the ONE canonical SQL authority (campaign active, exact bound
+// revision/snapshot/member, launch approval still valid, sender ready,
+// capability enabled, endpoint unchanged, CURRENT eligibility exactly
+// 'subscribed') immediately before the provider call; a refusal is a
+// pre-provider POLICY SKIP, never a false failure and never a silent rewrite.
 //
 // Discipline (same contract as every adapter, enforced by conformance G6):
 //  - executes ONLY the claimed immutable envelope the engine hands it. The
@@ -49,12 +59,13 @@ import type {
 } from "./index.ts";
 import type { ConnectorExecutionResult } from "../intelligence/automation_guards.ts";
 import {
+  buildBroadcastMime,
   buildMarketingMime,
   classifyGmailSendFailure,
   evaluateActorAuthority,
   evaluateGmailSendScope,
   sanitizeGmailSendResponse,
-  validateSendEnvelope,
+  validateMarketingEnvelope,
 } from "../marketing_email.ts";
 import { getGoogleOAuthConfig, refreshGmailAccessToken } from "../gmail_oauth.ts";
 import { DelegationError, getDelegatedGmailSendToken } from "../google_workspace.ts";
@@ -90,7 +101,7 @@ function unknownResult(code: string, message: string): ConnectorExecutionResult 
 
 export const marketingEmailAdapter: AutomationConnectorAdapter = {
   connectorType: "google-gmail",
-  supportedIntentTypes: ["send_marketing_test_email"],
+  supportedIntentTypes: ["send_marketing_test_email", "send_marketing_broadcast_email"],
   adapterVersion: "1",
 
   validate(input: ConnectorExecutionInput): ValidationResult {
@@ -104,8 +115,21 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
         errorMessage: `capability must be ${CAPABILITY}`,
       };
     }
-    const v = validateSendEnvelope(input.parameters);
+    const v = validateMarketingEnvelope(input.parameters);
     if (!v.ok) return { ok: false, errorCode: "payload_invalid", errorMessage: v.error };
+    // the intent TYPE and the envelope's declared purpose must agree — a test
+    // intent can never carry a broadcast envelope, nor the reverse
+    const expected =
+      v.envelope.purpose === "broadcast"
+        ? "send_marketing_broadcast_email"
+        : "send_marketing_test_email";
+    if (input.intentType !== expected) {
+      return {
+        ok: false,
+        errorCode: "payload_invalid",
+        errorMessage: `intent type ${input.intentType} does not match envelope purpose ${v.envelope.purpose}`,
+      };
+    }
     return { ok: true };
   },
 
@@ -114,9 +138,10 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     context: ConnectorExecutionContext,
   ): Promise<ConnectorExecutionResult> {
     const db = context.supabaseAdmin;
-    const parsed = validateSendEnvelope(input.parameters);
+    const parsed = validateMarketingEnvelope(input.parameters);
     if (!parsed.ok) return permanent("payload_invalid", parsed.error);
     const env = parsed.envelope;
+    const isBroadcast = env.purpose === "broadcast";
 
     // ── execution-time rechecks (CURRENT state, never trusted from request
     // time). FAIL-CLOSED READ DISCIPLINE: every mandatory authority/state read
@@ -158,11 +183,16 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
         "could not resolve the actor's current authority",
       );
     }
-    const authority = evaluateActorAuthority({
-      tenantId: input.tenantId,
-      actor: (actorRes.data ?? null) as { id: string; tenant_id: string | null } | null,
-      resolverVerdict: verdictRes.data as { enabled?: unknown; permissions?: unknown },
-    });
+    const authority = evaluateActorAuthority(
+      {
+        tenantId: input.tenantId,
+        actor: (actorRes.data ?? null) as { id: string; tenant_id: string | null } | null,
+        resolverVerdict: verdictRes.data as { enabled?: unknown; permissions?: unknown },
+      },
+      // a broadcast executes on the recorded LAUNCH approver's authority; a
+      // test send on the requesting actor's delegated test permission
+      isBroadcast ? "marketing.campaigns.launch" : "marketing.campaigns.test",
+    );
     if (!authority.ok) return permanent(authority.code, authority.message);
 
     // sender: current operational eligibility ONLY (its mutable display
@@ -223,21 +253,44 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       );
     }
 
-    // recipient policy recheck: the SAME same-tenant profile, SAME email
-    const recipientRes = await db
-      .from("profiles")
-      .select("id, tenant_id, email")
-      .eq("id", env.recipient_profile_id)
-      .maybeSingle();
-    if (recipientRes.error) {
-      return transient("recipient_read_failed", "could not read the recipient profile");
-    }
-    const recipient = recipientRes.data;
-    if (!recipient || recipient.tenant_id !== input.tenantId) {
-      return permanent("recipient_invalid", "recipient is not a profile of this tenant");
-    }
-    if ((recipient.email ?? "").toLowerCase() !== env.recipient_email) {
-      return permanent("recipient_changed", "recipient email changed since the request");
+    if (isBroadcast) {
+      // RACE CLOSURE (check 3 of 3): the ONE canonical SQL authority —
+      // campaign active + exact bound revision/snapshot/member + approval
+      // still valid + endpoint/person unchanged + CURRENT eligibility exactly
+      // 'subscribed' — IMMEDIATELY before the provider call. A refusal is a
+      // pre-provider POLICY SKIP (permanent, policy_-prefixed) so the
+      // reconciler records the recipient as skipped, never falsely failed.
+      const authRes = await db.rpc("marketing_broadcast_send_authority", {
+        p_tenant: input.tenantId,
+        p_delivery: env.delivery_id,
+      });
+      if (authRes.error || authRes.data == null) {
+        return transient("send_authority_unavailable", "broadcast authority could not be derived");
+      }
+      const verdict = authRes.data as { allowed?: unknown; code?: unknown };
+      if (verdict.allowed !== true) {
+        return permanent(
+          `policy_${String(verdict.code ?? "blocked")}`,
+          "broadcast policy blocked this recipient before the provider call",
+        );
+      }
+    } else {
+      // recipient policy recheck: the SAME same-tenant profile, SAME email
+      const recipientRes = await db
+        .from("profiles")
+        .select("id, tenant_id, email")
+        .eq("id", env.recipient_profile_id)
+        .maybeSingle();
+      if (recipientRes.error) {
+        return transient("recipient_read_failed", "could not read the recipient profile");
+      }
+      const recipient = recipientRes.data;
+      if (!recipient || recipient.tenant_id !== input.tenantId) {
+        return permanent("recipient_invalid", "recipient is not a profile of this tenant");
+      }
+      if ((recipient.email ?? "").toLowerCase() !== env.recipient_email) {
+        return permanent("recipient_changed", "recipient email changed since the request");
+      }
     }
 
     // ── credentials, server-side only ──
@@ -318,17 +371,32 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     // ── standards-compliant MIME from the FROZEN ENVELOPE ONLY ──
     let raw: string;
     try {
-      const mime = buildMarketingMime({
-        fromAddress: env.mailbox_address,
-        fromName: env.from_name,
-        to: env.recipient_email,
-        replyTo: env.reply_to,
-        subject: env.subject,
-        bodyText: env.body_text,
-        signatureText: env.signature_text,
-        deliveryId: env.delivery_id,
-      });
-      raw = mime.raw;
+      if (env.purpose === "broadcast") {
+        const mime = buildBroadcastMime({
+          fromAddress: env.mailbox_address,
+          fromName: env.from_name,
+          to: env.recipient_email,
+          replyTo: env.reply_to,
+          subject: env.subject,
+          textBody: env.body_text,
+          htmlBody: env.body_html,
+          unsubscribeUrl: env.unsubscribe_url,
+          deliveryId: env.delivery_id,
+        });
+        raw = mime.raw;
+      } else {
+        const mime = buildMarketingMime({
+          fromAddress: env.mailbox_address,
+          fromName: env.from_name,
+          to: env.recipient_email,
+          replyTo: env.reply_to,
+          subject: env.subject,
+          bodyText: env.body_text,
+          signatureText: env.signature_text,
+          deliveryId: env.delivery_id,
+        });
+        raw = mime.raw;
+      }
     } catch (e) {
       return permanent("mime_rejected", e instanceof Error ? e.message : "mime build failed");
     }

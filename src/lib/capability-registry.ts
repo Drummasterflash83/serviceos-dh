@@ -606,15 +606,16 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
     id: "marketing.campaigns",
     screen: "Marketing",
     control: "Broadcasts / Sequences / Templates / Reporting",
-    backingCapability: "marketing_campaigns, marketing_segments (bulk delivery not built)",
-    read: false,
-    write: false,
-    persistence: "n/a",
+    backingCapability:
+      "marketing_campaigns + revisions/approvals/snapshots/dispatches, send_marketing_broadcast_email via the frozen Automation Engine",
+    read: true,
+    write: true,
+    persistence: "server",
     requiredPermission: "ops",
     status: "PREVIEW",
     tenantLabel: "Preview",
     explanation:
-      "Campaign/segment foundations exist and Phase 4 added authorised senders + governed TEST sends only; Broadcast creation/launch arrives in Phase 5. No campaign or bulk sending exists today.",
+      "Broadcasts are fully built and locally proven end to end (draft → review → approve → immutable audience preflight → confirmed launch/schedule → governed per-recipient delivery through the Automation Engine, with public unsubscribe). Still Preview: the Edge/worker runtime, scheduler cron, public unsubscribe URL and a real authorised send are deploy-gated and unverified on a served environment. Sequences/Templates/AI Drafting remain Preview designs; click tracking is not implemented and no delivery/open/click metric is fabricated.",
   },
   {
     id: "marketing.ads",

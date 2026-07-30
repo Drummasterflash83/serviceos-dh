@@ -46,6 +46,11 @@ interface InteractionRow {
   phone_to?: string | null;
   sentiment: string | null;
   related_thread_id: string | null;
+  /** Structural campaign provenance, copied from the canonical source row's
+   *  origin_campaign_id when (and only when) the message originated from a
+   *  governed Marketing broadcast. Omitted entirely otherwise, so this
+   *  projector keeps working against a database that predates the column. */
+  related_campaign_id?: string | null;
   processing_status: string;
   /** Deterministic projected-content hash — the incremental marker (phone). Set
    *  from phone_select_projectable so an unchanged call is never re-selected. */
@@ -261,6 +266,7 @@ async function syncEmail(admin: Admin, tenantId: string, limit: number): Promise
       cc_addresses: cc,
       sentiment: null,
       related_thread_id: (m.provider_thread_id as string | null) ?? null,
+      ...(m.origin_campaign_id ? { related_campaign_id: m.origin_campaign_id as string } : {}),
       processing_status: "pending",
       metadata: { provider_thread_id: (m.provider_thread_id as string | null) ?? null, connector },
     };

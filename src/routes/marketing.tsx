@@ -37,6 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import { RequireAuth } from "@/lib/auth";
 import { AppChrome } from "@/components/app/AppChrome";
+import { MarketingCampaigns } from "@/components/app/MarketingCampaigns";
 import { MarketingContacts } from "@/components/app/MarketingContacts";
 import { MarketingSegments } from "@/components/app/MarketingSegments";
 import { MarketingTags } from "@/components/app/MarketingTags";
@@ -350,42 +351,9 @@ function ContactsSection() {
   );
 }
 
-/* ── Campaigns — foundation only; everything delivery-related is Phase 4–5. ── */
+/* ── Campaigns — Broadcasts operational (Phase 5); the rest honest Preview. ── */
 function CampaignsSection() {
-  const { can } = useMarketingAccess();
-  return (
-    <div className="space-y-5">
-      <div>
-        <div className="text-display text-xl font-semibold">Campaigns</div>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Broadcasts, sequences, templates, reporting and AI drafting — every send governed,
-          suppressed-safe and evidence-reported.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SectionCard icon={Send} title="Broadcasts" state="Preview">
-          One-off governed sends with audience preflight, immutable snapshots and per-recipient
-          evidence. Arrives in Phase 5, after the Workspace sender is authorised (Phase 4).
-        </SectionCard>
-        <SectionCard icon={ListFilter} title="Sequences" state="Preview">
-          Person-based enrolments with send/wait/action steps, pause/resume and safe exits. Arrives
-          in Phase 6.
-        </SectionCard>
-        <SectionCard icon={Tag} title="Templates" state="Preview">
-          Versioned, immutable template revisions with editorial quality checks. Arrives in Phase 7.
-        </SectionCard>
-        <SectionCard icon={BarChart3} title="Objectives &amp; Reporting" state="Preview">
-          Honest, evidence-backed reporting only — an open is not an outcome. Arrives in Phase 7.
-        </SectionCard>
-      </div>
-      {!can("marketing.campaigns.launch") && (
-        <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
-          Your role can draft and test campaigns when those arrive, but launching requires the
-          launch permission (owner/admin by default).
-        </div>
-      )}
-    </div>
-  );
+  return <MarketingCampaigns />;
 }
 
 /* ── Ads — no provider adapter exists: honestly Not connected. ── */

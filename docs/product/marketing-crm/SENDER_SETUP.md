@@ -26,6 +26,10 @@ marketing-senders (Edge, authenticated)
     confirmed submission) → the canonical Interaction projector
 ```
 
+Broadcast deployment (Phase 5) builds on everything here — see
+[BROADCAST_SETUP.md](BROADCAST_SETUP.md) for the scheduler secret, the public
+unsubscribe base URL and the launch-authority model.
+
 Authority note: a test send is delegated authority, not review — Phase 5
 broadcasts must register their own bulk-send intent type and/or an explicit
 approval-requiring Decision Package; the engine's approval guard is untouched

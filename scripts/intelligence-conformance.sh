@@ -42,6 +42,7 @@ ADAPTER_IMPLS="supabase/functions/_shared/connectors/controlled_test.ts supabase
 MARKETING_ADAPTER="supabase/functions/_shared/connectors/marketing_email.ts"
 NON_MARKETING_CONNECTOR_FILES=$(ls supabase/functions/_shared/connectors/*.ts | grep -v "/marketing_email\.ts$")
 MARKETING_MIGRATION=supabase/migrations/20260901120000_marketing_sender_delivery.sql
+MARKETING_MIGRATION_P5=supabase/migrations/20260902120000_marketing_broadcasts.sql
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
@@ -234,15 +235,28 @@ elif ! grep -q "marketing_email_submitted" "$MARKETING_MIGRATION" ; then
   note FAIL "email.send_marketing has no registered outcome contract"; fail=1
 elif ! grep -qE "'send_marketing_test_email', 'email\.send_marketing', 'high', true," "$MARKETING_MIGRATION" ; then
   note FAIL "send_marketing_test_email intent type is not registered with its capability"; fail=1
-elif ! grep -qE "supportedIntentTypes: \[\"send_marketing_test_email\"\]" "$MARKETING_ADAPTER" ; then
-  note FAIL "the marketing adapter must support ONLY the bounded test intent type"; fail=1
+elif ! grep -qE "supportedIntentTypes: \[\"send_marketing_test_email\", \"send_marketing_broadcast_email\"\]" "$MARKETING_ADAPTER" ; then
+  note FAIL "the marketing adapter must support EXACTLY the two registered marketing intent types"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P5" \
+       | grep -qE "\('send_marketing_broadcast_email', 'email\.send_marketing', 'high', true, *true, false, true," ; then
+  # the BULK intent type must be registered external + high risk + honestly
+  # no status lookup + REQUIRES APPROVAL (the tenant-senior launch approval)
+  note FAIL "send_marketing_broadcast_email is not registered approval-required on email.send_marketing"; fail=1
+elif ! grep -q "insert into automation_approvals" "$MARKETING_MIGRATION_P5" \
+       || ! grep -q "'tenant_senior'" "$MARKETING_MIGRATION_P5" \
+       || ! grep -q "marketing_require_launch_actor" "$MARKETING_MIGRATION_P5" ; then
+  # broadcast approvals are REAL: an append-only tenant_senior row created only
+  # under the owner/admin + canonical marketing.campaigns.launch ceiling
+  note FAIL "the broadcast approval path is missing its genuine tenant-senior lineage"; fail=1
+elif ! grep -q "marketing_broadcast_send_authority" "$MARKETING_ADAPTER" ; then
+  note FAIL "the broadcast path must recheck the ONE canonical SQL send authority pre-provider"; fail=1
 elif ! grep -q "marketing_sender_capability_sync" "$MARKETING_MIGRATION" ; then
   note FAIL "per-tenant enablement is not function-gated"; fail=1
 elif grep -qE "automation_approvals" "$MARKETING_MIGRATION" && \
      grep -nE "insert into automation_approvals" "$MARKETING_MIGRATION" >/dev/null ; then
   note FAIL "the test-send path fabricates an approval row — authority must stay honest"; fail=1
 else
-  note PASS "marketing adapter honours the external-adapter contract (one call, unknown-freeze, no status claim, test-only intent, no fabricated approval, full registration)"
+  note PASS "marketing adapter honours the external-adapter contract (one call, unknown-freeze, no status claim, exactly the two registered marketing intents, broadcast approval-required with genuine tenant-senior lineage + pre-provider authority recheck, no fabricated approval, full registration)"
 fi
 
 echo ""

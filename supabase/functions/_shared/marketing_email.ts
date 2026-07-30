@@ -171,6 +171,227 @@ export function validateSendEnvelope(
   };
 }
 
+// ── Broadcast envelope (Phase 5) — its OWN exact allowlist. A test envelope
+//    can never smuggle broadcast fields (its allowlist rejects them) and a
+//    broadcast envelope can never omit its campaign/snapshot/approval/
+//    unsubscribe lineage. The discriminator is `purpose`. ────────────────────
+
+export interface BroadcastSendEnvelope {
+  sender_profile_id: string;
+  source_kind: "gmail_oauth" | "workspace_dwd";
+  mailbox_address: string;
+  recipient_profile_id: null;
+  recipient_email: string;
+  subject: string;
+  body_text: string;
+  body_html: string;
+  preview_text: string | null;
+  from_name: string | null;
+  reply_to: string | null;
+  signature_text: string | null;
+  purpose: "broadcast";
+  content_version: string;
+  content_hash: string;
+  actor_profile_id: string;
+  request_id: string;
+  delivery_id: string;
+  campaign_id: string;
+  campaign_revision_id: string;
+  campaign_approval_id: string;
+  revision_hash: string;
+  audience_snapshot_id: string;
+  audience_member_id: string;
+  dispatch_id: string;
+  dispatch_generation: number;
+  person_id: string;
+  contact_point_id: string;
+  unsubscribe_token_id: string;
+  unsubscribe_url: string;
+}
+
+/** The ONE declared shape of a frozen broadcast envelope. Nothing else. */
+export const BROADCAST_ENVELOPE_KEYS: readonly string[] = [
+  "sender_profile_id",
+  "source_kind",
+  "mailbox_address",
+  "recipient_profile_id",
+  "recipient_email",
+  "subject",
+  "body_text",
+  "body_html",
+  "preview_text",
+  "from_name",
+  "reply_to",
+  "signature_text",
+  "purpose",
+  "content_version",
+  "content_hash",
+  "actor_profile_id",
+  "request_id",
+  "delivery_id",
+  "campaign_id",
+  "campaign_revision_id",
+  "campaign_approval_id",
+  "revision_hash",
+  "audience_snapshot_id",
+  "audience_member_id",
+  "dispatch_id",
+  "dispatch_generation",
+  "person_id",
+  "contact_point_id",
+  "unsubscribe_token_id",
+  "unsubscribe_url",
+];
+
+export function validateBroadcastEnvelope(
+  p: Record<string, unknown>,
+): { ok: true; envelope: BroadcastSendEnvelope } | { ok: false; error: string } {
+  const bad = (error: string) => ({ ok: false as const, error });
+  for (const k of Object.keys(p)) {
+    if (!BROADCAST_ENVELOPE_KEYS.includes(k)) return bad(`undeclared envelope field ${k}`);
+  }
+  for (const k of BROADCAST_ENVELOPE_KEYS) {
+    if (!(k in p)) return bad(`missing envelope field ${k}`);
+  }
+  const str = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : null);
+  const optStr = (k: string) =>
+    p[k] === null ? null : typeof p[k] === "string" ? (p[k] as string) : undefined;
+
+  if (p.recipient_profile_id !== null) {
+    return bad("a broadcast envelope addresses a Person — recipient_profile_id must be null");
+  }
+  for (const k of [
+    "sender_profile_id",
+    "actor_profile_id",
+    "delivery_id",
+    "campaign_id",
+    "campaign_revision_id",
+    "campaign_approval_id",
+    "audience_snapshot_id",
+    "audience_member_id",
+    "dispatch_id",
+    "person_id",
+    "contact_point_id",
+    "unsubscribe_token_id",
+  ]) {
+    const v = str(k);
+    if (!v || !UUID_RE.test(v)) return bad(`${k} must be a uuid`);
+  }
+  const sourceKind = str("source_kind");
+  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd") {
+    return bad("source_kind must be gmail_oauth|workspace_dwd");
+  }
+  const mailbox = str("mailbox_address");
+  if (!mailbox || !isPlausibleEmail(mailbox) || mailbox !== mailbox.toLowerCase()) {
+    return bad("mailbox_address must be a lower-cased email address");
+  }
+  const recipient = str("recipient_email");
+  if (!recipient || !isPlausibleEmail(recipient)) return bad("recipient_email invalid");
+  if (hasHeaderInjection(recipient)) return bad("recipient_email contains header material");
+  const subject = str("subject");
+  if (!subject || subject.length < 1 || subject.length > 300) {
+    return bad("subject must be 1-300 chars");
+  }
+  if (hasHeaderInjection(subject)) return bad("subject contains a line break");
+  const body = str("body_text");
+  if (!body || body.length < 1 || body.length > 30000) {
+    return bad("body_text must be 1-30000 chars");
+  }
+  const html = str("body_html");
+  if (!html || html.length < 1 || html.length > 100000) {
+    return bad("body_html must be 1-100000 chars");
+  }
+  const preview = optStr("preview_text");
+  if (preview === undefined || (preview !== null && preview.length > 150)) {
+    return bad("preview_text invalid");
+  }
+  const fromName = optStr("from_name");
+  if (
+    fromName === undefined ||
+    (fromName !== null && (fromName.length > 120 || hasHeaderInjection(fromName)))
+  ) {
+    return bad("from_name invalid");
+  }
+  const replyTo = optStr("reply_to");
+  if (
+    replyTo === undefined ||
+    (replyTo !== null && (!isPlausibleEmail(replyTo) || hasHeaderInjection(replyTo)))
+  ) {
+    return bad("reply_to invalid");
+  }
+  const signature = optStr("signature_text");
+  if (signature === undefined || (signature !== null && signature.length > 2000)) {
+    return bad("signature_text invalid");
+  }
+  if (str("purpose") !== "broadcast") return bad("purpose must be broadcast");
+  const contentVersion = str("content_version");
+  if (!contentVersion) return bad("content_version required");
+  const contentHash = str("content_hash");
+  if (!contentHash || !/^[0-9a-f]{64}$/.test(contentHash)) return bad("content_hash invalid");
+  const revisionHash = str("revision_hash");
+  if (!revisionHash || !/^[0-9a-f]{64}$/.test(revisionHash)) return bad("revision_hash invalid");
+  const requestId = str("request_id");
+  if (!requestId || !/^[A-Za-z0-9_-]{8,64}$/.test(requestId)) return bad("request_id invalid");
+  const gen = p.dispatch_generation;
+  if (typeof gen !== "number" || !Number.isInteger(gen) || gen < 1) {
+    return bad("dispatch_generation must be a positive integer");
+  }
+  const unsubUrl = str("unsubscribe_url");
+  if (!unsubUrl || !/^https?:\/\/[^\s<>]+$/.test(unsubUrl) || hasHeaderInjection(unsubUrl)) {
+    return bad("unsubscribe_url invalid");
+  }
+  if (!body.includes(unsubUrl) || !html.includes(unsubUrl)) {
+    return bad("the visible unsubscribe link must appear in both bodies");
+  }
+
+  return {
+    ok: true,
+    envelope: {
+      sender_profile_id: str("sender_profile_id") as string,
+      source_kind: sourceKind,
+      mailbox_address: mailbox,
+      recipient_profile_id: null,
+      recipient_email: recipient,
+      subject,
+      body_text: body,
+      body_html: html,
+      preview_text: preview,
+      from_name: fromName,
+      reply_to: replyTo,
+      signature_text: signature,
+      purpose: "broadcast",
+      content_version: contentVersion,
+      content_hash: contentHash,
+      actor_profile_id: str("actor_profile_id") as string,
+      request_id: requestId,
+      delivery_id: str("delivery_id") as string,
+      campaign_id: str("campaign_id") as string,
+      campaign_revision_id: str("campaign_revision_id") as string,
+      campaign_approval_id: str("campaign_approval_id") as string,
+      revision_hash: revisionHash,
+      audience_snapshot_id: str("audience_snapshot_id") as string,
+      audience_member_id: str("audience_member_id") as string,
+      dispatch_id: str("dispatch_id") as string,
+      dispatch_generation: gen,
+      person_id: str("person_id") as string,
+      contact_point_id: str("contact_point_id") as string,
+      unsubscribe_token_id: str("unsubscribe_token_id") as string,
+      unsubscribe_url: unsubUrl,
+    },
+  };
+}
+
+/** Discriminated dispatcher: the envelope's own declared purpose routes to
+ *  its exact validator — the two allowlists are disjoint supersets, so a test
+ *  envelope carrying any broadcast field (or vice versa) is refused. */
+export function validateMarketingEnvelope(
+  p: Record<string, unknown>,
+): { ok: true; envelope: SendEnvelope | BroadcastSendEnvelope } | { ok: false; error: string } {
+  if (!p || typeof p !== "object") return { ok: false, error: "parameters missing" };
+  if (p.purpose === "broadcast") return validateBroadcastEnvelope(p);
+  return validateSendEnvelope(p);
+}
+
 // ── Execution-time actor authority (pure DECISION; facts come from the
 //    canonical SQL resolver — this is NOT an independent permission model) ──
 
@@ -185,6 +406,7 @@ export interface ActorAuthorityFacts {
 
 export function evaluateActorAuthority(
   f: ActorAuthorityFacts,
+  requiredPermission: string = "marketing.campaigns.test",
 ): { ok: true } | { ok: false; code: string; message: string } {
   if (!f.actor) {
     return {
@@ -202,11 +424,11 @@ export function evaluateActorAuthority(
   }
   const verdict = f.resolverVerdict;
   const permissions = Array.isArray(verdict?.permissions) ? verdict?.permissions : [];
-  if (verdict?.enabled !== true || !permissions.includes("marketing.campaigns.test")) {
+  if (verdict?.enabled !== true || !permissions.includes(requiredPermission)) {
     return {
       ok: false,
       code: "actor_no_longer_authorised",
-      message: "the requesting actor no longer holds marketing.campaigns.test",
+      message: `the requesting actor no longer holds ${requiredPermission}`,
     };
   }
   return { ok: true };
@@ -390,6 +612,257 @@ export function buildMarketingMime(i: MarketingMimeInput): MarketingMime {
   ].join("\r\n");
   const raw = toBase64Url(new TextEncoder().encode(message));
   return { raw, messageId, composedBody, message };
+}
+
+// ── Personalisation (Phase 5) — a deliberately SMALL allowlist. No property
+//    paths, no expressions, no raw HTML. Tokens render ONLY from the frozen
+//    member context + the approved revision's explicit fallbacks. ────────────
+
+export const PERSONALISATION_TOKENS = [
+  "first_name",
+  "last_name",
+  "display_name",
+  "company_name",
+] as const;
+export type PersonalisationToken = (typeof PERSONALISATION_TOKENS)[number];
+
+const TOKEN_RE = /\{\{\s*([a-z_]+)\s*\}\}/g;
+
+/** Extract the tokens used by an authored value; throws on unknown tokens or
+ *  malformed braces (mirrors the SQL revision validator). */
+export function parsePersonalisationTokens(v: string): PersonalisationToken[] {
+  const seen = new Set<PersonalisationToken>();
+  for (const m of v.matchAll(TOKEN_RE)) {
+    const t = m[1] as PersonalisationToken;
+    if (!PERSONALISATION_TOKENS.includes(t)) {
+      throw new Error(`unknown personalisation token {{${m[1]}}}`);
+    }
+    seen.add(t);
+  }
+  const stripped = v.replace(TOKEN_RE, "");
+  if (stripped.includes("{{") || stripped.includes("}}")) {
+    throw new Error("malformed personalisation braces");
+  }
+  return [...seen];
+}
+
+export interface PersonalisationContext {
+  first_name?: string | null;
+  last_name?: string | null;
+  display_name?: string | null;
+  company_name?: string | null;
+}
+
+/** Substitute tokens from the FROZEN context, falling back to the approved
+ *  revision's explicit fallbacks. Throws when a used token has neither — a
+ *  member like that must have been excluded at preflight; rendering never
+ *  invents a value and never reads current mutable Person data. Substituted
+ *  values are control-character-stripped and bounded. */
+export function renderPersonalised(
+  v: string,
+  ctx: PersonalisationContext,
+  fallbacks: Record<string, string>,
+): string {
+  return v.replace(TOKEN_RE, (_, raw: string) => {
+    const t = raw as PersonalisationToken;
+    if (!PERSONALISATION_TOKENS.includes(t)) throw new Error(`unknown token {{${raw}}}`);
+    const fromCtx = ctx[t];
+    const value =
+      typeof fromCtx === "string" && fromCtx.length > 0
+        ? fromCtx
+        : typeof fallbacks[t] === "string"
+          ? fallbacks[t]
+          : null;
+    if (value === null) throw new Error(`missing personalisation value for {{${raw}}}`);
+    // eslint-disable-next-line no-control-regex
+    return value.replace(/[\x00-\x1f\x7f]/g, "").slice(0, 200);
+  });
+}
+
+// ── Broadcast rendering (Phase 5) — ONE safe authored model:
+//    plain text + {{token}} + [label](https://url). Deterministic plain-text
+//    and escaped-HTML derivations; never arbitrary HTML in, never unescaped
+//    values out. ───────────────────────────────────────────────────────────
+
+const LINK_RE = /\[([^\][]{1,200})\]\((https?:\/\/[^\s()<>]+)\)/g;
+
+export function escapeHtml(v: string): string {
+  return v
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+export interface BroadcastRenderInput {
+  subject: string;
+  previewText: string | null;
+  bodyAuthored: string;
+  context: PersonalisationContext;
+  fallbacks: Record<string, string>;
+  signatureText: string | null;
+  /** Company/footer identification lines (already plain text). */
+  footerLines: string[];
+  unsubscribeUrl: string;
+}
+
+export interface BroadcastRendered {
+  subject: string;
+  text: string;
+  html: string;
+  previewText: string | null;
+}
+
+type AuthoredSegment =
+  { kind: "text"; value: string } | { kind: "link"; label: string; url: string };
+
+/** Split the APPROVED authored body into plain-text runs and validated links.
+ *  Links are extracted from the authored revision BEFORE any personalisation,
+ *  so the set of destinations a recipient can be sent to is exactly the set the
+ *  approver saw. Personalised values are substituted into the runs and labels
+ *  afterwards and are never re-scanned for markup, so contact data (an imported
+ *  display name, a company name) can never introduce a link of its own. */
+function splitAuthoredLinks(authored: string): AuthoredSegment[] {
+  const segments: AuthoredSegment[] = [];
+  let cursor = 0;
+  for (const m of authored.matchAll(LINK_RE)) {
+    const at = m.index ?? 0;
+    if (at > cursor) segments.push({ kind: "text", value: authored.slice(cursor, at) });
+    segments.push({ kind: "link", label: m[1], url: m[2] });
+    cursor = at + m[0].length;
+  }
+  if (cursor < authored.length) segments.push({ kind: "text", value: authored.slice(cursor) });
+  return segments;
+}
+
+/** Deterministic dual rendering from the frozen inputs only. The visible
+ *  unsubscribe link appears in BOTH bodies (the SQL lineage guard verifies
+ *  this again server-side). */
+export function renderBroadcast(i: BroadcastRenderInput): BroadcastRendered {
+  const subject = renderPersonalised(i.subject, i.context, i.fallbacks);
+  if (/[\r\n\0]/.test(subject)) throw new Error("rendered subject contains header material");
+  const preview = i.previewText ? renderPersonalised(i.previewText, i.context, i.fallbacks) : null;
+  const personalise = (v: string) => renderPersonalised(v, i.context, i.fallbacks);
+  const segments = splitAuthoredLinks(i.bodyAuthored);
+
+  const textBody = segments
+    .map((s) => (s.kind === "link" ? `${personalise(s.label)} (${s.url})` : personalise(s.value)))
+    .join("");
+  const textParts = [textBody];
+  if (i.signatureText) textParts.push(`--\n${i.signatureText}`);
+  textParts.push([...i.footerLines, `Unsubscribe: ${i.unsubscribeUrl}`].join("\n"));
+  const text = textParts.join("\n\n");
+
+  // HTML: every value — run, label and href alike — is escaped, and only the
+  // authored hrefs ever become anchors.
+  const htmlBody = segments
+    .map((s) =>
+      s.kind === "link"
+        ? `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(
+            personalise(s.label),
+          )}</a>`
+        : escapeHtml(personalise(s.value)).replaceAll("\n", "<br/>\n"),
+    )
+    .join("");
+  const htmlSig = i.signatureText
+    ? `<p style="margin-top:16px">--<br/>\n${escapeHtml(i.signatureText).replaceAll("\n", "<br/>\n")}</p>`
+    : "";
+  const htmlFooter =
+    `<p style="margin-top:24px;font-size:12px;color:#667085">` +
+    i.footerLines.map((l) => escapeHtml(l)).join("<br/>\n") +
+    (i.footerLines.length ? "<br/>\n" : "") +
+    `<a href="${escapeHtml(i.unsubscribeUrl)}">Unsubscribe</a></p>`;
+  const preheader = preview
+    ? `<span style="display:none;max-height:0;overflow:hidden">${escapeHtml(preview)}</span>`
+    : "";
+  const html =
+    `${preheader}<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;` +
+    `line-height:1.6;color:#101828">${htmlBody}${htmlSig}${htmlFooter}</div>`;
+
+  return { subject, text, html, previewText: preview };
+}
+
+// ── Multipart MIME (Phase 5) — deterministic standards-compliant
+//    multipart/alternative with one-click unsubscribe headers. All Phase-4
+//    header hardening (encoded-word folding, quoted display names, injection
+//    rejection, bounded base64 lines) is reused, never reimplemented. ───────
+
+export interface BroadcastMimeInput {
+  fromAddress: string;
+  fromName: string | null;
+  to: string;
+  replyTo: string | null;
+  subject: string;
+  textBody: string;
+  htmlBody: string;
+  unsubscribeUrl: string;
+  /** Deterministic per delivery — powers Message-ID and the part boundary. */
+  deliveryId: string;
+}
+
+export interface BroadcastMime {
+  raw: string;
+  messageId: string;
+  message: string;
+}
+
+const UUID_RE_LOCAL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function buildBroadcastMime(i: BroadcastMimeInput): BroadcastMime {
+  for (const [k, v] of Object.entries({
+    fromAddress: i.fromAddress,
+    to: i.to,
+    subject: i.subject,
+    unsubscribeUrl: i.unsubscribeUrl,
+    ...(i.fromName ? { fromName: i.fromName } : {}),
+    ...(i.replyTo ? { replyTo: i.replyTo } : {}),
+  })) {
+    if (typeof v === "string" && hasHeaderInjection(v)) {
+      throw new Error(`header injection rejected in ${k}`);
+    }
+  }
+  if (!isPlausibleEmail(i.fromAddress)) throw new Error("from address implausible");
+  if (!isPlausibleEmail(i.to)) throw new Error("recipient address implausible");
+  if (i.replyTo && !isPlausibleEmail(i.replyTo)) throw new Error("reply-to address implausible");
+  if (!UUID_RE_LOCAL.test(i.deliveryId)) throw new Error("delivery id required for Message-ID");
+  if (!/^https?:\/\/[^\s<>]+$/.test(i.unsubscribeUrl)) {
+    throw new Error("unsubscribe url implausible");
+  }
+
+  const domain = i.fromAddress.split("@")[1];
+  const messageId = `<mkt-${i.deliveryId}@${domain}>`;
+  const boundary = `=_mkt_${i.deliveryId.replaceAll("-", "")}`;
+  const from = i.fromName ? `${encodeDisplayName(i.fromName)} <${i.fromAddress}>` : i.fromAddress;
+  const enc = new TextEncoder();
+
+  const message = [
+    `From: ${from}`,
+    `To: ${i.to}`,
+    ...(i.replyTo ? [`Reply-To: ${i.replyTo}`] : []),
+    `Subject: ${encodeHeaderText(i.subject)}`,
+    `Message-ID: ${messageId}`,
+    `List-Unsubscribe: <${i.unsubscribeUrl}>`,
+    "List-Unsubscribe-Post: List-Unsubscribe=One-Click",
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    "This is a multi-part message in MIME format.",
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    wrapBase64Lines(bytesToBase64(enc.encode(i.textBody))),
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    wrapBase64Lines(bytesToBase64(enc.encode(i.htmlBody))),
+    `--${boundary}--`,
+    "",
+  ].join("\r\n");
+  const raw = toBase64Url(enc.encode(message));
+  return { raw, messageId, message };
 }
 
 // ── Provider result handling (sanitized; honest classification) ─────────────

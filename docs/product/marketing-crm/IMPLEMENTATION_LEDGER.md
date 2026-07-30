@@ -26,6 +26,7 @@ verified. It does **not** replace the code; it explains it._
 | 2 | Contacts vertical slice | **COMMITTED as `24b4497`** (`feat(marketing): add governed contacts vertical slice`, 2026-07-29 — partial-staged `supabase/config.toml` marketing hunk only). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview. |
 | 3 | Settings, access admin, lifecycle, tags, segments, imports, audit | **Built + THREE CORRECTION PASSES + DB/PostgREST-proven, UNCOMMITTED on 24b4497** (2026-07-29) — see §12. Pass 3 (§12c, final narrow pass) verified and fixed 3 findings: over-permissive row-results transition guard (identity/lineage now pinned on every update, failed retries counted by exactly one, terminal immutability with a single-reference FK set-null as the only exception — stated honestly as a SHAPE constraint, not caller authentication), an unrecorded "matched person vanished" invalid (now a retryable 40001 → durable failed row → retry re-resolves), and single-contact assignment resurrecting inactive tags (tag_mutate assign now locks + rejects; remove/history/reactivation proven). Review 1 verified 14 defects (broken UI import flow, lossy retry counts, non-converged import identity, viewer-ceiling violation, lockout race, disabled-recovery dead end, default-stage drift, history-rewriting retirement, non-strict validation, unbounded AST recursion, incomplete segment concurrency, definition-destroying builder, false keyset pagination, ambiguous bulk counts). Review 2 verified 10 remaining gaps (live-settings default leak past the sealed contract, under-specified profile resolution, racy row-outcome upserts, incomplete finalize contract, missing external-id identity lock + name-collision review, unbound row-results references, unprotected Phase-2 tag mutations, silently-normalized nested keys, unreachable saved-segment evaluation + fragile builder shapes, leaky sample masking). Every finding was fixed in place in the SAME uncommitted draft (§12b) and proven by extended suites. Safe as a correction-passed LOCAL CHECKPOINT; NOT launch-proven — HTTP proofs NOT RUN (staged, exit 3), populated visual QA Preview. |
 | 4 | Workspace sender & governed delivery (test-send vertical) | **Built + CORRECTNESS/SECURITY PASS (14 findings, §13b) + FINAL INTEGRITY PASS (6 findings, §13c: delivery INSERT invariants + terminal-fact pinning; event lineage composite-bound to the exact intent with guarded truthful history; exact auth/scope readiness + trigger-refreshed capability; RFC 2047 folded long-Unicode headers; fail-closed adapter authority reads; stale claims corrected) + §13d micro-correction, **COMMITTED as the local Phase 4 checkpoint on top of `6e64b0b`** (2026-07-29) — see §13. NOT pushed, NOT deployed, NOT launch-proven. Sender profiles composite-FK bound to existing Gmail-OAuth/Workspace-DWD mailboxes (incl. creator/updater binding); CANONICAL LIVE readiness from authoritative source state (per-mailbox connection; drives enable/capability/test/adapter/overview; health honest); `email.send_marketing` external/high with TEST-ONLY intent `send_marketing_test_email` (requires_approval FALSE — a test send is an explicitly authorised DELEGATED action under marketing.campaigns.test; NO approval row exists or is fabricated; the frozen approval guard still protects the Phase-5 broadcast boundary); frozen-envelope-only delivery (sender edits never leak into a requested send) + execution-time actor-authority recheck via the canonical resolver; request-FINGERPRINT idempotency (MK412 on reuse-with-difference, zero side effects); FACTUAL delivery states (fabricated submission structurally impossible, even for the service role); confirmed submission → canonical email row + the STANDARD interactions.sync job (deterministic, idempotent); strict status contract at the DB boundary. Engine untouched (conformance PASS incl. strengthened gate j). NOT deployed; NO real email ever sent; HTTP staged exit 3; mode truth: execution requires trusted/optimisation. |
+| 5 | Broadcasts end to end | **BUILT + locally proven + INDEPENDENT ADVERSARIAL AUDIT PASS (9 confirmed defects fixed, §14e), UNCOMMITTED on `c739a39`** (2026-07-29/30) — see §14 and §14e. One campaign model around the existing skeleton: immutable revisions (one safe authored content model, allowlisted personalisation + fallbacks), append-only approvals/events, immutable audience snapshots with EVERY candidate + exact exclusion reasons, one-use digest-verified launch confirmations (DST-truthful scheduling), lease-safe dispatch (SKIP LOCKED), the bulk intent `send_marketing_broadcast_email` registered APPROVAL-REQUIRED with a genuine append-only tenant_senior approval per recipient, three-point suppression-race closure through ONE canonical SQL send authority (adapter rechecks pre-provider), multipart MIME with one-click unsubscribe, digest-only non-enumerating public unsubscribe, factual reporting (clicked/delivered honestly null — tracking NOT implemented), derived completion (unknown blocks), polished Broadcasts UI. NOT deployed; NO email ever sent; Edge HTTP/visual QA deploy-gated. |
 | 5 | Broadcasts | Not started |
 | 6–10 | Sequences, templates/reporting/AI, Ads, platform seams, launch | Not started |
 
@@ -1518,16 +1519,336 @@ Created (12): `docs/product/marketing-crm/SENDER_SETUP.md`,
 Concurrent phone-ops/telephony/product-review/run-checkpoint work stays
 byte-for-byte outside this scope.
 
+## 14 · Phase 5 — Broadcasts end to end (2026-07-29; BUILT + locally proven, UNCOMMITTED on c739a39)
+
+One campaign model, one audience truth, one provider transport. Everything
+below is ADDITIVE around the existing seams: `marketing_campaigns` stays the
+only campaign identity; segments stay saved queries; eligibility stays
+`marketing_endpoint_eligibility`; every send goes through the FROZEN
+Automation Engine and the ONE registered Gmail Marketing adapter. No second
+workflow engine, queue, person table, activity feed, sender, permission
+resolver or provider transport was created.
+
+### Schema (migration `20260902120000_marketing_broadcasts.sql`)
+- `marketing_campaigns` gains version (optimistic concurrency),
+  current_revision_id, active_snapshot_id, schedule evidence
+  (schedule_local/timezone/schedule_at/schedule_fold), launch_public_base_url,
+  cancelled facts, composite tenant FKs on every profile/sender/segment ref,
+  and a `BEFORE INSERT OR UPDATE` guard enforcing the legal machine
+  (draft→review→approved→scheduled/active→paused/completed/cancelled→archived)
+  with FACTUAL anchoring for every caller incl. service role: approved needs
+  a real approval of the current revision; scheduled/active need a USED launch
+  confirmation bound to the active snapshot; completed is impossible while any
+  recipient is pending/preparing/queued/executing/UNKNOWN; lifecycle facts
+  move only with their transitions; the launched bundle is pinned.
+- IMMUTABLE `marketing_campaign_revisions` (subject, preview, ONE safe
+  authored body — plain text + {{token}} + [label](https://url) only, no HTML
+  in — allowlisted tokens {first_name,last_name,display_name,company_name},
+  explicit fallbacks, content hash, sender+segment+segment_version binding).
+- APPEND-ONLY `marketing_campaign_approvals` (campaign version + revision +
+  hash + sender + segment version + approver + authority basis + decision +
+  correlation) and `marketing_campaign_events` (guard-assigned seq; events
+  must record the ACTUAL status and continue the recorded chain).
+- IMMUTABLE `marketing_audience_snapshots` + `marketing_audience_members`:
+  EVERY segment candidate gets a member row — included (frozen endpoint +
+  destination + personalisation context) or excluded with exact reason codes
+  (unknown_preference, unsubscribed, hard_suppression, no_contact_point,
+  invalid_destination, duplicate_shared_destination [fail-closed, both
+  sharers], missing_personalisation). Counts equal rows; snapshot hash covers
+  the full member set + bindings.
+- ONE-USE `marketing_launch_confirmations` (challenge DIGEST only, actor- and
+  snapshot-bound, 15-minute expiry, launch idempotency fingerprint;
+  refreshing preflight SUPERSEDES prior unused confirmations — stale
+  preflight can never launch). No client select policy exists at all.
+- LEASE-SAFE `marketing_broadcast_dispatches` (pending→preparing→queued→
+  executing→submitted|skipped|failed|unknown|cancelled; FOR UPDATE SKIP
+  LOCKED claims with lease recovery; guard: born pending mirroring an
+  INCLUDED member, facts move only with transitions, unknown is never
+  rewritten into a retry; generation column reserved for future re-dispatch).
+- DIGEST-ONLY `marketing_unsubscribe_tokens` (sha-256 digest unique; the
+  plaintext exists only inside the frozen envelope URL; expiry/revocation/
+  single-use recorded; no client select policy).
+- `marketing_deliveries` extended (campaign/revision/snapshot/member/dispatch/
+  person/contact point/unsubscribe token/body_html/preview/generation +
+  purposes test|broadcast + statuses +skipped/+cancelled). The Phase-4 guard
+  and reconciler are REPLACED by supersets — every Phase-4 invariant
+  preserved verbatim and re-proven by the untouched Phase-4 suites. Broadcast
+  inserts must agree with the frozen envelope INCLUDING the full campaign
+  lineage and a PREPARING dispatch; 'skipped' is anchored to an engine-
+  recorded policy_* refusal; 'cancelled' to a cancelled intent.
+- Canonical projection: `email_messages` + origin_campaign_id/origin_person_id
+  (composite FKs); `interactions.related_campaign_id` (composite FK) written
+  by the EXISTING projector from origin columns — the projector remains the
+  only Interaction writer; later Gmail ingestion converges on the same row.
+- `marketing_settings.max_bulk_recipients` guardrail (default 500, 1..10000).
+- `serviceos_schedule_defs()` replaced ADDITIVELY: every existing schedule
+  preserved + `serviceos-marketing-broadcast` → marketing-broadcast-scheduled-
+  sync (MARKETING_BROADCAST_SECRET, every minute). Adding the definition
+  installs NOTHING remotely — an operator must run serviceos_schedule_all().
+
+### Automation registration + honest approval model
+`send_marketing_broadcast_email` on the EXISTING email.send_marketing
+capability: external, high risk, supports_status_lookup FALSE,
+**requires_approval TRUE**. Every recipient gets the complete lineage in ONE
+transaction (`marketing_broadcast_create_lineage`): canonical Action →
+immutable Decision Package (AUTOMATION_REQUIRES_APPROVAL, routing
+tenantReviewRequired) → intent with the FULL frozen envelope (rendered
+subject/text/HTML, sender identity, unsubscribe URL + token id, campaign/
+revision/snapshot/member/dispatch/approval lineage, content + request hashes)
+→ pinned approved_payload_hash → **append-only automation_approvals row,
+approver_kind tenant_senior, naming the GENUINE owner/admin who confirmed the
+launch under canonical marketing.campaigns.launch** (an Operations actor can
+never be labelled tenant_senior — the resolver ceiling + RPC gates + the
+execution-time authority all enforce it) → idempotent engine enqueue.
+Deterministic request id `bc-<member>-g<generation>`; the delivery-insert
+guard recomputes the canonical fingerprint.
+
+### Suppression race closure (three checks, one authority)
+1. Audience snapshot (preflight) — canonical eligibility per candidate.
+2. `marketing_broadcast_recipient_bundle`/`create_lineage` — the SAME
+   `marketing_broadcast_authority_core` BEFORE any intent exists; ineligible
+   recipients are skipped with the exact policy code and NO engine rows.
+3. The adapter calls `marketing_broadcast_send_authority(delivery)`
+   IMMEDIATELY before its single Gmail call (campaign ACTIVE, exact bound
+   revision/snapshot/member, launch approval still valid — approver still a
+   same-tenant owner/admin holding launch —, sender enabled+ready, capability
+   enabled, person/point/destination unchanged, CURRENT eligibility exactly
+   'subscribed'). Refusals are permanent policy_* results the reconciler
+   projects as SKIPPED (never failed); authority READ errors are safe
+   retryable pre-provider failures. There is NO override path.
+
+### Launch, scheduling, workers
+Preflight (launch authority only) builds the immutable snapshot + returns
+masked samples + a one-use challenge. Launch verifies challenge digest,
+actor, campaign version/revision binding, supersession and expiry; replaying
+the same request converges; a changed reuse is a stable MK412; parallel
+launches create ONE launch + one dispatch per included member (advisory-lock
+serialised; PostgREST-proven). Scheduling resolves tenant-timezone local
+times with DST truth: nonexistent times → MK414; ambiguous times demand an
+explicit fold (earlier|later) → MK415; evidence (local, tz, UTC instant,
+fold) is stored. The secret-gated scheduler fn only DISCOVERS due campaigns
+(guarded scheduled→active + idempotent dispatch materialisation) and enqueues
+platform jobs. The dispatch worker (marketing.broadcast_dispatch, registered
+in the existing worker registry) leases ≤10 recipients (SKIP LOCKED + lease
+recovery), defers in quiet hours (scheduler re-drives), renders via the pure
+deterministic renderer from FROZEN inputs only, creates lineage
+transactionally, enqueues engine execution + the existing delivery_sync
+reconciler, and continues only while safe claimable work remains. Pause stops
+claims AND the pre-provider authority; cancel terminates pending dispatches
+outright and cancels ONLY still-pending intents through the engine's legal
+transition (executing/unknown work is never rewritten); resume re-activates
+without re-dispatching anything that exists — never a submitted or unknown
+recipient. Completion is DERIVED (marketing_broadcast_check_completion) on
+every terminal path; unknown blocks it until the engine's appended
+resolution.
+
+### Unsubscribe (public, non-enumerating)
+Opaque 48-hex tokens; DIGEST-only storage; no email/Person id in any URL.
+`marketing-unsubscribe` (verify_jwt=false, shares NO tenant-user auth code):
+GET → minimal accessible confirmation page; POST (form or RFC-8058 one-click
+`List-Unsubscribe=One-Click`) → idempotent apply. Valid, invalid, expired,
+revoked and replayed tokens receive IDENTICAL generic responses. A valid
+first use appends ONE unsubscribed communication preference + converges ONE
+active hard suppression + ONE controlled event + audit, with campaign/
+dispatch lineage in evidence — and takes effect immediately (live
+eligibility). The MIME carries the visible footer link + List-Unsubscribe +
+List-Unsubscribe-Post headers. Launch fails honestly (MK428/CONFIG_REQUIRED)
+when MARKETING_PUBLIC_BASE_URL is not configured.
+
+### Click tracking — deliberately NOT implemented
+No redirect endpoint exists; approved links are preserved verbatim;
+reporting returns clicked = null ("unavailable"), never a fabricated count.
+tenant tracking_enabled remains configuration only. A safe implementation
+(server-stored destinations, opaque tokens, no open redirects) is a future
+phase; nothing unsafe was shipped instead.
+
+### Edge/API surface
+`marketing-campaigns` (requireTenantUser + canonical resolver double gate;
+exact per-action key allowlists): list/detail (marketing.view) ·
+create/revise/duplicate/audience_preview/submit_review (operational role +
+campaigns.draft) · test_send (operational role + campaigns.test; sends the
+CURRENT revision through the Phase-4 governed test path with fallbacks-or-
+[token] rendering and no fabricated unsubscribe link) · request_changes/
+approve/preflight/launch/schedule/pause/resume/cancel/archive (owner/admin +
+campaigns.launch) · report/recipient_page (reporting.view) · health. Stable
+errors: VERSION_CONFLICT/REQUEST_MISMATCH/GUARDRAIL/DST_INVALID/
+DST_AMBIGUOUS/CONFIRMATION_EXPIRED/CONFIG_REQUIRED/FORBIDDEN/…; no token
+digests, raw tokens, credentials or unbounded recipient lists in any
+response. `marketing-broadcast-scheduled-sync` is secret-gated;
+`marketing-unsubscribe` is public by design. config.toml gained ONLY the
+three marketing entries (phone-operations hunk untouched).
+
+### UI
+`MarketingCampaigns` replaces the Campaigns card: Broadcasts (operational) ·
+Sequences (Preview) · Templates (Preview) · Objectives & Reporting (Preview
+except the real broadcast report) · AI Drafting (Preview — explicitly states
+no model generates content). List (status/owner/sender/segment/revision/
+schedule/snapshot counts/submitted-skipped-failed-unknown/last activity),
+guided editor (sender/segment pickers, personalisation help + fallbacks,
+text preview, test send), prominent preflight (counts, exact exclusion
+breakdown, masked samples, snapshot hash, refresh-requires-reconfirmation
+copy), explicit launch dialog (real-email warning, exact included count,
+submitted≠delivered, execution-time suppression recheck, pause limitation,
+no exactly-once for unknown), factual report tiles with UNKNOWN visually
+loud, bounded recipient drill-down, configuration-required and
+permission-gated states. Hidden controls are not the boundary.
+
+### Verification matrix (2026-07-29, local)
+| Check | Result |
+|---|---|
+| `supabase/tests/marketing_broadcasts.test.sql` — 13 sections: authority ceilings (hostile grant inert, explicit deny wins), lifecycle machine + fabrication battery + append-only chains, audience truth (9-candidate breakdown exact; counts = immutable rows; refresh = new snapshot; guardrail MK413; segment-drift MK409; base-URL MK428), launch (challenge digest, actor binding, stale-confirmation MK409, DST MK414/MK415+fold, replay convergence, MK412, empty-audience refusal, excluded-member dispatch impossible), worker (SKIP LOCKED lease, wrong-worker MK423, digest-verified token, forged-token refusal, full engine lineage incl. genuine tenant_senior approval + pinned hash, frozen content survives sender/person edits, submitted projection + structural campaign/person provenance + ingestion convergence + completion), suppression races (pre-dispatch skip with ZERO engine rows; endpoint-change + unsubscribe blocks pre-provider; policy refusal projects SKIPPED not failed, no email row), pause/resume/cancel (claims stop; only pending intents cancel via the legal engine transition; resume creates nothing), unknown freeze (blocks completion; never re-dispatched; appended resolution submits), unsubscribe (idempotent, non-enumerating, digest-only, immediate effect), reporting (facts only; clicked/delivered null; stable pagination), cross-tenant + RLS + service-role-only, tenant cascade WITH append-only guards | **PASS** (dev DB) |
+| `scripts/marketing-broadcasts-pure.test.mjs` — 18 tests: personalisation (allowlist, malformed braces, fallbacks, control-strip, injection-inert), rendering (deterministic dual derivation, escaping, hostile labels, footer in both bodies), multipart MIME (alternative parts byte-exact, one-click headers, folded/bounded, injection), discriminated envelopes (exact allowlists both ways), frozen guard × approval model (no approval → APPROVAL_REQUIRED; tenant_senior satisfies; wrong kind/expired never), mocked adapter boundary (policy skip pre-provider with ZERO calls; authority read error → transient; paused blocks; approver de-authorised blocks; healthy path = ONE multipart call; 429 transient; 5xx frozen unknown) | **PASS** 18/18 |
+| `scripts/marketing-broadcasts.test.mjs` — PostgREST + real GoTrue JWTs: 11 RPC denials + 2 table-write denials; ops-cannot-approve at the direct RPC; PARALLEL identical launches converge (one launch, 2 dispatches, no dupes) + MK412; PARALLEL workers claim DISJOINT recipients; bundle→lineage→engine→reconcile with tenant_senior approval naming the real owner + ONE canonical email with campaign/person provenance; completion honest while work remains; report clicked=null | **PASS** ×2 (re-run-safe) |
+| Phase 0–4 regressions (marketing_foundation/hardening/admin/contacts/senders SQL + senders-pure 24 + senders mjs + access/contacts/admin mjs) | **PASS** |
+| Engine regressions (automation_engine / execution_reliability / email_reliability / response_approval_atomicity) | **PASS** |
+| `bash scripts/intelligence-conformance.sh` (gate (j) narrowly EVOLVED: exactly the two registered marketing intents; broadcast registered approval-required; genuine tenant-senior lineage + pre-provider authority recheck required; every internal-adapter ban unchanged) | **PASS** |
+| `npx tsc --noEmit` · focused lint · production build (npm) · `git diff --check` | **PASS** |
+| Fresh clean chain (85 migrations, phone-ops excluded) + suites | **PASS** |
+| Upgrade from committed HEAD `c739a39` with seeded campaign/segment/sender/preference/suppression/email/interaction data → run-once, +8 tables, data survives, Phase-4+5 suites pass on the upgraded DB | **PASS** |
+| Authenticated Edge HTTP (`marketing-broadcasts-http`) | **NOT RUN — exit 3** (no local Edge runtime; honestly staged) |
+| Populated visual QA | **NOT RUN / Preview** — the access gate requires a served authenticated runtime; nothing is claimed |
+| REAL broadcast/provider send | **NEVER EXECUTED** — stubbed engine results only; NO email of any kind was sent |
+
+### Honest limitations
+- No real email was sent; the adapter transport, Edge HTTP, worker runtime,
+  scheduler cron and the public unsubscribe endpoint run only when deployed.
+- Click tracking is not implemented (clicked = null, never zero); delivered/
+  opened/replied/bounced are provider-unreported and stay null.
+- Preference and engine-attempt ledgers are append-only BY PLATFORM DESIGN,
+  so tenants with recorded preferences/attempts are undeletable; the cascade
+  proof uses preference-free lineage (Phase-4 precedent), with dispatch
+  cascade proven from the catalog.
+- Quiet-hours deferral is scheduler-redriven (bounded 1-minute polling only
+  while a campaign is active with pending work).
+- "submitted" = Gmail accepted the request; Gmail offers no idempotency key —
+  unknown results freeze for review and are never blindly retried.
+
+### External configuration required before any live broadcast
+1. Deploy migration 20260902120000 + the marketing-campaigns /
+   marketing-unsubscribe / marketing-broadcast-scheduled-sync functions + the
+   shared worker bundle (platform-worker redeploy).
+2. Set MARKETING_BROADCAST_SECRET and re-run serviceos_schedule_all() (cron
+   is never installed implicitly).
+3. Set MARKETING_PUBLIC_BASE_URL to the public functions origin serving
+   marketing-unsubscribe (launch fails honestly without it).
+4. Gmail gmail.send re-consent / Workspace DWD grant (Phase-4 SENDER_SETUP).
+5. An operational mode permitting irreversible external work.
+6. Explicit user authorisation for any real test or broadcast send.
+
+### Phase 5 file scope (uncommitted)
+Modified: this ledger, `docs/reference/AUTOMATION_ENGINE.md`,
+`docs/reference/BACKEND_RUNTIME.md`, `docs/product/marketing-crm/SENDER_SETUP.md`,
+`scripts/intelligence-conformance.sh`, `src/lib/capability-registry.ts`,
+`src/routes/marketing.tsx`, `supabase/config.toml` (marketing entries only),
+`supabase/functions/_shared/marketing_email.ts`,
+`supabase/functions/_shared/connectors/marketing_email.ts`,
+`supabase/functions/_shared/worker_handlers/index.ts`,
+`supabase/functions/_shared/worker_handlers/interactions_sync.ts` (§14e — the
+projector now actually writes the `related_campaign_id` the migration adds).
+Created: `docs/product/marketing-crm/BROADCAST_SETUP.md`,
+`scripts/marketing-broadcasts-http.test.mjs`,
+`scripts/marketing-broadcasts-pure.test.mjs`, `scripts/marketing-broadcasts.test.mjs`,
+`src/components/app/MarketingCampaigns.tsx`, `src/lib/marketing/campaigns.ts`,
+`supabase/functions/_shared/worker_handlers/marketing_broadcast_dispatch.ts`,
+`supabase/functions/marketing-broadcast-scheduled-sync/index.ts`,
+`supabase/functions/marketing-campaigns/index.ts`,
+`supabase/functions/marketing-unsubscribe/index.ts`,
+`supabase/migrations/20260902120000_marketing_broadcasts.sql`,
+`supabase/tests/marketing_broadcasts.test.sql`.
+Concurrent phone-ops/telephony/product-review/run-checkpoint work stays
+byte-for-byte outside this scope.
+
+## 14e · Phase 5 — independent adversarial audit pass (2026-07-30, uncommitted)
+
+An independent audit re-verified the §14 claims against the running code
+rather than the build report. **Nine defects were confirmed by executable
+probes before any edit** and corrected in the SAME uncommitted draft; those
+probes became regression locks (SQL §14a–§14g, two pure renderer tests, three
+PostgREST checks). Everything else in §14 was re-proven, not restated.
+
+| # | Confirmed defect (probe evidence) | Severity | Correction |
+|---|---|---|---|
+| 1 | **Pre-Phase-5 campaigns were a governed dead end.** A skeleton `marketing_campaigns` row has no event history; `revise` succeeded but EVERY later transition failed the event-chain guard (`P0001 the first campaign event must be the initial null -> draft record`), so it could never be reviewed, approved or launched — contradicting the documented bootstrap route | High (launch-readiness) | `marketing_campaign_seed_event_chain()` records EXACTLY the initial `null → draft` fact for a chain-less draft, called by `revise` and `transition`; a chain-less non-draft row gets a stable 22023 instead of a raw trigger error. Proven end to end on a genuinely UPGRADED database |
+| 2 | **Resuming a paused scheduled campaign sent 7 days early.** `resume` forced `active` and materialised dispatches immediately, so pause+resume was an early launch of an unreached schedule | High (irreversible external effect) | `paused → scheduled` added to the legal machine; `resume` returns an unreached schedule to `scheduled` (schedule evidence preserved, zero dispatches) and only activates when the instant has arrived or the campaign was already active. The scheduler still fires at the original time |
+| 3 | **Recipient data could inject live links into approved mail.** The renderer substituted personalisation FIRST and then scanned the RESULT for `[label](url)`, so a contact whose stored name contained markdown link syntax became a real `<a href>` in the HTML part — a phishing destination the approver never saw | High (content trust / security) | Links are extracted from the APPROVED body first; personalisation is substituted into the runs and labels afterwards and never re-scanned. Hostile values survive as inert escaped text; the anchor set equals the approved set |
+| 4 | **Sub-hour DST folds were silently resolved.** The ±1-hour probe cannot see Lord Howe's 30-minute fold: `2026-04-05 01:45` occurs twice and one of the two instants was picked without asking | Medium (schedule truth) | The fold probe now covers the real candidate offsets (15/20/30/45/60/90/120 min), nearest first. The 1-hour London fold (MK415) and the spring-forward gap (MK414) behave exactly as before |
+| 5 | **`revise` accepted an unvalidated campaign identity** — a 5000-character control-character name was written where `create` bounds it to 120 clean chars | Medium (input integrity) | `revise` validates name/description with the same bounds as `create`; a rejected revision changes nothing |
+| 6 | **Out-of-sequence transitions leaked raw trigger exceptions.** `submit_review` on an approved campaign, `pause` on a draft and `archive` on an active campaign reached the guard as `P0001`, which the Edge maps to `INTERNAL` 500 | Medium (API contract) | Every action states its legal precondition in the RPC, so these are stable `22023 → INVALID_REQUEST 400` |
+| 7 | **A lost execution enqueue stranded a recipient forever.** A crash after the lineage transaction committed but before `enqueueAutomationExecution` leaves a `queued` dispatch with a `pending` intent; claims only take pending/lease-expired work, the reconciler's ttl runs out, and the campaign can never reach a truthful terminal state | Medium (reliability) | Bounded recovery sweep in the dispatch worker re-enqueues such intents (idempotent at the job key AND the engine claim RPC); the scheduler tenant scan now covers `pending` **and** `queued` |
+| 8 | **A new helper shipped client-reachable.** `marketing_campaign_seed_event_chain` (added by this pass) defaulted to `PUBLIC EXECUTE` because the grants block is a hand-kept list | High (authority boundary) | Added to the revoke/grant list, and the SQL suite now enumerates Phase-5 functions **from the catalog**, so any future helper missing its revoke fails loudly. Negative control: granting it to `authenticated` makes the suite fail with that exact message |
+| 9 | **Preflight was quadratic at the documented ceiling.** `jsonb_set` accumulation copied the whole accumulator per candidate: measured 0.22s at 500, 3.0s at 2000, **66s at the 10000 ceiling** — one transaction holding the campaign row lock, beyond ordinary gateway timeouts | Medium (launch-readiness) | Rewritten set-based (one ordered pass; counts, breakdown, samples and member rows all derive from the same frozen rows). Measured after: **0.043s at 500, 0.82s at 10000**. Ordering, hash coverage, the exact 9-candidate exclusion breakdown and immutability are unchanged and re-proven |
+
+Two smaller corrections landed in the same pass: a recipient leased by a
+worker when the campaign is cancelled is now recorded `cancelled` rather than
+returned to `pending` (it can never be sent, so "pending" was untrue), and
+`interactions.related_campaign_id` — which the migration adds and the header
+claimed the projector wrote — is now actually written by the existing
+projector (it was always null, so the documented structural campaign linkage
+did not exist). The projector sets it only when the source row carries
+`origin_campaign_id`, so it stays safe against a database that predates the
+column. A supporting index `(tenant_id, status, created_at)` was added for the
+worker claim path, which the campaign-first index could not serve. The launch
+dialog gained real dialog semantics (`role="dialog"`, `aria-modal`, a labelled
+title, initial focus, a Tab trap and Escape) — it confirms irreversible
+external sending.
+
+**Areas re-verified with no defect found** (evidence, not opinion): no Phase-5
+function is SECURITY DEFINER (catalog check — so this phase introduces no
+`search_path` exposure); cross-tenant lineage is structurally impossible via
+composite FKs (suite §11 plus FK-violation probes); every bounded read's
+un-predicated sub-select is protected by a composite tenant FK; the launch
+confirmation binds tenant/campaign/version/revision/snapshot/actor and is
+one-use, expiring and supersedable; the engine's `approved_payload_hash`
+(which covers `parameters`) is what prevents content substitution between
+approval and provider execution — the SQL side deliberately does not
+re-render, and that alternative trust chain is sufficient because the adapter
+builds MIME from the frozen envelope only; unsubscribe returns a
+byte-identical generic response for valid, uppercase, short, non-hex,
+SQL-shaped and null tokens, stores only the digest, leaks no plaintext into
+audit rows or events, and cannot touch another recipient; concurrent first use
+converges to one preference, one suppression and one event; `mapDbError` never
+returns a raw database message.
+
+### Verification performed by the audit pass (2026-07-30)
+
+| Check | Result |
+|---|---|
+| `supabase/tests/marketing_broadcasts.test.sql` — 13 original sections + **§14a–§14g adversarial locks** (legacy adoption, scheduled pause/resume, out-of-sequence transitions, revise identity bounds, sub-hour DST fold, audience boundaries 0/1/cap/cap+1, cancellation while leased) + the catalog-driven grant lock | **PASS** on the dev DB, a fresh clean-chain DB and an upgraded-from-`c739a39` DB |
+| `scripts/marketing-broadcasts-pure.test.mjs` — 18 original + **2 new renderer locks** (recipient data can never introduce a link; hostile values cannot break the HTML structure or the unsubscribe link) | **PASS 20/20** |
+| `scripts/marketing-broadcasts.test.mjs` — the original RPC/concurrency proof + **the REAL SQL-built envelope validated against the adapter's exact allowlist** (drift lock), **concurrent unsubscribe convergence**, **the orphan-intent recovery contract** | **PASS**, 4 consecutive runs (re-run safe) |
+| Phase 0–4 regressions (`marketing_foundation/hardening/admin/contacts/senders` SQL; access/contacts/admin/senders mjs; senders-pure 24/24) | **PASS** |
+| Engine regressions (`automation_engine`, `execution_reliability`, `email_reliability`, `response_approval_atomicity`) | **PASS** on dev + clean chain |
+| `bash scripts/intelligence-conformance.sh` | **PASS** (gate (j) unchanged by this pass) |
+| Clean full chain (85 migrations, phone-ops excluded) from FINAL bytes + all suites | **PASS** |
+| Upgrade from the committed Phase-4 head with seeded campaign/segment/sender/preference/suppression/email/interaction data | **PASS** — exactly +8 tables (175→183), every seeded row preserved, and the legacy skeleton adopted into the governed lifecycle through to preflight |
+| Run-once discipline (second application of the migration) | **PASS** — fails loudly (`relation "marketing_campaign_revisions" already exists`) |
+| `npx tsc --noEmit` · focused ESLint on every changed TS/TSX file · `npm run build` · `git diff --check` | **PASS** |
+| Authenticated Edge HTTP (`marketing-broadcasts-http`) | **NOT RUN — exit 3** (no local Edge runtime; unchanged) |
+| Populated visual QA | **NOT RUN** — static inspection + production build only; no served authenticated runtime exists |
+| REAL provider send | **NEVER EXECUTED** — no email of any kind was sent |
+
 ## 10 · Restart-safe "next phase"
-**Next: Phase 5 — Broadcasts** (on the proven sender + governed delivery
-foundation): campaign create/revise/approve/schedule/launch/pause/archive,
-audience snapshot + exclusion reasons, per-recipient governed delivery through
-the SAME `email.send_marketing` capability with suppression re-checked at
-execution, retry-safe launch queueing, reporting that distinguishes submitted
-from delivered/opened only when evidence exists. Before starting: commit the
-Phase-4 checkpoint (partial-stage `supabase/config.toml` marketing hunks only);
-when deployed, run the staged HTTP suites and complete the sender setup steps
-in [SENDER_SETUP.md](SENDER_SETUP.md).
+**Next (after the Phase-5 checkpoint): Phase 6 — Sequences** (on the proven
+Broadcasts foundation, §14): ordered multi-step sequences (send email / wait
+duration / wait-until-window / tag / lifecycle / owner / follow-up steps),
+Person-based enrolments with the selected contact point retained, manual +
+segment enrolment with deduplication, pause/resume, bounded batch leases,
+exits on unsubscribe/hard-bounce/reply/conversion/manual/lifecycle, per-step
+and overall factual reporting. Reuse the Phase-5 seams exactly: revisions for
+step content, the SAME `send_marketing_broadcast_email`-style governed
+delivery per step-send (or a registered sequence intent type with the same
+approval honesty), the ONE send authority, the dispatch/lease pattern and the
+unsubscribe system. Before starting: commit the Phase-5 checkpoint
+(partial-stage `supabase/config.toml` marketing entries only); when deployed,
+run the staged HTTP suites and complete [SENDER_SETUP.md](SENDER_SETUP.md) +
+[BROADCAST_SETUP.md](BROADCAST_SETUP.md).
+
+**Superseded Phase-5 plan (delivered above, §14):** campaign
+create/revise/approve/schedule/launch/pause/archive, audience snapshot +
+exclusion reasons, per-recipient governed delivery through the SAME
+`email.send_marketing` capability with suppression re-checked at execution,
+retry-safe launch queueing, reporting that distinguishes submitted from
+delivered/opened only when evidence exists.
 
 **Superseded Phase-4 plan (delivered above):** Sender profiles over
 discovered Workspace mailboxes (choose permitted Marketing senders, from-name/
