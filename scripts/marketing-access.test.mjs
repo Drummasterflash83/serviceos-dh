@@ -95,7 +95,7 @@ async function main() {
   // ── Canonical resolver verdicts (the REAL production SQL) ──
   const rpc = (uid) => admin.rpc("marketing_effective_permissions", { p_profile_id: uid });
   let r = await rpc(U.owner);
-  ok("resolver: owner full set", !r.error && r.data?.permissions?.length === 11, r.error?.message);
+  ok("resolver: owner full set", !r.error && r.data?.permissions?.length === 12, r.error?.message);
   r = await rpc(U.ops);
   ok(
     "resolver: ops working subset (no launch)",

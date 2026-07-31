@@ -14,7 +14,7 @@
  * founding-document alignment audit + the frontend capability audit (2026-07-22).
  */
 
-export const REGISTRY_VERSION = "2026-07-29.4";
+export const REGISTRY_VERSION = "2026-07-31.1";
 
 /** Raw engineering status — the full truth, for OpenFolk/eng only. */
 export type CapabilityStatus =
@@ -615,7 +615,52 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
     status: "PREVIEW",
     tenantLabel: "Preview",
     explanation:
-      "Broadcasts AND Sequences are built and locally proven end to end (broadcast: draft → approve → immutable audience preflight → confirmed launch/schedule; sequence: draft → approve → activation confirmation → immutable enrolment batch → revision-pinned, endpoint-pinned Person enrolments). Sequence send, wait, tag, lifecycle and owner steps are built and locally proven; they deliver only through the Automation Engine with live suppression rechecks and public unsubscribe. Follow-up steps are CONFIGURATION-GATED — refused at authoring, withheld from the builder, and refused again at canonical Action creation — and become available only once canonical ('core','Action') state transitions exist, because until then the work item could be created but never progressed, completed or dismissed. Still Preview: the served Edge/worker runtime, scheduler installation, the public unsubscribe URL and a real authorised send are deploy-gated and unverified on a served environment. Templates/Objectives/AI Drafting remain Preview designs; event-triggered enrolment remains Preview and is not installed; click tracking is not implemented, and delivered/opened/clicked/bounced evidence is reported as unavailable — never fabricated and never shown as zero.",
+      "Broadcasts AND Sequences are built and locally proven end to end (broadcast: draft → approve → immutable audience preflight → confirmed launch/schedule; sequence: draft → approve → activation confirmation → immutable enrolment batch → revision-pinned, endpoint-pinned Person enrolments). Sequence send, wait, tag, lifecycle and owner steps are built and locally proven; they deliver only through the Automation Engine with live suppression rechecks and public unsubscribe. Follow-up steps are CONFIGURATION-GATED — refused at authoring, withheld from the builder, and refused again at canonical Action creation — and become available only once canonical ('core','Action') state transitions exist, because until then the work item could be created but never progressed, completed or dismissed. Still Preview: the served Edge/worker runtime, scheduler installation, the public unsubscribe URL and a real authorised send are deploy-gated and unverified on a served environment. Event-triggered enrolment remains Preview and is not installed; click tracking is not implemented, and delivered/opened/clicked/bounced evidence is reported as unavailable — never fabricated and never shown as zero. Templates, Objectives & Reporting and AI Drafting are Phase-7 builds with their own registry rows below.",
+  },
+  {
+    id: "marketing.templates",
+    screen: "Marketing",
+    control: "Versioned content templates (immutable revisions)",
+    backingCapability:
+      "marketing_templates + marketing_template_revisions/usages, the ONE canonical content validator + renderer, use-in-broadcast/sequence pinning",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Built and locally proven (Phase 7): tenant Template identities with immutable, hash-addressed revisions on the SAME safe content model Broadcasts/Sequences use; using a template PINS the exact revision into campaign content (byte-match enforced) and never bypasses review/approval/preflight; archive preserves all history and usage; deterministic ADVISORY quality guidance (not AI, never blocking). Preview until the authenticated Edge HTTP path and populated visual QA run on a served environment.",
+  },
+  {
+    id: "marketing.reporting",
+    screen: "Marketing",
+    control: "Objectives & honest reporting",
+    backingCapability:
+      "marketing_reporting_overview/_campaign composing the canonical per-type reports; objective_links (target_kind marketing_campaign) + append-only relationship history",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Preview",
+    explanation:
+      "Built and locally proven for evidence the platform truly possesses (Phase 7): one server-composed projection over the canonical Broadcast/Sequence report authorities (unknown is never zero; submitted is provider acceptance, not delivery), plus governed Campaign↔Objective links through the canonical objective_links model — a link records INTENT, contribution is displayed only from the Objective engine's own append-only assessments, and sends/opens/clicks never create a measurement. Preview until the authenticated HTTP path and populated visual QA run on a served environment.",
+  },
+  {
+    id: "marketing.ai",
+    screen: "Marketing",
+    control: "AI Drafting (governed proposals)",
+    backingCapability:
+      "ai.generate_marketing_draft via the frozen Automation Engine (openai connector, Vault-brokered credential) + immutable marketing_ai_proposals / human revisions",
+    read: true,
+    write: true,
+    persistence: "server",
+    requiredPermission: "ops",
+    status: "PREVIEW",
+    tenantLabel: "Not connected",
+    explanation:
+      "Built at the governed persistence/provider boundary and locally proven WITH MOCKS ONLY (Phase 7): the brief freezes into an immutable intent, the registered adapter makes one bounded provider call, output must pass the canonical content validator, the original proposal is immutable, human edits are numbered revisions, and acceptance writes DRAFTS only — never approval, launch or a send. NO model provider is configured and NO real model request has ever been made: the runtime state is Not connected/Configuration required until an owner/admin connects a provider (model + Vault-stored key) on a deployed environment.",
   },
   {
     id: "marketing.ads",

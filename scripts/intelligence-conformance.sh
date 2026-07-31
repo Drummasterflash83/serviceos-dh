@@ -45,6 +45,12 @@ MARKETING_MIGRATION=supabase/migrations/20260901120000_marketing_sender_delivery
 MARKETING_MIGRATION_P5=supabase/migrations/20260902120000_marketing_broadcasts.sql
 MARKETING_MIGRATION_P6=supabase/migrations/20260903120000_marketing_sequences.sql
 MARKETING_ACTIONS_ADAPTER="supabase/functions/_shared/connectors/marketing_actions.ts"
+# Marketing Phase 7: the SECOND deliberate, reviewed external adapter —
+# ai.generate_marketing_draft. It makes ONE bounded model-provider call and
+# transmits nothing to any recipient: its only write is the governed
+# immutable-proposal RPC. Gate (k) holds it to its own contract.
+MARKETING_AI_ADAPTER="supabase/functions/_shared/connectors/marketing_ai_draft.ts"
+MARKETING_MIGRATION_P7=supabase/migrations/20260904120000_marketing_templates_reporting_ai.sql
 fail=0
 note() { printf "  [%s] %s\n" "$1" "$2"; }
 
@@ -287,6 +293,43 @@ elif grep -qE "automation_approvals" "$MARKETING_MIGRATION" && \
   note FAIL "the test-send path fabricates an approval row — authority must stay honest"; fail=1
 else
   note PASS "marketing adapters honour their contracts (ONE external transport: one call, unknown-freeze, no status claim, exactly the three registered marketing intents, broadcast AND sequence approval-required with genuine tenant-senior lineage + their own pre-provider authority rechecks, no fabricated approval; the internal contact-action capability is registered non-external, makes no network call and writes only through the canonical governed RPCs)"
+fi
+
+# (k) the Marketing AI draft adapter honours its own stricter contract:
+#     registered in the adapter registry with EXACTLY the one generation
+#     intent type; exactly ONE provider call; NO status-lookup claim; NO
+#     global environment key (the tenant Vault broker is the only credential
+#     path); its only write is the governed immutable-proposal RPC; the
+#     Phase-7 migration registers the capability external+medium with an
+#     operational outcome contract and the intent type approval-free HONESTLY
+#     (no automation approval row is created or fabricated anywhere in it).
+if ! grep -q 'marketingAiDraftAdapter' supabase/functions/_shared/connectors/index.ts ; then
+  note FAIL "the marketing AI draft adapter is not registered in the adapter registry"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_AI_ADAPTER" \
+       | grep -qE 'supportedIntentTypes: \["generate_marketing_draft"\]' ; then
+  note FAIL "the AI adapter must support EXACTLY the one registered generation intent type"; fail=1
+elif [ "$(grep -c 'fetch(' "$MARKETING_AI_ADAPTER")" != "1" ] ; then
+  note FAIL "the AI adapter must contain exactly ONE provider call"; fail=1
+elif grep -q 'getStatus' "$MARKETING_AI_ADAPTER" ; then
+  note FAIL "the AI adapter claims a status lookup the provider does not get"; fail=1
+elif grep -qE 'OPENAI_API_KEY|Deno\.env' "$MARKETING_AI_ADAPTER" ; then
+  note FAIL "the AI adapter must resolve credentials through the tenant Vault broker only"; fail=1
+elif ! grep -q 'provider_secret_read' "$MARKETING_AI_ADAPTER" \
+  || ! grep -q 'marketing_ai_record_proposal' "$MARKETING_AI_ADAPTER" \
+  || ! grep -q 'marketing_effective_permissions' "$MARKETING_AI_ADAPTER" ; then
+  note FAIL "the AI adapter must recheck canonical authority and persist ONLY via the governed proposal RPC"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P7" \
+       | grep -qE "\('ai\.generate_marketing_draft',[^;]*true, 'medium'\)" ; then
+  note FAIL "ai.generate_marketing_draft is not registered external_side_effect=true / risk medium"; fail=1
+elif ! grep -q "marketing_ai_draft_recorded" "$MARKETING_MIGRATION_P7" ; then
+  note FAIL "ai.generate_marketing_draft has no registered outcome contract"; fail=1
+elif ! tr '\n' ' ' < "$MARKETING_MIGRATION_P7" \
+       | grep -qE "\('generate_marketing_draft', 'ai\.generate_marketing_draft', 'medium', true, *true, false, false," ; then
+  note FAIL "generate_marketing_draft is not registered honestly delegated (requires_approval=false) on its capability"; fail=1
+elif grep -nE "insert into automation_approvals" "$MARKETING_MIGRATION_P7" >/dev/null ; then
+  note FAIL "the AI drafting path fabricates an approval row — authority must stay honest"; fail=1
+else
+  note PASS "the AI draft adapter honours its contract (one generation intent, one provider call, Vault-only credentials, governed-RPC-only persistence, honest delegated registration, no fabricated approval)"
 fi
 
 echo ""

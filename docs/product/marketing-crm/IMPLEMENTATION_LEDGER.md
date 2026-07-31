@@ -19,16 +19,17 @@ verified. It does **not** replace the code; it explains it._
 
 ## 0 · Status at a glance
 
-| Phase | Title                                                             | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ----- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Audit & design reconciliation                                     | **Done** (this ledger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| 1     | Foundations (shell, route, schema, permissions, config)           | **COMMITTED as `7cf1dcf`** (`feat(marketing): add secure tenant-scoped foundation`). Shell, route, schema, permissions and config. The `marketing-access` authenticated **HTTP path remains unexecuted locally** (no served edge runtime) and is deploy-gated — see §11.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 2     | Contacts vertical slice                                           | **COMMITTED as `24b4497`** (`feat(marketing): add governed contacts vertical slice`, 2026-07-29 — partial-staged `supabase/config.toml` marketing hunk only). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| 3     | Settings, access admin, lifecycle, tags, segments, imports, audit | **COMMITTED as `6e64b0b`** (`feat(marketing): add governed admin, segments and imports`). Three correction passes + DB/PostgREST-proven — see §12; pass 3 (§12c) fixed 3 findings. Authenticated HTTP remains deploy-gated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 4     | Workspace sender & governed delivery (test-send vertical)         | **COMMITTED as `c739a39`** (`feat(marketing): add governed senders and test delivery`). Correctness/security pass (14 findings, §13b) + final integrity pass (6 findings, §13c) + §13d micro-correction. Sender profiles composite-FK bound to existing Gmail-OAuth/Workspace mailboxes; canonical live readiness; `email.send_marketing` external/high with the TEST-ONLY `send_marketing_test_email` intent (`requires_approval` FALSE — an explicitly authorised DELEGATED test action under `marketing.campaigns.test`; no approval row is fabricated, and the frozen approval guard still protects the broadcast boundary); frozen-envelope-only delivery; request-fingerprint idempotency; factual delivery states. NOT deployed; NO real email ever sent; HTTP staged exit 3.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 5     | Broadcasts end to end                                             | **COMMITTED as `48674be`** (`feat(marketing): add governed broadcasts`, 2026-07-30 — partial-staged `supabase/config.toml` marketing hunk only). Independent adversarial audit passed with **nine confirmed defects fixed — see §14 and §14e**. One campaign model, immutable audience snapshots, governed launch confirmation, leased dispatch and evidence-based reporting. NOT deployed; NO real email ever sent; authenticated Edge HTTP and populated visual QA remain deploy-gated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 6     | Governed Sequences & scheduler                                    | **BUILT + locally proven + INDEPENDENTLY AUDITED TWICE — the content of this checkpoint commit** (2026-07-30). Nine defects were confirmed against executing code and corrected: six in the first pass (§15c) and three in the second (§15d). One campaign identity (`campaign_type = 'sequence'`); immutable bundle-hashed revisions + ordered steps; Person-based, revision- and endpoint-pinned enrolments from an immutable batch recording EVERY candidate; one-use digest-only activation and enrolment confirmations; a lease-safe `marketing.sequence_advance` worker with waits resolved deterministically in SQL on the database clock; the approval-required `send_marketing_sequence_email` intent with genuine tenant_senior lineage; the INTERNAL `marketing.contact_action` capability executed only through existing governed RPCs; evidence-only exits; truthful completion (open ≠ closed ≠ completed); operational health; an accessible Sequences UI. **Follow-up creation stays configuration-gated** at authoring, in the UI and at canonical Action creation until `('core','Action')` state transitions exist. NOT deployed; NO email ever sent; authenticated Edge HTTP, populated visual QA, scheduler installation, provider authorisation and real sending remain explicit launch gates. |
-| 7–10  | Templates/reporting/AI, Ads, platform seams, launch               | Not started                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Phase | Title                                                             | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Audit & design reconciliation                                     | **Done** (this ledger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 1     | Foundations (shell, route, schema, permissions, config)           | **COMMITTED as `7cf1dcf`** (`feat(marketing): add secure tenant-scoped foundation`). Shell, route, schema, permissions and config. The `marketing-access` authenticated **HTTP path remains unexecuted locally** (no served edge runtime) and is deploy-gated — see §11.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2     | Contacts vertical slice                                           | **COMMITTED as `24b4497`** (`feat(marketing): add governed contacts vertical slice`, 2026-07-29 — partial-staged `supabase/config.toml` marketing hunk only). One consistent record in §11: mandatory-key create idempotency (key lock before ledger read — no same-key duplicate People, ever), tenant-safe bounded identity evidence, strict payload shapes at both boundaries, single-row relationship filters, exact contact-point concurrency tokens (set_primary removed), invalid-evidence-aware eligibility, current-relationship card projection, true key-based event dedup, run-once release migration (no destructive drops). NOT launch-proven — HTTP proofs NOT RUN, populated visual QA Preview.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 3     | Settings, access admin, lifecycle, tags, segments, imports, audit | **COMMITTED as `6e64b0b`** (`feat(marketing): add governed admin, segments and imports`). Three correction passes + DB/PostgREST-proven — see §12; pass 3 (§12c) fixed 3 findings. Authenticated HTTP remains deploy-gated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 4     | Workspace sender & governed delivery (test-send vertical)         | **COMMITTED as `c739a39`** (`feat(marketing): add governed senders and test delivery`). Correctness/security pass (14 findings, §13b) + final integrity pass (6 findings, §13c) + §13d micro-correction. Sender profiles composite-FK bound to existing Gmail-OAuth/Workspace mailboxes; canonical live readiness; `email.send_marketing` external/high with the TEST-ONLY `send_marketing_test_email` intent (`requires_approval` FALSE — an explicitly authorised DELEGATED test action under `marketing.campaigns.test`; no approval row is fabricated, and the frozen approval guard still protects the broadcast boundary); frozen-envelope-only delivery; request-fingerprint idempotency; factual delivery states. NOT deployed; NO real email ever sent; HTTP staged exit 3.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 5     | Broadcasts end to end                                             | **COMMITTED as `48674be`** (`feat(marketing): add governed broadcasts`, 2026-07-30 — partial-staged `supabase/config.toml` marketing hunk only). Independent adversarial audit passed with **nine confirmed defects fixed — see §14 and §14e**. One campaign model, immutable audience snapshots, governed launch confirmation, leased dispatch and evidence-based reporting. NOT deployed; NO real email ever sent; authenticated Edge HTTP and populated visual QA remain deploy-gated.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 6     | Governed Sequences & scheduler                                    | **COMMITTED as `60cc18f`** (`feat(marketing): add governed sequences and scheduler`, 2026-07-30) — built, locally proven and INDEPENDENTLY AUDITED TWICE; NOT pushed/deployed. Nine defects were confirmed against executing code and corrected: six in the first pass (§15c) and three in the second (§15d). One campaign identity (`campaign_type = 'sequence'`); immutable bundle-hashed revisions + ordered steps; Person-based, revision- and endpoint-pinned enrolments from an immutable batch recording EVERY candidate; one-use digest-only activation and enrolment confirmations; a lease-safe `marketing.sequence_advance` worker with waits resolved deterministically in SQL on the database clock; the approval-required `send_marketing_sequence_email` intent with genuine tenant_senior lineage; the INTERNAL `marketing.contact_action` capability executed only through existing governed RPCs; evidence-only exits; truthful completion (open ≠ closed ≠ completed); operational health; an accessible Sequences UI. **Follow-up creation stays configuration-gated** at authoring, in the UI and at canonical Action creation until `('core','Action')` state transitions exist. NOT deployed; NO email ever sent; authenticated Edge HTTP, populated visual QA, scheduler installation, provider authorisation and real sending remain explicit launch gates. |
+| 7     | Templates, Objectives & Honest Reporting, Governed AI Drafting    | **BUILT + locally proven + INDEPENDENTLY AUDITED (§16b: six reproduced defects corrected, four initial UI defects corrected) + PRODUCTION-READINESS PASS COMPLETE (§16c: all seven Template mutations request-idempotent through the canonical request-key ledger; every recorded accessibility/forbidden-state gap closed) — CHECKPOINT-READY, the content of this checkpoint commit** (2026-07-31, §16). One safe content model (Template revisions + AI proposals reuse `marketing_campaign_validate_content` verbatim); exact-revision pinning with byte-match-enforced lineage; the ADDITIVE `marketing_campaign` target kind on canonical `objective_links` with a governed validator + append-only relationship history (a link records INTENT; nothing is ever fabricated into measurements/health/contribution); one reporting projection COMPOSING the canonical per-type reports (jsonb-equality proven); `ai.generate_marketing_draft` through the frozen Automation Engine (delegated `requires_approval=false` honestly, Vault-only credentials, immutable proposals + human revisions, acceptance writes DRAFTS only). NOT pushed/deployed; NO model request ever made; NO email ever sent; authenticated Edge HTTP exit 3 and populated visual QA NOT RUN — they remain explicit launch gates with provider verification and the first authorised generation.        |
+| 8–10  | Ads, platform seams, launch                                       | Not started                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 **Honest layer separation (what "proven" means here):**
 
@@ -1864,7 +1865,7 @@ returns a raw database message.
 | Populated visual QA                                                                                                                                                                                                                                                                                                     | **NOT RUN** — static inspection + production build only; no served authenticated runtime exists                                                      |
 | REAL provider send                                                                                                                                                                                                                                                                                                      | **NEVER EXECUTED** — no email of any kind was sent                                                                                                   |
 
-## 15 · Phase 6 — Governed Sequences & scheduler (2026-07-30; BUILT + locally proven + INDEPENDENTLY AUDITED TWICE — the content of this checkpoint commit)
+## 15 · Phase 6 — Governed Sequences & scheduler (2026-07-30; COMMITTED as `60cc18f` — built, locally proven, INDEPENDENTLY AUDITED TWICE with nine corrections; not pushed/deployed)
 
 One campaign identity, one delivery transport, one authority. Everything below
 is ADDITIVE around the existing seams: `marketing_campaigns` stays the only
@@ -2205,19 +2206,452 @@ Phase 6; adding that pattern to unrelated suites would be out of scope here.
 Concurrent phone-ops/telephony/product-review/run-checkpoint work stays
 byte-for-byte outside this scope.
 
+## 16 · Phase 7 — Templates, Objectives & Honest Reporting, Governed AI Drafting (2026-07-31; BUILT + locally proven + INDEPENDENTLY AUDITED (§16b) + production-readiness corrected (§16c) — CHECKPOINT-READY)
+
+One campaign content and evidence layer, additive around the existing seams.
+Nothing new competes with anything canonical: NO second campaign model, content
+renderer, objective system, AI provenance model, workflow engine, queue,
+provider transport, reporting truth or Person/Interaction model was created.
+
+### Seam audit → reuse decisions (evidence-led)
+
+- **One safe content model.** Template revisions, sequence-step templates and
+  AI proposals all store EXACTLY the Phase-5 authored shape and every write
+  passes `marketing_campaign_validate_content` (the path Phase 6 already
+  proved for sequence steps). The Phase-7 content hash
+  (`marketing_template_revision_hash`) is content-only — sender/segment stay
+  campaign-frozen facts; a Template records no sender and no format knobs
+  (`content_format = 'marketing_text_v1'` names the ONE canonical format; no
+  configurable brand/format machinery was invented because none exists to
+  configure). Preview renders through the ONE deterministic `renderBroadcast`
+  with explicitly-labelled SAMPLE data + a placeholder unsubscribe URL.
+- **Pinning, not referencing.** "Use in Broadcast/Sequence" copies the exact
+  revision content through the CANONICAL authoring RPCs
+  (`marketing_campaign_create/revise` and `marketing_sequence_revise` — the
+  first two REPLACED with byte-preserving supersets that add ONLY the two
+  optional lineage keys; `marketing_sequence_validate_step` likewise). Lineage
+  means "this content IS exactly that revision": `marketing_template_lineage_check`
+  / `marketing_ai_lineage_check` enforce byte-equality at the RPC layer AND at
+  a BEFORE INSERT trigger on `marketing_campaign_revisions`, so a lineage lie
+  is structurally impossible even for the service role. Live execution never
+  reads the Template row; usage is recorded by AFTER INSERT triggers into the
+  append-only `marketing_template_usages` ledger in the same transaction as
+  the pin. Using a template in an approved campaign structurally invalidates
+  the approval (the proven revise path: new revision + draft).
+- **Objectives: the canonical model, extended additively.** The audit (agent
+  evidence, `20260720120000_objectives.sql:168`) showed `objective_links` is
+  the intended universal relationship but: `target_kind` is an inline CHECK
+  with no `campaign` value, `target_ref` is unvalidated text, and links carry
+  no history/concurrency model (the engine treats them as mutable "current"
+  pointers with append-only assessments as the history). Resolution:
+  - CHECK extended additively with `marketing_campaign`; a NEW guard trigger
+    validates ONLY that kind (uuid shape, same-tenant campaign existence,
+    relation ∈ supports|contributes_to). Other kinds keep byte-identical
+    behaviour (suite-proven).
+  - `marketing_campaigns.objective_link_id` (composite tenant FK) is the
+    campaign's current-pointer; supersede/unlink set the old link
+    `approved=false` (removing it from the engine's link-consuming queries)
+    WITHOUT deleting it, and every act lands in the append-only
+    `marketing_campaign_objective_history` with actor/rationale/campaign
+    version. Campaign `version` is the concurrency token (MK409); linking is
+    request-id idempotent through the canonical `marketing_request_keys`
+    ledger (byte-identical replay converges — the ledger is consulted BEFORE
+    the version gate, a defect the suite caught and this pass fixed; changed
+    reuse → MK412).
+  - The Phase-1 `objective_link_ref` placeholder is CLOSED by a narrow guard
+    trigger: legacy/null values stay readable (upgrade-proven with a seeded
+    legacy value), new writes are 22023.
+  - Links FABRICATE NOTHING: suite-proven zero delta on `measurements`,
+    `objective_health` and `objective_contribution_assessments` across
+    link/supersede/unlink. `verification_state='approved_link'`,
+    `approved=true`, `contribution_state='proposed'` — exactly the vocabulary
+    the engine's assessor consumes, whose v1 boundary can only ever produce
+    `expected`/`inconclusive` (its `SUPPORTED_OUTCOME_EVIDENCE_TYPES` remains
+    empty; untouched).
+  - Context honesty: `marketing_campaign_objective_context` reads the LATEST
+    canonical health snapshot (missing = `never_evaluated`; >48h = `stale`),
+    compares the primary metric ONLY under matching units/currencies
+    (mismatch = unknown + exact reason, suite-proven), and shows contribution
+    ONLY from `objective_contribution_assessments` — else the explicit
+    "No verified contribution evidence" line.
+- **Reporting: composition, never re-derivation.** `marketing_reporting_overview`
+  and `marketing_reporting_campaign` CALL `marketing_campaign_report` /
+  `marketing_sequence_report` per row; the suite asserts jsonb-EQUALITY
+  between the composed row and the canonical authority (dev DB + PostgREST),
+  so totals reconcile with the existing drill-downs by construction. Filters
+  (type/status/objective/factual created_at range/search) validate strictly;
+  keyset pagination is the recipient-page contract (page-2 disjoint, no
+  phantom page 3); overview totals are campaign COUNTS only — no cross-type
+  metric arithmetic is fabricated; nulls stay null through every layer.
+  Recipient/enrolment drill-down remains DELEGATED to the canonical
+  marketing-campaigns / marketing-sequences actions.
+- **AI drafting through the frozen engine, honestly delegated.** The audit
+  found the repo's only LLM path (`_shared/openai.ts`, phone pipeline) is a
+  direct fetch on a GLOBAL env key outside all capability governance — a
+  divergence Phase 7 deliberately does NOT copy. Resolution: register
+  `ai.generate_marketing_draft` (external, medium) + intent type
+  `generate_marketing_draft` + contract + operational outcome
+  `marketing_ai_draft_recorded`; the request RPC mirrors the Phase-4
+  delegated-test-send package EXACTLY (AUTOMATION_AUTHORISED, no review
+  routing, NO approval row — an explicitly authorised delegated draft action
+  under canonical `marketing.campaigns.draft`; reversibility honestly
+  IRREVERSIBLE (provider egress + spend), so the mode re-check withholds
+  execution in modes requiring reversibility). Tenant enablement is
+  `tenant_connector_capabilities` (`openai`) — the registry the engine itself
+  enforces — flipped only by `marketing_ai_configure` under a STRUCTURAL
+  owner/admin ceiling inside the RPC (hostile `marketing.ai.manage` grants to
+  ops proven inert) + the new additive `marketing.ai.manage` permission
+  (owner/admin default only; vocabulary now 12).
+  Credentials: tenant Vault broker (`provider_secret_store/read`,
+  `openai`/`api_key`) — never an env key, never echoed (conformance gate (k)
+  scans for `OPENAI_API_KEY|Deno\.env` in the adapter).
+- **Provenance mirrors the response-proposal pattern without table reuse**
+  (mixing domain ownership was rejected; the PATTERN is reused):
+  `marketing_ai_requests` (frozen brief; immutable except write-once close
+  facts; status always DERIVED from engine facts — no fabricatable status
+  column exists), `marketing_ai_proposals` (IMMUTABLE original + provider,
+  model, prompt_version `marketing-draft@1`, prompt/completion tokens,
+  finish_reason; unique per intent — regeneration is a NEW request),
+  `marketing_ai_revisions` (append-only numbered human edits with editor +
+  note). Acceptance goes through the canonical authoring RPCs with AI lineage
+  (byte-match to the original OR a recorded revision), writes DRAFTS only,
+  and structurally invalidates prior approval (suite-proven: an approved
+  campaign returns to draft). Reject preserves the proposal as evidence;
+  cancel uses the engine's legal pending→cancelled transition and refuses
+  once execution began or a proposal exists.
+- **Prompt/data safety.** `_shared/marketing_ai_prompt.ts`: versioned
+  deterministic builder (fixed system message with ZERO tenant data; the
+  brief in a delimited untrusted-data block; only an explicitly selected
+  Objective's TITLE crosses, frozen at request time), exact envelope
+  allowlist with hard bounds, and the exact 4-field output schema —
+  unsupported fields, truncation (`finish_reason=length`), refusals and
+  malformed JSON are stable permanent failures. Full content legality stays
+  with the ONE canonical SQL validator, run inside
+  `marketing_ai_record_proposal` — invalid model output can never become a
+  proposal at all. Prompt injection is NOT claimed impossible; the enforced
+  boundary is what leaves the model.
+- **Editorial quality guidance** (`_shared/marketing_quality.ts`,
+  `marketing-quality@1`): deterministic, ADVISORY-only, clearly labelled "not
+  AI, never blocking" in API + UI; thresholds tenant-tunable via the existing
+  `marketing_settings.settings.quality` bag; no brand copy. The canonical
+  validator remains the only blocker.
+
+### Schema (migration `20260904120000_marketing_templates_reporting_ai.sql`)
+
++7 tables (upgrade-proven 191→198): `marketing_templates` (identity, version
+concurrency, guarded archive facts), IMMUTABLE `marketing_template_revisions`
+(content + hash + `source` editor|duplicate|ai_draft + lineage columns),
+APPEND-ONLY `marketing_template_usages`, APPEND-ONLY
+`marketing_campaign_objective_history`, `marketing_ai_requests` (guarded),
+IMMUTABLE `marketing_ai_proposals`, APPEND-ONLY `marketing_ai_revisions`.
+Additive on existing tables: `objectives`/`objective_links` `(tenant_id,id)`
+unique indexes (composite-FK targets, the Phase-5 pattern);
+`objective_links` target-kind CHECK + campaign guard;
+`marketing_campaigns.objective_link_id` + `objective_link_ref` freeze guard;
+`marketing_campaign_revisions` lineage columns + `source` CHECK extension
+('template','ai_draft') + `mcr_lineage_shape` + lineage guard/usage triggers;
+`marketing_sequence_steps` usage trigger. Every new tenant table: tenant_id,
+composite tenant FKs, RLS SELECT gated on `marketing_has_permission
+('marketing.view')`, bounded indexes, append-only guards where evidence,
+service-role-only writes with update/delete/truncate revoked on history even
+for service_role, no client write policy anywhere. 34 new functions — NONE
+SECURITY DEFINER (catalog-asserted), ALL revoked from client roles
+(catalog-derived grant lock in the suite fails loudly if any becomes
+reachable).
+
+### Edge/API surface
+
+`marketing-templates` (list/detail/create/revise/duplicate/archive/restore/
+preview/quality_check/use_in_broadcast/use_in_sequence_step),
+`marketing-reporting` (overview/campaign_report/objective_search/
+objective_context/link_objective/unlink_objective), `marketing-ai-drafts`
+(status/configure/request_generation/request_status/request_list/
+proposal_detail/revise/accept/reject/cancel). All: requireTenantUser + the
+canonical-resolver double gate, per-action exact key allowlists, stable
+`mapDbError` vocabulary (+ CONFIG_REQUIRED for unconfigured AI), no raw DB
+errors, no credentials/Vault values/hidden prompts/unbounded lists in any
+response; the browser can never plant lineage keys (edge allowlists exclude
+them — lineage travels only through the governed use/accept paths).
+`config.toml` gained ONLY the three Phase-7 entries (the unrelated Phone
+Operations hunk is byte-for-byte untouched). The UI keeps the mandated
+internal order and makes Templates, Objectives & Reporting and AI Drafting
+operational (AI honestly "Not connected/Configuration required" until an
+owner/admin configures a provider); metric cells render null as
+"Unavailable" with the server's reason, never 0.
+
+### Deliberately evolved earlier-phase assertions (accuracy, not weakening)
+
+The `marketing.ai.manage` permission grew the vocabulary 11→12:
+`marketing_foundation.test.sql` (count), `marketing_hardening.test.sql`
+(owner/admin full set + vocabulary count), `scripts/marketing-access.test.mjs`
+and `scripts/marketing-access-http.test.mjs` (owner/admin set size) were
+updated to the new factual count. The client mirror
+(`src/lib/marketing/permissions.ts`) gained the same entry (owner/admin
+default only). No other committed test was touched.
+
+### Verification matrix (2026-07-31, local)
+
+| Check                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Result                                                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/tests/marketing_templates_reporting_ai.test.sql` — 13 sections: template authority/content/immutability/concurrency/duplicate lineage; pinning + approval invalidation + pin survival + lineage-lie adversarials (RPC and direct-insert); sequence-step pinning; archive semantics; the governed objective link lifecycle incl. registry/validator adversarials, idempotency (converge/MK412), zero-fabrication deltas, honest context (never_evaluated/unit_mismatch/comparable/no-evidence); reporting composition jsonb-equality + strict filters + stable pagination + cross-tenant zero; AI provider honesty + structural config ceiling (hostile grant inert); the governed generation request (frozen brief, NO approval row, MK428/MK429/MK412, immutable request); REAL engine claim → canonical-validator gate (invalid output persists NOTHING) → immutable proposal with provenance → finalize → derived status; human revisions; accept into template/broadcast/sequence (draft-only, approval invalidated, MK409 on stale destination); reject/cancel; RLS + catalog grant lock + no-SECURITY-DEFINER assertion | **PASS** on the dev DB, the fresh clean-chain DB AND the upgraded-from-`60cc18f` DB                                                                                                                         |
+| `scripts/marketing-templates-ai-pure.test.mjs` — 20 tests: quality determinism + every rule + thresholds; envelope allowlist/bounds/version; prompt determinism + instruction/data separation + hostile-brief containment; output schema gate; the REAL adapter against a scripted client + mocked fetch (fail-closed transients with ZERO provider calls, permanent refusals, ONE-call healthy path with Vault credential + governed recorder, 429/5xx/network transient, 401 permanent, refusal/truncation/malformed permanent, validator-rejection permanent, recorder-failure bounded transient); source scans (no env key, one fetch site, no getStatus)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | **PASS 20/20**                                                                                                                                                                                              |
+| `scripts/marketing-templates-ai.test.mjs` — PostgREST + real GoTrue JWTs: 25 RPC denials (authenticated + anon) + table write denial; viewer-without-view reads ZERO rows; tenant-B reads ZERO; PARALLEL identical objective links converge (ONE link, ONE history act); PARALLEL template revisions → ONE winner + ONE MK409; provider configure + hostile-ops denial; the governed generation request; **DRIFT LOCK: the REAL SQL-built envelope validates against the adapter's exact allowlist**; REAL engine claim + stubbed output → ONE proposal; PARALLEL identical accepts → ONE template with AI provenance; overview composition jsonb-equal over PostgREST                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | **PASS** (re-run-safe)                                                                                                                                                                                      |
+| `scripts/marketing-phase7-http.test.mjs` (shared edge-probe classifier over all three functions)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | **NOT RUN — exit 3** (unserved 503 locally; honestly staged)                                                                                                                                                |
+| Marketing Phase 0–6 regressions (foundation/hardening/contacts/admin/senders/broadcasts/sequences SQL; access/admin/contacts/senders/broadcasts/sequences mjs; senders-pure 24, broadcasts-pure 20, sequences-pure 22, import-pure 13, edge-probe 7)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | **PASS** (SQL suites on all THREE databases)                                                                                                                                                                |
+| Engine/objective/approval regressions (`automation_engine`, `execution_reliability`, `email_reliability`, `response_approval_atomicity`, `objective_health_evaluation`, `objectives_versioning`, `decision_log_immutable`; `automation-dedup` 1/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | **PASS** on dev + clean chain + upgraded DB (SQL)                                                                                                                                                           |
+| `work-projection` + `view-as` mjs (the objective_links CHECK extension regresses no existing consumer) · `npm run verify:product` · `npm run test:openfolk` 23/23                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | **PASS**                                                                                                                                                                                                    |
+| `bash scripts/intelligence-conformance.sh` — including the NEW gate (k): the AI adapter's own contract (one generation intent, ONE provider call, Vault-only credentials, governed-RPC-only persistence, honest delegated registration, no fabricated approval anywhere in the migration)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | **PASS**                                                                                                                                                                                                    |
+| `npx tsc --noEmit` · focused ESLint on every changed/created TS/TSX/MJS file · `npm run build` (production) · `git diff --check` · `node scripts/check-migration-order.mjs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | **PASS**                                                                                                                                                                                                    |
+| Fresh clean chain — 86 committed migrations + Phase 7 from FINAL bytes (untracked phone-ops excluded, as every phase) on a fresh `supabase/postgres:17.6.1.141` container + all 14 suites                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | **PASS**                                                                                                                                                                                                    |
+| Upgrade from the EXACT committed head `60cc18f` — seeded campaign (with a LEGACY `objective_link_ref` value), sender, segment, objective+metric+measurement+health+link data → Phase 7 applied ONCE: **exactly +7 tables (191→198)**, every seeded row preserved, legacy ref readable but CLOSED to new writes, lineage columns default null, NO campaign auto-linked, NO template/AI row seeded, capability registered globally with **ZERO tenant enablement**; all 14 suites pass on the upgraded DB                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | **PASS**                                                                                                                                                                                                    |
+| Run-once discipline (second application)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | **PASS** — fails loudly (`relation "marketing_templates" already exists`)                                                                                                                                   |
+| `reliability_vertical.test.sql`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **NOT RUN** — pgTAP absent locally (pre-existing; fails identically without Phase 7 on `plan(15)`); `queue-collision`/`data-import`-class suites need the remote/served env (pre-existing, documented §15d) |
+| Authenticated Edge HTTP                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | **NOT RUN — exit 3** (no served runtime; the probe classified 503 = unserved)                                                                                                                               |
+| Populated visual QA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | **NOT RUN** — no served authenticated runtime exists; build + typecheck + static inspection are NOT visual verification                                                                                     |
+| REAL model request / REAL email                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **NEVER EXECUTED** — provider results mocked at the engine boundary (SQL/PostgREST) or at global fetch (pure); no credential beyond a synthetic local test string ever existed                              |
+
+### Honest limitations
+
+- No model provider is configured anywhere; AI Drafting's runtime state is
+  **Not connected/Configuration required** and no generation has ever run.
+  The adapter transport was never executed against a real provider.
+- ~~Template create/revise/duplicate/use are deliberately NOT request-id
+  idempotent~~ **Superseded by the production-readiness correction pass
+  (§16c, 2026-07-31): EVERY template mutation now REQUIRES a validated
+  `request_id` (`^[A-Za-z0-9_-]{8,64}$`) through the canonical
+  `marketing_request_keys` ledger** — create, revise, duplicate,
+  archive/restore and both use-in destinations. The fingerprint binds tenant,
+  genuine actor, action, resource, expected version and every semantic
+  argument; the ledger is consulted BEFORE the version/status gates so a
+  byte-identical replay returns the ORIGINAL result even after the resource
+  advanced; changed reuse (payload, version or actor) is MK412; the exact
+  result persists atomically with the side effects. AI acceptance derives a
+  deterministic namespaced CHILD key server-side
+  (`substr(md5('ai-accept-child:' || <outer id>), 1, 32)`) for its internal
+  template mutation — never accepted from the browser, and a browser reuse of
+  the child key value can never fingerprint-match (the Edge create allowlist
+  cannot carry AI lineage) so it conflicts.
+- Reporting composes what exists: delivered/opened/clicked/bounced stay null
+  (no evidence pipeline); overview totals are campaign counts only; no Ads
+  spend/CPL anywhere.
+- `marketing_ai_request_status` derives from intent state + proposal
+  existence. **Corrected by the adversarial audit (2026-07-31):** the
+  previously-acknowledged "second paid call bounded by max_attempts" window
+  is CLOSED. After a successful provider call, a recorder failure retries the
+  idempotent recorder RPC once in-place and otherwise returns `unknown` — the
+  engine freezes automatic retry (`external_result_unknown`, routed to
+  review); one logical generation request can never automatically buy a
+  second provider call because persistence failed. If the recorder actually
+  committed and only its response was lost, the derived status reads
+  `succeeded` from the proposal fact; otherwise the request shows `unknown`
+  honestly and only an explicit human "generate again" (a NEW request +
+  intent) reaches the provider again. Pre-provider transients (429/5xx/
+  network/fail-closed reads) still retry bounded by `max_attempts = 3`.
+- AI proposal retention follows the platform's append-only evidence posture
+  (no automatic deletion exists platform-wide); rejection preserves evidence.
+- The dev-DB proof style remains direct psql application (the documented
+  Phase-1 drift note stands); the clean-chain/upgrade containers used the
+  documented storage/auth shim the services normally provision.
+
+### Phase 7 file scope — 30 paths (12 modified, 18 created)
+
+> Count corrected by the independent adversarial audit (2026-07-31): the
+> earlier header said "28 paths (10 modified…)" while the enumeration below
+> already named all 12 modified files — the two evolved committed SQL suites
+> (`marketing_foundation` / `marketing_hardening`, 11→12 permission-vocabulary
+> accuracy only) were enumerated but not counted. 12 + 18 = 30 paths.
+
+**Modified — 12:** this ledger · `docs/reference/AUTOMATION_ENGINE.md` ·
+`scripts/intelligence-conformance.sh` (gate (k)) ·
+`scripts/marketing-access.test.mjs` + `scripts/marketing-access-http.test.mjs`
+(11→12 accuracy) · `src/components/app/MarketingCampaigns.tsx` ·
+`src/lib/capability-registry.ts` (three new Phase-7 rows + campaigns copy +
+version bump) · `src/lib/marketing/permissions.ts` ·
+`supabase/functions/_shared/connectors/index.ts` ·
+`supabase/tests/marketing_foundation.test.sql` +
+`supabase/tests/marketing_hardening.test.sql` (11→12 accuracy) ·
+`supabase/config.toml` (**partial-stage: the three marketing entries ONLY —
+the Phone Operations hunk stays working-tree-only**).
+**Created — 18:** `docs/product/marketing-crm/CONTENT_AND_REPORTING_SETUP.md` ·
+`scripts/marketing-phase7-http.test.mjs` ·
+`scripts/marketing-templates-ai-pure.test.mjs` ·
+`scripts/marketing-templates-ai.test.mjs` ·
+`src/components/app/MarketingAiDrafting.tsx` ·
+`src/components/app/MarketingReporting.tsx` ·
+`src/components/app/MarketingTemplates.tsx` ·
+`src/lib/marketing/aidrafts.ts` · `src/lib/marketing/reporting.ts` ·
+`src/lib/marketing/templates.ts` ·
+`supabase/functions/_shared/connectors/marketing_ai_draft.ts` ·
+`supabase/functions/_shared/marketing_ai_prompt.ts` ·
+`supabase/functions/_shared/marketing_quality.ts` ·
+`supabase/functions/marketing-ai-drafts/index.ts` ·
+`supabase/functions/marketing-reporting/index.ts` ·
+`supabase/functions/marketing-templates/index.ts` ·
+`supabase/migrations/20260904120000_marketing_templates_reporting_ai.sql` ·
+`supabase/tests/marketing_templates_reporting_ai.test.sql`.
+Concurrent phone-ops/telephony/product-review/run-checkpoint work stays
+byte-for-byte outside this scope. (Counting note: the two evolved access test
+scripts and the two evolved SQL suites are four files; config.toml is ONE
+modified path carrying two independent working-tree hunks — partial-stage the
+marketing hunk only.)
+
+### §16b · Independent Phase-7 adversarial hardening audit (2026-07-31)
+
+An independent audit re-verified §16's claims against the live repository and
+running local databases (dev + fresh clean-chain + exact-`60cc18f`-upgrade
+containers), reproduced each suspected defect against executable code before
+correcting it, and left Phase 7 uncommitted. **Six defects confirmed and
+corrected; every correction carries a regression test that fails without it.**
+
+| #   | Defect (reproduced first)                                                                                                                                                                                                                                                                                                             | Correction                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **Duplicate paid provider call** (cost-control, highest priority): recorder failure AFTER a successful provider call returned `failed_transient`; the engine's own `planPostExecution` scheduled a retry that re-ran the WHOLE adapter — reproduced with the real adapter + real engine plan: 2 `fetch` calls for one logical request | `marketing_ai_draft.ts`: post-provider recorder failure now retries the idempotent recorder RPC once in-place, then returns **`unknown`** — the engine freezes automatic retry (`external_result_unknown`) and routes to review. Pure-suite proofs: exactly ONE mocked fetch across recorder failure + retry; blip absorbed → succeeded; lost-response → idempotent convergence; 22023 stays permanent and is never recorder-retried |
+| 2   | **Sequence-step lineage forgeable by the service role**: a DIRECT insert into `marketing_sequence_steps` with a lineage key but different content succeeded AND minted a false `marketing_template_usages` evidence row (campaign revisions refused the identical forgery via their row guard)                                        | New `marketing_sequence_step_lineage_guard()` BEFORE-INSERT trigger (migration Part C): validates template/AI lineage byte-match at the row boundary, refuses lineage on non-email steps and dual-source claims; locked in Part H. SQL-suite proofs: forged template/AI/non-email inserts all refuse; zero usage rows minted                                                                                                         |
+| 3   | **Objective-link fingerprint omitted the campaign version**: reusing a request id with the same payload against a DIFFERENT campaign version converged on the stored result instead of MK412 (the ai-accept fingerprint in the same migration already bound the version)                                                              | `marketing_campaign_objective_link` fingerprint now binds `campaign_version` (= `p_expected_version`); byte-identical replay still converges. SQL + PostgREST proofs: version-differing reuse → MK412                                                                                                                                                                                                                                |
+| 4   | **Archive gate launderable via duplicate**: duplicating an ARCHIVED template minted an active copy of its content, bypassing "an archived template cannot be selected for new content"                                                                                                                                                | `marketing_template_duplicate` refuses archived sources (22023 "restore it first"). SQL proof added                                                                                                                                                                                                                                                                                                                                  |
+| 5   | **Idempotent replay never re-enqueued**: `marketing-ai-drafts` `request_generation` skipped `enqueueAutomationExecution` when `idempotent === true`, so a lost enqueue after the RPC committed could strand a pending intent until expiry                                                                                             | Enqueue now runs for every returned `intent_id` (the job key de-dups one active job per intent; the claim RPC stays the single-execution guard). Pure-suite source-discipline scan locks the contract                                                                                                                                                                                                                                |
+| 6   | **Catalog grant-lock blind spot**: the SQL suite's pattern-only enumeration missed `marketing_campaign_revision_lineage_guard` — Part H locked it, but a regression could never be detected                                                                                                                                           | Suite §13 now derives the catalog set AND compares it to the complete 35-function expected list in BOTH directions (missing OR extra fails loudly); SECURITY-DEFINER check runs over the same exact set                                                                                                                                                                                                                              |
+
+UI corrections from the audit's static inspection (no served runtime exists,
+so this is NOT visual QA): (a) the sequence "Submitted" column now sums ONLY
+per-`send_email`-step canonical counts (internal tag/lifecycle/owner steps
+were being counted as submissions) and both column variants carry the exact
+"submitted ≠ delivered" semantics in a tooltip; (b) an `unknown` AI request
+row now explains itself ("parked for review; never re-billed automatically"),
+shows its `last_error`, and gains the refresh affordance — required by
+correction #1's unknown boundary; (c) editing a generation brief rotates the
+request id (the code comment promised this but no effect existed — a
+post-failure resubmit with an edited brief could hit a confusing
+REQUEST_MISMATCH); (d) the icon-only refresh button gained an accessible
+name. The accessibility gaps this inspection recorded were COMPLETED by the
+follow-up correction pass — see §16c.
+
+Determinations (no change required, evidence recorded): `contributes_to` is
+safe intent vocabulary — the canonical evaluator consumes `supports` and
+`contributes_to` identically as EXPECTED-contribution candidates
+(`objective_evaluate.ts` filters `approved=true` + verified states;
+confirmation stays structurally impossible while the outcome-evidence registry
+is empty), and committed `work_transition.ts` already writes `contributes_to`
+links at intent time. SSRF surface: the provider URL is the fixed
+`OPENAI_CHAT_URL` constant, the model string is a bounded identifier
+(`^[A-Za-z0-9._:-]{1,80}$`), no configurable base URL exists, no environment
+fallback exists (conformance gate (k)), and credentials resolve only through
+the tenant-scoped Vault broker (`provider_secret_read` — SECURITY DEFINER,
+`search_path=''`, name-derived from `p_tenant`, service-role-only EXECUTE);
+the stored `secret_ref` is presence-only and never used to fetch. The
+`objective_links` CHECK replacement is byte-compatible (committed 10-kind list
+
+- `marketing_campaign`). Identical-timestamp keyset pagination proven exact.
+  `marketing_ai_configure` stores the Vault secret before the RPC's ceiling
+  re-check — reachable only by an Edge-verified owner/admin against their OWN
+  tenant's slot; recorded as accepted, not a defect.
+
+Audit verification (all on FINAL migration bytes): fresh clean chain (87
+migrations, phone-ops excluded) + exact-`60cc18f` upgrade (seeded Phase 0-6 +
+Objective data preserved; legacy `objective_link_ref` readable + closed;
+run-once re-application fails loudly) — 17 SQL suites PASS on dev, clean-chain
+AND upgraded DBs; pure 24/24; PostgREST suite extended with
+supersede-vs-supersede, link-vs-unlink and different-step parallel accepts
+(ALL PASS incl. loser-retry convergence and step-order preservation); Phase
+0-6 mjs suites + work-projection/transition + automation-dedup +
+queue-collision ALL PASS; `tsc` clean; focused ESLint clean; Prettier clean;
+production build PASS; conformance (a)–(k) PASS; migration-order PASS; HTTP
+suites honestly exit 3 (unserved local gateway). Nothing staged, committed,
+pushed, deployed, remotely migrated; no real model call; no email; no cron,
+secret, scope or provider change.
+
+### §16c · Production-readiness correction pass (2026-07-31, after §16b)
+
+A follow-up pass completed the two areas §16b had recorded but not closed.
+Same discipline: no staging/commit, unrelated work untouched, final-bytes
+proofs on dev + fresh clean-chain + exact-`60cc18f`-upgrade databases.
+
+**1 · Template mutation request-id idempotency (all seven mutations).**
+`marketing_template_request_gate(uuid, text, text, text)` (service-role-only,
+in the Part H lock + exact-set catalog list — now 36 functions) implements
+the canonical order for create / revise / duplicate / archive / restore /
+use-in-broadcast / use-in-sequence-step: validate id → fingerprint every
+semantic input (tenant, genuine actor, action, resource + expected version +
+full argument object; no clocks, no credentials) → per-tenant/action/request
+advisory lock → ledger consultation BEFORE any version/status gate → replay
+returns the stored result / changed reuse raises MK412 → side effects →
+result persisted atomically. Proven outcomes (SQL §5b battery + PostgREST):
+create/duplicate replay mints no second row; **revise replay returns the
+ORIGINALLY created revision even after the template advanced**;
+archive/restore replay returns the original success even though a fresh call
+would refuse as already-archived; both use-in replays create no second
+campaign/sequence revision, step or usage row; zero duplicate audit/event
+rows on replay (persisted-count assertions, not response shapes); parallel
+identical requests converge (creates, uses, revisions — real PostgREST
+`Promise.all`); a DIFFERENT ACTOR reusing an id + payload gets MK412, never
+another actor's stored result; missing/malformed ids refuse with zero
+writes; distinct ids keep normal MK409 version-conflict behaviour. Edge
+allowlists, the typed client (`newTemplateRequestId` + per-call requestId)
+and the UI (semantic-scope key cache: unchanged retry reuses its key, any
+input change derives a new one, success clears the scope) all carry the id.
+AI acceptance passes a derived namespaced child key server-side; accept
+replay still converges on ONE template and a browser reuse of the child key
+value conflicts (proven in SQL §11).
+
+**2 · Accessibility + forbidden states (static inspection — still NOT visual
+QA; no served runtime exists).** Campaign tabs are a complete tablist:
+labelled `role="tablist"`, per-tab `role="tab"` + stable ids +
+`aria-selected` + `aria-controls`, roving `tabIndex`, Left/Right/Home/End
+with focus-following activation, and a matching labelled `role="tabpanel"`;
+tab order unchanged (Broadcasts, Sequences, Templates, Objectives &
+Reporting, AI Drafting). Stateful toggles carry `aria-pressed`
+(active/archived filter, new-vs-replace mode, original-vs-revision compare);
+search fields and reporting selects have accessible labels (no
+placeholder-as-label); icon-only buttons are named (`aria-label` mirrors
+`title` in the shared Btn atoms); notices are `role="status"`/`aria-live=
+"polite"` and blocking errors `role="alert"`. Every Phase-7 dialog remembers
+its invoking control, keeps the focus trap (now including `textarea`),
+supports Escape, and restores focus to the opener on close with a
+deterministic fallback (the selected tab) if it disappeared. Templates and
+AI Drafting gained dedicated FORBIDDEN branches (like Reporting's): a
+permission denial is its own state — never a retryable error, never "Not
+connected"/"Configuration required", and it reveals nothing about what
+exists. The dead `PreviewCard` component was removed from
+`MarketingCampaigns.tsx` (no callers; its icons remain in live use by the
+tab registry — no genuine Preview status was touched).
+
+**Verification (this pass):** Phase 7 SQL suite incl. the §5b idempotency
+battery + child-key proofs — PASS on dev, fresh clean-chain and
+exact-upgrade DBs (final migration bytes; run-once re-application still
+fails loudly); pure suite 24/24; extended PostgREST suite ALL PASS; Phase
+0–6 SQL + engine/objective regressions PASS on all three DBs; `tsc` clean;
+focused ESLint clean; Prettier clean; production build PASS; conformance
+(a)–(k) PASS; migration-order PASS; `git diff --check` clean; HTTP suites
+honestly exit 3 (unserved). No real model call, no email, nothing staged/
+committed/pushed/deployed, no remote migration, no cron/secret/provider
+change, Phase 8 untouched.
+
+### External configuration required before any live Phase-7 surface
+
+See [CONTENT_AND_REPORTING_SETUP.md](CONTENT_AND_REPORTING_SETUP.md): deploy
+migration + three functions + shared bundle; owner/admin provider
+configuration (model + Vault key) for AI; an operational mode permitting
+irreversible external work for generation to execute; explicit human
+authorisation for the first real generation. Broadcasts/Sequences launch
+gates unchanged.
+
 ## 10 · Restart-safe "next phase"
 
-**Next: Phase 7 — Templates, Objectives & Reporting.** Phase 6 (§15) is built,
-locally proven, and has now been through **two** independent adversarial
-hardening audits. Both are complete: **nine defects were confirmed against
-executing code and corrected — six in §15c and three in §15d.** Phase 6 is
-checkpoint-ready.
+**Next: the Phase-7 checkpoint commit.** The independent adversarial hardening
+audit is COMPLETE (§16b, 2026-07-31): six defects confirmed, corrected and
+regression-locked; every §16 claim re-verified on dev + fresh clean-chain +
+exact-`60cc18f`-upgrade databases from final migration bytes. Phase 7 remains
+deliberately UNCOMMITTED: the working tree holds the complete Phase-7 file set
+(30 paths) plus the unrelated concurrent phone-operations work, and the index
+is empty. Commit the checkpoint with **partial-stage `supabase/config.toml`
+(the three marketing entries only — never the phone-operations hunk)**. Launch gates carried forward unchanged:
+authenticated Edge HTTP, populated visual QA, scheduler installation, the
+public unsubscribe base URL, provider authorisation (Gmail send + AI model
+provider) and real authorised sending/generation — none provable without a
+served, deployed environment. Phase 8 (Ads) does not start until then.
 
-**Do not start Phase 7 until the Phase-6 checkpoint commit is complete.** When
-it is, Phase 7 begins from that commit, and the launch gates carried forward are
-unchanged: authenticated Edge HTTP, populated visual QA, scheduler installation,
-the public unsubscribe base URL, provider authorisation and real authorised
-sending — none of which can be proven without a served, deployed environment.
+**Superseded Phase-7 plan (delivered above, §16): Templates, Objectives &
+Reporting, AI Drafting.**
 
 **Superseded Phase-6 plan (delivered above, §15): Sequences** (on the proven
 Broadcasts foundation, §14): ordered multi-step sequences (send email / wait

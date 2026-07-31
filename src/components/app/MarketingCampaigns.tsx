@@ -69,6 +69,10 @@ import {
 } from "@/lib/marketing/senders";
 import { listSegments } from "@/lib/marketing/segments";
 import { MarketingSequences } from "@/components/app/MarketingSequences";
+import { MarketingTemplates } from "@/components/app/MarketingTemplates";
+import { MarketingReporting } from "@/components/app/MarketingReporting";
+import { MarketingAiDrafting } from "@/components/app/MarketingAiDrafting";
+import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 
 /* ── shared atoms ─────────────────────────────────────────────────────────── */
 
@@ -1374,30 +1378,6 @@ function CampaignRowView({ row, onOpen }: { row: CampaignListRow; onOpen: () => 
 
 /* ── preview tabs (honest) ────────────────────────────────────────────────── */
 
-function PreviewCard({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: typeof Send;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-hairline bg-white p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <Icon className="h-4 w-4 text-muted-foreground" /> {title}
-        </div>
-        <span className="inline-flex items-center rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
-          Preview
-        </span>
-      </div>
-      <div className="mt-2 text-xs text-muted-foreground">{children}</div>
-    </div>
-  );
-}
-
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
 type CampaignsTabKey = "broadcasts" | "sequences" | "templates" | "reporting" | "ai";
@@ -1412,6 +1392,23 @@ const TABS: { key: CampaignsTabKey; label: string; icon: typeof Send }[] = [
 
 export function MarketingCampaigns() {
   const [tab, setTab] = useState<CampaignsTabKey>("broadcasts");
+  // affordance gating only — the server enforces every permission again
+  const { can } = useMarketingAccess();
+  // complete tab semantics: roving tabIndex + Left/Right/Home/End with
+  // automatic activation; focus follows selection
+  const tabRefs = useRef(new Map<CampaignsTabKey, HTMLButtonElement>());
+  const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let next: number | null = null;
+    if (e.key === "ArrowRight") next = (index + 1) % TABS.length;
+    else if (e.key === "ArrowLeft") next = (index - 1 + TABS.length) % TABS.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = TABS.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    const key = TABS[next].key;
+    setTab(key);
+    tabRefs.current.get(key)?.focus();
+  };
   return (
     <div className="space-y-5">
       <div>
@@ -1421,10 +1418,24 @@ export function MarketingCampaigns() {
           suppression-safe and evidence-reported.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-1 border-b border-hairline pb-2">
-        {TABS.map((t) => (
+      <div
+        role="tablist"
+        aria-label="Campaign sections"
+        className="flex flex-wrap items-center gap-1 border-b border-hairline pb-2"
+      >
+        {TABS.map((t, i) => (
           <button
             key={t.key}
+            ref={(el) => {
+              if (el) tabRefs.current.set(t.key, el);
+              else tabRefs.current.delete(t.key);
+            }}
+            role="tab"
+            id={`mkt-tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls={`mkt-panel-${t.key}`}
+            tabIndex={tab === t.key ? 0 : -1}
+            onKeyDown={(e) => onTabKeyDown(e, i)}
             onClick={() => setTab(t.key)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
@@ -1433,34 +1444,23 @@ export function MarketingCampaigns() {
                 : "font-medium text-muted-foreground hover:bg-surface-alt hover:text-foreground",
             )}
           >
-            <t.icon className="h-3.5 w-3.5" /> {t.label}
+            <t.icon className="h-3.5 w-3.5" aria-hidden="true" /> {t.label}
           </button>
         ))}
       </div>
 
-      {tab === "broadcasts" && <BroadcastsTab />}
-      {tab === "sequences" && <MarketingSequences />}
-      {tab === "templates" && (
-        <PreviewCard icon={FileText} title="Templates">
-          Versioned, immutable template revisions with editorial quality checks. Arrives in Phase 7.
-          Broadcast content is currently authored per campaign with immutable revisions.
-        </PreviewCard>
-      )}
-      {tab === "reporting" && (
-        <div className="space-y-3">
-          <PreviewCard icon={BarChart3} title="Objectives & Reporting">
-            Objective-linked reporting arrives in Phase 7. Real, factual Broadcast counts are
-            already available on each campaign&apos;s report panel — submitted is not delivered, an
-            open is not an outcome, and nothing is fabricated.
-          </PreviewCard>
-        </div>
-      )}
-      {tab === "ai" && (
-        <PreviewCard icon={Bot} title="AI Drafting">
-          Draft assistance is not connected. No model generates or edits campaign content today —
-          every revision shown was authored by a person in this workspace.
-        </PreviewCard>
-      )}
+      <div role="tabpanel" id={`mkt-panel-${tab}`} aria-labelledby={`mkt-tab-${tab}`}>
+        {tab === "broadcasts" && <BroadcastsTab />}
+        {tab === "sequences" && <MarketingSequences />}
+        {tab === "templates" && <MarketingTemplates canDraft={can("marketing.campaigns.draft")} />}
+        {tab === "reporting" && <MarketingReporting canLink={can("marketing.campaigns.launch")} />}
+        {tab === "ai" && (
+          <MarketingAiDrafting
+            canDraft={can("marketing.campaigns.draft")}
+            canManageProvider={can("marketing.ai.manage")}
+          />
+        )}
+      </div>
     </div>
   );
 }

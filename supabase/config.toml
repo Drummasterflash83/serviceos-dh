@@ -114,6 +114,25 @@ verify_jwt = false
 # sends email itself.
 verify_jwt = false
 
+[functions.marketing-templates]
+# Marketing Templates API (Phase 7). requireTenantUser + canonical resolver
+# (view / campaigns.draft double gate); one safe content model — every write
+# passes the canonical validator; preview renders SAMPLE data only.
+verify_jwt = false
+
+[functions.marketing-reporting]
+# Marketing Reporting & Objectives API (Phase 7). Composes the canonical
+# per-type report authorities; objective linking under the owner/admin +
+# campaigns.launch ceiling. Read-mostly; never sends anything.
+verify_jwt = false
+
+[functions.marketing-ai-drafts]
+# Marketing AI Drafting API (Phase 7). Generation creates immutable PROPOSALS
+# through the governed ai.generate_marketing_draft capability (Automation
+# Engine); acceptance writes drafts only. Provider credential goes straight
+# to the tenant Vault broker.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

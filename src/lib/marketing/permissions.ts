@@ -12,6 +12,8 @@
  * Keep in sync with:
  *   - migration 20260828120000_marketing_foundation.sql
  *     (marketing_permissions + marketing_role_defaults seeds)
+ *   - migration 20260904120000_marketing_templates_reporting_ai.sql
+ *     (adds marketing.ai.manage — owner/admin default only)
  */
 
 export type UserRole = "owner" | "admin" | "ops" | "viewer";
@@ -28,6 +30,7 @@ export const MARKETING_PERMISSIONS = [
   "marketing.ads.manage",
   "marketing.reporting.view",
   "marketing.access.manage",
+  "marketing.ai.manage",
 ] as const;
 
 export type MarketingPermission = (typeof MARKETING_PERMISSIONS)[number];

@@ -157,7 +157,7 @@ async function main() {
   r = await call(tokens.admin);
   ok("admin → 200 can_view", r.status === 200 && r.body?.data?.can_view === true, r.status);
   ok("admin → materialised on first call", r.body?.data?.materialised?.created_stages === 8);
-  ok("admin → 11 permissions", r.body?.data?.permissions?.length === 11);
+  ok("admin → 12 permissions", r.body?.data?.permissions?.length === 12);
   ok("admin → settings present, UTC default", r.body?.data?.settings?.timezone === "UTC");
   ok("admin → 8 lifecycle stages", r.body?.data?.lifecycle_stages?.length === 8);
   r = await call(tokens.admin);

@@ -113,9 +113,9 @@ do $$
 declare v jsonb;
 begin
   v := marketing_effective_permissions('bbbb0000-0000-0000-0000-0000000000e1'); -- owner
-  assert jsonb_array_length(v->'permissions') = 11, 'owner gets full set';
+  assert jsonb_array_length(v->'permissions') = 12, 'owner gets full set';
   v := marketing_effective_permissions('bbbb0000-0000-0000-0000-0000000000e2'); -- admin
-  assert jsonb_array_length(v->'permissions') = 11, 'admin gets full set';
+  assert jsonb_array_length(v->'permissions') = 12, 'admin gets full set';
   v := marketing_effective_permissions('bbbb0000-0000-0000-0000-0000000000e3'); -- ops
   assert jsonb_array_length(v->'permissions') = 7, 'ops gets the working subset';
   assert not ((v->'permissions') ? 'marketing.campaigns.launch'), 'ops cannot launch';
@@ -151,7 +151,7 @@ begin
   assert (select count(*) from marketing_campaigns) = 0, 'viewer: campaigns hidden';
   assert (select count(*) from marketing_access_grants) = 0, 'viewer: grants hidden';
   -- vocabulary stays readable (platform convention, like authority_permissions)
-  assert (select count(*) from marketing_permissions) = 11, 'viewer: vocabulary readable';
+  assert (select count(*) from marketing_permissions) = 12, 'viewer: vocabulary readable';
 end $$;
 reset role;
 

@@ -64,6 +64,7 @@ import { internalNoteAdapter } from "./internal_note.ts";
 import { emailReplyDraftAdapter } from "./email_reply_draft.ts";
 import { marketingEmailAdapter } from "./marketing_email.ts";
 import { marketingActionsAdapter } from "./marketing_actions.ts";
+import { marketingAiDraftAdapter } from "./marketing_ai_draft.ts";
 
 // Registry. The three internal adapters are SAFE and side-effect-free
 // (email.reply_draft PREPARES a reply artifact, it never transmits). The
@@ -76,13 +77,20 @@ import { marketingActionsAdapter } from "./marketing_actions.ts";
 // external_side_effect = true, fully registered (contract row, intent type,
 // per-tenant enablement via verified sender setup only) and executable solely
 // through the untouched universal executor. Adding any further transmitting
-// connector remains an explicit, reviewed change.
+// connector remains an explicit, reviewed change. The marketing AI draft
+// adapter (Marketing Phase 7, ai.generate_marketing_draft) is EXTERNAL in the
+// narrow sense that it makes one bounded, paid model-provider call — but it
+// transmits nothing to any recipient: its only write is the governed
+// immutable-proposal RPC, and its output cannot become campaign content
+// without passing the canonical content validator and the human draft/accept
+// path.
 export const AUTOMATION_ADAPTERS: AutomationConnectorAdapter[] = [
   controlledTestAdapter,
   internalNoteAdapter,
   emailReplyDraftAdapter,
   marketingEmailAdapter,
   marketingActionsAdapter,
+  marketingAiDraftAdapter,
 ];
 
 /** Resolve the adapter that supports an intent type, or null if none (unsupported

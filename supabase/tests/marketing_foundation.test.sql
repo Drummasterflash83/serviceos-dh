@@ -2,7 +2,7 @@
 --   docker exec -i supabase_db_serviceos-dh psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/marketing_foundation.test.sql
 --
 -- Proves Marketing CRM Phase-1 foundation invariants (migration 20260828120000):
---   • Platform seeds present: 11 marketing_permissions + 8 lifecycle template stages.
+--   • Platform seeds present: 12 marketing_permissions (11 foundation + marketing.ai.manage, Phase 7) + 8 lifecycle template stages.
 --   • RLS enabled on every new tenant table.
 --   • Tenant isolation: an authenticated user sees ONLY their tenant's marketing rows,
 --     never another tenant's (cross-tenant denial).
@@ -36,7 +36,7 @@ insert into contact_relationships (tenant_id, person_id, relationship_type, life
 -- ── (1) Platform seeds ──────────────────────────────────────────────────────
 do $$
 begin
-  assert (select count(*) from marketing_permissions) = 11, 'expected 11 marketing_permissions';
+  assert (select count(*) from marketing_permissions) = 12, 'expected 12 marketing_permissions';
   assert (select count(*) from marketing_lifecycle_stages where tenant_id is null) = 8,
     'expected 8 lifecycle template stages';
   assert (select count(*) from marketing_lifecycle_stages where tenant_id is null and terminal_outcome = 'won') = 1,
