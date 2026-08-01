@@ -44,6 +44,7 @@ import { MarketingTags } from "@/components/app/MarketingTags";
 import { MarketingImports } from "@/components/app/MarketingImports";
 import { MarketingSettings } from "@/components/app/MarketingSettings";
 import { MarketingAds } from "@/components/app/MarketingAds";
+import { MarketingConnections } from "@/components/app/MarketingConnections";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import { deriveMarketingGate } from "@/lib/marketing/gate";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -367,5 +368,13 @@ function AdsSection() {
   // buttons that would only 403 (the boundary holds server-side either way).
   const { access, can } = useMarketingAccess();
   const isOwnerAdmin = access?.role === "owner" || access?.role === "admin";
-  return <MarketingAds canManage={Boolean(isOwnerAdmin) && can("marketing.ads.manage")} />;
+  const canManage = Boolean(isOwnerAdmin) && can("marketing.ads.manage");
+  return (
+    <div className="space-y-6">
+      <MarketingAds canManage={canManage} />
+      {/* Phase 9 — the provider-connection seam layer. Truthfully inert: no
+          adapter exists, nothing can claim connected, nothing polls. */}
+      <MarketingConnections canManage={canManage} />
+    </div>
+  );
 }

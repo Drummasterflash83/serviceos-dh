@@ -147,6 +147,13 @@ verify_jwt = false
 # a freshness window. Every auth failure is one generic 401 with zero writes.
 verify_jwt = false
 
+[functions.marketing-provider-connections]
+# Marketing provider-connection seams (Phase 9). requireTenantUser + canonical
+# resolver (view / owner-admin+ads.manage double gate). Zero adapters exist:
+# connect lands truthfully in error/no_adapter, sync refuses for every
+# non-connected account, credentials go straight to the tenant Vault broker.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

@@ -14,7 +14,7 @@
  * founding-document alignment audit + the frontend capability audit (2026-07-22).
  */
 
-export const REGISTRY_VERSION = "2026-07-31.2";
+export const REGISTRY_VERSION = "2026-08-01.1";
 
 /** Raw engineering status — the full truth, for OpenFolk/eng only. */
 export type CapabilityStatus =
@@ -675,7 +675,7 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
     status: "PREVIEW",
     tenantLabel: "Preview",
     explanation:
-      "Built and locally proven (Phase 8): versioned ad sources, an append-only signed-webhook event ledger (replay-safe, conflict-detecting), canonical inbound Interactions + identity resolution (ambiguity → the existing review path, never a silent merge, never an invented subscription), append-only attribution touchpoints with derived first/last touch, and honest metrics — spend/CPL stay UNAVAILABLE with the exact reason until a genuinely connected adapter reports facts. Meta / Google Ads / LinkedIn / the authenticated-Sheet fallback remain truthfully Not connected (no adapter, no credentials, no manual sync, nothing fabricated). Preview until the served HTTP paths and populated visual QA run on a deployed environment; Phase 9 Business Graph/Card projections are not built.",
+      "Built and locally proven (Phase 8): versioned ad sources, an append-only signed-webhook event ledger (replay-safe, conflict-detecting), canonical inbound Interactions + identity resolution (ambiguity → the existing review path, never a silent merge, never an invented subscription), append-only attribution touchpoints with derived first/last touch, and honest metrics — spend/CPL stay UNAVAILABLE with the exact reason until a genuinely connected adapter reports facts. Phase 9 adds the platform SEAM layer, also built and locally proven: provider connection accounts with a real lifecycle (preview → connecting → connected → error → revoked, where connected is reachable ONLY through the adapter seam with verification evidence), Vault-only credentials with mark-before-store idempotent rotation and the bounded 86400s overlap, a lease-safe single-flight sync engine with the attempts>=10 poison ceiling (manual requests refuse truthfully for every non-connected account; the scheduled path is due-computation only — NO cron registered, nothing polls), and computed freshness (never_run / error / stale / fresh). Meta / Google Ads / LinkedIn / the authenticated-Sheet fallback remain truthfully Not connected (zero adapters, nothing fabricated). Preview until the served HTTP paths and populated visual QA run on a deployed environment.",
   },
 
   // ── Strategy / ownership (whole-product gaps the reset addresses) ─────────
