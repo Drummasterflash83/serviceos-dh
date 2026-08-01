@@ -1,13 +1,15 @@
 /**
- * Marketing Provider Connections (Phase 9 — platform seams).
+ * Marketing Provider Connections (Phase 9/10 — platform seams).
  *
- * HONEST UI CONTRACT: zero provider adapters exist in this build, and this
- * panel says so plainly. Every provider is truthfully "Not connected"; a
- * connect attempt surfaces the recorded error/'no_adapter' outcome; sync is
- * refused for every non-connected account; freshness renders the computed
- * never_run / error / stale / fresh states with their reasons; and NOTHING
- * here shows spend, CPL or a fabricated connected badge. Per-section load
- * failures render as retryable errors — never as a fabricated empty state.
+ * HONEST UI CONTRACT: exactly one reviewed adapter exists (Meta — fixture
+ * tested, NOT live verified; labelled exactly that), and no tenant is
+ * connected to any provider. Providers without an adapter surface the
+ * recorded error/'no_adapter' outcome; connected is reachable only through
+ * worker-verified adapter evidence; sync is refused for every non-connected
+ * account; freshness renders the computed never_run / error / stale / fresh
+ * states with their reasons; and NOTHING here shows spend, CPL or a
+ * fabricated connected badge. Per-section load failures render as retryable
+ * errors — never as a fabricated empty state.
  *
  * Hidden controls are NOT the security boundary — the server enforces every
  * permission again (owner/admin + marketing.ads.manage inside every RPC).
@@ -183,9 +185,10 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
               <Cable className="h-4 w-4" aria-hidden="true" /> Provider connections
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              The connection seam for ad and data providers. No provider adapter exists in this
-              build — every provider is truthfully Not connected, nothing polls, and no metric is
-              fabricated. Credentials go straight to the tenant Vault and are never shown again.
+              The connection seam for ad and data providers. One reviewed adapter exists (Meta —
+              fixture tested, not live verified); no tenant is connected to any provider, nothing
+              polls, and no metric is fabricated. Credentials go straight to the tenant Vault and
+              are never shown again.
             </p>
           </div>
           {canManage && (
@@ -634,12 +637,19 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {providers.map((p) => (
               <li key={p.provider} className="rounded-xl border border-hairline p-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-sm font-medium text-foreground">{p.displayName}</span>
-                  <span className="text-xs text-muted-foreground">Not connected</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">Not connected</span>
                 </div>
+                {p.verification === "fixture_tested" && (
+                  <p className="mt-1 text-xs font-medium text-foreground">
+                    Adapter implemented — fixture tested — not live verified.
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">
-                  No adapter in this build. Requires:{" "}
+                  {p.verification === "none"
+                    ? "No adapter in this build. Requires: "
+                    : "Requires: "}
                   {p.requirements.map((r, i) => (
                     <span key={r}>
                       {i > 0 ? "; " : ""}

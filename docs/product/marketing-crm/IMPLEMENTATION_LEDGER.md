@@ -3113,3 +3113,87 @@ registry line) · `supabase/functions/marketing-provider-connections/index.ts`
 `supabase/config.toml` is NOT touched this phase. Concurrent
 phone-ops/telephony/product-review/run-checkpoint work stays byte-for-byte
 outside this scope.
+
+## 21 · Phase 10B — Meta Provider Adapter V1 (2026-08-01; ADAPTER IMPLEMENTED — FIXTURE TESTED — NOT LIVE VERIFIED; UNCOMMITTED — checkpoint-ready)
+
+**The first genuine provider vertical slice.** Full design, official-contract
+record (7 developers.facebook.com documents, checked 2026-08-01, pinned Graph
+API v26.0), credential lifecycle, sync strategy, V1 scope/exclusions,
+Meta runbook and monitoring additions: **META_SETUP.md** (the authoritative
+companion to this section). No genuine Meta request was made; no credential
+exists in this environment; nothing claims connection or live verification.
+
+Key structural facts:
+
+- Adapter behind the UNCHANGED Phase-10A contract; two additive contract
+  fields only: `fetchFacts.sinceIso` (incremental window input, passed by
+  the sync worker from `last_synced_at`) and
+  `ProviderAdapter.requiresExternalAccount` (Meta: true — the worker fails
+  runs honestly as `no_external_account` BEFORE any provider access when no
+  ad account is selected; found by the fixture journey when the seam-queued
+  initial sync ran pre-selection as an opaque `provider_rejected`).
+- Registry: meta resolves the reviewed adapter always; the env gate governs
+  ONLY whether `meta-fixture:*` credentials resolve to contract fixtures —
+  in production a fixture credential is STRUCTURALLY an invalid credential.
+- Catalogue: new `verification` field (`none | fixture_tested |
+live_verified`) — meta = `fixture_tested`; nothing is `live_verified`;
+  this is adapter status, never a tenant connection state. UI renders
+  "Adapter implemented — fixture tested — not live verified." on the Meta
+  readiness card.
+- LOCK EVOLUTIONS (documented, nothing weakened): the Phase-9 pure
+  catalogue lock ("zero adapters") and the Phase-10A registry lock ("real
+  providers never resolve") now assert the NEW exact truth (meta
+  implemented/resolving; google_ads/linkedin/sheet still locked to none;
+  live_verified locked to impossible).
+- ZERO SQL changes: vocabulary, lifecycle, facts, reporting and locks are
+  untouched — the Phase-10A clean-chain proof stands byte-identical; SQL
+  suites re-run green on the dev DB.
+
+### Verification (2026-08-01; deterministic META CONTRACT FIXTURES — NOT LIVE DATA)
+
+| Proof                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Result                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FAIL-BEFORE: `scripts/marketing-meta-pure.test.mjs` before the adapter module existed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | **FAILS first** (module not found)                                                                                                                                                             |
+| Meta pure suite — registry/catalogue truth, fixture gate structurally closed in production, validation + discovery evidence, invalid(190/463)→auth, noscope(10)→scope, two-page cursor harvest, ad set→ad_group mapping, spend-string parsing, lead-action summing, fixture reconciliation (100.00 GBP / 5), incremental determinism, degraded partial-metrics, BUC rate-limit + retry_after_minutes, page-two all-or-nothing, schema drift caught, token never in any diagnostic, source scans (bearer-header only, no token in URLs, cursors not next-URLs, no logging, bounded paging)                                                                                                                                                                                                            | **PASS (19/19)**                                                                                                                                                                               |
+| `scripts/marketing-meta-http.test.mjs` — the complete journey over the SERVED Edge boundary + the real platform-worker, TWO deterministic rounds: catalogue truth over HTTP; token stored once/never echoed; connect → worker validation → connected ONLY after adapter verification; two discovered accounts (currency-labelled); selection; initial sync; report reconciles (100.00 GBP / 5 / CPL 20.00 / 2 campaigns; ad_group + ad facts present); repeat sync idempotent; restatement supersession (101.50 / 20.30); unselected sync fails honestly `no_external_account`; degraded (feed survives, metrics-specific error, recovery); invalid + noscope NEVER connect; rate limit leaves the run LEASED at attempt 1 with zero facts ingested; revoke blocks sync; cross-tenant NOT_FOUND/zero | **PASS (96 assertions, both rounds)**                                                                                                                                                          |
+| Regressions: 10A simulator HTTP suite (122) · PostgREST boundary (47) · P10A/P9/sequences SQL on dev · P8 SQL (same pre-existing §17b environmental stop, byte-identical) · P8/P9/P10A pure (18/11/14) · tsc · eslint · prettier · production build                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | **ALL PASS**                                                                                                                                                                                   |
+| ACTUAL VISUAL QA (local authenticated stack, served functions, fixture gate on): Meta readiness card renders the exact classification + external requirements; full UI journey — create meta connection → token via the credential form (aria-live confirmation) → Attempt connect → worker → Connected → discovery selector ("Drummond Heating Ads (GBP)" / "Secondary Fixture Ads (USD)") → select GBP → Sync now → report on screen (Health healthy · Spend 100 GBP · Leads 5 · CPL 20 · Campaign feed (2) · run history); desktop full-page capture; mobile 375px zero horizontal overflow                                                                                                                                                                                                       | **PASS** (deployed-environment QA remains a launch item)                                                                                                                                       |
+| Live verification (Step-14 gate)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | **NOT RUN — no Meta app/system-user token exists in this environment (external registrations)**; the permitted read-only sequence is documented in META_SETUP.md, ready when credentials exist |
+
+### Security review (Phase 10B additions)
+
+Token redaction proven at every layer (pure lock: token in no diagnostic;
+HTTP lock: token never echoed; source locks: bearer-header only, no URL
+parameters, no logging, paging.next never fetched); fixture mode
+structurally impossible in production (auth-refused, pure-locked);
+`no_external_account` refusal happens BEFORE provider access; rate-limit
+backoff never completes runs as fabricated success or degraded; error
+bodies bounded + sanitised with `fbtrace_id` as the only correlation
+carrier. One workflow defect found by the journey and fixed with locks: the
+pre-selection initial sync surfaced an opaque `provider_rejected` — now the
+honest `no_external_account` class (regression-locked in the HTTP suite).
+No open critical/high finding.
+
+### Phase 10B file scope — 15 paths (10 modified, 5 created)
+
+**Created — 5:** `supabase/functions/_shared/marketing_meta_adapter.ts` ·
+`supabase/functions/_shared/marketing_meta_fixtures.ts` ·
+`scripts/marketing-meta-pure.test.mjs` · `scripts/marketing-meta-http.test.mjs`
+· `docs/product/marketing-crm/META_SETUP.md`.
+**Modified — 10:** this ledger ·
+`supabase/functions/_shared/marketing_provider_adapter_contract.ts`
+(registry + two additive contract fields) ·
+`supabase/functions/_shared/marketing_provider_connections.ts` (catalogue
+truth + `verification` field) ·
+`supabase/functions/_shared/worker_handlers/marketing_provider_sync.ts`
+(`sinceIso` + `no_external_account`) · `scripts/marketing-connections-pure.test.mjs`
+
+- `scripts/marketing-provider-hardening-pure.test.mjs` (documented lock
+  evolutions) · `src/lib/marketing/connections.ts` ·
+  `src/components/app/MarketingConnections.tsx` (readiness label + honest
+  copy) · `src/lib/capability-registry.ts` (truth text + version; STILL
+  Preview) · `docs/product/marketing-crm/CONNECTIONS_RUNBOOK.md` (Meta
+  pointer + `no_external_account` row).
+  `supabase/config.toml` untouched; NO migration; concurrent
+  phone-ops/telephony/product-review/run-checkpoint work stays byte-for-byte
+  outside this scope.

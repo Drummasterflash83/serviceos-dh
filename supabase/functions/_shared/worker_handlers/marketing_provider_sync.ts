@@ -36,6 +36,7 @@ interface AccountRow {
   provider: string;
   status: string;
   external_account_ref: string | null;
+  last_synced_at: string | null;
 }
 
 export async function handleMarketingProviderSync(
@@ -79,7 +80,7 @@ export async function handleMarketingProviderSync(
     // REVOCATION CHECK immediately before any provider access
     const acct = await supabaseAdmin
       .from("marketing_provider_accounts")
-      .select("provider, status, external_account_ref")
+      .select("provider, status, external_account_ref, last_synced_at")
       .eq("tenant_id", tenantId)
       .eq("id", run.account_id)
       .maybeSingle();
@@ -101,8 +102,20 @@ export async function handleMarketingProviderSync(
       testProviderEnabled: Deno.env.get("MARKETING_TEST_PROVIDER") === "enabled",
     });
     if (!adapter) {
-      // TRUTHFUL: no adapter exists for any real provider in this build
+      // TRUTHFUL: no adapter exists for this real provider in this build
       const done = await complete(run.id, { outcome: "failed", error_class: "no_adapter" });
+      if (done.error) return seamFailure(done.error.message);
+      processed += 1;
+      continue;
+    }
+    if (adapter.requiresExternalAccount && !row.external_account_ref) {
+      // honest, provider-untouched refusal: the operator has not selected an
+      // external account yet (e.g. the seam-queued initial sync right after
+      // connect). Selection + a manual/scheduled sync is the recovery.
+      const done = await complete(run.id, {
+        outcome: "failed",
+        error_class: "no_external_account",
+      });
       if (done.error) return seamFailure(done.error.message);
       processed += 1;
       continue;
@@ -126,6 +139,9 @@ export async function handleMarketingProviderSync(
     const result = await adapter.fetchFacts({
       credential: cred.data,
       externalAccountRef: row.external_account_ref,
+      // lets an adapter bound an incremental window (with its own
+      // provider-correction overlap); absent ⇒ its initial bounded lookback
+      sinceIso: row.last_synced_at,
     });
 
     if (!result.ok) {

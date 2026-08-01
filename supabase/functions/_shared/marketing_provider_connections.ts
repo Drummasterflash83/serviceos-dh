@@ -1,18 +1,20 @@
-// Marketing Phase 9 — the provider CONNECTION seam contract + TRUTHFUL
+// Marketing Phase 9/10 — the provider CONNECTION seam contract + TRUTHFUL
 // catalogue.
 //
-// Pure module (no network, no database). This is the seam a future reviewed
-// provider adapter plugs into; in this build ZERO connection adapters exist,
-// and every declaration below says so plainly. The Phase-8 module
-// (marketing_ads_adapters.ts) remains the single truth for INGESTION modes
-// and is deliberately untouched — this module describes CONNECTIONS
-// (credentialed provider accounts + sync), which no provider implements yet.
+// Pure module (no network, no database). This is the seam reviewed provider
+// adapters plug into. As of Phase 10B exactly ONE real adapter exists — Meta
+// (fixture tested, NOT live verified, no tenant connected); Google Ads /
+// LinkedIn / Sheet remain unimplemented and say so plainly. The Phase-8
+// module (marketing_ads_adapters.ts) remains the single truth for INGESTION
+// modes and is deliberately untouched — this module describes CONNECTIONS
+// (credentialed provider accounts + sync).
 //
 // The Edge function consults connectionAdapterImplemented() before letting a
-// connect attempt proceed past the recorded-facts path, and the SQL layer
-// bakes the same v1 truth (marketing_provider_account_connect_start lands in
-// error/'no_adapter'). Two layers, one truth: nothing can fabricate a
-// connected account.
+// connect attempt proceed past the recorded-facts path; providers without an
+// adapter land in the recorded error/'no_adapter'. A provider WITH an
+// adapter still only reaches 'connected' through the worker-validated seam
+// with genuine verification evidence. Nothing can fabricate a connected
+// account.
 
 export type ProviderConnectionKey = "meta" | "google_ads" | "linkedin" | "sheet";
 
@@ -38,6 +40,13 @@ export interface ProviderConnectionDescriptor {
   connectImplemented: boolean;
   /** a reviewed sync adapter exists and can genuinely pull provider facts */
   syncImplemented: boolean;
+  /** HOW FAR the adapter's truth has been verified:
+   *  'none' — no adapter; 'fixture_tested' — implemented and proven against
+   *  deterministic official-contract fixtures, NO live provider request has
+   *  ever been made; 'live_verified' — a genuine authorised provider
+   *  request succeeded (nothing in this build is live_verified). This is
+   *  adapter status, NEVER a tenant connection state. */
+  verification: "none" | "fixture_tested" | "live_verified";
   /** what a REAL integration requires before connect can ever succeed */
   requirements: string[];
 }
@@ -46,11 +55,16 @@ export const PROVIDER_CONNECTION_CATALOGUE: readonly ProviderConnectionDescripto
   {
     provider: "meta",
     displayName: "Meta / Facebook / Instagram",
-    connectImplemented: false,
-    syncImplemented: false,
+    // Phase 10B: the reviewed adapter EXISTS (Graph API v26.0, read-only
+    // slice) and is fixture tested — NOT live verified, and no tenant is
+    // connected. Requirements below are the remaining EXTERNAL gates.
+    connectImplemented: true,
+    syncImplemented: true,
+    verification: "fixture_tested",
     requirements: [
-      "A reviewed Meta Graph API connection adapter (credential verification + insights sync)",
-      "A Meta app + system-user token stored in the tenant Vault broker",
+      "A Business Manager system-user access token with ads_read (operator-supplied)",
+      "Meta app with Marketing API access — App Review / advanced access is an external process",
+      "First genuine authorised request (live verification) — never performed in this build",
     ],
   },
   {
@@ -58,6 +72,7 @@ export const PROVIDER_CONNECTION_CATALOGUE: readonly ProviderConnectionDescripto
     displayName: "Google Ads",
     connectImplemented: false,
     syncImplemented: false,
+    verification: "none",
     requirements: [
       "A reviewed Google Ads API connection adapter (OAuth verification + reporting sync)",
       "OAuth credentials + developer token stored in the tenant Vault broker",
@@ -68,6 +83,7 @@ export const PROVIDER_CONNECTION_CATALOGUE: readonly ProviderConnectionDescripto
     displayName: "LinkedIn",
     connectImplemented: false,
     syncImplemented: false,
+    verification: "none",
     requirements: [
       "A reviewed LinkedIn Marketing API connection adapter (OAuth verification + reporting sync)",
       "OAuth credentials stored in the tenant Vault broker",
@@ -78,6 +94,7 @@ export const PROVIDER_CONNECTION_CATALOGUE: readonly ProviderConnectionDescripto
     displayName: "Authenticated Google Sheet",
     connectImplemented: false,
     syncImplemented: false,
+    verification: "none",
     requirements: [
       "An AUTHENTICATED Sheets connection through the existing Google Workspace seam",
       "Never a publicly shared sheet — tenant-authorised access only",

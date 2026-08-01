@@ -22,6 +22,7 @@
 
 import { getConnectionDescriptor } from "./marketing_provider_connections.ts";
 import { serviceosTestProviderAdapter } from "./marketing_test_provider.ts";
+import { metaAdapter, metaAdapterWithFixtures } from "./marketing_meta_adapter.ts";
 
 export const SERVICEOS_TEST_PROVIDER = "serviceos_test_provider";
 
@@ -86,10 +87,20 @@ export type AdapterSyncResult =
 export interface ProviderAdapter {
   provider: string;
   version: string;
+  /** true when facts can only be fetched for a SELECTED external account
+   *  (e.g. a Meta ad account). The sync worker then fails runs honestly as
+   *  'no_external_account' before any provider access instead of surfacing
+   *  an opaque provider refusal. */
+  requiresExternalAccount?: boolean;
   validateConnection(credential: string): Promise<AdapterValidation>;
   fetchFacts(args: {
     credential: string;
     externalAccountRef: string | null;
+    /** ISO instant of the account's last successful sync, when known — an
+     *  adapter MAY use it to bound an incremental window (with its own
+     *  provider-correction overlap). Absent ⇒ the adapter's initial
+     *  bounded lookback. */
+    sinceIso?: string | null;
   }): Promise<AdapterSyncResult>;
 }
 
@@ -208,7 +219,14 @@ export function getProviderAdapter(provider: string, env: AdapterEnv): ProviderA
   if (provider === SERVICEOS_TEST_PROVIDER) {
     return env.testProviderEnabled ? serviceosTestProviderAdapter : null;
   }
-  // real providers: a reviewed adapter does not exist in this build. The
+  if (provider === "meta") {
+    // the REVIEWED Meta adapter (fixture tested — NOT live verified). The
+    // env gate governs ONLY whether meta-fixture:* credentials resolve to
+    // the deterministic contract fixtures; production always gets the real
+    // transport, where a fixture credential can never validate.
+    return env.testProviderEnabled ? metaAdapterWithFixtures : metaAdapter;
+  }
+  // remaining real providers: no reviewed adapter exists in this build. The
   // catalogue says so; this registry says so; nothing can pretend otherwise.
   void getConnectionDescriptor(provider);
   return null;

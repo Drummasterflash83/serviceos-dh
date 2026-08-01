@@ -22,6 +22,8 @@ export interface ConnectionDescriptor {
   displayName: string;
   connectImplemented: boolean;
   syncImplemented: boolean;
+  /** adapter verification depth — NEVER a tenant connection state */
+  verification: "none" | "fixture_tested" | "live_verified";
   requirements: string[];
 }
 

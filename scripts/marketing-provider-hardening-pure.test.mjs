@@ -81,9 +81,15 @@ test("contract: malformed canonical data cannot cross the boundary", () => {
 
 /* ── 2 · the registry gate ────────────────────────────────────────────────── */
 
-test("registry: real providers NEVER resolve an adapter", () => {
+test("registry: unimplemented real providers NEVER resolve; meta resolves the reviewed adapter", () => {
+  // LOCK EVOLVED in Phase 10B (ledger §20): meta now resolves the reviewed
+  // fixture-tested adapter under BOTH gate states (the gate only selects
+  // whether meta-fixture:* credentials resolve to contract fixtures). The
+  // lock still fails loudly if any UNIMPLEMENTED provider resolves one.
   for (const enabled of [true, false]) {
-    for (const p of ["meta", "google_ads", "linkedin", "sheet", "unknown", ""]) {
+    const meta = getProviderAdapter("meta", { testProviderEnabled: enabled });
+    assert.ok(meta && meta.provider === "meta", `meta resolves (enabled=${enabled})`);
+    for (const p of ["google_ads", "linkedin", "sheet", "unknown", ""]) {
       assert.equal(
         getProviderAdapter(p, { testProviderEnabled: enabled }),
         null,

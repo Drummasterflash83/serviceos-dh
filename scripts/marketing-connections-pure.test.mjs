@@ -36,16 +36,35 @@ test("catalogue: exactly the four connectable providers, no webhook", () => {
   assert.deepEqual(keys, ["google_ads", "linkedin", "meta", "sheet"]);
 });
 
-test("catalogue: ZERO connection adapters are implemented in this build", () => {
+test("catalogue: adapter truth — meta fixture-tested, everything else unimplemented", () => {
+  // LOCK EVOLVED in Phase 10B (documented in ledger §20): the original
+  // Phase-9 assertion was "zero adapters exist". The reviewed Meta adapter
+  // now exists (fixture tested — NOT live verified). The lock still fails
+  // loudly if any OTHER provider claims an adapter, if meta claims live
+  // verification, or if requirements are dropped. Nothing was weakened —
+  // the catalogue must still tell the exact truth.
   for (const c of PROVIDER_CONNECTION_CATALOGUE) {
-    assert.equal(c.connectImplemented, false, `${c.provider} must not claim connect`);
-    assert.equal(c.syncImplemented, false, `${c.provider} must not claim sync`);
+    if (c.provider === "meta") {
+      assert.equal(c.connectImplemented, true, "meta's reviewed adapter exists");
+      assert.equal(c.syncImplemented, true);
+      assert.equal(c.verification, "fixture_tested", "meta is NEVER live_verified in this build");
+    } else {
+      assert.equal(c.connectImplemented, false, `${c.provider} must not claim connect`);
+      assert.equal(c.syncImplemented, false, `${c.provider} must not claim sync`);
+      assert.equal(c.verification, "none");
+    }
     assert.ok(c.requirements.length > 0, `${c.provider} states what a REAL integration needs`);
   }
+  assert.ok(
+    !PROVIDER_CONNECTION_CATALOGUE.some((c) => c.verification === "live_verified"),
+    "nothing in this build is live verified",
+  );
 });
 
 test("helpers: implemented flags report the same truth for every input", () => {
-  for (const p of ["meta", "google_ads", "linkedin", "sheet", "webhook", "unknown", ""]) {
+  assert.equal(connectionAdapterImplemented("meta"), true);
+  assert.equal(syncAdapterImplemented("meta"), true);
+  for (const p of ["google_ads", "linkedin", "sheet", "webhook", "unknown", ""]) {
     assert.equal(connectionAdapterImplemented(p), false);
     assert.equal(syncAdapterImplemented(p), false);
   }
