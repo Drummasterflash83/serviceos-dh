@@ -584,7 +584,10 @@ begin
     raise exception 'FAIL: a browser role can write a Phase-9 table';
   end if;
 
-  -- the COMPLETE Phase-9 function set, locked in BOTH directions
+  -- the COMPLETE marketing_provider_% function set, locked in BOTH directions.
+  -- Phase 10A EXTENDED this list additively (external_select, fact_record,
+  -- account_report, sync_enqueue_due) — the lock still fails loudly on any
+  -- unlisted function AND on any missing one; nothing was weakened.
   declare
     expected text[] := array[
       'marketing_provider_account_guard','marketing_provider_sync_run_guard',
@@ -594,7 +597,10 @@ begin
       'marketing_provider_account_credential_mark',
       'marketing_provider_account_revoke','marketing_provider_sync_request',
       'marketing_provider_sync_claim','marketing_provider_sync_complete',
-      'marketing_provider_sync_due','marketing_provider_connection_list'];
+      'marketing_provider_sync_due','marketing_provider_connection_list',
+      'marketing_provider_account_external_select',
+      'marketing_provider_fact_record','marketing_provider_account_report',
+      'marketing_provider_sync_enqueue_due'];
     found_set text[];
     missing text[];
     extra text[];

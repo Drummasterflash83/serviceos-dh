@@ -41,6 +41,7 @@ import { handleMarketingBroadcastDispatch } from "./marketing_broadcast_dispatch
 import { handleMarketingSequenceAdvance } from "./marketing_sequence_advance.ts";
 import { handleMarketingAdLeadProcess } from "./marketing_ad_lead.ts";
 import { handleMarketingProviderSync } from "./marketing_provider_sync.ts";
+import { handleMarketingProviderConnect } from "./marketing_provider_connect.ts";
 
 export interface WorkerHandlerContext {
   /** Service-role client (bypasses RLS). Business writes go through this. */
@@ -120,6 +121,7 @@ export const WORKER_HANDLERS: Record<string, WorkerHandler> = {
   "marketing.sequence_advance": handleMarketingSequenceAdvance,
   "marketing.ad_lead_process": handleMarketingAdLeadProcess,
   "marketing.provider_sync": handleMarketingProviderSync,
+  "marketing.provider_connect": handleMarketingProviderConnect,
 };
 
 export function getWorkerHandler(jobType: string): WorkerHandler | null {

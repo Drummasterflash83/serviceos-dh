@@ -860,9 +860,9 @@ export function MarketingAds({ canManage }: { canManage: boolean }) {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {unconnected.map((p) => (
           <div key={p.provider} className="rounded-xl border border-hairline bg-white p-3">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs font-semibold text-foreground">{p.displayName}</div>
-              <span className="rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
+              <span className="shrink-0 whitespace-nowrap rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
                 Not connected
               </span>
             </div>

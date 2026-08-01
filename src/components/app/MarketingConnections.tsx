@@ -19,13 +19,18 @@ import {
   type ConnectionAccountRow,
   type ConnectionDescriptor,
   type ConnectionProvider,
+  type ConnectionReport,
+  type ConnectionRunSummary,
   connectConnection,
   createConnection,
   getConnectionCatalogue,
+  getConnectionReport,
+  listConnectionRuns,
   listConnections,
   newConnectionRequestId,
   requestConnectionSync,
   revokeConnection,
+  selectExternalAccount,
   setConnectionCredential,
 } from "@/lib/marketing/connections";
 
@@ -91,6 +96,33 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
   const [newName, setNewName] = useState("");
   const [credentialFor, setCredentialFor] = useState<ConnectionAccountRow | null>(null);
   const [credentialValue, setCredentialValue] = useState("");
+  const [selectRef, setSelectRef] = useState("");
+  const [reportFor, setReportFor] = useState<string | null>(null);
+  const [report, setReport] = useState<ConnectionReport | null>(null);
+  const [reportRuns, setReportRuns] = useState<ConnectionRunSummary[]>([]);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const openReport = async (accountId: string) => {
+    setReportFor(accountId);
+    setReport(null);
+    setReportRuns([]);
+    setReportError(null);
+    setReportLoading(true);
+    const [rep, rr] = await Promise.all([
+      getConnectionReport(accountId),
+      listConnectionRuns(accountId),
+    ]);
+    setReportLoading(false);
+    if (!rep.ok) {
+      // NEVER render a fabricated empty report from a failed fetch
+      setReportError(rep.error.message);
+      return;
+    }
+    setReport(rep.data);
+    setReportRuns(rr.ok ? (rr.data.runs ?? []) : []);
+    if (!rr.ok) setReportError(`Run history unavailable: ${rr.error.message}`);
+  };
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -268,6 +300,11 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
                           last run failed · {a.latest_run.error_class ?? "unknown"}
                         </span>
                       )}
+                      {a.external_account_name && (
+                        <span className="text-xs text-muted-foreground">
+                          external account: {a.external_account_name}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {canManage && a.status !== "revoked" && (
@@ -285,6 +322,10 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
                             if (r.ok && r.data.status === "error") {
                               setNotice(
                                 "Connect attempt recorded honestly: no provider adapter exists in this build, so the connection stays in error/no_adapter until a reviewed adapter ships.",
+                              );
+                            } else if (r.ok && r.data.status === "connecting") {
+                              setNotice(
+                                "Connection validation queued — the adapter verifies the credential server-side; refresh to see the genuine outcome.",
                               );
                             }
                             return r;
@@ -399,6 +440,172 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
                     </button>
                   </form>
                 )}
+
+                {canManage &&
+                  a.status === "connected" &&
+                  !a.external_account_ref &&
+                  (a.discovered_accounts?.length ?? 0) > 0 && (
+                    <form
+                      className="mt-3 flex flex-wrap items-end gap-2 border-t border-hairline pt-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!selectRef) {
+                          setNotice("Choose an external account first.");
+                          return;
+                        }
+                        void run(`select-${a.id}`, () =>
+                          selectExternalAccount(
+                            a.id,
+                            a.version,
+                            selectRef,
+                            newConnectionRequestId(),
+                          ),
+                        ).then(() => setSelectRef(""));
+                      }}
+                    >
+                      <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                        External account (discovered by the adapter)
+                        <select
+                          value={selectRef}
+                          onChange={(e) => setSelectRef(e.target.value)}
+                          className="rounded-lg border border-hairline bg-white px-2 py-1.5 text-sm text-foreground"
+                        >
+                          <option value="">Choose…</option>
+                          {a.discovered_accounts.map((d) => (
+                            <option key={d.ref} value={d.ref}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="submit"
+                        disabled={busy === `select-${a.id}`}
+                        className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                      >
+                        {busy === `select-${a.id}` ? "Selecting…" : "Select account"}
+                      </button>
+                    </form>
+                  )}
+
+                <div className="mt-3 border-t border-hairline pt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (reportFor === a.id) {
+                        setReportFor(null);
+                      } else {
+                        void openReport(a.id);
+                      }
+                    }}
+                    aria-expanded={reportFor === a.id}
+                    className="rounded-lg border border-hairline px-2.5 py-1 text-xs text-foreground hover:bg-surface-alt"
+                  >
+                    {reportFor === a.id ? "Hide details" : "Details & report"}
+                  </button>
+
+                  {reportFor === a.id && (
+                    <div className="mt-3 space-y-3">
+                      {reportLoading && (
+                        <div role="status" className="text-xs text-muted-foreground">
+                          <Loader2
+                            className="mr-1 inline h-3 w-3 animate-spin"
+                            aria-hidden="true"
+                          />
+                          Loading report…
+                        </div>
+                      )}
+                      {reportError && (
+                        <div
+                          role="alert"
+                          className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-destructive"
+                        >
+                          <AlertTriangle className="mr-1 inline h-3 w-3" aria-hidden="true" />
+                          {reportError}
+                          <button
+                            type="button"
+                            onClick={() => void openReport(a.id)}
+                            className="ml-2 rounded border border-hairline px-2 py-0.5 text-xs text-foreground hover:bg-white"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+                      {report && (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-lg border border-hairline p-3">
+                            <div className="text-xs font-semibold text-foreground">
+                              Health: {report.health}
+                            </div>
+                            <dl className="mt-2 space-y-1 text-xs text-muted-foreground">
+                              <div>
+                                <dt className="inline font-medium">Spend: </dt>
+                                <dd className="inline">
+                                  {report.totals.spend !== null
+                                    ? `${report.totals.spend} ${report.totals.currencies[0] ?? ""}`
+                                    : `Unavailable — ${report.totals.spend_unavailable_reason ?? "no facts"}`}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="inline font-medium">Leads: </dt>
+                                <dd className="inline">
+                                  {report.totals.leads !== null
+                                    ? report.totals.leads
+                                    : `Unavailable — ${report.totals.leads_unavailable_reason ?? "no facts"}`}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="inline font-medium">Cost per lead: </dt>
+                                <dd className="inline">
+                                  {report.cpl.value !== null
+                                    ? report.cpl.value
+                                    : `Unavailable — ${report.cpl.unavailable_reason ?? "not derivable"}`}
+                                </dd>
+                              </div>
+                              {report.metrics_status.state === "unavailable" && (
+                                <div role="alert" className="text-destructive">
+                                  Metrics unavailable — {report.metrics_status.reason}
+                                </div>
+                              )}
+                            </dl>
+                          </div>
+                          <div className="rounded-lg border border-hairline p-3">
+                            <div className="text-xs font-semibold text-foreground">
+                              Campaign feed ({report.campaigns.length})
+                            </div>
+                            {report.campaigns.length === 0 ? (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                No campaign facts have been synced.
+                              </p>
+                            ) : (
+                              <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                                {report.campaigns.slice(0, 8).map((c) => (
+                                  <li key={c.external_ref}>{c.name ?? c.external_ref}</li>
+                                ))}
+                              </ul>
+                            )}
+                            <div className="mt-2 text-xs font-semibold text-foreground">
+                              Recent sync runs
+                            </div>
+                            {reportRuns.length === 0 ? (
+                              <p className="mt-1 text-xs text-muted-foreground">No runs yet.</p>
+                            ) : (
+                              <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                                {reportRuns.slice(0, 6).map((rr) => (
+                                  <li key={rr.id}>
+                                    {rr.kind} · {rr.status}
+                                    {rr.error_class ? ` · ${rr.error_class}` : ""} · attempts{" "}
+                                    {rr.attempts}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

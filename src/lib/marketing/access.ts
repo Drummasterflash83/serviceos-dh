@@ -40,9 +40,10 @@ export interface MarketingSettingsView {
 export interface MarketingAccess {
   can_view: boolean;
   reason?: "no_permission" | "not_enabled";
-  /** The caller's OWN authenticated role — returned on denied verdicts so the
-   *  UI can offer the governed owner/admin re-enable path when Marketing is
-   *  disabled (self-information only; never another user's role). */
+  /** The caller's OWN authenticated role (self-information only; never
+   *  another user's role). Returned on BOTH verdicts: on denied it drives the
+   *  governed owner/admin re-enable path; on allowed it drives the
+   *  owner/admin affordance mirrors (e.g. Ads/Connections management). */
   role?: string;
   marketing_enabled?: boolean;
   permissions?: MarketingPermission[];

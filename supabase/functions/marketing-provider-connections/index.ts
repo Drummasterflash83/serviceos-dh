@@ -33,6 +33,10 @@ import {
   connectionVaultProvider,
   PROVIDER_CONNECTION_CATALOGUE,
 } from "../_shared/marketing_provider_connections.ts";
+import {
+  getProviderAdapter,
+  SERVICEOS_TEST_PROVIDER,
+} from "../_shared/marketing_provider_adapter_contract.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -92,13 +96,17 @@ const ACTION_KEYS: Record<string, string[]> = {
     "request_id",
   ],
   connect: ["action", "account_id", "expected_version", "request_id"],
+  external_select: ["action", "account_id", "expected_version", "external_ref", "request_id"],
   credential_set: ["action", "account_id", "expected_version", "credential", "request_id"],
   revoke: ["action", "account_id", "expected_version", "request_id"],
   sync_request: ["action", "account_id", "request_id"],
+  report: ["action", "account_id"],
+  runs: ["action", "account_id"],
 };
 const MANAGE_ACTIONS = new Set([
   "account_create",
   "connect",
+  "external_select",
   "credential_set",
   "revoke",
   "sync_request",
@@ -168,6 +176,14 @@ Deno.serve(async (req) => {
         return json({ ok: true, data: r.data });
       }
       case "account_create": {
+        // the deterministic test identity is REFUSED unless the environment
+        // explicitly enables it — production keeps exactly the real choices
+        if (
+          body.provider === SERVICEOS_TEST_PROVIDER &&
+          Deno.env.get("MARKETING_TEST_PROVIDER") !== "enabled"
+        ) {
+          return fail("INVALID_REQUEST", "The test provider is not available", 400);
+        }
         const args: Row = { request_id: body.request_id };
         for (const k of [
           "provider",
@@ -192,16 +208,81 @@ Deno.serve(async (req) => {
         if (typeof body.expected_version !== "number" || !Number.isInteger(body.expected_version)) {
           return fail("INVALID_REQUEST", "expected_version must be an integer", 400);
         }
-        // The SQL authority records the attempt and its truthful v1 outcome
-        // (error/'no_adapter'); this API adds nothing and fabricates nothing.
+        // Adapter-aware: this layer states truthfully whether it holds an
+        // adapter for the account's provider (real providers: never in this
+        // build). With an adapter the account enters 'connecting' and the
+        // WORKER performs genuine validation; without one the SQL authority
+        // records the honest error/'no_adapter'. Nothing here can fabricate
+        // a connected state.
+        const acctRow = await admin
+          .from("marketing_provider_accounts")
+          .select("provider")
+          .eq("tenant_id", tenantId)
+          .eq("id", body.account_id)
+          .maybeSingle();
+        if (acctRow.error || !acctRow.data) return fail("NOT_FOUND", "Not found", 404);
+        const adapterImplemented =
+          getProviderAdapter(acctRow.data.provider, {
+            testProviderEnabled: Deno.env.get("MARKETING_TEST_PROVIDER") === "enabled",
+          }) !== null;
         const r = await admin.rpc("marketing_provider_account_connect_start", {
           p_tenant: tenantId,
           p_actor: userId,
           p_account: body.account_id,
-          p_args: { request_id: body.request_id, expected_version: body.expected_version },
+          p_args: {
+            request_id: body.request_id,
+            expected_version: body.expected_version,
+            adapter_implemented: adapterImplemented,
+          },
         });
         if (r.error) return mapDbError(r.error);
         return json({ ok: true, data: r.data });
+      }
+      case "external_select": {
+        if (!isUuid(body.account_id)) {
+          return fail("INVALID_REQUEST", "account_id must be a uuid", 400);
+        }
+        if (typeof body.expected_version !== "number" || !Number.isInteger(body.expected_version)) {
+          return fail("INVALID_REQUEST", "expected_version must be an integer", 400);
+        }
+        const r = await admin.rpc("marketing_provider_account_external_select", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_account: body.account_id,
+          p_args: {
+            request_id: body.request_id,
+            expected_version: body.expected_version,
+            external_ref: body.external_ref,
+          },
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "report": {
+        if (!isUuid(body.account_id)) {
+          return fail("INVALID_REQUEST", "account_id must be a uuid", 400);
+        }
+        const r = await admin.rpc("marketing_provider_account_report", {
+          p_tenant: tenantId,
+          p_account: body.account_id,
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "runs": {
+        if (!isUuid(body.account_id)) {
+          return fail("INVALID_REQUEST", "account_id must be a uuid", 400);
+        }
+        const r = await admin
+          .from("marketing_provider_sync_runs")
+          .select("id, kind, status, attempts, error_class, created_at, started_at, finished_at")
+          .eq("tenant_id", tenantId)
+          .eq("account_id", body.account_id)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(20);
+        if (r.error) return fail("INTERNAL", "The operation failed", 500);
+        return json({ ok: true, data: { runs: r.data ?? [] } });
       }
       case "credential_set": {
         if (!isUuid(body.account_id)) {
@@ -274,12 +355,24 @@ Deno.serve(async (req) => {
           p_secret: credential,
         });
         if (stored.error) return fail("INTERNAL", "Could not store the credential", 500);
+        const credAcct = await admin
+          .from("marketing_provider_accounts")
+          .select("provider")
+          .eq("tenant_id", tenantId)
+          .eq("id", body.account_id)
+          .maybeSingle();
+        const hasAdapter =
+          getProviderAdapter(credAcct.data?.provider ?? "", {
+            testProviderEnabled: Deno.env.get("MARKETING_TEST_PROVIDER") === "enabled",
+          }) !== null;
         return json({
           ok: true,
           data: {
             ...markData,
             stored: true,
-            note: "Credential stored in the tenant Vault broker. No adapter exists in this build, so nothing can use it yet — the connection stays truthfully not connected.",
+            note: hasAdapter
+              ? "Credential stored in the tenant Vault broker. It is used only during adapter validation and sync — it is never shown again."
+              : "Credential stored in the tenant Vault broker. No adapter exists for this provider in this build, so nothing can use it yet — the connection stays truthfully not connected.",
           },
         });
       }

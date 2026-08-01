@@ -150,6 +150,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       data: {
         can_view: true,
         marketing_enabled: true,
+        // the caller's OWN authenticated role (self-information only — the
+        // deny path already returns it). Without this the client-side
+        // owner/admin affordance mirror (Phase-8 F10, Ads/Connections
+        // management) could NEVER render for genuine owners — a defect
+        // proven by the first populated visual QA (Phase 10A).
+        role,
         permissions: [...permissions].sort(),
         // initialised=false: settings not yet materialised (caller lacked the
         // authority to bootstrap); the UI states this honestly.

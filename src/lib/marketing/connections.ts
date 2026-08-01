@@ -41,6 +41,11 @@ export interface ConnectionRunSummary {
   finished_at: string | null;
 }
 
+export interface DiscoveredExternalAccount {
+  ref: string;
+  name: string;
+}
+
 export interface ConnectionAccountRow {
   id: string;
   provider: ConnectionProvider;
@@ -54,9 +59,29 @@ export interface ConnectionAccountRow {
   stale_after_seconds: number;
   sync_cadence_minutes: number | null;
   adapter_version: string | null;
+  external_account_ref: string | null;
+  external_account_name: string | null;
+  discovered_accounts: DiscoveredExternalAccount[];
   version: number;
   created_at: string;
   freshness: ConnectionFreshness;
+  latest_run: ConnectionRunSummary | null;
+}
+
+export interface ConnectionReport {
+  account_id: string;
+  health: "healthy" | "degraded" | "error" | "never_run" | "revoked" | ConnectionStatus;
+  totals: {
+    spend: number | null;
+    spend_unavailable_reason?: string | null;
+    currencies: string[];
+    leads: number | null;
+    leads_unavailable_reason?: string | null;
+  };
+  cpl: { value: number | null; unavailable_reason?: string | null };
+  campaigns: { external_ref: string; name: string | null }[];
+  metrics: Record<string, unknown>[];
+  metrics_status: { state: "available" | "unavailable"; reason?: string };
   latest_run: ConnectionRunSummary | null;
 }
 
@@ -145,4 +170,29 @@ export function requestConnectionSync(
     account_id: accountId,
     request_id: requestId,
   });
+}
+
+export function selectExternalAccount(
+  accountId: string,
+  expectedVersion: number,
+  externalRef: string,
+  requestId: string,
+): Promise<ApiResult<{ id: string; external_account_ref: string; external_account_name: string }>> {
+  return callMarketingFn(FN, {
+    action: "external_select",
+    account_id: accountId,
+    expected_version: expectedVersion,
+    external_ref: externalRef,
+    request_id: requestId,
+  });
+}
+
+export function getConnectionReport(accountId: string): Promise<ApiResult<ConnectionReport>> {
+  return callMarketingFn(FN, { action: "report", account_id: accountId });
+}
+
+export function listConnectionRuns(
+  accountId: string,
+): Promise<ApiResult<{ runs: ConnectionRunSummary[] }>> {
+  return callMarketingFn(FN, { action: "runs", account_id: accountId });
 }
