@@ -133,6 +133,20 @@ verify_jwt = false
 # to the tenant Vault broker.
 verify_jwt = false
 
+[functions.marketing-ads]
+# Marketing Ads management/read API (Phase 8). requireTenantUser + canonical
+# resolver (view / owner-admin+ads.manage double gate). Ads captures and
+# attributes leads; it does not create or edit advertisements. The webhook
+# signing secret goes straight to the tenant Vault broker and is shown once.
+verify_jwt = false
+
+[functions.marketing-ad-webhook]
+# PUBLIC provider-neutral SIGNED lead-capture webhook (Phase 8). No Supabase
+# JWT: authentication is the per-source HMAC-SHA256 over timestamp + raw body
+# (secret in the tenant Vault broker), an opaque non-enumerable route key and
+# a freshness window. Every auth failure is one generic 401 with zero writes.
+verify_jwt = false
+
 [functions.phone-scheduled-sync]
 verify_jwt = false
 

@@ -14,7 +14,7 @@
  * founding-document alignment audit + the frontend capability audit (2026-07-22).
  */
 
-export const REGISTRY_VERSION = "2026-07-31.1";
+export const REGISTRY_VERSION = "2026-07-31.2";
 
 /** Raw engineering status — the full truth, for OpenFolk/eng only. */
 export type CapabilityStatus =
@@ -665,16 +665,17 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
   {
     id: "marketing.ads",
     screen: "Marketing",
-    control: "Ads sources (Meta / Google / LinkedIn)",
-    backingCapability: null,
-    read: false,
-    write: false,
-    persistence: "n/a",
+    control: "Ads lead capture, attribution & source health",
+    backingCapability:
+      "marketing_ad_sources/_events/_touchpoints/_metric_facts + the signed provider-neutral webhook (HMAC over raw bytes, Vault-brokered secret) + marketing.ad_lead_process worker through canonical identity/Interactions",
+    read: true,
+    write: true,
+    persistence: "server",
     requiredPermission: "admin",
     status: "PREVIEW",
-    tenantLabel: "Not connected",
+    tenantLabel: "Preview",
     explanation:
-      "No ad provider adapter or credentials exist. Stays Not connected until a real integration is verified (Phase 8).",
+      "Built and locally proven (Phase 8): versioned ad sources, an append-only signed-webhook event ledger (replay-safe, conflict-detecting), canonical inbound Interactions + identity resolution (ambiguity → the existing review path, never a silent merge, never an invented subscription), append-only attribution touchpoints with derived first/last touch, and honest metrics — spend/CPL stay UNAVAILABLE with the exact reason until a genuinely connected adapter reports facts. Meta / Google Ads / LinkedIn / the authenticated-Sheet fallback remain truthfully Not connected (no adapter, no credentials, no manual sync, nothing fabricated). Preview until the served HTTP paths and populated visual QA run on a deployed environment; Phase 9 Business Graph/Card projections are not built.",
   },
 
   // ── Strategy / ownership (whole-product gaps the reset addresses) ─────────

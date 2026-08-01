@@ -1270,7 +1270,8 @@ begin
   -- opened, clicked and bounced must be JSON null — present, explicitly
   -- unknown, and never coerced to a comforting zero — and each must carry the
   -- plain-language reason it is unknown.
-  select campaign_id into cid from marketing_sequence_executions limit 1;
+  select campaign_id into cid from marketing_sequence_executions
+   where tenant_id = 'aaaa9100-0000-0000-0000-0000000000f1' limit 1;
   assert cid is not null, 'reporting invariant has nothing to judge';
   r := marketing_sequence_report('aaaa9100-0000-0000-0000-0000000000f1', cid);
   assert r ?& array['delivered','opened','clicked','bounced'],
@@ -1401,6 +1402,8 @@ begin
   select x.id, e.person_id into ex, per
     from marketing_sequence_executions x
     join marketing_sequence_enrolments e on e.id = x.enrolment_id
+   where x.tenant_id = 'aaaa9100-0000-0000-0000-0000000000f1'
+     and e.tenant_id = 'aaaa9100-0000-0000-0000-0000000000f1'
    limit 1;
   assert ex is not null and per is not null, 'the seam test has nothing to judge';
   select count(*) into before_n from intelligence_objects where object_class = 'action';

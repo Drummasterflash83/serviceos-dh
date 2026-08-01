@@ -43,6 +43,7 @@ import { MarketingSegments } from "@/components/app/MarketingSegments";
 import { MarketingTags } from "@/components/app/MarketingTags";
 import { MarketingImports } from "@/components/app/MarketingImports";
 import { MarketingSettings } from "@/components/app/MarketingSettings";
+import { MarketingAds } from "@/components/app/MarketingAds";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import { deriveMarketingGate } from "@/lib/marketing/gate";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -356,25 +357,15 @@ function CampaignsSection() {
   return <MarketingCampaigns />;
 }
 
-/* ── Ads — no provider adapter exists: honestly Not connected. ── */
+/* ── Ads — the operational Phase 8 surface: signed-webhook lead capture,
+      attribution, honest cost and source health. Meta/Google/LinkedIn stay
+      truthfully Not connected inside it until real adapters exist. ── */
 function AdsSection() {
-  return (
-    <div className="space-y-5">
-      <div>
-        <div className="text-display text-xl font-semibold">Ads</div>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Lead capture, attribution, cost-per-lead and source health. Ads does not create or edit
-          advertisements.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        {["Meta / Facebook / Instagram", "Google Ads", "LinkedIn"].map((provider) => (
-          <SectionCard key={provider} icon={Plug} title={provider} state="Not connected">
-            No adapter or credentials are configured for this provider. It stays Not connected until
-            a real integration is verified end-to-end (Phase 8) — no fabricated data.
-          </SectionCard>
-        ))}
-      </div>
-    </div>
-  );
+  // affordance gating only — the server enforces every permission again. Mirror
+  // the server's STRUCTURAL ceiling here: management needs the owner/admin role
+  // AND marketing.ads.manage, so a stray grant to ops/viewer never surfaces
+  // buttons that would only 403 (the boundary holds server-side either way).
+  const { access, can } = useMarketingAccess();
+  const isOwnerAdmin = access?.role === "owner" || access?.role === "admin";
+  return <MarketingAds canManage={Boolean(isOwnerAdmin) && can("marketing.ads.manage")} />;
 }
