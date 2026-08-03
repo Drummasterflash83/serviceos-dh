@@ -97,6 +97,14 @@ const ACTION_KEYS: Record<string, string[]> = {
     "reply_to",
     "signature_text",
   ],
+  sender_create_resend: [
+    "action",
+    "from_address",
+    "label",
+    "from_name",
+    "reply_to",
+    "signature_text",
+  ],
   sender_update: ["action", "sender_id", "changes", "expected_updated_at"],
   sender_enable: ["action", "sender_id", "expected_updated_at"],
   sender_disable: ["action", "sender_id", "expected_updated_at"],
@@ -107,6 +115,7 @@ const ACTION_KEYS: Record<string, string[]> = {
 };
 const MANAGE_ACTIONS = new Set([
   "sender_create",
+  "sender_create_resend",
   "sender_update",
   "sender_enable",
   "sender_disable",
@@ -316,6 +325,28 @@ Deno.serve(async (req) => {
           if (["42501", "22023"].includes(r.error.code ?? "")) {
             await auditRejected("marketing.sender.created", r.error.code ?? "", {
               source_kind: body.source_kind,
+            });
+          }
+          return mapDbError(r.error);
+        }
+        return json({ ok: true, data: r.data });
+      }
+      case "sender_create_resend": {
+        const r = await admin.rpc("marketing_sender_create_resend", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_args: {
+            from_address: body.from_address,
+            ...(body.label !== undefined ? { label: body.label } : {}),
+            ...(body.from_name !== undefined ? { from_name: body.from_name } : {}),
+            ...(body.reply_to !== undefined ? { reply_to: body.reply_to } : {}),
+            ...(body.signature_text !== undefined ? { signature_text: body.signature_text } : {}),
+          },
+        });
+        if (r.error) {
+          if (["42501", "22023"].includes(r.error.code ?? "")) {
+            await auditRejected("marketing.sender.created", r.error.code ?? "", {
+              source_kind: "resend",
             });
           }
           return mapDbError(r.error);

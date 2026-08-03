@@ -96,6 +96,13 @@ verify_jwt = false
 # responses, idempotent. Shares NO tenant-user auth code.
 verify_jwt = false
 
+[functions.marketing-track]
+# PUBLIC open/click tracking (Activation). Deliberately unauthenticated:
+# HMAC-signed pixel/redirect over the delivery id, generic non-enumerating
+# responses (a gif / a neutral redirect regardless of validity). Records via
+# service-role RPC only; reveals no tenant data.
+verify_jwt = false
+
 [functions.marketing-broadcast-scheduled-sync]
 # Scheduled broadcast heartbeat (Phase 5): discovers due campaigns + drives the
 # bounded dispatch worker. Secret-gated via MARKETING_BROADCAST_SECRET; never

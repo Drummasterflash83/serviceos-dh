@@ -50,7 +50,7 @@ export function senderRemediation(state: SenderReadiness["state"]): string | nul
 
 export interface SenderProfile {
   id: string;
-  source_kind: "gmail_oauth" | "workspace_dwd";
+  source_kind: "gmail_oauth" | "workspace_dwd" | "resend";
   email_account_id: string | null;
   workspace_mailbox_id: string | null;
   mailbox_address: string;
@@ -180,6 +180,20 @@ export const createSender = (args: {
   reply_to?: string;
   signature_text?: string;
 }) => callMarketingFn<{ id: string; created: boolean }>(FN, { action: "sender_create", ...args });
+
+// Resend transport sender: a verified from-address backed by the platform
+// Resend key. No Google connection required — immediately usable.
+export const createResendSender = (args: {
+  from_address: string;
+  label?: string;
+  from_name?: string;
+  reply_to?: string;
+  signature_text?: string;
+}) =>
+  callMarketingFn<{ id: string; created: boolean; mailbox_address: string; enabled: boolean }>(FN, {
+    action: "sender_create_resend",
+    ...args,
+  });
 
 export const updateSender = (
   senderId: string,

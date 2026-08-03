@@ -39,7 +39,7 @@ export function hasHeaderInjection(v: string): boolean {
 
 export interface SendEnvelope {
   sender_profile_id: string;
-  source_kind: "gmail_oauth" | "workspace_dwd";
+  source_kind: "gmail_oauth" | "workspace_dwd" | "resend";
   mailbox_address: string;
   recipient_profile_id: string;
   recipient_email: string;
@@ -104,8 +104,8 @@ export function validateSendEnvelope(
     if (!v || !UUID_RE.test(v)) return bad(`${k} must be a uuid`);
   }
   const sourceKind = str("source_kind");
-  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd") {
-    return bad("source_kind must be gmail_oauth|workspace_dwd");
+  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd" && sourceKind !== "resend") {
+    return bad("source_kind must be gmail_oauth|workspace_dwd|resend");
   }
   const mailbox = str("mailbox_address");
   if (!mailbox || !isPlausibleEmail(mailbox) || mailbox !== mailbox.toLowerCase()) {
@@ -178,7 +178,7 @@ export function validateSendEnvelope(
 
 export interface BroadcastSendEnvelope {
   sender_profile_id: string;
-  source_kind: "gmail_oauth" | "workspace_dwd";
+  source_kind: "gmail_oauth" | "workspace_dwd" | "resend";
   mailbox_address: string;
   recipient_profile_id: null;
   recipient_email: string;
@@ -278,8 +278,8 @@ export function validateBroadcastEnvelope(
     if (!v || !UUID_RE.test(v)) return bad(`${k} must be a uuid`);
   }
   const sourceKind = str("source_kind");
-  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd") {
-    return bad("source_kind must be gmail_oauth|workspace_dwd");
+  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd" && sourceKind !== "resend") {
+    return bad("source_kind must be gmail_oauth|workspace_dwd|resend");
   }
   const mailbox = str("mailbox_address");
   if (!mailbox || !isPlausibleEmail(mailbox) || mailbox !== mailbox.toLowerCase()) {
@@ -389,7 +389,7 @@ export function validateBroadcastEnvelope(
 
 export interface SequenceSendEnvelope {
   sender_profile_id: string;
-  source_kind: "gmail_oauth" | "workspace_dwd";
+  source_kind: "gmail_oauth" | "workspace_dwd" | "resend";
   mailbox_address: string;
   recipient_profile_id: null;
   recipient_email: string;
@@ -491,8 +491,8 @@ export function validateSequenceEnvelope(
     if (!v || !UUID_RE.test(v)) return bad(`${k} must be a uuid`);
   }
   const sourceKind = str("source_kind");
-  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd") {
-    return bad("source_kind must be gmail_oauth|workspace_dwd");
+  if (sourceKind !== "gmail_oauth" && sourceKind !== "workspace_dwd" && sourceKind !== "resend") {
+    return bad("source_kind must be gmail_oauth|workspace_dwd|resend");
   }
   const mailbox = str("mailbox_address");
   if (!mailbox || !isPlausibleEmail(mailbox) || mailbox !== mailbox.toLowerCase()) {

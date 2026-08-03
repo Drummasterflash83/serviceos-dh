@@ -25,6 +25,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import {
+  createResendSender,
   createSender,
   getSendersOverview,
   getTestSendStatus,
@@ -108,6 +109,8 @@ export function SendersSection() {
     body: "",
   });
   const [testRequestId, setTestRequestId] = useState<string>(newTestSendRequestId());
+  const [resendFrom, setResendFrom] = useState<string>("onboarding@resend.dev");
+  const [resendFromName, setResendFromName] = useState<string>("Drummonds");
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -265,7 +268,13 @@ export function SendersSection() {
                   <span className="text-xs text-muted-foreground">{s.mailbox_address}</span>
                   <Pill
                     tone="muted"
-                    label={s.source_kind === "gmail_oauth" ? "Gmail OAuth" : "Workspace DWD"}
+                    label={
+                      s.source_kind === "gmail_oauth"
+                        ? "Gmail OAuth"
+                        : s.source_kind === "resend"
+                          ? "Resend"
+                          : "Workspace DWD"
+                    }
                   />
                   {isDefault && <Pill tone="ok" label="Default" />}
                   <Pill
@@ -551,6 +560,52 @@ export function SendersSection() {
               domain-wide delegation grant.
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Resend transport sender — a verified from-address, no Google needed */}
+      {data.can_manage && (
+        <div className="mt-4 rounded-lg border border-hairline p-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Add Resend sender
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            <input
+              className={inputCls}
+              value={resendFrom}
+              onChange={(e) => setResendFrom(e.target.value)}
+              placeholder="from address (e.g. onboarding@resend.dev)"
+              aria-label="Resend from address"
+            />
+            <input
+              className={inputCls}
+              value={resendFromName}
+              onChange={(e) => setResendFromName(e.target.value)}
+              placeholder="from name"
+              aria-label="Resend from name"
+            />
+          </div>
+          <button
+            className={`${btnCls} mt-2`}
+            disabled={busy || !resendFrom.includes("@")}
+            onClick={() =>
+              run(
+                () =>
+                  createResendSender({
+                    from_address: resendFrom.trim(),
+                    from_name: resendFromName.trim() || undefined,
+                  }),
+                "Resend sender created — enable it, then send a test.",
+              )
+            }
+          >
+            Add Resend sender
+          </button>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            The platform Resend API key (RESEND_API_KEY) must be configured. Real sending to any
+            recipient needs a domain verified in Resend; the resend.dev sandbox sends only to your
+            own account address.
+          </p>
         </div>
       )}
 

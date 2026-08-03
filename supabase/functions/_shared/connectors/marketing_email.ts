@@ -62,6 +62,8 @@ import {
   buildBroadcastMime,
   buildMarketingMime,
   classifyGmailSendFailure,
+  composeMarketingBody,
+  escapeHtml,
   evaluateActorAuthority,
   evaluateGmailSendScope,
   sanitizeGmailSendResponse,
@@ -69,6 +71,8 @@ import {
 } from "../marketing_email.ts";
 import { getGoogleOAuthConfig, refreshGmailAccessToken } from "../gmail_oauth.ts";
 import { DelegationError, getDelegatedGmailSendToken } from "../google_workspace.ts";
+import { composeFrom, sendViaResend } from "./resend_transport.ts";
+import { injectTrackingHtml, trackingToken } from "../marketing_tracking.ts";
 
 const CAPABILITY = "email.send_marketing";
 const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
@@ -97,6 +101,21 @@ function unknownResult(code: string, message: string): ConnectorExecutionResult 
     errorMessage: message.slice(0, 200),
     retryable: false,
   };
+}
+
+// Simple HTML for a plain-text test envelope: escape, split on blank lines into
+// paragraphs, append the signature block. Broadcast/sequence envelopes carry
+// their own rendered body_html and never reach this.
+function composeTestHtml(bodyText: string, signatureText: string | null): string {
+  const paras = bodyText
+    .split(/\n{2,}/)
+    .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
+    .join("\n");
+  const sig =
+    signatureText && signatureText.trim().length > 0
+      ? `\n<hr>\n<p>${escapeHtml(signatureText).replace(/\n/g, "<br>")}</p>`
+      : "";
+  return `<div>\n${paras}${sig}\n</div>`;
 }
 
 export const marketingEmailAdapter: AutomationConnectorAdapter = {
@@ -244,21 +263,28 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       );
     }
 
-    const capRes = await db
-      .from("tenant_connector_capabilities")
-      .select("enabled")
-      .eq("tenant_id", input.tenantId)
-      .eq("connector_id", "google-gmail")
-      .eq("capability_key", CAPABILITY)
-      .maybeSingle();
-    if (capRes.error) {
-      return transient("capability_read_failed", "could not read the tenant capability state");
-    }
-    if (!capRes.data?.enabled) {
-      return permanent(
-        "capability_disabled",
-        "the marketing send capability is not enabled for tenant",
-      );
+    // The tenant_connector_capabilities gate is the GOOGLE mailbox enablement
+    // flag; it does not apply to the Resend transport, whose sendability is
+    // governed entirely by marketing_enabled + actor authority + sender
+    // readiness (all already checked above) + the broadcast/sequence SQL
+    // authority (below). A resend sender never touches Google connectors.
+    if (env.source_kind !== "resend") {
+      const capRes = await db
+        .from("tenant_connector_capabilities")
+        .select("enabled")
+        .eq("tenant_id", input.tenantId)
+        .eq("connector_id", "google-gmail")
+        .eq("capability_key", CAPABILITY)
+        .maybeSingle();
+      if (capRes.error) {
+        return transient("capability_read_failed", "could not read the tenant capability state");
+      }
+      if (!capRes.data?.enabled) {
+        return permanent(
+          "capability_disabled",
+          "the marketing send capability is not enabled for tenant",
+        );
+      }
     }
 
     if (isGoverned) {
@@ -303,7 +329,85 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       }
     }
 
-    // ── credentials, server-side only ──
+    // ── Resend transport branch ──────────────────────────────────────────
+    // For a `resend` sender the provider is the platform Resend API keyed by a
+    // server-resolved secret (never in the payload). The message is built
+    // EXCLUSIVELY from the frozen envelope: subject, recipient, from-address +
+    // from-name, reply-to, and the body (html for broadcast/sequence, composed
+    // from the plain body + signature for a test). Result classification and
+    // the write-free contract are identical to the Gmail path.
+    if (env.source_kind === "resend") {
+      const apiKey = (
+        globalThis as { Deno?: { env: { get(k: string): string | undefined } } }
+      ).Deno?.env.get("RESEND_API_KEY");
+      if (!apiKey) {
+        // a missing platform secret is a retryable operator-config gap
+        // (nothing was sent), never a permanent refusal of the request
+        return transient("resend_not_configured", "RESEND_API_KEY is not configured");
+      }
+      let text: string;
+      let html: string;
+      if (env.purpose === "test") {
+        text = composeMarketingBody(env.body_text, env.signature_text);
+        html = composeTestHtml(env.body_text, env.signature_text);
+      } else {
+        text = env.body_text;
+        html =
+          env.body_html && env.body_html.length > 0
+            ? env.body_html
+            : `<div>${escapeHtml(env.body_text)}</div>`;
+      }
+      // open/click tracking: signed pixel + rewritten links. Write-free — the
+      // adapter only SIGNS; the public marketing-track endpoint records the
+      // event. Enabled only when the secret + a functions base URL exist.
+      const denoEnv = (globalThis as { Deno?: { env: { get(k: string): string | undefined } } })
+        .Deno?.env;
+      const trackingSecret = denoEnv?.get("MARKETING_TRACKING_SECRET");
+      const functionsBase = denoEnv?.get("SUPABASE_URL");
+      if (trackingSecret && functionsBase) {
+        const base = `${functionsBase.replace(/\/$/, "")}/functions/v1/marketing-track`;
+        const openTok = await trackingToken(trackingSecret, env.delivery_id, "open");
+        const clickTok = await trackingToken(trackingSecret, env.delivery_id, "click");
+        const openUrl = `${base}?d=${encodeURIComponent(env.delivery_id)}&k=open&t=${encodeURIComponent(openTok)}`;
+        html = injectTrackingHtml(html, {
+          openUrl,
+          clickBase: base,
+          clickToken: clickTok,
+          deliveryId: env.delivery_id,
+        });
+      }
+      const result = await sendViaResend(
+        {
+          apiKey,
+          from: composeFrom(env.mailbox_address, env.from_name),
+          to: env.recipient_email,
+          replyTo: env.reply_to ?? null,
+          subject: env.subject,
+          html,
+          text,
+          deliveryId: env.delivery_id,
+        },
+        context.signal ?? null,
+      );
+      if (result.outcome === "succeeded") {
+        return {
+          outcome: "succeeded",
+          externalReference: result.id,
+          result: {
+            message_id: result.id,
+            delivery_id: env.delivery_id,
+            transport: "resend",
+            submitted_at: context.now,
+          },
+          retryable: false,
+        };
+      }
+      if (result.outcome === "failed_transient") return transient(result.code, result.message);
+      if (result.outcome === "failed_permanent") return permanent(result.code, result.message);
+      return unknownResult(result.code, result.message);
+    }
+
+    // ── credentials, server-side only (Gmail / Workspace) ──
     let accessToken: string;
     if (env.source_kind === "gmail_oauth") {
       if (!sender.email_account_id) {
