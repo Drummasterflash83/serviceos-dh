@@ -112,12 +112,18 @@ is an explicit operator decision (tenant-scoped
 - "Submitted" means the PROVIDER accepted the request — "submitted to Gmail" on
   the Google paths, "submitted to Resend" on the Resend path. Neither is
   delivery. Nothing in Phase 4 claims delivery, opens or clicks.
-- **Resend (added 2026-08-03):** a third `source_kind`, `resend`, exists. It is
-  the `onboarding@resend.dev` SANDBOX identity only — not a verified sender,
-  test-to-self only, campaigns/sequences refused, and **no real provider
-  submission has ever been verified**. Open/click tracking exists for that
-  transport but is unique-delivery evidence, not analytics. Read
-  [RESEND_SETUP.md](RESEND_SETUP.md) before touching it.
+- **Resend (added 2026-08-03):** a third `source_kind`, `resend`, exists with
+  TWO governed classes. (1) The `onboarding@resend.dev` **sandbox** identity —
+  test-to-self only, campaigns/sequences refused, never provider-verified; a
+  genuine submission through it has now been proven (provider id
+  `c587b2fe-861d-4194-aff8-7b0041d8b263`, inbox receipt confirmed). (2) A
+  **production-verified** identity, permitted only while an OpenFolk operator
+  holds an ACTIVE platform sender authority for that EXACT tenant and address —
+  a tenant admin can never authorise their own sending identity, there is no
+  domain-wide or wildcard grant, and revocation is immediate. Readiness
+  distinguishes `sandbox_ready` / `ready` / `revoked` / `unavailable`. Open/click
+  tracking exists for that transport but is unique-delivery evidence, not
+  analytics. Read [RESEND_SETUP.md](RESEND_SETUP.md) before touching it.
 - Gmail exposes no usable per-account sending quota through these APIs; the UI
   says **Not reported by provider** instead of inventing capacity.
 

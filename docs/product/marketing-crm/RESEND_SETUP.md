@@ -1,25 +1,31 @@
 # Resend transport — setup, limits and what is actually proven
 
-_Last updated: 2026-08-03 (Resend sandbox activation closure)._
+_Last updated: 2026-08-03 (governed verified-domain senders)._
 
 This document is the honest state of the Resend email transport. It is written
 so that nothing here has to be discovered later: what works, what has never been
 run, and exactly what the operator must do before a real email can leave the
 platform.
 
+Three claim strengths are kept distinct throughout: **code-complete** (built and
+locally proven), **staging-proven** (observed against the real staging project)
+and **production-live** (running for real customers — nothing here is that yet).
+
 ---
 
 ## 0 · Status at a glance
 
-| Claim                                                | State                                                         |
-| ---------------------------------------------------- | ------------------------------------------------------------- |
-| Code path implemented (transport, adapter, tracking) | **Yes** — built and unit/SQL/HTTP proven                      |
-| Real provider submission to Resend                   | **NOT RUN** — no request has ever reached `api.resend.com`    |
-| Inbox delivery observed                              | **NOT RUN** — nothing has been received anywhere              |
-| Campaign / sequence handshake over Resend            | **NOT RUN** — and structurally refused for the sandbox sender |
-| Earlier "fixture" success evidence                   | **RETRACTED** — see §1                                        |
-| `RESEND_API_KEY` installed on staging                | **No** — deliberately absent; sending fails closed            |
-| Verified sending domain                              | **No** — only the `resend.dev` sandbox identity exists        |
+| Claim                                                | State                                                                                     |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Code path implemented (transport, adapter, tracking) | **Code-complete** — unit/SQL/HTTP proven                                                  |
+| Real provider submission to Resend                   | **PROVEN (staging, sandbox sender)** — provider id `c587b2fe-861d-4194-aff8-7b0041d8b263` |
+| Inbox delivery observed                              | **CONFIRMED by Chris** for that sandbox submission                                        |
+| Governed verified-domain (production) senders        | **Code-complete**; staging activation for `hello@drummonds.co` — see §7                   |
+| Campaign / sequence handshake over Resend            | **NOT RUN** — permitted only for a production-verified sender; none has been launched     |
+| Earlier "fixture" success evidence                   | **RETRACTED** — see below                                                                 |
+| `RESEND_API_KEY` installed on staging                | **Yes** (operator-owned; never in this repository)                                        |
+| Verified sending domain                              | **`drummonds.co` verified in Resend** (SPF, DKIM, return-path MX, DMARC via GoDaddy)      |
+| Production Supabase / production frontend            | **UNTOUCHED** — no production deployment has occurred                                     |
 
 ### FIXTURE PROOF EXPLICITLY RETRACTED
 
@@ -60,8 +66,9 @@ exact canonical destination` — changing any byte invalidates the token;
 
 ## 1 · What the sandbox sender is (and is not)
 
-The only permitted Resend from-address today is **`onboarding@resend.dev`**, the
-provider's sandbox identity on the platform key.
+One of the two governed Resend classes is the **sandbox** identity
+**`onboarding@resend.dev`** on the platform key. (The other is a
+production-verified identity backed by a platform sender authority — see §7.)
 
 It is **not** a verified sender. Specifically:
 
@@ -76,24 +83,28 @@ actor_profile_id`, recipient in the same tenant, the recipient's current email
   network requests. We do not rely on Resend rejecting the recipient for us.
 - **Campaigns and sequences blocked** — a sandbox envelope with purpose
   `broadcast` or `sequence` is refused (`policy_sandbox_sender_no_campaign`).
-- **Real provider submission not yet verified** — see §0.
+- **Real provider submission PROVEN** — one governed test-to-self send was
+  accepted by Resend (provider id `c587b2fe-861d-4194-aff8-7b0041d8b263`) and
+  Chris confirmed inbox receipt. See §0.
 - **Missing key fails closed** — without a valid `re_…` key the send returns
   `resend_not_configured` and nothing is sent.
 
-Any other Resend from-address is **unavailable** and **never production-ready**:
-the create RPC refuses it, readiness derives `unavailable`, and migration
-`20260908120400` disables any that a previous build left behind (history
-preserved, change audited).
+Any other Resend from-address is **unavailable by default**: the create RPC
+refuses it (`42501`) and readiness derives `unavailable`, unless an OpenFolk
+operator holds an ACTIVE platform sender authority for that exact tenant and
+address (§7). Migration `20260908120400` disabled any legacy arbitrary address a
+previous build left behind (history preserved, change audited).
 
 ### Sender classes the UI must keep distinct
 
-| Class                        | Meaning                                                 |
-| ---------------------------- | ------------------------------------------------------- |
-| `gmail_verified`             | Gmail OAuth mailbox with a live `gmail.send` grant      |
-| `workspace_verified`         | Workspace DWD mailbox on an active connection           |
-| `resend_sandbox_test_ready`  | `onboarding@resend.dev` — test-to-self only             |
-| `resend_production_verified` | a verified Resend domain (**does not exist yet**)       |
-| `unavailable`                | misconfigured, disconnected, or a legacy Resend address |
+| Class                        | Meaning                                                  |
+| ---------------------------- | -------------------------------------------------------- |
+| `gmail_verified`             | Gmail OAuth mailbox with a live `gmail.send` grant       |
+| `workspace_verified`         | Workspace DWD mailbox on an active connection            |
+| `resend_sandbox_test_ready`  | `onboarding@resend.dev` — test-to-self only              |
+| `resend_production_verified` | an ACTIVE platform sender authority on a verified domain |
+| `resend_revoked`             | the platform sender authority was revoked — unusable     |
+| `unavailable`                | misconfigured, disconnected, or no sender authority      |
 
 `gmail.send` scope language belongs to the Google rows only and is never shown
 on a Resend row. Provider acceptance is described as **"submitted to Resend"**,
@@ -261,17 +272,100 @@ docker exec -i supabase_db_serviceos-dh psql -U postgres -d postgres -v ON_ERROR
 
 ---
 
-## 6 · What is still NOT RUN
+## 6 · What is proven, and what is still NOT RUN
 
-- **Real provider submission** — `NOT RUN`.
-- **Inbox delivery** — `NOT RUN`.
-- **Campaign handshake over Resend** — `NOT RUN` (and refused for the sandbox).
-- **Open/click round-trip against a genuinely delivered message** — `NOT RUN`;
-  the tracking proofs use synthetic deliveries.
-- **Staging tracking-secret strength** — the secret's value is not readable from
-  outside (the management API exposes a digest only), so the ≥32-character bar
-  is asserted by configuration on staging, not observed there. It is observed in
-  the local suites.
+**Proven (staging):**
 
-Until the operator installs a real key and a genuine test-to-self send is
-observed, every "email sending works" claim is premature.
+- **Real provider submission** — a governed test-to-self send from the sandbox
+  sender reached `api.resend.com` and was accepted with provider id
+  `c587b2fe-861d-4194-aff8-7b0041d8b263` (delivery
+  `062dd998-3b5d-4be6-9168-10ad1dfb9cb3`, 2026-08-03T11:52:01Z). Exactly one
+  provider request; the fixture branch does not exist in the deployed path.
+- **Inbox delivery** — Chris confirmed receipt of that message.
+- **Governed verified-domain senders** — the platform sender-authority model
+  (§7) is code-complete and proven by SQL, service-boundary and concurrency
+  suites.
+
+**Still NOT RUN:**
+
+- **Campaign or sequence over Resend** — permitted only for a
+  production-verified sender, and none has been launched. No broadcast or
+  sequence has ever been sent from this platform.
+- **Open/click round-trip against a genuinely delivered message** — the tracking
+  proofs use synthetic deliveries.
+- **Production** — no production Supabase migration, function deploy or frontend
+  deployment has occurred. Production holds no Marketing schema at all.
+- **Staging tracking-secret strength** — the management API exposes a digest
+  only, so the >=32-character bar is asserted by configuration on staging, not
+  observed there (it is observed in the local suites).
+
+---
+
+## 7 · Governed verified-domain (production) senders
+
+The sandbox restriction was never lifted. Instead there is exactly one governed
+way past it: a **platform sender authority**.
+
+### The security model
+
+- A tenant admin **cannot** self-assert a sending identity on the shared
+  Openfolk Resend key. Creation of any non-sandbox Resend sender is refused
+  (`42501`) unless an authority already exists.
+- An authority names the **exact tenant, exact normalised address, its own
+  domain and the transport**. There is no tenant-wide, domain-wide or wildcard
+  form, and matching is exact string equality — `hello@mail.drummonds.co`,
+  `hello@drummonds.co.uk` and `hello@drummonds.co.evil.com` are simply different
+  strings that match nothing.
+- Granting and revoking are **service-role only** _and_ require the acting
+  profile to hold an ACTIVE `platform.controlplane.admin` grant in the existing
+  effective-dated `platform_authority_grants` ledger. No tenant role, marketing
+  permission or access grant can satisfy it.
+- The grant RPC takes an **exact argument allowlist**. There is no `verified`,
+  `ready`, `state` or provider flag a caller could assert; `verified_at` is
+  server time.
+- Addresses are **normalised to printable ASCII** before storage and before
+  every lookup, so case, whitespace, control-character, zero-width and Unicode
+  homoglyph variants can never reach a row other than the one they appear to
+  name. Untrustworthy input is refused outright rather than coerced.
+- **Revocation is immediate**: readiness derives from the authority and
+  capability truth is re-synchronised in the same transaction. A revoked
+  authority can never be reinstated — its history is preserved and a new
+  authority must be granted after re-verifying the domain.
+- Identity is **immutable** on both sides: an authority cannot be re-pointed or
+  moved between tenants, and a sender's mailbox address cannot change — so an
+  existing frozen envelope can never silently switch sending identity.
+- The Resend API key is never stored, logged, returned or referenced by any of
+  this.
+
+### The four honest Resend readiness states
+
+| State           | Meaning                                                                  |
+| --------------- | ------------------------------------------------------------------------ |
+| `sandbox_ready` | `onboarding@resend.dev` — test-to-self only, campaigns/sequences blocked |
+| `ready`         | production verified — an ACTIVE authority exists; bulk permitted         |
+| `revoked`       | the authority was revoked — unusable, history preserved                  |
+| `unavailable`   | no authority exists for this exact tenant + address                      |
+
+### Granting an authority (OpenFolk operator only)
+
+```sql
+select marketing_sender_authority_grant(
+  '<operator profile id>',
+  jsonb_build_object(
+    'tenant_id','<tenant uuid>',
+    'sender_address','hello@drummonds.co',
+    'domain','drummonds.co',
+    'from_name','ServiceOS by Drummonds',
+    'reply_to','chris@openfolk.ai',
+    'reason','domain verified in Resend',
+    'request_id','<8-64 char idempotency key>'));
+```
+
+Revoke with `marketing_sender_authority_revoke(actor, {tenant_id, sender_address, reason})`.
+
+`drummonds.co` is verified in Resend with SPF, DKIM, return-path MX, DMARC and
+tracking-link records configured through GoDaddy. Google Workspace for the
+domain is still awaiting release case `74004687`, which does **not** affect
+outbound Resend sending: `hello@drummonds.co` needs no mailbox to send. Reply-To
+is temporarily `chris@openfolk.ai` and can move to `hello@drummonds.co` once
+Workspace is available.

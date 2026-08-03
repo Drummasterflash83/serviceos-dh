@@ -3281,3 +3281,49 @@ work, and duplicate query parameters are refused.
 - **Staging tracking-secret strength** — the management API exposes a digest
   only, so the ≥32-character bar is asserted by configuration on staging, not
   observed there (it is observed locally).
+
+## 23 · Governed verified-domain Resend senders (2026-08-03; CODE-COMPLETE + STAGING-PROVEN; PRODUCTION UNTOUCHED)
+
+Operator-facing document: **[RESEND_SETUP.md](RESEND_SETUP.md) §7**.
+
+### 23a · What changed
+
+Migration `20260908120500_marketing_resend_verified_domain.sql` (additive; the
+five earlier Resend migrations are unchanged) adds the ONE governed way past the
+sandbox-only restriction — a **platform sender authority**:
+
+| Object                                         | Purpose                                                                                                                 |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `marketing_sender_authorities`                 | exact (tenant, transport, address) authority; domain must be the address's own; the sandbox identity can never hold one |
+| `marketing_normalise_email(text)`              | strict printable-ASCII normalisation — the anti-lookalike boundary                                                      |
+| `marketing_require_platform_operator(uuid)`    | gate on an ACTIVE `platform.controlplane.admin` grant in the existing effective-dated ledger                            |
+| `marketing_sender_authority_state(...)`        | the ONE canonical lookup: `verified` / `revoked` / `none`, exact equality only                                          |
+| `marketing_sender_authority_grant/revoke(...)` | operator-only, idempotent, concurrency-safe, audited + event-appended                                                   |
+| `marketing_sender_create_resend` (redefined)   | sandbox OR an exactly-authorised identity; DEFAULT DENY otherwise                                                       |
+| `marketing_sender_readiness` (redefined)       | four honest Resend states: `sandbox_ready` / `ready` / `revoked` / `unavailable`                                        |
+
+Security invariants held: no tenant self-assertion; no wildcard; no
+caller-supplied verification flag (exact argument allowlist, server-side
+`verified_at`); cross-tenant impossible; revocation immediate with capability
+convergence; authority and sender identity immutable; no credential stored,
+logged or returned. The sandbox sender and all its proofs are untouched.
+
+### 23b · Evidence
+
+| Suite                                                                                                                                                                                                                                                                                     | Result                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `supabase/tests/marketing_sender_authority.test.sql` — 11 sections (operator gate incl. expired grant, argument allowlist, normalisation + lookalikes, exact tenant, idempotency, default-deny creation, four readiness states, revocation + non-reinstatement, immutability, boundaries) | **ALL ASSERTIONS PASSED** |
+| `scripts/marketing-sender-authority.test.mjs` — 27 assertions at the real service boundary incl. TRUE CONCURRENCY (8 parallel grants → 1 row; 8 parallel creations → 1 sender) and browser-JWT denial of all five new RPCs                                                                | **ALL PASS**              |
+
+### 23c · Claim strengths
+
+- **Code-complete + locally proven**: the authority model above.
+- **Staging-proven**: the genuine Resend submission through the SANDBOX sender
+  (provider id `c587b2fe-861d-4194-aff8-7b0041d8b263`, delivery
+  `062dd998-3b5d-4be6-9168-10ad1dfb9cb3`, 2026-08-03T11:52:01Z) with inbox
+  receipt confirmed by Chris. This supersedes the earlier "real provider
+  submission NOT RUN" statements in §22.
+- **NOT RUN**: any campaign or sequence over Resend; open/click round-trip
+  against a genuinely delivered message.
+- **PRODUCTION-LIVE**: nothing. Production Supabase `tgbnakbxwcqjeimygroz` and
+  the production Vercel app are untouched and hold no Marketing schema.

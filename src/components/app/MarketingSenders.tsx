@@ -13,10 +13,13 @@
  *
  * Sender classes are kept distinct and are never conflated:
  *   Gmail verified · Workspace verified · Resend sandbox (test-ready) ·
- *   Resend production verified · unavailable/misconfigured.
+ *   Resend production verified · Resend authority revoked ·
+ *   unavailable/misconfigured.
  * The Resend sandbox identity is NOT a verified address: it is test-to-self
- * only, campaigns and sequences are refused, it needs the operator's own
- * RESEND_API_KEY, and NO real provider submission has ever been verified.
+ * only and campaigns/sequences are refused. Any OTHER Resend address is usable
+ * only while an OpenFolk operator holds an ACTIVE platform sender authority for
+ * that exact tenant and address — a tenant admin can never authorise their own
+ * sending identity, and revocation makes it unusable immediately.
  * `gmail.send` scope language belongs to the Google rows only.
  */
 import { useCallback, useEffect, useState } from "react";
@@ -52,6 +55,9 @@ import {
   senderRemediation,
   SENDER_CLASS_LABEL,
 } from "@/lib/marketing/senders";
+
+/** The Resend sandbox identity — the one address that needs no platform authority. */
+const SANDBOX_ADDRESS = "onboarding@resend.dev";
 
 const inputCls =
   "rounded-lg border border-hairline bg-white px-2 py-2 text-sm outline-none focus:border-accent";
@@ -120,6 +126,7 @@ export function SendersSection() {
   });
   const [testRequestId, setTestRequestId] = useState<string>(newTestSendRequestId());
   const [resendFromName, setResendFromName] = useState<string>("Drummonds");
+  const [resendFromAddress, setResendFromAddress] = useState<string>(SANDBOX_ADDRESS);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -307,7 +314,7 @@ export function SendersSection() {
                   />
                   <Pill
                     tone={
-                      senderClass(s) === "unavailable"
+                      senderClass(s) === "unavailable" || senderClass(s) === "resend_revoked"
                         ? "err"
                         : senderClass(s) === "resend_sandbox_test_ready"
                           ? "warn"
@@ -343,11 +350,37 @@ export function SendersSection() {
                     )}
                   </div>
                 )}
+                {s.source_kind === "resend" && !s.readiness.sandbox && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {s.readiness.authority_state === "verified" ? (
+                      <>
+                        <Pill tone="ok" label="Platform sender authority: verified" />
+                        <Pill tone="ok" label="Campaigns and sequences permitted" />
+                      </>
+                    ) : s.readiness.authority_state === "revoked" ? (
+                      <Pill tone="err" label="Platform sender authority: REVOKED" />
+                    ) : (
+                      <Pill tone="err" label="No platform sender authority" />
+                    )}
+                    {!data.resend_key_configured && (
+                      <Pill
+                        tone="err"
+                        label="RESEND_API_KEY not configured — sending fails closed"
+                      />
+                    )}
+                  </div>
+                )}
                 <div className="mt-1 text-[11px] text-muted-foreground">
                   From name: {s.from_name ?? "—"} · Reply-to: {s.reply_to ?? "—"} · Signature:{" "}
                   {s.signature_text ? "set" : "—"} ·{" "}
                   {s.source_kind === "resend"
-                    ? "Provider verification: none (a from-address is not provider authorisation)"
+                    ? s.readiness.authority_state === "verified"
+                      ? `Domain verified by an OpenFolk operator${
+                          s.last_verified_at
+                            ? ` on ${new Date(s.last_verified_at).toLocaleString()}`
+                            : ""
+                        }`
+                      : "Provider verification: none (a from-address is not provider authorisation)"
                     : `Last verified: ${
                         s.last_verified_at ? new Date(s.last_verified_at).toLocaleString() : "never"
                       }`}
@@ -625,18 +658,19 @@ export function SendersSection() {
         </div>
       )}
 
-      {/* Resend SANDBOX sender — a test-only identity, not a verified address */}
+      {/* Resend sender — sandbox, or a platform-authorised verified identity */}
       {data.can_manage && (
         <div className="mt-4 rounded-lg border border-hairline p-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Add Resend sandbox sender (test only)
+            Add Resend sender
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             <input
               className={inputCls}
-              value="onboarding@resend.dev"
-              readOnly
-              aria-label="Resend sandbox from address (test only)"
+              value={resendFromAddress}
+              onChange={(e) => setResendFromAddress(e.target.value)}
+              placeholder="from address"
+              aria-label="Resend from address"
             />
             <input
               className={inputCls}
@@ -648,30 +682,31 @@ export function SendersSection() {
           </div>
           <button
             className={`${btnCls} mt-2`}
-            disabled={busy}
+            disabled={busy || resendFromAddress.trim().length === 0}
             onClick={() =>
               run(
                 () =>
                   createResendSender({
-                    from_address: "onboarding@resend.dev",
+                    from_address: resendFromAddress.trim(),
                     from_name: resendFromName.trim() || undefined,
                   }),
-                "Sandbox test sender created — test-only until a domain is verified.",
+                resendFromAddress.trim().toLowerCase() === SANDBOX_ADDRESS
+                  ? "Sandbox test sender created — test-to-self only."
+                  : "Sender created against its platform authority.",
               )
             }
           >
-            Add Resend sandbox sender (test only)
+            Add Resend sender
           </button>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            <strong>Sandbox test-ready — not a verified sender.</strong> Until a domain is verified
-            in Resend, the only permitted from-address is <code>onboarding@resend.dev</code>. It is{" "}
-            <b>test-to-self only</b>: a test send may be addressed to the signed-in user and to
-            nobody else, and <b>campaigns and sequences are blocked</b>. Your own Resend key (
+            Two governed classes exist. <code>{SANDBOX_ADDRESS}</code> is the{" "}
+            <b>sandbox test identity</b>: test-to-self only, campaigns and sequences blocked, never
+            provider-verified. <b>Any other address is refused</b> unless an OpenFolk operator has
+            granted a <b>platform sender authority</b> for this exact tenant and address after
+            verifying the domain in Resend — a tenant admin cannot authorise their own sending
+            identity, and there is no domain-wide or wildcard grant. Your Resend key (
             <code>RESEND_API_KEY</code>) must be configured; without it sending fails closed with a
-            missing-key error. <b>Real provider submission has not yet been verified</b> — no email
-            has been submitted to Resend and no inbox delivery has been observed. Resend’s sandbox
-            also accepts only your own Resend account address, so a genuine send needs a verified
-            domain.
+            missing-key error. Provider acceptance is <b>submitted to Resend</b>, never delivery.
           </p>
         </div>
       )}
@@ -733,9 +768,13 @@ export function SendersSection() {
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">
                 This sends a <b>real external email</b> when a live provider is connected. Success
-                means <b>submitted to {selectedIsSandbox ? "Resend" : "Gmail"}</b> — not delivered,
-                and not proof it reached an inbox. The send runs through the governed Automation
-                Engine (immutable intent, append-only attempts).{" "}
+                means{" "}
+                <b>
+                  submitted to{" "}
+                  {selectedSender?.readiness.transport === "resend" ? "Resend" : "Gmail"}
+                </b>{" "}
+                — not delivered, and not proof it reached an inbox. The send runs through the
+                governed Automation Engine (immutable intent, append-only attempts).{" "}
                 {selectedIsSandbox ? (
                   <>
                     The <b>Resend sandbox</b> may only be addressed to <b>you</b>; the server

@@ -13,6 +13,7 @@ export interface SenderReadiness {
   state:
     | "ready"
     | "sandbox_ready"
+    | "revoked"
     | "unavailable"
     | "source_disconnected"
     | "source_changed"
@@ -30,8 +31,10 @@ export interface SenderReadiness {
   test_to_self_only?: boolean;
   campaigns_blocked?: boolean;
   sequences_blocked?: boolean;
-  /** never true today: no real Resend submission has been verified */
+  /** true only for a genuinely production-verified sender class */
   provider_submission_verified?: boolean;
+  /** platform sender-authority state — resend non-sandbox rows only */
+  authority_state?: "verified" | "revoked" | "none" | null;
   transport?: "gmail" | "resend";
 }
 
@@ -45,6 +48,7 @@ export type SenderClass =
   | "workspace_verified"
   | "resend_sandbox_test_ready"
   | "resend_production_verified"
+  | "resend_revoked"
   | "unavailable";
 
 export function senderClass(s: {
@@ -55,6 +59,7 @@ export function senderClass(s: {
   if (s.source_kind === "resend") {
     if (state === "sandbox_ready") return "resend_sandbox_test_ready";
     if (state === "ready") return "resend_production_verified";
+    if (state === "revoked") return "resend_revoked";
     return "unavailable";
   }
   if (state !== "ready") return "unavailable";
@@ -66,6 +71,7 @@ export const SENDER_CLASS_LABEL: Record<SenderClass, string> = {
   workspace_verified: "Workspace verified sender",
   resend_sandbox_test_ready: "Resend sandbox — test-ready",
   resend_production_verified: "Resend production verified",
+  resend_revoked: "Authority revoked — unusable",
   unavailable: "Unavailable / misconfigured",
 };
 
@@ -73,7 +79,9 @@ export const SENDER_CLASS_LABEL: Record<SenderClass, string> = {
 export function senderRemediation(state: SenderReadiness["state"]): string | null {
   switch (state) {
     case "unavailable":
-      return "This from-address is not usable. Only the resend.dev sandbox sender is permitted until a domain is verified in Resend.";
+      return "This from-address holds no platform sender authority. An OpenFolk operator must verify the domain and authorise this exact address before it can send.";
+    case "revoked":
+      return "The platform sender authority for this address was revoked — it cannot send. Its history is preserved; a new authority must be granted after re-verifying the domain.";
     case "source_disconnected":
       return "The source mailbox was removed — reconnect it or configure another sender.";
     case "source_changed":
@@ -232,10 +240,13 @@ export const createSender = (args: {
   signature_text?: string;
 }) => callMarketingFn<{ id: string; created: boolean }>(FN, { action: "sender_create", ...args });
 
-// Resend SANDBOX sender: the resend.dev sandbox identity on the platform Resend
-// key. NOT a verified address and NOT production-usable — it is test-to-self
-// only (campaigns and sequences are refused), and it needs the operator to have
-// configured RESEND_API_KEY before anything can be submitted at all.
+// Resend sender. Two governed classes only:
+//   * the resend.dev SANDBOX identity — test-to-self only, campaigns and
+//     sequences refused, never provider-verified;
+//   * a PRODUCTION-VERIFIED identity — permitted only when an OpenFolk operator
+//     has granted a platform sender authority for this EXACT tenant + address.
+// Any other address is refused server-side (default deny). The browser can ask;
+// only the platform authority can answer yes.
 export const createResendSender = (args: {
   from_address: string;
   label?: string;
