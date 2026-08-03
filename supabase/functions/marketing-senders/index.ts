@@ -10,7 +10,7 @@
 //
 // Actions: overview · recipients · sender_create · sender_update ·
 // sender_enable · sender_disable · sender_set_default · sender_verify ·
-// test_send · test_status.
+// test_send · test_status · test_cancel (governed cancel-before-execution).
 //
 // Provider truth: sender send-scope state is derived ONLY here (server-side)
 // from authoritative evidence — the STORED Gmail OAuth grant
@@ -112,6 +112,7 @@ const ACTION_KEYS: Record<string, string[]> = {
   sender_verify: ["action", "sender_id"],
   test_send: ["action", "sender_id", "recipient_profile_id", "subject", "body_text", "request_id"],
   test_status: ["action", "limit"],
+  test_cancel: ["action", "delivery_id"],
 };
 const MANAGE_ACTIONS = new Set([
   "sender_create",
@@ -564,6 +565,85 @@ Deno.serve(async (req) => {
       }
 
       // ── bounded status/history (with a lazy reconcile for freshness) ──
+      // ── test_cancel: governed cancel-before-provider-execution ──
+      // A queued test whose intent is still PENDING (never claimed, zero
+      // attempts) can be withdrawn. The pending→cancelled transition is a legal
+      // move in the engine's frozen state machine and the conditional UPDATE
+      // closes the race with a claiming worker: whichever side commits first
+      // wins, and the loser sees the truth. Nothing that may already be at the
+      // provider is ever touched.
+      case "test_cancel": {
+        if (!["owner", "admin", "ops"].includes(auth.ctx.role)) {
+          return fail("FORBIDDEN", "Cancelling a test requires an operational role", 403);
+        }
+        if (!permissionSet.includes("marketing.campaigns.test")) {
+          return fail("FORBIDDEN", "Requires marketing.campaigns.test", 403);
+        }
+        if (!isUuid(body.delivery_id)) {
+          return fail("INVALID_REQUEST", "delivery_id required", 400);
+        }
+        const del = await admin
+          .from("marketing_deliveries")
+          .select("id, tenant_id, purpose, status, automation_intent_id, recipient_email, subject")
+          .eq("id", body.delivery_id)
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+        if (del.error) return mapDbError(del.error);
+        if (!del.data) return fail("NOT_FOUND", "Test not found", 404);
+        if (del.data.purpose !== "test") {
+          return fail("INVALID_REQUEST", "Only test sends can be cancelled here", 400);
+        }
+        if (del.data.status !== "queued" || !del.data.automation_intent_id) {
+          return fail(
+            "CONFLICT",
+            "This test is no longer waiting — it already processed or finished",
+            409,
+          );
+        }
+        // conditional transition: only a still-pending intent can be withdrawn
+        const upd = await admin
+          .from("automation_intents")
+          .update({ status: "cancelled" })
+          .eq("id", del.data.automation_intent_id)
+          .eq("tenant_id", tenantId)
+          .eq("status", "pending")
+          .eq("attempts", 0)
+          .select("id");
+        if (upd.error) return mapDbError(upd.error);
+        if (!upd.data || upd.data.length === 0) {
+          return fail(
+            "CONFLICT",
+            "ServiceOS already started processing this test — it can no longer be withdrawn",
+            409,
+          );
+        }
+        await admin.from("audit_logs").insert({
+          tenant_id: tenantId,
+          actor: auth.ctx.email ?? userId,
+          action: "marketing.test_send.cancelled",
+          resource_type: "automation_intent",
+          resource_id: del.data.automation_intent_id,
+          status: "ok",
+          detail: {
+            delivery_id: del.data.id,
+            recipient_email: del.data.recipient_email,
+            subject: del.data.subject,
+            reason: "cancelled by the requester before provider execution",
+          },
+        });
+        const rec = await admin.rpc("marketing_delivery_reconcile", {
+          p_tenant: tenantId,
+          p_delivery: del.data.id,
+        });
+        return json({
+          ok: true,
+          data: {
+            delivery_id: del.data.id,
+            cancelled: true,
+            delivery_status: rec.error ? "queued" : ((rec.data as Row)?.status ?? "queued"),
+          },
+        });
+      }
       case "test_status": {
         let limit = 20;
         if (body.limit !== undefined) {

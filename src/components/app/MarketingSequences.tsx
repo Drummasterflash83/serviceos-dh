@@ -88,6 +88,7 @@ import {
 } from "@/lib/marketing/contacts";
 import { listLifecycleStagesAdmin, type LifecycleStageAdmin } from "@/lib/marketing/admin";
 import { MarketingContentTools } from "@/components/app/MarketingContentTools";
+import { TestSendTracker } from "@/components/app/MarketingTestStatus";
 
 const inputCls =
   "w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-foreground " +
@@ -878,6 +879,8 @@ function SequenceDetailView({
   const [testStepOrder, setTestStepOrder] = useState<number | null>(null);
   const [viewerProfileId, setViewerProfileId] = useState<string | null>(null);
   const [operationalMode, setOperationalMode] = useState<string | null>(null);
+  const [modePermitsSend, setModePermitsSend] = useState(false);
+  const [lastTestDeliveryId, setLastTestDeliveryId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -913,6 +916,7 @@ function SequenceDetailView({
         if (!overview.ok) return;
         setViewerProfileId(overview.data.viewer_profile_id);
         setOperationalMode(overview.data.operational_mode);
+        setModePermitsSend(overview.data.mode_permits_send === true);
         if (
           overview.data.viewer_profile_id &&
           recipients.ok &&
@@ -992,13 +996,12 @@ function SequenceDetailView({
       request_id: newSequenceRequestId(),
     });
     setBusyAction(null);
-    setNotice(
-      result.ok
-        ? operationalMode === "discovery"
-          ? "Test saved to the governed queue, but external delivery is paused while this workspace is in Discovery mode. Its status is under Marketing settings → Recent test sends."
-          : "Test queued through the governed pipeline. Follow its status under Marketing settings → Recent test sends."
-        : result.error.message,
-    );
+    if (result.ok) {
+      setLastTestDeliveryId(result.data.delivery_id);
+      setNotice(null);
+    } else {
+      setNotice(result.error.message);
+    }
   };
 
   if (loading) {
@@ -1176,10 +1179,15 @@ function SequenceDetailView({
               </Btn>
             </div>
           </div>
-          {operationalMode === "discovery" && (
+          {operationalMode === "discovery" && !lastTestDeliveryId && (
             <div className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-xs text-foreground">
-              Delivery is paused by Discovery mode. The test can be queued, but it will not leave
-              ServiceOS until an operator changes the workspace mode.
+              Sending is currently paused: this workspace is in Discovery mode, so ServiceOS saves
+              tests safely but no email leaves the platform until an operator raises the mode.
+            </div>
+          )}
+          {lastTestDeliveryId && (
+            <div className="mt-2">
+              <TestSendTracker deliveryId={lastTestDeliveryId} modePermitsSend={modePermitsSend} />
             </div>
           )}
         </div>

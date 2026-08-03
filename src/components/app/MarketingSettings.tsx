@@ -61,7 +61,13 @@ function Note({ tone, children }: { tone: "error" | "warn" | "ok"; children: Rea
   );
 }
 
-export function MarketingSettings({ onBack }: { onBack: () => void }) {
+export function MarketingSettings({
+  onBack,
+  focus,
+}: {
+  onBack: () => void;
+  focus?: "test-activity";
+}) {
   const { access } = useMarketingAccess();
   const canAdmin = access?.permissions?.includes("marketing.access.manage") ?? false;
 
@@ -163,7 +169,7 @@ export function MarketingSettings({ onBack }: { onBack: () => void }) {
           <InclusionSection settings={settings} stages={stages} onSave={save} />
           <LifecycleSection stages={stages} onChanged={reload} />
           <GuardrailsSection settings={settings} onSave={save} />
-          <SendersSection />
+          <SendersSection focus={focus} />
           {canAdmin && <AccessSection />}
           <NotificationsSection settings={settings} onSave={save} />
           <GovernanceNote />

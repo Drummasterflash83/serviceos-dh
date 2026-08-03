@@ -305,6 +305,15 @@ export const requestTestSend = (args: {
   ApiResult<{ delivery_id: string; intent_id: string; status: string; idempotent: boolean }>
 > => callMarketingFn(FN, { action: "test_send", ...args });
 
+/** Governed cancel-before-provider-execution: withdraws a QUEUED test whose
+ *  intent is still pending. Races with a claiming worker are decided by the
+ *  server; a test that already reached processing can no longer be withdrawn. */
+export const cancelTestSend = (deliveryId: string) =>
+  callMarketingFn<{ delivery_id: string; cancelled: boolean; delivery_status: string }>(FN, {
+    action: "test_cancel",
+    delivery_id: deliveryId,
+  });
+
 export const getTestSendStatus = (limit = 20) =>
   callMarketingFn<{ deliveries: TestDelivery[] }>(FN, { action: "test_status", limit });
 

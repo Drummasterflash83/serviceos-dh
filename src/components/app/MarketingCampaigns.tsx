@@ -78,6 +78,7 @@ import { MarketingTemplates } from "@/components/app/MarketingTemplates";
 import { MarketingReporting } from "@/components/app/MarketingReporting";
 import { MarketingAiDrafting } from "@/components/app/MarketingAiDrafting";
 import { MarketingContentTools } from "@/components/app/MarketingContentTools";
+import { TestSendTracker } from "@/components/app/MarketingTestStatus";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import { nextLocalHourValue, toServerLocalDateTime } from "@/lib/marketing/schedule";
 
@@ -822,6 +823,8 @@ function CampaignDetailView({
   const [testRecipient, setTestRecipient] = useState("");
   const [viewerProfileId, setViewerProfileId] = useState<string | null>(null);
   const [operationalMode, setOperationalMode] = useState<string | null>(null);
+  const [modePermitsSend, setModePermitsSend] = useState(false);
+  const [lastTestDeliveryId, setLastTestDeliveryId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(initialNotice ?? null);
 
   const reload = useCallback(async () => {
@@ -856,6 +859,7 @@ function CampaignDetailView({
         if (overview.ok) {
           setViewerProfileId(overview.data.viewer_profile_id);
           setOperationalMode(overview.data.operational_mode);
+          setModePermitsSend(overview.data.mode_permits_send === true);
           if (
             overview.data.viewer_profile_id &&
             recipients.ok &&
@@ -921,13 +925,12 @@ function CampaignDetailView({
       request_id: newCampaignTestRequestId(),
     });
     setBusyAction(null);
-    setNotice(
-      res.ok
-        ? operationalMode === "discovery"
-          ? "Test saved to the governed queue, but external delivery is paused while this workspace is in Discovery mode. Its live status is under Marketing settings → Recent test sends."
-          : "Test queued through the governed pipeline. Follow its live status under Marketing settings → Recent test sends."
-        : res.error.message,
-    );
+    if (res.ok) {
+      setLastTestDeliveryId(res.data.delivery_id);
+      setNotice(null);
+    } else {
+      setNotice(res.error.message);
+    }
   };
 
   const doDuplicate = async () => {
@@ -1129,10 +1132,15 @@ function CampaignDetailView({
               </Btn>
             </div>
           </div>
-          {operationalMode === "discovery" && (
+          {operationalMode === "discovery" && !lastTestDeliveryId && (
             <div className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-xs text-foreground">
-              Delivery is currently paused by the workspace&apos;s Discovery mode. The test can be
-              queued, but it will not leave ServiceOS until an operator changes the mode.
+              Sending is currently paused: this workspace is in Discovery mode, so ServiceOS saves
+              tests safely but no email leaves the platform until an operator raises the mode.
+            </div>
+          )}
+          {lastTestDeliveryId && (
+            <div className="mt-2">
+              <TestSendTracker deliveryId={lastTestDeliveryId} modePermitsSend={modePermitsSend} />
             </div>
           )}
         </div>

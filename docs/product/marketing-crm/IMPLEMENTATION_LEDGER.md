@@ -3327,3 +3327,79 @@ logged or returned. The sandbox sender and all its proofs are untouched.
   against a genuinely delivered message.
 - **PRODUCTION-LIVE**: nothing. Production Supabase `tgbnakbxwcqjeimygroz` and
   the production Vercel app are untouched and hold no Marketing schema.
+
+## 24 · Marketing V1 launch hardening — honest test journey + governed cancel (2026-08-03; STAGING-PROVEN)
+
+### 24a · What changed (customer language)
+
+- **You can now see what happened to your test email, right where you sent
+  it.** After "Send test to myself", an inline tracker shows the honest status
+  — Waiting to send · Paused by workspace mode · Processing · Submitted to
+  provider · Failed · Unknown — needs review · Cancelled before sending — with
+  one obvious **View test activity** action that deep-links to Marketing
+  settings → Recent test sends (`?settings=true&focus=test-activity`, with
+  auto-scroll).
+- **A queued test can be withdrawn.** New governed `test_cancel` action on the
+  marketing-senders function: the requester (operational role +
+  `marketing.campaigns.test`) can cancel a test whose intent is still PENDING.
+  pending→cancelled is a legal engine transition; the conditional update closes
+  the race with a claiming worker; the act is audited and the delivery
+  reconciles. Nothing that may already be at the provider is ever touched.
+- **Workspace-mode pauses are explained in customer language** wherever tests
+  are offered, while the raw engine facts stay visible as secondary text.
+
+Files: `src/lib/marketing/test-status.ts` (+ unit tests) ·
+`src/components/app/MarketingTestStatus.tsx` · wiring in MarketingCampaigns /
+MarketingSequences / MarketingSenders / MarketingSettings / routes/marketing ·
+`supabase/functions/marketing-senders/index.ts` (test_cancel) ·
+`scripts/marketing-test-cancel-http.test.mjs` (9 assertions at the deployed
+boundary, random-id tenants, re-runnable anywhere).
+
+### 24b · Parked-intent resolution (2026-08-03 20:0x UTC)
+
+All ten parked `send_marketing_test_email` intents (7 Drummonds QA leftovers
+incl. this session's audit test + 3 HTTP-suite fixtures) were terminally
+withheld — the Drummonds seven through the DEPLOYED governed `test_cancel`
+action with per-intent audits, the fixtures through the operator path. Zero
+non-terminal intents and zero runnable external jobs before any execution
+window. Nothing was released; recipients/subjects recorded in the run log.
+
+### 24c · Staging launch verification send (the production-shaped proof)
+
+| Fact                 | Value                                                                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requested through    | the DEPLOYED staging app UI (governed test send, explicit confirm)                                                                                                     |
+| Delivery / intent    | `c4609c97-9d09-4bd8-9feb-5b2667437e5c` / `9d291cc2-f3f0-49c8-8a9a-c0efc0a01de6`                                                                                        |
+| From / Reply-To / To | `ServiceOS by Drummonds <hello@drummonds.co>` / `chris@openfolk.ai` / `chris@openfolk.ai`                                                                              |
+| Subject              | `ServiceOS launch verification — 2026-08-03T20:20Z`                                                                                                                    |
+| Executed by          | the CRON-driven platform-worker (job `c3d513ca…`, repair-trigger enqueue) inside an audited tenant-scoped trusted window (~90 s), restored to `discovery` in a finally |
+| Provider id          | **`32579228-d21d-48a9-baa2-a3e6ef3ef215`**                                                                                                                             |
+| Delivery status      | `submitted` 2026-08-03T20:25:01Z; the deployed UI shows the identical status/provider id                                                                               |
+| Inbox receipt        | awaiting Chris's confirmation (submission ≠ delivery)                                                                                                                  |
+
+### 24d · Production launch runbook (recorded before promotion)
+
+1. **Release SHA**: the Marketing checkpoint commit on
+   `serviceos-backend-foundation` (recorded in §24e after commit).
+2. **Staging state at sign-off**: 97 migrations applied (`20260908120500` head);
+   functions `marketing-*`, `platform-worker` at the release bytes; staging
+   frontend deployed to the Vercel `staging` environment bound to
+   `eityajdtzvdbdqtoipia` only; operational mode `discovery`; sender authority
+   `hello@drummonds.co` verified; secrets present BY NAME: `RESEND_API_KEY`,
+   `MARKETING_TRACKING_SECRET`, `MARKETING_PUBLIC_BASE_URL`, `WORKER_SECRET`,
+   `MARKETING_BROADCAST_SECRET`, `MARKETING_SEQUENCE_SECRET`.
+3. **Production promotion order**: audit prod (env → Supabase ref
+   `tgbnakbxwcqjeimygroz`; migration ledger; functions; cron; secrets by name;
+   real tenant/admin; pending intents) → apply missing migrations in order →
+   deploy exact function bytes → push branch → fast-forward `main` → Vercel
+   builds production from Git → single authorised production test →
+   sender-authority grant for the real tenant → mode stays an explicit
+   operator decision.
+4. **Rollback**: previous production Vercel deployment retained for instant
+   rollback; all migrations additive (revoke sender authority + unset
+   `RESEND_API_KEY` to fail sending closed; `git revert` on `main` if needed).
+5. **Known limitations** (honest): provider delivery/open/bounce webhooks not
+   ingested (submission ≠ delivery); open/click tracking is unique-delivery
+   evidence only; Ads/Meta shows Not connected; sequences activate immediately
+   (no scheduled future activation); campaign eligibility currently reports
+   zero eligible recipients until consent/preference data exists.

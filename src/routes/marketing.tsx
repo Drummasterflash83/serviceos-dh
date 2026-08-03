@@ -56,6 +56,8 @@ type MarketingSearch = {
   campaignTab?: CampaignsTabKey;
   campaignId?: string;
   sequenceId?: string;
+  /** scroll target inside Marketing settings (deep link from "View test activity") */
+  focus?: "test-activity";
 };
 
 const CAMPAIGN_TABS: CampaignsTabKey[] = [
@@ -95,6 +97,7 @@ export const Route = createFileRoute("/marketing")({
       ...(campaignTab ? { campaignTab } : {}),
       ...(campaignId ? { campaignId } : {}),
       ...(sequenceId ? { sequenceId } : {}),
+      ...(search.focus === "test-activity" ? { focus: "test-activity" as const } : {}),
     };
   },
   head: () => ({
@@ -336,10 +339,11 @@ function MarketingShell() {
         <>
           {settingsOpen ? (
             <MarketingSettings
+              focus={search.focus}
               onBack={() =>
                 void navigate({
                   to: "/marketing",
-                  search: { ...search, section, settings: undefined },
+                  search: { ...search, section, settings: undefined, focus: undefined },
                 })
               }
             />

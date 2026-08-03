@@ -22,7 +22,7 @@
  * sending identity, and revocation makes it unusable immediately.
  * `gmail.send` scope language belongs to the Google rows only.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   createResendSender,
   createSender,
+  cancelTestSend,
   getSendersOverview,
   getTestSendStatus,
   listTestRecipients,
@@ -55,6 +56,7 @@ import {
   senderRemediation,
   SENDER_CLASS_LABEL,
 } from "@/lib/marketing/senders";
+import { customerTestStatus } from "@/lib/marketing/test-status";
 
 /** The Resend sandbox identity — the one address that needs no platform authority. */
 const SANDBOX_ADDRESS = "onboarding@resend.dev";
@@ -102,7 +104,7 @@ type Confirm =
   | { kind: "test"; senderId: string }
   | null;
 
-export function SendersSection() {
+export function SendersSection({ focus }: { focus?: "test-activity" } = {}) {
   const [data, setData] = useState<SendersOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +129,8 @@ export function SendersSection() {
   const [testRequestId, setTestRequestId] = useState<string>(newTestSendRequestId());
   const [resendFromName, setResendFromName] = useState<string>("Drummonds");
   const [resendFromAddress, setResendFromAddress] = useState<string>(SANDBOX_ADDRESS);
+  const testActivityRef = useRef<HTMLDivElement | null>(null);
+  const focusedOnce = useRef(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -175,6 +179,13 @@ export function SendersSection() {
     const st = await getTestSendStatus(10);
     if (st.ok) setDeliveries(st.data.deliveries);
   }, []);
+
+  useEffect(() => {
+    if (focus === "test-activity" && !loading && !focusedOnce.current && testActivityRef.current) {
+      focusedOnce.current = true;
+      testActivityRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [focus, loading, deliveries.length]);
 
   if (loading) {
     return (
@@ -271,10 +282,11 @@ export function SendersSection() {
       {!data.mode_permits_send && (
         <div className="mb-3">
           <Note tone="warn">
-            Operational mode is <b>{data.operational_mode ?? "unknown"}</b>: the platform will
-            accept and queue governed test sends, but the Automation Engine withholds irreversible
-            external execution in this mode (the intent parks as mode-blocked with its real reason).
-            Raising the mode is an explicit operator decision.
+            <b>Sending is paused for this workspace.</b> It is in{" "}
+            <b>{data.operational_mode ?? "unknown"}</b> mode, so ServiceOS saves and queues test
+            emails safely but nothing leaves the platform until an operator raises the mode. Queued
+            tests below show as &ldquo;Paused by workspace mode&rdquo; and will send automatically
+            once the mode allows it.
           </Note>
         </div>
       )}
@@ -848,7 +860,7 @@ export function SendersSection() {
           )}
 
           {deliveries.length > 0 && (
-            <div className="mt-3 space-y-1">
+            <div ref={testActivityRef} id="test-activity" className="mt-3 space-y-1">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Recent test sends
@@ -857,34 +869,54 @@ export function SendersSection() {
                   <RefreshCw className="mr-1 inline h-3 w-3" /> Refresh status
                 </button>
               </div>
-              {deliveries.map((d) => (
-                <div key={d.id} className="rounded-lg border border-hairline px-3 py-2 text-xs">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {d.status === "submitted" ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                    ) : d.status === "failed" ? (
-                      <XCircle className="h-3.5 w-3.5 text-destructive" />
-                    ) : (
-                      <BadgeCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                    <span className="font-medium">{d.subject}</span>
-                    <span className="text-muted-foreground">→ {d.recipient_email}</span>
-                    <Pill tone={STATUS_TONE[d.status]} label={d.status} />
-                    {d.failure_class && <Pill tone="err" label={d.failure_class} />}
-                    {d.status === "unknown" && (
-                      <Pill tone="warn" label="needs review — never auto-resent" />
-                    )}
+              {deliveries.map((d) => {
+                const st = customerTestStatus({
+                  status: d.status,
+                  intent_status: d.intent_status,
+                  failure_class: d.failure_class,
+                  modePermitsSend: data.mode_permits_send,
+                });
+                return (
+                  <div key={d.id} className="rounded-lg border border-hairline px-3 py-2 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {st.tone === "ok" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      ) : st.tone === "err" ? (
+                        <XCircle className="h-3.5 w-3.5 text-destructive" />
+                      ) : (
+                        <BadgeCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                      <span className="font-medium">{d.subject}</span>
+                      <span className="text-muted-foreground">→ {d.recipient_email}</span>
+                      <Pill tone={st.tone} label={st.label} />
+                      {d.failure_class && st.key !== "cancelled" && (
+                        <Pill tone="err" label={d.failure_class} />
+                      )}
+                      {d.status === "queued" && d.intent_status === "pending" && (
+                        <button
+                          className={cn(btnCls, "ml-auto")}
+                          disabled={busy}
+                          onClick={() =>
+                            run(() => cancelTestSend(d.id), "Test cancelled — nothing was sent.")
+                          }
+                        >
+                          Cancel test
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{st.hint}</p>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">
+                      {new Date(d.created_at).toLocaleString()}
+                      {d.provider_message_id && <> · provider id {d.provider_message_id}</>}
+                      {d.submitted_at && (
+                        <> · submitted to provider {new Date(d.submitted_at).toLocaleString()}</>
+                      )}{" "}
+                      · engine: {d.status} · intent {d.intent_status ?? "—"} (
+                      {d.intent_attempts ?? 0} attempts)
+                    </div>
                   </div>
-                  <div className="mt-0.5 text-[11px] text-muted-foreground">
-                    {new Date(d.created_at).toLocaleString()}
-                    {d.provider_message_id && <> · provider id {d.provider_message_id}</>}
-                    {d.submitted_at && (
-                      <> · submitted to provider {new Date(d.submitted_at).toLocaleString()}</>
-                    )}{" "}
-                    · intent {d.intent_status ?? "—"} ({d.intent_attempts ?? 0} attempts)
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>
