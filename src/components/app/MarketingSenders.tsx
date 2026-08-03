@@ -56,7 +56,7 @@ import {
   senderRemediation,
   SENDER_CLASS_LABEL,
 } from "@/lib/marketing/senders";
-import { customerTestStatus } from "@/lib/marketing/test-status";
+import { canCancelTest, customerTestStatus } from "@/lib/marketing/test-status";
 
 /** The Resend sandbox identity — the one address that needs no platform authority. */
 const SANDBOX_ADDRESS = "onboarding@resend.dev";
@@ -850,66 +850,74 @@ export function SendersSection() {
             </div>
           )}
 
-          {deliveries.length > 0 && (
-            <div id="test-activity" className="mt-3 space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Recent test sends
-                </div>
-                <button className={btnCls} onClick={() => void refreshStatus()}>
-                  <RefreshCw className="mr-1 inline h-3 w-3" /> Refresh status
-                </button>
-              </div>
-              {deliveries.map((d) => {
-                const st = customerTestStatus({
-                  status: d.status,
-                  intent_status: d.intent_status,
-                  failure_class: d.failure_class,
-                  modePermitsSend: data.mode_permits_send,
-                });
-                return (
-                  <div key={d.id} className="rounded-lg border border-hairline px-3 py-2 text-xs">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {st.tone === "ok" ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                      ) : st.tone === "err" ? (
-                        <XCircle className="h-3.5 w-3.5 text-destructive" />
-                      ) : (
-                        <BadgeCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                      <span className="font-medium">{d.subject}</span>
-                      <span className="text-muted-foreground">→ {d.recipient_email}</span>
-                      <Pill tone={st.tone} label={st.label} />
-                      {d.failure_class && st.key !== "cancelled" && (
-                        <Pill tone="err" label={d.failure_class} />
-                      )}
-                      {d.status === "queued" && d.intent_status === "pending" && (
-                        <button
-                          className={cn(btnCls, "ml-auto")}
-                          disabled={busy}
-                          onClick={() =>
-                            run(() => cancelTestSend(d.id), "Test cancelled — nothing was sent.")
-                          }
-                        >
-                          Cancel test
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{st.hint}</p>
-                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                      {new Date(d.created_at).toLocaleString()}
-                      {d.provider_message_id && <> · provider id {d.provider_message_id}</>}
-                      {d.submitted_at && (
-                        <> · submitted to provider {new Date(d.submitted_at).toLocaleString()}</>
-                      )}{" "}
-                      · engine: {d.status} · intent {d.intent_status ?? "—"} (
-                      {d.intent_attempts ?? 0} attempts)
-                    </div>
-                  </div>
-                );
-              })}
+          {/* the deep-link destination ALWAYS exists when tests are permitted,
+              so "View test activity" can never land on nothing */}
+          <div
+            id="test-activity"
+            tabIndex={-1}
+            className="mt-3 scroll-mt-24 space-y-1 rounded-lg outline-none transition"
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground">Recent test sends</h4>
+              <button className={btnCls} onClick={() => void refreshStatus()}>
+                <RefreshCw className="mr-1 inline h-3 w-3" /> Refresh status
+              </button>
             </div>
-          )}
+            {deliveries.length === 0 && (
+              <p className="rounded-lg border border-dashed border-hairline px-3 py-2 text-xs text-muted-foreground">
+                No test sends yet. Send yourself a test from a broadcast, a sequence, or the
+                governed test send above — every test and its honest outcome appears here.
+              </p>
+            )}
+            {deliveries.map((d) => {
+              const st = customerTestStatus({
+                status: d.status,
+                intent_status: d.intent_status,
+                failure_class: d.failure_class,
+                modePermitsSend: data.mode_permits_send,
+              });
+              return (
+                <div key={d.id} className="rounded-lg border border-hairline px-3 py-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {st.tone === "ok" ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                    ) : st.tone === "err" ? (
+                      <XCircle className="h-3.5 w-3.5 text-destructive" />
+                    ) : (
+                      <BadgeCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className="font-medium">{d.subject}</span>
+                    <span className="text-muted-foreground">→ {d.recipient_email}</span>
+                    <Pill tone={st.tone} label={st.label} />
+                    {d.failure_class && st.key !== "cancelled" && (
+                      <Pill tone="err" label={d.failure_class} />
+                    )}
+                    {canCancelTest(d) && (
+                      <button
+                        className={cn(btnCls, "ml-auto")}
+                        disabled={busy}
+                        onClick={() =>
+                          run(() => cancelTestSend(d.id), "Test cancelled — nothing was sent.")
+                        }
+                      >
+                        Cancel test
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{st.hint}</p>
+                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                    {new Date(d.created_at).toLocaleString()}
+                    {d.provider_message_id && <> · provider id {d.provider_message_id}</>}
+                    {d.submitted_at && (
+                      <> · submitted to provider {new Date(d.submitted_at).toLocaleString()}</>
+                    )}{" "}
+                    · technical: engine {d.status} · intent {d.intent_status ?? "—"} (
+                    {d.intent_attempts ?? 0} attempts)
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </>
       )}
     </section>

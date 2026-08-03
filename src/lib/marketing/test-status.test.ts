@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { customerTestStatus } from "./test-status.ts";
+import { canCancelTest, customerTestStatus } from "./test-status.ts";
 
 test("a queued test in a non-sending mode is honestly paused, not lost", () => {
   const st = customerTestStatus({ status: "queued", modePermitsSend: false });
@@ -48,5 +48,34 @@ test("executing reads as processing", () => {
   assert.equal(
     customerTestStatus({ status: "executing", modePermitsSend: true }).key,
     "processing",
+  );
+});
+
+test("cancel is offered ONLY for a queued, never-attempted test", () => {
+  assert.equal(
+    canCancelTest({ status: "queued", intent_status: "pending", intent_attempts: 0 }),
+    true,
+  );
+  // a freshly recorded delivery may not have joined intent facts yet — treat
+  // missing facts as the pending/zero defaults the server will re-prove anyway
+  assert.equal(canCancelTest({ status: "queued" }), true);
+});
+
+test("cancel is never offered once the engine may own the work", () => {
+  // executing / terminal deliveries are out of reach
+  for (const status of ["executing", "submitted", "failed", "unknown"] as const) {
+    assert.equal(canCancelTest({ status, intent_status: "pending", intent_attempts: 0 }), false);
+  }
+  // a claimed/executing/cancelled intent bars withdrawal even while queued
+  for (const intent of ["claimed", "executing", "succeeded", "cancelled", "failed"]) {
+    assert.equal(
+      canCancelTest({ status: "queued", intent_status: intent, intent_attempts: 0 }),
+      false,
+    );
+  }
+  // attempted work (retrying) can no longer be withdrawn
+  assert.equal(
+    canCancelTest({ status: "queued", intent_status: "pending", intent_attempts: 1 }),
+    false,
   );
 });

@@ -1,20 +1,29 @@
 // ServiceOS — governed cancel-before-execution HTTP contract (marketing-senders
-// action test_cancel), exercised against a SERVED runtime with real GoTrue JWTs.
+// action test_cancel → the ATOMIC marketing_test_cancel RPC), exercised against
+// a SERVED runtime with real GoTrue JWTs.
 //
 // Random-id synthetic tenants → re-runnable on any environment, including a
 // staging project whose append-only ledgers keep fixed-fixture ids forever.
 //
 // Proves:
 //   - an operational actor with marketing.campaigns.test can withdraw their own
-//     QUEUED test; the intent moves pending→cancelled, the delivery reconciles,
-//     and an audit row records the act;
+//     QUEUED test; the response IS the authoritative final state (delivery
+//     failed / failure_class 'cancelled' / intent cancelled), the guarded event
+//     chain records the act, and an audit row exists — all committed together
+//     by ONE database transaction;
 //   - cancelling twice is a clean conflict, not a duplicate cancellation;
 //   - a viewer cannot cancel;
 //   - a caller from another tenant sees NOT_FOUND (non-enumerating);
-//   - a non-test delivery id and a garbage id are refused;
+//   - a garbage id is refused;
 //   - a delivery whose intent already left `pending` can no longer be
 //     withdrawn (CONFLICT) — nothing that may already be at the provider is
-//     ever touched.
+//     ever touched;
+//   - TRUE RACE: a cancel fired concurrently with a worker claim resolves to
+//     exactly one winner with a consistent final state.
+//
+// The full rollback-on-failed-audit/projection proof and the non-test
+// (broadcast) refusal are SQL-layer proofs: supabase/tests/
+// marketing_test_cancel.test.sql and marketing_broadcasts.test.sql.
 //
 // Exits 3 NOT-RUN without a served runtime.
 
@@ -172,20 +181,54 @@ async function main() {
   r = await call(tokens.owner, { action: "test_cancel", delivery_id: "not-a-uuid" });
   ok("a malformed delivery id is refused", r.status === 400, r.status);
 
-  // the owner cancels their queued test
+  // the owner cancels their queued test — the response is the AUTHORITATIVE
+  // final state of the one atomic transaction
   r = await call(tokens.owner, { action: "test_cancel", delivery_id: deliveryId });
   ok(
     "the requester can withdraw a queued test",
     r.status === 200 && r.body?.data?.cancelled === true,
     JSON.stringify(r.body?.data ?? r.body?.error),
   );
+  ok(
+    "the response is the authoritative terminal state",
+    r.body?.data?.delivery_status === "failed" &&
+      r.body?.data?.failure_class === "cancelled" &&
+      r.body?.data?.intent_status === "cancelled" &&
+      typeof r.body?.data?.cancelled_at === "string",
+    JSON.stringify(r.body?.data),
+  );
+  const delRow = await admin
+    .from("marketing_deliveries")
+    .select("status, failure_class, provider_message_id, submitted_at")
+    .eq("id", deliveryId)
+    .maybeSingle();
+  ok(
+    "the delivery is terminally failed/cancelled with no provider facts",
+    delRow.data?.status === "failed" &&
+      delRow.data?.failure_class === "cancelled" &&
+      delRow.data?.provider_message_id === null &&
+      delRow.data?.submitted_at === null,
+    JSON.stringify(delRow.data),
+  );
+  const events = await admin
+    .from("marketing_delivery_events")
+    .select("from_status, to_status, detail")
+    .eq("tenant_id", TA)
+    .eq("delivery_id", deliveryId)
+    .order("seq", { ascending: true });
+  ok(
+    "the guarded event chain records request + cancellation",
+    events.data?.length === 2 &&
+      events.data[0].to_status === "queued" &&
+      events.data[1].from_status === "queued" &&
+      events.data[1].to_status === "failed" &&
+      /cancelled by the requester/.test(events.data[1].detail ?? ""),
+    JSON.stringify(events.data),
+  );
   const intent = await admin
     .from("automation_intents")
     .select("status")
-    .eq("tenant_id", TA)
-    .eq("intent_type", "send_marketing_test_email")
-    .order("created_at", { ascending: false })
-    .limit(1)
+    .eq("id", r.body?.data?.intent_id)
     .maybeSingle();
   ok("the intent is cancelled", intent.data?.status === "cancelled", intent.data?.status);
   const audit = await admin
@@ -220,6 +263,59 @@ async function main() {
     "a test that already started processing cannot be withdrawn",
     r.status === 409,
     `${r.status} ${r.body?.error?.code}`,
+  );
+
+  // TRUE RACE: fire the governed cancel and a worker-style claim at the same
+  // moment. The conditional transitions inside the database decide the winner;
+  // the ONLY legal outcomes are (cancel won → intent cancelled) XOR (claim won
+  // → intent claimed, cancel refused 409). No third state, no partial write.
+  const req3 = await call(tokens.owner, {
+    action: "test_send",
+    sender_id: sender.data.id,
+    recipient_profile_id: OWNER,
+    subject: "race-me",
+    body_text: "third queued test — raced",
+    request_id: `tc-${RUN}-0003`,
+  });
+  const delivery3 = req3.body?.data?.delivery_id;
+  const intent3 = req3.body?.data?.intent_id;
+  ok("a third test is queued for the race", req3.status === 200 && !!intent3, req3.status);
+  const [raceCancel, raceClaim] = await Promise.all([
+    call(tokens.owner, { action: "test_cancel", delivery_id: delivery3 }),
+    admin
+      .from("automation_intents")
+      .update({ status: "claimed" })
+      .eq("id", intent3)
+      .eq("status", "pending")
+      .eq("attempts", 0)
+      .select("id"),
+  ]);
+  const cancelWon = raceCancel.status === 200 && raceCancel.body?.data?.cancelled === true;
+  const claimWon = (raceClaim.data?.length ?? 0) === 1;
+  const finalIntent = await admin
+    .from("automation_intents")
+    .select("status")
+    .eq("id", intent3)
+    .maybeSingle();
+  const finalDelivery = await admin
+    .from("marketing_deliveries")
+    .select("status, failure_class")
+    .eq("id", delivery3)
+    .maybeSingle();
+  ok(
+    "the race has exactly one winner",
+    (cancelWon && !claimWon && raceClaim.error === null) ||
+      (claimWon && !cancelWon && raceCancel.status === 409),
+    `cancel=${raceCancel.status} claimRows=${raceClaim.data?.length ?? "err"}`,
+  );
+  ok(
+    "the final state is consistent with the winner",
+    cancelWon
+      ? finalIntent.data?.status === "cancelled" &&
+          finalDelivery.data?.status === "failed" &&
+          finalDelivery.data?.failure_class === "cancelled"
+      : finalIntent.data?.status === "claimed" && finalDelivery.data?.status === "queued",
+    `intent=${finalIntent.data?.status} delivery=${finalDelivery.data?.status}`,
   );
 
   await cleanup();

@@ -89,10 +89,16 @@ import {
 import { listLifecycleStagesAdmin, type LifecycleStageAdmin } from "@/lib/marketing/admin";
 import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 import { TestSendTracker } from "@/components/app/MarketingTestStatus";
+import {
+  FormSection,
+  JourneySteps,
+  TechnicalDetails,
+  marketingInputCls,
+  type JourneyStep,
+} from "@/components/app/MarketingFormKit";
 
-const inputCls =
-  "w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-foreground " +
-  "placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10";
+// ONE form language across Marketing (same boundary + focus as Broadcasts)
+const inputCls = marketingInputCls;
 
 function Btn({
   children,
@@ -188,40 +194,37 @@ function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void
   );
 }
 
-function SequenceJourney({ status }: { status: string }) {
-  const stage = status === "draft" ? 0 : status === "review" ? 1 : status === "approved" ? 2 : 3;
-  const steps = [
-    ["1", "Build & test", "Write the journey and test each email step."],
-    ["2", "Review", "Approve the exact sequence revision."],
-    ["3", "Activate", "Turn the approved journey on."],
-    ["4", "Choose audience", "Enrol a saved segment or selected contacts."],
-  ];
+/** The ONE sequence journey, spoken the same way in the builder and the detail
+ *  view. Activation and enrolment are DELIBERATELY separate final steps:
+ *  turning the journey on never chooses who goes through it. */
+const SEQUENCE_JOURNEY: JourneyStep[] = [
+  { title: "Build the journey", hint: "Emails, waits and actions — in order." },
+  { title: "Test each email", hint: "Send every email step to yourself first." },
+  { title: "Review and approve", hint: "An owner or admin approves the exact journey." },
+  { title: "Activate", hint: "Turn the journey on. Nobody is enrolled by this." },
+  {
+    title: "Choose and enrol the audience",
+    hint: "Pick who goes through it — a separate, confirmed step.",
+  },
+];
+
+function SequenceJourney({ status, enrolled }: { status: string; enrolled?: boolean }) {
+  const stage =
+    status === "draft" ? 1 : status === "review" ? 2 : status === "approved" ? 3 : enrolled ? 5 : 4;
+  const next =
+    status === "draft"
+      ? "Next: test each email on yourself, then submit for review."
+      : status === "review"
+        ? "Next: an owner or admin approves the exact journey (or requests changes)."
+        : status === "approved"
+          ? "Next: activate the journey. Activation never enrols anyone."
+          : !enrolled
+            ? "The journey is on. Next: choose and enrol the audience — nothing happens until you do."
+            : null;
   return (
-    <div className="grid grid-cols-1 gap-2 md:grid-cols-4" aria-label="Sequence launch progress">
-      {steps.map(([number, label, help], index) => (
-        <div
-          key={number}
-          className={cn(
-            "rounded-xl border p-3",
-            index < stage && "border-success/30 bg-success/5",
-            index === stage && "border-accent/40 bg-accent-soft",
-            index > stage && "border-hairline bg-white",
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold",
-                index <= stage ? "bg-foreground text-background" : "bg-surface-alt text-foreground",
-              )}
-            >
-              {index < stage ? "✓" : number}
-            </span>
-            <span className="text-xs font-semibold text-foreground">{label}</span>
-          </div>
-          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{help}</p>
-        </div>
-      ))}
+    <div aria-label="Sequence launch progress">
+      <JourneySteps steps={SEQUENCE_JOURNEY} current={stage} done={stage} />
+      {next && <p className="mt-2 text-xs font-medium text-foreground">{next}</p>}
     </div>
   );
 }
@@ -333,7 +336,7 @@ function StepEditor({
             <div className="md:col-span-2">
               <Field
                 label="Subject"
-                hint="Personalisation: {{first_name}}, {{last_name}}, {{display_name}}, {{company_name}}"
+                hint="Use “Insert a name or field…” below to personalise — friendly names, no codes to remember."
               >
                 <input
                   className={inputCls}
@@ -408,7 +411,7 @@ function StepEditor({
 
         {step.type === "wait_duration" && (
           <>
-            <Field label="Amount">
+            <Field label="Wait for">
               <input
                 type="number"
                 min={1}
@@ -417,10 +420,7 @@ function StepEditor({
                 onChange={(e) => set({ amount: Number(e.target.value) })}
               />
             </Field>
-            <Field
-              label="Unit"
-              hint="Measured from the moment the previous step actually finished."
-            >
+            <Field label="Unit">
               <select
                 className={inputCls}
                 value={String(cfg.unit ?? "days")}
@@ -431,6 +431,13 @@ function StepEditor({
                 <option value="days">Days</option>
               </select>
             </Field>
+            <p className="text-[11px] text-muted-foreground md:col-span-2">
+              The contact simply waits here: ServiceOS pauses{" "}
+              <span className="font-medium text-foreground">
+                {Number(cfg.amount ?? 1)} {String(cfg.unit ?? "days")}
+              </span>{" "}
+              after the previous step finishes, then continues to the next one.
+            </p>
           </>
         )}
 
@@ -661,10 +668,11 @@ function ActivationDialog({
         </div>
         <div className="mt-3 space-y-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-foreground">
           <p className="font-medium">
-            Once active, enrolled People move through {preflight.step_count} step
-            {preflight.step_count === 1 ? "" : "s"} automatically — including{" "}
-            {preflight.email_steps} real email step{preflight.email_steps === 1 ? "" : "s"} when
-            deployed.
+            Activating turns the journey on — it does NOT enrol anyone. Nobody receives anything
+            until you choose and enrol the audience afterwards. Once someone is enrolled, they move
+            through {preflight.step_count} step{preflight.step_count === 1 ? "" : "s"} automatically
+            — including {preflight.email_steps} real email step
+            {preflight.email_steps === 1 ? "" : "s"}.
           </p>
           <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
             <li>
@@ -857,12 +865,14 @@ function SequenceDetailView({
   onBack,
   onChanged,
   onRevise,
+  initialNotice,
 }: {
   campaignId: string;
   caps: Pick<SequenceListData, "can_draft" | "can_test" | "can_launch" | "can_report">;
   onBack: () => void;
   onChanged: () => void;
   onRevise: (detail: SequenceDetail) => void;
+  initialNotice?: string | null;
 }) {
   const [detail, setDetail] = useState<SequenceDetail | null>(null);
   const [report, setReport] = useState<SequenceReport | null>(null);
@@ -870,7 +880,7 @@ function SequenceDetailView({
   const [nextCursor, setNextCursor] = useState<{ at: string; id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice ?? null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [activation, setActivation] = useState<ActivationPreflight | null>(null);
   const [enrolPreflight, setEnrolPreflight] = useState<EnrolmentPreflight | null>(null);
@@ -1112,11 +1122,19 @@ function SequenceDetailView({
       </div>
 
       {notice && (
-        <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-foreground">
+        <div
+          role="status"
+          className={cn(
+            "rounded-lg border px-3 py-2 text-xs text-foreground",
+            notice.startsWith("Sequence saved")
+              ? "border-success/40 bg-success/10"
+              : "border-hairline bg-surface-alt",
+          )}
+        >
           {notice}
         </div>
       )}
-      <SequenceJourney status={detail.status} />
+      <SequenceJourney status={detail.status} enrolled={enrolments.length > 0} />
       {heldCount > 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-foreground">
           <AlertTriangle className="h-4 w-4 text-warning" />
@@ -1476,14 +1494,18 @@ function EnrolPanel({
     <div className="rounded-xl border border-hairline bg-white p-4">
       <div className="flex items-center gap-2">
         <UserPlus className="h-4 w-4 text-muted-foreground" />
-        <div className="text-sm font-medium text-foreground">Enrol People</div>
+        <div className="text-sm font-semibold text-foreground">Choose and enrol the audience</div>
       </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        The journey is on, but nobody goes through it until you enrol them here. You&apos;ll see
+        exactly who will be enrolled — and who is excluded, with the reason — before confirming.
+      </p>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
         {entry !== "manual_only" && (
           <div className="rounded-lg border border-hairline p-3">
             <Field
               label="From a segment"
-              hint="Evaluated live against the segment's current version."
+              hint="Uses the segment as it stands right now — you confirm the exact list next."
             >
               <select
                 className={inputCls}
@@ -1505,7 +1527,7 @@ function EnrolPanel({
                 disabled={!segmentId}
                 onClick={() => onPreflight("segment", undefined, segmentId)}
               >
-                <Users className="h-3.5 w-3.5" /> Preflight segment
+                <Users className="h-3.5 w-3.5" /> Check who will be enrolled
               </Btn>
             </div>
           </div>
@@ -1709,22 +1731,23 @@ function SequenceBuilder({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-hairline bg-white p-4">
-        <div className="text-sm font-medium text-foreground">
+      <div className="rounded-xl border border-foreground/15 bg-white p-4">
+        <div className="text-sm font-semibold text-foreground">
           {mode === "create" ? "New sequence" : `Revise “${existing?.name}”`}
         </div>
         {mode === "create" && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Name the journey, choose the verified sender, then build the emails and waits in the
-            order contacts should receive them. You can test every email before activation.
+            Build a series of emails and waits that runs by itself once you approve and activate it.
+            Nothing sends while you build — and nobody is enrolled until you choose them at the end.
           </p>
         )}
         {mode === "revise" && (
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Saving creates a NEW immutable revision and returns the sequence to draft for approval.
-            People already enrolled continue on the revision they entered on.
+          <p className="mt-1 text-xs text-muted-foreground">
+            Change the journey, then save. It returns to draft so it can be tested and approved
+            again; people already enrolled simply finish the version they started on.
           </p>
         )}
+        <JourneySteps className="mt-3" steps={SEQUENCE_JOURNEY} current={0} done={0} />
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
           <Field label="Name (required)">
             <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
@@ -1916,6 +1939,7 @@ export function MarketingSequences({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(initialSelected);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [building, setBuilding] = useState<{
     mode: "create" | "revise";
     existing?: SequenceDetail;
@@ -1958,6 +1982,9 @@ export function MarketingSequences({
         onCancel={() => setBuilding(null)}
         onSaved={(campaignId) => {
           setBuilding(null);
+          setSavedNotice(
+            "Sequence saved as a draft — you're viewing it now. It stays under Campaigns → Sequences whenever you come back. Next: test each email on yourself.",
+          );
           setSelected(campaignId);
           onSelectedChange?.(campaignId);
           void load();
@@ -1971,11 +1998,13 @@ export function MarketingSequences({
         campaignId={selected}
         caps={data}
         onBack={() => {
+          setSavedNotice(null);
           setSelected(null);
           onSelectedChange?.(null);
         }}
         onChanged={load}
         onRevise={(detail) => setBuilding({ mode: "revise", existing: detail })}
+        initialNotice={savedNotice}
       />
     );
   }
@@ -1984,25 +2013,33 @@ export function MarketingSequences({
     <div className="space-y-4">
       {!data.unsubscribe_configured && (
         <div className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-foreground">
-          <span className="font-medium">Configuration required.</span> The public unsubscribe base
-          URL is not set, so a sequence containing an email step cannot be activated. Nothing is
-          faked — see BROADCAST_SETUP.md.
+          You can build, test and approve sequences now — activating one with an email step is
+          unlocked once an administrator finishes the server setup (unsubscribe links need it).
+          <TechnicalDetails className="mt-2" summary="What an administrator needs to do">
+            Set the public Marketing base URL (MARKETING_PUBLIC_BASE_URL) so unsubscribe links can
+            be built — the full steps are in BROADCAST_SETUP.md.
+          </TechnicalDetails>
         </div>
       )}
       {!data.scheduler_configured && (
         <div className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-foreground">
-          <span className="font-medium">Scheduler not configured.</span> MARKETING_SEQUENCE_SECRET
-          is unset, so due steps will not advance automatically until an operator installs the cron.
+          Sequences will not advance on their own yet — an administrator still needs to switch on
+          the schedule that moves contacts to their next step.
+          <TechnicalDetails className="mt-2" summary="What an administrator needs to do">
+            Configure MARKETING_SEQUENCE_SECRET (Edge secret + Vault) and install the sequence cron
+            — the full steps are in SEQUENCE_SETUP.md.
+          </TechnicalDetails>
         </div>
       )}
       {!data.follow_up_available && (
-        <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-foreground">
-          <span className="font-medium">Follow-up steps: configuration required.</span> This
-          platform has no state machine registered for core Actions, so a follow-up created here
-          could be seen on the work list but never started, completed or dismissed. Rather than
-          author permanent work nobody can clear, the step is withheld from the builder and refused
-          by the server. It becomes available the moment the platform registers those transitions —
-          no Marketing change is needed.
+        <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
+          Follow-up task steps aren&apos;t available on this platform yet, so the builder
+          doesn&apos;t offer them — everything else works.
+          <TechnicalDetails className="mt-2" summary="Why">
+            The platform has no state machine registered for core Actions, so a follow-up created
+            here could never be started, completed or dismissed. The step unlocks the moment those
+            transitions are registered — no Marketing change is needed.
+          </TechnicalDetails>
         </div>
       )}
 
@@ -2010,8 +2047,9 @@ export function MarketingSequences({
         <div>
           <div className="text-sm font-medium text-foreground">Sequences</div>
           <p className="text-xs text-muted-foreground">
-            Ordered journeys with governed sends, waits and internal actions. Every step is
-            approved, suppression-checked and evidence-reported.
+            A series of emails and waits that runs by itself — welcome journeys, service reminders,
+            follow-ups. Build it once, test it on yourself, approve it, then choose who goes through
+            it.
           </p>
         </div>
         {data.can_draft && (
@@ -2026,8 +2064,8 @@ export function MarketingSequences({
           <Mail className="mx-auto h-6 w-6 text-muted-foreground" />
           <div className="mt-2 text-sm font-medium text-foreground">No sequences yet</div>
           <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
-            A sequence sends a governed series of steps to People who enrol. Nothing sends until an
-            owner or admin approves the journey and activates it.
+            Build your first journey — for example a welcome series or a service reminder. Nothing
+            sends until it is approved, activated, and you choose who goes through it.
           </p>
         </div>
       ) : (

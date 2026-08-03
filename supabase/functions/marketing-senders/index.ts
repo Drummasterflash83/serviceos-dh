@@ -564,14 +564,16 @@ Deno.serve(async (req) => {
         return json({ ok: true, data: out });
       }
 
-      // ── bounded status/history (with a lazy reconcile for freshness) ──
       // ── test_cancel: governed cancel-before-provider-execution ──
-      // A queued test whose intent is still PENDING (never claimed, zero
-      // attempts) can be withdrawn. The pending→cancelled transition is a legal
-      // move in the engine's frozen state machine and the conditional UPDATE
-      // closes the race with a claiming worker: whichever side commits first
-      // wins, and the loser sees the truth. Nothing that may already be at the
-      // provider is ever touched.
+      // THIN WRAPPER: the entire governed act (tenant/delivery binding,
+      // purpose + still-queued + still-pending-with-zero-attempts proofs, the
+      // conditional pending→cancelled transition, the terminal delivery
+      // reconciliation, the delivery event, the audit record) runs inside ONE
+      // database transaction in marketing_test_cancel. A failed audit or
+      // projection write rolls back the cancellation itself — no unaudited
+      // cancellation and no stale projection can exist. The worker race stays
+      // decided in SQL: whichever side commits first wins (loser sees MK411).
+      // Nothing that may already be at the provider is ever touched.
       case "test_cancel": {
         if (!["owner", "admin", "ops"].includes(auth.ctx.role)) {
           return fail("FORBIDDEN", "Cancelling a test requires an operational role", 403);
@@ -582,68 +584,31 @@ Deno.serve(async (req) => {
         if (!isUuid(body.delivery_id)) {
           return fail("INVALID_REQUEST", "delivery_id required", 400);
         }
-        const del = await admin
-          .from("marketing_deliveries")
-          .select("id, tenant_id, purpose, status, automation_intent_id, recipient_email, subject")
-          .eq("id", body.delivery_id)
-          .eq("tenant_id", tenantId)
-          .maybeSingle();
-        if (del.error) return mapDbError(del.error);
-        if (!del.data) return fail("NOT_FOUND", "Test not found", 404);
-        if (del.data.purpose !== "test") {
-          return fail("INVALID_REQUEST", "Only test sends can be cancelled here", 400);
-        }
-        if (del.data.status !== "queued" || !del.data.automation_intent_id) {
-          return fail(
-            "CONFLICT",
-            "This test is no longer waiting — it already processed or finished",
-            409,
-          );
-        }
-        // conditional transition: only a still-pending intent can be withdrawn
-        const upd = await admin
-          .from("automation_intents")
-          .update({ status: "cancelled" })
-          .eq("id", del.data.automation_intent_id)
-          .eq("tenant_id", tenantId)
-          .eq("status", "pending")
-          .eq("attempts", 0)
-          .select("id");
-        if (upd.error) return mapDbError(upd.error);
-        if (!upd.data || upd.data.length === 0) {
-          return fail(
-            "CONFLICT",
-            "ServiceOS already started processing this test — it can no longer be withdrawn",
-            409,
-          );
-        }
-        await admin.from("audit_logs").insert({
-          tenant_id: tenantId,
-          actor: auth.ctx.email ?? userId,
-          action: "marketing.test_send.cancelled",
-          resource_type: "automation_intent",
-          resource_id: del.data.automation_intent_id,
-          status: "ok",
-          detail: {
-            delivery_id: del.data.id,
-            recipient_email: del.data.recipient_email,
-            subject: del.data.subject,
-            reason: "cancelled by the requester before provider execution",
-          },
-        });
-        const rec = await admin.rpc("marketing_delivery_reconcile", {
+        const r = await admin.rpc("marketing_test_cancel", {
           p_tenant: tenantId,
-          p_delivery: del.data.id,
+          p_actor: userId,
+          p_args: { delivery_id: body.delivery_id },
         });
-        return json({
-          ok: true,
-          data: {
-            delivery_id: del.data.id,
-            cancelled: true,
-            delivery_status: rec.error ? "queued" : ((rec.data as Row)?.status ?? "queued"),
-          },
-        });
+        if (r.error) {
+          if (r.error.code === "MK410") {
+            return fail(
+              "CONFLICT",
+              "This test is no longer waiting — it already processed or finished",
+              409,
+            );
+          }
+          if (r.error.code === "MK411") {
+            return fail(
+              "CONFLICT",
+              "ServiceOS already started processing this test — it can no longer be withdrawn",
+              409,
+            );
+          }
+          return mapDbError(r.error);
+        }
+        return json({ ok: true, data: r.data });
       }
+      // ── bounded status/history (with a lazy reconcile for freshness) ──
       case "test_status": {
         let limit = 20;
         if (body.limit !== undefined) {

@@ -79,6 +79,13 @@ import { MarketingReporting } from "@/components/app/MarketingReporting";
 import { MarketingAiDrafting } from "@/components/app/MarketingAiDrafting";
 import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 import { TestSendTracker } from "@/components/app/MarketingTestStatus";
+import {
+  FormSection,
+  JourneySteps,
+  TechnicalDetails,
+  marketingInputCls,
+  type JourneyStep,
+} from "@/components/app/MarketingFormKit";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import { nextLocalHourValue, toServerLocalDateTime } from "@/lib/marketing/schedule";
 
@@ -173,8 +180,9 @@ function Field({
   );
 }
 
-const inputCls =
-  "w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-foreground outline-none transition focus:border-foreground/40";
+// ONE form language across Marketing: clearly visible field boundaries + one
+// consistent focus treatment (the StoryBrand correction pass)
+const inputCls = marketingInputCls;
 
 function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
@@ -195,6 +203,19 @@ function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void
   );
 }
 
+/** The ONE broadcast journey, spoken the same way on the form and the detail
+ *  view: the customer always knows the goal, the next action and what happens. */
+const BROADCAST_JOURNEY: JourneyStep[] = [
+  { title: "Create your message", hint: "Write it once — subject, body, personalisation." },
+  { title: "Choose the audience", hint: "Pick the saved segment that should receive it." },
+  {
+    title: "Send yourself a test",
+    hint: "See exactly what recipients will get — in your own inbox.",
+  },
+  { title: "Review and approve", hint: "An owner or admin approves the exact content." },
+  { title: "Send now or schedule", hint: "Check exactly who receives it, then choose when." },
+];
+
 function CampaignJourney({
   status,
   audienceChecked,
@@ -202,46 +223,22 @@ function CampaignJourney({
   status: CampaignStatus;
   audienceChecked: boolean;
 }) {
-  const stage =
+  // a saved draft has completed steps 1–2; the next action is the test
+  const stage = status === "draft" ? 2 : status === "review" ? 3 : status === "approved" ? 4 : 5; // scheduled / active / completed — the journey is finished
+  const next =
     status === "draft"
-      ? 0
+      ? "Next: send yourself a test below, then submit for review."
       : status === "review"
-        ? 1
+        ? "Next: an owner or admin approves the exact content (or requests changes)."
         : status === "approved" && !audienceChecked
-          ? 2
-          : 3;
-  const steps = [
-    ["1", "Write & test", "Create the message and send yourself a test."],
-    ["2", "Review", "Submit the exact content for approval."],
-    ["3", "Check audience", "Confirm who will receive it and who is excluded."],
-    ["4", "Choose when", "Send now or select a UK date and time."],
-  ];
+          ? "Next: check the audience to see exactly who will receive it."
+          : status === "approved"
+            ? "Next: send now, or choose a date and time."
+            : null;
   return (
-    <div className="grid grid-cols-1 gap-2 md:grid-cols-4" aria-label="Broadcast launch progress">
-      {steps.map(([number, label, help], index) => (
-        <div
-          key={number}
-          className={cn(
-            "rounded-xl border p-3",
-            index < stage && "border-success/30 bg-success/5",
-            index === stage && "border-accent/40 bg-accent-soft",
-            index > stage && "border-hairline bg-white",
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold",
-                index <= stage ? "bg-foreground text-background" : "bg-surface-alt text-foreground",
-              )}
-            >
-              {index < stage ? "✓" : number}
-            </span>
-            <span className="text-xs font-semibold text-foreground">{label}</span>
-          </div>
-          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{help}</p>
-        </div>
-      ))}
+    <div aria-label="Broadcast launch progress">
+      <JourneySteps steps={BROADCAST_JOURNEY} current={stage} done={stage} />
+      {next && <p className="mt-2 text-xs font-medium text-foreground">{next}</p>}
     </div>
   );
 }
@@ -268,7 +265,9 @@ function CampaignEditor({
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [form, setForm] = useState<CampaignContentInput>(initial);
   const [senders, setSenders] = useState<{ id: string; label: string; ready: boolean }[]>([]);
-  const [segments, setSegments] = useState<{ id: string; name: string }[]>([]);
+  const [segments, setSegments] = useState<
+    { id: string; name: string; estimated_count: number | null; evaluated_at: string | null }[]
+  >([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<CampaignDraftErrors>({});
@@ -296,7 +295,12 @@ function CampaignEditor({
     }));
     const availableSegments = (sg.data.segments ?? [])
       .filter((s) => s.status === "active")
-      .map((s) => ({ id: s.id, name: s.name }));
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        estimated_count: s.estimated_count ?? null,
+        evaluated_at: s.evaluated_at ?? null,
+      }));
     setSenders(availableSenders);
     setSegments(availableSegments);
     if (mode === "create" && sv.data.default_sender_profile_id) {
@@ -377,17 +381,25 @@ function CampaignEditor({
     onDone(mode === "create" ? (res.data as { id: string }).id : (campaignId ?? null));
   };
 
+  const selectedSegment = segments.find((s) => s.id === form.segment_id) ?? null;
+
   return (
-    <div className="rounded-xl border border-hairline bg-white p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-xl border border-foreground/15 bg-surface-alt/40 p-4">
+      <div className="mb-3">
         <div className="text-sm font-semibold text-foreground">
-          {mode === "create" ? "New broadcast" : "Revise broadcast"}
+          {mode === "create" ? "New broadcast" : "Revise this broadcast"}
         </div>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {mode === "create"
+            ? "Get one email to the right customers. Nothing sends while you work — saving keeps it as a draft."
+            : "Change the message, then save. The broadcast returns to draft so it can be tested and approved again before anything sends."}
+        </p>
+        <JourneySteps className="mt-3" steps={BROADCAST_JOURNEY} current={0} done={0} />
         {mode === "revise" && (
-          <div className="text-[11px] text-muted-foreground">
-            Saving creates revision {`>`} — the campaign returns to draft and any approval,
-            preflight snapshot and launch confirmation are invalidated (history is kept).
-          </div>
+          <TechnicalDetails className="mt-2" summary="What saving a revision changes">
+            Saving creates the next revision. Any earlier approval, audience snapshot and launch
+            confirmation are invalidated automatically; full history is kept.
+          </TechnicalDetails>
         )}
       </div>
       {error && (
@@ -407,177 +419,255 @@ function CampaignEditor({
           </button>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Field label="Name" required error={fieldErrors.name}>
-          <input
-            className={cn(inputCls, fieldErrors.name && "border-destructive")}
-            aria-invalid={Boolean(fieldErrors.name)}
-            value={form.name ?? ""}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, name: e.target.value }));
-              setFieldErrors((current) => ({ ...current, name: undefined }));
-            }}
-            maxLength={120}
-          />
-        </Field>
-        <Field label="Description (optional)">
-          <input
-            className={inputCls}
-            value={form.description ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            maxLength={500}
-          />
-        </Field>
-        <Field
-          label="Sender"
-          hint="Only enabled, ready senders can launch. The default verified sender is selected automatically."
-          required
-          error={fieldErrors.sender_id}
-        >
-          <select
-            className={cn(inputCls, fieldErrors.sender_id && "border-destructive")}
-            aria-invalid={Boolean(fieldErrors.sender_id)}
-            value={form.sender_id ?? ""}
-            disabled={prerequisitesLoading}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, sender_id: e.target.value }));
-              setFieldErrors((current) => ({ ...current, sender_id: undefined }));
-            }}
+      <FormSection
+        step={1}
+        title="Create your message"
+        description="Write it once, in plain language. Personalisation and links are inserted below."
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <Field
+            label="Broadcast name"
+            hint="For your team — recipients never see it."
+            required
+            error={fieldErrors.name}
           >
-            <option value="">Select a sender…</option>
-            {senders.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-                {s.ready ? "" : " — not ready"}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field
-          label="Saved segment"
-          hint="The audience is a saved query; launch uses an immutable snapshot."
-          required
-          error={fieldErrors.segment_id}
-        >
-          <select
-            className={cn(inputCls, fieldErrors.segment_id && "border-destructive")}
-            aria-invalid={Boolean(fieldErrors.segment_id)}
-            value={form.segment_id ?? ""}
-            disabled={prerequisitesLoading}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, segment_id: e.target.value }));
-              setFieldErrors((current) => ({ ...current, segment_id: undefined }));
-            }}
-          >
-            <option value="">Select a segment…</option>
-            {segments.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Subject" required error={fieldErrors.subject}>
-          <input
-            className={cn(inputCls, fieldErrors.subject && "border-destructive")}
-            aria-invalid={Boolean(fieldErrors.subject)}
-            value={form.subject ?? ""}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, subject: e.target.value }));
-              setFieldErrors((current) => ({ ...current, subject: undefined }));
-            }}
-            maxLength={300}
-          />
-        </Field>
-        <Field label="Preview text (optional)" hint="Shown by inbox clients next to the subject.">
-          <input
-            className={inputCls}
-            value={form.preview_text ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, preview_text: e.target.value }))}
-            maxLength={150}
-          />
-        </Field>
-      </div>
-      <div className="mt-3">
-        <MarketingContentTools
-          className="mb-2"
-          targetRef={bodyRef}
-          value={form.body_authored ?? ""}
-          onChange={(body_authored) => setForm((current) => ({ ...current, body_authored }))}
-        />
-        <Field
-          label="Body"
-          hint="Write the message in plain language. ServiceOS safely creates the email version and keeps personalisation governed."
-          required
-          error={fieldErrors.body_authored}
-        >
-          <textarea
-            ref={bodyRef}
-            className={cn(
-              inputCls,
-              "min-h-[180px] font-mono text-[13px]",
-              fieldErrors.body_authored && "border-destructive",
-            )}
-            aria-invalid={Boolean(fieldErrors.body_authored)}
+            <input
+              className={cn(inputCls, fieldErrors.name && "border-destructive")}
+              aria-invalid={Boolean(fieldErrors.name)}
+              value={form.name ?? ""}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, name: e.target.value }));
+                setFieldErrors((current) => ({ ...current, name: undefined }));
+              }}
+              maxLength={120}
+            />
+          </Field>
+          <Field label="Description (optional)" hint="A note for your team about this broadcast.">
+            <input
+              className={inputCls}
+              value={form.description ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              maxLength={500}
+            />
+          </Field>
+          <Field label="Subject" required error={fieldErrors.subject}>
+            <input
+              className={cn(inputCls, fieldErrors.subject && "border-destructive")}
+              aria-invalid={Boolean(fieldErrors.subject)}
+              value={form.subject ?? ""}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, subject: e.target.value }));
+                setFieldErrors((current) => ({ ...current, subject: undefined }));
+              }}
+              maxLength={300}
+            />
+          </Field>
+          <Field label="Preview text (optional)" hint="Shown by inbox clients next to the subject.">
+            <input
+              className={inputCls}
+              value={form.preview_text ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, preview_text: e.target.value }))}
+              maxLength={150}
+            />
+          </Field>
+        </div>
+        <div className="mt-3">
+          <MarketingContentTools
+            className="mb-2"
+            targetRef={bodyRef}
             value={form.body_authored ?? ""}
-            onChange={(e) => {
-              setForm((f) => ({ ...f, body_authored: e.target.value }));
-              setFieldErrors((current) => ({ ...current, body_authored: undefined }));
-            }}
-            maxLength={20000}
+            onChange={(body_authored) => setForm((current) => ({ ...current, body_authored }))}
           />
-        </Field>
-      </div>
-      {usedTokens.length > 0 && (
+          <Field
+            label="Body"
+            hint="Write the message in plain language. ServiceOS safely creates the email version and keeps personalisation governed."
+            required
+            error={fieldErrors.body_authored}
+          >
+            <textarea
+              ref={bodyRef}
+              className={cn(
+                inputCls,
+                "min-h-[180px] font-mono text-[13px]",
+                fieldErrors.body_authored && "border-destructive",
+              )}
+              aria-invalid={Boolean(fieldErrors.body_authored)}
+              value={form.body_authored ?? ""}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, body_authored: e.target.value }));
+                setFieldErrors((current) => ({ ...current, body_authored: undefined }));
+              }}
+              maxLength={20000}
+            />
+          </Field>
+        </div>
+        {usedTokens.length > 0 && (
+          <div className="mt-3 rounded-lg border border-hairline bg-surface-alt/50 p-3">
+            <div className="text-xs font-medium text-foreground">
+              If a personal detail is missing, say this instead
+            </div>
+            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+              {usedTokens.map((t) => (
+                <Field
+                  key={t}
+                  label={FALLBACK_LABELS[t] ?? `If ${t.replaceAll("_", " ")} is missing`}
+                >
+                  <input
+                    className={inputCls}
+                    value={fallbackDraft[t] ?? ""}
+                    placeholder='e.g. "there" — leave empty to skip people missing it'
+                    onChange={(e) => setFallbackDraft((d) => ({ ...d, [t]: e.target.value }))}
+                    maxLength={200}
+                  />
+                </Field>
+              ))}
+            </div>
+            <div className="mt-2 text-[11px] text-muted-foreground">
+              Left empty, anyone missing this detail is excluded before sending — with the exact
+              reason shown to you, never a broken email to them.
+            </div>
+          </div>
+        )}
         <div className="mt-3 rounded-lg border border-hairline bg-surface-alt/50 p-3">
           <div className="text-xs font-medium text-foreground">
-            Personalisation fallbacks (used when a recipient has no value)
+            What recipients will read (plain-text preview)
           </div>
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-            {usedTokens.map((t) => (
-              <Field key={t} label={`{{${t}}} fallback`}>
-                <input
-                  className={inputCls}
-                  value={fallbackDraft[t] ?? ""}
-                  placeholder="Leave empty to EXCLUDE recipients missing this value"
-                  onChange={(e) => setFallbackDraft((d) => ({ ...d, [t]: e.target.value }))}
-                  maxLength={200}
-                />
-              </Field>
-            ))}
-          </div>
-          <div className="mt-2 text-[11px] text-muted-foreground">
-            Without a fallback, recipients missing a used token are excluded at preflight with the
-            exact reason recorded.
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-[12px] text-muted-foreground">
+            {textPreview || "—"}
+          </pre>
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            Recipients receive text + a safely derived HTML version, both ending with the visible
+            unsubscribe footer.
           </div>
         </div>
-      )}
-      <div className="mt-3 rounded-lg border border-hairline bg-surface-alt/50 p-3">
-        <div className="text-xs font-medium text-foreground">
-          Plain-text preview (fallback values)
+      </FormSection>
+
+      <FormSection
+        step={2}
+        title="Choose the audience"
+        description="A broadcast always sends to a saved segment — exactly who receives it is shown and checked before anything sends."
+        className="mt-3"
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <Field
+            label="From (sender)"
+            hint="Your verified sender is selected for you. Only verified, enabled senders can send."
+            required
+            error={fieldErrors.sender_id}
+          >
+            <select
+              className={cn(inputCls, fieldErrors.sender_id && "border-destructive")}
+              aria-invalid={Boolean(fieldErrors.sender_id)}
+              value={form.sender_id ?? ""}
+              disabled={prerequisitesLoading}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, sender_id: e.target.value }));
+                setFieldErrors((current) => ({ ...current, sender_id: undefined }));
+              }}
+            >
+              <option value="">Select a sender…</option>
+              {senders.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                  {s.ready ? "" : " — not ready"}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Audience (saved segment)"
+            hint="Need a different group? Create a segment under Marketing → Contacts → Segments."
+            required
+            error={fieldErrors.segment_id}
+          >
+            <select
+              className={cn(inputCls, fieldErrors.segment_id && "border-destructive")}
+              aria-invalid={Boolean(fieldErrors.segment_id)}
+              value={form.segment_id ?? ""}
+              disabled={prerequisitesLoading}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, segment_id: e.target.value }));
+                setFieldErrors((current) => ({ ...current, segment_id: undefined }));
+              }}
+            >
+              <option value="">Select a segment…</option>
+              {segments.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                  {s.estimated_count !== null ? ` — about ${s.estimated_count} people` : ""}
+                </option>
+              ))}
+            </select>
+          </Field>
         </div>
-        <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-[12px] text-muted-foreground">
-          {textPreview || "—"}
-        </pre>
-        <div className="mt-1 text-[11px] text-muted-foreground">
-          Recipients receive text + a safely derived HTML version, both ending with the visible
-          unsubscribe footer.
-        </div>
-      </div>
-      <div className="mt-4 flex items-center gap-2">
+        {selectedSegment && (
+          <div
+            className={cn(
+              "mt-3 rounded-lg border p-3 text-xs",
+              selectedSegment.estimated_count === 0
+                ? "border-warning/40 bg-warning/5"
+                : "border-hairline bg-surface-alt/50",
+            )}
+          >
+            {selectedSegment.estimated_count === null && (
+              <p className="text-muted-foreground">
+                This audience hasn&apos;t been counted yet. The exact number of recipients is
+                counted and shown to you before anything sends.
+              </p>
+            )}
+            {selectedSegment.estimated_count !== null && selectedSegment.estimated_count > 0 && (
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  About {selectedSegment.estimated_count}{" "}
+                  {selectedSegment.estimated_count === 1 ? "person matches" : "people match"} this
+                  segment.
+                </span>{" "}
+                Before sending, the list is checked again: anyone unsubscribed, suppressed or
+                without recorded consent is excluded automatically, and you see every exclusion with
+                its reason.
+              </p>
+            )}
+            {selectedSegment.estimated_count === 0 && (
+              <div className="text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  No one matches this segment yet — a broadcast to it would reach nobody.
+                </p>
+                <p className="mt-1">
+                  That usually means contacts haven&apos;t been added yet, or none have a recorded
+                  marketing consent. To get ready: add or import contacts (Marketing → Contacts),
+                  record real consent — ServiceOS never assumes it — and re-check the segment.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </FormSection>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <Btn
           tone="primary"
           onClick={save}
           busy={saving}
           disabled={prerequisitesLoading || Boolean(prerequisiteError)}
         >
-          {mode === "create" ? "Create draft" : "Save as new revision"}
+          {mode === "create" ? "Save draft" : "Save as new revision"}
         </Btn>
         <Btn onClick={onCancel}>Cancel</Btn>
+        <span className="text-[11px] text-muted-foreground">
+          Saving never sends anything. Next step: send yourself a test.
+        </span>
       </div>
     </div>
   );
 }
+
+/** Friendly labels for the personalisation fallback inputs. */
+const FALLBACK_LABELS: Record<string, string> = {
+  first_name: "If first name is missing",
+  last_name: "If last name is missing",
+  display_name: "If full name is missing",
+  company_name: "If company name is missing",
+};
 
 /* ── launch dialog ────────────────────────────────────────────────────────── */
 
@@ -596,6 +686,8 @@ function LaunchDialog({
   const [scheduleLocal, setScheduleLocal] = useState(() => nextLocalHourValue());
   const [timezone, setTimezone] = useState("Europe/London");
   const [fold, setFold] = useState<"earlier" | "later" | "">("");
+  // the clocks-go-back choice only appears when the server proves it is needed
+  const [needsFold, setNeedsFold] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [requestId] = useState(newLaunchRequestId());
@@ -657,11 +749,14 @@ function LaunchDialog({
           });
     setBusy(false);
     if (!res.ok) {
-      setError(
-        res.error.code === "DST_AMBIGUOUS"
-          ? "That local time occurs twice (clocks go back). Choose “earlier” or “later” below and confirm again."
-          : res.error.message,
-      );
+      if (res.error.code === "DST_AMBIGUOUS") {
+        setNeedsFold(true);
+        setError(
+          "That time happens twice that night (the clocks go back). Choose which one you mean below, then confirm again.",
+        );
+      } else {
+        setError(res.error.message);
+      }
       return;
     }
     onLaunched();
@@ -679,39 +774,35 @@ function LaunchDialog({
         <div id="launch-dialog-title" className="text-sm font-semibold text-foreground">
           Choose when to send
         </div>
-        <div className="mt-3 space-y-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-foreground">
+        <div className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-foreground">
           <p className="font-medium">
-            This sends real external email to {preflight.included_count} recipient
-            {preflight.included_count === 1 ? "" : "s"} when deployed.
+            This sends a real email to {preflight.included_count}{" "}
+            {preflight.included_count === 1 ? "person" : "people"} — the exact audience you just
+            checked. It cannot be recalled once sent.
           </p>
-          <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+        </div>
+        <TechnicalDetails className="mt-2" summary="How ServiceOS protects this send">
+          <ul className="list-disc space-y-1 pl-4">
             <li>
-              Sender:{" "}
-              <span className="text-foreground">
-                {campaign.revision?.sender_profile_id && preflight
-                  ? "the approved campaign sender"
-                  : "—"}
-              </span>{" "}
-              · audience snapshot taken {new Date(preflight.created_at).toLocaleString()}.
+              The audience list was frozen when you checked it (
+              {new Date(preflight.created_at).toLocaleString()}); every recipient&apos;s consent,
+              unsubscribe and suppression state is re-checked again at the moment of sending —
+              ineligible people are skipped, never overridden.
             </li>
             <li>
-              “Submitted” means the selected provider accepted the request — it is not delivery
-              proof.
+              “Submitted” means the email provider accepted the request — it is not proof of inbox
+              delivery.
             </li>
             <li>
-              Suppression, unsubscribes and preference are re-checked for every recipient at
-              execution time; ineligible recipients are skipped, never overridden.
+              Pause stops anyone not yet prepared; a provider call already in flight may still
+              finish.
             </li>
             <li>
-              Pause stops recipients that have not been prepared; an already executing provider call
-              may still finish.
-            </li>
-            <li>
-              Email providers offer no exactly-once guarantee: an unknown outcome freezes that
-              recipient for review and is never silently retried.
+              If a provider result is ever lost, that one recipient is frozen for human review —
+              never silently retried.
             </li>
           </ul>
-        </div>
+        </TechnicalDetails>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <Btn
             tone={mode === "immediate" ? "primary" : "default"}
@@ -730,7 +821,11 @@ function LaunchDialog({
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field
               label="Send date and time"
-              hint="Shown and scheduled in the timezone alongside it."
+              hint={
+                timezone === "Europe/London"
+                  ? "United Kingdom time — including British Summer Time."
+                  : "Interpreted in the timezone chosen alongside."
+              }
             >
               <input
                 type="datetime-local"
@@ -750,20 +845,24 @@ function LaunchDialog({
                 <option value="UTC">UTC</option>
               </select>
             </Field>
-            <Field
-              label="DST fold (only if prompted)"
-              hint="Needed only when the local time occurs twice"
-            >
-              <select
-                className={inputCls}
-                value={fold}
-                onChange={(e) => setFold(e.target.value as typeof fold)}
+            {needsFold && (
+              <Field
+                label="Which one do you mean?"
+                hint="The clocks go back that night, so this time happens twice."
               >
-                <option value="">Not needed</option>
-                <option value="earlier">Earlier occurrence</option>
-                <option value="later">Later occurrence</option>
-              </select>
-            </Field>
+                <select
+                  className={inputCls}
+                  value={fold}
+                  onChange={(e) => setFold(e.target.value as typeof fold)}
+                >
+                  <option value="">Choose…</option>
+                  <option value="earlier">
+                    The first time it occurs (before the clocks change)
+                  </option>
+                  <option value="later">The second time it occurs (after the clocks change)</option>
+                </select>
+              </Field>
+            )}
           </div>
         )}
         {error && (
@@ -777,14 +876,13 @@ function LaunchDialog({
           </Btn>
           <Btn tone="primary" onClick={go} busy={busy}>
             {mode === "immediate"
-              ? `Send to ${preflight.included_count} recipients`
-              : `Schedule ${preflight.included_count} recipients`}
+              ? `Send to ${preflight.included_count} ${preflight.included_count === 1 ? "person" : "people"} now`
+              : `Schedule for ${scheduleLocal ? new Date(scheduleLocal).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "…"} — ${preflight.included_count} ${preflight.included_count === 1 ? "person" : "people"}`}
           </Btn>
         </div>
         <div className="mt-2 text-right text-[10px] text-muted-foreground">
-          Server confirmation {preflight.confirmation_id.slice(0, 8)}… expires{" "}
-          {new Date(preflight.expires_at).toLocaleTimeString()} — a refreshed preflight requires a
-          new confirmation.
+          This confirmation expires {new Date(preflight.expires_at).toLocaleTimeString()} — after
+          that, check the audience again before sending.
         </div>
       </div>
     </div>
@@ -1047,13 +1145,35 @@ function CampaignDetailView({
         <div
           role="status"
           className={cn(
-            "rounded-lg border px-3 py-2 text-xs text-foreground",
+            "flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-xs text-foreground",
             notice.startsWith("Draft saved")
               ? "border-success/40 bg-success/10"
               : "border-hairline bg-surface-alt",
           )}
         >
-          {notice}
+          <span>{notice}</span>
+          {notice.startsWith("Draft saved") && (
+            <span className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("broadcast-test-panel")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" })
+                }
+                className="rounded-md border border-success/40 bg-white px-2 py-1 font-medium text-foreground hover:bg-success/5"
+              >
+                Send yourself a test
+              </button>
+              <button
+                type="button"
+                onClick={onBack}
+                className="rounded-md border border-hairline bg-white px-2 py-1 font-medium text-foreground hover:bg-surface-alt"
+              >
+                View all broadcasts
+              </button>
+            </span>
+          )}
         </div>
       )}
       <CampaignJourney
@@ -1063,8 +1183,9 @@ function CampaignDetailView({
       {unknownCount > 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-foreground">
           <AlertTriangle className="h-4 w-4 text-warning" />
-          {unknownCount} recipient{unknownCount === 1 ? "" : "s"} with an UNKNOWN provider result —
-          frozen for review, never auto-retried, and completion is blocked until resolved.
+          For {unknownCount} recipient{unknownCount === 1 ? "" : "s"} the email provider&apos;s
+          answer was lost, so ServiceOS cannot say whether their email sent. They are held for human
+          review — never silently re-sent — and the broadcast stays open until resolved.
         </div>
       )}
 
@@ -1094,7 +1215,10 @@ function CampaignDetailView({
       )}
 
       {caps.can_test && (
-        <div className="rounded-xl border border-accent/30 bg-accent-soft p-4">
+        <div
+          id="broadcast-test-panel"
+          className="rounded-xl border border-accent/30 bg-accent-soft p-4"
+        >
           <div className="flex flex-wrap items-start gap-3">
             <div className="min-w-0 grow">
               <div className="text-sm font-semibold text-foreground">Send yourself a test</div>
@@ -1163,9 +1287,7 @@ function CampaignDetailView({
 
         {/* preflight / snapshot */}
         <div className="rounded-xl border border-hairline bg-white p-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Audience preflight
-          </div>
+          <div className="text-sm font-semibold text-foreground">Who will receive this</div>
           {preflight ? (
             <div className="mt-2 space-y-2 text-xs">
               <div className="flex flex-wrap gap-3">
@@ -1189,11 +1311,6 @@ function CampaignDetailView({
                 </div>
               </div>
               <ExclusionBreakdown breakdown={preflight.exclusion_breakdown} />
-              <div className="text-[11px] text-muted-foreground">
-                Snapshot {preflight.snapshot_hash.slice(0, 12)}… taken{" "}
-                {new Date(preflight.created_at).toLocaleString()} · samples:{" "}
-                {preflight.included_samples.map((s) => s.destination_masked).join(", ") || "—"}
-              </div>
               <div className="flex items-center gap-2 pt-1">
                 {caps.can_launch && (
                   <Btn tone="primary" onClick={() => setShowLaunch(true)}>
@@ -1201,13 +1318,16 @@ function CampaignDetailView({
                   </Btn>
                 )}
                 <Btn onClick={doPreflight} busy={busyAction === "preflight"}>
-                  <RefreshCw className="h-3.5 w-3.5" /> Refresh preflight
+                  <RefreshCw className="h-3.5 w-3.5" /> Check the audience again
                 </Btn>
               </div>
-              <div className="text-[11px] text-muted-foreground">
-                Refreshing creates a NEW immutable snapshot and requires a new confirmation — the
-                old one can no longer launch.
-              </div>
+              <TechnicalDetails summary="Audience snapshot details">
+                Snapshot {preflight.snapshot_hash.slice(0, 12)}… taken{" "}
+                {new Date(preflight.created_at).toLocaleString()} · sample addresses (masked):{" "}
+                {preflight.included_samples.map((s) => s.destination_masked).join(", ") || "—"}.
+                Re-checking freezes a fresh list and needs a fresh confirmation — the old one can no
+                longer send.
+              </TechnicalDetails>
             </div>
           ) : detail.snapshot ? (
             <div className="mt-2 space-y-2 text-xs">
@@ -1235,9 +1355,9 @@ function CampaignDetailView({
             <div className="mt-2 text-xs text-muted-foreground">
               {detail.status === "approved"
                 ? caps.unsubscribe_configured
-                  ? "Run preflight to build the immutable audience snapshot and launch confirmation."
-                  : "Launch requires the server-configured Marketing public base URL (unsubscribe links). Ask an administrator to configure MARKETING_PUBLIC_BASE_URL."
-                : "Preflight becomes available once the campaign is approved."}
+                  ? "Choose “Check audience” above to see exactly who will receive this — and who is excluded, with the reason — before you send."
+                  : "Sending is not available yet: unsubscribe links can't be built until an administrator finishes the server setup (the public Marketing web address)."
+                : "The audience check unlocks once the content is approved."}
             </div>
           )}
         </div>
@@ -1247,7 +1367,7 @@ function CampaignDetailView({
       {caps.can_report && report && (
         <div className="rounded-xl border border-hairline bg-white p-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Delivery report — factual counts only
+            What actually happened (facts only — never estimates)
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
             {(
@@ -1496,8 +1616,9 @@ function BroadcastsTab({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <p className="max-w-2xl text-sm text-muted-foreground">
-          One-off governed sends: immutable audience snapshots, per-recipient evidence, suppression
-          re-checked at execution.
+          Send one email to the right customers: write it, test it on yourself, approve it, then
+          send now or schedule. ServiceOS checks every recipient&apos;s consent before anything
+          leaves.
         </p>
         <div className="ml-auto">
           {data.can_draft && (
@@ -1509,17 +1630,25 @@ function BroadcastsTab({
       </div>
 
       {!data.unsubscribe_configured && (
-        <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-foreground">
-          <ShieldAlert className="h-4 w-4 text-warning" />
-          Configuration required: the server has no MARKETING_PUBLIC_BASE_URL, so unsubscribe links
-          cannot be built. Drafting and review work; preflight and launch are unavailable until an
-          administrator configures it.
+        <div className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-foreground">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-warning" />
+            <span>
+              You can write, test and approve broadcasts now — sending is unlocked once an
+              administrator finishes the server setup (unsubscribe links need it).
+            </span>
+          </div>
+          <TechnicalDetails className="mt-2" summary="What an administrator needs to do">
+            Set the MARKETING_PUBLIC_BASE_URL server secret to the public functions origin so
+            unsubscribe and tracking links can be built. Audience checking and launch stay
+            unavailable until it is set.
+          </TechnicalDetails>
         </div>
       )}
       {!data.can_draft && (
         <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
-          Your role can view broadcasts. Drafting requires the campaigns.draft permission; approving
-          and launching require an owner/admin with the launch permission.
+          Your role can view broadcasts but not create them. An owner or admin can grant drafting
+          access under Marketing settings → Access &amp; permissions.
         </div>
       )}
 
@@ -1532,7 +1661,7 @@ function BroadcastsTab({
             reload();
             if (id) {
               setSavedNotice(
-                "Draft saved. You’re viewing it now. Send yourself a test below, or choose All broadcasts to return to the saved list.",
+                "Draft saved — you're viewing it now. It stays under Campaigns → Broadcasts whenever you come back.",
               );
               setSelected(id);
               onSelectedChange?.(id);
@@ -1551,7 +1680,7 @@ function BroadcastsTab({
             <div className="text-display mt-3 text-lg font-semibold">No broadcasts yet</div>
             <p className="mt-1 text-sm text-muted-foreground">
               {data.can_draft
-                ? "Create your first broadcast: pick an authorised sender and a saved segment, author the content once, and every send stays governed."
+                ? "Create your first broadcast — write the message, choose who receives it, test it on yourself, then send when you're ready."
                 : "Broadcasts appear here once a drafter creates one."}
             </p>
           </div>
@@ -1711,8 +1840,9 @@ export function MarketingCampaigns({
       <div>
         <div className="text-display text-xl font-semibold">Campaigns</div>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Broadcasts, sequences, templates, reporting and AI drafting — every send governed,
-          suppression-safe and evidence-reported.
+          Reach your customers with one-off broadcasts or automatic sequences. Write once, test on
+          yourself, approve, send — ServiceOS checks consent for every recipient and shows you the
+          facts of what happened.
         </p>
       </div>
       <div

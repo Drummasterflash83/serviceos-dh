@@ -298,6 +298,8 @@ async function main() {
   );
   r = await call(tokens.ops, { action: "test_status", limit: 2.5 });
   ok("status: fractional limit → 400", r.status === 400, r.status);
+  // the tenant window already holds ONE send (req-http-0002); two more reach
+  // the 3/minute ceiling, so the FOURTH send must be refused
   r = await call(tokens.ops, {
     action: "test_send",
     sender_id: senderId,
@@ -313,6 +315,15 @@ async function main() {
     subject: "RL",
     body_text: "B",
     request_id: "req-http-0004",
+  });
+  ok("third send inside the window still succeeds", r.status === 200, r.status);
+  r = await call(tokens.ops, {
+    action: "test_send",
+    sender_id: senderId,
+    recipient_profile_id: USERS.owner.id,
+    subject: "RL",
+    body_text: "B",
+    request_id: "req-http-0005",
   });
   ok(
     "rate limit → 429 RATE_LIMITED",

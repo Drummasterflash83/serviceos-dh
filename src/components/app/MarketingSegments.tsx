@@ -12,6 +12,7 @@ import { AlertTriangle, Loader2, Plus, RefreshCw, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
+import { eligibilityLanguage } from "@/lib/marketing/eligibility-language";
 import { listTags, listOwners, listCompanies, type MarketingTag } from "@/lib/marketing/contacts";
 import {
   listSegments,
@@ -470,15 +471,33 @@ function SegmentBuilder({
           {error}
         </div>
       )}
-      {evalResult && (
+      {evalResult && evalResult.count > 0 && (
         <div className="mt-2 rounded-lg border border-hairline bg-surface-alt/50 p-2 text-xs">
-          <span className="tabular font-medium">{evalResult.count}</span> matching contact(s)
+          <span className="tabular font-medium">{evalResult.count}</span>{" "}
+          {evalResult.count === 1 ? "person matches" : "people match"}
           {evalResult.names.length > 0 && (
             <span className="text-muted-foreground">
               {" "}
               — e.g. {evalResult.names.slice(0, 5).join(", ")}
             </span>
           )}
+          <p className="mt-1 text-muted-foreground">
+            Matching is not the same as sendable: before any campaign sends, each person&apos;s
+            consent, unsubscribe and suppression state is checked and every exclusion is shown with
+            its reason.
+          </p>
+        </div>
+      )}
+      {evalResult && evalResult.count === 0 && (
+        <div className="mt-2 rounded-lg border border-warning/40 bg-warning/5 p-2 text-xs">
+          <p className="font-medium text-foreground">Nobody matches this segment yet.</p>
+          <p className="mt-1 text-muted-foreground">
+            Either no contacts exist yet, or none meet these conditions. If you filtered on
+            eligibility, remember most contacts start with{" "}
+            <span className="font-medium text-foreground">no marketing preference recorded</span> —
+            ServiceOS never assumes consent, so they stay excluded until a real opt-in is recorded.
+            Add or import contacts under Contacts → Imports, record consent, then evaluate again.
+          </p>
         </div>
       )}
     </div>
@@ -930,7 +949,9 @@ function LeafEditor({
               "invalid",
               "no_contact_point",
             ].map((v) => (
-              <option key={v}>{v}</option>
+              <option key={v} value={v}>
+                {eligibilityLanguage(v).label}
+              </option>
             ))}
           </select>
         </span>

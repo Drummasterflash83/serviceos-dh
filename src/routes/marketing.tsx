@@ -431,7 +431,9 @@ function ContactsSection() {
 
       {tab === "contacts" && (
         <>
-          <MarketingContacts />
+          <MarketingContacts
+            onGoToImports={can("marketing.contacts.import") ? () => setTab("imports") : undefined}
+          />
           {settings && (
             <div className="rounded-lg border border-hairline bg-surface-alt/50 px-3 py-2 text-xs text-muted-foreground">
               Inclusion:{" "}

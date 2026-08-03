@@ -71,26 +71,64 @@ export function MarketingSettings({
   const { access } = useMarketingAccess();
   const canAdmin = access?.permissions?.includes("marketing.access.manage") ?? false;
 
-  // Deep link from "View test activity": scroll to the Recent test sends block
-  // once it exists. The sections load asynchronously and the router resets the
-  // scroll position on navigation, so retry until the anchor holds still.
+  // Deep link from "View test activity": land VISIBLY on the Recent test sends
+  // block. The block renders only after the async senders section loads (which
+  // can take several seconds on a cold start), and the router resets scroll on
+  // navigation — so wait for the anchor via a MutationObserver (no fixed retry
+  // budget to outlive), then keep it pinned until it holds still, then make the
+  // arrival obvious: focus the block and flash a highlight ring.
   useEffect(() => {
     if (focus !== "test-activity") return;
-    let attempts = 0;
-    const timer = setInterval(() => {
-      attempts += 1;
-      const el = document.getElementById("test-activity");
-      if (el) {
-        el.scrollIntoView({ behavior: attempts === 1 ? "smooth" : "auto", block: "start" });
+    let cancelled = false;
+    let settleTimer: ReturnType<typeof setInterval> | null = null;
+    let observer: MutationObserver | null = null;
+    const hardStop = setTimeout(() => {
+      observer?.disconnect();
+      if (settleTimer) clearInterval(settleTimer);
+    }, 30_000);
+
+    const settle = (el: HTMLElement) => {
+      let attempts = 0;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      settleTimer = setInterval(() => {
+        if (cancelled) return;
+        attempts += 1;
         const top = el.getBoundingClientRect().top;
-        if (attempts > 1 && top > -60 && top < 240) {
-          clearInterval(timer);
+        if (top > -60 && top < 240) {
+          if (settleTimer) clearInterval(settleTimer);
+          clearTimeout(hardStop);
+          el.focus({ preventScroll: true });
+          el.classList.add("ring-2", "ring-accent", "ring-offset-2", "bg-accent-soft");
+          setTimeout(
+            () => el.classList.remove("ring-2", "ring-accent", "ring-offset-2", "bg-accent-soft"),
+            2500,
+          );
           return;
         }
-      }
-      if (attempts >= 12) clearInterval(timer);
-    }, 500);
-    return () => clearInterval(timer);
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+        if (attempts >= 20 && settleTimer) clearInterval(settleTimer);
+      }, 500);
+    };
+
+    const existing = document.getElementById("test-activity");
+    if (existing) {
+      settle(existing);
+    } else {
+      observer = new MutationObserver(() => {
+        const el = document.getElementById("test-activity");
+        if (el) {
+          observer?.disconnect();
+          settle(el);
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      if (settleTimer) clearInterval(settleTimer);
+      clearTimeout(hardStop);
+    };
   }, [focus]);
 
   const [settings, setSettings] = useState<MarketingSettingsFull | null>(null);
@@ -180,7 +218,8 @@ export function MarketingSettings({
         <div>
           <div className="text-display text-xl font-semibold">Marketing settings</div>
           <p className="text-xs text-muted-foreground">
-            Tenant configuration — versioned, audited, owner/admin only.
+            How Marketing behaves for your business — senders, guardrails, access and history. Only
+            owners and admins can change it, and every change is recorded.
           </p>
         </div>
       </div>

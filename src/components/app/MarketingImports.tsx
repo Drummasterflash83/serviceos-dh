@@ -185,11 +185,16 @@ export function MarketingImports() {
   return (
     <div className="space-y-4">
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Preview-first: uploading never imports. The preview resolves and seals the import profile,
-        column mapping and options — apply uses exactly that sealed contract. Strong email/phone
-        evidence may match an existing Person only when every identifier agrees; a name alone never
-        merges.
+        Bring in your contacts from a CSV. Uploading never imports anything by itself — you always
+        see a full preview of what would happen first, and nothing changes until you apply it.
       </p>
+      <div className="max-w-2xl rounded-lg border border-warning/40 bg-warning/5 px-3 py-2 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">
+          Importing someone does not subscribe them.
+        </span>{" "}
+        An imported contact starts with no marketing preference recorded, so campaigns exclude them
+        until a real opt-in is recorded — ServiceOS never assumes consent from a spreadsheet.
+      </div>
 
       <div className="rounded-xl border border-hairline bg-white p-4">
         <div className="flex flex-wrap items-center gap-2 text-xs">

@@ -724,6 +724,19 @@ begin
     'the broadcast delivery carries the full frozen lineage';
   assert (select status from marketing_broadcast_dispatches where id = disp) = 'queued',
     'dispatch is queued';
+  -- ── cancel-refusal: the governed TEST cancel can never touch a BROADCAST
+  --    delivery (marketing_test_cancel, migration 20260909120000) — broadcast
+  --    lifecycles have their own governed pause/cancel, and the refusal
+  --    changes nothing ──
+  begin
+    perform marketing_test_cancel('aaaa6000-0000-0000-0000-0000000000f1',
+      'bbbb6000-0000-0000-0000-000000000001', jsonb_build_object('delivery_id', del));
+    assert false, 'a broadcast delivery must be refused by the TEST cancel';
+  exception when sqlstate '22023' then null;
+  end;
+  assert (select status from marketing_deliveries where id = del) = 'queued'
+     and (select status from automation_intents where id = itn) = 'pending',
+    'the non-test refusal changed nothing';
   -- deterministic idempotency: the dispatch is no longer claimable or re-preparable
   assert not exists (select 1 from marketing_broadcast_claim_batch(
     'aaaa6000-0000-0000-0000-0000000000f1', 'w1', 10, 120)),

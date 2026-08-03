@@ -16,7 +16,11 @@ import { Activity, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { cancelTestSend, getTestSendStatus, type TestDelivery } from "@/lib/marketing/senders";
-import { customerTestStatus, type CustomerTestStatus } from "@/lib/marketing/test-status";
+import {
+  canCancelTest,
+  customerTestStatus,
+  type CustomerTestStatus,
+} from "@/lib/marketing/test-status";
 
 const POLL_MS = 5000;
 const POLL_LIMIT_MS = 3 * 60 * 1000;
@@ -105,7 +109,7 @@ export function TestSendTracker({
           </span>
         )}
         <span className="ml-auto flex items-center gap-2">
-          {st && !st.terminal && delivery?.status === "queued" && (
+          {st && !st.terminal && delivery && canCancelTest(delivery) && (
             <button
               type="button"
               disabled={cancelBusy}
@@ -115,8 +119,14 @@ export function TestSendTracker({
                 const r = await cancelTestSend(delivery.id);
                 setCancelBusy(false);
                 if (r.ok) {
+                  // reflect the AUTHORITATIVE final state the atomic RPC returned
                   setCancelMsg(null);
-                  setDelivery({ ...delivery, status: "failed", intent_status: "cancelled" });
+                  setDelivery({
+                    ...delivery,
+                    status: (r.data.delivery_status as TestDelivery["status"]) ?? "failed",
+                    failure_class: r.data.failure_class ?? "cancelled",
+                    intent_status: "cancelled",
+                  });
                 } else {
                   setCancelMsg(r.error.message);
                 }

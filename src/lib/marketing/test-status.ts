@@ -26,6 +26,22 @@ export interface CustomerTestStatus {
   terminal: boolean;
 }
 
+/** A test can be offered for withdrawal ONLY while it is still queued and its
+ *  intent has never been attempted — the same proof the server re-makes
+ *  atomically (and authoritatively) inside marketing_test_cancel. The UI check
+ *  exists purely to avoid offering a button that will refuse. */
+export function canCancelTest(d: {
+  status: "queued" | "executing" | "submitted" | "failed" | "unknown";
+  intent_status?: string | null;
+  intent_attempts?: number | null;
+}): boolean {
+  return (
+    d.status === "queued" &&
+    (d.intent_status ?? "pending") === "pending" &&
+    (d.intent_attempts ?? 0) === 0
+  );
+}
+
 export function customerTestStatus(d: {
   status: "queued" | "executing" | "submitted" | "failed" | "unknown";
   intent_status?: string | null;

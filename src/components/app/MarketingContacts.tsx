@@ -39,6 +39,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
+import {
+  AUDIENCE_ONBOARDING_STEPS,
+  eligibilityLanguage,
+} from "@/lib/marketing/eligibility-language";
 import type { MarketingLifecycleStage } from "@/lib/marketing/access";
 import {
   listContacts,
@@ -84,7 +88,7 @@ function EligibilityPill({ value }: { value: string }) {
         ELIGIBILITY_TONE[value] ?? ELIGIBILITY_TONE.unknown,
       )}
     >
-      {value === "no_contact_point" ? "no endpoint" : value}
+      {eligibilityLanguage(value).label}
     </span>
   );
 }
@@ -135,7 +139,7 @@ const inputCls =
 
 /* ── main list ── */
 
-export function MarketingContacts() {
+export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => void } = {}) {
   const { access, can } = useMarketingAccess();
   const stages = useMemo(() => access?.lifecycle_stages ?? [], [access]);
 
@@ -383,7 +387,7 @@ export function MarketingContacts() {
               "no_contact_point",
             ].map((v) => (
               <option key={v} value={v}>
-                {v}
+                {eligibilityLanguage(v).label}
               </option>
             ))}
           </select>
@@ -581,17 +585,54 @@ export function MarketingContacts() {
       )}
       {!loading && !error && items.length === 0 && (
         <div className="grid min-h-[30vh] place-items-center">
-          <div className="max-w-sm text-center">
-            <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-surface-alt">
-              <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+          {search || lifecycle || eligibility || ownerId || moreFilters ? (
+            <div className="max-w-sm text-center">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-surface-alt">
+                <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div className="text-display mt-4 text-lg font-semibold">No contacts found</div>
+              <p className="mt-1 text-sm text-muted-foreground">No contacts match these filters.</p>
             </div>
-            <div className="text-display mt-4 text-lg font-semibold">No contacts found</div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {search || lifecycle || eligibility || ownerId || moreFilters
-                ? "No contacts match these filters."
-                : "No People are discovered or created yet — connected sources and imports populate this list."}
-            </p>
-          </div>
+          ) : (
+            <div className="w-full max-w-xl rounded-xl border border-hairline bg-white p-5">
+              <div className="text-display text-lg font-semibold">Start your contact list</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Nobody is here yet. Here&apos;s the honest path from an empty list to a campaign
+                that can actually send:
+              </p>
+              <ol className="mt-3 space-y-2">
+                {AUDIENCE_ONBOARDING_STEPS.map((s, i) => (
+                  <li key={s.title} className="flex gap-2 text-xs">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
+                      {i + 1}
+                    </span>
+                    <span>
+                      <span className="font-medium text-foreground">{s.title}.</span>{" "}
+                      <span className="text-muted-foreground">{s.detail}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {can("marketing.contacts.manage") && (
+                  <button
+                    onClick={() => setCreateOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" /> Add your first contact
+                  </button>
+                )}
+                {can("marketing.contacts.import") && onGoToImports && (
+                  <button
+                    onClick={onGoToImports}
+                    className="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-alt"
+                  >
+                    Import contacts from a CSV
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
