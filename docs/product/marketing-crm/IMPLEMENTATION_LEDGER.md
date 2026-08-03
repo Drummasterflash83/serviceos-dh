@@ -3403,3 +3403,25 @@ window. Nothing was released; recipients/subjects recorded in the run log.
    evidence only; Ads/Meta shows Not connected; sequences activate immediately
    (no scheduled future activation); campaign eligibility currently reports
    zero eligible recipients until consent/preference data exists.
+
+### 24e · Staging release checkpoint (final)
+
+- **Code release**: `8bce67d` (honest test journey + governed cancel) +
+  `fd5b4d5` (settings-owned deep-link scroll). The production promotion target
+  is the docs checkpoint commit that records this section.
+- **Staging deployment**: functions `marketing-senders` / `marketing-campaigns`
+  / `marketing-sequences` deployed from the clean release worktree; frontend
+  deployment `serviceos-pqkpqxd29-allkin.vercel.app` (Vercel target `staging`)
+  aliased to `serviceos-dh-env-staging-allkin.vercel.app`; bundle bound to
+  `eityajdtzvdbdqtoipia` only; no migration in this release (staging already at
+  `20260908120500`, `db push --dry-run` = up to date).
+- **Deployed-boundary evidence**: `marketing-test-cancel-http` 9/9 against the
+  served staging functions; browser acceptance on the deployed frontend —
+  request test → inline "Paused by workspace mode" with customer hint →
+  Cancel test → "Cancelled before sending · Nothing was sent" → View test
+  activity deep-link opens Marketing settings with the Recent test sends
+  anchor rendered (auto-scroll code ships and is prop-proven; the automation
+  pane cannot verify visual scrolling, noted honestly).
+- **Launch verification send**: §24c — provider id
+  `32579228-d21d-48a9-baa2-a3e6ef3ef215`, delivery `submitted`, mode restored
+  to `discovery`, zero non-terminal intents afterwards.
