@@ -17,10 +17,13 @@ function safeRedirect(value: unknown): string | undefined {
 }
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string; reset?: boolean } => ({
-    redirect: safeRedirect(search.redirect),
-    reset: search.reset === true || search.reset === "1",
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; reset?: boolean } => {
+    const reset = search.reset === true || search.reset === "1";
+    return {
+      redirect: safeRedirect(search.redirect),
+      reset: reset ? true : undefined,
+    };
+  },
   head: () => ({
     meta: [{ title: "Sign in · OpenFolk" }],
   }),

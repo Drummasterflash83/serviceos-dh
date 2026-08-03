@@ -215,7 +215,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    if (!loading && !session) {
+    // The guard can remain mounted for one render after navigation. Do not let
+    // that render overwrite the original destination with `/login`.
+    if (!loading && !session && pathname !== "/login") {
       navigate({ to: "/login", search: { redirect: pathname }, replace: true });
     }
   }, [loading, session, navigate, pathname]);
