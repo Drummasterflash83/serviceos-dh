@@ -66,7 +66,11 @@ import {
   type SequenceStepInput,
   type StepType,
 } from "@/lib/marketing/sequences";
-import { getSendersOverview, type SenderProfile } from "@/lib/marketing/senders";
+import {
+  getSendersOverview,
+  senderCanRunSequence,
+  type SenderProfile,
+} from "@/lib/marketing/senders";
 import { listSegments, type MarketingSegment } from "@/lib/marketing/segments";
 import {
   listOwners,
@@ -1373,7 +1377,7 @@ function SequenceBuilder({
 
   useEffect(() => {
     void getSendersOverview().then((r) => {
-      if (r.ok) setSenders((r.data.senders ?? []).filter((s) => s.enabled));
+      if (r.ok) setSenders((r.data.senders ?? []).filter(senderCanRunSequence));
     });
     void listTags().then((r) => {
       if (r.ok) setTags(r.data.tags ?? []);

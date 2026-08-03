@@ -341,7 +341,7 @@ export function SendersSection() {
                     <Pill tone="warn" label="Sandbox test-ready" />
                     <Pill tone="warn" label="Test-to-self only" />
                     <Pill tone="err" label="Campaigns and sequences blocked" />
-                    <Pill tone="warn" label="Real provider submission not yet verified" />
+                    <Pill tone="warn" label="Sandbox restricted — not a production sender" />
                     {!data.resend_key_configured && (
                       <Pill
                         tone="err"

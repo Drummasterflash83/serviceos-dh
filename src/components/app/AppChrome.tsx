@@ -71,8 +71,8 @@ export function AppChrome({
         <div className="border-t border-hairline p-4">
           <div className="rounded-xl bg-surface-alt p-3">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-              All systems live
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+              Secure workspace
             </div>
             <div className="mt-2 text-xs text-muted-foreground">{tenantLabel}</div>
           </div>

@@ -22,6 +22,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ApiResult } from "@/lib/types";
 import {
   type AdsAdapterDescriptor,
   type AdsEventState,
@@ -41,6 +42,23 @@ import {
   setAdSourceStatus,
   setupAdWebhook,
 } from "@/lib/marketing/ads";
+
+const ADS_READ_RETRY_DELAYS_MS = [350, 900] as const;
+
+/**
+ * Free-tier Edge Functions can be briefly unreachable while a cold worker is
+ * starting. Retry network failures only; authoritative server errors are
+ * returned immediately and remain visible to the operator.
+ */
+async function readAdsWithRecovery<T>(read: () => Promise<ApiResult<T>>): Promise<ApiResult<T>> {
+  let result = await read();
+  for (const delay of ADS_READ_RETRY_DELAYS_MS) {
+    if (result.ok || result.error.code !== "network") return result;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    result = await read();
+  }
+  return result;
+}
 
 /* ── local atoms (file-local by repo convention) ─────────────────────────── */
 
@@ -529,13 +547,16 @@ export function MarketingAds({ canManage }: { canManage: boolean }) {
   const reload = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [cat, src, hl, feed, met] = await Promise.all([
-      getAdsCatalogue(),
-      listAdSources(),
-      getAdsHealth(),
+    // Start these reads one at a time. A five-way cold-start burst was enough
+    // to make the first Ads visit fail on staging even though every endpoint
+    // was healthy after warm-up.
+    const cat = await readAdsWithRecovery(() => getAdsCatalogue());
+    const src = await readAdsWithRecovery(() => listAdSources());
+    const hl = await readAdsWithRecovery(() => getAdsHealth());
+    const feed = await readAdsWithRecovery(() =>
       getAdsLeadFeed({ window: windowKey, ...(stateFilter ? { state: stateFilter } : {}) }),
-      getAdsMetrics({}),
-    ]);
+    );
+    const met = await readAdsWithRecovery(() => getAdsMetrics({}));
     setLoading(false);
     if (!src.ok) {
       if (src.error.code === "FORBIDDEN") {

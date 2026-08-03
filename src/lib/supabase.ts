@@ -40,8 +40,9 @@ export function getSupabaseClient(): SupabaseClient {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        // Password auth only for now — no OAuth/magic-link redirect parsing.
-        detectSessionInUrl: false,
+        // Required for recovery links: Supabase exchanges the URL tokens for
+        // a short-lived authenticated session before the user sets a password.
+        detectSessionInUrl: true,
       },
     });
   }

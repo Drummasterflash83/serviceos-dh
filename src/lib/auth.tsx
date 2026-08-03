@@ -38,6 +38,8 @@ interface AuthContextValue {
   configured: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
   signUpWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
+  requestPasswordReset: (email: string, redirectTo: string) => Promise<{ error: string | null }>;
+  updatePassword: (password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -129,6 +131,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [configured],
   );
 
+  const requestPasswordReset = useCallback(
+    async (email: string, redirectTo: string): Promise<{ error: string | null }> => {
+      if (!configured) return { error: "Supabase is not configured" };
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      return { error: error?.message ?? null };
+    },
+    [configured],
+  );
+
+  const updatePassword = useCallback(
+    async (password: string): Promise<{ error: string | null }> => {
+      if (!configured) return { error: "Supabase is not configured" };
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.updateUser({ password });
+      return { error: error?.message ?? null };
+    },
+    [configured],
+  );
+
   const signOut = useCallback(async () => {
     if (!configured) return;
     const supabase = getSupabaseClient();
@@ -145,9 +167,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       signInWithPassword,
       signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
       signOut,
     }),
-    [session, profile, loading, configured, signInWithPassword, signUpWithPassword, signOut],
+    [
+      session,
+      profile,
+      loading,
+      configured,
+      signInWithPassword,
+      signUpWithPassword,
+      requestPasswordReset,
+      updatePassword,
+      signOut,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -65,6 +65,7 @@ import {
 import {
   getSendersOverview,
   listTestRecipients,
+  senderCanLaunchCampaign,
   type TestRecipient,
 } from "@/lib/marketing/senders";
 import { listSegments } from "@/lib/marketing/segments";
@@ -221,10 +222,10 @@ function CampaignEditor({
       const [sv, sg] = await Promise.all([getSendersOverview(), listSegments()]);
       if (sv.ok) {
         setSenders(
-          (sv.data.senders ?? []).map((s) => ({
+          (sv.data.senders ?? []).filter(senderCanLaunchCampaign).map((s) => ({
             id: s.id,
-            label: `${s.label || s.mailbox_address} (${s.mailbox_address})${s.enabled ? "" : " — disabled"}`,
-            ready: Boolean(s.readiness?.ready),
+            label: `${s.label || s.mailbox_address} (${s.mailbox_address})`,
+            ready: true,
           })),
         );
       }

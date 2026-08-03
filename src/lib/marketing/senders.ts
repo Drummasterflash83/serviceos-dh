@@ -6,6 +6,8 @@
 import { callMarketingFn } from "@/lib/marketing/call";
 import type { ApiResult } from "@/lib/types";
 
+export { senderCanLaunchCampaign, senderCanRunSequence } from "./sender-eligibility";
+
 /** The canonical SQL readiness verdict (marketing_sender_readiness). */
 export interface SenderReadiness {
   sender_id?: string;
