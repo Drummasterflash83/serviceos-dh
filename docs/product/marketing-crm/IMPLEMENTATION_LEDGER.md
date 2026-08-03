@@ -3425,3 +3425,193 @@ window. Nothing was released; recipients/subjects recorded in the run log.
 - **Launch verification send**: §24c — provider id
   `32579228-d21d-48a9-baa2-a3e6ef3ef215`, delivery `submitted`, mode restored
   to `discovery`, zero non-terminal intents afterwards.
+
+## 25 · Launch correction pass — atomic cancel + StoryBrand overhaul (2026-08-04; STAGING-DEPLOYED)
+
+Codex's launch review found five incomplete requirements at checkpoint
+`c8e64b4`. This pass corrects them. Code commit `594200a`; the docs checkpoint
+commit recording this section is the new production promotion target.
+
+### 25a · Atomic governed test cancellation (correction of §24's Edge orchestration)
+
+The shipped `test_cancel` performed three separate state changes (intent
+update, audit insert, reconcile call) with UNCHECKED audit and reconciliation
+errors — a failure between them could leave an unaudited cancellation or a
+stale projection. Replaced by migration
+`20260909120000_marketing_test_cancel_atomic.sql`: ONE service-role SQL
+transaction (`marketing_test_cancel`) that binds the exact tenant + delivery
+(row-locked), proves `purpose='test'`, still-`queued`, and still-`pending`
+with zero attempts, performs the conditional pending→cancelled transition,
+reconciles the delivery to the truthful terminal state (`failed` /
+`failure_class='cancelled'` — MORE truthful than the lazy reconciler's
+`unclassified`, and idempotent-compatible: a later reconcile no-ops), appends
+the guarded delivery event, the audit record and the platform event, and
+returns the authoritative final state. ANY required-write failure rolls back
+the whole act. Worker race preserved: whichever side commits first wins
+(loser sees a stable conflict); nothing that might have reached the provider
+is ever touched. The Edge action is now a thin authenticated wrapper
+(role + `marketing.campaigns.test` at the Edge; the RPC re-proves both).
+
+Evidence:
+
+| Suite | Result |
+| --- | --- |
+| `supabase/tests/marketing_test_cancel.test.sql` — 8 sections: service-role-only boundary; authority + argument battery (viewer 42501, cross-tenant actor, cross-tenant delivery P0002 non-enumerating, malformed/unknown/missing args 22023); **trigger-injected audit-failure and projection-failure ROLLBACK proofs** (intent stays pending, delivery stays queued, zero evidence rows); owner + admin success with full evidence battery (event chain `∅>queued, queued>failed`, exact audit row, ONE platform event, reconcile no-op); repeat-request MK410 creating nothing; REAL-engine `automation_claim_and_start` race refusal, executing refusal, **succeeded+submitted refusal with provider facts untouched**; retried-work (real `failed_transient` attempt) refusal | **ALL ASSERTIONS PASSED** (local) |
+| `supabase/tests/marketing_broadcasts.test.sql` §cancel-refusal — a BROADCAST delivery with full real lineage is refused (22023), nothing changes | **ALL ASSERTIONS PASSED** (local) |
+| `src/lib/marketing/test-status.test.ts` — `canCancelTest` pure eligibility (queued+pending+zero-attempts only) + existing status vocabulary | **8/8** (40/40 across all pure marketing tests) |
+| `scripts/marketing-test-cancel-http.test.mjs` — extended to 15 assertions incl. authoritative terminal-state response, guarded event chain, and a TRUE concurrent cancel-vs-claim race (exactly one winner, consistent final state) | **15/15 local · 15/15 against the DEPLOYED staging boundary** |
+| `scripts/marketing-senders-http.test.mjs` | ALL PASS after correcting a latent off-by-one: the suite asserted 429 on the THIRD in-window send (limit is 3/minute → the FOURTH is refused); it had only ever "passed" against dirty fixture state |
+
+Also learned and recorded: fixed-fixture HTTP suites cannot fully self-clean
+on append-only databases (`decision_log` blocks the tenant cascade), so their
+fixture tenants persist by design — the cancel suite's random-id approach is
+the pattern for anything that must re-run remotely.
+
+### 25b · StoryBrand overhaul (correction of the partial §24 journey work)
+
+Authenticated browser review (local stack, `ux-owner` tenant seeded with a
+campaign-capable sender) across nav, contacts, imports, tags, segments,
+broadcasts (list/create/detail/test/review/audience/launch), sequences
+(list/builder/detail/test/activation/enrolment), templates, reporting, AI
+drafting, senders, settings and ads — then implementation of the
+launch-critical findings. Principle: the customer is the hero, ServiceOS is
+the guide; every screen states the goal, the next action and what will
+happen; governance stays available as secondary detail.
+
+Shipped (all customer-visible language):
+
+- **One form language** (`MarketingFormKit`): clearly visible field
+  boundaries replacing three divergent faint variants (the "too faint /
+  where does the form end" complaints), one focus treatment, titled
+  `FormSection` groups, numbered `JourneySteps` chips,
+  `TechnicalDetails` collapsed disclosures.
+- **Broadcasts speak one five-step journey** on both the editor and the
+  detail view: Create your message → Choose the audience → Send yourself a
+  test → Review and approve → Send now or schedule — with a "Next: …"
+  sentence after every state change. The create form is two titled sections;
+  primary button is **Save draft**; "Saving never sends anything" is stated
+  at the button.
+- **Save draft lands somewhere obvious**: green confirmation naming where
+  the draft lives, with immediate "Send yourself a test" (scrolls to the
+  test panel) and "View all broadcasts" actions.
+- **Audience honesty in the editor**: segment options carry people counts;
+  a selected segment explains matched-vs-sendable; a ZERO-match segment
+  explains why (no contacts / no recorded consent) and the honest path
+  forward — consent is never invented.
+- **Launch dialog**: plain-language confirmation stating exactly how many
+  people and (for schedules) exactly when, UK-time clarity on the native
+  date/time control, safeguards collapsed under "How ServiceOS protects this
+  send", and the clocks-go-back choice appears ONLY when the server proves
+  the time is ambiguous.
+- **Sequences**: same five-step journey (Build → Test each email → Review
+  and approve → Activate → Choose and enrol the audience); activation
+  dialog now states "Activating turns the journey on — it does NOT enrol
+  anyone"; the enrol panel is titled "Choose and enrol the audience";
+  "Preflight segment" became "Check who will be enrolled"; the verified
+  default sender is auto-selected; waits read as a plain sentence; advanced
+  delivery/safety stays collapsed; fallbacks stay friendly; contact search
+  by name/email only.
+- **Contacts/Imports/Segments**: the empty contact list carries the
+  four-step honest onboarding path (add/import → record REAL consent →
+  segment → audience check); Imports states "Importing someone does not
+  subscribe them"; eligibility enums render as human language everywhere
+  (`eligibility-language.ts`); segment evaluation explains zero matches.
+- **Test activity**: the `#test-activity` block always exists when tests
+  are permitted (deep links can no longer land on nothing), has a real
+  heading, an empty state, and on deep-link arrival is found via
+  MutationObserver (no retry budget to outlive the async section load),
+  focused, and flashed with a highlight ring; engine facts remain the
+  last muted line prefixed "technical:". Cancelled/paused/submitted/failed/
+  unknown wording unchanged and truthful — provider submission is never
+  described as inbox delivery.
+- **Config warnings speak customer language** ("You can write, test and
+  approve now — sending is unlocked once an administrator finishes the
+  server setup") with env-var/runbook detail inside the disclosure.
+
+Verified in-browser at desktop (1280), laptop-width, tablet (768) and mobile
+(375): journey chips wrap, forms stay bounded, no horizontal overflow.
+Before/after captures reviewed during the session (before: governance-first
+intros, invisible boundaries, flat single-grid form, silent draft save;
+after: the journeys above). HONEST LIMIT (same as §24e): the automation
+browser pane cannot execute programmatic scrolling (zero-height hidden
+viewport), so the deep-link scroll/highlight is logic-proven and
+DOM-verified, not visually captured; the improved MutationObserver approach
+strictly supersedes the shipped retry loop that demonstrably expired before
+slow section loads.
+
+Remaining V1.1 items (reviewed, deliberately deferred): shared Btn/Field
+primitives for the eight untouched files (Tags mono-key leading column,
+Ads free-text lifecycle keys, Templates/AI `step_key` inputs, Senders
+primary-button treatment); a consent-capture surface (record a real opt-in
+against evidence); Reporting exclusion vocabulary surfaced pre-send in
+Segments; sequence-builder per-step inline testing (currently detail-view
+only); toast system for cross-surface confirmations.
+
+### 25c · Staging re-acceptance (this pass)
+
+- Clean worktree at `594200a` (gates: porcelain empty; phone-ops migration
+  ABSENT; migration order PASS 97/97 unique).
+- `supabase db push` → staging `eityajdtzvdbdqtoipia`: exactly
+  `20260909120000_marketing_test_cancel_atomic.sql` applied (dry-run proven
+  first). Staging ledger now ends at `20260909120000`.
+- `marketing-senders` deployed from the worktree (149 kB bundle).
+- Frontend deployed to the Vercel **staging** environment from the same
+  worktree: deployment `serviceos-ca9769uj8-allkin.vercel.app` (target
+  `staging`, Ready) aliased to `serviceos-dh-env-staging-allkin.vercel.app`.
+  (An accidental auto-linked Vercel project created by a first mis-linked
+  deploy attempt was removed immediately; `serviceos-dh` untouched by it.)
+- Deployed-boundary evidence: cancel HTTP suite **15/15 against staging**;
+  authenticated browser journey on the DEPLOYED frontend — draft detail
+  shows the five-step journey → "Send test to myself" → inline **Paused by
+  workspace mode** (discovery, customer hint) → **Cancel test** →
+  **"Cancelled before sending · Nothing was sent"** — through the deployed
+  atomic RPC.
+- Local battery at the release SHA: 4 marketing SQL suites ALL PASS; pure
+  40/40; local HTTP cancel 15/15 + senders ALL PASS; eslint clean on every
+  touched file; `tsc --noEmit` clean; production build clean; migration
+  order PASS.
+- End state: staging mode **discovery**; **zero non-terminal
+  `send_marketing_test_email` intents** (the suite's two simulated worker
+  claims were terminalised through the engine's LEGAL path —
+  claimed→pending lease release, then pending→cancelled — via the new
+  staging-gated `scripts/cleanup/qa-test-intent-terminalise.mjs`); the
+  ephemeral browser-QA login was deleted; NO external email was sent this
+  pass (nothing required it — cancellation is pre-provider by definition).
+
+### 25d · Corrected production runbook + migration-continuity blocker
+
+The authoritative runbook is now
+**[PRODUCTION_LAUNCH_RUNBOOK.md](PRODUCTION_LAUNCH_RUNBOOK.md)**, superseding
+§24d. Corrections: `MARKETING_PUBLIC_BASE_URL` must be the **functions
+origin** `https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1` (the
+earlier `https://app.openfolk.ai` proposal was wrong — unsubscribe/tracking
+links are served by Edge Functions), with pre-launch link verification;
+`MARKETING_BROADCAST_SECRET` + `MARKETING_SEQUENCE_SECRET` must exist with
+the SAME value in BOTH Edge secrets AND Postgres Vault (the cron sends the
+Vault copy, the function compares its env copy — mismatch = eternal 403s);
+pg_cron + pg_net + `serviceos_schedule_all('<functions-base>')` +
+cron-job verification + a secret-authenticated no-403 execution proof +
+due-work discovery evidence; the full function set including
+`marketing-track` and `marketing-unsubscribe`; sender authority; one
+controlled production test; frontend promotion; rollback. No command in the
+runbook prints a secret value.
+
+**PRODUCTION `db push` REMAINS BLOCKED** (verified live 2026-08-03 via
+read-only `supabase migration list --linked`): production records
+`20260830120000_phone_operations_control.sql` as APPLIED, but that file
+exists on this branch only as untracked Phone Operations working material —
+it is in no commit, and it sits BETWEEN pending Marketing migrations
+`20260829120000` and `20260831120000`. Release requires either (1) the Phone
+Operations workstream committing the byte-exact production-applied migration
+and normal integration of that checkpoint, or (2) a recorded authoritative
+migration-continuity decision. The Marketing release never absorbs or stages
+the phone-ops file.
+
+### 25e · Unrelated work untouched
+
+`supabase/config.toml` (phone-ops hunk), `PhoneOperations.tsx`,
+`PhoneReliabilityControl.tsx`, `phone-operations.ts`, the phone-ops
+functions/tests/migration, `telephony-capability-probe.mjs`,
+`docs/product-review/`, `docs/run-checkpoints/` and
+`META_STAGING_VERIFICATION.md` remain exactly as found — modified/untracked
+in the working tree, never staged, never committed, never relocated.
