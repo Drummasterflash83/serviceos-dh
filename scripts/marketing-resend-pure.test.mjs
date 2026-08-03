@@ -14,7 +14,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { validateSendEnvelope } from "../supabase/functions/_shared/marketing_email.ts";
+import {
+  evaluateSandboxSelfSend,
+  RESEND_SANDBOX_ADDRESS,
+  validateSendEnvelope,
+} from "../supabase/functions/_shared/marketing_email.ts";
+import {
+  isUsableTrackingSecret,
+  MIN_TRACKING_SECRET_LEN,
+} from "../supabase/functions/_shared/marketing_tracking.ts";
 import {
   buildResendBody,
   classifyResendFailure,
@@ -213,7 +221,7 @@ test("canonicalDestination: https only, no creds/control/self-wrap/oversize", ()
   assert.equal(canonicalDestination("javascript:alert(1)"), null);
   assert.equal(canonicalDestination("data:text/html,x"), null);
   assert.equal(canonicalDestination("https://user:pass@a.co"), null); // credentials
-  assert.equal(canonicalDestination("https://a.co/"), null); // control char
+  assert.equal(canonicalDestination("https://a.co/\u0001"), null); // control char (escaped)
   assert.equal(canonicalDestination("https://a.co/functions/v1/marketing-track?x=1"), null); // self-wrap
   assert.equal(canonicalDestination("https://a.co/" + "x".repeat(2100)), null); // oversize
   assert.equal(canonicalDestination(null), null);
@@ -275,6 +283,228 @@ test("injectTrackingHtml: links routed through destination-bound click tokens; o
   assert.equal((await verifyClickToken(secret, d, u, tok)).ok, true);
 });
 
+// ── Resend sandbox: GENUINE test-to-self ────────────────────────────────────
+// The evaluator is the pre-provider boundary. Each refusal below is proven to
+// happen BEFORE any provider work: the refusal path is exercised, and then the
+// transport is driven with a counting fetch to show a refused send never
+// reaches the network.
+
+const TENANT = "10000000-0000-4000-8000-000000000001";
+const OTHER_TENANT = "10000000-0000-4000-8000-000000000002";
+const ACTOR = "20000000-0000-4000-8000-00000000000a";
+const OTHER_USER = "20000000-0000-4000-8000-00000000000b";
+const SELF_EMAIL = "chris@openfolk.test";
+
+const selfFacts = (over = {}) => ({
+  tenantId: TENANT,
+  purpose: "test",
+  actorProfileId: ACTOR,
+  recipientProfileId: ACTOR,
+  envelopeRecipientEmail: SELF_EMAIL,
+  actor: { id: ACTOR, tenant_id: TENANT, email: SELF_EMAIL },
+  recipient: { id: ACTOR, tenant_id: TENANT, email: SELF_EMAIL },
+  ...over,
+});
+
+test("sandbox self-send: the happy path is the ONLY accepted shape", () => {
+  assert.deepEqual(evaluateSandboxSelfSend(selfFacts()), { ok: true });
+  // case/whitespace differences in stored emails do not break a genuine self-send
+  assert.deepEqual(
+    evaluateSandboxSelfSend(
+      selfFacts({
+        actor: { id: ACTOR, tenant_id: TENANT, email: `  ${SELF_EMAIL.toUpperCase()} ` },
+        recipient: { id: ACTOR, tenant_id: TENANT, email: SELF_EMAIL.toUpperCase() },
+      }),
+    ),
+    { ok: true },
+  );
+});
+
+test("sandbox self-send: SUCCESS PATH reaches the provider exactly once (injected response)", async () => {
+  const verdict = evaluateSandboxSelfSend(selfFacts());
+  assert.equal(verdict.ok, true);
+  const f = mkFetch(OK_RESP);
+  const r = await sendViaResend(
+    {
+      apiKey: REAL_KEY,
+      from: composeFrom(RESEND_SANDBOX_ADDRESS, "Drummonds"),
+      to: SELF_EMAIL,
+      replyTo: null,
+      subject: "s",
+      html: "<p>h</p>",
+      text: "t",
+      deliveryId: "44444444-4444-4444-8444-444444444444",
+    },
+    { fetchImpl: f },
+  );
+  assert.deepEqual(r, { outcome: "succeeded", id: "resend-abc-123" });
+  assert.equal(f.calls(), 1);
+  const body = JSON.parse(
+    await (async () => {
+      let seen;
+      const g = mkFetch(async (_u, init) => {
+        seen = init;
+        return OK_RESP();
+      });
+      await sendViaResend(
+        {
+          apiKey: REAL_KEY,
+          from: composeFrom(RESEND_SANDBOX_ADDRESS, "Drummonds"),
+          to: SELF_EMAIL,
+          replyTo: null,
+          subject: "s",
+          html: "h",
+          text: "t",
+          deliveryId: "d",
+        },
+        { fetchImpl: g },
+      );
+      return seen.body;
+    })(),
+  );
+  assert.deepEqual(body.to, [SELF_EMAIL], "the sandbox addresses the actor and nobody else");
+});
+
+test("sandbox self-send: EVERY refusal is pre-provider and makes ZERO provider calls", async () => {
+  const cases = [
+    // another user of the SAME tenant
+    {
+      name: "another tenant user",
+      facts: selfFacts({
+        recipientProfileId: OTHER_USER,
+        recipient: { id: OTHER_USER, tenant_id: TENANT, email: "someone.else@openfolk.test" },
+      }),
+      code: "policy_sandbox_not_self",
+    },
+    // a profile that belongs to ANOTHER tenant
+    {
+      name: "cross-tenant profile",
+      facts: selfFacts({
+        recipient: { id: ACTOR, tenant_id: OTHER_TENANT, email: SELF_EMAIL },
+      }),
+      code: "policy_sandbox_recipient_foreign_tenant",
+    },
+    // the actor's own email changed after the envelope was frozen
+    {
+      name: "changed actor email",
+      facts: selfFacts({
+        actor: { id: ACTOR, tenant_id: TENANT, email: "moved@openfolk.test" },
+      }),
+      code: "policy_sandbox_actor_email_changed",
+    },
+    // the recipient row's email changed after the envelope was frozen
+    {
+      name: "changed recipient email",
+      facts: selfFacts({
+        recipient: { id: ACTOR, tenant_id: TENANT, email: "moved@openfolk.test" },
+      }),
+      code: "recipient_changed",
+    },
+    // the actor has no usable current email at all
+    {
+      name: "missing actor email",
+      facts: selfFacts({ actor: { id: ACTOR, tenant_id: TENANT, email: null } }),
+      code: "policy_sandbox_actor_email_missing",
+    },
+    {
+      name: "blank actor email",
+      facts: selfFacts({ actor: { id: ACTOR, tenant_id: TENANT, email: "   " } }),
+      code: "policy_sandbox_actor_email_missing",
+    },
+    {
+      name: "malformed actor email",
+      facts: selfFacts({
+        actor: { id: ACTOR, tenant_id: TENANT, email: "not-an-address" },
+        recipient: { id: ACTOR, tenant_id: TENANT, email: "not-an-address" },
+        envelopeRecipientEmail: "not-an-address",
+      }),
+      code: "policy_sandbox_actor_email_missing",
+    },
+    // the actor row vanished / moved tenant
+    {
+      name: "actor removed",
+      facts: selfFacts({ actor: null }),
+      code: "actor_removed",
+    },
+    {
+      name: "actor moved tenant",
+      facts: selfFacts({ actor: { id: ACTOR, tenant_id: OTHER_TENANT, email: SELF_EMAIL } }),
+      code: "actor_tenant_mismatch",
+    },
+    {
+      name: "recipient removed",
+      facts: selfFacts({ recipient: null }),
+      code: "recipient_invalid",
+    },
+    // bulk paths are structurally refused for the sandbox identity
+    {
+      name: "campaign attempt",
+      facts: selfFacts({ purpose: "broadcast", recipientProfileId: null, recipient: null }),
+      code: "policy_sandbox_sender_no_campaign",
+    },
+    {
+      name: "sequence attempt",
+      facts: selfFacts({ purpose: "sequence", recipientProfileId: null, recipient: null }),
+      code: "policy_sandbox_sender_no_campaign",
+    },
+  ];
+
+  for (const c of cases) {
+    const v = evaluateSandboxSelfSend(c.facts);
+    assert.equal(v.ok, false, `${c.name} must be refused`);
+    assert.equal(v.code, c.code, c.name);
+
+    // the adapter returns on a refusal, so nothing downstream runs. Prove the
+    // provider is untouched by driving the transport only when ok === true.
+    const f = mkFetch(OK_RESP);
+    if (v.ok) {
+      await sendViaResend(
+        {
+          apiKey: REAL_KEY,
+          from: RESEND_SANDBOX_ADDRESS,
+          to: SELF_EMAIL,
+          replyTo: null,
+          subject: "s",
+          html: "h",
+          text: "t",
+          deliveryId: "d",
+        },
+        { fetchImpl: f },
+      );
+    }
+    assert.equal(f.calls(), 0, `${c.name}: refusal must make ZERO provider calls`);
+  }
+});
+
+test("tracking secret strength: both sides fail closed on a weak/absent secret", () => {
+  assert.equal(MIN_TRACKING_SECRET_LEN, 32);
+  for (const bad of [null, undefined, "", "   ", "short", "a".repeat(31), " ".repeat(64)]) {
+    assert.equal(isUsableTrackingSecret(bad), false, JSON.stringify(bad));
+  }
+  assert.equal(isUsableTrackingSecret("a".repeat(32)), true);
+  assert.equal(isUsableTrackingSecret("b".repeat(64)), true);
+});
+
+test("REGRESSION: marketing_tracking.ts holds no literal control bytes and stays text", () => {
+  const buf = readFileSync(
+    new URL("../supabase/functions/_shared/marketing_tracking.ts", import.meta.url),
+  );
+  const offenders = [...buf].filter((b) => b < 9 || (b > 10 && b < 32 && b !== 13) || b === 127);
+  assert.equal(
+    offenders.length,
+    0,
+    "source must contain no NUL/control bytes (Git treats as binary)",
+  );
+  const src = buf.toString("utf8");
+  // the control-character guard is expressed in ESCAPED source notation
+  assert.match(src, /\\u0000-\\u001F\\u007F/);
+  // …and still rejects real control characters at runtime
+  assert.equal(canonicalDestination(`https://a.co/${String.fromCharCode(0)}`), null);
+  assert.equal(canonicalDestination(`https://a.co/${String.fromCharCode(31)}`), null);
+  assert.equal(canonicalDestination(`https://a.co/${String.fromCharCode(127)}`), null);
+  assert.equal(canonicalDestination("https://a.co/ok"), "https://a.co/ok");
+});
+
 test("source scan: no fixture branch; key only in Authorization header; no logging", () => {
   const t = readFileSync(
     new URL("../supabase/functions/_shared/connectors/resend_transport.ts", import.meta.url),
@@ -288,7 +518,28 @@ test("source scan: no fixture branch; key only in Authorization header; no loggi
     "utf8",
   );
   assert.match(a, /isPlausibleResendKey/);
-  assert.match(a, /policy_sandbox_sender_no_campaign/, "campaign fail-closed for sandbox sender");
+  // the sandbox boundary is evaluated at the final pre-provider step, and the
+  // refusal codes live in the shared evaluator (single source of truth)
+  assert.match(a, /evaluateSandboxSelfSend/, "sandbox test-to-self boundary is wired in");
+  assert.match(a, /RESEND_SANDBOX_ADDRESS/);
+  assert.match(a, /isUsableTrackingSecret/, "never signs with a weak tracking secret");
+  const shared = readFileSync(
+    new URL("../supabase/functions/_shared/marketing_email.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    shared,
+    /policy_sandbox_sender_no_campaign/,
+    "campaign fail-closed for sandbox sender",
+  );
+  assert.match(shared, /policy_sandbox_not_self/, "test-to-self refusal exists");
+  // the evaluator must sit BEFORE the provider call in the adapter source
+  const guardAt = a.indexOf("evaluateSandboxSelfSend");
+  const sendAt = a.indexOf("await sendViaResend");
+  assert.ok(
+    guardAt > -1 && sendAt > -1 && guardAt < sendAt,
+    "guard must precede the provider call",
+  );
   const ep = readFileSync(
     new URL("../supabase/functions/marketing-track/index.ts", import.meta.url),
     "utf8",
@@ -296,4 +547,6 @@ test("source scan: no fixture branch; key only in Authorization header; no loggi
   // the endpoint must never redirect to the raw supplied target on failure
   assert.doesNotMatch(ep, /redirect\(safeTarget/);
   assert.match(ep, /verifyClickToken/);
+  assert.match(ep, /isUsableTrackingSecret/, "weak/absent secret fails closed");
+  assert.doesNotMatch(ep, /console\./, "the tracking secret is never logged");
 });

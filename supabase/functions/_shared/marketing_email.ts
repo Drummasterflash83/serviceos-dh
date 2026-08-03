@@ -653,6 +653,120 @@ export function evaluateActorAuthority(
   return { ok: true };
 }
 
+// ── Resend sandbox: GENUINE test-to-self enforcement ────────────────────────
+// The resend.dev sandbox identity runs on the platform's shared Resend key and
+// has no verified domain. Its ONLY legitimate use is a governed test send that
+// the requesting actor addresses to THEMSELVES. That is enforced here, at the
+// final pre-provider boundary, from CURRENT database facts — never delegated to
+// Resend's own sandbox rejection (which is a provider convenience, not our
+// authority, and which would still have meant a real outbound request).
+//
+// Every refusal below happens BEFORE the provider call, so a refused send makes
+// zero network requests.
+
+export const RESEND_SANDBOX_ADDRESS = "onboarding@resend.dev";
+
+/** A plausible address — the same shape the sender RPCs accept. */
+const PLAUSIBLE_EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const normaliseEmail = (v: string | null | undefined): string =>
+  typeof v === "string" ? v.trim().toLowerCase() : "";
+
+export interface SandboxSelfSendFacts {
+  tenantId: string;
+  purpose: string;
+  /** the FROZEN envelope values */
+  actorProfileId: string;
+  recipientProfileId: string | null;
+  envelopeRecipientEmail: string;
+  /** CURRENT database rows (null = the read succeeded and found nothing) */
+  actor: { id: string; tenant_id: string | null; email: string | null } | null;
+  recipient: { id: string; tenant_id: string | null; email: string | null } | null;
+}
+
+/**
+ * Proves, for the resend.dev sandbox sender:
+ *   purpose === 'test'
+ *   recipient_profile_id === actor_profile_id
+ *   the recipient belongs to the SAME tenant as the execution
+ *   the recipient's CURRENT email still equals the frozen envelope email
+ *   the actor's CURRENT profile email is present, valid, and the same address
+ * Any mismatch is a permanent, pre-provider policy refusal.
+ */
+export function evaluateSandboxSelfSend(
+  f: SandboxSelfSendFacts,
+): { ok: true } | { ok: false; code: string; message: string } {
+  if (f.purpose !== "test") {
+    return {
+      ok: false,
+      code: "policy_sandbox_sender_no_campaign",
+      message: "the resend.dev sandbox sender is test-only; verify a domain for campaigns",
+    };
+  }
+  if (!f.recipientProfileId || f.recipientProfileId !== f.actorProfileId) {
+    return {
+      ok: false,
+      code: "policy_sandbox_not_self",
+      message: "the sandbox sender may only send to the requesting actor themselves",
+    };
+  }
+  if (!f.actor) {
+    return { ok: false, code: "actor_removed", message: "the requesting actor no longer exists" };
+  }
+  if (f.actor.tenant_id !== f.tenantId) {
+    return {
+      ok: false,
+      code: "actor_tenant_mismatch",
+      message: "the requesting actor is no longer a member of this tenant",
+    };
+  }
+  if (!f.recipient) {
+    return {
+      ok: false,
+      code: "recipient_invalid",
+      message: "the recipient profile no longer exists",
+    };
+  }
+  if (f.recipient.tenant_id !== f.tenantId) {
+    return {
+      ok: false,
+      code: "policy_sandbox_recipient_foreign_tenant",
+      message: "the recipient is not a profile of this tenant",
+    };
+  }
+  if (f.recipient.id !== f.actor.id) {
+    return {
+      ok: false,
+      code: "policy_sandbox_not_self",
+      message: "the sandbox sender may only send to the requesting actor themselves",
+    };
+  }
+  const actorEmail = normaliseEmail(f.actor.email);
+  if (!actorEmail || !PLAUSIBLE_EMAIL_RE.test(actorEmail)) {
+    return {
+      ok: false,
+      code: "policy_sandbox_actor_email_missing",
+      message: "the requesting actor has no valid current profile email",
+    };
+  }
+  const frozen = normaliseEmail(f.envelopeRecipientEmail);
+  if (normaliseEmail(f.recipient.email) !== frozen) {
+    return {
+      ok: false,
+      code: "recipient_changed",
+      message: "recipient email changed since the request",
+    };
+  }
+  if (actorEmail !== frozen) {
+    return {
+      ok: false,
+      code: "policy_sandbox_actor_email_changed",
+      message: "the actor's current email is no longer the frozen envelope recipient",
+    };
+  }
+  return { ok: true };
+}
+
 // ── MIME construction (standards-compliant, injection-proof, deterministic,
 //    built from the FROZEN ENVELOPE ONLY — never current sender settings) ────
 

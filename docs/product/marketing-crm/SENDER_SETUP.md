@@ -109,8 +109,15 @@ is an explicit operator decision (tenant-scoped
   deterministic `Message-ID` (`<mkt-{delivery}@{sender-domain}>`) is stamped on
   the MIME for future manual reconciliation, but "not found in the mailbox" is
   NOT treated as proof of non-submission.
-- "Submitted" means Gmail accepted the request. Nothing in Phase 4 claims
-  delivery, opens or clicks.
+- "Submitted" means the PROVIDER accepted the request — "submitted to Gmail" on
+  the Google paths, "submitted to Resend" on the Resend path. Neither is
+  delivery. Nothing in Phase 4 claims delivery, opens or clicks.
+- **Resend (added 2026-08-03):** a third `source_kind`, `resend`, exists. It is
+  the `onboarding@resend.dev` SANDBOX identity only — not a verified sender,
+  test-to-self only, campaigns/sequences refused, and **no real provider
+  submission has ever been verified**. Open/click tracking exists for that
+  transport but is unique-delivery evidence, not analytics. Read
+  [RESEND_SETUP.md](RESEND_SETUP.md) before touching it.
 - Gmail exposes no usable per-account sending quota through these APIs; the UI
   says **Not reported by provider** instead of inventing capacity.
 

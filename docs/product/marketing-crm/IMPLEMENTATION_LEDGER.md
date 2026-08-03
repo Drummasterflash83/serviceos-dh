@@ -3197,3 +3197,87 @@ truth + `verification` field) ·
   `supabase/config.toml` untouched; NO migration; concurrent
   phone-ops/telephony/product-review/run-checkpoint work stays byte-for-byte
   outside this scope.
+
+## 22 · Resend email activation + sandbox closure (2026-08-02/03; SANDBOX TEST-READY — REAL PROVIDER SUBMISSION `NOT RUN`)
+
+Operator-facing document: **[RESEND_SETUP.md](RESEND_SETUP.md)**. Read that
+first; this section is the build/verification ledger behind it.
+
+### 22a · Commits
+
+| Commit    | What                                                                        |
+| --------- | --------------------------------------------------------------------------- |
+| `a48f11b` | Resend transport + open/click tracking (migrations `20260908120000/120100`) |
+| `c77dcb6` | Resend sender enables the send capability on creation (`20260908120200`)    |
+| `f634b7c` | Adversarial hardening (`20260908120300`)                                    |
+| _this_    | **Sandbox activation closure** (`20260908120400`)                           |
+
+The four earlier migrations are **applied to staging and immutable**. The
+closure migration is additive and idempotent; no applied migration was edited.
+
+### 22b · FIXTURE PROOF EXPLICITLY RETRACTED
+
+The `a48f11b`/`c77dcb6` staging run recorded a "successful send" with
+`RESEND_API_KEY=fixture`. The transport treated that magic value as success and
+**fabricated a synthetic message id without contacting Resend**. That evidence
+proved nothing about Resend and is **withdrawn in full**, along with every claim
+that rested on it (provider acceptance, provider message ids, delivery, and any
+tracking round-trip against a "real" message). The fixture branch is gone from
+the deployed path; tests inject a mock `fetch`, and a missing/blank/malformed/
+non-`re_` key fails closed with **no network call** and no success.
+
+### 22c · CRITICAL open-redirect correction
+
+The first tracking build redirected a click to the request-supplied `u=`
+whenever any token was present — an open redirect usable for phishing behind a
+first-party URL. Corrected in `20260908120300`: v2 tokens HMAC-bind
+`delivery id + event kind + exact canonical destination`; an open token is not a
+click token; **any** failure redirects only to a fixed neutral first-party
+fallback with **zero database writes**; destinations are https-only, no
+credentials, no control characters, no self-wrapping, bounded before any HMAC
+work, and duplicate query parameters are refused.
+
+### 22d · Defects this closure pass corrected
+
+| #   | Confirmed defect                                                                                                                                                                                                                                                               | Correction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The staging sender created before hardening still recorded `send_scope_state='authorized'` with a `last_verified_at` stamp — a false claim                                                                                                                                     | `20260908120400` §A1 converges every existing Resend sender: sandbox → `unknown` + `last_verified_at` NULL + canonical sandbox `verification_note`; any other address → **disabled**, unavailable, history preserved, change audited; tenant-safe, deterministic, idempotent, and a no-op when no Resend sender exists                                                                                                                                                                                                          |
+| 2   | The sandbox sender could be test-sent to **any** same-tenant profile — "test-to-self" was asserted, never enforced                                                                                                                                                             | `evaluateSandboxSelfSend` at the final pre-provider boundary proves purpose `test`, `recipient_profile_id === actor_profile_id`, same tenant, recipient email still the frozen envelope address, and the actor's own current profile email present + valid + identical. Every mismatch refuses **before** the provider call — zero network requests. Never delegated to Resend's own sandbox rejection                                                                                                                          |
+| 3   | A valid leaked tracking token could drive one `UPDATE` per request, indefinitely (saturating counters bounded the _value_, not the _work_)                                                                                                                                     | Write-once recorder: `SELECT` probe first, duplicate events perform **zero writes**, lifetime budget ≤ 1 INSERT + 1 open UPDATE + 1 click UPDATE, `CHECK (open_count/click_count between 0 and 1)` makes over-counting unrepresentable, concurrent duplicates converge                                                                                                                                                                                                                                                          |
+| 4   | Raw total-event analytics were reported without governed rate-controlled evidence                                                                                                                                                                                              | `total_open_events`/`total_click_events` removed; summary reports unique-delivery evidence plus `total_event_analytics: "not_collected"`; `last_click_url` frozen and superseded by write-once `first_click_url`                                                                                                                                                                                                                                                                                                                |
+| 5   | Token lifetime was undecided                                                                                                                                                                                                                                                   | **Explicit decision: no expiry.** Tokens live with the delivery (a sent email lives in a mailbox indefinitely; an expiry would discard legitimate later evidence and add clock skew). The safety property is provided structurally by the write-once bound and proven under concurrency and a valid-token flood                                                                                                                                                                                                                 |
+| 6   | `supabase/functions/_shared/marketing_tracking.ts` contained literal NUL/`0x1F`/`0x7F` bytes, so Git treated it as **binary**                                                                                                                                                  | Replaced with escaped source notation `\u0000-\u001F\u007F`; the file is NUL-free, Git counts it as 143 text lines, TypeScript/Prettier/ESLint parse it, and unsafe control-character URLs are still rejected                                                                                                                                                                                                                                                                                                                   |
+| 7   | UI/doc falsehoods: `Enabled (verified sender)` for a sandbox, `gmail.send:` on Resend rows, `submitted to Gmail` on the Resend transport, "No campaign or bulk sending exists yet", "a verified from-address … immediately usable", "Click tracking is NOT implemented at all" | Five honest sender classes (`gmail_verified` / `workspace_verified` / `resend_sandbox_test_ready` / `resend_production_verified` / `unavailable`); sandbox rows carry **Sandbox test-ready**, **Test-to-self only**, **Campaigns and sequences blocked**, **Real provider submission not yet verified**, plus a missing-key failure pill; `gmail.send` language confined to Google rows; success is "submitted to Resend"; `RESEND_SETUP.md` created; `SENDER_SETUP.md`/`BROADCAST_SETUP.md` corrected with dated supersessions |
+| 8   | Tracking-secret configuration failure was silent                                                                                                                                                                                                                               | `isUsableTrackingSecret` (≥32 chars) applied on BOTH sides — the adapter refuses to sign, the endpoint refuses to verify — so a misconfigured deployment fails closed instead of pretending to track. The secret is never logged or echoed                                                                                                                                                                                                                                                                                      |
+
+### 22e · Regression coverage added
+
+`scripts/marketing-resend-pure.test.mjs` (extended), plus new
+`scripts/marketing-tracking-sql.test.mjs` and `scripts/marketing-track-http.test.mjs`:
+
+- sandbox **self-recipient success** through an injected provider response;
+- refusals — another tenant user, a cross-tenant profile, a changed actor email,
+  a changed recipient email, a missing actor email, and campaign + sequence
+  attempts — **each asserting zero provider calls**;
+- control-byte-free source scan and unsafe-URL rejection;
+- bounded tracking: duplicate open/click ⇒ zero writes (`xmin` unchanged),
+  concurrent duplicates converge, a valid-token flood creates no amplification,
+  `CHECK` rejects over-counting;
+- tracking endpoint: forged / missing / wrong-kind / altered-destination /
+  malformed / duplicate-parameter requests never redirect to the supplied
+  target, invalid clicks take the fixed neutral fallback, invalid opens return
+  the neutral pixel, invalid requests write nothing, and a valid
+  destination-bound click redirects correctly and records at most the bounded
+  unique evidence.
+
+### 22f · Still `NOT RUN` (unchanged by this pass)
+
+- **Real provider submission** — `NOT RUN`. No request has reached `api.resend.com`.
+- **Inbox delivery** — `NOT RUN`.
+- **Campaign handshake over Resend** — `NOT RUN`, and structurally refused for
+  the sandbox sender.
+- **Open/click round-trip against a genuinely delivered message** — `NOT RUN`;
+  all tracking proofs use synthetic deliveries.
+- **Staging tracking-secret strength** — the management API exposes a digest
+  only, so the ≥32-character bar is asserted by configuration on staging, not
+  observed there (it is observed locally).

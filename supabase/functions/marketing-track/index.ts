@@ -12,11 +12,25 @@
 //  - every query value is bounded BEFORE any HMAC/DB work; duplicate params are
 //    rejected; the target is HTTPS-only, no credentials, no control chars, and
 //    can never be a marketing-track URL (no self-wrapping).
+//
+// BOUNDED PUBLIC WRITES: a valid token is replayable for the life of the
+// delivery (see the token-lifetime decision in migration 20260908120400), so
+// the recorder is write-once per event kind: the FIRST open and the FIRST click
+// are recorded, and every later request — including a flood of valid ones —
+// performs zero writes. The lifetime write budget for any delivery is at most
+// one INSERT plus one open UPDATE plus one click UPDATE, and a CHECK constraint
+// makes over-counting unrepresentable. Only unique-delivery evidence exists;
+// no per-request ledger and no recipient behavioural profile is kept.
+//
+// The tracking secret is REQUIRED: without MARKETING_TRACKING_SECRET no token
+// can verify, so nothing records and nothing redirects to a supplied target.
+// The secret is never logged, never echoed and never appears in a response.
 // verify_jwt is OFF (set in config.toml).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
   canonicalDestination,
+  isUsableTrackingSecret,
   MAX_TRACK_URL_LEN,
   verifyClickToken,
   verifyOpenToken,
@@ -64,13 +78,16 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const sp = url.searchParams;
 
-  // reject duplicate/ambiguous params before anything else — a request we
-  // cannot interpret unambiguously records nothing and redirects nowhere.
-  for (const k of ["d", "k", "t", "u"]) {
-    if (sp.getAll(k).length > 1) return pixelResponse();
-  }
+  // Duplicate/ambiguous params: a request we cannot interpret unambiguously
+  // records NOTHING. The response still depends only on the requested KIND, so
+  // an ambiguous click follows the SAME invalid-click contract as every other
+  // failure (the fixed neutral fallback) rather than being distinguishable by
+  // its response shape. If `k` ITSELF is duplicated the kind is unknowable, so
+  // the neutral pixel is the only honest answer.
+  const kindAmbiguous = sp.getAll("k").length > 1;
+  const paramsAmbiguous = ["d", "k", "t", "u"].some((k) => sp.getAll(k).length > 1);
 
-  const kind = sp.get("k");
+  const kind = kindAmbiguous ? null : sp.get("k");
   const delivery = sp.get("d");
   const token = sp.get("t") ?? "";
   const rawTarget = sp.get("u");
@@ -78,13 +95,18 @@ Deno.serve(async (req) => {
 
   // bound every value BEFORE HMAC / DB work
   const boundedOk =
+    !paramsAmbiguous &&
     !!delivery &&
     UUID_RE.test(delivery) &&
     token.length > 0 &&
     token.length <= MAX_TOKEN_LEN &&
     (rawTarget === null || rawTarget.length <= MAX_TRACK_URL_LEN);
 
-  const secret = Deno.env.get("MARKETING_TRACKING_SECRET");
+  // a missing / blank / too-short secret is a CONFIGURATION FAILURE: it is
+  // treated as "tracking not configured" — nothing verifies, nothing records,
+  // and responses stay neutral. The value itself is never logged or echoed.
+  const rawSecret = Deno.env.get("MARKETING_TRACKING_SECRET");
+  const secret = isUsableTrackingSecret(rawSecret) ? (rawSecret as string) : null;
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 

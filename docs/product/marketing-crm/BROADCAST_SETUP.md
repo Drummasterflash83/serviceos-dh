@@ -73,7 +73,7 @@ and are never retried blindly.
 - **Pause** stops new preparation immediately and the canonical send
   authority refuses the campaign pre-provider. A provider call already in
   flight may still finish — there is no recall.
-- **Resume** of a campaign paused *before* its scheduled instant returns it
+- **Resume** of a campaign paused _before_ its scheduled instant returns it
   to `scheduled`, so the schedule is never brought forward; the scheduler
   activates it at its own time. A campaign paused after activation resumes
   into active dispatch and never re-sends a submitted or unknown recipient.
@@ -97,5 +97,15 @@ so it can never produce a second send.
   exits 3 NOT-RUN locally).
 - The worker/scheduler runtime loop and the public unsubscribe endpoint.
 - Populated visual QA of the Broadcasts UI.
-- Any real provider behaviour. Click tracking is NOT implemented at all —
-  reporting shows clicks as unavailable, never zero, and no URL is rewritten.
+- Any real provider behaviour.
+- **Superseded (2026-08-03):** this document previously said "Click tracking is
+  NOT implemented at all — reporting shows clicks as unavailable, never zero,
+  and no URL is rewritten." That was true for Phase 5. Open/click tracking now
+  EXISTS for the Resend transport (migrations `20260908120100` /
+  `20260908120300` / `20260908120400` and the public `marketing-track`
+  endpoint): https links in a Resend message are rewritten through a
+  destination-bound token and a hidden open pixel is appended. It records
+  unique-delivery first-open/first-click evidence only, is not analytics, and
+  has never been exercised against a genuinely delivered message. The Gmail
+  path still rewrites nothing. See
+  [RESEND_SETUP.md](RESEND_SETUP.md) for the honest limits.

@@ -7,9 +7,17 @@
  * confirmations for enabling / default changes / disabling / test sends, and a
  * governed test-send flow that is honest about what it does: a REAL external
  * email when a live provider is connected, submitted through the untouched
- * Automation Engine, where "submitted" means Gmail accepted the request — not
- * that anything was delivered. Gmail exposes no usable capacity value through
- * this connection, and that is said outright rather than charted.
+ * Automation Engine, where "submitted" means the PROVIDER accepted the request
+ * — not that anything was delivered. Neither provider exposes a usable capacity
+ * value through this connection, and that is said outright rather than charted.
+ *
+ * Sender classes are kept distinct and are never conflated:
+ *   Gmail verified · Workspace verified · Resend sandbox (test-ready) ·
+ *   Resend production verified · unavailable/misconfigured.
+ * The Resend sandbox identity is NOT a verified address: it is test-to-self
+ * only, campaigns and sequences are refused, it needs the operator's own
+ * RESEND_API_KEY, and NO real provider submission has ever been verified.
+ * `gmail.send` scope language belongs to the Google rows only.
  */
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -40,7 +48,9 @@ import {
   type SenderProfile,
   type TestDelivery,
   type TestRecipient,
+  senderClass,
   senderRemediation,
+  SENDER_CLASS_LABEL,
 } from "@/lib/marketing/senders";
 
 const inputCls =
@@ -185,6 +195,16 @@ export function SendersSection() {
   const noSources =
     data.sources.gmail_accounts.length === 0 && data.sources.workspace_mailboxes.length === 0;
   const enabledAuthorized = data.senders.filter((s) => s.enabled && s.readiness.ready);
+  // every sendable sender is the resend.dev sandbox → nothing production-capable
+  const sandboxOnly =
+    enabledAuthorized.length > 0 && enabledAuthorized.every((s) => s.readiness.sandbox === true);
+  const selectedSender = enabledAuthorized.find((s) => s.id === test.sender_id) ?? null;
+  const selectedIsSandbox = selectedSender?.readiness.sandbox === true;
+  // the sandbox may ONLY address the signed-in user (the server re-proves this
+  // before the provider call — this list is a guard rail, not the authority)
+  const offeredRecipients = selectedIsSandbox
+    ? recipients.filter((r) => r.id === data.viewer_profile_id)
+    : recipients;
 
   return (
     <section className={cardCls}>
@@ -194,8 +214,9 @@ export function SendersSection() {
           <div>
             <div className="text-sm font-semibold">Senders & Workspace</div>
             <p className="text-xs text-muted-foreground">
-              Authorised Marketing senders over your connected Gmail / Google Workspace mailboxes.
-              Sends run only through the governed Automation Engine.
+              Authorised Marketing senders over your connected Gmail / Google Workspace mailboxes,
+              plus the Resend sandbox test identity. Sends run only through the governed Automation
+              Engine.
             </p>
           </div>
         </div>
@@ -221,7 +242,11 @@ export function SendersSection() {
         <div className="rounded-lg border border-hairline p-2 text-xs">
           <div className="text-muted-foreground">Send capability</div>
           <div className="text-sm font-semibold">
-            {data.capability_enabled ? "Enabled (verified sender)" : "Off — no verified sender"}
+            {data.capability_enabled
+              ? sandboxOnly
+                ? "Enabled (sandbox test sender only)"
+                : "Enabled (verified sender)"
+              : "Off — no sendable sender"}
           </div>
         </div>
         <div className="rounded-lg border border-hairline p-2 text-xs">
@@ -281,24 +306,51 @@ export function SendersSection() {
                     label={s.enabled ? "Enabled" : "Disabled"}
                   />
                   <Pill
-                    tone={s.readiness.ready ? "ok" : "err"}
-                    label={s.readiness.state.replaceAll("_", " ")}
-                  />
-                  <Pill
                     tone={
-                      s.send_scope_state === "authorized"
-                        ? "ok"
-                        : s.send_scope_state === "missing"
-                          ? "err"
-                          : "warn"
+                      senderClass(s) === "unavailable"
+                        ? "err"
+                        : senderClass(s) === "resend_sandbox_test_ready"
+                          ? "warn"
+                          : "ok"
                     }
-                    label={`gmail.send: ${s.send_scope_state}`}
+                    label={SENDER_CLASS_LABEL[senderClass(s)]}
                   />
+                  {/* gmail.send scope language belongs ONLY to the Google rows */}
+                  {s.source_kind !== "resend" && (
+                    <Pill
+                      tone={
+                        s.send_scope_state === "authorized"
+                          ? "ok"
+                          : s.send_scope_state === "missing"
+                            ? "err"
+                            : "warn"
+                      }
+                      label={`gmail.send: ${s.send_scope_state}`}
+                    />
+                  )}
                 </div>
+                {s.readiness.sandbox && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Pill tone="warn" label="Sandbox test-ready" />
+                    <Pill tone="warn" label="Test-to-self only" />
+                    <Pill tone="err" label="Campaigns and sequences blocked" />
+                    <Pill tone="warn" label="Real provider submission not yet verified" />
+                    {!data.resend_key_configured && (
+                      <Pill
+                        tone="err"
+                        label="RESEND_API_KEY not configured — sending fails closed"
+                      />
+                    )}
+                  </div>
+                )}
                 <div className="mt-1 text-[11px] text-muted-foreground">
                   From name: {s.from_name ?? "—"} · Reply-to: {s.reply_to ?? "—"} · Signature:{" "}
-                  {s.signature_text ? "set" : "—"} · Last verified:{" "}
-                  {s.last_verified_at ? new Date(s.last_verified_at).toLocaleString() : "never"}
+                  {s.signature_text ? "set" : "—"} ·{" "}
+                  {s.source_kind === "resend"
+                    ? "Provider verification: none (a from-address is not provider authorisation)"
+                    : `Last verified: ${
+                        s.last_verified_at ? new Date(s.last_verified_at).toLocaleString() : "never"
+                      }`}
                 </div>
                 {senderRemediation(s.readiness.state) && (
                   <div className="mt-2">
@@ -310,15 +362,19 @@ export function SendersSection() {
                 )}
                 {data.can_manage && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <button
-                      className={btnCls}
-                      disabled={busy}
-                      onClick={() =>
-                        run(() => verifySender(s.id), "Send authorisation re-verified.")
-                      }
-                    >
-                      Verify send authorisation
-                    </button>
+                    {/* re-verification reads the stored Google grant; there is
+                        no equivalent scope to re-check on a Resend sender */}
+                    {s.source_kind !== "resend" && (
+                      <button
+                        className={btnCls}
+                        disabled={busy}
+                        onClick={() =>
+                          run(() => verifySender(s.id), "Send authorisation re-verified.")
+                        }
+                      >
+                        Verify send authorisation
+                      </button>
+                    )}
                     {s.enabled ? (
                       <button
                         className={btnCls}
@@ -366,9 +422,16 @@ export function SendersSection() {
                   <div className="mt-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs">
                     {confirm.kind === "enable" && (
                       <p>
-                        Enable <b>{s.mailbox_address}</b> as an external Marketing sender? Once a
-                        verified sender is enabled, the governed send capability switches on for
-                        this tenant.
+                        Enable <b>{s.mailbox_address}</b> as an external Marketing sender? Enabling
+                        a sendable sender switches the governed send capability on for this tenant.
+                        {s.readiness.sandbox && (
+                          <>
+                            {" "}
+                            This is the <b>Resend sandbox identity</b>: test-to-self only, campaigns
+                            and sequences stay refused, and no real provider submission has been
+                            verified.
+                          </>
+                        )}
                       </p>
                     )}
                     {confirm.kind === "disable" && (
@@ -562,11 +625,11 @@ export function SendersSection() {
         </div>
       )}
 
-      {/* Resend transport sender — a verified from-address, no Google needed */}
+      {/* Resend SANDBOX sender — a test-only identity, not a verified address */}
       {data.can_manage && (
         <div className="mt-4 rounded-lg border border-hairline p-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Add Resend sender
+            Add Resend sandbox sender (test only)
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             <input
@@ -600,11 +663,15 @@ export function SendersSection() {
             Add Resend sandbox sender (test only)
           </button>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            <strong>Sandbox / test only.</strong> Until a domain is verified in Resend, the only
-            permitted sender is <code>onboarding@resend.dev</code>, usable for governed test sends
-            only — campaigns and sequences are refused. The platform Resend key (
-            <code>RESEND_API_KEY</code>) must be configured; without it the sender is shown but
-            sending fails closed. The sandbox delivers only to your Resend account’s own address.
+            <strong>Sandbox test-ready — not a verified sender.</strong> Until a domain is verified
+            in Resend, the only permitted from-address is <code>onboarding@resend.dev</code>. It is{" "}
+            <b>test-to-self only</b>: a test send may be addressed to the signed-in user and to
+            nobody else, and <b>campaigns and sequences are blocked</b>. Your own Resend key (
+            <code>RESEND_API_KEY</code>) must be configured; without it sending fails closed with a
+            missing-key error. <b>Real provider submission has not yet been verified</b> — no email
+            has been submitted to Resend and no inbox delivery has been observed. Resend’s sandbox
+            also accepts only your own Resend account address, so a genuine send needs a verified
+            domain.
           </p>
         </div>
       )}
@@ -616,7 +683,7 @@ export function SendersSection() {
             Governed test send
           </div>
           {enabledAuthorized.length === 0 ? (
-            <Note tone="warn">Test sends need at least one enabled, send-verified sender.</Note>
+            <Note tone="warn">Test sends need at least one enabled, sendable sender.</Note>
           ) : (
             <div className="rounded-lg border border-hairline p-3">
               <div className="grid gap-2 md:grid-cols-2">
@@ -637,10 +704,14 @@ export function SendersSection() {
                   value={test.recipient_profile_id}
                   onChange={(e) => setTest({ ...test, recipient_profile_id: e.target.value })}
                 >
-                  <option value="">Recipient (tenant users only)…</option>
-                  {recipients.map((r) => (
+                  <option value="">
+                    {selectedIsSandbox
+                      ? "Recipient (yourself only)…"
+                      : "Recipient (tenant users only)…"}
+                  </option>
+                  {offeredRecipients.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {r.email} ({r.role})
+                      {r.email} ({r.role}){r.id === data.viewer_profile_id ? " — you" : ""}
                     </option>
                   ))}
                 </select>
@@ -662,9 +733,21 @@ export function SendersSection() {
               </div>
               <p className="mt-2 text-[11px] text-muted-foreground">
                 This sends a <b>real external email</b> when a live provider is connected. Success
-                means <b>submitted to Gmail</b> — not delivered. The send runs through the governed
-                Automation Engine (immutable intent, append-only attempts). Recipients are limited
-                to this tenant's own users. No campaign or bulk sending exists yet.
+                means <b>submitted to {selectedIsSandbox ? "Resend" : "Gmail"}</b> — not delivered,
+                and not proof it reached an inbox. The send runs through the governed Automation
+                Engine (immutable intent, append-only attempts).{" "}
+                {selectedIsSandbox ? (
+                  <>
+                    The <b>Resend sandbox</b> may only be addressed to <b>you</b>; the server
+                    re-proves that before the provider call and refuses anything else without
+                    contacting Resend. Campaigns and sequences are blocked for this sender, and{" "}
+                    <b>no real Resend submission has been verified yet</b>.
+                  </>
+                ) : (
+                  <>Recipients are limited to this tenant's own users.</>
+                )}{" "}
+                Campaign and sequence sending exists separately and is governed by approvals; it is
+                never available to the sandbox sender.
               </p>
               {confirm?.kind === "test" ? (
                 <div className="mt-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs">
@@ -708,6 +791,8 @@ export function SendersSection() {
                     busy ||
                     !test.sender_id ||
                     !test.recipient_profile_id ||
+                    // the sandbox may only address the signed-in user
+                    (selectedIsSandbox && test.recipient_profile_id !== data.viewer_profile_id) ||
                     test.subject.trim().length === 0 ||
                     test.body.length === 0
                   }
@@ -749,9 +834,9 @@ export function SendersSection() {
                   </div>
                   <div className="mt-0.5 text-[11px] text-muted-foreground">
                     {new Date(d.created_at).toLocaleString()}
-                    {d.provider_message_id && <> · Gmail id {d.provider_message_id}</>}
+                    {d.provider_message_id && <> · provider id {d.provider_message_id}</>}
                     {d.submitted_at && (
-                      <> · submitted {new Date(d.submitted_at).toLocaleString()}</>
+                      <> · submitted to provider {new Date(d.submitted_at).toLocaleString()}</>
                     )}{" "}
                     · intent {d.intent_status ?? "—"} ({d.intent_attempts ?? 0} attempts)
                   </div>

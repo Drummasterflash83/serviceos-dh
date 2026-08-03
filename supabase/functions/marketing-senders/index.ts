@@ -283,6 +283,17 @@ Deno.serve(async (req) => {
             // mode-blocked with the real reason
             mode_permits_send: currentMode === "trusted" || currentMode === "optimisation",
             required_send_scope: GMAIL_SEND_SCOPE,
+            // the caller's own profile id — the ONLY legal recipient for a
+            // resend.dev sandbox test send. The UI uses it to offer nothing
+            // else; the adapter re-proves it server-side before the provider
+            // call, which remains the authority.
+            viewer_profile_id: userId,
+            // whether the platform Resend key is configured AT ALL. Never the
+            // value, and never a claim that it works — only a real submission
+            // can establish that.
+            resend_key_configured: /^re_[A-Za-z0-9_-]{16,}$/.test(
+              Deno.env.get("RESEND_API_KEY") ?? "",
+            ),
             can_manage:
               ["owner", "admin"].includes(auth.ctx.role) &&
               permissionSet.includes("marketing.senders.manage"),

@@ -32,6 +32,14 @@
 //    derivation used by enablement/capability sync), envelope↔sender source
 //    agreement, capability still enabled for the tenant, recipient still the
 //    same same-tenant profile email;
+//  - for the RESEND SANDBOX identity (onboarding@resend.dev) additionally
+//    proves GENUINE TEST-TO-SELF at the final pre-provider boundary: purpose
+//    'test', recipient_profile_id === actor_profile_id, recipient in the same
+//    tenant, recipient email still the frozen envelope address, and the actor's
+//    own current profile email present, valid and that same address. Campaign
+//    and sequence use is refused. Every refusal returns before the provider
+//    call, so a refused sandbox send makes ZERO network requests — the rule is
+//    never delegated to Resend's own sandbox rejection;
 //  - performs NO writes of any kind and emits nothing — it returns one
 //    sanitized result; the engine records it and the marketing reconciler
 //    projects it;
@@ -66,13 +74,15 @@ import {
   escapeHtml,
   evaluateActorAuthority,
   evaluateGmailSendScope,
+  evaluateSandboxSelfSend,
+  RESEND_SANDBOX_ADDRESS,
   sanitizeGmailSendResponse,
   validateMarketingEnvelope,
 } from "../marketing_email.ts";
 import { getGoogleOAuthConfig, refreshGmailAccessToken } from "../gmail_oauth.ts";
 import { DelegationError, getDelegatedGmailSendToken } from "../google_workspace.ts";
 import { composeFrom, isPlausibleResendKey, sendViaResend } from "./resend_transport.ts";
-import { injectTrackingHtml, openToken } from "../marketing_tracking.ts";
+import { injectTrackingHtml, isUsableTrackingSecret, openToken } from "../marketing_tracking.ts";
 
 const CAPABILITY = "email.send_marketing";
 const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
@@ -195,14 +205,22 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     // actor (the read succeeded and found nothing) is a genuine permanent
     // refusal; a FAILED read or resolver call is a retryable inability to
     // establish authority — the two are never conflated.
+    // `email` is read so the sandbox test-to-self boundary can prove the actor's
+    // CURRENT canonical profile email (it is never used to build the message —
+    // the frozen envelope is the message).
     const actorRes = await db
       .from("profiles")
-      .select("id, tenant_id")
+      .select("id, tenant_id, email")
       .eq("id", env.actor_profile_id)
       .maybeSingle();
     if (actorRes.error) {
       return transient("actor_read_failed", "could not read the requesting actor");
     }
+    const actorRow = (actorRes.data ?? null) as {
+      id: string;
+      tenant_id: string | null;
+      email: string | null;
+    } | null;
     const verdictRes = await db.rpc("marketing_effective_permissions", {
       p_profile_id: env.actor_profile_id,
     });
@@ -215,7 +233,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     const authority = evaluateActorAuthority(
       {
         tenantId: input.tenantId,
-        actor: (actorRes.data ?? null) as { id: string; tenant_id: string | null } | null,
+        actor: actorRow,
         resolverVerdict: verdictRes.data as { enabled?: unknown; permissions?: unknown },
       },
       isGoverned ? "marketing.campaigns.launch" : "marketing.campaigns.test",
@@ -287,6 +305,10 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       }
     }
 
+    // the CURRENT recipient row for a test send (null for the bulk paths, which
+    // address a Person rather than a tenant profile)
+    let recipientRow: { id: string; tenant_id: string | null; email: string | null } | null = null;
+
     if (isGoverned) {
       // RACE CLOSURE (check 3 of 3): the ONE canonical SQL authority for this
       // path — for a broadcast the campaign/snapshot/member binding, for a
@@ -320,13 +342,18 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       if (recipientRes.error) {
         return transient("recipient_read_failed", "could not read the recipient profile");
       }
-      const recipient = recipientRes.data;
+      const recipient = recipientRes.data as {
+        id: string;
+        tenant_id: string | null;
+        email: string | null;
+      } | null;
       if (!recipient || recipient.tenant_id !== input.tenantId) {
         return permanent("recipient_invalid", "recipient is not a profile of this tenant");
       }
       if ((recipient.email ?? "").toLowerCase() !== env.recipient_email) {
         return permanent("recipient_changed", "recipient email changed since the request");
       }
+      recipientRow = recipient;
     }
 
     // ── Resend transport branch ──────────────────────────────────────────
@@ -349,14 +376,25 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
           "RESEND_API_KEY is missing or not a valid Resend key",
         );
       }
-      // SANDBOX GUARD: the resend.dev sandbox sender may only be used for a
-      // governed test send. Broadcast/sequence sends fail closed (policy) so a
-      // sandbox identity can never fan out a real campaign.
-      if (env.mailbox_address === "onboarding@resend.dev" && env.purpose !== "test") {
-        return permanent(
-          "policy_sandbox_sender_no_campaign",
-          "the resend.dev sandbox sender is test-only; verify a domain for campaigns",
-        );
+      // SANDBOX GUARD — GENUINE TEST-TO-SELF, at the final pre-provider
+      // boundary. The resend.dev sandbox identity may ONLY carry a governed
+      // test send that the requesting actor addressed to THEMSELVES: same
+      // profile id, same tenant, the recipient's current email still equal to
+      // the frozen envelope address, and the actor's own current profile email
+      // present, valid and that same address. Broadcast/sequence use fails
+      // closed. Every refusal returns HERE, before any network call — we never
+      // rely on Resend rejecting an unauthorised recipient for us.
+      if (env.mailbox_address === RESEND_SANDBOX_ADDRESS) {
+        const selfVerdict = evaluateSandboxSelfSend({
+          tenantId: input.tenantId,
+          purpose: env.purpose,
+          actorProfileId: env.actor_profile_id,
+          recipientProfileId: env.recipient_profile_id,
+          envelopeRecipientEmail: env.recipient_email,
+          actor: actorRow,
+          recipient: recipientRow,
+        });
+        if (!selfVerdict.ok) return permanent(selfVerdict.code, selfVerdict.message);
       }
       let text: string;
       let html: string;
@@ -373,7 +411,10 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       // open/click tracking: signed pixel + destination-bound rewritten links.
       // Write-free — the adapter only SIGNS; the public marketing-track endpoint
       // verifies + records. Enabled only when the secret + functions base exist.
-      const trackingSecret = denoEnv?.get("MARKETING_TRACKING_SECRET");
+      // the SAME strength bar the public endpoint applies: we never sign with a
+      // secret weak enough to guess — tracking is simply omitted instead.
+      const rawTrackingSecret = denoEnv?.get("MARKETING_TRACKING_SECRET");
+      const trackingSecret = isUsableTrackingSecret(rawTrackingSecret) ? rawTrackingSecret : null;
       const functionsBase = denoEnv?.get("SUPABASE_URL");
       if (trackingSecret && functionsBase) {
         const base = `${functionsBase.replace(/\/$/, "")}/functions/v1/marketing-track`;

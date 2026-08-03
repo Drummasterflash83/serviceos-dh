@@ -12,6 +12,8 @@ export interface SenderReadiness {
   ready: boolean;
   state:
     | "ready"
+    | "sandbox_ready"
+    | "unavailable"
     | "source_disconnected"
     | "source_changed"
     | "source_inactive"
@@ -22,11 +24,56 @@ export interface SenderReadiness {
     | "connection_inactive"
     | "unknown";
   enabled?: boolean;
+  /** true only for the resend.dev sandbox identity */
+  sandbox?: boolean;
+  /** the sandbox may only send to the requesting actor themselves */
+  test_to_self_only?: boolean;
+  campaigns_blocked?: boolean;
+  sequences_blocked?: boolean;
+  /** never true today: no real Resend submission has been verified */
+  provider_submission_verified?: boolean;
+  transport?: "gmail" | "resend";
 }
+
+/**
+ * The honest capability class of a configured sender — what it may actually do
+ * right now. Derived from the canonical SQL verdict; never re-derived from
+ * display state.
+ */
+export type SenderClass =
+  | "gmail_verified"
+  | "workspace_verified"
+  | "resend_sandbox_test_ready"
+  | "resend_production_verified"
+  | "unavailable";
+
+export function senderClass(s: {
+  source_kind: SenderProfile["source_kind"];
+  readiness: SenderReadiness;
+}): SenderClass {
+  const state = s.readiness.state;
+  if (s.source_kind === "resend") {
+    if (state === "sandbox_ready") return "resend_sandbox_test_ready";
+    if (state === "ready") return "resend_production_verified";
+    return "unavailable";
+  }
+  if (state !== "ready") return "unavailable";
+  return s.source_kind === "gmail_oauth" ? "gmail_verified" : "workspace_verified";
+}
+
+export const SENDER_CLASS_LABEL: Record<SenderClass, string> = {
+  gmail_verified: "Gmail verified sender",
+  workspace_verified: "Workspace verified sender",
+  resend_sandbox_test_ready: "Resend sandbox — test-ready",
+  resend_production_verified: "Resend production verified",
+  unavailable: "Unavailable / misconfigured",
+};
 
 /** Display-only remediation copy for a readiness state (UI text, not policy). */
 export function senderRemediation(state: SenderReadiness["state"]): string | null {
   switch (state) {
+    case "unavailable":
+      return "This from-address is not usable. Only the resend.dev sandbox sender is permitted until a domain is verified in Resend.";
     case "source_disconnected":
       return "The source mailbox was removed — reconnect it or configure another sender.";
     case "source_changed":
@@ -116,6 +163,10 @@ export interface SendersOverview {
   required_send_scope: string;
   can_manage: boolean;
   can_test: boolean;
+  /** the signed-in caller's own profile id — the ONLY legal sandbox recipient */
+  viewer_profile_id: string | null;
+  /** whether the platform Resend key is configured at all (never its value) */
+  resend_key_configured: boolean;
 }
 
 export interface SenderHealth {
@@ -181,8 +232,10 @@ export const createSender = (args: {
   signature_text?: string;
 }) => callMarketingFn<{ id: string; created: boolean }>(FN, { action: "sender_create", ...args });
 
-// Resend transport sender: a verified from-address backed by the platform
-// Resend key. No Google connection required — immediately usable.
+// Resend SANDBOX sender: the resend.dev sandbox identity on the platform Resend
+// key. NOT a verified address and NOT production-usable — it is test-to-self
+// only (campaigns and sequences are refused), and it needs the operator to have
+// configured RESEND_API_KEY before anything can be submitted at all.
 export const createResendSender = (args: {
   from_address: string;
   label?: string;
