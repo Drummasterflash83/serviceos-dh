@@ -37,7 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import { RequireAuth } from "@/lib/auth";
 import { AppChrome } from "@/components/app/AppChrome";
-import { MarketingCampaigns } from "@/components/app/MarketingCampaigns";
+import { MarketingCampaigns, type CampaignsTabKey } from "@/components/app/MarketingCampaigns";
 import { MarketingContacts } from "@/components/app/MarketingContacts";
 import { MarketingSegments } from "@/components/app/MarketingSegments";
 import { MarketingTags } from "@/components/app/MarketingTags";
@@ -49,7 +49,45 @@ import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import { deriveMarketingGate } from "@/lib/marketing/gate";
 import { Settings as SettingsIcon } from "lucide-react";
 
+type SectionKey = "contacts" | "campaigns" | "ads";
+type MarketingSearch = {
+  section?: SectionKey;
+  settings?: boolean;
+  campaignTab?: CampaignsTabKey;
+  campaignId?: string;
+};
+
+const CAMPAIGN_TABS: CampaignsTabKey[] = [
+  "broadcasts",
+  "sequences",
+  "templates",
+  "reporting",
+  "ai",
+];
+
 export const Route = createFileRoute("/marketing")({
+  validateSearch: (search: Record<string, unknown>): MarketingSearch => {
+    const section =
+      search.section === "campaigns" || search.section === "ads" || search.section === "contacts"
+        ? search.section
+        : undefined;
+    const campaignTab = CAMPAIGN_TABS.includes(search.campaignTab as CampaignsTabKey)
+      ? (search.campaignTab as CampaignsTabKey)
+      : undefined;
+    const campaignId =
+      typeof search.campaignId === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        search.campaignId,
+      )
+        ? search.campaignId
+        : undefined;
+    return {
+      ...(section ? { section } : {}),
+      ...(search.settings === true || search.settings === "true" ? { settings: true } : {}),
+      ...(campaignTab ? { campaignTab } : {}),
+      ...(campaignId ? { campaignId } : {}),
+    };
+  },
   head: () => ({
     meta: [{ title: "Marketing · ServiceOS" }],
   }),
@@ -63,9 +101,6 @@ function ProtectedMarketing() {
     </RequireAuth>
   );
 }
-
-/* ── Section model — exactly three primary sections, in this order. ── */
-type SectionKey = "contacts" | "campaigns" | "ads";
 
 const SECTIONS: { key: SectionKey; label: string; icon: typeof Contact }[] = [
   { key: "contacts", label: "Contacts", icon: Contact },
@@ -124,8 +159,9 @@ function SectionCard({
 }
 
 function MarketingShell() {
-  const [section, setSection] = useState<SectionKey>("contacts");
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const search = Route.useSearch();
+  const section = search.section ?? "contacts";
+  const settingsOpen = search.settings === true;
   const { access, loading, error, canView, refresh } = useMarketingAccess();
   const navigate = useNavigate();
   const gate = deriveMarketingGate(loading, error, access);
@@ -144,7 +180,7 @@ function MarketingShell() {
           <button
             onClick={() => {
               closeNav();
-              navigate({ to: "/app" });
+              void navigate({ to: "/app" });
             }}
             className="mb-4 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-surface-alt hover:text-foreground"
           >
@@ -158,8 +194,10 @@ function MarketingShell() {
             <button
               key={item.key}
               onClick={() => {
-                setSection(item.key);
-                setSettingsOpen(false);
+                void navigate({
+                  to: "/marketing",
+                  search: { section: item.key },
+                });
                 closeNav();
               }}
               className={cn(
@@ -177,7 +215,10 @@ function MarketingShell() {
           {canAdmin && (
             <button
               onClick={() => {
-                setSettingsOpen(true);
+                void navigate({
+                  to: "/marketing",
+                  search: { ...search, section, settings: true },
+                });
                 closeNav();
               }}
               className={cn(
@@ -239,7 +280,12 @@ function MarketingShell() {
               from Marketing settings — the change is versioned and audited.
             </p>
             <button
-              onClick={() => setSettingsOpen(true)}
+              onClick={() =>
+                void navigate({
+                  to: "/marketing",
+                  search: { ...search, section, settings: true },
+                })
+              }
               className="mt-3 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background"
             >
               Open settings to re-enable
@@ -250,7 +296,10 @@ function MarketingShell() {
       {gate.kind === "disabled_admin" && settingsOpen && (
         <MarketingSettings
           onBack={() => {
-            setSettingsOpen(false);
+            void navigate({
+              to: "/marketing",
+              search: { ...search, section, settings: undefined },
+            });
             refresh();
           }}
         />
@@ -277,11 +326,39 @@ function MarketingShell() {
       {!loading && !error && canView && (
         <>
           {settingsOpen ? (
-            <MarketingSettings onBack={() => setSettingsOpen(false)} />
+            <MarketingSettings
+              onBack={() =>
+                void navigate({
+                  to: "/marketing",
+                  search: { ...search, section, settings: undefined },
+                })
+              }
+            />
           ) : (
             <>
               {section === "contacts" && <ContactsSection />}
-              {section === "campaigns" && <CampaignsSection />}
+              {section === "campaigns" && (
+                <CampaignsSection
+                  tab={search.campaignTab}
+                  campaignId={search.campaignId}
+                  onTabChange={(campaignTab) =>
+                    void navigate({
+                      to: "/marketing",
+                      search: { section: "campaigns", campaignTab },
+                    })
+                  }
+                  onCampaignChange={(campaignId) =>
+                    void navigate({
+                      to: "/marketing",
+                      search: {
+                        section: "campaigns",
+                        campaignTab: "broadcasts",
+                        ...(campaignId ? { campaignId } : {}),
+                      },
+                    })
+                  }
+                />
+              )}
               {section === "ads" && <AdsSection />}
             </>
           )}
@@ -354,8 +431,25 @@ function ContactsSection() {
 }
 
 /* ── Campaigns — Broadcasts operational (Phase 5); the rest honest Preview. ── */
-function CampaignsSection() {
-  return <MarketingCampaigns />;
+function CampaignsSection({
+  tab,
+  campaignId,
+  onTabChange,
+  onCampaignChange,
+}: {
+  tab?: CampaignsTabKey;
+  campaignId?: string;
+  onTabChange: (tab: CampaignsTabKey) => void;
+  onCampaignChange: (campaignId: string | null) => void;
+}) {
+  return (
+    <MarketingCampaigns
+      initialTab={tab}
+      selectedCampaignId={campaignId}
+      onTabChange={onTabChange}
+      onCampaignChange={onCampaignChange}
+    />
+  );
 }
 
 /* ── Ads — the operational Phase 8 surface: signed-webhook lead capture,

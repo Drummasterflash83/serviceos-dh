@@ -79,6 +79,7 @@ import {
   type OwnerOption,
 } from "@/lib/marketing/contacts";
 import { listLifecycleStagesAdmin, type LifecycleStageAdmin } from "@/lib/marketing/admin";
+import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 
 const inputCls =
   "w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-foreground " +
@@ -229,6 +230,7 @@ function StepEditor({
   onRemove: () => void;
   followUpAvailable: boolean;
 }) {
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const cfg = step.config ?? {};
   const set = (patch: Record<string, unknown>) =>
     onChange({ ...step, config: { ...cfg, ...patch } });
@@ -284,11 +286,18 @@ function StepEditor({
               </Field>
             </div>
             <div className="md:col-span-2">
+              <MarketingContentTools
+                className="mb-2"
+                targetRef={bodyRef}
+                value={String(cfg.body_authored ?? "")}
+                onChange={(body_authored) => set({ body_authored })}
+              />
               <Field
                 label="Body"
-                hint="Plain text. Links use [label](https://destination). No HTML is accepted; the HTML part is derived safely."
+                hint="Write the message in plain language. ServiceOS safely creates the email version."
               >
                 <textarea
+                  ref={bodyRef}
                   className={cn(inputCls, "min-h-[120px] font-mono text-xs")}
                   value={String(cfg.body_authored ?? "")}
                   onChange={(e) => set({ body_authored: e.target.value })}
@@ -1078,9 +1087,9 @@ function SequenceDetailView({
             ))}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            {report.submitted_meaning}. {report.tracking.note}. Replies are counted only from
-            canonical thread evidence ({report.replied_proven} proven). Bounces:{" "}
-            {report.bounce_evidence}.
+            Submitted means the selected provider accepted the request — not delivered.{" "}
+            {report.tracking.note}. Replies are counted only from canonical thread evidence (
+            {report.replied_proven} proven). Bounces: {report.bounce_evidence}.
           </p>
           {Object.keys(report.exits).length > 0 && (
             <div className="mt-3">
@@ -1726,7 +1735,16 @@ export function MarketingSequences() {
                   onClick={() => setSelected(s.id)}
                 >
                   <td className="p-3">
-                    <div className="font-medium text-foreground">{s.name}</div>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setSelected(s.id);
+                      }}
+                      className="text-left font-medium text-foreground underline decoration-hairline underline-offset-2 transition hover:decoration-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    >
+                      {s.name}
+                    </button>
                     <div className="text-[11px] text-muted-foreground">
                       {s.sender_mailbox ?? "no sender"} · {s.timezone ?? "—"}
                     </div>

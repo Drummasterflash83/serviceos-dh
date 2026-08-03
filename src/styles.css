@@ -85,9 +85,10 @@
   --accent-foreground: #ffffff;
   --accent-soft: #eff4ff;
 
-  --hairline: #e8ecf2;
-  --border: #e8ecf2;
-  --input: #e8ecf2;
+  /* Deliberately visible on white: fields and cards must have a clear edge. */
+  --hairline: #cbd3df;
+  --border: #cbd3df;
+  --input: #bcc6d3;
   --ring: #2563eb;
 
   --destructive: #ef4444;

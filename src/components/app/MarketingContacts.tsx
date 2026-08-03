@@ -708,9 +708,16 @@ export function MarketingContacts() {
                     </td>
                   )}
                   <td className="max-w-[220px] px-4 py-2.5">
-                    <div className="truncate font-medium text-foreground">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDetailId(it.person_id);
+                      }}
+                      className="block max-w-full truncate text-left font-medium text-foreground underline decoration-hairline underline-offset-2 transition hover:decoration-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    >
                       {it.display_name ?? "Unnamed person"}
-                    </div>
+                    </button>
                     <div className="truncate text-xs text-muted-foreground">
                       {it.primary_email ?? it.primary_phone ?? "no contact details"}
                     </div>

@@ -8,8 +8,8 @@
  * Broadcasts is the real Phase-5 surface: draft → review → approve →
  * preflight (immutable audience snapshot) → explicit confirmed launch or
  * timezone-aware schedule → factual per-recipient reporting. Every number
- * shown is a persisted server fact; "submitted" means Gmail accepted the
- * request — never "delivered" — and unknown results are surfaced loudly, not
+ * shown is a persisted server fact; "submitted" means the selected provider
+ * accepted the request — never "delivered" — and unknown results are surfaced loudly, not
  * hidden. Hidden controls are NOT the security boundary: the Edge Function
  * and the SQL resolver re-check every permission on every call.
  */
@@ -73,6 +73,7 @@ import { MarketingSequences } from "@/components/app/MarketingSequences";
 import { MarketingTemplates } from "@/components/app/MarketingTemplates";
 import { MarketingReporting } from "@/components/app/MarketingReporting";
 import { MarketingAiDrafting } from "@/components/app/MarketingAiDrafting";
+import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 
 /* ── shared atoms ─────────────────────────────────────────────────────────── */
@@ -180,15 +181,6 @@ function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void
   );
 }
 
-/* ── personalisation help ─────────────────────────────────────────────────── */
-
-const TOKEN_HELP: { token: string; source: string }[] = [
-  { token: "{{first_name}}", source: "Person first name" },
-  { token: "{{last_name}}", source: "Person last name" },
-  { token: "{{display_name}}", source: "Person display name" },
-  { token: "{{company_name}}", source: "Linked company name" },
-];
-
 /* ── editor ───────────────────────────────────────────────────────────────── */
 
 interface EditorProps {
@@ -208,6 +200,7 @@ function CampaignEditor({
   onDone,
   onCancel,
 }: EditorProps) {
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [form, setForm] = useState<CampaignContentInput>(initial);
   const [senders, setSenders] = useState<{ id: string; label: string; ready: boolean }[]>([]);
   const [segments, setSegments] = useState<{ id: string; name: string }[]>([]);
@@ -357,11 +350,18 @@ function CampaignEditor({
         </Field>
       </div>
       <div className="mt-3">
+        <MarketingContentTools
+          className="mb-2"
+          targetRef={bodyRef}
+          value={form.body_authored ?? ""}
+          onChange={(body_authored) => setForm((current) => ({ ...current, body_authored }))}
+        />
         <Field
           label="Body"
-          hint="Plain text. Personalisation: {{first_name}} {{last_name}} {{display_name}} {{company_name}}. Links: [label](https://destination). No HTML — the HTML version is derived safely."
+          hint="Write the message in plain language. ServiceOS safely creates the email version and keeps personalisation governed."
         >
           <textarea
+            ref={bodyRef}
             className={cn(inputCls, "min-h-[180px] font-mono text-[13px]")}
             value={form.body_authored ?? ""}
             onChange={(e) => setForm((f) => ({ ...f, body_authored: e.target.value }))}
@@ -410,13 +410,6 @@ function CampaignEditor({
           {mode === "create" ? "Create draft" : "Save as new revision"}
         </Btn>
         <Btn onClick={onCancel}>Cancel</Btn>
-        <div className="ml-auto flex items-center gap-1 text-[11px] text-muted-foreground">
-          {TOKEN_HELP.map((t) => (
-            <code key={t.token} className="rounded bg-surface-alt px-1.5 py-0.5" title={t.source}>
-              {t.token}
-            </code>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -531,7 +524,10 @@ function LaunchDialog({
               </span>{" "}
               · audience snapshot taken {new Date(preflight.created_at).toLocaleString()}.
             </li>
-            <li>“Submitted” means Gmail accepted the request — it is not delivery proof.</li>
+            <li>
+              “Submitted” means the selected provider accepted the request — it is not delivery
+              proof.
+            </li>
             <li>
               Suppression, unsubscribes and preference are re-checked for every recipient at
               execution time; ineligible recipients are skipped, never overridden.
@@ -541,8 +537,8 @@ function LaunchDialog({
               may still finish.
             </li>
             <li>
-              Gmail offers no exactly-once guarantee: an unknown outcome freezes that recipient for
-              review and is never silently retried.
+              Email providers offer no exactly-once guarantee: an unknown outcome freezes that
+              recipient for review and is never silently retried.
             </li>
           </ul>
         </div>
@@ -625,6 +621,7 @@ function CampaignDetailView({
   caps,
   onBack,
   onChanged,
+  initialNotice,
 }: {
   campaignId: string;
   caps: Pick<
@@ -633,6 +630,7 @@ function CampaignDetailView({
   >;
   onBack: () => void;
   onChanged: () => void;
+  initialNotice?: string | null;
 }) {
   const [detail, setDetail] = useState<CampaignDetail | null>(null);
   const [report, setReport] = useState<CampaignReport | null>(null);
@@ -646,7 +644,9 @@ function CampaignDetailView({
   const [showLaunch, setShowLaunch] = useState(false);
   const [testRecipients, setTestRecipients] = useState<TestRecipient[]>([]);
   const [testRecipient, setTestRecipient] = useState("");
-  const [notice, setNotice] = useState<string | null>(null);
+  const [viewerProfileId, setViewerProfileId] = useState<string | null>(null);
+  const [operationalMode, setOperationalMode] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice ?? null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -675,8 +675,19 @@ function CampaignDetailView({
   }, [reload]);
   useEffect(() => {
     if (caps.can_test) {
-      listTestRecipients().then((r) => {
-        if (r.ok) setTestRecipients(r.data.recipients);
+      Promise.all([listTestRecipients(), getSendersOverview()]).then(([recipients, overview]) => {
+        if (recipients.ok) setTestRecipients(recipients.data.recipients);
+        if (overview.ok) {
+          setViewerProfileId(overview.data.viewer_profile_id);
+          setOperationalMode(overview.data.operational_mode);
+          if (
+            overview.data.viewer_profile_id &&
+            recipients.ok &&
+            recipients.data.recipients.some((r) => r.id === overview.data.viewer_profile_id)
+          ) {
+            setTestRecipient(overview.data.viewer_profile_id);
+          }
+        }
       });
     }
   }, [caps.can_test]);
@@ -736,7 +747,9 @@ function CampaignDetailView({
     setBusyAction(null);
     setNotice(
       res.ok
-        ? "Test queued through the governed pipeline (visible under Senders → recent test sends)."
+        ? operationalMode === "discovery"
+          ? "Test saved to the governed queue, but external delivery is paused while this workspace is in Discovery mode. Its live status is under Marketing settings → Recent test sends."
+          : "Test queued through the governed pipeline. Follow its live status under Marketing settings → Recent test sends."
         : res.error.message,
     );
   };
@@ -852,7 +865,15 @@ function CampaignDetailView({
       </div>
 
       {notice && (
-        <div className="rounded-lg border border-hairline bg-surface-alt px-3 py-2 text-xs text-foreground">
+        <div
+          role="status"
+          className={cn(
+            "rounded-lg border px-3 py-2 text-xs text-foreground",
+            notice.startsWith("Draft saved")
+              ? "border-success/40 bg-success/10"
+              : "border-hairline bg-surface-alt",
+          )}
+        >
           {notice}
         </div>
       )}
@@ -889,6 +910,54 @@ function CampaignDetailView({
         />
       )}
 
+      {caps.can_test && (
+        <div className="rounded-xl border border-accent/30 bg-accent-soft p-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="min-w-0 grow">
+              <div className="text-sm font-semibold text-foreground">Send yourself a test</div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Check the subject, personalisation, links and footer before review or launch. A test
+                never sends to the campaign audience.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="sr-only" htmlFor={`campaign-test-recipient-${campaignId}`}>
+                Test recipient
+              </label>
+              <select
+                id={`campaign-test-recipient-${campaignId}`}
+                className={cn(inputCls, "max-w-[260px] bg-white py-1.5 text-xs")}
+                value={testRecipient}
+                onChange={(e) => setTestRecipient(e.target.value)}
+              >
+                <option value="">Choose a workspace recipient…</option>
+                {testRecipients.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.email}
+                    {r.id === viewerProfileId ? " — you" : ""}
+                  </option>
+                ))}
+              </select>
+              <Btn
+                tone="primary"
+                onClick={doTest}
+                disabled={!testRecipient}
+                busy={busyAction === "test"}
+              >
+                <Send className="h-3.5 w-3.5" />
+                {testRecipient === viewerProfileId ? "Send test to myself" : "Send test"}
+              </Btn>
+            </div>
+          </div>
+          {operationalMode === "discovery" && (
+            <div className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-xs text-foreground">
+              Delivery is currently paused by the workspace&apos;s Discovery mode. The test can be
+              queued, but it will not leave ServiceOS until an operator changes the mode.
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* content */}
         <div className="rounded-xl border border-hairline bg-white p-4">
@@ -902,28 +971,6 @@ function CampaignDetailView({
           <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-surface-alt/50 p-3 text-[12px] text-muted-foreground">
             {rev?.body_authored ?? "—"}
           </pre>
-          {caps.can_test && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
-              <select
-                className={cn(inputCls, "max-w-[240px] py-1.5 text-xs")}
-                value={testRecipient}
-                onChange={(e) => setTestRecipient(e.target.value)}
-              >
-                <option value="">Test recipient (workspace user)…</option>
-                {testRecipients.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.email}
-                  </option>
-                ))}
-              </select>
-              <Btn onClick={doTest} disabled={!testRecipient} busy={busyAction === "test"}>
-                <Send className="h-3.5 w-3.5" /> Send test
-              </Btn>
-              <span className="text-[11px] text-muted-foreground">
-                Governed Phase-4 test send — tokens show fallbacks or [token].
-              </span>
-            </div>
-          )}
         </div>
 
         {/* preflight / snapshot */}
@@ -1050,7 +1097,9 @@ function CampaignDetailView({
             <span>Unsubscribed via this campaign: {report.unsubscribed}</span>
             <span>Delivered / opened / replied / bounced: not reported by provider</span>
             <span>Clicks: unavailable — click tracking is not implemented (never fabricated)</span>
-            <span className="font-medium text-foreground">{report.submitted_meaning}</span>
+            <span className="font-medium text-foreground">
+              Submitted means the selected provider accepted the request — not delivered.
+            </span>
           </div>
 
           {recipients.length > 0 && (
@@ -1198,12 +1247,19 @@ function ExclusionBreakdown({ breakdown }: { breakdown: Record<string, number> }
 
 /* ── broadcasts tab ───────────────────────────────────────────────────────── */
 
-function BroadcastsTab() {
+function BroadcastsTab({
+  initialSelected = null,
+  onSelectedChange,
+}: {
+  initialSelected?: string | null;
+  onSelectedChange?: (campaignId: string | null) => void;
+}) {
   const [data, setData] = useState<CampaignListData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialSelected);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -1216,6 +1272,9 @@ function BroadcastsTab() {
   useEffect(() => {
     reload();
   }, [reload]);
+  useEffect(() => {
+    setSelected(initialSelected);
+  }, [initialSelected]);
 
   if (loading) {
     return (
@@ -1234,7 +1293,12 @@ function BroadcastsTab() {
       <CampaignDetailView
         campaignId={selected}
         caps={data}
-        onBack={() => setSelected(null)}
+        initialNotice={savedNotice}
+        onBack={() => {
+          setSelected(null);
+          setSavedNotice(null);
+          onSelectedChange?.(null);
+        }}
         onChanged={reload}
       />
     );
@@ -1278,7 +1342,13 @@ function BroadcastsTab() {
           onDone={(id) => {
             setCreating(false);
             reload();
-            if (id) setSelected(id);
+            if (id) {
+              setSavedNotice(
+                "Draft saved. You’re viewing it now. Send yourself a test below, or choose All broadcasts to return to the saved list.",
+              );
+              setSelected(id);
+              onSelectedChange?.(id);
+            }
           }}
           onCancel={() => setCreating(false)}
         />
@@ -1317,7 +1387,15 @@ function BroadcastsTab() {
             </thead>
             <tbody>
               {data.campaigns.map((c) => (
-                <CampaignRowView key={c.id} row={c} onOpen={() => setSelected(c.id)} />
+                <CampaignRowView
+                  key={c.id}
+                  row={c}
+                  onOpen={() => {
+                    setSavedNotice(null);
+                    setSelected(c.id);
+                    onSelectedChange?.(c.id);
+                  }}
+                />
               ))}
             </tbody>
           </table>
@@ -1335,7 +1413,16 @@ function CampaignRowView({ row, onOpen }: { row: CampaignListRow; onOpen: () => 
       className="cursor-pointer border-b border-hairline/60 transition hover:bg-surface-alt/50"
     >
       <td className="px-3 py-2">
-        <div className="font-medium text-foreground">{row.name}</div>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpen();
+          }}
+          className="text-left font-medium text-foreground underline decoration-hairline underline-offset-2 transition hover:decoration-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+        >
+          {row.name}
+        </button>
         {row.description && (
           <div className="max-w-[220px] truncate text-[11px] text-muted-foreground">
             {row.description}
@@ -1381,7 +1468,7 @@ function CampaignRowView({ row, onOpen }: { row: CampaignListRow; onOpen: () => 
 
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
-type CampaignsTabKey = "broadcasts" | "sequences" | "templates" | "reporting" | "ai";
+export type CampaignsTabKey = "broadcasts" | "sequences" | "templates" | "reporting" | "ai";
 
 const TABS: { key: CampaignsTabKey; label: string; icon: typeof Send }[] = [
   { key: "broadcasts", label: "Broadcasts", icon: Send },
@@ -1391,13 +1478,30 @@ const TABS: { key: CampaignsTabKey; label: string; icon: typeof Send }[] = [
   { key: "ai", label: "AI Drafting", icon: Bot },
 ];
 
-export function MarketingCampaigns() {
-  const [tab, setTab] = useState<CampaignsTabKey>("broadcasts");
+export function MarketingCampaigns({
+  initialTab = "broadcasts",
+  selectedCampaignId = null,
+  onTabChange,
+  onCampaignChange,
+}: {
+  initialTab?: CampaignsTabKey;
+  selectedCampaignId?: string | null;
+  onTabChange?: (tab: CampaignsTabKey) => void;
+  onCampaignChange?: (campaignId: string | null) => void;
+}) {
+  const [tab, setTab] = useState<CampaignsTabKey>(initialTab);
   // affordance gating only — the server enforces every permission again
   const { can } = useMarketingAccess();
   // complete tab semantics: roving tabIndex + Left/Right/Home/End with
   // automatic activation; focus follows selection
   const tabRefs = useRef(new Map<CampaignsTabKey, HTMLButtonElement>());
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
+  const selectTab = (nextTab: CampaignsTabKey) => {
+    setTab(nextTab);
+    onTabChange?.(nextTab);
+  };
   const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
     let next: number | null = null;
     if (e.key === "ArrowRight") next = (index + 1) % TABS.length;
@@ -1407,7 +1511,7 @@ export function MarketingCampaigns() {
     if (next === null) return;
     e.preventDefault();
     const key = TABS[next].key;
-    setTab(key);
+    selectTab(key);
     tabRefs.current.get(key)?.focus();
   };
   return (
@@ -1437,7 +1541,7 @@ export function MarketingCampaigns() {
             aria-controls={`mkt-panel-${t.key}`}
             tabIndex={tab === t.key ? 0 : -1}
             onKeyDown={(e) => onTabKeyDown(e, i)}
-            onClick={() => setTab(t.key)}
+            onClick={() => selectTab(t.key)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition",
               tab === t.key
@@ -1451,7 +1555,9 @@ export function MarketingCampaigns() {
       </div>
 
       <div role="tabpanel" id={`mkt-panel-${tab}`} aria-labelledby={`mkt-tab-${tab}`}>
-        {tab === "broadcasts" && <BroadcastsTab />}
+        {tab === "broadcasts" && (
+          <BroadcastsTab initialSelected={selectedCampaignId} onSelectedChange={onCampaignChange} />
+        )}
         {tab === "sequences" && <MarketingSequences />}
         {tab === "templates" && <MarketingTemplates canDraft={can("marketing.campaigns.draft")} />}
         {tab === "reporting" && <MarketingReporting canLink={can("marketing.campaigns.launch")} />}

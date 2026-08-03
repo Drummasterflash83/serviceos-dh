@@ -771,7 +771,11 @@ export function SendersSection() {
                 means{" "}
                 <b>
                   submitted to{" "}
-                  {selectedSender?.readiness.transport === "resend" ? "Resend" : "Gmail"}
+                  {selectedSender
+                    ? selectedSender.readiness.transport === "resend"
+                      ? "Resend"
+                      : "Gmail"
+                    : "the selected provider"}
                 </b>{" "}
                 — not delivered, and not proof it reached an inbox. The send runs through the
                 governed Automation Engine (immutable intent, append-only attempts).{" "}

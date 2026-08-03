@@ -43,6 +43,7 @@ import { listCampaigns } from "@/lib/marketing/campaigns";
 import { listSequences } from "@/lib/marketing/sequences";
 import { getSendersOverview } from "@/lib/marketing/senders";
 import { listSegments } from "@/lib/marketing/segments";
+import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 
 /* ── local atoms (file-local by repo convention) ─────────────────────────── */
 
@@ -586,6 +587,7 @@ function UseInSequenceDialog({
 /* ── main ────────────────────────────────────────────────────────────────── */
 
 export function MarketingTemplates({ canDraft }: { canDraft: boolean }) {
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<TemplateListRow[]>([]);
@@ -1077,11 +1079,18 @@ export function MarketingTemplates({ canDraft }: { canDraft: boolean }) {
             </Field>
           </div>
           <div className="mt-3">
+            <MarketingContentTools
+              className="mb-2"
+              targetRef={bodyRef}
+              value={form.body_authored}
+              onChange={(body_authored) => setForm({ ...form, body_authored })}
+            />
             <Field
               label="Body"
-              hint="plain text · {{first_name}} etc · [label](https://destination) links"
+              hint="Write the message in plain language. ServiceOS safely creates the email version."
             >
               <textarea
+                ref={bodyRef}
                 className={cn(inputCls, "min-h-[180px] font-mono text-xs")}
                 maxLength={20000}
                 value={form.body_authored}

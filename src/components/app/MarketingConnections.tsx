@@ -176,6 +176,15 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
     );
   }
 
+  // A provider removed from the server catalogue is no longer available to
+  // this environment. Keep its governed history server-side, but do not leak
+  // a retired fixture/internal adapter into the customer-facing connection UI.
+  const visibleAccounts = catalogError
+    ? accounts
+    : accounts.filter((account) =>
+        providers.some((provider) => provider.provider === account.provider),
+      );
+
   return (
     <section aria-label="Provider connections" className="space-y-4">
       <div className="rounded-2xl border border-hairline bg-white p-6">
@@ -275,7 +284,7 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
               <RefreshCw className="mr-1 inline h-3 w-3" aria-hidden="true" /> Retry
             </button>
           </div>
-        ) : accounts.length === 0 ? (
+        ) : visibleAccounts.length === 0 ? (
           <p className="mt-4 text-xs text-muted-foreground">
             No connections yet.{" "}
             {canManage
@@ -284,7 +293,7 @@ export function MarketingConnections({ canManage }: { canManage: boolean }) {
           </p>
         ) : (
           <ul className="mt-4 space-y-3">
-            {accounts.map((a) => (
+            {visibleAccounts.map((a) => (
               <li key={a.id} className="rounded-xl border border-hairline p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
