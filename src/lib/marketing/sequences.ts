@@ -85,6 +85,7 @@ export interface SequenceListRow {
 export interface SequenceListData {
   sequences: SequenceListRow[];
   can_draft: boolean;
+  can_test: boolean;
   can_launch: boolean;
   can_report: boolean;
   unsubscribe_configured: boolean;
@@ -301,6 +302,17 @@ export const validateSteps = (steps: SequenceStepInput[]) =>
     valid: boolean;
     steps: { order: number; ok: boolean; summary?: string; error?: string }[];
   }>(FN, { action: "validate", steps });
+
+export const sendSequenceStepTest = (args: {
+  campaign_id: string;
+  step_order: number;
+  recipient_profile_id: string;
+  request_id: string;
+}) =>
+  callMarketingFn<{ delivery_id: string; intent_id: string; status: string }>(FN, {
+    action: "test_send",
+    ...args,
+  });
 
 export const transitionSequence = (
   action:

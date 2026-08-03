@@ -29,6 +29,9 @@ import {
   Pause,
   Play,
   Plus,
+  Search,
+  Send,
+  SlidersHorizontal,
   Tag,
   Trash2,
   UserPlus,
@@ -53,6 +56,7 @@ import {
   preflightActivation,
   preflightEnrolment,
   reviseSequence,
+  sendSequenceStepTest,
   transitionSequence,
   validateSteps,
   type ActivationPreflight,
@@ -68,13 +72,17 @@ import {
 } from "@/lib/marketing/sequences";
 import {
   getSendersOverview,
+  listTestRecipients,
   senderCanRunSequence,
   type SenderProfile,
+  type TestRecipient,
 } from "@/lib/marketing/senders";
 import { listSegments, type MarketingSegment } from "@/lib/marketing/segments";
 import {
+  listContacts,
   listOwners,
   listTags,
+  type ContactListItem,
   type MarketingTag,
   type OwnerOption,
 } from "@/lib/marketing/contacts";
@@ -179,6 +187,44 @@ function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void
   );
 }
 
+function SequenceJourney({ status }: { status: string }) {
+  const stage = status === "draft" ? 0 : status === "review" ? 1 : status === "approved" ? 2 : 3;
+  const steps = [
+    ["1", "Build & test", "Write the journey and test each email step."],
+    ["2", "Review", "Approve the exact sequence revision."],
+    ["3", "Activate", "Turn the approved journey on."],
+    ["4", "Choose audience", "Enrol a saved segment or selected contacts."],
+  ];
+  return (
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-4" aria-label="Sequence launch progress">
+      {steps.map(([number, label, help], index) => (
+        <div
+          key={number}
+          className={cn(
+            "rounded-xl border p-3",
+            index < stage && "border-success/30 bg-success/5",
+            index === stage && "border-accent/40 bg-accent-soft",
+            index > stage && "border-hairline bg-white",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold",
+                index <= stage ? "bg-foreground text-background" : "bg-surface-alt text-foreground",
+              )}
+            >
+              {index < stage ? "✓" : number}
+            </span>
+            <span className="text-xs font-semibold text-foreground">{label}</span>
+          </div>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{help}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── step editor ──────────────────────────────────────────────────────────── */
 
 const STEP_ORDER: StepType[] = [
@@ -234,6 +280,16 @@ function StepEditor({
   const cfg = step.config ?? {};
   const set = (patch: Record<string, unknown>) =>
     onChange({ ...step, config: { ...cfg, ...patch } });
+  const usedTokens = [
+    ...new Set(
+      Array.from(
+        `${String(cfg.subject ?? "")}\n${String(cfg.body_authored ?? "")}`.matchAll(
+          /\{\{\s*([a-z_]+)\s*\}\}/g,
+        ),
+        (match) => match[1],
+      ),
+    ),
+  ];
 
   return (
     <div className="rounded-xl border border-hairline bg-white p-4">
@@ -304,30 +360,48 @@ function StepEditor({
                 />
               </Field>
             </div>
-            <div className="md:col-span-2">
-              <Field
-                label="Fallbacks for missing personalisation"
-                hint="A recipient missing a used token WITHOUT a fallback is excluded at enrolment preflight — never sent a broken email."
-              >
-                <input
-                  className={inputCls}
-                  placeholder="first_name=there, company_name=your business"
-                  value={Object.entries((cfg.token_fallbacks ?? {}) as Record<string, string>)
-                    .map(([k, v]) => `${k}=${v}`)
-                    .join(", ")}
-                  onChange={(e) => {
-                    const fallbacks: Record<string, string> = {};
-                    for (const pair of e.target.value.split(",")) {
-                      const [k, ...rest] = pair.split("=");
-                      const key = k.trim();
-                      const val = rest.join("=").trim();
-                      if (key && val) fallbacks[key] = val;
-                    }
-                    set({ token_fallbacks: fallbacks });
-                  }}
-                />
-              </Field>
-            </div>
+            {usedTokens.length > 0 && (
+              <div className="md:col-span-2 rounded-lg border border-hairline bg-surface-alt/40 p-3">
+                <div className="text-xs font-medium text-foreground">
+                  If a contact is missing a personalisation value
+                </div>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Add a safe replacement, or leave it blank to exclude that contact.
+                </p>
+                <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                  {usedTokens.map((token) => {
+                    const fallbacks = (cfg.token_fallbacks ?? {}) as Record<string, string>;
+                    const label =
+                      token === "first_name"
+                        ? "Missing first name"
+                        : token === "last_name"
+                          ? "Missing last name"
+                          : token === "display_name"
+                            ? "Missing full name"
+                            : "Missing company name";
+                    return (
+                      <Field key={token} label={label}>
+                        <input
+                          className={inputCls}
+                          value={fallbacks[token] ?? ""}
+                          placeholder={
+                            token === "first_name" ? "e.g. there" : "Optional replacement"
+                          }
+                          onChange={(event) =>
+                            set({
+                              token_fallbacks: {
+                                ...fallbacks,
+                                [token]: event.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </Field>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -781,11 +855,13 @@ function SequenceDetailView({
   caps,
   onBack,
   onChanged,
+  onRevise,
 }: {
   campaignId: string;
-  caps: Pick<SequenceListData, "can_draft" | "can_launch" | "can_report">;
+  caps: Pick<SequenceListData, "can_draft" | "can_test" | "can_launch" | "can_report">;
   onBack: () => void;
   onChanged: () => void;
+  onRevise: (detail: SequenceDetail) => void;
 }) {
   const [detail, setDetail] = useState<SequenceDetail | null>(null);
   const [report, setReport] = useState<SequenceReport | null>(null);
@@ -797,6 +873,11 @@ function SequenceDetailView({
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [activation, setActivation] = useState<ActivationPreflight | null>(null);
   const [enrolPreflight, setEnrolPreflight] = useState<EnrolmentPreflight | null>(null);
+  const [testRecipients, setTestRecipients] = useState<TestRecipient[]>([]);
+  const [testRecipient, setTestRecipient] = useState("");
+  const [testStepOrder, setTestStepOrder] = useState<number | null>(null);
+  const [viewerProfileId, setViewerProfileId] = useState<string | null>(null);
+  const [operationalMode, setOperationalMode] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -823,6 +904,33 @@ function SequenceDetailView({
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useEffect(() => {
+    if (!caps.can_test) return;
+    void Promise.all([listTestRecipients(), getSendersOverview()]).then(
+      ([recipients, overview]) => {
+        if (recipients.ok) setTestRecipients(recipients.data.recipients);
+        if (!overview.ok) return;
+        setViewerProfileId(overview.data.viewer_profile_id);
+        setOperationalMode(overview.data.operational_mode);
+        if (
+          overview.data.viewer_profile_id &&
+          recipients.ok &&
+          recipients.data.recipients.some(
+            (recipient) => recipient.id === overview.data.viewer_profile_id,
+          )
+        ) {
+          setTestRecipient(overview.data.viewer_profile_id);
+        }
+      },
+    );
+  }, [caps.can_test]);
+
+  useEffect(() => {
+    if (testStepOrder !== null) return;
+    const firstEmail = detail?.steps.find((step) => step.type === "send_email");
+    if (firstEmail) setTestStepOrder(firstEmail.order);
+  }, [detail, testStepOrder]);
 
   const doTransition = async (
     action:
@@ -873,6 +981,26 @@ function SequenceDetailView({
     else setNotice(res.error.message);
   };
 
+  const doTest = async () => {
+    if (!detail || !testRecipient || !testStepOrder) return;
+    setBusyAction("test");
+    setNotice(null);
+    const result = await sendSequenceStepTest({
+      campaign_id: detail.id,
+      step_order: testStepOrder,
+      recipient_profile_id: testRecipient,
+      request_id: newSequenceRequestId(),
+    });
+    setBusyAction(null);
+    setNotice(
+      result.ok
+        ? operationalMode === "discovery"
+          ? "Test saved to the governed queue, but external delivery is paused while this workspace is in Discovery mode. Its status is under Marketing settings → Recent test sends."
+          : "Test queued through the governed pipeline. Follow its status under Marketing settings → Recent test sends."
+        : result.error.message,
+    );
+  };
+
   if (loading) {
     return (
       <div className="grid min-h-[30vh] place-items-center text-sm text-muted-foreground">
@@ -889,6 +1017,7 @@ function SequenceDetailView({
     (n, s) => n + (report?.steps.find((r) => r.order === s.order)?.executions?.unknown ?? 0),
     0,
   );
+  const emailSteps = detail.steps.filter((step) => step.type === "send_email");
 
   return (
     <div className="space-y-4">
@@ -907,6 +1036,11 @@ function SequenceDetailView({
           </span>
         )}
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          {caps.can_draft && ["draft", "review", "approved"].includes(detail.status) && (
+            <Btn onClick={() => onRevise(detail)}>
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Revise
+            </Btn>
+          )}
           {caps.can_draft && detail.status === "draft" && (
             <Btn
               tone="primary"
@@ -979,6 +1113,7 @@ function SequenceDetailView({
           {notice}
         </div>
       )}
+      <SequenceJourney status={detail.status} />
       {heldCount > 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-foreground">
           <AlertTriangle className="h-4 w-4 text-warning" />
@@ -991,6 +1126,62 @@ function SequenceDetailView({
           <AlertTriangle className="h-4 w-4 text-warning" />
           {unknownCount} step execution{unknownCount === 1 ? "" : "s"} with an UNKNOWN provider
           result — frozen for review, never auto-retried.
+        </div>
+      )}
+
+      {caps.can_test && emailSteps.length > 0 && (
+        <div className="rounded-xl border border-accent/30 bg-accent-soft p-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="min-w-0 grow">
+              <div className="text-sm font-semibold text-foreground">Test an email step</div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Choose an email from this sequence and send it only to yourself. This never enrols a
+                contact or advances the journey.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Email step to test"
+                className={cn(inputCls, "max-w-[280px] bg-white py-1.5 text-xs")}
+                value={testStepOrder ?? ""}
+                onChange={(event) => setTestStepOrder(Number(event.target.value))}
+              >
+                {emailSteps.map((step) => (
+                  <option key={step.id} value={step.order}>
+                    Step {step.order}: {step.summary}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Test recipient"
+                className={cn(inputCls, "max-w-[240px] bg-white py-1.5 text-xs")}
+                value={testRecipient}
+                onChange={(event) => setTestRecipient(event.target.value)}
+              >
+                <option value="">Choose recipient…</option>
+                {testRecipients.map((recipient) => (
+                  <option key={recipient.id} value={recipient.id}>
+                    {recipient.email}
+                    {recipient.id === viewerProfileId ? " — you" : ""}
+                  </option>
+                ))}
+              </select>
+              <Btn
+                tone="primary"
+                onClick={doTest}
+                busy={busyAction === "test"}
+                disabled={!testRecipient || !testStepOrder}
+              >
+                <Send className="h-3.5 w-3.5" /> Send test to myself
+              </Btn>
+            </div>
+          </div>
+          {operationalMode === "discovery" && (
+            <div className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-xs text-foreground">
+              Delivery is paused by Discovery mode. The test can be queued, but it will not leave
+              ServiceOS until an operator changes the workspace mode.
+            </div>
+          )}
         </div>
       )}
 
@@ -1249,7 +1440,10 @@ function EnrolPanel({
 }) {
   const [segments, setSegments] = useState<MarketingSegment[]>([]);
   const [segmentId, setSegmentId] = useState("");
-  const [personIds, setPersonIds] = useState("");
+  const [contactSearch, setContactSearch] = useState("");
+  const [contactResults, setContactResults] = useState<ContactListItem[]>([]);
+  const [selectedPeople, setSelectedPeople] = useState<Set<string>>(new Set());
+  const [searchingContacts, setSearchingContacts] = useState(false);
   const entry = detail.revision?.entry_policy ?? "manual_or_segment";
 
   useEffect(() => {
@@ -1257,6 +1451,18 @@ function EnrolPanel({
       if (r.ok) setSegments((r.data.segments ?? []).filter((sg) => sg.status === "active"));
     });
   }, []);
+
+  const searchContacts = async () => {
+    setSearchingContacts(true);
+    const result = await listContacts({
+      ...(contactSearch.trim() ? { search: contactSearch.trim() } : {}),
+      sort: "name",
+      dir: "asc",
+      limit: 20,
+    });
+    setSearchingContacts(false);
+    if (result.ok) setContactResults(result.data.items);
+  };
 
   return (
     <div className="rounded-xl border border-hairline bg-white p-4">
@@ -1298,30 +1504,66 @@ function EnrolPanel({
         )}
         {entry !== "segment_only" && (
           <div className="rounded-lg border border-hairline p-3">
-            <Field label="Specific People" hint="One Person id per line — from Contacts.">
-              <textarea
-                className={cn(inputCls, "min-h-[72px] font-mono text-[11px]")}
-                value={personIds}
-                onChange={(e) => setPersonIds(e.target.value)}
-                placeholder="00000000-0000-0000-0000-000000000000"
-              />
+            <Field label="Specific contacts" hint="Search by name, company or email.">
+              <div className="flex gap-2">
+                <input
+                  className={inputCls}
+                  value={contactSearch}
+                  onChange={(event) => setContactSearch(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void searchContacts();
+                    }
+                  }}
+                  placeholder="Search contacts…"
+                />
+                <Btn onClick={() => void searchContacts()} busy={searchingContacts}>
+                  <Search className="h-3.5 w-3.5" /> Search
+                </Btn>
+              </div>
             </Field>
+            {contactResults.length > 0 && (
+              <div className="mt-2 max-h-44 space-y-1 overflow-auto rounded-lg border border-hairline p-2">
+                {contactResults.map((contact) => (
+                  <label
+                    key={contact.person_id}
+                    className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 hover:bg-surface-alt"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPeople.has(contact.person_id)}
+                      onChange={(event) =>
+                        setSelectedPeople((current) => {
+                          const next = new Set(current);
+                          if (event.target.checked) next.add(contact.person_id);
+                          else next.delete(contact.person_id);
+                          return next;
+                        })
+                      }
+                    />
+                    <span className="min-w-0 text-xs">
+                      <span className="block font-medium text-foreground">
+                        {contact.display_name || contact.primary_email || "Unnamed contact"}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {[contact.primary_email, contact.company_name, contact.eligibility]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
             <div className="mt-2">
               <Btn
                 tone="primary"
                 busy={busy}
-                disabled={personIds.trim().length === 0}
-                onClick={() =>
-                  onPreflight(
-                    "manual",
-                    personIds
-                      .split(/\s+/)
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  )
-                }
+                disabled={selectedPeople.size === 0}
+                onClick={() => onPreflight("manual", [...selectedPeople])}
               >
-                <UserPlus className="h-3.5 w-3.5" /> Preflight selection
+                <UserPlus className="h-3.5 w-3.5" /> Check {selectedPeople.size} selected
               </Btn>
             </div>
           </div>
@@ -1348,7 +1590,7 @@ function SequenceBuilder({
   existing?: SequenceDetail;
   followUpAvailable: boolean;
   onCancel: () => void;
-  onSaved: () => void;
+  onSaved: (campaignId: string) => void;
 }) {
   const [name, setName] = useState(existing?.name ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
@@ -1386,7 +1628,17 @@ function SequenceBuilder({
 
   useEffect(() => {
     void getSendersOverview().then((r) => {
-      if (r.ok) setSenders((r.data.senders ?? []).filter(senderCanRunSequence));
+      if (!r.ok) return;
+      const available = (r.data.senders ?? []).filter(senderCanRunSequence);
+      setSenders(available);
+      if (r.data.default_sender_profile_id) {
+        const defaultAvailable = available.some(
+          (sender) => sender.id === r.data.default_sender_profile_id,
+        );
+        if (defaultAvailable) {
+          setSenderId((current) => current || r.data.default_sender_profile_id || "");
+        }
+      }
     });
     void listTags().then((r) => {
       if (r.ok) setTags(r.data.tags ?? []);
@@ -1405,8 +1657,24 @@ function SequenceBuilder({
   };
 
   const save = async () => {
-    setBusy(true);
     setError(null);
+    if (!name.trim() || !senderId || steps.length === 0) {
+      setError("Add a sequence name, choose the sender and include at least one step.");
+      return;
+    }
+    setBusy(true);
+    const checked = await validateSteps(steps);
+    if (!checked.ok) {
+      setBusy(false);
+      setError(checked.error.message);
+      return;
+    }
+    setValidation(checked.data.steps);
+    if (!checked.data.valid) {
+      setBusy(false);
+      setError("Fix the highlighted sequence steps before saving.");
+      return;
+    }
     const payload: SequenceInput = {
       name,
       ...(description ? { description } : {}),
@@ -1428,7 +1696,7 @@ function SequenceBuilder({
       setError(res.error.message);
       return;
     }
-    onSaved();
+    onSaved(res.data.id);
   };
 
   return (
@@ -1437,6 +1705,12 @@ function SequenceBuilder({
         <div className="text-sm font-medium text-foreground">
           {mode === "create" ? "New sequence" : `Revise “${existing?.name}”`}
         </div>
+        {mode === "create" && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Name the journey, choose the verified sender, then build the emails and waits in the
+            order contacts should receive them. You can test every email before activation.
+          </p>
+        )}
         {mode === "revise" && (
           <p className="mt-1 text-[11px] text-muted-foreground">
             Saving creates a NEW immutable revision and returns the sequence to draft for approval.
@@ -1444,10 +1718,13 @@ function SequenceBuilder({
           </p>
         )}
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          <Field label="Name">
+          <Field label="Name (required)">
             <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Sender" hint="Only enabled, verified senders can be selected.">
+          <Field
+            label="Sender (required)"
+            hint="The verified default sender is selected automatically."
+          >
             <select
               className={inputCls}
               value={senderId}
@@ -1470,70 +1747,81 @@ function SequenceBuilder({
               />
             </Field>
           </div>
-          <Field label="Timezone (IANA)" hint="All local-time waits and quiet hours use this zone.">
-            <input
-              className={inputCls}
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Quiet hours from" hint="Optional">
-              <input
-                type="number"
-                min={0}
-                max={23}
-                className={inputCls}
-                value={quietStart}
-                onChange={(e) => setQuietStart(e.target.value)}
-              />
-            </Field>
-            <Field label="to">
-              <input
-                type="number"
-                min={0}
-                max={23}
-                className={inputCls}
-                value={quietEnd}
-                onChange={(e) => setQuietEnd(e.target.value)}
-              />
-            </Field>
-          </div>
-          <Field label="Re-enrolment" hint="May a Person who already left enter again?">
-            <select
-              className={inputCls}
-              value={reenrol}
-              onChange={(e) => setReenrol(e.target.value)}
-            >
-              <option value="never">Never</option>
-              <option value="after_exit">Only after they exited</option>
-              <option value="always">Always</option>
-            </select>
-          </Field>
-          <Field
-            label="If policy blocks a step"
-            hint="Suppression and unsubscribe always stop a send; this decides what happens to the enrolment."
-          >
-            <select
-              className={inputCls}
-              value={policyBlock}
-              onChange={(e) => setPolicyBlock(e.target.value)}
-            >
-              <option value="exit">Exit the enrolment</option>
-              <option value="skip_step">Skip the step and continue</option>
-            </select>
-          </Field>
-          <div className="md:col-span-2">
-            <label className="flex items-center gap-2 text-xs text-foreground">
-              <input
-                type="checkbox"
-                checked={exitOnReply}
-                onChange={(e) => setExitOnReply(e.target.checked)}
-              />
-              Exit the enrolment when the Person replies (proven from the canonical email thread —
-              never guessed from a subject line)
-            </label>
-          </div>
+          <details className="md:col-span-2 rounded-lg border border-hairline bg-surface-alt/40 p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-foreground">
+              Delivery and safety settings
+              <span className="ml-2 font-normal text-muted-foreground">
+                Europe/London · safe defaults applied
+              </span>
+            </summary>
+            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <Field label="Timezone" hint="All waits and quiet hours use this zone.">
+                <select
+                  className={inputCls}
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                >
+                  <option value="Europe/London">United Kingdom — Europe/London</option>
+                  <option value="Europe/Dublin">Ireland — Europe/Dublin</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </Field>
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="Do not send from" hint="Optional, local hour">
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    className={inputCls}
+                    value={quietStart}
+                    onChange={(e) => setQuietStart(e.target.value)}
+                  />
+                </Field>
+                <Field label="until" hint="Optional, local hour">
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    className={inputCls}
+                    value={quietEnd}
+                    onChange={(e) => setQuietEnd(e.target.value)}
+                  />
+                </Field>
+              </div>
+              <Field label="Re-enrolment" hint="May somebody who already left enter again?">
+                <select
+                  className={inputCls}
+                  value={reenrol}
+                  onChange={(e) => setReenrol(e.target.value)}
+                >
+                  <option value="never">Never</option>
+                  <option value="after_exit">Only after they exited</option>
+                  <option value="always">Always</option>
+                </select>
+              </Field>
+              <Field
+                label="If policy blocks a step"
+                hint="Unsubscribes and suppression always stop email."
+              >
+                <select
+                  className={inputCls}
+                  value={policyBlock}
+                  onChange={(e) => setPolicyBlock(e.target.value)}
+                >
+                  <option value="exit">Exit the contact from the sequence</option>
+                  <option value="skip_step">Skip the step and continue</option>
+                </select>
+              </Field>
+              <label className="flex items-center gap-2 text-xs text-foreground md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={exitOnReply}
+                  onChange={(e) => setExitOnReply(e.target.checked)}
+                />
+                Stop this sequence when the contact replies
+              </label>
+            </div>
+          </details>
         </div>
         <p className="mt-3 rounded-lg bg-surface-alt px-3 py-2 text-[11px] text-muted-foreground">
           Unsubscribes and hard suppressions always stop future sends. That is not configurable.
@@ -1598,7 +1886,7 @@ function SequenceBuilder({
       )}
       <div className="flex items-center gap-2">
         <Btn onClick={onCancel}>Cancel</Btn>
-        <Btn onClick={doValidate}>Check steps</Btn>
+        <Btn onClick={doValidate}>Check journey</Btn>
         <Btn tone="primary" onClick={save} busy={busy} disabled={!name || !senderId}>
           {mode === "create" ? "Create sequence" : "Save as new revision"}
         </Btn>
@@ -1609,12 +1897,21 @@ function SequenceBuilder({
 
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
-export function MarketingSequences() {
+export function MarketingSequences({
+  initialSelected = null,
+  onSelectedChange,
+}: {
+  initialSelected?: string | null;
+  onSelectedChange?: (campaignId: string | null) => void;
+}) {
   const [data, setData] = useState<SequenceListData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [building, setBuilding] = useState<"create" | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialSelected);
+  const [building, setBuilding] = useState<{
+    mode: "create" | "revise";
+    existing?: SequenceDetail;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1629,6 +1926,9 @@ export function MarketingSequences() {
   useEffect(() => {
     void load();
   }, [load]);
+  useEffect(() => {
+    setSelected(initialSelected);
+  }, [initialSelected]);
 
   if (loading) {
     return (
@@ -1641,26 +1941,33 @@ export function MarketingSequences() {
   }
   if (error || !data) return <ErrorNote message={error ?? "Unavailable"} onRetry={load} />;
 
+  if (building) {
+    return (
+      <SequenceBuilder
+        mode={building.mode}
+        existing={building.existing}
+        followUpAvailable={data.follow_up_available}
+        onCancel={() => setBuilding(null)}
+        onSaved={(campaignId) => {
+          setBuilding(null);
+          setSelected(campaignId);
+          onSelectedChange?.(campaignId);
+          void load();
+        }}
+      />
+    );
+  }
   if (selected) {
     return (
       <SequenceDetailView
         campaignId={selected}
         caps={data}
-        onBack={() => setSelected(null)}
-        onChanged={load}
-      />
-    );
-  }
-  if (building) {
-    return (
-      <SequenceBuilder
-        mode="create"
-        followUpAvailable={data.follow_up_available}
-        onCancel={() => setBuilding(null)}
-        onSaved={() => {
-          setBuilding(null);
-          void load();
+        onBack={() => {
+          setSelected(null);
+          onSelectedChange?.(null);
         }}
+        onChanged={load}
+        onRevise={(detail) => setBuilding({ mode: "revise", existing: detail })}
       />
     );
   }
@@ -1700,7 +2007,7 @@ export function MarketingSequences() {
           </p>
         </div>
         {data.can_draft && (
-          <Btn tone="primary" onClick={() => setBuilding("create")}>
+          <Btn tone="primary" onClick={() => setBuilding({ mode: "create" })}>
             <Plus className="h-3.5 w-3.5" /> New sequence
           </Btn>
         )}
@@ -1732,7 +2039,10 @@ export function MarketingSequences() {
                 <tr
                   key={s.id}
                   className="cursor-pointer border-b border-hairline last:border-0 hover:bg-surface-alt"
-                  onClick={() => setSelected(s.id)}
+                  onClick={() => {
+                    setSelected(s.id);
+                    onSelectedChange?.(s.id);
+                  }}
                 >
                   <td className="p-3">
                     <button
@@ -1740,6 +2050,7 @@ export function MarketingSequences() {
                       onClick={(event) => {
                         event.stopPropagation();
                         setSelected(s.id);
+                        onSelectedChange?.(s.id);
                       }}
                       className="text-left font-medium text-foreground underline decoration-hairline underline-offset-2 transition hover:decoration-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
                     >

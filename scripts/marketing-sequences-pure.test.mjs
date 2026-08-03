@@ -18,6 +18,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import {
   SEQUENCE_ENVELOPE_KEYS,
@@ -721,4 +722,23 @@ test("actions adapter: owner assignment converges and never clobbers", async () 
   );
   assert.equal(conflict.result.outcome, "failed_permanent");
   assert.equal(conflict.result.errorCode, "policy_target_changed");
+});
+
+test("sequence test-send stays self-contained and uses the governed delivery pipeline", () => {
+  const source = readFileSync("supabase/functions/marketing-sequences/index.ts", "utf8");
+  const testCase = source.slice(
+    source.indexOf('case "test_send"'),
+    source.indexOf('case "submit_review"'),
+  );
+  assert.match(
+    source,
+    /test_send: \["action", "campaign_id", "step_order", "recipient_profile_id", "request_id"\]/,
+  );
+  assert.match(source, /permissionSet\.includes\("marketing\.campaigns\.test"\)/);
+  assert.match(testCase, /marketing_sequence_detail/);
+  assert.match(testCase, /step\.type !== "send_email"/);
+  assert.match(testCase, /marketing_test_send_request/);
+  assert.match(testCase, /enqueueAutomationExecution/);
+  assert.match(testCase, /marketing\.delivery_sync/);
+  assert.doesNotMatch(testCase, /fetch\s*\(/, "the user endpoint never calls an email provider");
 });

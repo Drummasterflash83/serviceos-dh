@@ -79,6 +79,7 @@ import { MarketingReporting } from "@/components/app/MarketingReporting";
 import { MarketingAiDrafting } from "@/components/app/MarketingAiDrafting";
 import { MarketingContentTools } from "@/components/app/MarketingContentTools";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
+import { nextLocalHourValue, toServerLocalDateTime } from "@/lib/marketing/schedule";
 
 /* ── shared atoms ─────────────────────────────────────────────────────────── */
 
@@ -189,6 +190,57 @@ function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void
           Retry
         </button>
       )}
+    </div>
+  );
+}
+
+function CampaignJourney({
+  status,
+  audienceChecked,
+}: {
+  status: CampaignStatus;
+  audienceChecked: boolean;
+}) {
+  const stage =
+    status === "draft"
+      ? 0
+      : status === "review"
+        ? 1
+        : status === "approved" && !audienceChecked
+          ? 2
+          : 3;
+  const steps = [
+    ["1", "Write & test", "Create the message and send yourself a test."],
+    ["2", "Review", "Submit the exact content for approval."],
+    ["3", "Check audience", "Confirm who will receive it and who is excluded."],
+    ["4", "Choose when", "Send now or select a UK date and time."],
+  ];
+  return (
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-4" aria-label="Broadcast launch progress">
+      {steps.map(([number, label, help], index) => (
+        <div
+          key={number}
+          className={cn(
+            "rounded-xl border p-3",
+            index < stage && "border-success/30 bg-success/5",
+            index === stage && "border-accent/40 bg-accent-soft",
+            index > stage && "border-hairline bg-white",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold",
+                index <= stage ? "bg-foreground text-background" : "bg-surface-alt text-foreground",
+              )}
+            >
+              {index < stage ? "✓" : number}
+            </span>
+            <span className="text-xs font-semibold text-foreground">{label}</span>
+          </div>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{help}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -540,7 +592,7 @@ function LaunchDialog({
   onLaunched: () => void;
 }) {
   const [mode, setMode] = useState<"immediate" | "scheduled">("immediate");
-  const [scheduleLocal, setScheduleLocal] = useState("");
+  const [scheduleLocal, setScheduleLocal] = useState(() => nextLocalHourValue());
   const [timezone, setTimezone] = useState("Europe/London");
   const [fold, setFold] = useState<"earlier" | "later" | "">("");
   const [busy, setBusy] = useState(false);
@@ -587,12 +639,18 @@ function LaunchDialog({
       challenge: preflight.challenge,
       request_id: requestId,
     };
+    const governedSchedule = mode === "scheduled" ? toServerLocalDateTime(scheduleLocal) : null;
+    if (mode === "scheduled" && !governedSchedule) {
+      setBusy(false);
+      setError("Choose a valid date and time.");
+      return;
+    }
     const res =
       mode === "immediate"
         ? await launchCampaign(common)
         : await scheduleCampaign({
             ...common,
-            schedule_local: scheduleLocal,
+            schedule_local: governedSchedule!,
             timezone,
             ...(fold ? { fold } : {}),
           });
@@ -618,7 +676,7 @@ function LaunchDialog({
         className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-xl border border-hairline bg-white p-5"
       >
         <div id="launch-dialog-title" className="text-sm font-semibold text-foreground">
-          Confirm launch
+          Choose when to send
         </div>
         <div className="mt-3 space-y-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-foreground">
           <p className="font-medium">
@@ -653,36 +711,43 @@ function LaunchDialog({
             </li>
           </ul>
         </div>
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <Btn
             tone={mode === "immediate" ? "primary" : "default"}
             onClick={() => setMode("immediate")}
           >
-            Send now
+            Send as soon as confirmed
           </Btn>
           <Btn
             tone={mode === "scheduled" ? "primary" : "default"}
             onClick={() => setMode("scheduled")}
           >
-            Schedule
+            Choose a date and time
           </Btn>
         </div>
         {mode === "scheduled" && (
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Field label="Local date & time" hint="YYYY-MM-DD HH:MM in the chosen timezone">
+            <Field
+              label="Send date and time"
+              hint="Shown and scheduled in the timezone alongside it."
+            >
               <input
+                type="datetime-local"
                 className={inputCls}
-                placeholder="2026-08-01 09:00"
                 value={scheduleLocal}
                 onChange={(e) => setScheduleLocal(e.target.value)}
               />
             </Field>
-            <Field label="IANA timezone">
-              <input
+            <Field label="Timezone">
+              <select
                 className={inputCls}
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-              />
+              >
+                <option value="Europe/London">United Kingdom — Europe/London</option>
+                <option value="Europe/Dublin">Ireland — Europe/Dublin</option>
+                <option value="UTC">UTC</option>
+              </select>
             </Field>
             <Field
               label="DST fold (only if prompted)"
@@ -711,8 +776,8 @@ function LaunchDialog({
           </Btn>
           <Btn tone="primary" onClick={go} busy={busy}>
             {mode === "immediate"
-              ? `Launch to ${preflight.included_count} recipients`
-              : "Confirm schedule"}
+              ? `Send to ${preflight.included_count} recipients`
+              : `Schedule ${preflight.included_count} recipients`}
           </Btn>
         </div>
         <div className="mt-2 text-right text-[10px] text-muted-foreground">
@@ -941,7 +1006,7 @@ function CampaignDetailView({
           )}
           {caps.can_launch && detail.status === "approved" && (
             <Btn tone="primary" onClick={doPreflight} busy={busyAction === "preflight"}>
-              Run preflight
+              Check audience
             </Btn>
           )}
           {caps.can_launch && ["scheduled", "active"].includes(detail.status) && (
@@ -988,6 +1053,10 @@ function CampaignDetailView({
           {notice}
         </div>
       )}
+      <CampaignJourney
+        status={detail.status}
+        audienceChecked={Boolean(preflight || detail.snapshot)}
+      />
       {unknownCount > 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs font-medium text-foreground">
           <AlertTriangle className="h-4 w-4 text-warning" />
@@ -1120,7 +1189,7 @@ function CampaignDetailView({
               <div className="flex items-center gap-2 pt-1">
                 {caps.can_launch && (
                   <Btn tone="primary" onClick={() => setShowLaunch(true)}>
-                    <Send className="h-3.5 w-3.5" /> Launch / schedule…
+                    <Send className="h-3.5 w-3.5" /> Send now or choose date…
                   </Btn>
                 )}
                 <Btn onClick={doPreflight} busy={busyAction === "preflight"}>
@@ -1592,13 +1661,17 @@ const TABS: { key: CampaignsTabKey; label: string; icon: typeof Send }[] = [
 export function MarketingCampaigns({
   initialTab = "broadcasts",
   selectedCampaignId = null,
+  selectedSequenceId = null,
   onTabChange,
   onCampaignChange,
+  onSequenceChange,
 }: {
   initialTab?: CampaignsTabKey;
   selectedCampaignId?: string | null;
+  selectedSequenceId?: string | null;
   onTabChange?: (tab: CampaignsTabKey) => void;
   onCampaignChange?: (campaignId: string | null) => void;
+  onSequenceChange?: (campaignId: string | null) => void;
 }) {
   const [tab, setTab] = useState<CampaignsTabKey>(initialTab);
   // affordance gating only — the server enforces every permission again
@@ -1669,7 +1742,12 @@ export function MarketingCampaigns({
         {tab === "broadcasts" && (
           <BroadcastsTab initialSelected={selectedCampaignId} onSelectedChange={onCampaignChange} />
         )}
-        {tab === "sequences" && <MarketingSequences />}
+        {tab === "sequences" && (
+          <MarketingSequences
+            initialSelected={selectedSequenceId}
+            onSelectedChange={onSequenceChange}
+          />
+        )}
         {tab === "templates" && <MarketingTemplates canDraft={can("marketing.campaigns.draft")} />}
         {tab === "reporting" && <MarketingReporting canLink={can("marketing.campaigns.launch")} />}
         {tab === "ai" && (

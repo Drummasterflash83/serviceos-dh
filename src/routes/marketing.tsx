@@ -55,6 +55,7 @@ type MarketingSearch = {
   settings?: boolean;
   campaignTab?: CampaignsTabKey;
   campaignId?: string;
+  sequenceId?: string;
 };
 
 const CAMPAIGN_TABS: CampaignsTabKey[] = [
@@ -81,11 +82,19 @@ export const Route = createFileRoute("/marketing")({
       )
         ? search.campaignId
         : undefined;
+    const sequenceId =
+      typeof search.sequenceId === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        search.sequenceId,
+      )
+        ? search.sequenceId
+        : undefined;
     return {
       ...(section ? { section } : {}),
       ...(search.settings === true || search.settings === "true" ? { settings: true } : {}),
       ...(campaignTab ? { campaignTab } : {}),
       ...(campaignId ? { campaignId } : {}),
+      ...(sequenceId ? { sequenceId } : {}),
     };
   },
   head: () => ({
@@ -341,6 +350,7 @@ function MarketingShell() {
                 <CampaignsSection
                   tab={search.campaignTab}
                   campaignId={search.campaignId}
+                  sequenceId={search.sequenceId}
                   onTabChange={(campaignTab) =>
                     void navigate({
                       to: "/marketing",
@@ -354,6 +364,16 @@ function MarketingShell() {
                         section: "campaigns",
                         campaignTab: "broadcasts",
                         ...(campaignId ? { campaignId } : {}),
+                      },
+                    })
+                  }
+                  onSequenceChange={(sequenceId) =>
+                    void navigate({
+                      to: "/marketing",
+                      search: {
+                        section: "campaigns",
+                        campaignTab: "sequences",
+                        ...(sequenceId ? { sequenceId } : {}),
                       },
                     })
                   }
@@ -434,20 +454,26 @@ function ContactsSection() {
 function CampaignsSection({
   tab,
   campaignId,
+  sequenceId,
   onTabChange,
   onCampaignChange,
+  onSequenceChange,
 }: {
   tab?: CampaignsTabKey;
   campaignId?: string;
+  sequenceId?: string;
   onTabChange: (tab: CampaignsTabKey) => void;
   onCampaignChange: (campaignId: string | null) => void;
+  onSequenceChange: (campaignId: string | null) => void;
 }) {
   return (
     <MarketingCampaigns
       initialTab={tab}
       selectedCampaignId={campaignId}
+      selectedSequenceId={sequenceId}
       onTabChange={onTabChange}
       onCampaignChange={onCampaignChange}
+      onSequenceChange={onSequenceChange}
     />
   );
 }

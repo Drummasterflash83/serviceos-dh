@@ -27,6 +27,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { requireTenantUser } from "../_shared/authz.ts";
 import { writeAudit } from "../_shared/audit.ts";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import { enqueueAutomationExecution } from "../_shared/automation_execution_enqueue.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,7 @@ const ACTION_KEYS: Record<string, string[]> = {
   ],
   revise: ["action", "campaign_id", "expected_version", "changes"],
   validate: ["action", "steps"],
+  test_send: ["action", "campaign_id", "step_order", "recipient_profile_id", "request_id"],
   submit_review: ["action", "campaign_id", "expected_version", "note"],
   request_changes: ["action", "campaign_id", "expected_version", "note"],
   approve: ["action", "campaign_id", "expected_version", "note"],
@@ -199,6 +201,14 @@ Deno.serve(async (req) => {
       return fail("FORBIDDEN", "Requires marketing.campaigns.draft", 403);
     }
   }
+  if (action === "test_send") {
+    if (!["owner", "admin", "ops"].includes(auth.ctx.role)) {
+      return fail("FORBIDDEN", "Testing requires an operational role", 403);
+    }
+    if (!permissionSet.includes("marketing.campaigns.test")) {
+      return fail("FORBIDDEN", "Requires marketing.campaigns.test", 403);
+    }
+  }
   if (LAUNCH_ACTIONS.has(action)) {
     if (!["owner", "admin"].includes(auth.ctx.role)) {
       return fail("FORBIDDEN", "Sequence launch authority requires owner/admin", 403);
@@ -245,6 +255,9 @@ Deno.serve(async (req) => {
             can_draft:
               ["owner", "admin", "ops"].includes(auth.ctx.role) &&
               permissionSet.includes("marketing.campaigns.draft"),
+            can_test:
+              ["owner", "admin", "ops"].includes(auth.ctx.role) &&
+              permissionSet.includes("marketing.campaigns.test"),
             can_launch:
               ["owner", "admin"].includes(auth.ctx.role) &&
               permissionSet.includes("marketing.campaigns.launch"),
@@ -347,6 +360,83 @@ Deno.serve(async (req) => {
         });
         if (r.error) return mapDbError(r.error);
         return json({ ok: true, data: r.data });
+      }
+      case "test_send": {
+        if (
+          !isUuid(body.campaign_id) ||
+          !Number.isInteger(body.step_order) ||
+          body.step_order < 1 ||
+          !isUuid(body.recipient_profile_id) ||
+          typeof body.request_id !== "string"
+        ) {
+          return fail(
+            "INVALID_REQUEST",
+            "campaign_id, step_order, recipient_profile_id and request_id required",
+            400,
+          );
+        }
+        const detail = await admin.rpc("marketing_sequence_detail", {
+          p_tenant: tenantId,
+          p_campaign: body.campaign_id,
+        });
+        if (detail.error) return mapDbError(detail.error);
+        const sequence = (detail.data ?? null) as Row | null;
+        const revision = sequence?.revision as Row | null;
+        const steps = Array.isArray(sequence?.steps) ? (sequence!.steps as Row[]) : [];
+        const step = steps.find((candidate) => candidate.order === body.step_order);
+        if (!revision || !step || step.type !== "send_email" || !isPlainObject(step.config)) {
+          return fail("NOT_FOUND", "That email step is no longer available", 404);
+        }
+        const config = step.config as Row;
+        const fallbacks = isPlainObject(config.token_fallbacks)
+          ? (config.token_fallbacks as Record<string, string>)
+          : {};
+        const render = (value: string) =>
+          value
+            .replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_match, token: string) =>
+              fallbacks[token] ? fallbacks[token] : `[${token}]`,
+            )
+            .replace(
+              /\[([^\][]{1,200})\]\((https?:\/\/[^\s()<>]+)\)/g,
+              (_match, label: string, url: string) => `${label} (${url})`,
+            );
+        const subject =
+          `[TEST] Sequence step ${body.step_order} · ${render(String(config.subject ?? ""))}`.slice(
+            0,
+            300,
+          );
+        const bodyText =
+          render(String(config.body_authored ?? "")).slice(0, 9200) +
+          "\n\n— Sequence test send. Personalisation shows configured fallbacks or [token]. This does not enrol anyone or advance the sequence.";
+        const requested = await admin.rpc("marketing_test_send_request", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_args: {
+            sender_id: revision.sender_profile_id,
+            recipient_profile_id: body.recipient_profile_id,
+            subject,
+            body_text: bodyText,
+            request_id: body.request_id,
+          },
+        });
+        if (requested.error) return mapDbError(requested.error);
+        const out = (requested.data ?? {}) as Row;
+        if (out.intent_id && out.idempotent !== true) {
+          await enqueueAutomationExecution(admin, {
+            tenantId,
+            automationIntentId: out.intent_id as string,
+            triggeredBy: "intent_created",
+            correlationId: (out.correlation_id as string) ?? null,
+          });
+        }
+        await enqueueJob(admin, {
+          tenantId,
+          jobType: "marketing.delivery_sync",
+          jobKey: `marketing.delivery_sync:${tenantId}`,
+          moduleId: "marketing.senders",
+          payload: { ttl: 30 },
+        });
+        return json({ ok: true, data: out });
       }
       case "submit_review":
       case "request_changes":
