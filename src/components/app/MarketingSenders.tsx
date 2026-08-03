@@ -22,7 +22,7 @@
  * sending identity, and revocation makes it unusable immediately.
  * `gmail.send` scope language belongs to the Google rows only.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -104,7 +104,7 @@ type Confirm =
   | { kind: "test"; senderId: string }
   | null;
 
-export function SendersSection({ focus }: { focus?: "test-activity" } = {}) {
+export function SendersSection() {
   const [data, setData] = useState<SendersOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,8 +129,6 @@ export function SendersSection({ focus }: { focus?: "test-activity" } = {}) {
   const [testRequestId, setTestRequestId] = useState<string>(newTestSendRequestId());
   const [resendFromName, setResendFromName] = useState<string>("Drummonds");
   const [resendFromAddress, setResendFromAddress] = useState<string>(SANDBOX_ADDRESS);
-  const testActivityRef = useRef<HTMLDivElement | null>(null);
-  const focusedOnce = useRef(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -179,13 +177,6 @@ export function SendersSection({ focus }: { focus?: "test-activity" } = {}) {
     const st = await getTestSendStatus(10);
     if (st.ok) setDeliveries(st.data.deliveries);
   }, []);
-
-  useEffect(() => {
-    if (focus === "test-activity" && !loading && !focusedOnce.current && testActivityRef.current) {
-      focusedOnce.current = true;
-      testActivityRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [focus, loading, deliveries.length]);
 
   if (loading) {
     return (
@@ -860,7 +851,7 @@ export function SendersSection({ focus }: { focus?: "test-activity" } = {}) {
           )}
 
           {deliveries.length > 0 && (
-            <div ref={testActivityRef} id="test-activity" className="mt-3 space-y-1">
+            <div id="test-activity" className="mt-3 space-y-1">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Recent test sends

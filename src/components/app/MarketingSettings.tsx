@@ -71,6 +71,28 @@ export function MarketingSettings({
   const { access } = useMarketingAccess();
   const canAdmin = access?.permissions?.includes("marketing.access.manage") ?? false;
 
+  // Deep link from "View test activity": scroll to the Recent test sends block
+  // once it exists. The sections load asynchronously and the router resets the
+  // scroll position on navigation, so retry until the anchor holds still.
+  useEffect(() => {
+    if (focus !== "test-activity") return;
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      const el = document.getElementById("test-activity");
+      if (el) {
+        el.scrollIntoView({ behavior: attempts === 1 ? "smooth" : "auto", block: "start" });
+        const top = el.getBoundingClientRect().top;
+        if (attempts > 1 && top > -60 && top < 240) {
+          clearInterval(timer);
+          return;
+        }
+      }
+      if (attempts >= 12) clearInterval(timer);
+    }, 500);
+    return () => clearInterval(timer);
+  }, [focus]);
+
   const [settings, setSettings] = useState<MarketingSettingsFull | null>(null);
   const [stages, setStages] = useState<LifecycleStageAdmin[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +191,7 @@ export function MarketingSettings({
           <InclusionSection settings={settings} stages={stages} onSave={save} />
           <LifecycleSection stages={stages} onChanged={reload} />
           <GuardrailsSection settings={settings} onSave={save} />
-          <SendersSection focus={focus} />
+          <SendersSection />
           {canAdmin && <AccessSection />}
           <NotificationsSection settings={settings} onSave={save} />
           <GovernanceNote />
