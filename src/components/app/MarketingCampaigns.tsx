@@ -69,6 +69,10 @@ import {
   type TestRecipient,
 } from "@/lib/marketing/senders";
 import { listSegments } from "@/lib/marketing/segments";
+import {
+  validateCampaignDraft,
+  type CampaignDraftErrors,
+} from "@/lib/marketing/campaign-draft-validation";
 import { MarketingSequences } from "@/components/app/MarketingSequences";
 import { MarketingTemplates } from "@/components/app/MarketingTemplates";
 import { MarketingReporting } from "@/components/app/MarketingReporting";
@@ -144,17 +148,25 @@ function Btn({
 function Field({
   label,
   hint,
+  required,
+  error,
   children,
 }: {
   label: string;
   hint?: string;
+  required?: boolean;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
     <label className="block">
-      <div className="mb-1 text-xs font-medium text-foreground">{label}</div>
+      <div className="mb-1 text-xs font-medium text-foreground">
+        {label}
+        {required && <span className="ml-1 text-destructive">Required</span>}
+      </div>
       {children}
       {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
+      {error && <div className="mt-1 text-[11px] font-medium text-destructive">{error}</div>}
     </label>
   );
 }
@@ -206,25 +218,51 @@ function CampaignEditor({
   const [segments, setSegments] = useState<{ id: string; name: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<CampaignDraftErrors>({});
+  const [prerequisitesLoading, setPrerequisitesLoading] = useState(true);
+  const [prerequisiteError, setPrerequisiteError] = useState<string | null>(null);
   const [fallbackDraft, setFallbackDraft] = useState<Record<string, string>>(
     initial.token_fallbacks ?? {},
   );
 
-  useEffect(() => {
-    (async () => {
-      const [sv, sg] = await Promise.all([getSendersOverview(), listSegments()]);
-      if (sv.ok) {
-        setSenders(
-          (sv.data.senders ?? []).filter(senderCanLaunchCampaign).map((s) => ({
-            id: s.id,
-            label: `${s.label || s.mailbox_address} (${s.mailbox_address})`,
-            ready: true,
-          })),
-        );
+  const loadPrerequisites = useCallback(async () => {
+    setPrerequisitesLoading(true);
+    setPrerequisiteError(null);
+    const [sv, sg] = await Promise.all([getSendersOverview(), listSegments()]);
+    if (!sv.ok || !sg.ok) {
+      setPrerequisiteError(
+        "ServiceOS could not load the available senders and segments. Retry before creating this draft.",
+      );
+      setPrerequisitesLoading(false);
+      return;
+    }
+    const availableSenders = (sv.data.senders ?? []).filter(senderCanLaunchCampaign).map((s) => ({
+      id: s.id,
+      label: `${s.label || s.mailbox_address} (${s.mailbox_address})`,
+      ready: true,
+    }));
+    const availableSegments = (sg.data.segments ?? [])
+      .filter((s) => s.status === "active")
+      .map((s) => ({ id: s.id, name: s.name }));
+    setSenders(availableSenders);
+    setSegments(availableSegments);
+    if (mode === "create" && sv.data.default_sender_profile_id) {
+      const defaultAvailable = availableSenders.some(
+        (sender) => sender.id === sv.data.default_sender_profile_id,
+      );
+      if (defaultAvailable) {
+        setForm((current) => ({
+          ...current,
+          sender_id: current.sender_id || sv.data.default_sender_profile_id || undefined,
+        }));
       }
-      if (sg.ok) setSegments((sg.data.segments ?? []).map((s) => ({ id: s.id, name: s.name })));
-    })();
-  }, []);
+    }
+    setPrerequisitesLoading(false);
+  }, [mode]);
+
+  useEffect(() => {
+    void loadPrerequisites();
+  }, [loadPrerequisites]);
 
   const usedTokens = useMemo(() => {
     const text = `${form.subject ?? ""}\n${form.body_authored ?? ""}`;
@@ -245,8 +283,21 @@ function CampaignEditor({
   }, [form.body_authored, fallbackDraft]);
 
   const save = async () => {
-    setSaving(true);
     setError(null);
+    const nextFieldErrors = validateCampaignDraft(form, {
+      senderIds: senders.map((sender) => sender.id),
+      segmentIds: segments.map((segment) => segment.id),
+    });
+    setFieldErrors(nextFieldErrors);
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setError("Complete the highlighted required fields before creating the draft.");
+      return;
+    }
+    if (prerequisitesLoading || prerequisiteError) {
+      setError("Senders and segments must load successfully before creating the draft.");
+      return;
+    }
+    setSaving(true);
     const payload: CampaignContentInput = {
       ...form,
       token_fallbacks: Object.fromEntries(
@@ -259,7 +310,15 @@ function CampaignEditor({
         : await reviseCampaign(campaignId!, expectedVersion!, payload);
     setSaving(false);
     if (!res.ok) {
-      setError(res.error.message);
+      if (res.error.code === "NOT_FOUND" || res.error.code === "STALE_REFERENCE") {
+        setError(
+          "The selected sender or segment is no longer available. The options have been refreshed—choose them again and retry.",
+        );
+        setForm((current) => ({ ...current, sender_id: undefined, segment_id: undefined }));
+        void loadPrerequisites();
+      } else {
+        setError(res.error.message);
+      }
       return;
     }
     onDone(mode === "create" ? (res.data as { id: string }).id : (campaignId ?? null));
@@ -283,12 +342,28 @@ function CampaignEditor({
           {error}
         </div>
       )}
+      {prerequisiteError && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+          <span>{prerequisiteError}</span>
+          <button
+            type="button"
+            onClick={() => void loadPrerequisites()}
+            className="rounded-md border border-destructive/30 bg-white px-2 py-1 font-medium text-foreground"
+          >
+            Retry loading options
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Field label="Name">
+        <Field label="Name" required error={fieldErrors.name}>
           <input
-            className={inputCls}
+            className={cn(inputCls, fieldErrors.name && "border-destructive")}
+            aria-invalid={Boolean(fieldErrors.name)}
             value={form.name ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, name: e.target.value }));
+              setFieldErrors((current) => ({ ...current, name: undefined }));
+            }}
             maxLength={120}
           />
         </Field>
@@ -300,11 +375,21 @@ function CampaignEditor({
             maxLength={500}
           />
         </Field>
-        <Field label="Sender" hint="Only enabled, ready senders can launch.">
+        <Field
+          label="Sender"
+          hint="Only enabled, ready senders can launch. The default verified sender is selected automatically."
+          required
+          error={fieldErrors.sender_id}
+        >
           <select
-            className={inputCls}
+            className={cn(inputCls, fieldErrors.sender_id && "border-destructive")}
+            aria-invalid={Boolean(fieldErrors.sender_id)}
             value={form.sender_id ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, sender_id: e.target.value }))}
+            disabled={prerequisitesLoading}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, sender_id: e.target.value }));
+              setFieldErrors((current) => ({ ...current, sender_id: undefined }));
+            }}
           >
             <option value="">Select a sender…</option>
             {senders.map((s) => (
@@ -318,11 +403,18 @@ function CampaignEditor({
         <Field
           label="Saved segment"
           hint="The audience is a saved query; launch uses an immutable snapshot."
+          required
+          error={fieldErrors.segment_id}
         >
           <select
-            className={inputCls}
+            className={cn(inputCls, fieldErrors.segment_id && "border-destructive")}
+            aria-invalid={Boolean(fieldErrors.segment_id)}
             value={form.segment_id ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, segment_id: e.target.value }))}
+            disabled={prerequisitesLoading}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, segment_id: e.target.value }));
+              setFieldErrors((current) => ({ ...current, segment_id: undefined }));
+            }}
           >
             <option value="">Select a segment…</option>
             {segments.map((s) => (
@@ -332,11 +424,15 @@ function CampaignEditor({
             ))}
           </select>
         </Field>
-        <Field label="Subject">
+        <Field label="Subject" required error={fieldErrors.subject}>
           <input
-            className={inputCls}
+            className={cn(inputCls, fieldErrors.subject && "border-destructive")}
+            aria-invalid={Boolean(fieldErrors.subject)}
             value={form.subject ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, subject: e.target.value }));
+              setFieldErrors((current) => ({ ...current, subject: undefined }));
+            }}
             maxLength={300}
           />
         </Field>
@@ -359,12 +455,22 @@ function CampaignEditor({
         <Field
           label="Body"
           hint="Write the message in plain language. ServiceOS safely creates the email version and keeps personalisation governed."
+          required
+          error={fieldErrors.body_authored}
         >
           <textarea
             ref={bodyRef}
-            className={cn(inputCls, "min-h-[180px] font-mono text-[13px]")}
+            className={cn(
+              inputCls,
+              "min-h-[180px] font-mono text-[13px]",
+              fieldErrors.body_authored && "border-destructive",
+            )}
+            aria-invalid={Boolean(fieldErrors.body_authored)}
             value={form.body_authored ?? ""}
-            onChange={(e) => setForm((f) => ({ ...f, body_authored: e.target.value }))}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, body_authored: e.target.value }));
+              setFieldErrors((current) => ({ ...current, body_authored: undefined }));
+            }}
             maxLength={20000}
           />
         </Field>
@@ -406,7 +512,12 @@ function CampaignEditor({
         </div>
       </div>
       <div className="mt-4 flex items-center gap-2">
-        <Btn tone="primary" onClick={save} busy={saving}>
+        <Btn
+          tone="primary"
+          onClick={save}
+          busy={saving}
+          disabled={prerequisitesLoading || Boolean(prerequisiteError)}
+        >
           {mode === "create" ? "Create draft" : "Save as new revision"}
         </Btn>
         <Btn onClick={onCancel}>Cancel</Btn>

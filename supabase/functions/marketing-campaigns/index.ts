@@ -317,6 +317,13 @@ Deno.serve(async (req) => {
           p_actor: userId,
           p_args: args,
         });
+        if (r.error?.code === "P0002") {
+          return fail(
+            "STALE_REFERENCE",
+            "The selected sender or segment is no longer available. Reload the form and choose again.",
+            409,
+          );
+        }
         if (r.error) return mapDbError(r.error);
         return json({ ok: true, data: r.data });
       }
