@@ -1,12 +1,14 @@
-// Marketing — Resend transport pure proofs.
+// Marketing — Resend transport + tracking pure proofs (HARDENED).
 // Run: node --test scripts/marketing-resend-pure.test.mjs
 //
-// No network, no DB. Proves: the frozen envelope accepts the `resend` source
-// kind (and still rejects unknown kinds); the Resend transport builds the
-// correct provider body from the frozen values only; classification is
-// conservative (429 transient, auth/validation permanent, 5xx/lost unknown);
-// the fixture key short-circuits without network; and the deployed adapter
-// source carries no token in results and reads the key only from Deno.env.
+// Regression locks for the adversarial correction:
+//  - NO magic-key fixture success: "fixture"/"fixture:*"/blank/malformed/missing
+//    keys can NEVER yield a production `succeeded` result, and never call fetch.
+//  - transport uses injected fetch (DI); the deployed runtime never simulates.
+//  - v2 tracking tokens BIND delivery + kind + exact canonical destination;
+//    forged / altered-destination / altered-delivery / wrong-kind tokens fail.
+//  - canonicalDestination rejects non-https, credentials, control chars, unsafe
+//    schemes, self-wrapping and oversized URLs.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -17,187 +19,281 @@ import {
   buildResendBody,
   classifyResendFailure,
   composeFrom,
-  fixtureResult,
-  isFixtureKey,
+  isPlausibleResendKey,
   parseResendId,
   sendViaResend,
 } from "../supabase/functions/_shared/connectors/resend_transport.ts";
 import {
+  canonicalDestination,
+  clickToken,
   injectTrackingHtml,
-  safeRedirectTarget,
-  trackingToken,
-  verifyTrackingToken,
+  openToken,
+  verifyClickToken,
+  verifyOpenToken,
 } from "../supabase/functions/_shared/marketing_tracking.ts";
 
-const ENVELOPE = {
-  sender_profile_id: "11111111-1111-4111-8111-111111111111",
-  source_kind: "gmail_oauth",
-  mailbox_address: "sender@p4.test",
-  recipient_profile_id: "22222222-2222-4222-8222-222222222222",
-  recipient_email: "recipient@p4.test",
-  subject: "Phase 4 test",
-  body_text: "Hello.",
-  from_name: "Drummonds",
-  reply_to: "reply@p4.test",
-  signature_text: "The team",
-  purpose: "test",
-  content_version: "1",
-  content_hash: "a".repeat(64),
-  actor_profile_id: "33333333-3333-4333-8333-333333333333",
-  request_id: "req-12345678",
-  delivery_id: "44444444-4444-4444-8444-444444444444",
+const REAL_KEY = "re_" + "a".repeat(24);
+const OK_RESP = () => new Response(JSON.stringify({ id: "resend-abc-123" }), { status: 200 });
+const mkFetch = (fn) => {
+  let calls = 0;
+  const f = async (...a) => {
+    calls++;
+    return fn(...a);
+  };
+  f.calls = () => calls;
+  return f;
 };
 
 test("envelope: source_kind 'resend' validates; 'smtp' still rejected", () => {
-  assert.equal(validateSendEnvelope({ ...ENVELOPE, source_kind: "resend" }).ok, true);
-  assert.equal(validateSendEnvelope({ ...ENVELOPE, source_kind: "smtp" }).ok, false);
-  assert.equal(validateSendEnvelope({ ...ENVELOPE, source_kind: "gmail_oauth" }).ok, true);
-});
-
-test("composeFrom: name + address, sanitised; bare address when no name", () => {
-  assert.equal(composeFrom("a@b.co", "Drummonds"), "Drummonds <a@b.co>");
-  assert.equal(composeFrom("a@b.co", null), "a@b.co");
-  // header-injection chars stripped from the display name
-  assert.equal(composeFrom("a@b.co", 'Ev"il<x>\r\n'), "Evilx <a@b.co>");
-});
-
-test("buildResendBody: exact provider shape from frozen values only", () => {
-  const body = buildResendBody({
-    apiKey: "fixture",
-    from: "Drummonds <from@x.co>",
-    to: "to@x.co",
-    replyTo: "reply@x.co",
-    subject: "Hi",
-    html: "<p>Hi</p>",
-    text: "Hi",
-    deliveryId: "d-1",
-  });
-  assert.equal(body.from, "Drummonds <from@x.co>");
-  assert.deepEqual(body.to, ["to@x.co"]);
-  assert.equal(body.subject, "Hi");
-  assert.equal(body.html, "<p>Hi</p>");
-  assert.equal(body.text, "Hi");
-  assert.equal(body.reply_to, "reply@x.co");
-  assert.deepEqual(body.headers, { "X-Entity-Ref-ID": "d-1" });
-  // no reply_to key when absent
-  const body2 = buildResendBody({
-    apiKey: "fixture",
-    from: "from@x.co",
-    to: "to@x.co",
-    replyTo: null,
-    subject: "Hi",
-    html: "h",
-    text: "t",
-    deliveryId: "d-2",
-  });
-  assert.equal("reply_to" in body2, false);
-});
-
-test("classifyResendFailure: conservative mapping", () => {
-  assert.equal(classifyResendFailure(429, "").kind, "transient");
-  assert.equal(classifyResendFailure(401, "").kind, "permanent");
-  assert.equal(classifyResendFailure(403, "").kind, "permanent");
-  assert.equal(classifyResendFailure(422, "").kind, "permanent");
-  assert.equal(classifyResendFailure(400, "").kind, "permanent");
-  assert.equal(classifyResendFailure(500, "").kind, "unknown");
-  assert.equal(classifyResendFailure(503, "").kind, "unknown");
-  assert.equal(classifyResendFailure(418, "").kind, "unknown");
-});
-
-test("parseResendId: id extracted; junk → null", () => {
-  assert.equal(parseResendId('{"id":"abc-123"}'), "abc-123");
-  assert.equal(parseResendId('{"id":""}'), null);
-  assert.equal(parseResendId("not json"), null);
-  assert.equal(parseResendId("{}"), null);
-});
-
-test("fixture key: recognised and short-circuits every outcome without network", async () => {
-  assert.equal(isFixtureKey("fixture"), true);
-  assert.equal(isFixtureKey("fixture:unknown"), true);
-  assert.equal(isFixtureKey("re_live_realkey"), false);
-
-  assert.deepEqual(fixtureResult("fixture", "d-9"), {
-    outcome: "succeeded",
-    id: "resend-fixture-d-9",
-  });
-  assert.equal(fixtureResult("fixture:fail_permanent", "d").outcome, "failed_permanent");
-  assert.equal(fixtureResult("fixture:fail_transient", "d").outcome, "failed_transient");
-  assert.equal(fixtureResult("fixture:unknown", "d").outcome, "unknown");
-
-  // sendViaResend with a fixture key never touches the network
-  const r = await sendViaResend({
-    apiKey: "fixture",
-    from: "f@x.co",
-    to: "t@x.co",
-    replyTo: null,
+  const ENV = {
+    sender_profile_id: "11111111-1111-4111-8111-111111111111",
+    source_kind: "resend",
+    mailbox_address: "onboarding@resend.dev",
+    recipient_profile_id: "22222222-2222-4222-8222-222222222222",
+    recipient_email: "recipient@p4.test",
     subject: "s",
-    html: "h",
-    text: "t",
-    deliveryId: "d-42",
-  });
-  assert.deepEqual(r, { outcome: "succeeded", id: "resend-fixture-d-42" });
-});
-
-test("tracking token: deterministic, verifies, rejects tamper/wrong-kind", async () => {
-  const secret = "s3cr3t-staging";
-  const d = "44444444-4444-4444-8444-444444444444";
-  const openTok = await trackingToken(secret, d, "open");
-  const clickTok = await trackingToken(secret, d, "click");
-  assert.equal(openTok, await trackingToken(secret, d, "open")); // deterministic
-  assert.notEqual(openTok, clickTok); // kind-bound
-  assert.equal(await verifyTrackingToken(secret, d, "open", openTok), true);
-  assert.equal(await verifyTrackingToken(secret, d, "open", clickTok), false); // wrong kind
-  assert.equal(await verifyTrackingToken(secret, d, "open", openTok + "x"), false); // tampered
-  assert.equal(await verifyTrackingToken("other", d, "open", openTok), false); // wrong secret
-});
-
-test("injectTrackingHtml: rewrites http links, adds pixel, leaves non-http anchors", () => {
-  const inj = {
-    openUrl: "https://api.x/functions/v1/marketing-track?d=D&k=open&t=OT",
-    clickBase: "https://api.x/functions/v1/marketing-track",
-    clickToken: "CT",
-    deliveryId: "D",
+    body_text: "b",
+    from_name: "D",
+    reply_to: "r@p4.test",
+    signature_text: "sig",
+    purpose: "test",
+    content_version: "1",
+    content_hash: "a".repeat(64),
+    actor_profile_id: "33333333-3333-4333-8333-333333333333",
+    request_id: "req-12345678",
+    delivery_id: "44444444-4444-4444-8444-444444444444",
   };
-  const html = injectTrackingHtml(
-    '<body><a href="https://drummonds.example/quote">Quote</a>' +
-      '<a href="mailto:x@y.co">mail</a><a href="#top">top</a></body>',
-    inj,
+  assert.equal(validateSendEnvelope(ENV).ok, true);
+  assert.equal(validateSendEnvelope({ ...ENV, source_kind: "smtp" }).ok, false);
+});
+
+test("isPlausibleResendKey: only re_ + long token", () => {
+  assert.equal(isPlausibleResendKey(REAL_KEY), true);
+  for (const bad of [
+    "fixture",
+    "fixture:success",
+    "",
+    "   ",
+    null,
+    undefined,
+    "re_short",
+    "sk_x",
+    "pk_live_x",
+  ]) {
+    assert.equal(isPlausibleResendKey(bad), false, JSON.stringify(bad));
+  }
+});
+
+test("REGRESSION: fixture/blank/malformed/missing keys NEVER succeed and NEVER call fetch", async () => {
+  for (const key of ["fixture", "fixture:success", "", "   ", "re_short", "not-a-key"]) {
+    const f = mkFetch(OK_RESP);
+    const r = await sendViaResend(
+      {
+        apiKey: key,
+        from: "f@x.co",
+        to: "t@x.co",
+        replyTo: null,
+        subject: "s",
+        html: "h",
+        text: "t",
+        deliveryId: "d1",
+      },
+      { fetchImpl: f },
+    );
+    assert.equal(r.outcome, "failed_permanent", `key=${JSON.stringify(key)}`);
+    assert.equal(r.code, "resend_key_invalid");
+    assert.equal(f.calls(), 0, "must not contact the provider with a bad key");
+    assert.ok(!("id" in r), "no synthetic provider id");
+  }
+});
+
+test("transport: real key + injected 200 → succeeded with the provider id", async () => {
+  const f = mkFetch(OK_RESP);
+  const r = await sendViaResend(
+    {
+      apiKey: REAL_KEY,
+      from: "Drummonds <f@x.co>",
+      to: "t@x.co",
+      replyTo: "r@x.co",
+      subject: "s",
+      html: "<p>h</p>",
+      text: "t",
+      deliveryId: "d-9",
+    },
+    { fetchImpl: f },
   );
+  assert.deepEqual(r, { outcome: "succeeded", id: "resend-abc-123" });
+  assert.equal(f.calls(), 1);
+});
+
+test("transport: idempotency + auth header + no key leak in body; classify + retry-after", async () => {
+  let seen;
+  const f = mkFetch(async (_u, init) => {
+    seen = init;
+    return new Response("{}", { status: 429, headers: { "retry-after": "42" } });
+  });
+  const r = await sendViaResend(
+    {
+      apiKey: REAL_KEY,
+      from: "f@x.co",
+      to: "t@x.co",
+      replyTo: null,
+      subject: "s",
+      html: "h",
+      text: "t",
+      deliveryId: "d-77",
+    },
+    { fetchImpl: f },
+  );
+  assert.equal(r.outcome, "failed_transient");
+  assert.equal(r.retryAfterSeconds, 42);
+  assert.equal(seen.headers["Idempotency-Key"], "d-77");
+  assert.equal(seen.headers.Authorization, `Bearer ${REAL_KEY}`);
+  assert.equal(JSON.parse(seen.body).headers["X-Entity-Ref-ID"], "d-77");
+  assert.ok(!JSON.parse(seen.body).apiKey, "key never in body");
+});
+
+test("transport: 401/403/400/422 permanent; 5xx unknown; thrown/timeout → unknown (never success)", async () => {
+  const run = async (mk) =>
+    (
+      await sendViaResend(
+        {
+          apiKey: REAL_KEY,
+          from: "f@x.co",
+          to: "t@x.co",
+          replyTo: null,
+          subject: "s",
+          html: "h",
+          text: "t",
+          deliveryId: "d",
+        },
+        { fetchImpl: mkFetch(mk) },
+      )
+    ).outcome;
+  assert.equal(await run(() => new Response("", { status: 401 })), "failed_permanent");
+  assert.equal(await run(() => new Response("", { status: 403 })), "failed_permanent");
+  assert.equal(await run(() => new Response("", { status: 422 })), "failed_permanent");
+  assert.equal(await run(() => new Response("", { status: 400 })), "failed_permanent");
+  assert.equal(await run(() => new Response("", { status: 500 })), "unknown");
+  assert.equal(
+    await run(() => {
+      throw new Error("network");
+    }),
+    "unknown",
+  );
+  // 2xx with no id → unknown, never a fabricated success
+  assert.equal(await run(() => new Response("{}", { status: 200 })), "unknown");
+});
+
+test("classify + parse + composeFrom", () => {
+  assert.equal(classifyResendFailure(429).kind, "transient");
+  assert.equal(classifyResendFailure(418).kind, "unknown");
+  assert.equal(parseResendId('{"id":"x"}'), "x");
+  assert.equal(parseResendId("{}"), null);
+  assert.equal(composeFrom("a@b.co", 'Ev"il<x>\r\n'), "Evilx <a@b.co>");
+  assert.equal(composeFrom("a@b.co", null), "a@b.co");
+  assert.deepEqual(
+    buildResendBody({
+      apiKey: "x",
+      from: "f",
+      to: "t@x.co",
+      replyTo: null,
+      subject: "s",
+      html: "h",
+      text: "t",
+      deliveryId: "d",
+    }).to,
+    ["t@x.co"],
+  );
+});
+
+test("canonicalDestination: https only, no creds/control/self-wrap/oversize", () => {
+  assert.equal(canonicalDestination("https://a.co/x"), "https://a.co/x");
+  assert.equal(canonicalDestination("http://a.co"), null); // http rejected
+  assert.equal(canonicalDestination("javascript:alert(1)"), null);
+  assert.equal(canonicalDestination("data:text/html,x"), null);
+  assert.equal(canonicalDestination("https://user:pass@a.co"), null); // credentials
+  assert.equal(canonicalDestination("https://a.co/"), null); // control char
+  assert.equal(canonicalDestination("https://a.co/functions/v1/marketing-track?x=1"), null); // self-wrap
+  assert.equal(canonicalDestination("https://a.co/" + "x".repeat(2100)), null); // oversize
+  assert.equal(canonicalDestination(null), null);
+});
+
+test("v2 tokens: open != click, bind delivery + destination; every tamper fails", async () => {
+  const secret = "s3cr3t";
+  const d = "44444444-4444-4444-8444-444444444444";
+  const other = "55555555-5555-4555-8555-555555555555";
+  const dest = "https://drummonds.example/quote";
+  const altered = "https://evil.example/phish";
+
+  const ot = await openToken(secret, d);
+  const ct = await clickToken(secret, d, dest);
+  assert.notEqual(ot, ct, "open and click tokens differ");
+
+  // valid open
+  assert.equal(await verifyOpenToken(secret, d, ot), true);
+  // open token is NOT a click token (wrong kind)
+  assert.equal((await verifyClickToken(secret, d, dest, ot)).ok, false);
+  // valid click bound to the exact destination
+  assert.equal((await verifyClickToken(secret, d, dest, ct)).ok, true);
+  // altered destination → invalid (this is the open-redirect fix)
+  assert.equal((await verifyClickToken(secret, d, altered, ct)).ok, false);
+  // altered delivery → invalid
+  assert.equal((await verifyClickToken(secret, other, dest, ct)).ok, false);
+  // forged / empty token → invalid
+  assert.equal((await verifyClickToken(secret, d, dest, "forged")).ok, false);
+  assert.equal((await verifyClickToken(secret, d, dest, "")).ok, false);
+  // wrong secret → invalid
+  assert.equal((await verifyClickToken("other", d, dest, ct)).ok, false);
+  // unsafe destination never validates even with any token
+  assert.equal((await verifyClickToken(secret, d, "javascript:x", ct)).ok, false);
+});
+
+test("injectTrackingHtml: links routed through destination-bound click tokens; open pixel added", async () => {
+  const secret = "s3cr3t";
+  const d = "44444444-4444-4444-8444-444444444444";
+  const openUrl = "https://api.x/functions/v1/marketing-track?d=" + d + "&k=open&t=OT";
+  const html = await injectTrackingHtml(
+    '<body><a href="https://drummonds.example/quote">Q</a>' +
+      '<a href="http://insecure.example">i</a>' +
+      '<a href="mailto:x@y.co">m</a></body>',
+    { openUrl, clickBase: "https://api.x/functions/v1/marketing-track", deliveryId: d, secret },
+  );
+  // the https link is rewritten to a click tracker carrying the bound token
   assert.match(
     html,
-    /href="https:\/\/api\.x\/functions\/v1\/marketing-track\?d=D&k=click&t=CT&u=https%3A%2F%2Fdrummonds\.example%2Fquote"/,
+    /marketing-track\?d=[^"]*&k=click&t=[^"]*&u=https%3A%2F%2Fdrummonds\.example%2Fquote/,
   );
-  assert.match(html, /href="mailto:x@y\.co"/); // untouched
-  assert.match(html, /href="#top"/); // untouched
+  // http + mailto left untouched (only https destinations are tracked)
+  assert.match(html, /href="http:\/\/insecure\.example"/);
+  assert.match(html, /href="mailto:x@y\.co"/);
   assert.match(html, /<img src="https:\/\/api\.x[^"]*k=open[^"]*"[^>]*width="1"/);
-  assert.match(html, /<\/body>/); // pixel inserted before close, body preserved
+  // the rewritten click token actually verifies for the bound destination
+  const m = html.match(/&k=click&t=([^&]+)&u=([^"]+)/);
+  const tok = decodeURIComponent(m[1]);
+  const u = decodeURIComponent(m[2]);
+  assert.equal((await verifyClickToken(secret, d, u, tok)).ok, true);
 });
 
-test("safeRedirectTarget: only http(s), bounded; everything else null", () => {
-  assert.equal(safeRedirectTarget("https://a.co/x"), "https://a.co/x");
-  assert.equal(safeRedirectTarget("http://a.co"), "http://a.co/");
-  assert.equal(safeRedirectTarget("javascript:alert(1)"), null);
-  assert.equal(safeRedirectTarget("data:text/html,x"), null);
-  assert.equal(safeRedirectTarget("not a url"), null);
-  assert.equal(safeRedirectTarget(null), null);
-  assert.equal(safeRedirectTarget("https://a.co/" + "x".repeat(2100)), null);
-});
-
-test("source scan: adapter reads RESEND_API_KEY only from Deno.env; no token in any result", () => {
-  const src = readFileSync(
-    new URL("../supabase/functions/_shared/connectors/marketing_email.ts", import.meta.url),
-    "utf8",
-  );
-  // key is resolved server-side from the environment, never a payload field
-  assert.match(src, /Deno[\s\S]*?\.env[\s\S]*?get\("RESEND_API_KEY"\)/);
-  // the success result carries the provider message id + transport tag, never the key
-  assert.match(src, /transport: "resend"/);
-  assert.doesNotMatch(src, /Bearer \$\{apiKey\}/); // the fetch lives in the transport module, not the adapter
+test("source scan: no fixture branch; key only in Authorization header; no logging", () => {
   const t = readFileSync(
     new URL("../supabase/functions/_shared/connectors/resend_transport.ts", import.meta.url),
     "utf8",
   );
-  // the key rides only the Authorization header, never the JSON body or a log
+  assert.doesNotMatch(t, /isFixtureKey|fixtureResult|resend-fixture-/, "no fixture success path");
   assert.match(t, /Authorization: `Bearer \$\{input\.apiKey\}`/);
   assert.doesNotMatch(t, /console\./);
+  const a = readFileSync(
+    new URL("../supabase/functions/_shared/connectors/marketing_email.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(a, /isPlausibleResendKey/);
+  assert.match(a, /policy_sandbox_sender_no_campaign/, "campaign fail-closed for sandbox sender");
+  const ep = readFileSync(
+    new URL("../supabase/functions/marketing-track/index.ts", import.meta.url),
+    "utf8",
+  );
+  // the endpoint must never redirect to the raw supplied target on failure
+  assert.doesNotMatch(ep, /redirect\(safeTarget/);
+  assert.match(ep, /verifyClickToken/);
 });

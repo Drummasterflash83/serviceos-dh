@@ -71,8 +71,8 @@ import {
 } from "../marketing_email.ts";
 import { getGoogleOAuthConfig, refreshGmailAccessToken } from "../gmail_oauth.ts";
 import { DelegationError, getDelegatedGmailSendToken } from "../google_workspace.ts";
-import { composeFrom, sendViaResend } from "./resend_transport.ts";
-import { injectTrackingHtml, trackingToken } from "../marketing_tracking.ts";
+import { composeFrom, isPlausibleResendKey, sendViaResend } from "./resend_transport.ts";
+import { injectTrackingHtml, openToken } from "../marketing_tracking.ts";
 
 const CAPABILITY = "email.send_marketing";
 const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
@@ -337,13 +337,26 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
     // from the plain body + signature for a test). Result classification and
     // the write-free contract are identical to the Gmail path.
     if (env.source_kind === "resend") {
-      const apiKey = (
-        globalThis as { Deno?: { env: { get(k: string): string | undefined } } }
-      ).Deno?.env.get("RESEND_API_KEY");
-      if (!apiKey) {
-        // a missing platform secret is a retryable operator-config gap
-        // (nothing was sent), never a permanent refusal of the request
-        return transient("resend_not_configured", "RESEND_API_KEY is not configured");
+      const denoEnv = (globalThis as { Deno?: { env: { get(k: string): string | undefined } } })
+        .Deno?.env;
+      const apiKey = denoEnv?.get("RESEND_API_KEY");
+      // FAIL CLOSED: a missing / placeholder / malformed key is an honest,
+      // retryable operator-config gap — nothing is sent, no network call, and
+      // a simulated value can never become a success.
+      if (!isPlausibleResendKey(apiKey ?? null)) {
+        return transient(
+          "resend_not_configured",
+          "RESEND_API_KEY is missing or not a valid Resend key",
+        );
+      }
+      // SANDBOX GUARD: the resend.dev sandbox sender may only be used for a
+      // governed test send. Broadcast/sequence sends fail closed (policy) so a
+      // sandbox identity can never fan out a real campaign.
+      if (env.mailbox_address === "onboarding@resend.dev" && env.purpose !== "test") {
+        return permanent(
+          "policy_sandbox_sender_no_campaign",
+          "the resend.dev sandbox sender is test-only; verify a domain for campaigns",
+        );
       }
       let text: string;
       let html: string;
@@ -357,23 +370,20 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
             ? env.body_html
             : `<div>${escapeHtml(env.body_text)}</div>`;
       }
-      // open/click tracking: signed pixel + rewritten links. Write-free — the
-      // adapter only SIGNS; the public marketing-track endpoint records the
-      // event. Enabled only when the secret + a functions base URL exist.
-      const denoEnv = (globalThis as { Deno?: { env: { get(k: string): string | undefined } } })
-        .Deno?.env;
+      // open/click tracking: signed pixel + destination-bound rewritten links.
+      // Write-free — the adapter only SIGNS; the public marketing-track endpoint
+      // verifies + records. Enabled only when the secret + functions base exist.
       const trackingSecret = denoEnv?.get("MARKETING_TRACKING_SECRET");
       const functionsBase = denoEnv?.get("SUPABASE_URL");
       if (trackingSecret && functionsBase) {
         const base = `${functionsBase.replace(/\/$/, "")}/functions/v1/marketing-track`;
-        const openTok = await trackingToken(trackingSecret, env.delivery_id, "open");
-        const clickTok = await trackingToken(trackingSecret, env.delivery_id, "click");
+        const openTok = await openToken(trackingSecret, env.delivery_id);
         const openUrl = `${base}?d=${encodeURIComponent(env.delivery_id)}&k=open&t=${encodeURIComponent(openTok)}`;
-        html = injectTrackingHtml(html, {
+        html = await injectTrackingHtml(html, {
           openUrl,
           clickBase: base,
-          clickToken: clickTok,
           deliveryId: env.delivery_id,
+          secret: trackingSecret,
         });
       }
       const result = await sendViaResend(
@@ -387,7 +397,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
           text,
           deliveryId: env.delivery_id,
         },
-        context.signal ?? null,
+        { signal: context.signal ?? null },
       );
       if (result.outcome === "succeeded") {
         return {

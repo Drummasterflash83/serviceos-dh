@@ -109,7 +109,6 @@ export function SendersSection() {
     body: "",
   });
   const [testRequestId, setTestRequestId] = useState<string>(newTestSendRequestId());
-  const [resendFrom, setResendFrom] = useState<string>("onboarding@resend.dev");
   const [resendFromName, setResendFromName] = useState<string>("Drummonds");
 
   const reload = useCallback(async () => {
@@ -572,10 +571,9 @@ export function SendersSection() {
           <div className="grid gap-2 md:grid-cols-2">
             <input
               className={inputCls}
-              value={resendFrom}
-              onChange={(e) => setResendFrom(e.target.value)}
-              placeholder="from address (e.g. onboarding@resend.dev)"
-              aria-label="Resend from address"
+              value="onboarding@resend.dev"
+              readOnly
+              aria-label="Resend sandbox from address (test only)"
             />
             <input
               className={inputCls}
@@ -587,24 +585,26 @@ export function SendersSection() {
           </div>
           <button
             className={`${btnCls} mt-2`}
-            disabled={busy || !resendFrom.includes("@")}
+            disabled={busy}
             onClick={() =>
               run(
                 () =>
                   createResendSender({
-                    from_address: resendFrom.trim(),
+                    from_address: "onboarding@resend.dev",
                     from_name: resendFromName.trim() || undefined,
                   }),
-                "Resend sender created — enable it, then send a test.",
+                "Sandbox test sender created — test-only until a domain is verified.",
               )
             }
           >
-            Add Resend sender
+            Add Resend sandbox sender (test only)
           </button>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            The platform Resend API key (RESEND_API_KEY) must be configured. Real sending to any
-            recipient needs a domain verified in Resend; the resend.dev sandbox sends only to your
-            own account address.
+            <strong>Sandbox / test only.</strong> Until a domain is verified in Resend, the only
+            permitted sender is <code>onboarding@resend.dev</code>, usable for governed test sends
+            only — campaigns and sequences are refused. The platform Resend key (
+            <code>RESEND_API_KEY</code>) must be configured; without it the sender is shown but
+            sending fails closed. The sandbox delivers only to your Resend account’s own address.
           </p>
         </div>
       )}
