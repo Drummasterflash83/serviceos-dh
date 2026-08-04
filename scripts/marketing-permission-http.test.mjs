@@ -16,7 +16,13 @@
 //     request id is 409 REQUEST_MISMATCH;
 //   - unsubscribe wins immediately; history shows the append-only rows;
 //   - bulk preflight names eligible AND refused members; apply is bound to
-//     the contract (409 on tamper) and reports the exact applied count;
+//     the VERSIONED sha-256 contract (409 on tamper; 409 when the selection
+//     drifts even only within its refused members) and reports the exact
+//     applied count;
+//   - idempotent replay is INDEPENDENT of mutable contact state: after the
+//     recorded endpoint is invalidated and replaced, a byte-equivalent
+//     single/bulk replay still converges on the stored result and changed
+//     reuse stays 409 REQUEST_MISMATCH;
 //   - the browser CANNOT call the SQL RPCs directly (PostgREST 404/denied).
 //
 // Exits 3 NOT-RUN without a served runtime.
@@ -282,6 +288,11 @@ async function main() {
     JSON.stringify(r.body?.data ?? r.body?.error),
   );
   const contract = r.body?.data?.contract;
+  ok(
+    "the bulk contract is versioned SHA-256 (never md5)",
+    typeof contract === "string" && /^v2:[0-9a-f]{64}$/.test(contract),
+    contract?.slice(0, 12),
+  );
 
   r = await call(tokens.owner, {
     action: "permission_bulk_apply",
@@ -318,6 +329,79 @@ async function main() {
     p_channel: "email",
   });
   ok("a bulk member is now genuinely subscribed", elig.data === "subscribed", elig.data);
+
+  // the COMPLETE contract: drift within the REFUSED members alone invalidates
+  r = await call(tokens.owner, {
+    action: "permission_bulk_preflight",
+    person_ids: [p1, p2],
+    decision: "subscribed",
+  });
+  const contract2 = r.body?.data?.contract;
+  r = await call(tokens.owner, {
+    action: "permission_bulk_apply",
+    person_ids: [p1, p2, p3], // p3 would be REFUSED — the eligible pairs are identical
+    decision: "subscribed",
+    basis: "existing_customer_documented",
+    evidence_method: "Service contract on file",
+    note: "Contracts cover marketing permission",
+    attestation: true,
+    request_id: `pm-${RUN}-b2`,
+    contract: contract2,
+  });
+  ok(
+    "adding a refused member alone breaks the contract (VERSION_CONFLICT)",
+    r.status === 409 && r.body?.error?.code === "VERSION_CONFLICT",
+    `${r.status} ${r.body?.error?.code}`,
+  );
+
+  // replay INDEPENDENCE from mutable contact state: invalidate + replace the
+  // recorded endpoint, then replay the EXACT single and bulk requests
+  const inv = await admin
+    .from("contact_points")
+    .update({ verification_state: "invalid", is_primary: false })
+    .eq("tenant_id", TA)
+    .eq("person_id", p1)
+    .eq("channel", "email");
+  const repl = await admin.from("contact_points").insert({
+    tenant_id: TA,
+    person_id: p1,
+    channel: "email",
+    value: `pat1-replaced-${RUN}@pm-proof.test`,
+    normalized_value: `pat1-replaced-${RUN}@pm-proof.test`,
+    is_primary: true,
+    verification_state: "unverified",
+    source: "manual",
+  });
+  ok("fixture mutation applied (endpoint invalidated + replaced)", !inv.error && !repl.error);
+
+  r = await call(tokens.owner, args);
+  ok(
+    "single replay AFTER the state moved still converges on the stored result",
+    r.status === 200 && r.body?.data?.idempotent === true && r.body?.data?.preference_id === prefId,
+    JSON.stringify(r.body?.data ?? r.body?.error),
+  );
+  r = await call(tokens.owner, { ...args, evidence_reference: "a different claim" });
+  ok(
+    "changed reuse AFTER the state moved is still REQUEST_MISMATCH",
+    r.status === 409 && r.body?.error?.code === "REQUEST_MISMATCH",
+    `${r.status} ${r.body?.error?.code}`,
+  );
+  r = await call(tokens.owner, {
+    action: "permission_bulk_apply",
+    person_ids: [p1, p2, p3],
+    decision: "subscribed",
+    basis: "existing_customer_documented",
+    evidence_method: "Service contract on file",
+    note: "Contracts cover marketing permission",
+    attestation: true,
+    request_id: `pm-${RUN}-b1`,
+    contract,
+  });
+  ok(
+    "bulk replay AFTER the state moved still converges on the stored result",
+    r.status === 200 && r.body?.data?.idempotent === true && r.body?.data?.applied === 2,
+    JSON.stringify(r.body?.data ?? r.body?.error),
+  );
 
   await cleanup();
   console.log(failed === 0 ? "\nALL PASS (real HTTP boundary exercised)" : `\n${failed} FAILED`);

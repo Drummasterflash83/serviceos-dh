@@ -751,7 +751,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (action === "permission_bulk_apply") {
           if (typeof body.request_id !== "string" || !/^[A-Za-z0-9_-]{8,64}$/.test(body.request_id))
             return fail("INVALID_REQUEST", "a valid request_id is required", 400);
-          if (typeof body.contract !== "string" || body.contract.length > 64)
+          // shape only (versioned "v2:<sha256hex>" today); the SQL layer is the
+          // authority — a stale or tampered contract is MK409 there, never here
+          if (
+            typeof body.contract !== "string" ||
+            body.contract.length < 1 ||
+            body.contract.length > 80
+          )
             return fail("INVALID_REQUEST", "preflight contract required for apply", 400);
         }
         const r = await admin.rpc("marketing_permission_record_bulk", {

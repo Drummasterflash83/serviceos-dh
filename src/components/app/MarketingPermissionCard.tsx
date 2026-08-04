@@ -44,6 +44,7 @@ import {
   type PermissionBulkPreflight,
   type PermissionBulkResult,
   type PermissionHistory,
+  type PermissionRecordResult,
 } from "@/lib/marketing/contacts";
 
 const BASIS_KEYS = Object.keys(PERMISSION_BASIS_LABELS) as PermissionBasis[];
@@ -274,6 +275,7 @@ function PermissionDialog({
   const [requestId] = useState(newPermissionRequestId());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState<PermissionRecordResult | null>(null);
 
   const submit = async () => {
     const nextErrors = validatePermissionForm(form);
@@ -298,10 +300,51 @@ function PermissionDialog({
       setError(r.error.message);
       return;
     }
-    onRecorded();
+    setSaved(r.data);
   };
 
   const email = emailOptions.find((o) => o.id === pointId)?.value ?? "";
+
+  // Saved: show the AUTHORITATIVE recalculated state the server returned —
+  // never a promise made in advance of it.
+  if (saved) {
+    const lang = eligibilityLanguage(saved.eligibility);
+    return (
+      <Dialog open onOpenChange={(open) => !open && onRecorded()}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Decision recorded</DialogTitle>
+            <DialogDescription>
+              The {saved.decision} decision for{" "}
+              <span className="font-medium text-foreground">{saved.email}</span> is now part of{" "}
+              {personName || "this contact"}&rsquo;s permanent permission history.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <div className="rounded-lg border border-hairline bg-surface-alt/60 px-3 py-2 text-xs">
+              <span className="font-medium text-foreground">Current status: {lang.label}.</span>{" "}
+              <span className="text-muted-foreground">{lang.meaning}</span>
+            </div>
+            {saved.suppressed && (
+              <p className="flex items-start gap-1.5 text-xs text-destructive">
+                <ShieldAlert className="mt-0.5 h-3 w-3 shrink-0" />A hard suppression still excludes
+                this contact from all campaigns. Recording permission never bypasses it.
+              </p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={onRecorded}
+                className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -347,16 +390,21 @@ function PermissionDialog({
           <div className="rounded-lg border border-hairline bg-surface-alt/60 px-3 py-2 text-xs text-muted-foreground">
             {decision === "subscribed" ? (
               <>
-                When you save: {personName || "this contact"} becomes eligible for campaigns at{" "}
-                <span className="font-medium text-foreground">{email}</span> (unless another issue
-                such as suppression still excludes them), and this decision joins their permanent
-                permission history.
+                When you save: this decision is added to {personName || "this contact"}&rsquo;s
+                permanent permission history for{" "}
+                <span className="font-medium text-foreground">{email}</span>, and ServiceOS
+                recalculates their current status — the newest applicable decision wins.
+                Suppressions and invalid addresses always remain exclusions. You&rsquo;ll see the
+                resulting status straight away.
               </>
             ) : (
               <>
-                When you save: campaigns stop including {personName || "this contact"} at{" "}
-                <span className="font-medium text-foreground">{email}</span> immediately. A later
-                re-subscription will need new evidence.
+                When you save: this decision is added to {personName || "this contact"}&rsquo;s
+                permanent permission history for{" "}
+                <span className="font-medium text-foreground">{email}</span>, and ServiceOS
+                recalculates their current status — the newest applicable decision wins. A later
+                re-subscription will need new evidence. You&rsquo;ll see the resulting status
+                straight away.
               </>
             )}
           </div>
