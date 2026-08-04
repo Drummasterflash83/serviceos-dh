@@ -14,6 +14,7 @@
  * and the SQL resolver re-check every permission on every call.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   Archive,
@@ -633,10 +634,20 @@ function CampaignEditor({
                   No one matches this segment yet — a broadcast to it would reach nobody.
                 </p>
                 <p className="mt-1">
-                  That usually means contacts haven&apos;t been added yet, or none have a recorded
-                  marketing consent. To get ready: add or import contacts (Marketing → Contacts),
-                  record real consent — ServiceOS never assumes it — and re-check the segment.
+                  That usually means contacts haven&apos;t been added yet, or no genuine marketing
+                  permission has been recorded for them. The path: add or import the contacts, open
+                  or select them under Contacts and use{" "}
+                  <span className="font-medium text-foreground">Record permission</span> with your
+                  real evidence (ServiceOS never assumes it), then re-evaluate the segment and check
+                  the audience here.
                 </p>
+                <Link
+                  to="/marketing"
+                  search={{ section: "contacts" }}
+                  className="mt-2 inline-flex items-center rounded-lg border border-warning/40 bg-white px-2.5 py-1.5 text-[11px] font-medium text-foreground hover:bg-surface-alt"
+                >
+                  Open Contacts to record permission
+                </Link>
               </div>
             )}
           </div>

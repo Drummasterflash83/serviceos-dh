@@ -495,8 +495,9 @@ function SegmentBuilder({
             Either no contacts exist yet, or none meet these conditions. If you filtered on
             eligibility, remember most contacts start with{" "}
             <span className="font-medium text-foreground">no marketing preference recorded</span> —
-            ServiceOS never assumes consent, so they stay excluded until a real opt-in is recorded.
-            Add or import contacts under Contacts → Imports, record consent, then evaluate again.
+            ServiceOS never assumes consent. On the Contacts tab, open a contact (or select several)
+            and use <span className="font-medium text-foreground">Record permission</span> with your
+            real evidence, then evaluate this segment again.
           </p>
         </div>
       )}

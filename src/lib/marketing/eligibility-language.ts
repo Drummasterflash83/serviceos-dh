@@ -71,9 +71,9 @@ export const AUDIENCE_ONBOARDING_STEPS: { title: string; detail: string }[] = [
       "Use Contacts → New contact, or Imports to bring in a CSV. Importing someone does NOT subscribe them — it only creates the record.",
   },
   {
-    title: "Record real marketing consent",
+    title: "Record real marketing permission",
     detail:
-      "A contact becomes eligible only when an explicit subscribed preference is recorded from a genuine action (a signup form, a written opt-in). ServiceOS never assumes consent.",
+      "Open a contact and use “Record permission”, or select several and use “Record marketing permission”. You state what genuinely happened (their opt-in or your documented basis) with the evidence — ServiceOS never assumes consent.",
   },
   {
     title: "Group them with a segment",

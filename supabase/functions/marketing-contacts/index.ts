@@ -81,7 +81,77 @@ const PERMISSION_BY_ACTION: Record<string, string> = {
   tag_admin: "marketing.tags.manage",
   tag_bulk_preflight: "marketing.tags.manage",
   tag_bulk_apply: "marketing.tags.manage",
+  permission_history: "marketing.view",
+  permission_record: "marketing.contacts.manage",
+  permission_bulk_preflight: "marketing.contacts.manage",
+  permission_bulk_apply: "marketing.contacts.manage",
 };
+
+/** Controlled evidence vocabulary for a SUBSCRIBED permission decision. */
+const PERMISSION_BASES = new Set([
+  "explicit_opt_in",
+  "existing_customer_documented",
+  "other_documented_basis",
+]);
+const PERMISSION_DECISIONS = new Set(["subscribed", "unsubscribed"]);
+
+/** Shared field validation for the permission actions (the SQL layer re-proves
+ *  everything; this exists so the browser gets precise, safe messages).
+ *  `requireEvidence` is false for bulk PREFLIGHT: preflight is about the
+ *  selection and runs before the operator has entered the evidence. */
+function validatePermissionFields(body: Row, requireEvidence = true): string | null {
+  if (typeof body.decision !== "string" || !PERMISSION_DECISIONS.has(body.decision)) {
+    return "decision must be subscribed or unsubscribed";
+  }
+  if (
+    body.basis !== undefined &&
+    (typeof body.basis !== "string" || !PERMISSION_BASES.has(body.basis))
+  ) {
+    return "basis must be explicit_opt_in, existing_customer_documented or other_documented_basis";
+  }
+  for (const [k, max] of [
+    ["evidence_method", 200],
+    ["evidence_reference", 500],
+    ["note", 500],
+  ] as const) {
+    if (
+      body[k] !== undefined &&
+      (typeof body[k] !== "string" || (body[k] as string).length > max)
+    ) {
+      return `${k} must be a string of at most ${max} characters`;
+    }
+  }
+  if (body.effective_at !== undefined) {
+    if (
+      typeof body.effective_at !== "string" ||
+      body.effective_at.length > 40 ||
+      Number.isNaN(Date.parse(body.effective_at))
+    ) {
+      return "effective_at must be a valid date/time";
+    }
+  }
+  if (body.attestation !== undefined && typeof body.attestation !== "boolean") {
+    return "attestation must be true or false";
+  }
+  if (requireEvidence && body.decision === "subscribed") {
+    if (typeof body.basis !== "string") return "a subscribed decision needs its evidence basis";
+    if (
+      typeof body.evidence_method !== "string" ||
+      (body.evidence_method as string).trim().length < 2
+    ) {
+      return "a subscribed decision needs the evidence method/source";
+    }
+    const ref = typeof body.evidence_reference === "string" ? body.evidence_reference.trim() : "";
+    const note = typeof body.note === "string" ? body.note.trim() : "";
+    if (ref.length < 2 && note.length < 2) {
+      return "a subscribed decision needs an evidence reference or a meaningful note";
+    }
+    if (body.attestation !== true) {
+      return "a subscribed decision needs the operator attestation";
+    }
+  }
+  return null;
+}
 
 const TAG_ADMIN_OPS = new Set([
   "rename",
@@ -110,6 +180,12 @@ function mapDbError(err: { code?: string; message?: string } | null): Response {
       return fail("NOT_FOUND", "Record not found", 404);
     case "55000":
       return fail("IDEMPOTENCY_CONFLICT", "This request key was used for a different action", 409);
+    case "MK412":
+      return fail(
+        "REQUEST_MISMATCH",
+        "That request id was already used for a different request",
+        409,
+      );
     case "23505":
       return fail("DUPLICATE", "This value already exists", 409);
     case "23000":
@@ -241,6 +317,45 @@ Deno.serve(async (req: Request): Promise<Response> => {
     tag_admin: ["action", "op", "args"],
     tag_bulk_preflight: ["action", "op", "tag_id", "person_ids"],
     tag_bulk_apply: ["action", "op", "tag_id", "person_ids", "contract"],
+    // governed marketing-permission capture (migration 20260910120000)
+    permission_history: ["action", "person_id"],
+    permission_record: [
+      "action",
+      "person_id",
+      "contact_point_id",
+      "decision",
+      "basis",
+      "evidence_method",
+      "evidence_reference",
+      "note",
+      "effective_at",
+      "attestation",
+      "request_id",
+    ],
+    permission_bulk_preflight: [
+      "action",
+      "person_ids",
+      "decision",
+      "basis",
+      "evidence_method",
+      "evidence_reference",
+      "note",
+      "effective_at",
+      "attestation",
+    ],
+    permission_bulk_apply: [
+      "action",
+      "person_ids",
+      "decision",
+      "basis",
+      "evidence_method",
+      "evidence_reference",
+      "note",
+      "effective_at",
+      "attestation",
+      "request_id",
+      "contract",
+    ],
   };
   if (P3_ACTION_KEYS[action]) {
     for (const k of Object.keys(body)) {
@@ -570,6 +685,96 @@ Deno.serve(async (req: Request): Promise<Response> => {
           p_person_ids: body.person_ids,
           p_mode: action === "tag_bulk_preflight" ? "preflight" : "apply",
           p_contract: action === "tag_bulk_apply" ? body.contract : null,
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+
+      // ── governed marketing-permission capture: THIN wrappers around the
+      //    atomic service-role RPCs (migration 20260910120000). ServiceOS
+      //    records the organisation's decision and evidence — it never assumes
+      //    permission; the SQL layer re-proves authority, evidence and
+      //    endpoint ownership inside one transaction. ──
+      case "permission_history": {
+        if (!isUuid(body.person_id)) return fail("INVALID_REQUEST", "person_id required", 400);
+        const r = await admin.rpc("marketing_permission_history", {
+          p_tenant: tenantId,
+          p_person: body.person_id,
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "permission_record": {
+        if (!isUuid(body.person_id)) return fail("INVALID_REQUEST", "person_id required", 400);
+        if (body.contact_point_id !== undefined && !isUuid(body.contact_point_id))
+          return fail("INVALID_REQUEST", "contact_point_id must be a uuid", 400);
+        if (typeof body.request_id !== "string" || !/^[A-Za-z0-9_-]{8,64}$/.test(body.request_id))
+          return fail("INVALID_REQUEST", "a valid request_id is required", 400);
+        const fieldError = validatePermissionFields(body);
+        if (fieldError) return fail("INVALID_REQUEST", fieldError, 400);
+        const r = await admin.rpc("marketing_permission_record", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_args: {
+            person_id: body.person_id,
+            decision: body.decision,
+            request_id: body.request_id,
+            ...(body.contact_point_id !== undefined
+              ? { contact_point_id: body.contact_point_id }
+              : {}),
+            ...(body.basis !== undefined ? { basis: body.basis } : {}),
+            ...(body.evidence_method !== undefined
+              ? { evidence_method: body.evidence_method }
+              : {}),
+            ...(body.evidence_reference !== undefined
+              ? { evidence_reference: body.evidence_reference }
+              : {}),
+            ...(body.note !== undefined ? { note: body.note } : {}),
+            ...(body.effective_at !== undefined ? { effective_at: body.effective_at } : {}),
+            ...(body.attestation !== undefined ? { attestation: body.attestation } : {}),
+          },
+        });
+        if (r.error) return mapDbError(r.error);
+        return json({ ok: true, data: r.data });
+      }
+      case "permission_bulk_preflight":
+      case "permission_bulk_apply": {
+        if (
+          !Array.isArray(body.person_ids) ||
+          body.person_ids.length < 1 ||
+          body.person_ids.length > 100 ||
+          !body.person_ids.every(isUuid)
+        )
+          return fail("INVALID_REQUEST", "person_ids must be 1-100 uuids", 400);
+        const fieldError = validatePermissionFields(body, action === "permission_bulk_apply");
+        if (fieldError) return fail("INVALID_REQUEST", fieldError, 400);
+        if (action === "permission_bulk_apply") {
+          if (typeof body.request_id !== "string" || !/^[A-Za-z0-9_-]{8,64}$/.test(body.request_id))
+            return fail("INVALID_REQUEST", "a valid request_id is required", 400);
+          if (typeof body.contract !== "string" || body.contract.length > 64)
+            return fail("INVALID_REQUEST", "preflight contract required for apply", 400);
+        }
+        const r = await admin.rpc("marketing_permission_record_bulk", {
+          p_tenant: tenantId,
+          p_actor: userId,
+          p_mode: action === "permission_bulk_preflight" ? "preflight" : "apply",
+          p_args: {
+            person_ids: body.person_ids,
+            decision: body.decision,
+            ...(body.basis !== undefined ? { basis: body.basis } : {}),
+            ...(body.evidence_method !== undefined
+              ? { evidence_method: body.evidence_method }
+              : {}),
+            ...(body.evidence_reference !== undefined
+              ? { evidence_reference: body.evidence_reference }
+              : {}),
+            ...(body.note !== undefined ? { note: body.note } : {}),
+            ...(body.effective_at !== undefined ? { effective_at: body.effective_at } : {}),
+            ...(body.attestation !== undefined ? { attestation: body.attestation } : {}),
+            ...(action === "permission_bulk_apply"
+              ? { request_id: body.request_id, contract: body.contract }
+              : {}),
+          },
         });
         if (r.error) return mapDbError(r.error);
         return json({ ok: true, data: r.data });

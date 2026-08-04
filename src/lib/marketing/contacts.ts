@@ -336,3 +336,89 @@ export const bulkTagApply = (
   });
 export const listCompanies = (search?: string) =>
   call<{ companies: { id: string; name: string }[] }>({ action: "companies_list", search });
+
+/* ── governed marketing-permission capture (append-only preference facts) ── */
+
+export interface PermissionHistoryRow {
+  id: string;
+  state: "subscribed" | "unsubscribed" | "unknown" | "not_applicable";
+  source: string;
+  lawful_basis: string | null;
+  evidence: Record<string, unknown>;
+  effective_at: string;
+  recorded_at: string;
+  recorded_by: string | null;
+  email: string | null;
+}
+export interface PermissionHistory {
+  eligibility: string;
+  suppressed: boolean;
+  history: PermissionHistoryRow[];
+}
+export const getPermissionHistory = (personId: string) =>
+  call<PermissionHistory>({ action: "permission_history", person_id: personId });
+
+export interface PermissionRecordArgs {
+  person_id: string;
+  contact_point_id?: string;
+  decision: "subscribed" | "unsubscribed";
+  basis?: string;
+  evidence_method?: string;
+  evidence_reference?: string;
+  note?: string;
+  effective_at?: string;
+  attestation?: boolean;
+  request_id: string;
+}
+export interface PermissionRecordResult {
+  person_id: string;
+  contact_point_id: string;
+  email: string;
+  decision: "subscribed" | "unsubscribed";
+  preference_id: string;
+  effective_at: string;
+  eligibility: string;
+  suppressed: boolean;
+  idempotent: boolean;
+}
+export const recordPermission = (args: PermissionRecordArgs) =>
+  call<PermissionRecordResult>({ action: "permission_record", ...args });
+
+export interface PermissionBulkArgs {
+  person_ids: string[];
+  decision: "subscribed" | "unsubscribed";
+  basis?: string;
+  evidence_method?: string;
+  evidence_reference?: string;
+  note?: string;
+  effective_at?: string;
+  attestation?: boolean;
+}
+export interface PermissionBulkPreflight {
+  requested: number;
+  unique: number;
+  eligible: { person_id: string; contact_point_id: string; email: string; display_name: string }[];
+  eligible_count: number;
+  refused: { person_id: string; reason: "not_found" | "no_usable_email" }[];
+  refused_count: number;
+  decision: string;
+  cap: number;
+  contract: string;
+}
+export const permissionBulkPreflight = (args: PermissionBulkArgs) =>
+  call<PermissionBulkPreflight>({ action: "permission_bulk_preflight", ...args });
+
+export interface PermissionBulkResult {
+  requested: number;
+  unique: number;
+  applied: number;
+  refused: { person_id: string; reason: string }[];
+  refused_count: number;
+  decision: string;
+  bulk_ref: string;
+  effective_at: string;
+  idempotent: boolean;
+}
+export const permissionBulkApply = (
+  args: PermissionBulkArgs & { request_id: string; contract: string },
+) => call<PermissionBulkResult>({ action: "permission_bulk_apply", ...args });

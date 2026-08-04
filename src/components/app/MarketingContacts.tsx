@@ -40,6 +40,11 @@ import {
 } from "@/components/ui/dialog";
 import { useMarketingAccess } from "@/lib/marketing/useMarketingAccess";
 import {
+  BulkPermissionDialog,
+  MarketingPermissionCard,
+} from "@/components/app/MarketingPermissionCard";
+import { PERMISSION_BULK_CAP } from "@/lib/marketing/permission";
+import {
   AUDIENCE_ONBOARDING_STEPS,
   eligibilityLanguage,
 } from "@/lib/marketing/eligibility-language";
@@ -182,6 +187,7 @@ export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => voi
   const [bulkTag, setBulkTag] = useState("");
   const [bulkOp, setBulkOp] = useState<"assign" | "remove">("assign");
   const [bulkPreflight, setBulkPreflight] = useState<BulkTagCounts | null>(null);
+  const [bulkPermissionOpen, setBulkPermissionOpen] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkMsg, setBulkMsg] = useState<string | null>(null);
 
@@ -636,63 +642,87 @@ export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => voi
         </div>
       )}
 
-      {/* bounded bulk tagging: preflight → explicit confirmation → idempotent apply */}
-      {can("marketing.tags.manage") && selected.size > 0 && (
+      {/* bounded bulk actions over the EXPLICIT selection: tagging + governed
+          marketing-permission recording (both preflight → confirm → apply) */}
+      {(can("marketing.tags.manage") || can("marketing.contacts.manage")) && selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/30 bg-white p-3 text-xs">
           <span className="font-medium">{selected.size} selected</span>
-          <span className="text-muted-foreground">(max 200)</span>
-          <select
-            value={bulkOp}
-            onChange={(e) => {
-              setBulkOp(e.target.value as "assign" | "remove");
-              setBulkPreflight(null);
-            }}
-            className={inputCls}
-          >
-            <option value="assign">Add tag</option>
-            <option value="remove">Remove tag</option>
-          </select>
-          <select
-            value={bulkTag}
-            onChange={(e) => {
-              setBulkTag(e.target.value);
-              setBulkPreflight(null);
-            }}
-            className={inputCls}
-          >
-            <option value="">Choose tag…</option>
-            {allTags.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-          {!bulkPreflight ? (
+          {can("marketing.contacts.manage") && (
             <button
-              disabled={bulkBusy || !bulkTag}
-              onClick={() => void runBulkPreflight()}
-              className="rounded-lg border border-hairline bg-white px-3 py-1.5 font-medium disabled:opacity-40"
+              onClick={() => setBulkPermissionOpen(true)}
+              disabled={selected.size > PERMISSION_BULK_CAP}
+              title={
+                selected.size > PERMISSION_BULK_CAP
+                  ? `Permission recording is bounded to ${PERMISSION_BULK_CAP} contacts at a time`
+                  : undefined
+              }
+              className="rounded-lg bg-foreground px-3 py-1.5 font-medium text-background disabled:opacity-40"
             >
-              {bulkBusy ? "Checking…" : "Preflight"}
+              Record marketing permission…
             </button>
-          ) : (
-            <span className="flex items-center gap-2">
-              <span className="text-muted-foreground">
-                {bulkPreflight.applicable} to change · {bulkPreflight.already_assigned} already
-                {bulkPreflight.rejected > 0 ? ` · ${bulkPreflight.rejected} rejected` : ""}
-              </span>
-              <button
-                disabled={bulkBusy || bulkPreflight.applicable === 0}
-                onClick={() => void runBulkApply()}
-                className="rounded-lg bg-foreground px-3 py-1.5 font-medium text-background disabled:opacity-40"
-              >
-                Confirm {bulkOp === "assign" ? "tagging" : "removal"}
-              </button>
-              <button onClick={() => setBulkPreflight(null)} className="underline">
-                Cancel
-              </button>
+          )}
+          {selected.size > PERMISSION_BULK_CAP && can("marketing.contacts.manage") && (
+            <span className="text-muted-foreground">
+              (permission: up to {PERMISSION_BULK_CAP} at a time)
             </span>
           )}
+          {can("marketing.tags.manage") && (
+            <select
+              value={bulkOp}
+              onChange={(e) => {
+                setBulkOp(e.target.value as "assign" | "remove");
+                setBulkPreflight(null);
+              }}
+              className={inputCls}
+            >
+              <option value="assign">Add tag</option>
+              <option value="remove">Remove tag</option>
+            </select>
+          )}
+          {can("marketing.tags.manage") && (
+            <select
+              value={bulkTag}
+              onChange={(e) => {
+                setBulkTag(e.target.value);
+                setBulkPreflight(null);
+              }}
+              className={inputCls}
+            >
+              <option value="">Choose tag…</option>
+              {allTags.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
+          {can("marketing.tags.manage") &&
+            (!bulkPreflight ? (
+              <button
+                disabled={bulkBusy || !bulkTag}
+                onClick={() => void runBulkPreflight()}
+                className="rounded-lg border border-hairline bg-white px-3 py-1.5 font-medium disabled:opacity-40"
+              >
+                {bulkBusy ? "Checking…" : "Preflight"}
+              </button>
+            ) : (
+              <span className="flex items-center gap-2">
+                <span className="text-muted-foreground">
+                  {bulkPreflight.applicable} to change · {bulkPreflight.already_assigned} already
+                  {bulkPreflight.rejected > 0 ? ` · ${bulkPreflight.rejected} rejected` : ""}
+                </span>
+                <button
+                  disabled={bulkBusy || bulkPreflight.applicable === 0}
+                  onClick={() => void runBulkApply()}
+                  className="rounded-lg bg-foreground px-3 py-1.5 font-medium text-background disabled:opacity-40"
+                >
+                  Confirm {bulkOp === "assign" ? "tagging" : "removal"}
+                </button>
+                <button onClick={() => setBulkPreflight(null)} className="underline">
+                  Cancel
+                </button>
+              </span>
+            ))}
           <button
             onClick={() => {
               setSelected(new Set());
@@ -714,7 +744,9 @@ export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => voi
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-hairline text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                {can("marketing.tags.manage") && <th className="w-8 px-2 py-2.5" />}
+                {(can("marketing.tags.manage") || can("marketing.contacts.manage")) && (
+                  <th className="w-8 px-2 py-2.5" />
+                )}
                 <th className="px-4 py-2.5 font-medium">Person</th>
                 <th className="px-4 py-2.5 font-medium">Company / type</th>
                 <th className="px-4 py-2.5 font-medium">Lifecycle</th>
@@ -738,7 +770,7 @@ export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => voi
                   onClick={() => setDetailId(it.person_id)}
                   className="cursor-pointer border-b border-hairline/60 last:border-0 hover:bg-surface-alt/60"
                 >
-                  {can("marketing.tags.manage") && (
+                  {(can("marketing.tags.manage") || can("marketing.contacts.manage")) && (
                     <td className="w-8 px-2 py-2.5" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
@@ -807,6 +839,18 @@ export function MarketingContacts({ onGoToImports }: { onGoToImports?: () => voi
             </div>
           )}
         </div>
+      )}
+
+      {bulkPermissionOpen && (
+        <BulkPermissionDialog
+          personIds={[...selected]}
+          onClose={() => setBulkPermissionOpen(false)}
+          onApplied={() => {
+            setBulkPermissionOpen(false);
+            setSelected(new Set());
+            void load(false, null);
+          }}
+        />
       )}
 
       {detailId && (
@@ -1009,6 +1053,19 @@ function ContactDetailDialog({
                 )}
               </div>
             </div>
+
+            <MarketingPermissionCard
+              personId={personId}
+              personName={detail.display_name ?? ""}
+              emailOptions={detail.contact_points
+                .filter((cp) => cp.channel === "email" && cp.eligibility !== "invalid")
+                .map((cp) => ({ id: cp.id, value: cp.value, is_primary: cp.is_primary }))}
+              canManage={canManage}
+              onChanged={() => {
+                void reload();
+                onChanged();
+              }}
+            />
 
             <div className="rounded-lg border border-hairline p-3">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">

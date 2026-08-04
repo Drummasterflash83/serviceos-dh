@@ -1632,6 +1632,17 @@ begin
                     and cr.relationship_type = 'lead'
                     and cr.lifecycle_stage_key = 'new_lead'),
     'apply used the SEALED defaults — changing settings after preview changed nothing';
+  -- ── REGRESSION LOCK (permission capture, migration 20260910120000): being
+  --    imported NEVER subscribes anyone. An imported person has ZERO
+  --    preference facts and stays 'unknown' (excluded from campaigns) until a
+  --    genuine permission decision is recorded through the governed path. ──
+  assert not exists (select 1 from communication_preferences pr
+                      where pr.tenant_id = 'aaaa3000-0000-0000-0000-0000000000f1'
+                        and pr.person_id = (r->>'person_id')::uuid),
+    'IMPORT LOCK: importing a contact writes NO communication_preferences row';
+  assert marketing_contact_eligibility('aaaa3000-0000-0000-0000-0000000000f1',
+           (r->>'person_id')::uuid, 'email') = 'unknown',
+    'IMPORT LOCK: an imported contact is NOT eligible until real permission is recorded';
 
   -- a SEALED stage that is later retired demands a NEW preview (22023), never
   -- a retryable row failure
