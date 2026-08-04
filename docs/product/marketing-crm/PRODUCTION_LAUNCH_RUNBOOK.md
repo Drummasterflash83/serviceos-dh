@@ -1,7 +1,12 @@
 # Marketing V1 — Production Launch Runbook (corrected)
 
-**Status: PRODUCTION `db push` IS BLOCKED** by the migration-continuity condition
-in §1. Every other step below is ready to execute once that blocker clears.
+**Status: MIGRATION CONTINUITY RESOLVED (2026-08-04)** — the §1 blocker is
+CLEARED by the operator-approved **option 2** adoption recorded in
+[PHONE_OPS_ADOPTION_DECISION.md](PHONE_OPS_ADOPTION_DECISION.md):
+`20260830120000_phone_operations_control.sql` (SHA-256 `4b276b47…`) is
+committed as canonical forward history on the parity dossier's evidence.
+No production `migration repair` was required or performed. Production
+`db push` may proceed per §4.
 This runbook supersedes the five-command sequence and the
 `MARKETING_PUBLIC_BASE_URL=https://app.openfolk.ai` proposal recorded earlier
 (IMPLEMENTATION_LEDGER §24d) — that base URL was WRONG: unsubscribe and
@@ -79,8 +84,14 @@ working-tree file (applied to an isolated predecessor-chain database) against
 a same-day production schema extraction. Verdict: **SAFE TO ADOPT AS
 CANONICAL FORWARD HISTORY** (every declared object exact; no unrepresented
 production object; schema parity proves current-effect representation, never
-historical byte identity). The adoption decision itself remains the
-operator's and was NOT taken.
+historical byte identity).
+
+**RESOLUTION (2026-08-04): option 2 TAKEN.** Chris Drummond explicitly
+approved adopting the file as canonical forward history on the dossier's
+evidence; the decision, hash and limitations are permanently recorded in
+[PHONE_OPS_ADOPTION_DECISION.md](PHONE_OPS_ADOPTION_DECISION.md) and the file
+is committed. This section's "do not run `db push`" restriction above is
+superseded by that record.
 
 ## 2 · Customer-readiness gate (before any real audience launch)
 

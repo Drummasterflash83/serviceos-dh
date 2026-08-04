@@ -3871,3 +3871,17 @@ limitation that parity proves current-effect representation, never
 historical byte identity (production's ledger row is an empty statements
 array). No adoption action taken this pass; the §1 option-2 decision remains
 the operator's.
+
+### 27f · Migration-continuity RESOLUTION (2026-08-04)
+
+Chris Drummond explicitly approved runbook §1 **option 2**:
+`20260830120000_phone_operations_control.sql` (SHA-256
+`4b276b47afa07936bd9e2285b1f83a573a90057be1349ea1148e7f37ecc0b4df`) is
+ADOPTED as canonical forward history on the §27e dossier's evidence and
+committed. Re-verified at adoption: production ledger row unchanged
+(`'{}'` statements), fresh production schema dump byte-identical to the
+dossier baseline (zero drift), file hash exact, no destructive operation.
+Permanent record: [PHONE_OPS_ADOPTION_DECISION.md](PHONE_OPS_ADOPTION_DECISION.md).
+Historical byte identity remains unknowable; no production `migration
+repair` was required, performed or authorised. Production `db push` is
+UNBLOCKED.
