@@ -3885,3 +3885,131 @@ Permanent record: [PHONE_OPS_ADOPTION_DECISION.md](PHONE_OPS_ADOPTION_DECISION.m
 Historical byte identity remains unknowable; no production `migration
 repair` was required, performed or authorised. Production `db push` is
 UNBLOCKED.
+
+## 28 · Controlled production launch (2026-08-04; LIVE — controlled test PENDING operator)
+
+Operator-authorised launch (Chris Drummond). Executed this pass:
+
+- **Adoption (§27f executed):** commit `6373306` adopts
+  `20260830120000_phone_operations_control.sql` (SHA-256 re-verified exact at
+  commit time from the git blob) with PHONE_OPS_ADOPTION_DECISION.md; fresh
+  production schema dump was byte-identical to the dossier baseline and the
+  production ledger row unchanged before adoption.
+- **Staging continuity:** staging had neither the version nor any phone-ops
+  object (expected clean state); `--include-all` dry-run showed EXACTLY the
+  one historical migration; applied; staging ledger now 100 versions
+  continuous `20260701120000…20260911120000`; object definitions match the
+  dossier extraction except the owner-name ACL noise (staging matches
+  production's exact ACL form); all 5 telephony seeds present.
+- **Staging frontend + browser proof:** deployment
+  `serviceos-qycze59xs-allkin.vercel.app` (target `staging`) aliased to
+  `serviceos-dh-env-staging-allkin.vercel.app`; footer proves staging
+  Supabase binding. Authenticated QA journey (QA operator via a one-time
+  admin magic link — no password handled): contact `QA Launch Journey`
+  created; permission recorded with genuine QA evidence; the corrected
+  truthful dialogue verified (no advance eligibility promise); authoritative
+  "Current status: Subscribed" saved-panel verified; unsubscribe →
+  "Current status: Unsubscribed … Campaigns will always exclude them" and the
+  list projection agrees; exact replay proven on that contact at the deployed
+  boundary (byte-equivalent replay: `idempotent=true`, same preference id,
+  row count unchanged; performed via the deployed `marketing_permission_record`
+  with a controlled request-id pair); bulk preflight complete truth (2
+  selected → 1 eligible listed + "1 … NOT be included: no usable email
+  address" via `QA Launch NoEmail`); desktop rendering verified live (mobile
+  rendering carried by the committed §26d 375-px evidence for the same dialog
+  primitives — the new saved-panel uses identical responsive classes). QA
+  auth session logged out; mode discovery (platform default, no tenant
+  override); zero non-terminal test intents; zero auth users created; the two
+  clearly-named QA contacts remain as documented append-only evidence.
+- **Production preflight:** origin/main `c88d1f8` strict ancestor (47
+  behind); rollback deployment recorded
+  `dpl_75R7iwzSjVf72VCnebKy76QBGzTo` (`serviceos-cksq5cgb0-allkin.vercel.app`,
+  11 days old — nothing superseded the audited baseline); 57 functions
+  recorded pre-launch (NO marketing-*); Edge secret names audited
+  (RESEND_API_KEY + WORKER_SECRET present, preserved); Vault names audited
+  (no MARKETING_*); cron inventory recorded; real tenant resolved live
+  (`00000000-0000-0000-0000-000000000001` Drummond Heating) + operator
+  (`ec84daae` chris@openfolk.ai, owner, ACTIVE platform.controlplane.admin);
+  **tenant operational mode is the PRE-EXISTING `assisted`** (platform
+  default discovery) — assisted clamps execution to low-risk + fully
+  reversible, so marketing sends are withheld exactly as in discovery
+  (registry semantics verified); zero marketing test intents; 237
+  non-terminal platform intents = 236 `record_internal_note` (low-risk,
+  already assisted-permitted) + 1 `schedule_engineer_visit` with NULL
+  capability_key (structurally unexecutable) — the marketing deploy makes
+  none of them externally executable; no campaign/sequence exists (tables
+  created empty this launch); `drummonds.co` Resend verification is the
+  recorded SPF/DKIM/MX/DMARC state (RESEND_SETUP.md).
+- **Database:** plain dry-run correctly refused (three files sort before the
+  remote-recorded phone-ops version); `--include-all` dry-run = EXACTLY the
+  20-migration committed chain (`20260827120100` + `20260828…20260911`,
+  NOT reapplying `20260830120000`, nothing unrelated, nothing destructive);
+  applied; ledger now 100 versions, head `20260911120000`; post-checks all
+  green (test-cancel + 3 permission RPCs present; anon/authenticated denied
+  on all five boundary functions; deterministic tie-break present in the live
+  eligibility definition; both `serviceos_schedule_defs()` marketing jobs;
+  all new Marketing tables EMPTY — zero data mutation; imports-never-
+  subscribe regression-locked with 0 preference rows).
+- **Secrets/Vault:** set `MARKETING_PUBLIC_BASE_URL`
+  (`https://tgbnakbxwcqjeimygroz.supabase.co/functions/v1`),
+  `MARKETING_TRACKING_SECRET`, `MARKETING_BROADCAST_SECRET`,
+  `MARKETING_SEQUENCE_SECRET` (Edge) and created the two Vault twins from
+  the SAME private material (duplicate-guarded; values never in argv, logs,
+  history or this ledger). `RESEND_API_KEY`/`WORKER_SECRET` untouched.
+- **Functions:** deployed exactly the intended 19 (17 `marketing-*` new at
+  v1 + `platform-worker` + `automation-execute`); bundle-hash diff proves NO
+  other function's code changed (the fleet-wide +1 version bumps are the
+  platform's env-propagation restarts from `secrets set`; `phone-operations`
+  bytes byte-identical). Public probes: `/marketing-unsubscribe?t=test` →
+  200 safe page; `/marketing-track` → responds (never 404).
+- **Scheduler:** `serviceos_schedule_all(<functions base>)` registered 14
+  jobs; `serviceos-marketing-broadcast` + `serviceos-marketing-sequence`
+  active `* * * * *`; first executions SUCCEEDED with **200 JSON**
+  (broadcast: `tenants_with_due_work:0`; sequence: `activated:0`) — the
+  Edge/Vault pair agrees (no 401/403); zero due work; no email.
+- **Sender authority:** governed `marketing_sender_authority_grant` by the
+  live operator grant → `hello@drummonds.co` state `verified`, tenant-scoped
+  (id `2d8b258a-17b3-4c4b-9f13-71d751452c40`); sandbox never granted;
+  granting sent nothing. Verified-domain sender profile created via
+  `marketing_sender_create_resend` → `72e40ace-1115-4f37-81ac-d34dea0fc8c2`,
+  mode `production_verified`, enabled.
+- **Git/frontend:** full battery re-run green (8 SQL suites, 49/49 pure,
+  tsc, focused eslint, npm build, order checks, `git diff --check`); branch
+  pushed (`b74bd8b..6373306`); Preview Ready
+  (`serviceos-o8m6hqrch-allkin.vercel.app`); `main` FAST-FORWARDED
+  `c88d1f8..6373306` (no rewrite); Git production deployment
+  `dpl_4YTUoeMUa3qomdtaw92vqVrwM2ue`
+  (`serviceos-k3uu0mgdh-allkin.vercel.app`) Ready and serving
+  **app.openfolk.ai** with footer `build 6373306 · env production ·
+  supabase tgbnakbxwcqjeimygroz`. Live acceptance: login OK; Marketing nav
+  loads; Contacts renders 1,592 real people ALL honestly
+  "No preference recorded"/"No email address" (zero invented consent);
+  contact card + permission section + real interaction history render;
+  Broadcasts loads (no "Not found") with the honest empty state; Marketing
+  settings + senders + governed-test-send surfaces render. No real audience
+  send occurred; no production consent fact was created.
+- **Controlled test (Phase K): NOT SENT — operator boundary.** The single
+  test-to-self requires a temporary tenant-mode raise (assisted clamps the
+  high-risk irreversible send action); the session's permission classifier
+  denied the production mode-change command (and this is the correct place
+  for a human gate). NOTHING was changed: independently re-verified
+  read-only — platform `discovery`, tenant `assisted`, ZERO
+  `send_marketing_test_email` intents, zero deliveries. The prepared,
+  operator-runnable window is recorded in the runbook (§9 note below):
+  raise to `trusted` via a published `config_versions` row + the tenant
+  `operational_mode.current` entry, run ONE governed test-to-self
+  (sender `72e40ace…`, recipient profile `ec84daae…` = chris@openfolk.ai,
+  subject `ServiceOS production launch verification — <UTC timestamp>`),
+  await provider submission, then IMMEDIATELY restore `assisted` (not
+  discovery — assisted is the pre-existing live state powering the
+  internal-note vertical; setting discovery would disable it and was not
+  part of this authorisation).
+
+**End state:** marketing CANNOT send (assisted clamp + no campaign/sequence
++ zero enrolments); cron healthy and secret-authenticated; sender authority
+exact; frontend and DB at `6373306`; rollback = `dpl_75R7iwzSjVf72VCnebKy76QBGzTo`;
+no staging credential in production; the primary working tree's unrelated
+Phone Operations/telephony/product-review/run-checkpoint material remains
+untouched and uncommitted (only the explicitly adopted migration was
+committed). NO customer campaign, sequence or bulk email was sent; NO email
+of any kind was sent this pass.

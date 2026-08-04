@@ -220,12 +220,29 @@ Deploy from the clean release checkout, in one pass:
 
 ## 9 · Sender authority & controlled production test
 
-- [ ] Operator grants the platform sender authority for the real tenant's
+- [x] Operator grants the platform sender authority for the real tenant's
       verified sending identity (`hello@drummonds.co` / Resend-verified
       domain), via the governed `marketing_sender_authority_grant` path.
-- [ ] ONE governed test send (test-to-self) through the deployed UI;
-      confirm provider submission + inbox receipt; cancel path NOT exercised
-      in production (already staging-proven).
+      **DONE 2026-08-04** (authority `2d8b258a…` verified; verified-domain
+      sender profile `72e40ace…` `production_verified`, enabled).
+- [ ] ONE governed test send (test-to-self) — **PENDING OPERATOR** (ledger
+      §28): the live tenant runs the pre-existing `assisted` mode, which
+      clamps the high-risk irreversible send action exactly like discovery.
+      The one remaining step is an operator-run minimal `trusted` window:
+      1. Publish a `config_versions` row (operating_profile,
+         `tenant:<tenant>:operational_mode`, note = temporary launch-test
+         window) and point the tenant's `operational_mode.current` entry at
+         it with value `"trusted"`.
+      2. In the deployed UI (Marketing settings → Governed test send) or via
+         `marketing_test_send_request`, send ONE test-to-self:
+         sender `72e40ace-1115-4f37-81ac-d34dea0fc8c2`, recipient profile
+         `ec84daae-b135-4547-a1de-794bfcd3fbf2` (chris@openfolk.ai), subject
+         `ServiceOS production launch verification — <UTC timestamp>`.
+      3. Await authoritative provider submission (delivery `submitted` with
+         a Resend message id), then IMMEDIATELY restore the tenant entry to
+         `"assisted"` (supersede the window version) — restore even if the
+         send fails. Do NOT set `discovery`: `assisted` is the pre-existing
+         live state powering the internal-note automation vertical.
 - [ ] Zero non-terminal test intents afterwards.
 
 ## 10 · Frontend promotion
