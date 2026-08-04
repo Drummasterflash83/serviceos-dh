@@ -3733,3 +3733,141 @@ resolution paths are recorded. The runbook also gains the
 **customer-readiness gate** (a real recorded permission, reviewed exclusions,
 staging-proven consent journey, no implicit import subscriptions) ahead of
 any real audience launch.
+
+## 27 · Permission-capture correctness — independent-review corrections (2026-08-04; STAGING-DEPLOYED, server-side)
+
+Codex independently confirmed the §26 journey (design approved, 49/49 pure,
+`tsc` clean) and reported four correctness findings. All four are corrected in
+ONE additive migration — **`20260911120000_marketing_permission_correctness.sql`**
+— over the APPLIED (immutable) `20260910120000`; nothing already applied was
+rewritten.
+
+### 27a · Findings → exact corrections
+
+1. **Idempotent replay was coupled to mutable contact state.** The receipt
+   check ran only after people/contact points were re-resolved, so a
+   byte-equivalent replay stopped converging when the endpoint was edited,
+   invalidated or replaced, the default selection changed, or a bulk member's
+   eligibility flipped. → Single and bulk APPLY now: strict envelope + actor
+   validation → canonicalise CALLER inputs → **versioned fingerprint over the
+   caller request only** (kind, actor, request id, sorted-unique person ids,
+   caller contact-point id incl. explicit-null/omission, decision, basis,
+   method, reference, note, raw effective-date representation, attestation,
+   bulk contract) → tenant advisory lock → `(tenant_id, request_id)` receipt
+   lookup → matching fingerprint returns the stored authoritative result
+   (`idempotent:true`); differing reuse is MK412; only a genuinely NEW
+   request reaches current-state resolution and writes. (Fingerprints are
+   versioned; a pre-correction request id can no longer replay-converge — it
+   fails safe as MK412 rather than ever writing twice.)
+2. **The bulk contract did not bind the complete preflight truth** (md5 over
+   tenant|decision|eligible pairs only — refusals could drift silently). →
+   Versioned **SHA-256 contract `v2:<hex>`** over the complete canonical
+   truth: contract version, tenant, decision, sorted unique selected-person
+   set, exact eligible (person, contact point) pairs, exact refused person
+   ids WITH reasons, requested/unique counts, server cap. APPLY recomputes
+   from current state and requires byte-equivalence — ANY drift (eligible or
+   refused) is MK409 before anything is written. md5 is not a contract
+   format: every stale contract mismatches by construction. Edge widens only
+   the shape bound (≤80 chars); SQL stays the authority.
+3. **The actor gate could pass on malformed resolver output** (three-valued
+   `if not (...)`). → `marketing_permission_require_actor` fails CLOSED:
+   resolver output must be a jsonb object, `enabled` must extract cleanly to
+   exactly true, `permissions` must be a jsonb array whose membership test is
+   exactly true; null/missing/malformed anything denies 42501. The canonical
+   resolver is untouched; a hostile raw grant row remains inert.
+4. **Preference precedence had no deterministic tie.** → ONE rule everywhere
+   current preference state is derived: most specific scope → latest
+   `effective_at` → latest `created_at` → **on an exact timestamp tie
+   `unsubscribed` WINS** → stable id order. Applied to
+   `marketing_endpoint_eligibility` (the one engine segments, broadcast
+   preflight and sequence enrolment/pre-send all call),
+   `marketing_contact_detail`'s per-scope current-preference projection
+   (previously `effective_at` only) and `marketing_permission_history`.
+   The §26-era situation in which same-second facts had no defined winner is
+   hereby CLOSED — it is no longer an accepted ambiguity anywhere. A
+   genuinely newer evidenced resubscription still wins.
+
+**UX (§26 dialogue):** the pre-save panel no longer promises eligibility in
+advance. It now states the decision is added to permanent history, ServiceOS
+recalculates the current status (the newest applicable decision wins;
+suppressions and invalid addresses always remain exclusions), and after
+saving the dialog SHOWS the authoritative returned state
+(`Current status: …` from the RPC's recalculated eligibility, with the
+suppression warning when true) before closing.
+
+### 27b · Files changed
+
+Code commit `e93e139`:
+`supabase/migrations/20260911120000_marketing_permission_correctness.sql`
+(new), `supabase/tests/marketing_permission.test.sql` (sections 9–12),
+`scripts/marketing-permission-http.test.mjs` (22 assertions),
+`supabase/functions/marketing-contacts/index.ts` (contract shape bound),
+`src/components/app/MarketingPermissionCard.tsx` (truthful wording +
+authoritative saved state). This checkpoint commit adds:
+`PRODUCTION_LAUNCH_RUNBOOK.md` (§1 chain head `20260911120000`, §4
+post-checks), `PHONE_OPS_MIGRATION_PARITY.md` (read-only parity dossier) and
+this ledger section.
+
+### 27c · Evidence
+
+| Suite | Result |
+| --- | --- |
+| `supabase/tests/marketing_permission.test.sql` — §§0–8 unchanged; §9 replay independence (explicit point invalidated+replaced; default selection changed → byte-equivalent replay returns the stored result with ZERO new preference/audit/event/receipt rows; changed reuse MK412); §10 complete-contract battery (v2 format lock; adding/removing a refused member and a changed refusal reason each invalidate; duplicate ids cannot alter/bypass; reordering preserves byte-for-byte; untouched selection applies; MK409 writes NOTHING and consumes no request id; bulk replay after an eligibility flip converges, changed reuse MK412); §11 fail-closed gate (14 malformed/disabled/missing resolver outcomes ALL deny 42501 via a savepoint-scoped shim with a passing control case; RPC-level denial writes nothing; canonical resolver proven restored; hostile raw viewer grant still denied); §12 same-instant tie (contact summary + segment gate + pre-send endpoint gate + contact-detail projection + history ALL resolve `unsubscribed`; newer evidenced resubscription wins) | **ALL PASS** — dev DB AND fresh 99-migration clean-chain container |
+| Regression SQL: foundation, contacts, admin, broadcasts, sequences, senders, test-cancel | **ALL PASS** (dev DB; permission+admin+contacts also on the clean chain) |
+| `scripts/marketing-permission-http.test.mjs` — 22 assertions incl. v2-contract format, refused-member drift → 409 VERSION_CONFLICT, and single+bulk replay AFTER the endpoint was invalidated+replaced → `idempotent:true` with changed reuse still 409 REQUEST_MISMATCH | **22/22 local (served runtime) · 22/22 against DEPLOYED staging** |
+| Pure suites (`node --test src/lib/marketing/*.test.ts`) | **49/49** |
+| `tsc --noEmit` · focused eslint · npm production build · migration order (100 files incl. untracked phone-ops, versions unique, sorted) · `git diff --check` | **ALL CLEAN** |
+
+### 27d · Staging deployment + live proof
+
+From a clean worktree at `e93e139` (porcelain empty; phone-ops migration
+ABSENT; 99 migrations): `db push --dry-run` proved **exactly**
+`20260911120000`; pushed; `migration list --linked` now ends at
+`20260911120000` with local/remote in full agreement. `marketing-contacts`
+deployed (121 kB). Read-only post-checks on staging: deterministic tie-break
+present in the live `marketing_endpoint_eligibility` definition; permission
+RPCs + `marketing_test_cancel(uuid,uuid,jsonb)` present and browser-denied;
+`serviceos_schedule_defs()` returns both marketing jobs. **Live tie proof**:
+a same-instant subscribed+unsubscribed fixture inserted INSIDE a rolled-back
+transaction on staging resolved `unsubscribed` through both the contact and
+pre-send gates — zero residue.
+
+**End state:** operational mode resolves **discovery** (platform default;
+no tenant override); **zero** non-terminal `send_marketing_test_email`
+intents (live statuses: 4 succeeded / 20 cancelled — all terminal); **zero**
+ephemeral QA auth users (HTTP-suite users deleted by its cleanup; verified).
+Honest residue note: two random-id synthetic HTTP-suite tenants
+(`pm-a-4008dea6` from this pass, `pm-a-f49d62ca` from the earlier
+independent run) remain because their `communication_preferences` rows are
+structurally undeletable (the append-only guard blocks even the FK cascade —
+a property worth keeping); they are isolated, clearly named, have no auth
+users and are invisible to the real tenant. NO external email was sent.
+
+**Operator-gated leftovers (permission classifier blocked both):**
+(1) the Vercel **staging** frontend deploy of the corrected dialogue —
+from a clean worktree at the release SHA:
+`vercel link --yes --scope allkin --project serviceos-dh && vercel deploy
+--target=staging && vercel alias <deployment>
+serviceos-dh-env-staging-allkin.vercel.app`; (2) the authenticated
+browser-journey re-run on that deployment (the server side of every journey
+step is already proven at the deployed boundary by the HTTP suite and the
+rolled-back live tie proof above; the wording change itself is
+committed, type-checked and lint-clean).
+
+### 27e · Phone Operations parity (read-only)
+
+Complete dossier: **[PHONE_OPS_MIGRATION_PARITY.md](PHONE_OPS_MIGRATION_PARITY.md)**.
+Working-tree SHA-256 re-verified
+(`4b276b47afa07936bd9e2285b1f83a573a90057be1349ea1148e7f37ecc0b4df`).
+Isolated predecessor-chain database + fresh same-day read-only production
+schema dump, one identical catalogue extraction on both, owner-name
+normalisation only: every declared object **EXACT** (columns, constraints,
+partial-unique indexes, RLS, policies, grants, triggers, SECURITY DEFINER
+function with byte-equal body, live seed rows); function ACL a **semantic
+match** (owner/apply-role noise only); reverse sweep found **no**
+unrepresented phone-ops object on production. Verdict:
+**SAFE TO ADOPT AS CANONICAL FORWARD HISTORY** — with the explicit
+limitation that parity proves current-effect representation, never
+historical byte identity (production's ledger row is an empty statements
+array). No adoption action taken this pass; the §1 option-2 decision remains
+the operator's.

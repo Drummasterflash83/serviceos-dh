@@ -26,8 +26,12 @@ Verified against the live production ledger (2026-08-03, read-only
   workstream — it is in no commit on `serviceos-backend-foundation`.
 - The Marketing chain pending for production is `20260827120100` and
   `20260828120000` … `20260908120500` plus `20260909120000`
-  (atomic test-cancel), and the applied phone-ops migration sits **between**
-  `20260829120000` and `20260831120000` in that sequence.
+  (atomic test-cancel), `20260910120000` (governed permission capture) and
+  `20260911120000` (permission correctness: caller-request idempotency,
+  complete versioned bulk contract, fail-closed actor gate, deterministic
+  opt-out precedence) — the current migration HEAD is `20260911120000`.
+  The applied phone-ops migration sits **between** `20260829120000` and
+  `20260831120000` in that sequence.
 
 Consequence: a `db push` from any clean release checkout (which is the only
 acceptable deployment source) would find a remote-recorded migration with no
@@ -68,6 +72,16 @@ Accordingly — per the launch rules — the file stays UNCOMMITTED, no
 
 Until then: **do not run `db push` against production.**
 
+**Parity evidence for option 2 (2026-08-04, read-only):** a complete
+object-by-object parity dossier —
+[PHONE_OPS_MIGRATION_PARITY.md](PHONE_OPS_MIGRATION_PARITY.md) — compares the
+working-tree file (applied to an isolated predecessor-chain database) against
+a same-day production schema extraction. Verdict: **SAFE TO ADOPT AS
+CANONICAL FORWARD HISTORY** (every declared object exact; no unrepresented
+production object; schema parity proves current-effect representation, never
+historical byte identity). The adoption decision itself remains the
+operator's and was NOT taken.
+
 ## 2 · Customer-readiness gate (before any real audience launch)
 
 Marketing V1 is usable only when the permission journey is real. Before the
@@ -106,10 +120,29 @@ first genuine audience launch (not before deployment):
       and confirm the plan is exactly the §1 pending list.
 - [ ] `supabase db push --linked` (operator-authorised).
 - [ ] `supabase migration list --linked` — remote now records the full chain
-      through `20260909120000`.
-- [ ] Post-checks (SQL editor, read-only): `marketing_test_cancel` exists and
-      EXECUTE is revoked from `anon`/`authenticated`;
-      `serviceos_schedule_defs()` returns the two marketing jobs.
+      through `20260911120000`.
+- [ ] Post-checks (SQL editor, read-only):
+      - `marketing_test_cancel` exists and EXECUTE is revoked from
+        `anon`/`authenticated`.
+      - The single permission-record RPC `marketing_permission_record`, the
+        bulk RPC `marketing_permission_record_bulk` and the history RPC
+        `marketing_permission_history` all exist
+        (`to_regprocedure(...)` non-null for each signature).
+      - Browser roles cannot execute ANY of them:
+        `has_function_privilege('anon'|'authenticated', <sig>, 'execute')`
+        is false for all three plus `marketing_permission_require_actor`.
+      - Imports still produce NO subscribed preference: an imported contact
+        has zero `communication_preferences` rows and
+        `marketing_contact_eligibility(...)` = `unknown`
+        (regression-locked in `marketing_admin.test.sql`).
+      - Deterministic opt-out precedence is installed: the
+        `marketing_endpoint_eligibility` definition (`pg_get_functiondef`)
+        contains the tie-break
+        `(pref.state = 'unsubscribed') desc` ordering term — same-instant
+        subscribed/unsubscribed facts resolve to `unsubscribed` on every
+        surface.
+      - `serviceos_schedule_defs()` returns BOTH marketing scheduler jobs
+        (`serviceos-marketing-broadcast`, `serviceos-marketing-sequence`).
 
 ## 5 · Edge Function secrets (names only — never echo values)
 
