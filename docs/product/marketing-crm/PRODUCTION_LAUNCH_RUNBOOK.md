@@ -61,8 +61,9 @@ any evidence available in this repository or in production**. The phone-ops
 session materials in the working tree (docs/run-checkpoints/,
 docs/product-review/) contain no reference to this migration either.
 
-Accordingly — per the launch rules — the file stays UNCOMMITTED, no
-`migration repair` is run, and **release requires ONE of:**
+Accordingly — per the launch rules at the time — the file stayed uncommitted
+pending an operator decision, no `migration repair` was run, and **release
+required ONE of** (HISTORICAL — resolved below):
 
 1. The Phone Operations workstream produces its own checkpoint evidence — a
    deploy transcript or a recorded SHA-256 of the file at the moment the
@@ -75,7 +76,10 @@ Accordingly — per the launch rules — the file stays UNCOMMITTED, no
    and that decision (with the SHA-256 above) is committed as the permanent
    record.
 
-Until then: **do not run `db push` against production.**
+~~Until then: do not run `db push` against production.~~ **SUPERSEDED —
+the file is COMMITTED (adoption commit `6373306`) and the production
+`db push` was executed on 2026-08-04 (see §4): the ledger is continuous
+through `20260911120000`.**
 
 **Parity evidence for option 2 (2026-08-04, read-only):** a complete
 object-by-object parity dossier —
@@ -122,7 +126,10 @@ first genuine audience launch (not before deployment):
       already exist.
 - [ ] Confirm the real tenant + operator profile exist and no non-terminal
       `send_marketing_test_email` intents are parked.
-- [ ] Operational mode is `discovery` (nothing can send until an operator
+- [x] Operational mode blocks sending — **CORRECTED 2026-08-04:** the live
+      tenant's mode is the pre-existing **`assisted`** (platform default
+      `discovery`); `assisted` clamps the high-risk irreversible send action
+      exactly like discovery, so nothing can send until an operator
       raises it — this is the launch-day safety floor).
 
 ## 4 · Database (after §1 clears)
@@ -225,25 +232,31 @@ Deploy from the clean release checkout, in one pass:
       domain), via the governed `marketing_sender_authority_grant` path.
       **DONE 2026-08-04** (authority `2d8b258a…` verified; verified-domain
       sender profile `72e40ace…` `production_verified`, enabled).
-- [ ] ONE governed test send (test-to-self) — **PENDING OPERATOR** (ledger
-      §28): the live tenant runs the pre-existing `assisted` mode, which
-      clamps the high-risk irreversible send action exactly like discovery.
-      The one remaining step is an operator-run minimal `trusted` window:
-      1. Publish a `config_versions` row (operating_profile,
-         `tenant:<tenant>:operational_mode`, note = temporary launch-test
-         window) and point the tenant's `operational_mode.current` entry at
-         it with value `"trusted"`.
-      2. In the deployed UI (Marketing settings → Governed test send) or via
-         `marketing_test_send_request`, send ONE test-to-self:
-         sender `72e40ace-1115-4f37-81ac-d34dea0fc8c2`, recipient profile
-         `ec84daae-b135-4547-a1de-794bfcd3fbf2` (chris@openfolk.ai), subject
-         `ServiceOS production launch verification — <UTC timestamp>`.
-      3. Await authoritative provider submission (delivery `submitted` with
-         a Resend message id), then IMMEDIATELY restore the tenant entry to
-         `"assisted"` (supersede the window version) — restore even if the
-         send fails. Do NOT set `discovery`: `assisted` is the pre-existing
-         live state powering the internal-note automation vertical.
-- [ ] Zero non-terminal test intents afterwards.
+- [x] ONE governed test send (test-to-self) — **DONE 2026-08-04, PROVIDER
+      SUBMISSION PROVEN** (operator-authorised temporary mode windows;
+      ledger §28a has the full evidence):
+      - Immutable request id `launch-verify-20260804T114113Z`, subject
+        `ServiceOS production launch verification — 2026-08-04T11:41:13Z`,
+        sender `hello@drummonds.co` → recipient `chris@openfolk.ai`.
+      - Identifiers: delivery `19b9ae50-0697-402c-b4f9-f4d95ba192dd`,
+        intent `d8434ccf-6502-4a25-b500-c16ffa2e1a4a`, correlation
+        `2a62c72f-e1e8-427d-8390-4f9648fb4f2e`, provider (Resend) message id
+        `230f8f98-4aec-42d2-a593-dead7843e06d`, submitted
+        `2026-08-04T12:01:03Z`.
+      - Exactly ONE provider request (single attempt #1; the delivery's
+        unique `(tenant, request_id)` receipt and the frozen envelope rule
+        out duplicates); intent terminal `succeeded`.
+      - Mode windows (each raise + restore via published `config_versions`
+        rows; restoration value `assisted`, never `discovery`):
+        11:41:15–11:46:19Z (send parked behind a deep worker queue),
+        11:50:18–11:54:21Z and 11:55:38–11:59:44Z (no execution — retry
+        enqueue tooling error, nothing ran), 12:00:50–12:02:06Z (execution
+        + provider submission). Effective mode re-verified `assisted` after
+        every window.
+      - Provider submission is NOT inbox proof — human inbox confirmation
+        outstanding.
+- [x] Zero non-terminal test intents afterwards — verified
+      (`intent succeeded`, zero active `automation.execute` jobs).
 
 ## 10 · Frontend promotion
 
@@ -259,5 +272,7 @@ Deploy from the clean release checkout, in one pass:
   (fails closed); `select serviceos_unschedule_all();` stops all cron work.
 - Database: all Marketing migrations are additive; no destructive rollback is
   required or attempted. `git revert` on `main` if the frontend must retreat.
-- Mode: operational mode remains `discovery` until an explicit operator
-  decision — nothing sends by default even when fully deployed.
+- Mode: the tenant's operational mode remains **`assisted`** (its
+  pre-existing live state; platform default `discovery`) — the send action
+  is clamped in both, so nothing sends by default even when fully deployed.
+  Any temporary raise must restore `assisted`, never `discovery`.

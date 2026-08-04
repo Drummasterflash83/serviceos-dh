@@ -4013,3 +4013,57 @@ Phone Operations/telephony/product-review/run-checkpoint material remains
 untouched and uncommitted (only the explicitly adopted migration was
 committed). NO customer campaign, sequence or bulk email was sent; NO email
 of any kind was sent this pass.
+
+### 28a · Controlled test-to-self EXECUTED — provider submission proven (2026-08-04)
+
+Operator-authorised (Chris Drummond) temporary mode operation, executed with
+a trap-guaranteed restore in every window:
+
+- **One immutable request:** `launch-verify-20260804T114113Z` · subject
+  `ServiceOS production launch verification — 2026-08-04T11:41:13Z` ·
+  `hello@drummonds.co` → `chris@openfolk.ai` (the only authorised pair).
+- **Identifiers:** delivery `19b9ae50-0697-402c-b4f9-f4d95ba192dd` · intent
+  `d8434ccf-6502-4a25-b500-c16ffa2e1a4a` · correlation
+  `2a62c72f-e1e8-427d-8390-4f9648fb4f2e` · automation job
+  `automation.execute:…:d8434ccf…` (+ `:retry:1` = `eaaf6911-75ae-4008-b4ba-5f31afc84959`) ·
+  **Resend message id `230f8f98-4aec-42d2-a593-dead7843e06d`**, submitted
+  `2026-08-04T12:01:03.73Z`, `response_class succeeded`.
+- **Mode windows** (each a published `config_versions` row; every restore a
+  NEW published `assisted` version; effective mode re-verified after each):
+  W1 11:41:15→11:46:19Z — request created + jobs enqueued, but the worker
+  drains 3 jobs/min and ~60+ queued platform jobs sat ahead, so the send
+  never executed inside the window; W2 11:50:18→11:54:21Z — no execution
+  (the base job had been consumed BETWEEN windows under `assisted`, where
+  the engine correctly WITHHELD the send with no attempt); W3
+  11:55:38→11:59:44Z — no execution (retry-enqueue tooling error; nothing
+  ran); W4 12:00:50→12:02:06Z — retry job (priority 1) claimed at the
+  12:01 worker tick, engine executed, provider submission at 12:01:03Z,
+  restore at 12:02:06Z (**76-second window**). W1 ran 5m04s — 4s over the
+  5-minute target, recorded honestly.
+- **Duplicate prevention proven:** ONE delivery for the unique
+  `(tenant, request_id)`; ONE execution attempt (#1 — its `in_flight` and
+  `succeeded` ledger rows share the same attempt number and start time);
+  ONE provider message id; intent terminal `succeeded`; zero active
+  `automation.execute` jobs; zero non-terminal test intents. The
+  between-windows job run made NO attempt (mode guard withheld pre-attempt)
+  — the assisted clamp was observed working in production.
+- **Post-restoration proofs:** effective mode `assisted`; exactly one
+  PUBLISHED mode version for the artifact key and it is the RESTORE row;
+  total marketing deliveries = 1; campaigns/enrolments = 0; consent rows =
+  0; suppressions = 0; sender authority `2d8b258a…` unchanged (`verified`);
+  worker healthy (claims 3/min, scheduled syncs 200).
+- **Browser verification (live app.openfolk.ai, Drummonds context):**
+  Marketing settings → Recent test sends shows the test as **“Submitted to
+  provider”** with recipient `chris@openfolk.ai`, provider id `230f8f98…`,
+  “intent succeeded (1 attempts)”, and the honest caption “provider
+  acceptance is not inbox proof”; no misleading queued state remains; UI
+  facts match the database exactly.
+- **Outstanding:** human inbox confirmation at `chris@openfolk.ai` —
+  provider submission and inbox receipt are separate facts. No other email,
+  campaign, sequence or bulk send occurred; no consent, suppression,
+  sender-authority or recipient-profile data changed.
+- **Operational finding (non-blocking, for later):** the platform worker
+  drains at 3 jobs/minute and the queue regularly backs up (60+ jobs);
+  time-sensitive automation shares that queue. Worth a capacity review —
+  deliberately NOT changed in this pass beyond raising the priority of the
+  two launch-created jobs.
