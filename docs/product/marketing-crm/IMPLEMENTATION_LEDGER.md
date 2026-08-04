@@ -3375,7 +3375,7 @@ window. Nothing was released; recipients/subjects recorded in the run log.
 | Executed by          | the CRON-driven platform-worker (job `c3d513ca…`, repair-trigger enqueue) inside an audited tenant-scoped trusted window (~90 s), restored to `discovery` in a finally |
 | Provider id          | **`32579228-d21d-48a9-baa2-a3e6ef3ef215`**                                                                                                                             |
 | Delivery status      | `submitted` 2026-08-03T20:25:01Z; the deployed UI shows the identical status/provider id                                                                               |
-| Inbox receipt        | awaiting Chris's confirmation (submission ≠ delivery)                                                                                                                  |
+| Inbox receipt        | **CONFIRMED by Chris (human receipt at `chris@openfolk.ai`, recorded 2026-08-04)**. Provider submission alone is never delivery proof; this send now has BOTH the provider-submission evidence (id above) AND human-confirmed inbox receipt. |
 
 ### 24d · Production launch runbook (recorded before promotion)
 
@@ -3615,3 +3615,121 @@ functions/tests/migration, `telephony-capability-probe.mjs`,
 `docs/product-review/`, `docs/run-checkpoints/` and
 `META_STAGING_VERIFICATION.md` remain exactly as found — modified/untracked
 in the working tree, never staged, never committed, never relocated.
+
+## 26 · Governed marketing-permission capture — the consent journey (2026-08-04; STAGING-DEPLOYED)
+
+The last customer-usability launch gap: every surface said "record real
+consent" with nowhere to do it. Code commit `baef733`; the docs checkpoint
+recording this section is the new production promotion target. Also corrected
+in this pass: §24c now records **human-confirmed inbox receipt** at
+`chris@openfolk.ai` for provider id `32579228-d21d-48a9-baa2-a3e6ef3ef215`
+(submission alone was never delivery proof; this send now has both).
+
+### 26a · What shipped (customer language)
+
+- **"Email marketing permission" card on every contact**: the current state
+  in plain words, which email address the decision applies to, when it took
+  effect, the evidence basis/method/reference, the append-only history, and
+  an honest note when a hard suppression still excludes the contact.
+- **"Record permission"** — a short guided dialogue, not a database form:
+  what genuinely happened (three controlled, human choices), how it was
+  given, where the evidence lives, when, and an explicit attestation. The
+  verbatim boundary sentence on every permission surface: *"ServiceOS records
+  your organisation's decision and evidence. It does not assume permission or
+  decide whether you may legally contact someone."*
+- **"Record unsubscribe"** — one step, records immediately, wins as the
+  latest fact; a later resubscription demands NEW evidence.
+- **Controlled bulk workflow** from the Contacts list: explicit selection
+  only (never unseen pages), exact selected count, members without a usable
+  email named BEFORE confirmation, one evidenced decision for the exact
+  confirmed set (server cap 100, all-or-nothing), exact applied/refused
+  result.
+- **The empty states now lead somewhere**: Broadcasts' zero-audience panel
+  links straight to Contacts; Segments' zero-match panel and the contact-list
+  onboarding path name the actual buttons.
+
+### 26b · Governed data/API design
+
+Migration `20260910120000_marketing_permission_capture.sql` (additive):
+`marketing_permission_requests` (per-tenant request-id receipts, service-role
+insert-only) + service-role-only RPCs `marketing_permission_record`,
+`marketing_permission_record_bulk` (preflight/apply, md5 contract over the
+exact eligible person+endpoint pairs), `marketing_permission_history`, and the
+shared actor gate (same-tenant operational profile + canonical
+`marketing.contacts.manage` through `marketing_effective_permissions`).
+Every write appends over the EXISTING append-only `communication_preferences`
+(endpoint-scoped rows, so the eligibility engine's scope-ranked latest-wins
+precedence applies unchanged); preference + audit + platform event + receipt
+commit in ONE transaction; identical replay converges on the stored receipt,
+changed request-id reuse is MK412; bulk apply is all-or-nothing (any drift
+from the preflight contract is MK409; any member write failure rolls back
+every row). Suppressions are never written or bypassed here. Edge:
+four strict actions on `marketing-contacts` (exact allowlists, precise safe
+messages, bulk PREFLIGHT deliberately requires no evidence — it is about the
+selection; APPLY requires all of it). Two defects were caught by the suites
+during the build and fixed before commit: the idempotency fingerprint
+originally included the *defaulted* effective time (replays could never
+converge), and preflight originally demanded evidence.
+
+### 26c · Evidence
+
+| Suite | Result |
+| --- | --- |
+| `supabase/tests/marketing_permission.test.sql` — service-role-only boundary; owner/ops succeed, viewer 42501, cross-tenant actor/person/point refused non-enumerating; strict argument battery writes NOTHING; injected audit-failure rollback (preference+event+receipt all revert); single success with full evidence envelope + exact audit/platform-event; append-only proven against direct service-role UPDATE/DELETE; unsubscribe precedence; evidence-required resubscription; history trail; bulk preflight-without-evidence, apply-without-evidence refused, tampered contract MK409, injected mid-write failure rolls back EVERY row, exact apply, idempotent replay, changed reuse MK412; suppression honesty | **ALL ASSERTIONS PASSED** (local) |
+| `marketing_admin.test.sql` — NEW REGRESSION LOCK: an imported contact has ZERO preference rows and stays `unknown` (never subscribed by importing) | **ALL ASSERTIONS PASSED** |
+| `scripts/marketing-permission-http.test.mjs` — 16 assertions incl. direct-RPC denial for browser JWTs, precise 400s, replay convergence, REQUEST_MISMATCH, bulk contract binding | **ALL PASS local · ALL PASS against DEPLOYED staging** |
+| Pure suites (`permission.test.ts` + existing) | **49/49** |
+| Marketing SQL battery (permission, admin, contacts, test_cancel, senders, broadcasts, sequences, foundation) | **ALL PASS** |
+| `tsc --noEmit` · focused eslint · production build · migration order (98 committed, unique) · `git diff --check` | **ALL CLEAN** |
+
+### 26d · Browser acceptance (the 18-step journey)
+
+LOCAL (dev server + served functions + local stack): contact created →
+"No preference recorded" → guided subscribe (explicit opt-in, method,
+reference, attestation) → card + eligibility flip to Subscribed immediately →
+history row visible → segment re-evaluated to 2 matching → broadcast editor
+shows "All current leads — about 2 people" and the matched/sendable
+explanation → fresh draft saved with the obvious landing → governed test in
+Discovery ("Paused by workspace mode") → **atomic cancel** ("Cancelled before
+sending · Nothing was sent") → submit → approve → **audience check: first
+honestly 0 included / 2 excluded ("Missing required personalisation" — no
+first names and no fallback), then after a revise adding the fallback:
+2 included / 0 excluded / 2 candidates** — NOT launched → unsubscribe →
+audience re-check drops to 1 included (masked sample proves the survivor) →
+evidenced resubscription (append-only trail: subscribed → unsubscribed →
+subscribed → unsubscribed → subscribed) → bulk on 3 selected (1 without a
+usable email): preflight names the refusal, exact confirmation "ONE
+subscribed decision for exactly 2 contacts", result "applied 2 · 1 not
+touched", list refreshes (Jamie/Pat Subscribed, Sam "No email address").
+Desktop, tablet-width and mobile 375 verified (no horizontal overflow;
+Radix dialogs carry focus management; visible field boundaries).
+
+DEPLOYED STAGING (migration `20260910120000` pushed — dry-run proved exactly
+that one file; `marketing-contacts` redeployed; frontend
+`serviceos-nph9uc9w2-allkin.vercel.app`, target `staging`, aliased to
+`serviceos-dh-env-staging-allkin.vercel.app`): QA contact
+`qa-permission-journey@staging-proof.test` created through the deployed UI →
+"No preference recorded" → guided subscribe → Subscribed with the evidence
+line rendered → unsubscribe → Unsubscribed with 2 append-only rows (verified
+in the staging DB: states `[unsubscribed, subscribed]`). Permission HTTP
+suite ALL PASS against the deployed boundary.
+
+### 26e · Staging end-state + migration continuity
+
+Staging: operational mode **discovery**; **zero** non-terminal
+`send_marketing_test_email` intents; **no** ephemeral QA auth users (verified
+absent); the only new fixture is the clearly-named QA contact above (terminal
+state: opted out). NO external email was sent this pass.
+
+Migration continuity (production `db push` REMAINS BLOCKED): the
+investigation and verdict are recorded in
+[PRODUCTION_LAUNCH_RUNBOOK.md](PRODUCTION_LAUNCH_RUNBOOK.md) §1 — production
+stores an EMPTY statements array for `20260830120000` (every other row stores
+full content), so byte identity of the untracked phone-ops file (SHA-256
+`4b276b47afa07936bd9e2285b1f83a573a90057be1349ea1148e7f37ecc0b4df`) is
+UNPROVABLE from production or from anything in this repository; the file
+stays uncommitted, no `migration repair` was run, and the two acceptable
+resolution paths are recorded. The runbook also gains the
+**customer-readiness gate** (a real recorded permission, reviewed exclusions,
+staging-proven consent journey, no implicit import subscriptions) ahead of
+any real audience launch.
