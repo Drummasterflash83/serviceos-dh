@@ -288,3 +288,9 @@ verify_jwt = false
 # requireTenantUser, so gateway JWT verification is OFF (mirrors gmail-oauth-callback).
 [functions.intelligence-review-action]
 verify_jwt = false
+
+[functions.receptionist-calls]
+verify_jwt = false
+
+[functions.client-notifications]
+verify_jwt = false
