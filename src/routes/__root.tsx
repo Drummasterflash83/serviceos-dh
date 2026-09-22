@@ -78,25 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OpenFolk" },
+      { title: "OpenFolk — Your business, working better." },
       {
         name: "description",
         content:
-          "A bespoke operating system designed around Drummonds' people, systems and workflows - built from discovery, engineered to operate.",
+          "OpenFolk connects your people, systems and workflows around measurable business results.",
       },
-      { property: "og:title", content: "OpenFolk" },
-      {
-        property: "og:description",
-        content:
-          "The intelligence layer above every system Drummonds already uses - shaped by discovery, tuned to your standards.",
-      },
-      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "OpenFolk — Your business, working better." },
+      { property: "og:description", content: "Business improvement, built around you." },
+      { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "OpenFolk" },
-      { name: "description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
-      { property: "og:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
-      { name: "twitter:description", content: "A bespoke operating system designed around how Drummonds runs - from calls and engineers to suppliers and invoices." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f98a9b43-b8ff-43b2-87ef-cd3a6ed83dce/id-preview-93aaeb2d--c2f1478d-0ca8-4c76-a1b8-b553456f7566.lovable.app-1782319909370.png" },
+      { name: "twitter:description", content: "Your business, working better." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

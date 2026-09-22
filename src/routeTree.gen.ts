@@ -13,6 +13,7 @@ import { Route as OpenfolkRouteImport } from './routes/openfolk'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HealthShadowRouteImport } from './routes/health-shadow'
+import { Route as ClientRouteImport } from './routes/client'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
@@ -41,6 +42,11 @@ const LoginRoute = LoginRouteImport.update({
 const HealthShadowRoute = HealthShadowRouteImport.update({
   id: '/health-shadow',
   path: '/health-shadow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientRoute = ClientRouteImport.update({
+  id: '/client',
+  path: '/client',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -92,6 +98,7 @@ const DemoCommandCentreRoute = DemoCommandCentreRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/client': typeof ClientRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/client': typeof ClientRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/client': typeof ClientRoute
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/client'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/app'
+    | '/client'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/client'
     | '/health-shadow'
     | '/login'
     | '/marketing'
@@ -184,6 +196,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  ClientRoute: typeof ClientRoute
   HealthShadowRoute: typeof HealthShadowRoute
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
@@ -223,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/health-shadow'
       fullPath: '/health-shadow'
       preLoaderRoute: typeof HealthShadowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client': {
+      id: '/client'
+      path: '/client'
+      fullPath: '/client'
+      preLoaderRoute: typeof ClientRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -308,6 +328,7 @@ const OpenfolkRouteWithChildren = OpenfolkRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  ClientRoute: ClientRoute,
   HealthShadowRoute: HealthShadowRoute,
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
