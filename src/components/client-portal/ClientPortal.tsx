@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ShieldCheck,
   X,
+  Headphones,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -663,6 +664,21 @@ export function ClientPortal() {
           </label>
         )}
         <nav aria-label="Client workspace">
+          <a
+            href={`/receptionist${tenant ? `?tenant=${tenant}` : ""}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 14px",
+              borderRadius: 8,
+              color: "inherit",
+              textDecoration: "none",
+              fontSize: 13,
+            }}
+          >
+            <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
+          </a>
           {nav.map(({ id, label, Icon }) => (
             <button
               key={id}

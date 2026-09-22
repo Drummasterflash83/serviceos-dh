@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReceptionistRouteImport } from './routes/receptionist'
 import { Route as OpenfolkRouteImport } from './routes/openfolk'
 import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as LoginRouteImport } from './routes/login'
@@ -24,6 +25,11 @@ import { Route as DemoLearningCentreRouteImport } from './routes/demo.learning-c
 import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
 import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-centre'
 
+const ReceptionistRoute = ReceptionistRouteImport.update({
+  id: '/receptionist',
+  path: '/receptionist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpenfolkRoute = OpenfolkRouteImport.update({
   id: '/openfolk',
   path: '/openfolk',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
+  '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
   '/demo/learning-centre': typeof DemoLearningCentreRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/health-shadow': typeof HealthShadowRoute
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
+  '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
   '/demo/learning-centre': typeof DemoLearningCentreRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/marketing': typeof MarketingRoute
   '/openfolk': typeof OpenfolkRouteWithChildren
+  '/receptionist': typeof ReceptionistRoute
   '/demo/command-centre': typeof DemoCommandCentreRoute
   '/demo/customer-health': typeof DemoCustomerHealthRoute
   '/demo/learning-centre': typeof DemoLearningCentreRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/openfolk'
+    | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
     | '/demo/learning-centre'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/health-shadow'
     | '/login'
     | '/marketing'
+    | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
     | '/demo/learning-centre'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/marketing'
     | '/openfolk'
+    | '/receptionist'
     | '/demo/command-centre'
     | '/demo/customer-health'
     | '/demo/learning-centre'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MarketingRoute: typeof MarketingRoute
   OpenfolkRoute: typeof OpenfolkRouteWithChildren
+  ReceptionistRoute: typeof ReceptionistRoute
   DemoCommandCentreRoute: typeof DemoCommandCentreRoute
   DemoCustomerHealthRoute: typeof DemoCustomerHealthRoute
   DemoLearningCentreRoute: typeof DemoLearningCentreRoute
@@ -210,6 +223,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/receptionist': {
+      id: '/receptionist'
+      path: '/receptionist'
+      fullPath: '/receptionist'
+      preLoaderRoute: typeof ReceptionistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/openfolk': {
       id: '/openfolk'
       path: '/openfolk'
@@ -333,6 +353,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MarketingRoute: MarketingRoute,
   OpenfolkRoute: OpenfolkRouteWithChildren,
+  ReceptionistRoute: ReceptionistRoute,
   DemoCommandCentreRoute: DemoCommandCentreRoute,
   DemoCustomerHealthRoute: DemoCustomerHealthRoute,
   DemoLearningCentreRoute: DemoLearningCentreRoute,
