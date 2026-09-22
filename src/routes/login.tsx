@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
+import { friendlySignInError } from "@/lib/auth-errors";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
 const SIGNUP_ENABLED = import.meta.env.VITE_ENABLE_SIGNUP === "true";
@@ -54,7 +55,7 @@ function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const dest = redirect ?? "/app";
+  const dest = redirect ?? "/client";
 
   // A recovery link creates a session specifically so the password can be
   // changed here; do not auto-redirect that session away from the form.
@@ -112,7 +113,7 @@ function LoginPage() {
     const { error: authError } = await run(email.trim(), password);
     setPending(false);
     if (authError) {
-      setError(authError);
+      setError(mode === "signin" ? friendlySignInError(authError) : authError);
       return;
     }
     if (mode === "signup") {
