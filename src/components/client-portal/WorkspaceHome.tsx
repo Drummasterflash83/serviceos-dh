@@ -47,7 +47,9 @@ export function WorkspaceHome({
           ) : receptionist.data ? (
             <>
               <span className="cp-recorded-stage">
-                Recorded stage: {receptionist.data.launch_stage || "Not recorded"}
+                {receptionist.data.launch_stage === "Testing"
+                  ? "Activation pending"
+                  : receptionist.data.launch_stage || "Not recorded"}
               </span>
               <small>{receptionist.data.launch_note}</small>
             </>

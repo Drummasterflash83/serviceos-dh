@@ -292,5 +292,8 @@ verify_jwt = false
 [functions.receptionist-calls]
 verify_jwt = false
 
+[functions.receptionist-practice]
+verify_jwt = false
+
 [functions.client-notifications]
 verify_jwt = false
