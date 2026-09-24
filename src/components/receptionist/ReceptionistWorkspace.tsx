@@ -34,6 +34,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import "./receptionist.css";
+import { PhonePlanner } from "./PhonePlanner";
+import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 
 type Workspace = {
   tenant_id: string;
@@ -66,11 +68,12 @@ type Page = {
   nextCursor: string | null;
   checkedAt: string;
 };
-type View = "today" | "calls" | "callers" | "improvements" | "details";
+type View = "today" | "calls" | "callers" | "improvements" | "details" | "phones";
 const views = [
   { id: "today", label: "Your daily view", Icon: LayoutDashboard },
   { id: "calls", label: "Call journal", Icon: Phone },
   { id: "callers", label: "People who called", Icon: Users },
+  { id: "phones", label: "Phones & call groups", Icon: Phone },
   { id: "improvements", label: "Make Emma better", Icon: Sparkles },
   { id: "details", label: "Receptionist details", Icon: SlidersHorizontal },
 ] as const;
@@ -323,7 +326,9 @@ export function ReceptionistWorkspace({
       setFocus(
         typeof pref.focus === "string" ? pref.focus : "Start with calls that need a closer look.",
       );
-    } catch {}
+    } catch {
+      // Invalid browser preferences must not prevent the workspace from loading.
+    }
   }, [tenant, user?.id]);
   function saveView() {
     try {
@@ -615,14 +620,20 @@ export function ReceptionistWorkspace({
                       ? "Caller history grouped by phone number. Identity is only as reliable as the source."
                       : view === "improvements"
                         ? "From a quick observation to a tested improvement. Keep the conversation here."
-                        : "The essentials, the launch stage and the evidence behind the status."}
+                        : view === "phones"
+                          ? "Arrange your phone system. OpenFolk handles the provider changes and testing."
+                          : "The essentials, the launch stage and the evidence behind the status."}
               </p>
             </div>
             <button className="rw-btn rw-btn-light" onClick={() => setSettings(true)}>
               <SlidersHorizontal size={16} /> Make it yours
             </button>
           </div>
-          <div className="rw-toolbar">
+          <div
+            className="rw-toolbar"
+            hidden={view === "phones"}
+            style={view === "phones" ? { display: "none" } : undefined}
+          >
             <div className="rw-segment" aria-label="Call period">
               {[
                 ["7", "Last 7 days"],
@@ -900,7 +911,7 @@ export function ReceptionistWorkspace({
             <>
               <div className="rw-board-intro">
                 <p>
-                  Mary’s observations and OpenFolk’s responses, in one place.
+                  Your team’s observations and OpenFolk’s responses, in one place.
                   <br />
                   <small>
                     Urgent flags are highlighted here. WhatsApp and phone escalation are not
@@ -931,7 +942,11 @@ export function ReceptionistWorkspace({
                       <span className={`rw-priority ${n.priority}`}>{n.priority} priority</span>
                     </div>
                     <h2>{n.title}</h2>
-                    <p className="rw-preserve">{n.body}</p>
+                    <p className="rw-preserve">
+                      {decodePhonePlan(n.body)
+                        ? describePhonePlan(decodePhonePlan(n.body)!)
+                        : n.body}
+                    </p>
                     <div className="rw-feedback-meta">
                       <span>{n.category.replace("-", " ")}</span>
                       <span>{date(n.created_at)}</span>
@@ -981,6 +996,7 @@ export function ReceptionistWorkspace({
               </p>
             </>
           )}
+          {view === "phones" && tenant && <PhonePlanner key={tenant} tenant={tenant} demo={demo} />}
           {view === "details" && (
             <div className="rw-details-grid">
               <section className="rw-panel">
