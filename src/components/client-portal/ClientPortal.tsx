@@ -20,6 +20,8 @@ import {
   Headphones,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { ClientInvestment } from "./ClientInvestment";
+import "@/styles/client-investment.css";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   programmeSchema,
@@ -44,6 +46,7 @@ import {
 
 const nav = [
   { id: "overview", label: "Your programme", Icon: LayoutDashboard },
+  { id: "investment", label: "Invoices & delivery", Icon: ShieldCheck },
   { id: "outcomes", label: "Outcomes & investment", Icon: Layers },
   { id: "systems", label: "Systems & connections", Icon: Plug },
   { id: "links", label: "Useful links", Icon: Link2 },
@@ -275,6 +278,9 @@ export function ClientPortal() {
         <div role="alert" className="cp-error">
           {error}
         </div>
+      )}
+      {section === "investment" && tenant && user && (
+        <ClientInvestment tenant={tenant} userId={user.id} />
       )}
       {section === "overview" && (
         <>
