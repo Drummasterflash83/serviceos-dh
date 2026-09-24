@@ -18,6 +18,7 @@ import { CallRecording } from "./CallRecording";
 
 export type EmmaInfo = {
   enabled: boolean;
+  unavailableReason?: string | null;
   checkedAt: string;
   maxSeconds: number;
   overview: {
@@ -174,7 +175,14 @@ export function PracticeImprove({
     }
   }, [active]);
   async function start(nextMode: "listen" | "conversation") {
-    if (demo || state === "active" || state === "connecting" || !info.data?.enabled) return;
+    if (demo || state === "active" || state === "connecting") return;
+    if (!info.data?.enabled) {
+      setError(
+        info.data?.unavailableReason ??
+          "The voice connection has not passed its readiness check. Use Recheck connection below; your feedback can still be saved.",
+      );
+      return;
+    }
     if ((noticed.trim() || change.trim()) && !saved) {
       setError(
         "Send or clear your current feedback before starting another conversation, so it stays linked to the right call.",
@@ -366,14 +374,14 @@ export function PracticeImprove({
               <>
                 <button
                   className="rw-btn rw-btn-primary"
-                  disabled={demo || !info.data?.enabled}
+                  disabled={demo || info.isPending}
                   onClick={() => void start("conversation")}
                 >
                   <Mic size={18} /> Talk to {name}
                 </button>
                 <button
                   className="rw-btn rw-btn-light"
-                  disabled={demo || !info.data?.enabled}
+                  disabled={demo || info.isPending}
                   onClick={() => void start("listen")}
                 >
                   <Headphones size={18} /> Hear her welcome
@@ -420,9 +428,12 @@ export function PracticeImprove({
                   ? "Checking the voice connection…"
                   : info.isError
                     ? info.error.message
-                    : "Voice practice is awaiting OpenFolk verification. You can send feedback now."}{" "}
-              {info.isError && (
-                <button onClick={() => void info.refetch()}>Retry connection</button>
+                    : (info.data?.unavailableReason ??
+                      "Voice practice is awaiting OpenFolk verification. You can send feedback now.")}{" "}
+              {!demo && !info.isPending && (
+                <button onClick={() => void info.refetch()} disabled={info.isFetching}>
+                  Recheck connection
+                </button>
               )}
             </p>
           )}

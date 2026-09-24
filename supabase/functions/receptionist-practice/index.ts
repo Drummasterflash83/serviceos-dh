@@ -107,15 +107,27 @@ Deno.serve(async (req) => {
     const queryIds = allowedQueryTools(tools);
     const overview = assistantOverview(assistant, queryIds.length, tools.length - queryIds.length);
     let candidate;
+    let unavailableReason = w.practice_enabled
+      ? null
+      : "Browser practice is not enabled for this workspace.";
     try {
       candidate = practiceAssistant(assistant, queryIds);
-    } catch {
+    } catch (e) {
       candidate = null;
+      // Only expose our own fixed validation messages, never provider response bodies.
+      const message = e instanceof Error ? e.message : "";
+      unavailableReason =
+        message === "Inline knowledge needs an explicit practice adapter"
+          ? "Emma’s knowledge setup needs a browser-practice adapter. OpenFolk must connect it before a conversation can start."
+          : message === "Published instructions unavailable"
+            ? "Emma’s published conversation instructions are unavailable. OpenFolk needs to check the assistant configuration."
+            : "Emma’s voice or model configuration is not supported by this practice connection yet. OpenFolk needs to check it.";
     }
     if (body.action === "info")
       return reply({
         overview,
         enabled: w.practice_enabled && !!candidate,
+        unavailableReason,
         checkedAt: new Date().toISOString(),
         maxSeconds: 180,
       });

@@ -8,6 +8,15 @@ import {
   practiceRoom,
 } from "../../supabase/functions/_shared/receptionist-practice.ts";
 const query = "ad200000-0000-0000-0000-000000000001";
+test("failed readiness is visible and recheckable instead of an inert talk button", () => {
+  const ui = readFileSync(new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(ui, /disabled=\{demo \|\| !info\.data\?\.enabled\}/);
+  assert.match(ui, /unavailableReason/);
+  assert.match(ui, /Recheck connection/);
+  const edge = readFileSync(new URL("../../supabase/functions/receptionist-practice/index.ts", import.meta.url), "utf8");
+  assert.match(edge, /unavailableReason,/);
+  assert.match(edge, /Inline knowledge needs an explicit practice adapter/);
+});
 test("practice feedback has reopenable evidence and separates save from Slack delivery", () => {
   const ui = readFileSync(new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url), "utf8");
   assert.match(ui, /PracticeEvidence/);
