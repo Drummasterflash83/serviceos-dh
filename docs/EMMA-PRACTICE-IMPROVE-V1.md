@@ -1,5 +1,30 @@
 # Emma — Practice & improve, 24 September 2026
 
+## Browser-call route correction
+
+Chris's start attempt reached the database reservation but stored no call ID. A single
+bounded internal diagnostic reproduced HTTP 400 from POST /call: Vapi demanded a phone
+number. The corrected POST /call/web with a server-only public-scoped HS256 JWT (60s)
+returned HTTP 201 and a valid Daily room. The token is never exposed to the browser;
+signing uses the existing private key and the verified assistant's orgId.
+
+The one created internal diagnostic call 01a0d4c7-83ba-7aa9-9d88-b64f5c3ed70c was verified
+as webCall, no customer/phone number, maxDuration 10s, metadata matched. It ended with
+call.in-progress.error-assistant-did-not-receive-customer-audio (no browser joined),
+provider cost $0.0011. This is call-creation proof, NOT audible browser acceptance.
+No telephone dial, live assistant PATCH or transfer occurred.
+
+Session/tenant binding is stored in transient assistant.metadata and verified there
+on result/recording reads; this exact metadata persistence was verified on the diagnostic.
+Known 4xx rejections mark the reservation failed (daily quota still counts). Timeouts,
+5xx and ambiguous failures retain the lease. UI now reads governed invocation error
+responses instead of replacing every rejection with a misleading generic five-minute wait.
+
+Four added tests cover JWT signature/scope/expiry, invalid signing inputs, definitive vs
+ambiguous failure classification and tenant/session/web-call evidence binding.
+Temporary diagnostic endpoint removed after release. Source references:
+https://docs.vapi.ai/customization/jwt-authentication and @vapi-ai/web 2.7.1 API contract.
+
 ## Knowledge adapter correction
 
 ### Confirmed legacy Google format (supersedes the unverified custom label)
