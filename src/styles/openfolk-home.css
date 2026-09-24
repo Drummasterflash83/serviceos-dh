@@ -1,0 +1,87 @@
+.of-minimal-home {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+  overflow: hidden;
+  color: #203f70;
+  background:
+    radial-gradient(ellipse at 72% 28%, rgba(203, 217, 238, 0.3), transparent 53%),
+    radial-gradient(ellipse at 25% 80%, rgba(231, 211, 181, 0.19), transparent 50%), #fafaf8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.of-minimal-content {
+  width: 100%;
+  text-align: center;
+  padding-bottom: 4vh;
+}
+.of-minimal-content h1 {
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 1.08;
+}
+.of-minimal-brand {
+  display: block;
+  font-size: clamp(48px, 8vw, 104px);
+  font-weight: 600;
+}
+.of-minimal-colon {
+  color: #b57b30;
+}
+.of-minimal-promise {
+  display: block;
+  margin-top: 24px;
+  font-size: clamp(26px, 4.1vw, 56px);
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.of-glass-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  margin-top: 46px;
+  padding: 15px 35px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 8px 28px rgba(32, 63, 112, 0.09),
+    inset 0 1px 1px #fff;
+  color: #203f70;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+  transition:
+    box-shadow 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+.of-glass-login:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 10px 32px rgba(32, 63, 112, 0.14),
+    inset 0 1px 1px #fff;
+  transform: translateY(-1px);
+}
+.of-glass-login:focus-visible {
+  outline: 3px solid #203f70;
+  outline-offset: 5px;
+}
+.of-glass-login:active {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .of-glass-login {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .of-glass-login {
+    border: 1px solid ButtonText;
+  }
+}
