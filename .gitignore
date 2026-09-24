@@ -41,6 +41,9 @@ supabase/.branches/
 .vercel
 .env*
 
+# Generated from the shared landing component during every production build.
+/public/index.html
+
 # Commusoft backup exports — raw customer data, NEVER commit (kept outside repo under ~/commusoft-analysis)
 commusoft-analysis/
 commusoft-*.zip

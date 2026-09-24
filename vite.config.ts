@@ -6,6 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { execSync } from "node:child_process";
+import { publicHome } from "./build/public-home";
 
 // Build/version stamp — surfaced to OpenFolk operators so a stale frontend deploy is
 // diagnosable at a glance (see src/components/BuildBadge.tsx). On Vercel the commit SHA
@@ -28,6 +29,7 @@ const BUILD_TIME = new Date().toISOString();
 const BUILD_ENV = process.env.VERCEL_ENV || process.env.NODE_ENV || "local";
 
 export default defineConfig({
+  plugins: [publicHome()],
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
