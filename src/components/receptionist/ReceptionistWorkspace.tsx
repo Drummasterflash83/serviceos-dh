@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
+import { WorkspaceMenu } from "@/components/WorkspaceMenu";
+import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
+import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Phone,
@@ -204,10 +207,9 @@ export function ReceptionistWorkspace({
       return data as Workspace[];
     },
   });
-  const w = demo
-    ? demoWorkspace
-    : (workspaces.data?.find((w) => w.tenant_id === selectedTenant) ?? workspaces.data?.[0]);
+  const w = demo ? demoWorkspace : selectedWorkspace(workspaces.data, selectedTenant);
   const tenant = w?.tenant_id;
+  const workspaceHref = clientWorkspaceHref(demo ? undefined : selectedTenant || tenant);
   const operator = useQuery({
     queryKey: ["receptionist-operator", user?.id],
     enabled: !!user && !demo,
@@ -479,7 +481,7 @@ export function ReceptionistWorkspace({
         <p>
           {workspaces.error?.message ?? "A receptionist has not been assigned to this login yet."}
         </p>
-        <a href="/client">Back to your programme</a>
+        <a href={workspaceHref}>Back to workspace</a>
       </div>
     );
   return (
@@ -488,16 +490,14 @@ export function ReceptionistWorkspace({
         Skip to dashboard
       </a>
       <aside className="rw-sidebar">
-        <a href="/client" className="rw-brand">
+        <a href={workspaceHref} className="rw-brand" aria-label="OpenFolk — back to workspace">
           <OpenFolkWordmark onDark />
         </a>
-        <div className="rw-company">
-          <span className="rw-company-icon">{w.company.slice(0, 1)}</span>
-          <div>
-            <strong>{w.company}</strong>
-            <small>Your receptionist workspace</small>
-          </div>
-        </div>
+        <WorkspaceMenu
+          company={w.company}
+          tenant={demo ? undefined : tenant}
+          active="receptionist"
+        />
         {(workspaces.data?.length ?? 0) > 1 && (
           <select
             aria-label="Company"
@@ -513,6 +513,9 @@ export function ReceptionistWorkspace({
         )}
         <p className="rw-nav-caption">A WARMER WELCOME</p>
         <nav aria-label="Receptionist workspace">
+          <a href={workspaceHref} className="rw-workspace-nav">
+            <ArrowLeft size={18} /> Workspace home
+          </a>
           {views.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -543,12 +546,13 @@ export function ReceptionistWorkspace({
           </button>
         </div>
         <div className="rw-sidebar-bottom">
-          <a href="/client">
-            <ArrowLeft size={15} /> Your OpenFolk programme
+          <a href={workspaceHref}>
+            <ArrowLeft size={15} /> Back to workspace
           </a>
           <small>
             <ShieldCheck size={14} /> Private client workspace
           </small>
+          {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
           {!demo && (
             <button
               onClick={async () => {
@@ -565,9 +569,9 @@ export function ReceptionistWorkspace({
       </aside>
       <div className="rw-shell">
         <header className="rw-topbar">
-          <span>
-            {w.company} <span>/</span> AI receptionist
-          </span>
+          <a href={workspaceHref} className="rw-workspace-back">
+            <ArrowLeft size={17} /> Back to workspace
+          </a>
           <div>
             <span className="rw-user-avatar">{(user?.email ?? "M").slice(0, 1).toUpperCase()}</span>
             <span>{demo ? "Mary’s view · design preview" : user?.email}</span>

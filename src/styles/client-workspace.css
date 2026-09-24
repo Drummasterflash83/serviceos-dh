@@ -1,0 +1,428 @@
+/* Same visual language as Emma. Scoped so legacy ServiceOS screens are unaffected. */
+.cp-root .cp-commercial,
+.cp-root .cp-investment {
+  background: #f2eef7;
+  border-color: #e9e7ee;
+}
+.cp-root .cp-investment p:not(.of-eyebrow),
+.cp-root .cp-stage-row small,
+.cp-root .cp-price-summary > span,
+.cp-root .cp-price-summary > small {
+  color: #706b7e;
+}
+.cp-root .cp-invoice-section {
+  display: block;
+  background: #fff;
+  border-radius: 18px;
+}
+.cp-root .cp-invoice-section p:not(.of-eyebrow) {
+  max-width: none;
+  font-size: 14px;
+}
+.cp-root .cp-stage-index {
+  color: #75658d;
+  background: #f2eef7;
+  border-color: #e9e7ee;
+}
+.cp-dialog .cp-primary {
+  background: #514669;
+  border-color: #514669;
+}
+.cp-root {
+  background: #faf9f6;
+  color: #25253a;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.cp-root .cp-sidebar {
+  width: 246px;
+  background: #242337;
+  color: #d2cfdf;
+  border: 0;
+  padding: 34px 20px 24px;
+  overflow-y: auto;
+}
+.cp-root .cp-workspace-label {
+  color: #b9b1ce;
+  margin: 25px 8px 0;
+}
+.cp-root .cp-sidebar .cp-field {
+  color: #d2cfdf;
+}
+.cp-root .cp-sidebar select {
+  color: #25253a;
+}
+.cp-root .cp-sidebar nav {
+  gap: 6px;
+  margin-top: 8px;
+}
+.cp-root .cp-sidebar nav button,
+.cp-root .cp-emma-nav {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 44px;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #c7c1d8;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.cp-root .cp-sidebar nav button:hover,
+.cp-root .cp-emma-nav:hover {
+  background: #ffffff0c;
+  color: #fff;
+}
+.cp-root .cp-sidebar nav button.is-active {
+  background: #514669;
+  color: #fff;
+}
+.cp-root .cp-sidebar-bottom,
+.cp-root .cp-sidebar-bottom button,
+.cp-root .cp-private {
+  color: #bcb5cd;
+}
+.cp-operator-controls {
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ffffff22;
+}
+.cp-operator-controls a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cp-operator-controls button {
+  text-align: left;
+  min-height: 36px;
+}
+.cp-root .cp-topbar {
+  height: 76px;
+  background: #ffffffa8;
+  border-color: #e9e7ee;
+  padding: 0 38px;
+}
+.cp-home-breadcrumb {
+  font-size: 12px;
+  color: #514669;
+  text-decoration: none;
+}
+.cp-home-breadcrumb > span {
+  color: #aaa2b7;
+  padding: 0 10px;
+}
+.cp-root .cp-user {
+  color: #71687e;
+}
+.cp-root .cp-content {
+  max-width: 1320px;
+  padding: 38px;
+}
+.cp-root .cp-page-heading h1 {
+  font-family: Inter, Arial, sans-serif;
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 550;
+  letter-spacing: -1.2px;
+}
+.cp-root .cp-page-heading > div > p:last-child {
+  color: #716d7d;
+  font-size: 14px;
+}
+.cp-root .of-eyebrow {
+  color: #756590;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+.cp-root .cp-card,
+.cp-root .cp-metrics {
+  border-color: #e9e7ee;
+  border-radius: 16px;
+}
+.cp-root .cp-card > p,
+.cp-root .cp-metrics span,
+.cp-root .cp-metrics small {
+  color: #706b7e;
+}
+.cp-root .cp-card h2 {
+  font-size: 18px;
+}
+.cp-root .cp-card > p {
+  font-size: 14px;
+}
+.cp-root .cp-metrics > div + div {
+  border-color: #e9e7ee;
+}
+.cp-root .cp-primary {
+  background: #514669;
+  border-color: #514669;
+}
+.cp-root .cp-secondary,
+.cp-root .cp-icon-button {
+  color: #514669;
+  border-color: #e9e7ee;
+  border-radius: 10px;
+  min-height: 44px;
+}
+.cp-root .cp-text-button {
+  color: #655399;
+}
+.cp-root .cp-north-star {
+  background: #514669;
+  border-radius: 18px;
+}
+.cp-root .cp-north-star .of-eyebrow,
+.cp-root .cp-north-star p:last-child {
+  color: #e0d7ed;
+}
+.cp-root .cp-north-symbol {
+  color: #c8b8e4;
+}
+.cp-root .cp-status {
+  color: #645776;
+  background: #f0ecf7;
+}
+.cp-root .cp-status-good {
+  color: #326c54;
+  background: #edf7f0;
+}
+.cp-root .cp-stage-row {
+  border-color: #e9e7ee;
+}
+.cp-root .cp-stage-row:hover {
+  background: #f6f3fb;
+}
+.cp-root .cp-price-summary strong,
+.cp-root .cp-invoice-top > strong {
+  color: #514669;
+}
+.cp-root :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid #a998ec;
+  outline-offset: 3px;
+}
+.cp-emma-entry {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  border: 1px solid #e7dfef;
+  border-radius: 22px;
+  background: linear-gradient(120deg, #eee7f7, #f7f1f2 72%, #faf6ed);
+}
+.cp-emma-orb {
+  display: grid;
+  place-items: center;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #625080;
+  background: radial-gradient(circle at 30% 25%, #ffffff, #d9c9ef);
+  box-shadow:
+    inset 0 2px 8px #fff9,
+    0 12px 35px #6d5a9922;
+}
+.cp-emma-copy {
+  flex: 1;
+  min-width: 0;
+}
+.cp-emma-copy h2 {
+  font-size: 36px;
+  font-weight: 550;
+  letter-spacing: -1.3px;
+  margin: 5px 0;
+}
+.cp-emma-copy p {
+  max-width: 490px;
+  color: #625b72;
+  line-height: 1.7;
+}
+.cp-emma-copy small {
+  display: block;
+  font-size: 12px;
+  color: #625b72;
+  margin-top: 8px;
+}
+.cp-emma-copy button {
+  text-decoration: underline;
+  color: #514669;
+  padding: 8px 0;
+}
+.cp-recorded-stage {
+  display: inline-block;
+  color: #5c4a79;
+  border: 1px solid #d5c8e3;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  margin-top: 13px;
+}
+.cp-open-emma {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  background: #514669;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 550;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.cp-open-emma:hover {
+  background: #403652;
+}
+.cp-home-intro {
+  margin: 36px 0 18px;
+}
+.cp-home-intro h2 {
+  font-size: 21px;
+  font-weight: 550;
+  letter-spacing: -0.5px;
+}
+.cp-home-intro p {
+  color: #777182;
+  margin-top: 5px;
+  font-size: 13px;
+}
+.cp-home-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.cp-home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 26px;
+  background: #fff;
+  border: 1px solid #e9e7ee;
+  border-radius: 17px;
+  min-width: 0;
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+.cp-home-card:hover {
+  border-color: #beadd4;
+  box-shadow: 0 10px 30px #5146690b;
+}
+.cp-home-card > svg {
+  color: #81709b;
+  margin-bottom: 25px;
+}
+.cp-home-card h3 {
+  font-size: 18px;
+  font-weight: 550;
+  letter-spacing: -0.4px;
+}
+.cp-home-card p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #777182;
+  margin: 9px 0 22px;
+}
+.cp-home-card > span {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #645282;
+  font-size: 12px;
+  font-weight: 550;
+}
+.cp-home-disclosure {
+  color: #7a7484;
+  font-size: 11px;
+  margin: 24px 0;
+}
+@media (max-width: 1100px) {
+  .cp-emma-entry {
+    flex-wrap: wrap;
+  }
+  .cp-open-emma {
+    margin-left: 124px;
+  }
+  .cp-home-cards {
+    gap: 12px;
+  }
+  .cp-home-card {
+    padding: 20px;
+  }
+}
+@media (max-width: 800px) {
+  .cp-root .cp-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    padding: 20px;
+    overflow: visible;
+  }
+  .cp-root .cp-sidebar nav {
+    overflow-x: auto;
+    display: flex;
+    padding-bottom: 8px;
+  }
+  .cp-root .cp-sidebar nav > * {
+    flex-shrink: 0;
+  }
+  .cp-root .cp-content {
+    padding: 26px 20px;
+  }
+  .cp-root .cp-topbar {
+    height: auto;
+    min-height: 58px;
+    padding: 12px 20px;
+    flex-wrap: wrap;
+  }
+  .cp-root .cp-user {
+    max-width: 100%;
+  }
+  .cp-root .cp-sidebar-bottom {
+    padding: 12px 0 0;
+  }
+  .cp-operator-controls {
+    display: flex;
+    gap: 18px;
+    width: 100%;
+    align-items: center;
+  }
+  .cp-emma-entry {
+    padding: 22px;
+    gap: 18px;
+  }
+  .cp-emma-orb {
+    width: 68px;
+    height: 68px;
+  }
+  .cp-emma-copy {
+    flex-basis: calc(100% - 90px);
+  }
+  .cp-emma-copy h2 {
+    font-size: 30px;
+  }
+  .cp-open-emma {
+    width: 100%;
+    margin-left: 0;
+  }
+  .cp-home-cards {
+    grid-template-columns: 1fr;
+  }
+  .cp-home-card > svg {
+    margin-bottom: 14px;
+  }
+  .cp-home-card p {
+    margin-bottom: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-home-card {
+    transition: none;
+  }
+}

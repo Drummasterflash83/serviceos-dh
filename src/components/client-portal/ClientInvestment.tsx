@@ -58,7 +58,7 @@ export function ClientInvestment({ tenant, userId }: { tenant: string; userId: s
       .filter((r) => !status || r.status === status)
       .reduce((n, r) => n + Number(r.amount_pence), 0) / 100;
   return (
-    <section className="cp-investment">
+    <section className="cp-investment cp-invoice-section">
       <p className="of-eyebrow">YOUR INVESTMENT, EXPLAINED</p>
       <h2>A clear record. A clear way forward.</h2>
       <p>What you have invested, the work it supports, and what comes next.</p>
