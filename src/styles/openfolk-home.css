@@ -24,10 +24,12 @@
 .of-minimal-brand {
   display: block;
   font-size: clamp(48px, 8vw, 104px);
-  font-weight: 600;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
 }
 .of-minimal-colon {
-  color: #b57b30;
+  color: #cc8625;
 }
 .of-minimal-promise {
   display: block;
@@ -37,6 +39,8 @@
   text-wrap: balance;
 }
 .of-glass-login {
+  position: relative;
+  gap: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -45,10 +49,17 @@
   padding: 15px 35px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.95);
-  background: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(227, 235, 247, 0.48) 52%,
+    rgba(255, 255, 255, 0.78)
+  );
   box-shadow:
-    0 8px 28px rgba(32, 63, 112, 0.09),
-    inset 0 1px 1px #fff;
+    0 16px 36px -12px rgba(32, 63, 112, 0.25),
+    0 2px 5px rgba(32, 63, 112, 0.05),
+    inset 0 2px 2px #fff,
+    inset 0 -2px 3px rgba(32, 63, 112, 0.08);
   color: #203f70;
   font-size: 15px;
   font-weight: 550;
@@ -60,6 +71,49 @@
     box-shadow 160ms ease,
     background 160ms ease,
     transform 160ms ease;
+}
+.of-login-arrow {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 2px #fff,
+    0 1px 4px rgba(32, 63, 112, 0.08);
+  font-size: 18px;
+}
+.of-login-wordmark {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 42px;
+  letter-spacing: -0.035em;
+  color: #203f70;
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.of-login-wordmark span {
+  color: #cc8625;
+}
+.of-client-login > div {
+  max-width: 420px;
+}
+.of-client-login form input {
+  min-height: 48px;
+}
+.of-client-login form button[type="submit"] {
+  min-height: 48px;
+  border-radius: 14px;
+  background: #203f70;
+  color: white;
+}
+.of-client-login .rounded-2xl {
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 65px -30px #203f7040;
+  border-color: #ffffff;
+  backdrop-filter: blur(20px);
 }
 .of-glass-login:hover {
   background: rgba(255, 255, 255, 0.95);

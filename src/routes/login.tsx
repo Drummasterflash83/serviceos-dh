@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { friendlySignInError } from "@/lib/auth-errors";
+import "@/styles/openfolk-home.css";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
 const SIGNUP_ENABLED = import.meta.env.VITE_ENABLE_SIGNUP === "true";
@@ -125,23 +126,25 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="of-minimal-home of-client-login">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <img src="/brand/openfolk-icon.svg" alt="OpenFolk" className="h-10 w-10 rounded-md" />
+          <a href="/" className="of-login-wordmark" aria-label="OpenFolk home">
+            open<span>folk</span>
+          </a>
           <h1 className="text-display mt-4 text-xl font-semibold tracking-tight text-foreground">
             {mode === "forgot"
               ? "Reset your password"
               : mode === "reset"
                 ? "Choose a new password"
-                : "Sign in to OpenFolk"}
+                : "Your business, in view."}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "forgot"
               ? "We’ll email a secure link to your account address."
               : mode === "reset"
                 ? "Use a unique password with at least 12 characters."
-                : "Access is invite-only."}
+                : "Emma, your programme and your progress. One private workspace."}
           </p>
         </div>
 
