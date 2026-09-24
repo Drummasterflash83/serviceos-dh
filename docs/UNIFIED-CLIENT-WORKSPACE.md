@@ -25,10 +25,15 @@ recording changes are included.
 - Operator editing controls are OFF by default in the client programme. An actual
   authorised operator can enable them explicitly; this does not impersonate Heidi,
   change permissions or simulate another user's data access. RLS remains authoritative.
+- A separate **OpenFolk admin** button sits in both sidebar footers. It is visible
+  only when the signed-in email is `chris@openfolk.ai` AND the existing server RPC
+  confirms admin operator authority. Other users and pending/failed authority checks
+  see no button. It navigates to the existing guarded `/openfolk` route in the same
+  session, independently of the editing toggle; it never signs anyone out or grants access.
 
 ## Checks and release boundary
 
-TypeScript, production-target build, 14 prebuild brand/navigation checks, five
+TypeScript, production-target build, 18 prebuild brand/navigation checks, five
 homepage-output checks and three programme-contract tests pass. Targeted lint has
 no errors; the existing auth module's react-refresh export warning remains.
 

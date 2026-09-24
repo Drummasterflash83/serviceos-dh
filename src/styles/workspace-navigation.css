@@ -12,6 +12,32 @@
   color: #efedf8;
   cursor: pointer;
 }
+.cp-root .of-admin-return,
+.rw .of-admin-return {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid #b9a3db55;
+  border-radius: 10px;
+  background: #514669;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 550;
+  text-decoration: none;
+}
+.of-admin-return > span {
+  flex: 1;
+}
+.cp-root .of-admin-return:hover,
+.rw .of-admin-return:hover {
+  background: #63547f;
+}
+.of-admin-return:focus-visible {
+  outline: 3px solid #b9a3db;
+  outline-offset: 3px;
+}
 .of-workspace-switch:hover,
 .of-workspace-switch[data-state="open"] {
   background: #514669;

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -23,6 +23,7 @@ import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
+import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
 import {
   clientWorkspaceHref,
@@ -741,11 +742,9 @@ export function ClientPortal({
               <button aria-pressed={operatorTools} onClick={() => setOperatorTools(!operatorTools)}>
                 {operatorTools ? "Return to client view" : "OpenFolk editing tools"}
               </button>
-              <Link to="/openfolk">
-                Operator workspace <ArrowUpRight size={14} />
-              </Link>
             </div>
           )}
+          <OpenFolkAdminLink email={user?.email} authorised={operator.data} />
           <button
             onClick={async () => {
               await signOut();

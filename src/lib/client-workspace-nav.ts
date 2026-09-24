@@ -32,3 +32,8 @@ export function clientWorkspaceHref(tenant?: string, section: ClientSection = "h
 export function receptionistHref(tenant?: string) {
   return tenant ? `/receptionist?tenant=${encodeURIComponent(tenant)}` : "/receptionist";
 }
+
+/** UI visibility only. The existing admin route and server authority remain mandatory. */
+export function canShowOpenFolkAdmin(email: string | null | undefined, authorised: unknown) {
+  return authorised === true && email?.trim().toLowerCase() === "chris@openfolk.ai";
+}

@@ -6,8 +6,44 @@ import {
   clientWorkspaceHref,
   receptionistHref,
   selectedWorkspace,
+  canShowOpenFolkAdmin,
 } from "./client-workspace-nav.ts";
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
+
+test("admin return is shown only to Chris with verified admin authority", () => {
+  assert.equal(canShowOpenFolkAdmin("chris@openfolk.ai", true), true);
+  assert.equal(canShowOpenFolkAdmin("Chris@OpenFolk.ai", true), true);
+  assert.equal(canShowOpenFolkAdmin("heidi@drummondheating.co.uk", true), false);
+  assert.equal(canShowOpenFolkAdmin("other@openfolk.ai", true), false);
+  assert.equal(canShowOpenFolkAdmin("chris@openfolk.ai.example.com", true), false);
+});
+test("an email match never grants access: missing, failed or pending authority hides the link", () => {
+  for (const authority of [false, undefined, null, "true", 1, {}]) {
+    assert.equal(canShowOpenFolkAdmin("chris@openfolk.ai", authority), false);
+  }
+  assert.equal(canShowOpenFolkAdmin(undefined, true), false);
+  assert.equal(canShowOpenFolkAdmin(null, true), false);
+});
+test("admin return preserves the signed-in session and uses the existing guarded route", () => {
+  const link = read("../components/OpenFolkAdminLink.tsx");
+  assert.match(link, /if \(!canShowOpenFolkAdmin\(email, authorised\)\) return null/);
+  assert.match(link, /<Link to="\/openfolk"/);
+  assert.match(link, /OpenFolk admin/);
+  assert.doesNotMatch(link, /signOut|signIn|window\.open|target=|localStorage/);
+});
+test("both sidebar footers contain the same gated admin return", () => {
+  for (const [path, marker] of [
+    ["../components/client-portal/ClientPortal.tsx", 'className="cp-sidebar-bottom"'],
+    ["../components/receptionist/ReceptionistWorkspace.tsx", 'className="rw-sidebar-bottom"'],
+  ]) {
+    const text = read(path);
+    const footer = text.slice(text.indexOf(marker), text.indexOf("</aside>", text.indexOf(marker)));
+    assert.match(
+      footer,
+      /<OpenFolkAdminLink email=\{user\?\.email\} authorised=\{operator.data\} \/>/,
+    );
+  }
+});
 
 test("sign-in workspace defaults to home, not the proposal", () => {
   assert.deepEqual(clientSearch({}), { tenant: undefined, section: "home" });

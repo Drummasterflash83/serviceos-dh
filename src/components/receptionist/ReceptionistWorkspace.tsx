@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
+import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -551,6 +552,7 @@ export function ReceptionistWorkspace({
           <small>
             <ShieldCheck size={14} /> Private client workspace
           </small>
+          {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
           {!demo && (
             <button
               onClick={async () => {
