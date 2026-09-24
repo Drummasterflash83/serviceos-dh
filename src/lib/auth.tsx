@@ -213,14 +213,15 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const searchStr = useRouterState({ select: (s) => s.location.searchStr });
 
   useEffect(() => {
     // The guard can remain mounted for one render after navigation. Do not let
     // that render overwrite the original destination with `/login`.
     if (!loading && !session && pathname !== "/login") {
-      navigate({ to: "/login", search: { redirect: pathname }, replace: true });
+      navigate({ to: "/login", search: { redirect: pathname + searchStr }, replace: true });
     }
-  }, [loading, session, navigate, pathname]);
+  }, [loading, session, navigate, pathname, searchStr]);
 
   if (loading || !session) return <AuthLoading />;
   return <>{children}</>;

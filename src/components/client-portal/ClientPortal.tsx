@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -22,7 +22,16 @@ import {
 import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
 import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
+import { WorkspaceMenu } from "@/components/WorkspaceMenu";
+import { WorkspaceHome } from "./WorkspaceHome";
+import {
+  clientWorkspaceHref,
+  receptionistHref,
+  selectedWorkspace,
+  type ClientSection,
+} from "@/lib/client-workspace-nav";
 import "@/styles/client-investment.css";
+import "@/styles/client-workspace.css";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   programmeSchema,
@@ -46,6 +55,7 @@ import {
 } from "@/components/ui/dialog";
 
 const nav = [
+  { id: "home", label: "Workspace home", Icon: LayoutDashboard },
   { id: "overview", label: "Your programme", Icon: LayoutDashboard },
   { id: "investment", label: "Invoices & delivery", Icon: ShieldCheck },
   { id: "outcomes", label: "Outcomes & investment", Icon: Layers },
@@ -87,11 +97,20 @@ function date(value: string) {
   });
 }
 
-export function ClientPortal() {
+export function ClientPortal({
+  tenantId,
+  section = "home",
+}: {
+  tenantId?: string;
+  section?: ClientSection;
+}) {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
-  const [section, setSection] = useState<Section>("overview");
-  const [selected, setSelected] = useState("");
+  const [operatorTools, setOperatorTools] = useState(false);
+  function setSection(next: ClientSection) {
+    void navigate({ to: "/client", search: { tenant: tenantId ?? tenant, section: next } });
+  }
   const [editing, setEditing] = useState<OutcomePackage | null>(null);
   const [settings, setSettings] = useState(false);
   const [editorVersion, setEditorVersion] = useState<number | null>(null);
@@ -126,7 +145,7 @@ export function ClientPortal() {
       return !error && data === true;
     },
   });
-  const row = programmes.data?.find((p) => p.tenant_id === selected) ?? programmes.data?.[0];
+  const row = selectedWorkspace(programmes.data, tenantId);
   const tenant = row?.tenant_id;
   const notes = useQuery({
     queryKey: ["client-programme-notes", user?.id, tenant],
@@ -143,6 +162,7 @@ export function ClientPortal() {
     },
   });
   useEffect(() => {
+    setOperatorTools(false);
     setNotice("");
     setError("");
     setNote("");
@@ -199,7 +219,7 @@ export function ClientPortal() {
     }
   }
   const p = row?.content;
-  const admin = operator.data === true;
+  const admin = operator.data === true && operatorTools;
   const content = !p ? (
     <div className="cp-empty">
       <Layers size={30} />
@@ -231,17 +251,25 @@ export function ClientPortal() {
       <div className="cp-page-heading">
         <div>
           <p className="of-eyebrow">OPENFOLK × {p.company.toUpperCase()}</p>
-          <h1>{section === "overview" ? p.title : nav.find((n) => n.id === section)?.label}</h1>
+          <h1>
+            {section === "home"
+              ? p.company
+              : section === "overview"
+                ? "Your programme"
+                : nav.find((n) => n.id === section)?.label}
+          </h1>
           <p>
-            {section === "overview"
-              ? "A shared plan. Clear outcomes. One step at a time."
-              : section === "outcomes"
-                ? "Define the result, agree the investment, then build."
-                : section === "systems"
-                  ? "What each system does, who owns it and what happens next."
-                  : section === "links"
-                    ? "Your programme’s shared resources, in one place."
-                    : "Questions, priorities and findings to shape what we build next."}
+            {section === "home"
+              ? "Your business, in view. Start with what matters today."
+              : section === "overview"
+                ? "A shared plan. Clear outcomes. One step at a time."
+                : section === "outcomes"
+                  ? "Define the result, agree the investment, then build."
+                  : section === "systems"
+                    ? "What each system does, who owns it and what happens next."
+                    : section === "links"
+                      ? "Your programme’s shared resources, in one place."
+                      : "Questions, priorities and findings to shape what we build next."}
           </p>
         </div>
         <div className="cp-heading-actions">
@@ -282,6 +310,9 @@ export function ClientPortal() {
       )}
       {section === "investment" && tenant && user && (
         <ClientInvestment tenant={tenant} userId={user.id} />
+      )}
+      {section === "home" && tenant && user && (
+        <WorkspaceHome tenant={tenant} userId={user.id} company={p.company} open={setSection} />
       )}
       {section === "overview" && (
         <>
@@ -638,27 +669,34 @@ export function ClientPortal() {
   return (
     <div className="cp-root">
       <a href="#client-main" className="of-skip">
-        Skip to programme
+        Skip to workspace
       </a>
       <aside className="cp-sidebar">
-        <Link to="/" className="of-wordmark">
-          <OpenFolkWordmark />
-        </Link>
+        <a
+          href={clientWorkspaceHref(tenantId ?? tenant)}
+          className="of-wordmark"
+          aria-label="OpenFolk — workspace home"
+        >
+          <OpenFolkWordmark onDark />
+        </a>
         <div className="cp-workspace-label">CLIENT WORKSPACE</div>
-        <div className="cp-client-identity">
-          <span>{p?.company.slice(0, 1) ?? "O"}</span>
-          <div>
-            <strong>{p?.company ?? "Your workspace"}</strong>
-            <small>Your improvement programme</small>
-          </div>
-        </div>
+        <WorkspaceMenu
+          company={p?.company ?? "Your workspace"}
+          tenant={tenantId ?? tenant}
+          active={section === "home" ? "home" : "programme"}
+        />
         {(programmes.data?.length ?? 0) > 1 && (
           <label className="cp-field">
             <span>Client programme</span>
             <select
               aria-label="Client programme"
               value={tenant ?? ""}
-              onChange={(e) => setSelected(e.target.value)}
+              onChange={(e) =>
+                void navigate({
+                  to: "/client",
+                  search: { tenant: e.target.value, section: "home" },
+                })
+              }
             >
               {programmes.data?.map((r) => (
                 <option value={r.tenant_id} key={r.tenant_id}>
@@ -669,36 +707,26 @@ export function ClientPortal() {
           </label>
         )}
         <nav aria-label="Client workspace">
-          <a
-            href={`/receptionist${tenant ? `?tenant=${tenant}` : ""}`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "12px 14px",
-              borderRadius: 8,
-              color: "inherit",
-              textDecoration: "none",
-              fontSize: 13,
-            }}
-          >
+          <a href={receptionistHref(tenantId ?? tenant)} className="cp-emma-nav">
             <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
           </a>
-          {nav.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              className={section === id ? "is-active" : ""}
-              aria-current={section === id ? "page" : undefined}
-              onClick={() => {
-                setSection(id);
-                setNotice("");
-                setError("");
-              }}
-            >
-              <Icon size={17} />
-              {label}
-            </button>
-          ))}
+          {nav
+            .filter(({ id }) => id !== "links" || (p?.links.length ?? 0) > 0)
+            .map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                className={section === id ? "is-active" : ""}
+                aria-current={section === id ? "page" : undefined}
+                onClick={() => {
+                  setSection(id);
+                  setNotice("");
+                  setError("");
+                }}
+              >
+                <Icon size={17} />
+                {label}
+              </button>
+            ))}
         </nav>
         <div className="cp-sidebar-bottom">
           <div className="cp-private">
@@ -708,10 +736,15 @@ export function ClientPortal() {
           <a href="mailto:chris@openfolk.ai">
             Your OpenFolk contact <ArrowUpRight size={14} />
           </a>
-          {admin && (
-            <Link to="/openfolk">
-              Operator workspace <ArrowUpRight size={14} />
-            </Link>
+          {operator.data === true && (
+            <div className="cp-operator-controls">
+              <button aria-pressed={operatorTools} onClick={() => setOperatorTools(!operatorTools)}>
+                {operatorTools ? "Return to client view" : "OpenFolk editing tools"}
+              </button>
+              <Link to="/openfolk">
+                Operator workspace <ArrowUpRight size={14} />
+              </Link>
+            </div>
           )}
           <button
             onClick={async () => {
@@ -727,9 +760,10 @@ export function ClientPortal() {
       </aside>
       <div className="cp-main">
         <header className="cp-topbar">
-          <span>
-            Workspace <span>/</span> {p?.company ?? "OpenFolk"}
-          </span>
+          <a className="cp-home-breadcrumb" href={clientWorkspaceHref(tenantId ?? tenant)}>
+            {p?.company ?? "Your workspace"} <span>/</span>{" "}
+            {nav.find((n) => n.id === section)?.label}
+          </a>
           <span className="cp-user">{user?.email}</span>
         </header>
         <main id="client-main" className="cp-content">
