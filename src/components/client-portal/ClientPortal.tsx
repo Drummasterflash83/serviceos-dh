@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
+import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import "@/styles/client-investment.css";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -641,9 +642,7 @@ export function ClientPortal() {
       </a>
       <aside className="cp-sidebar">
         <Link to="/" className="of-wordmark">
-          <img src="/brand/openfolk-icon.svg" alt="" />
-          OpenFolk
-          <span className="of-brand-dot" />
+          <OpenFolkWordmark />
         </Link>
         <div className="cp-workspace-label">CLIENT WORKSPACE</div>
         <div className="cp-client-identity">

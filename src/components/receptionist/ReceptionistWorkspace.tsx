@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Phone,
@@ -488,8 +489,7 @@ export function ReceptionistWorkspace({
       </a>
       <aside className="rw-sidebar">
         <a href="/client" className="rw-brand">
-          <img src="/brand/openfolk-icon.svg" alt="" />
-          OpenFolk<span>●</span>
+          <OpenFolkWordmark onDark />
         </a>
         <div className="rw-company">
           <span className="rw-company-icon">{w.company.slice(0, 1)}</span>
