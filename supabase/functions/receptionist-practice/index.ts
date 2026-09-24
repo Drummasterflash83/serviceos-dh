@@ -18,6 +18,7 @@ const reply = (body: unknown, status = 200) =>
 const uuid = (v: unknown): v is string =>
   typeof v === "string" &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
+class ProviderReadError extends Error {}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers });
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
@@ -48,7 +49,13 @@ Deno.serve(async (req) => {
         ...(payload ? { body: JSON.stringify(payload) } : {}),
         signal: AbortSignal.timeout(20000),
       });
-      if (!r.ok) throw Error("Provider unavailable");
+      if (!r.ok) {
+        if (!payload && (path.startsWith("assistant/") || path.startsWith("tool/")))
+          throw new ProviderReadError(
+            `Emma’s ${path.startsWith("assistant/") ? "assistant configuration" : "knowledge tool configuration"} could not be read from Vapi (HTTP ${r.status}). OpenFolk needs to check the connection.`,
+          );
+        throw Error("Provider unavailable");
+      }
       return record(await r.json());
     };
     const service = createClient(
@@ -107,15 +114,27 @@ Deno.serve(async (req) => {
     const queryIds = allowedQueryTools(tools);
     const overview = assistantOverview(assistant, queryIds.length, tools.length - queryIds.length);
     let candidate;
+    let unavailableReason = w.practice_enabled
+      ? null
+      : "Browser practice is not enabled for this workspace.";
     try {
       candidate = practiceAssistant(assistant, queryIds);
-    } catch {
+    } catch (e) {
       candidate = null;
+      // Only expose our own fixed validation messages, never provider response bodies.
+      const message = e instanceof Error ? e.message : "";
+      unavailableReason =
+        message === "Inline knowledge needs an explicit practice adapter"
+          ? "Emma’s knowledge setup needs a browser-practice adapter. OpenFolk must connect it before a conversation can start."
+          : message === "Published instructions unavailable"
+            ? "Emma’s published conversation instructions are unavailable. OpenFolk needs to check the assistant configuration."
+            : "Emma’s voice or model configuration is not supported by this practice connection yet. OpenFolk needs to check it.";
     }
     if (body.action === "info")
       return reply({
         overview,
         enabled: w.practice_enabled && !!candidate,
+        unavailableReason,
         checkedAt: new Date().toISOString(),
         maxSeconds: 180,
       });
@@ -170,9 +189,14 @@ Deno.serve(async (req) => {
         502,
       );
     }
-  } catch {
+  } catch (e) {
     return reply(
-      { error: "Receptionist connection unavailable. Please retry or ask OpenFolk to check." },
+      {
+        error:
+          e instanceof ProviderReadError
+            ? e.message
+            : "Receptionist connection unavailable. Please retry or ask OpenFolk to check.",
+      },
       502,
     );
   }
