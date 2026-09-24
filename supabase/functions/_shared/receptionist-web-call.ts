@@ -56,3 +56,57 @@ export function practiceCallMatches(call: unknown, sessionId: string, tenantId: 
     metadata?.openfolkTenant === tenantId
   );
 }
+
+export function practiceReservationFailure(message: string | undefined, reserved: unknown) {
+  if (message === "A practice conversation is already reserved")
+    return {
+      code: "practice_busy",
+      error:
+        "Another practice conversation is still active or its end has not yet been confirmed. End it first; an unconfirmed reservation expires within five minutes.",
+      status: 429,
+    };
+  if (message === "Practice daily limit reached")
+    return {
+      code: "practice_daily_limit",
+      error:
+        "The rolling 24-hour practice allowance has been reached (10 per person or 30 per workspace). Waiting five minutes will not reset it. OpenFolk can review usage.",
+      status: 429,
+    };
+  if (message === "Practice not enabled")
+    return {
+      code: "practice_disabled",
+      error: "Browser practice is not enabled for this workspace.",
+      status: 409,
+    };
+  if (!message && reserved === false)
+    return {
+      code: "practice_duplicate",
+      error:
+        "This practice request was already registered. Check the existing conversation before starting another.",
+      status: 409,
+    };
+  return {
+    code: "practice_reservation_unavailable",
+    error:
+      "The practice reservation could not be checked. No new call was requested. Please ask OpenFolk to check the connection.",
+    status: 503,
+  };
+}
+
+export async function reconcilePracticeSessions(
+  sessions: { id: string; call_id: string | null }[],
+  tenant: string,
+  readCall: (id: string) => Promise<unknown>,
+  markEnded: (id: string) => Promise<void>,
+) {
+  for (const session of sessions) {
+    if (!session.call_id) continue;
+    // A failed read, absent call or different tenant never releases a lease.
+    const call = await readCall(session.call_id).catch(() => null);
+    if (
+      practiceCallMatches(call, session.id, tenant) &&
+      (call as { status?: string }).status === "ended"
+    )
+      await markEnded(session.id);
+  }
+}
