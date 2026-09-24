@@ -144,7 +144,7 @@ function LoginPage() {
               ? "We’ll email a secure link to your account address."
               : mode === "reset"
                 ? "Use a unique password with at least 12 characters."
-                : "Emma, your programme and your progress. One private workspace."}
+                : "Your programme and your progress: one private workspace."}
           </p>
         </div>
 
