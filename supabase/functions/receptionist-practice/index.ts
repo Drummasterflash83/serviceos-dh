@@ -18,6 +18,7 @@ const reply = (body: unknown, status = 200) =>
 const uuid = (v: unknown): v is string =>
   typeof v === "string" &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
+class ProviderReadError extends Error {}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers });
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
@@ -48,7 +49,13 @@ Deno.serve(async (req) => {
         ...(payload ? { body: JSON.stringify(payload) } : {}),
         signal: AbortSignal.timeout(20000),
       });
-      if (!r.ok) throw Error("Provider unavailable");
+      if (!r.ok) {
+        if (!payload && (path.startsWith("assistant/") || path.startsWith("tool/")))
+          throw new ProviderReadError(
+            `Emma’s ${path.startsWith("assistant/") ? "assistant configuration" : "knowledge tool configuration"} could not be read from Vapi (HTTP ${r.status}). OpenFolk needs to check the connection.`,
+          );
+        throw Error("Provider unavailable");
+      }
       return record(await r.json());
     };
     const service = createClient(
@@ -182,9 +189,14 @@ Deno.serve(async (req) => {
         502,
       );
     }
-  } catch {
+  } catch (e) {
     return reply(
-      { error: "Receptionist connection unavailable. Please retry or ask OpenFolk to check." },
+      {
+        error:
+          e instanceof ProviderReadError
+            ? e.message
+            : "Receptionist connection unavailable. Please retry or ask OpenFolk to check.",
+      },
       502,
     );
   }

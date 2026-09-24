@@ -40,10 +40,22 @@ export function useEmmaInfo(tenant: string, userId: string | undefined, demo: bo
       const { data, error } = await getSupabaseClient().functions.invoke("receptionist-practice", {
         body: { tenantId: tenant, action: "info" },
       });
-      if (error || data?.error)
+      if (error || data?.error) {
+        // This endpoint returns governed messages, never raw provider payloads.
+        let reason = data?.error;
+        if (!reason && error?.context instanceof Response) {
+          const body = await error.context
+            .clone()
+            .json()
+            .catch(() => null);
+          reason = body?.error;
+        }
         throw Error(
-          "Emma’s current configuration could not be checked. Your feedback can still be saved.",
+          typeof reason === "string"
+            ? reason
+            : "Emma’s current configuration could not be checked. Your feedback can still be saved.",
         );
+      }
       return data as EmmaInfo;
     },
   });
