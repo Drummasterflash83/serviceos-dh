@@ -1,0 +1,165 @@
+.pp {
+  display: grid;
+  gap: 24px;
+  color: #203f70;
+}
+.pp .rw-panel { padding: 24px; }
+.pp h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  margin: 18px 0 12px;
+  letter-spacing: -1px;
+}
+.pp p {
+  line-height: 1.6;
+  color: #566779;
+}
+.pp-caution,
+.pp-message {
+  background: #edf4f8;
+  padding: 16px;
+  border-radius: 14px;
+}
+.pp-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pp-flow span {
+  border: 1px solid #cbd8e5;
+  border-radius: 30px;
+  padding: 10px 18px;
+  font-size: 13px;
+  background: #ffffffb0;
+}
+.pp-editor {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 24px;
+}
+.pp-columns {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(320px, 1.5fr);
+  gap: 24px;
+  align-items: start;
+}
+.pp-groups {
+  display: grid;
+  gap: 18px;
+}
+.pp label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.pp input,
+.pp select,
+.pp textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #c9d5e0;
+  border-radius: 10px;
+  padding: 10px;
+  background: white;
+  color: #203f70;
+  font: inherit;
+}
+.pp textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.pp input:focus-visible,
+.pp select:focus-visible,
+.pp textarea:focus-visible,
+.pp button:focus-visible {
+  outline: 3px solid #b08c3f;
+  outline-offset: 3px;
+}
+.pp-phone {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  margin: 14px 0;
+  border: 1px solid #d1dce6;
+  border-radius: 16px;
+  background: #f8fafc;
+  cursor: grab;
+}
+.pp-grip {
+  color: #718298;
+}
+.pp-group {
+  display: grid;
+  gap: 16px;
+  border: 2px dashed #c4d4e0;
+}
+.pp-group p {
+  margin: 0;
+  font-size: 13px;
+}
+.pp-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.pp-members {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.pp-members li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #edf4f8;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.pp-members span {
+  flex: 1;
+}
+.pp-members button {
+  min-width: 36px;
+  min-height: 36px;
+  border: 1px solid #b8cbdc;
+  border-radius: 8px;
+  background: white;
+}
+.pp-instructions {
+  display: grid;
+  gap: 18px;
+}
+.pp pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  line-height: 1.8;
+}
+.pp-history {
+  border-top: 1px solid #dbe2e8;
+  padding: 18px 0;
+}
+.pp-history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.pp-footnote,
+.pp-empty {
+  font-size: 13px;
+}
+.pp button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 800px) {
+  .pp-columns {
+    grid-template-columns: 1fr;
+  }
+  .pp-two {
+    grid-template-columns: 1fr;
+  }
+}
