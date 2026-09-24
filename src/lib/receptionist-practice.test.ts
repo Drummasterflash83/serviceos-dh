@@ -78,6 +78,35 @@ const fileQuery = {
     },
   ],
 };
+test("actual legacy Google model knowledge becomes a safe query using the exact same file set", () => {
+  const input = {
+    ...source,
+    model: {
+      ...source.model,
+      knowledgeBase: { provider: "google", fileIds: [query] },
+      tools: undefined,
+    },
+  };
+  const before = JSON.stringify(input);
+  const result = practiceAssistant(input, []);
+  assert.equal(result.model.tools?.length, 1);
+  assert.equal(result.model.tools?.[0].function?.name, "openfolk_practice_knowledge");
+  assert.deepEqual(result.model.tools?.[0].knowledgeBases[0].fileIds, [query]);
+  assert.match(result.model.messages[0].content, /Use it for company facts/);
+  assert.equal(JSON.stringify(input), before);
+  assert.ok(!JSON.stringify(result).includes("live-transfer"));
+});
+test("legacy Google retrieval rejects malformed file sets and external server overrides", () => {
+  for (const kb of [
+    { provider: "google", fileIds: [] },
+    { provider: "google", fileIds: ["not-an-id"] },
+    { provider: "google", fileIds: [query], server: { url: "https://external.example" } },
+    { provider: "google", fileIds: [query], credentialsId: "private" },
+  ])
+    assert.throws(() =>
+      practiceAssistant({ ...source, model: { ...source.model, knowledgeBase: kb } }, []),
+    );
+});
 test("inline file-backed knowledge works alongside saved query IDs without changing its files or name", () => {
   const input = {
     ...source,
