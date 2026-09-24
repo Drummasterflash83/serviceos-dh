@@ -13,6 +13,11 @@ import {
 import { getSupabaseClient } from "@/lib/supabase";
 import { type ReceptionistCall } from "@/lib/receptionist-data";
 import { callBrief } from "@/lib/receptionist-review";
+import {
+  PracticeLifecycle,
+  practiceVoiceError,
+  practiceEndedMessage,
+} from "@/lib/receptionist-practice-runtime";
 import type Vapi from "@vapi-ai/web";
 import { CallRecording } from "./CallRecording";
 
@@ -96,12 +101,15 @@ export function PracticeImprove({
   const db = getSupabaseClient(),
     qc = useQueryClient();
   const sdk = useRef<Vapi | null>(null),
+    media = useRef<{ stop: () => void } | null>(null),
+    lifecycle = useRef<PracticeLifecycle | null>(null),
     alive = useRef(true),
     generation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [state, setState] = useState<"idle" | "connecting" | "active" | "ended">("idle"),
     [muted, setMuted] = useState(false),
     [error, setError] = useState(""),
+    [connectionNote, setConnectionNote] = useState(""),
     [scenario, setScenario] = useState(scenarios[0]);
   const [session, setSession] = useState<{ id: string; callId: string | null } | null>(null),
     [excerpt, setExcerpt] = useState(""),
@@ -160,10 +168,13 @@ export function PracticeImprove({
     },
   });
   function stop() {
+    lifecycle.current?.end();
     generation.current++;
     if (timer.current) clearTimeout(timer.current);
     void sdk.current?.stop();
     sdk.current = null;
+    media.current?.stop();
+    media.current = null;
     setState("ended");
     setMuted(false);
   }
@@ -171,18 +182,24 @@ export function PracticeImprove({
     alive.current = true;
     return () => {
       alive.current = false;
+      lifecycle.current?.end();
       generation.current++;
       if (timer.current) clearTimeout(timer.current);
       void sdk.current?.stop();
       sdk.current = null;
+      media.current?.stop();
+      media.current = null;
     };
   }, []);
   useEffect(() => {
     if (!active) {
+      lifecycle.current?.end();
       generation.current++;
       if (timer.current) clearTimeout(timer.current);
       void sdk.current?.stop();
       sdk.current = null;
+      media.current?.stop();
+      media.current = null;
       setState((s) => (s === "active" || s === "connecting" ? "ended" : s));
     }
   }, [active]);
@@ -202,19 +219,51 @@ export function PracticeImprove({
       return;
     }
     const attempt = ++generation.current;
+    const connection = new PracticeLifecycle();
+    lifecycle.current = connection;
     setState("connecting");
     setMode(nextMode);
     setError("");
+    setConnectionNote("Preparing audio…");
     setExcerpt("");
     setSaved(null);
-    setSession(null);
     setMuted(false);
     try {
+      let track: MediaStreamTrack;
       if (nextMode === "conversation") {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((t) => t.stop());
+        if (!alive.current || attempt !== generation.current) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        media.current = { stop: () => stream.getTracks().forEach((t) => t.stop()) };
+        track = stream.getAudioTracks()[0];
+        if (!track || track.readyState !== "live")
+          throw Error(
+            "No working microphone was found. Check your input device before trying again.",
+          );
+      } else {
+        // Daily needs an audio track even for welcome-only playback. A silent
+        // generated track avoids opening/recording the visitor's microphone.
+        const context = new AudioContext();
+        const destination = context.createMediaStreamDestination();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        gain.gain.value = 0;
+        oscillator.connect(gain).connect(destination);
+        oscillator.start();
+        media.current = {
+          stop: () => {
+            destination.stream.getTracks().forEach((t) => t.stop());
+            oscillator.stop();
+            void context.close();
+          },
+        };
+        await context.resume();
+        track = destination.stream.getAudioTracks()[0];
       }
       if (!alive.current || attempt !== generation.current) return;
+      setConnectionNote("Preparing Emma’s secure connection…");
       const { default: VapiClient } = await import("@vapi-ai/web");
       if (!alive.current || attempt !== generation.current) return;
       const id = crypto.randomUUID();
@@ -239,23 +288,40 @@ export function PracticeImprove({
       }
       setSession({ id, callId: data.callId });
       const voice = new VapiClient("", undefined, undefined, {
-        audioSource: nextMode !== "listen",
+        audioSource: track,
       });
       sdk.current = voice;
-      voice.on("call-start", () => {
-        if (alive.current && attempt === generation.current) setState("active");
-      });
+      const ready = () => {
+        if (alive.current && attempt === generation.current && connection.ready()) {
+          if (timer.current) clearTimeout(timer.current);
+          setState("active");
+          setConnectionNote(
+            nextMode === "listen"
+              ? "Listening to Emma — your microphone is not being used."
+              : "Microphone connected. You can speak to Emma.",
+          );
+          timer.current = setTimeout(() => stop(), data.maxSeconds * 1000);
+        }
+      };
+      voice.on("call-start", ready);
       voice.on("call-end", () => {
-        if (alive.current && attempt === generation.current) {
+        if (alive.current && attempt === generation.current && connection.end()) {
           setState("ended");
           setMuted(false);
+          setConnectionNote("Conversation ended. Checking the call record…");
           if (timer.current) clearTimeout(timer.current);
+          media.current?.stop();
+          media.current = null;
+          sdk.current = null;
         }
       });
-      voice.on("error", () => {
+      voice.on("error", (event: unknown) => {
         if (alive.current && attempt === generation.current) {
-          setError("The voice connection stopped. Your feedback is still here.");
-          stop();
+          const issue = practiceVoiceError(event);
+          if (issue.fatal) {
+            setError(issue.message);
+            stop();
+          } else setConnectionNote(issue.message);
         }
       });
       voice.on("message", (message: unknown) => {
@@ -274,21 +340,31 @@ export function PracticeImprove({
         )
           setExcerpt(`${m.role === "assistant" ? name : "You"}: ${m.transcript}`);
       });
+      setConnectionNote("Connecting microphone and speaker…");
+      timer.current = setTimeout(() => {
+        if (alive.current && attempt === generation.current && !connection.ended) {
+          setError(
+            "The browser could not finish connecting audio. Check microphone permission and your connection before another attempt.",
+          );
+          stop();
+        }
+      }, 30000);
       await voice.reconnect({ webCallUrl: data.webCallUrl, id: data.callId });
       if (!alive.current || attempt !== generation.current) {
         await voice.stop();
         return;
       }
-      setState("active");
-      timer.current = setTimeout(() => stop(), data.maxSeconds * 1000);
+      if (!connection.ended) ready();
     } catch (e) {
       if (alive.current && attempt === generation.current) {
         setError(
-          e instanceof Error ? e.message : "Voice unavailable. You can still share an improvement.",
+          e instanceof Error && e.name === "NotAllowedError"
+            ? "Microphone access was blocked. Allow it for this site, then start again. No call was requested."
+            : e instanceof Error
+              ? e.message
+              : "Voice unavailable. You can still share an improvement.",
         );
-        setState("ended");
-        void sdk.current?.stop();
-        sdk.current = null;
+        stop();
       }
     }
   }
@@ -414,9 +490,16 @@ export function PracticeImprove({
           </div>
           <div className="ep-live-caption" role="status">
             {state === "connecting"
-              ? "Connecting securely…"
-              : excerpt || "Your conversation appears here as you speak."}
+              ? connectionNote
+              : excerpt ||
+                (state === "ended" ? "Conversation ended." : connectionNote) ||
+                "Your conversation appears here as you speak."}
           </div>
+          {state === "ended" && result.data && practiceEndedMessage(result.data.endedReason) && (
+            <p className="rw-footnote" role="status">
+              {practiceEndedMessage(result.data.endedReason)}
+            </p>
+          )}
           {result.data && (
             <div className="ep-recap">
               <strong>Your conversation</strong>

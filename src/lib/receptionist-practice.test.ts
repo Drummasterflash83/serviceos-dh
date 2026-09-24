@@ -252,7 +252,7 @@ test("browser joins a server-created call without a private or public API key", 
     "utf8",
   );
   assert.match(ui, /voice\.reconnect/);
-  assert.doesNotMatch(ui, /\.start\(/);
+  assert.doesNotMatch(ui, /(?:voice|sdk\.current\??)\.start\(/);
   assert.match(ui, /submission_key/);
   assert.match(ui, /practice_session_id/);
   assert.match(ui, /Slack delivery pending/);

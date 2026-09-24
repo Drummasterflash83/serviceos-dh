@@ -1,5 +1,32 @@
 # Emma — Practice & improve, 24 September 2026
 
+## Browser media and reservation correction
+
+The actual user attempt created at 2026-09-24T20:07:34.771266Z was confirmed through
+a fixed-tenant, service-authenticated read: Vapi status ended, reason
+`call.in-progress.error-assistant-did-not-receive-customer-audio`, start/end both
+20:07:50.204Z. Database still said active. Tenant/session metadata matched. No
+meeting token was supplied by this call, so a missing token was not the cause.
+This proves no customer audio reached Vapi; it does not prove which browser event
+prevented it. No extra paid call was created for this investigation.
+
+The previous microphone preflight stopped its track before SDK join. Conversation
+now passes the still-live acquired track directly to the SDK, stopping it on every
+terminal/cancel/unmount path. Welcome-only mode supplies a generated silent track,
+not the visitor's microphone (the installed SDK silently changes audioSource:false
+to true, so false was not a safe listening-only contract). Optional noise-reduction
+errors no longer cause our handler to hang up. A terminal lifecycle latch prevents
+call-end followed by late join from resurrecting active state. Connection stages,
+30-second join timeout and fixed safe end-reason guidance are displayed; prior
+call evidence survives a rejected retry.
+
+Before reservation, positively ended provider calls with exact web-call,
+tenant/session binding are reconciled. Failed reads, absent calls and wrong bindings
+do not release anything. The existing locked reservation RPC and rolling quota are
+unchanged. Busy, daily limit, duplicate and infrastructure errors have distinct messages.
+Eight focused tests cover these boundaries; browser/audible acceptance remains pending.
+Reference: https://docs.vapi.ai/calls/call-ended-reason
+
 ## Browser-call route correction
 
 Chris's start attempt reached the database reservation but stored no call ID. A single

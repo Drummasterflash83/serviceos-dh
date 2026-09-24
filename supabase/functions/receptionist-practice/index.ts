@@ -4,6 +4,8 @@ import {
   webCallToken,
   definitiveWebCallRejection,
   practiceCallMatches,
+  practiceReservationFailure,
+  reconcilePracticeSessions,
 } from "../_shared/receptionist-web-call.ts";
 import {
   practiceAssistant,
@@ -151,18 +153,41 @@ Deno.serve(async (req) => {
     if (!w.practice_enabled || !candidate)
       return reply({ error: "OpenFolk needs to finish preparing the practice connection" }, 409);
     if (!uuid(body.sessionId)) return reply({ error: "Invalid practice reference" }, 400);
+    // Reconcile only positively ended, correctly bound provider calls. The locked
+    // reservation RPC remains authoritative for overlap and all usage limits.
+    const pending = await service
+      .from("receptionist_practice_sessions")
+      .select("id,call_id")
+      .eq("tenant_id", body.tenantId)
+      .in("state", ["starting", "active"])
+      .gt("expires_at", new Date().toISOString());
+    if (pending.error)
+      return reply(
+        { error: "Practice availability could not be checked. No new call was requested." },
+        503,
+      );
+    await reconcilePracticeSessions(
+      pending.data ?? [],
+      body.tenantId,
+      (id) => provider("call/" + id),
+      async (id) => {
+        const updated = await service
+          .from("receptionist_practice_sessions")
+          .update({ state: "ended" })
+          .eq("id", id)
+          .eq("tenant_id", body.tenantId)
+          .in("state", ["starting", "active"]);
+        if (updated.error) throw Error("Practice reconciliation unavailable");
+      },
+    );
     const { data: reserved, error: reserveError } = await service.rpc(
       "reserve_receptionist_practice",
       { p_tenant: body.tenantId, p_actor: auth.user.id, p_id: body.sessionId },
     );
-    if (reserveError || !reserved)
-      return reply(
-        {
-          error:
-            "A conversation is already reserved, or the practice limit has been reached. Wait five minutes before trying again.",
-        },
-        429,
-      );
+    if (reserveError || !reserved) {
+      const failure = practiceReservationFailure(reserveError?.message, reserved);
+      return reply({ error: failure.error, code: failure.code }, failure.status);
+    }
     try {
       const duration = body.mode === "listen" ? 25 : 180;
       const token = await webCallToken(key, String(assistant.orgId ?? ""));
