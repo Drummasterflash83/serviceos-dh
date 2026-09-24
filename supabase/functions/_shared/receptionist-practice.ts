@@ -7,12 +7,43 @@ export const PRACTICE_SECONDS = 180;
 // source tool, callbacks, credentials, hooks or function/action implementations.
 export function practiceKnowledgeTools(modelValue: unknown) {
   const model = record(modelValue);
-  if (model.knowledgeBase || model.knowledgeBaseId) throw Error("Custom knowledge requires review");
+  if (model.knowledgeBaseId) throw Error("Custom knowledge requires review");
+  const legacy = record(model.knowledgeBase);
+  if (
+    model.knowledgeBase &&
+    (legacy.provider !== "google" ||
+      legacy.server ||
+      legacy.serverUrl ||
+      legacy.credentialsId ||
+      legacy.credentialId)
+  )
+    throw Error("Custom knowledge requires review");
   if (model.tools != null && !Array.isArray(model.tools))
     throw Error("Invalid inline knowledge configuration");
   const tools = (Array.isArray(model.tools) ? model.tools : []).filter(
     (t) => record(t).type === "query",
   );
+  // Older Vapi assistants store Google file retrieval directly on the model.
+  // Re-express the exact file set as a current read-only query tool; no re-upload,
+  // alternate document set, custom server or mutation of the saved assistant.
+  if (model.knowledgeBase)
+    tools.push({
+      type: "query",
+      function: {
+        name: "openfolk_practice_knowledge",
+        description:
+          "Retrieve Emma's existing approved company knowledge for this practice conversation.",
+      },
+      knowledgeBases: [
+        {
+          provider: "google",
+          name: "Emma published knowledge",
+          description: "The same knowledge files attached to the published receptionist.",
+          fileIds: legacy.fileIds,
+          ...(legacy.model !== undefined ? { model: legacy.model } : {}),
+        },
+      ],
+    });
   return tools.map((raw) => {
     const tool = record(raw);
     if (
@@ -108,6 +139,9 @@ export function practiceAssistant(source: unknown, queryToolIds: string[]) {
           role: "system",
           content:
             rules +
+            (model.knowledgeBase
+              ? "\n\nKNOWLEDGE LOOKUP: Your existing company knowledge is available through openfolk_practice_knowledge. Use it for company facts and policies not explicitly contained in these instructions. Do not invent an answer when the lookup does not supply it."
+              : "") +
             "\n\nPRACTICE MODE: This is an internal rehearsal, never a real customer call. No calls can be transferred, appointments booked, messages sent or records changed. When a route is identified, explain who you would connect the caller to and why. Never claim a transfer occurred. Knowledge lookup is read-only. Apply the approved conversation rules above otherwise.",
         },
       ],

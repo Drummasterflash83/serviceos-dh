@@ -2,6 +2,22 @@
 
 ## Knowledge adapter correction
 
+### Confirmed legacy Google format (supersedes the unverified custom label)
+
+A temporary service-authenticated, fixed-tenant diagnostic read the actual provider
+configuration. Emma's model.knowledgeBase is `{provider: "google", fileIds: [one UUID]}`,
+not a custom external server. No knowledgeBaseId; no inline tools; only a saved live
+transferCall tool. Source updatedAt 2026-09-22T16:09:07.432Z. The prior generic label
+misclassified this older Google file-retrieval format.
+
+The adapter now converts that exact file set into an inline read-only Google query,
+with an explicit practice instruction to use it. No file contents downloaded, no
+provider configuration changed. Actual-source diagnostic: adapterPassed=true,
+sourceFileCount=1, projectedFileCount=1, exactFileSetPreserved=true, tool types=[query],
+saved action references=0, serverMessages=[], maxDurationSeconds=180.
+15 practice tests / 67 broader focused tests, TypeScript and Deno pass.
+Temporary diagnostic is removed after deployment; no actual voice call claimed verified.
+
 Chris reported the explicit knowledge-adapter blocker. The previous implementation
 rejected every inline query tool, including Vapi's supported read-only file-backed
 knowledge configuration. The practice adapter now strictly reconstructs Google-backed
