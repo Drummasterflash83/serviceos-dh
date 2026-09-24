@@ -1646,3 +1646,259 @@
   color: #91809b;
   font-size: 10px;
 }
+/* V1 daily operations: quiet surfaces, legible evidence, one purple accent. */
+.rw-brand {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  gap: 0;
+}
+.rw-brand > span {
+  color: #cc8625;
+  font-size: inherit;
+  margin-left: 0;
+}
+.rw {
+  --muted: #615c70;
+  --paper: #faf9fc;
+}
+.rw-shell {
+  min-width: 0;
+}
+.rw-main {
+  max-width: 1440px;
+  margin: auto;
+}
+.rw-heading > div > p:last-child {
+  color: #615c70;
+}
+.rw-sidebar-card {
+  display: none;
+}
+.rw-health-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid #ded5ef;
+  border-radius: 16px;
+  background: #f2edfa;
+}
+.rw-health-strip > div {
+  flex: 1;
+  min-width: 175px;
+}
+.rw-health-strip strong,
+.rw-health-strip small {
+  display: block;
+}
+.rw-health-strip strong {
+  font-size: 13px;
+  color: #353045;
+}
+.rw-health-strip small {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #61566f;
+}
+.rw-health-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.rw-health-orb {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: white;
+  color: #6c53b6;
+}
+.rw-health-label {
+  display: block;
+  font-size: 11px;
+  color: #675776;
+  margin-bottom: 5px;
+}
+.rw-coverage,
+.rw-queue-help {
+  font-size: 12px;
+  color: #645c70;
+  line-height: 1.65;
+}
+.rw-coverage {
+  margin: 12px 0 22px;
+}
+.rw-queue-help {
+  padding: 0 24px;
+}
+.rw-attention {
+  margin-bottom: 18px;
+}
+.rw-queue-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px;
+  color: #6550a8;
+}
+.rw-queue-empty strong {
+  color: #353045;
+  font-size: 14px;
+}
+.rw-queue-empty p {
+  color: #625a6e;
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.rw-insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.rw-insight-grid > button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px;
+  text-align: left;
+  background: white;
+  border: 1px solid #e4dfeb;
+  border-radius: 14px;
+  color: #6952ad;
+}
+.rw-insight-grid > button:hover {
+  border-color: #ad9bd2;
+}
+.rw-insight-grid span {
+  flex: 1;
+}
+.rw-insight-grid strong {
+  display: block;
+  color: #353045;
+  font-size: 14px;
+}
+.rw-insight-grid small {
+  display: block;
+  margin-top: 6px;
+  color: #625a6e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.rw-call-summary {
+  color: #524b61;
+  font-size: 13px;
+}
+.rw-outcome {
+  display: block;
+  margin-top: 6px;
+  color: #665382;
+  font-size: 11px;
+}
+.rw-caller > small,
+.rw-call-time small {
+  color: #675d75;
+  font-size: 11px;
+}
+.rw-metric > small {
+  color: #675d75;
+  font-size: 12px;
+}
+.rw-searchbar > select {
+  border: 1px solid #ddd5e7;
+  border-radius: 9px;
+  background: white;
+  color: #51455f;
+  padding: 12px;
+}
+.rw-evidence {
+  background: #fcf7ef;
+  border: 1px solid #ecdcc2;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.rw-evidence > div + div {
+  border-top: 1px solid #e9dcc8;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.rw-evidence strong {
+  font-size: 13px;
+}
+.rw-evidence small {
+  color: #725a38;
+  font-size: 11px;
+}
+.rw-outcome-detail {
+  font-weight: 650;
+  color: #5e488b;
+}
+.rw-recording {
+  background: #f5f1fa;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.rw-dialog .rw-person-call {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+@media (max-width: 800px) {
+  .rw-insight-grid {
+    grid-template-columns: 1fr;
+  }
+  .rw-topbar {
+    gap: 12px;
+  }
+  .rw-topbar > div {
+    min-width: 0;
+  }
+  .rw-call-row {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 18px;
+  }
+  .rw-call-row .rw-call-summary {
+    display: block;
+    grid-column: 2 / -1;
+    grid-row: 2;
+    width: auto;
+    max-width: none;
+    white-space: normal;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+  .rw-call-row .rw-caller {
+    width: auto;
+    min-width: 0;
+  }
+  .rw-call-row .rw-pill {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: start;
+    font-size: 10px;
+  }
+  .rw-call-row .rw-call-time {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+    font-size: 11px;
+  }
+  .rw-call-row > svg {
+    display: none;
+  }
+  .rw-health-strip {
+    padding: 20px;
+    gap: 18px;
+  }
+  .rw-panel-title {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}

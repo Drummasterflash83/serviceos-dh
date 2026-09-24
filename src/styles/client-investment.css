@@ -1,14 +1,14 @@
-.cp-investment {
+.cp-invoices-page {
   max-width: 1120px;
   margin: auto;
 }
-.cp-investment h2 {
+.cp-invoices-page h2 {
   font-size: clamp(24px, 3vw, 36px);
   letter-spacing: -0.045em;
   line-height: 1.15;
   margin: 12px 0;
 }
-.cp-investment .cp-metrics {
+.cp-invoices-page .cp-metrics {
   margin: 28px 0;
 }
 .cp-investment-note {
@@ -62,9 +62,7 @@
   margin-top: 20px;
 }
 .cp-delivery-summary {
-  border-top: 1px solid #e3e7ed;
-  margin-top: 46px;
-  padding-top: 36px;
+  margin-bottom: 36px;
 }
 @media (max-width: 680px) {
   .cp-invoice-list {

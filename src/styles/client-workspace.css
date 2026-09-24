@@ -1,0 +1,260 @@
+/* V1 workspace: operational entry points, with proposals kept in Programme. */
+.cp-root {
+  color: #24243a;
+  background: #faf9fc;
+}
+.cp-root .of-wordmark {
+  color: #203f70;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  gap: 0;
+}
+.cp-wordmark-colon {
+  color: #cc8625;
+}
+.cp-launch-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 24px;
+}
+.cp-launch-emma {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 34px;
+  background: linear-gradient(135deg, #f0eafa, #faf8ff);
+  border: 1px solid #dcd2ef;
+  border-radius: 20px;
+}
+.cp-launch-icon {
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  color: #6550b5;
+  background: #fff;
+  box-shadow: 0 6px 20px #58419712;
+}
+.cp-launch-copy h2 {
+  font-size: 36px;
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+  margin: 10px 0 14px;
+}
+.cp-launch-copy > p {
+  color: #535166;
+  line-height: 1.7;
+}
+.cp-launch-stage {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #d9cfee;
+  color: #5c4598;
+  font-size: 12px;
+  font-weight: 650;
+  padding: 5px 12px;
+  border-radius: 100px;
+  margin-top: 18px;
+}
+.cp-launch-copy .cp-launch-note {
+  font-size: 12px;
+  margin: 12px 0 22px;
+}
+.cp-launch-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 25px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: #6753b7;
+  color: white;
+  font-weight: 650;
+  text-decoration: none;
+}
+.cp-launch-open:hover {
+  background: #514096;
+}
+.cp-launch-shortcuts {
+  display: grid;
+  gap: 14px;
+}
+.cp-work-tile {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  text-align: left;
+  background: white;
+  border: 1px solid #e3dfeb;
+  border-radius: 16px;
+  color: #6550a8;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.cp-work-tile:hover {
+  border-color: #afa0d3;
+  box-shadow: 0 6px 20px #5140960a;
+}
+.cp-work-tile span {
+  flex: 1;
+}
+.cp-work-tile strong {
+  display: block;
+  color: #29263b;
+  font-size: 17px;
+}
+.cp-work-tile small {
+  display: block;
+  color: #615e71;
+  font-size: 13px;
+  margin-top: 5px;
+}
+.cp-launch-footer {
+  grid-column: 1 / -1;
+  color: #625e70;
+  font-size: 12px;
+  margin: 0;
+}
+.cp-root .cp-page-heading > div > p:not(.of-eyebrow),
+.cp-root .cp-detail dt {
+  color: #615d70;
+}
+.cp-launch-grid :where(button, a):focus-visible {
+  outline: 3px solid #8e76c9;
+  outline-offset: 4px;
+}
+.cp-root .cp-sidebar nav button {
+  font-size: 13px;
+  color: #60596e;
+}
+.cp-root .cp-sidebar nav button.is-active {
+  background: #efe9f8;
+  color: #61489e;
+}
+.cp-root .cp-primary {
+  background: #6753b7;
+  border-color: #6753b7;
+}
+.cp-root .cp-text-button {
+  color: #61489e;
+}
+.cp-root .cp-card > p,
+.cp-root .cp-outcome-heading p,
+.cp-root .cp-detail dd {
+  color: #585064;
+  font-size: 13px;
+}
+.cp-root .cp-footnote {
+  color: #62596e;
+  font-size: 12px;
+}
+.cp-root .cp-investment {
+  background: #f2eef8;
+  border-color: #ded5ec;
+}
+.cp-root .cp-investment p:not(.of-eyebrow) {
+  color: #60566e;
+  font-size: 13px;
+}
+.cp-root .cp-status {
+  font-size: 11px;
+  color: #785a28;
+}
+.cp-root .cp-status-good {
+  color: #326641;
+}
+.cp-root .cp-price-summary > span,
+.cp-root .cp-price-summary > small,
+.cp-root .cp-outcome-bottom span {
+  color: #685e74;
+  font-size: 12px;
+}
+.cp-concept-section {
+  padding: 24px;
+  margin: 28px 0;
+  border: 1px solid #e1d9eb;
+  border-radius: 16px;
+  background: #f5f1fa;
+}
+.cp-concept-section > summary {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cp-concept-section > p {
+  font-size: 12px;
+  color: #60566e;
+  margin: 16px 0;
+}
+.cp-concept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.cp-concept-card {
+  background: white;
+  border: 1px solid #e5deed;
+  border-radius: 14px;
+  padding: 22px;
+}
+.cp-concept-card > span {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #6c558e;
+}
+.cp-concept-card h3 {
+  font-size: 19px;
+  margin: 18px 0 8px;
+}
+.cp-concept-card p {
+  font-size: 13px;
+  color: #62586e;
+  min-height: 42px;
+}
+.cp-concept-card > div {
+  border-top: 1px solid #eee8f3;
+  padding-top: 14px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: #62586e;
+}
+.cp-concept-card i {
+  display: block;
+  width: 60%;
+  height: 6px;
+  border-radius: 8px;
+  background: #ece5f5;
+  margin-top: 10px;
+}
+@media (max-width: 1000px) {
+  .cp-launch-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 800px) {
+  .cp-concept-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 540px) {
+  .cp-launch-emma {
+    padding: 24px;
+    gap: 16px;
+  }
+  .cp-launch-icon {
+    width: 46px;
+    height: 46px;
+  }
+  .cp-work-tile {
+    padding: 20px;
+  }
+  .cp-launch-copy h2 {
+    font-size: 30px;
+  }
+}
