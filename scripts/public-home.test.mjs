@@ -11,7 +11,8 @@ test("public homepage is complete HTML with one working, non-scripted login link
   assert.match(html, /<html lang="en">/);
   assert.match(html, /name="viewport"/);
   assert.match(html, /Your business working better\./);
-  assert.match(html, /open<span class="of-minimal-colon">folk<\/span>/);
+  assert.match(html, /color:#203F70[^>]*>open<\/span>/);
+  assert.match(html, /color:#CC8625[^>]*>folk<\/span>/);
   assert.equal((html.match(/<a /g) || []).length, 1);
   assert.match(html, /href="https:\/\/app\.openfolk\.ai\/login\?redirect=%2Fclient"/);
   assert.match(html, /Client Login/);

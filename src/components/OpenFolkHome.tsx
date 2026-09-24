@@ -1,4 +1,5 @@
 import * as React from "react";
+import { OpenFolkWordmark } from "./OpenFolkWordmark";
 
 // Shared by the app route and the zero-JavaScript public landing page.
 export function OpenFolkHome() {
@@ -7,7 +8,7 @@ export function OpenFolkHome() {
       <div className="of-minimal-content">
         <h1>
           <span className="of-minimal-brand">
-            open<span className="of-minimal-colon">folk</span>
+            <OpenFolkWordmark size="inherit" />
           </span>
           <span className="of-minimal-promise">Your business working better.</span>
         </h1>

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -130,7 +131,7 @@ function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
           <a href="/" className="of-login-wordmark" aria-label="OpenFolk home">
-            open<span>folk</span>
+            <OpenFolkWordmark size="inherit" />
           </a>
           <h1 className="text-display mt-4 text-xl font-semibold tracking-tight text-foreground">
             {mode === "forgot"
