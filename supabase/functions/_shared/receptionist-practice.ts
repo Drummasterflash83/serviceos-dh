@@ -1,6 +1,76 @@
 import { record } from "./receptionist-data.ts";
 
 export const PRACTICE_SECONDS = 180;
+
+// Vapi supports file-backed query tools inline as well as by saved tool ID.
+// Rebuild only the read-only file lookup configuration. Never forward an entire
+// source tool, callbacks, credentials, hooks or function/action implementations.
+export function practiceKnowledgeTools(modelValue: unknown) {
+  const model = record(modelValue);
+  if (model.knowledgeBase || model.knowledgeBaseId) throw Error("Custom knowledge requires review");
+  if (model.tools != null && !Array.isArray(model.tools))
+    throw Error("Invalid inline knowledge configuration");
+  const tools = (Array.isArray(model.tools) ? model.tools : []).filter(
+    (t) => record(t).type === "query",
+  );
+  return tools.map((raw) => {
+    const tool = record(raw);
+    if (
+      tool.server ||
+      tool.serverUrl ||
+      tool.credentialsId ||
+      tool.credentialId ||
+      tool.async === true
+    )
+      throw Error("Custom knowledge requires review");
+    if (!Array.isArray(tool.knowledgeBases) || !tool.knowledgeBases.length)
+      throw Error("Invalid inline knowledge configuration");
+    const knowledgeBases = tool.knowledgeBases.map((value) => {
+      const kb = record(value);
+      if (
+        kb.provider !== "google" ||
+        typeof kb.name !== "string" ||
+        !kb.name.trim() ||
+        typeof kb.description !== "string" ||
+        !Array.isArray(kb.fileIds) ||
+        !kb.fileIds.length ||
+        kb.fileIds.some(
+          (id) =>
+            typeof id !== "string" ||
+            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id),
+        ) ||
+        (kb.model !== undefined && typeof kb.model !== "string")
+      )
+        throw Error("Invalid inline knowledge configuration");
+      return {
+        provider: "google",
+        name: kb.name,
+        description: kb.description,
+        fileIds: [...kb.fileIds],
+        ...(kb.model !== undefined ? { model: kb.model } : {}),
+      };
+    });
+    const fn = record(tool.function);
+    if (
+      tool.function != null &&
+      (typeof fn.name !== "string" || !/^[a-zA-Z0-9_-]{1,64}$/.test(fn.name))
+    )
+      throw Error("Invalid inline knowledge configuration");
+    return {
+      type: "query",
+      knowledgeBases,
+      ...(typeof fn.name === "string"
+        ? {
+            function: {
+              name: fn.name,
+              ...(typeof fn.description === "string" ? { description: fn.description } : {}),
+            },
+          }
+        : {}),
+    };
+  });
+}
+
 export function practiceAssistant(source: unknown, queryToolIds: string[]) {
   const a = record(source),
     model = record(a.model),
@@ -24,11 +94,7 @@ export function practiceAssistant(source: unknown, queryToolIds: string[]) {
     .filter((x) => typeof x === "string")
     .join("\n\n");
   if (!rules) throw Error("Published instructions unavailable");
-  if (
-    model.knowledgeBase ||
-    (Array.isArray(model.tools) && model.tools.some((t) => record(t).type === "query"))
-  )
-    throw Error("Inline knowledge needs an explicit practice adapter");
+  const knowledgeTools = practiceKnowledgeTools(model);
   return {
     name: "OpenFolk private practice",
     model: {
@@ -36,6 +102,7 @@ export function practiceAssistant(source: unknown, queryToolIds: string[]) {
       provider: model.provider,
       model: model.model,
       toolIds: queryToolIds,
+      ...(knowledgeTools.length ? { tools: knowledgeTools } : {}),
       messages: [
         {
           role: "system",

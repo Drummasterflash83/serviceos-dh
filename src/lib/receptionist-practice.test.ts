@@ -6,19 +6,29 @@ import {
   assistantOverview,
   allowedQueryTools,
   practiceRoom,
+  practiceKnowledgeTools,
 } from "../../supabase/functions/_shared/receptionist-practice.ts";
 const query = "ad200000-0000-0000-0000-000000000001";
 test("failed readiness is visible and recheckable instead of an inert talk button", () => {
-  const ui = readFileSync(new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url), "utf8");
+  const ui = readFileSync(
+    new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
+    "utf8",
+  );
   assert.doesNotMatch(ui, /disabled=\{demo \|\| !info\.data\?\.enabled\}/);
   assert.match(ui, /unavailableReason/);
   assert.match(ui, /Recheck connection/);
-  const edge = readFileSync(new URL("../../supabase/functions/receptionist-practice/index.ts", import.meta.url), "utf8");
+  const edge = readFileSync(
+    new URL("../../supabase/functions/receptionist-practice/index.ts", import.meta.url),
+    "utf8",
+  );
   assert.match(edge, /unavailableReason,/);
-  assert.match(edge, /Inline knowledge needs an explicit practice adapter/);
+  assert.match(edge, /Custom knowledge requires review/);
 });
 test("practice feedback has reopenable evidence and separates save from Slack delivery", () => {
-  const ui = readFileSync(new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url), "utf8");
+  const ui = readFileSync(
+    new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
+    "utf8",
+  );
   assert.match(ui, /PracticeEvidence/);
   assert.match(ui, /practiceSessionId=\{sessionId\}/);
   assert.match(ui, /d\?\.state === "sent"/);
@@ -55,6 +65,98 @@ const source = {
   firstMessage: "Welcome",
   maxDurationSeconds: 9999,
 };
+const fileQuery = {
+  type: "query",
+  function: { name: "drummond_knowledge", description: "Look up company guidance" },
+  knowledgeBases: [
+    {
+      provider: "google",
+      name: "Drummond guidance",
+      description: "Approved company documents",
+      model: "gemini-2.5-flash",
+      fileIds: [query],
+    },
+  ],
+};
+test("inline file-backed knowledge works alongside saved query IDs without changing its files or name", () => {
+  const input = {
+    ...source,
+    model: {
+      ...source.model,
+      tools: [fileQuery, { type: "transferCall", destinations: ["real"] }],
+    },
+  };
+  const before = JSON.stringify(input);
+  const a = practiceAssistant(input, [query]);
+  assert.deepEqual(a.model.tools, [fileQuery]);
+  assert.deepEqual(a.model.toolIds, [query]);
+  assert.equal(JSON.stringify(input), before);
+  assert.equal(a.maxDurationSeconds, 180);
+  assert.deepEqual(a.serverMessages, []);
+  assert.ok(!JSON.stringify(a).includes("destinations"));
+});
+test("inline query projection never copies hooks, credentials, messages or arbitrary tools", () => {
+  const [result] = practiceKnowledgeTools({
+    tools: [
+      {
+        ...fileQuery,
+        hooks: [{ url: "https://never.example" }],
+        messages: [{ type: "request-start", content: "irrelevant" }],
+        function: { ...fileQuery.function, parameters: { unknown: "not-copied" } },
+      },
+    ],
+  });
+  assert.deepEqual(result, fileQuery);
+});
+test("external and malformed knowledge is rejected, never silently removed", () => {
+  for (const patch of [
+    { server: { url: "https://never.example" } },
+    { serverUrl: "https://never.example" },
+    { credentialsId: "private" },
+    { async: true },
+    { knowledgeBases: [] },
+    { function: { name: "bad/name" } },
+  ])
+    assert.throws(() => practiceKnowledgeTools({ tools: [{ ...fileQuery, ...patch }] }));
+  for (const patch of [
+    { provider: "custom" },
+    { fileIds: ["https://never.example/file"] },
+    { fileIds: [] },
+    { name: "" },
+    { description: null },
+    { model: {} },
+  ])
+    assert.throws(() =>
+      practiceKnowledgeTools({
+        tools: [{ ...fileQuery, knowledgeBases: [{ ...fileQuery.knowledgeBases[0], ...patch }] }],
+      }),
+    );
+  for (const model of [
+    {
+      knowledgeBase: {
+        provider: "custom-knowledge-base",
+        server: { url: "https://never.example" },
+      },
+    },
+    { knowledgeBaseId: query },
+    { tools: {} },
+  ])
+    assert.throws(() => practiceKnowledgeTools(model));
+});
+test("multiple inline knowledge tools and file sets survive with no server callbacks", () => {
+  const other = {
+    ...fileQuery,
+    function: { name: "service_plans" },
+    knowledgeBases: [
+      ...fileQuery.knowledgeBases,
+      { ...fileQuery.knowledgeBases[0], name: "Plans" },
+    ],
+  };
+  const result = practiceKnowledgeTools({ tools: [fileQuery, other] });
+  assert.equal(result.length, 2);
+  assert.equal(result[1].knowledgeBases.length, 2);
+  assert.deepEqual(result[1].knowledgeBases[1].fileIds, [query]);
+});
 test("practice is a strict projection; no live tools, destinations, credentials or servers", () => {
   const a = practiceAssistant(source, [query]);
   const text = JSON.stringify(a);

@@ -124,15 +124,20 @@ Deno.serve(async (req) => {
       // Only expose our own fixed validation messages, never provider response bodies.
       const message = e instanceof Error ? e.message : "";
       unavailableReason =
-        message === "Inline knowledge needs an explicit practice adapter"
-          ? "Emma’s knowledge setup needs a browser-practice adapter. OpenFolk must connect it before a conversation can start."
-          : message === "Published instructions unavailable"
-            ? "Emma’s published conversation instructions are unavailable. OpenFolk needs to check the assistant configuration."
-            : "Emma’s voice or model configuration is not supported by this practice connection yet. OpenFolk needs to check it.";
+        message === "Custom knowledge requires review"
+          ? "Emma uses a custom knowledge connection, which needs a separate safety review before browser practice. Her live phone setup is unchanged."
+          : message === "Invalid inline knowledge configuration"
+            ? "Emma’s file-based knowledge configuration is incomplete or unsupported. OpenFolk needs to check its file references."
+            : message === "Published instructions unavailable"
+              ? "Emma’s published conversation instructions are unavailable. OpenFolk needs to check the assistant configuration."
+              : "Emma’s voice or model configuration is not supported by this practice connection yet. OpenFolk needs to check it.";
     }
     if (body.action === "info")
       return reply({
-        overview,
+        overview: {
+          ...overview,
+          queryToolCount: queryIds.length + (candidate?.model.tools?.length ?? 0),
+        },
         enabled: w.practice_enabled && !!candidate,
         unavailableReason,
         checkedAt: new Date().toISOString(),

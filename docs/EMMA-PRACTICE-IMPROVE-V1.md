@@ -1,5 +1,22 @@
 # Emma — Practice & improve, 24 September 2026
 
+## Knowledge adapter correction
+
+Chris reported the explicit knowledge-adapter blocker. The previous implementation
+rejected every inline query tool, including Vapi's supported read-only file-backed
+knowledge configuration. The practice adapter now strictly reconstructs Google-backed
+inline query tools with original names, descriptions, model and file UUIDs. Saved query
+tool references continue to work. No provider configuration is PATCHed. External/custom
+knowledge servers and malformed file setups still refuse with distinct explanations.
+The training overview counts inline read-only knowledge tools too.
+
+13 practice tests pass, including inline lookup preservation, multiple knowledge sets,
+source immutability, callback/credential/action exclusion and invalid-file/custom-server
+refusals. Broader focused checks: 65 pass (excluding the separate static-output suite).
+Frontend TypeScript and backend Deno checks pass. Real signed-in/audible confirmation
+is still pending; do not turn this into a claim of successful practice calls.
+Reference: https://docs.vapi.ai/knowledge-base/using-query-tool
+
 Built on released main 94610da, preserving the unified client workspace, approved
 wordmark, tenant-safe company menu, Back to workspace and verified Chris-only admin link.
 
