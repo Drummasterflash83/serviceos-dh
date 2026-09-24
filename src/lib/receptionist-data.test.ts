@@ -62,3 +62,21 @@ test("recording links reject script, insecure and credential-bearing URLs", () =
     assert.equal(secureUrl(u), null);
   assert.equal(secureUrl("https://example.com/a"), "https://example.com/a");
 });
+test("modern scalar summary and success are read without inventing sentiment", () => {
+  const c = normalizeCall({
+    artifact: {
+      structuredOutputs: {
+        a: { name: "Call Summary", result: "Asked for Mary" },
+        b: { name: "Success Evaluation", result: true },
+      },
+    },
+  });
+  assert.equal(c.summary, "Asked for Mary");
+  assert.equal(c.success, "true");
+  assert.equal(c.sentiment, null);
+  const conflicting = normalizeCall({
+    analysis: { successEvaluation: false },
+    artifact: { structuredOutputs: { a: { name: "Success Evaluation", result: true } } },
+  });
+  assert.equal(conflicting.success, null);
+});

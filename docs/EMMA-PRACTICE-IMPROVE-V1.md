@@ -1,0 +1,68 @@
+# Emma — Practice & improve, 24 September 2026
+
+Built on released main 94610da, preserving the unified client workspace, approved
+wordmark, tenant-safe company menu, Back to workspace and verified Chris-only admin link.
+
+## Client experience
+
+- Practice & improve: bounded browser conversation or welcome-only listening,
+  scenario selection, mute/end, live final utterance, post-call summary/recording when supplied.
+- Adjacent observation and requested-change fields; automatically bound to the practice
+  session and provider call. Ambiguous saves retry the same submission key, not another note.
+- Saved feedback, Slack delivery and OpenFolk's response are distinct. Previous notes
+  include their text and reopenable practice evidence; OpenFolk can review the same evidence.
+- Current assistant instruction sections/updated timestamp retrieved server-side;
+  no old draft is substituted if the provider configuration is unavailable.
+- Caller-experience cards show assessed/unknown populations and drill into matching flags.
+  Provider estimates are not CSAT. Normal requests for a person are not failure signals.
+- Journal briefs prefer provider summaries, then explicitly labelled caller excerpts.
+  Fresh authenticated recording retrieval stays in the app, with failure/retry states.
+- Phone system shows a verified snapshot and proposed edits, not invented live groups.
+  No verified Drummonds snapshot is currently installed; the page reports that gap.
+
+## Safety and release
+
+Practice is a transient Vapi assistant using the installed tenant-specific private key
+on the server. Strict allowlists retain conversation instructions/voice and verified
+read-only query tools. Transfer/booking/custom action tools, servers, hooks, credentials
+and forwarding destinations are not copied. Unsupported inline knowledge refuses practice.
+No Vapi public/private key is returned to the browser. The browser SDK joins the server-created
+Daily room; recordings and voice usage are disclosed before starting.
+
+Max 180 seconds (welcome 25 seconds), one active reservation per tenant, 10 attempts per
+person and 30 per tenant per rolling 24 hours. Database advisory lock, not process-local
+quota. Failed/ambiguous creation consumes quota. No automatic paid call retry.
+Only a provider-observed ended call or reservation expiry releases the overlap guard.
+
+Migration 20261020120000 applied in a scoped transaction and recorded in migration history.
+One-time runner scripts/client-portal/deploy-emma-v1.sql refuses an already-recorded version.
+Drummonds changed Testing → Ready per Chris's confirmed testing, with main-number activation
+explicitly separate. Browser practice enabled; no practice call created by this release.
+Only receptionist-practice, receptionist-calls and client-notifications deployed.
+Their application-level authentication is explicit; unauthorized POSTs all return 401.
+Existing notification schedule verified active; no new Slack delivery proof claimed.
+
+Backend rollback source preserved at /private/tmp/openfolk-emma-backend.KfLIne.
+Frontend rollback: https://serviceos-5zzqurvzi-allkin.vercel.app (94610da).
+No main-number activation, Birchills mutation, customer import or Heidi invitation.
+
+## Verification and remaining acceptance
+
+Focused Node/source checks, frontend TypeScript, three Deno function checks and
+Vercel-target build pass. Rollback-only local SQL tests prove reservation/replay/overlap,
+disabled tenant, browser RPC denial, own/stranger RLS, note idempotency, call binding,
+single outbox insertion and failed-attempt quota. These are not browser or audible proofs.
+Two targeted lint warnings: mixed hook/component export and mutable generation counter
+in teardown; zero errors. Existing dependency advisories remain in build-tool transitive
+dependencies (baseline-browser-mapping, browserslist, js-yaml, nanoid); no blanket update.
+
+Signed-in visual/mobile acceptance, microphone/audio, real practice and actual Slack
+delivery still need a normal authorised user check. Managed browser restriction was
+not bypassed. Customer-card matching is not newly added; names are provider supplied and
+same-number history is not an established customer/job link. No new provider sentiment
+assessment configuration was installed: absent source assessments stay unknown. Call
+history is the loaded population, not a complete business-wide aggregate.
+
+Acceptance: sign in → Practice & improve → Talk to Emma → End → type a correction →
+Send to OpenFolk → verify Slack delivery and linked evidence → OpenFolk response → retest.
+Phone system remains awaiting a verified Birchills baseline, not ready for live PBX editing.

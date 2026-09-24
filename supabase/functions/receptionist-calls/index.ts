@@ -1,6 +1,7 @@
 // Read-only Vapi view. Does not ingest duplicate interactions or alter the assistant.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { scopedCalls, record } from "../_shared/receptionist-data.ts";
+import { recordingLink } from "../_shared/receptionist-recording.ts";
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
@@ -32,6 +33,16 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (error || !w) return reply({ error: "Workspace unavailable" }, 403);
     const key = Deno.env.get(w.vapi_secret_name);
+    if (body.action && body.action !== "recording")
+      return reply({ error: "Unsupported action" }, 400);
+    if (body.action === "recording") {
+      if (!key) return reply({ error: "Recording connection unavailable" }, 503);
+      try {
+        return reply({ url: await recordingLink(body.callId, w.assistant_id, key) });
+      } catch {
+        return reply({ error: "Recording unavailable. Refresh or contact OpenFolk." }, 502);
+      }
+    }
     if (!key)
       return reply({
         connection: "not_configured",

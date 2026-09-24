@@ -2,104 +2,125 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { addPhoneToGroup, type PhonePlan } from "@/lib/phone-plan";
 import {
-  addPhoneToGroup,
-  decodePhonePlan,
-  describePhonePlan,
-  emptyPhonePlan,
-  encodePhonePlan,
-  type PhonePlan,
-} from "@/lib/phone-plan";
+  phoneSnapshotSchema,
+  phoneChanges,
+  encodePhoneChanges,
+  type PhoneSnapshot,
+} from "@/lib/phone-changes";
 import "./phone-planner.css";
 
-type Request = {
-  id: string;
-  title: string;
-  body: string;
-  status: string;
-  response: string;
-  created_at: string;
-};
 export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }) {
   const { user } = useAuth();
-  const db = getSupabaseClient();
-  const qc = useQueryClient();
-  const [plan, setPlan] = useState(emptyPhonePlan);
-  const [review, setReview] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const db = getSupabaseClient(),
+    qc = useQueryClient();
+  const [draft, setDraft] = useState<{ baseline: PhoneSnapshot; plan: PhonePlan } | null>(null);
+  const [review, setReview] = useState(false),
+    [busy, setBusy] = useState(false),
+    [uncertain, setUncertain] = useState(false);
   const [message, setMessage] = useState("");
-  const [uncertain, setUncertain] = useState(false);
+  const snapshot = useQuery({
+    queryKey: ["phone-snapshot", user?.id, tenant],
+    enabled: !!user && !demo,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("receptionist_workspaces")
+        .select("phone_snapshot")
+        .eq("tenant_id", tenant)
+        .single();
+      if (error)
+        throw Error(
+          "The verified phone setup could not be loaded. OpenFolk needs to check the connection.",
+        );
+      if (!data.phone_snapshot) return null;
+      const parsed = phoneSnapshotSchema.safeParse(data.phone_snapshot);
+      if (!parsed.success || Date.parse(parsed.data.observedAt) > Date.now())
+        throw Error("The phone inventory needs verification before changes can be requested.");
+      return parsed.data;
+    },
+    refetchInterval: 60000,
+  });
   const requests = useQuery({
     queryKey: ["phone-plan-requests", user?.id, tenant],
-    enabled: !demo && !!user,
+    enabled: !!user && !demo,
     queryFn: async () => {
-      const rows: Request[] = [];
+      const rows: {
+        id: string;
+        title: string;
+        status: string;
+        response: string;
+        created_at: string;
+      }[] = [];
       for (let offset = 0; ; offset += 100) {
         const { data, error } = await db
           .from("receptionist_feedback")
-          .select("id,title,body,status,response,created_at")
+          .select("id,title,status,response,created_at")
           .eq("tenant_id", tenant)
           .eq("category", "routing")
           .order("created_at", { ascending: false })
-          .order("id", { ascending: false })
+          .order("id")
           .range(offset, offset + 99);
         if (error)
-          throw Error("Saved phone requests are unavailable. Please refresh before submitting.");
-        rows.push(...(data as Request[]));
-        if (data.length < 100) return rows.filter((r) => decodePhonePlan(r.body));
+          throw Error("Change history unavailable. Refresh before sending another change.");
+        rows.push(...data);
+        if (data.length < 100) return rows;
       }
     },
     refetchInterval: 30000,
   });
-  const update = (next: PhonePlan) => {
-    setPlan(next);
+  const baseline = snapshot.data,
+    plan = draft?.plan ?? baseline?.plan;
+  const stale = !!draft && JSON.stringify(baseline) !== JSON.stringify(draft.baseline);
+  const edit = (next: PhonePlan) => {
+    if (!baseline || busy || uncertain || stale || snapshot.isError) return;
+    setDraft({ baseline: draft?.baseline ?? baseline, plan: next });
     setReview(false);
     setMessage("");
   };
-  function reviewPlan() {
+  let changes: string[] = [],
+    validation = "";
+  if (draft) {
     try {
-      encodePhonePlan(plan);
-      setReview(true);
-      setMessage("");
-    } catch (e) {
-      setMessage(
-        e instanceof Error && "issues" in e
-          ? "Check the plan: every phone needs a name and unique 2–8 digit extension; every group needs members, a name, a 5–120 second ring time and a fallback. Include working hours and time zone."
-          : (e as Error).message,
-      );
+      changes = phoneChanges(draft.baseline.plan, draft.plan);
+    } catch {
+      validation = "Check phone names and group members before saving.";
     }
   }
-  async function submit() {
-    if (busy || uncertain) return;
-    if (demo) {
-      setMessage("Preview only — nothing was saved, sent or changed in Birchills.");
-      return;
-    }
+  async function save() {
+    if (!draft || busy || uncertain || stale || !changes.length || demo) return;
     setBusy(true);
     setMessage("");
     try {
-      const body = encodePhonePlan(plan);
+      const latest = await snapshot.refetch();
+      if (!latest.isSuccess || JSON.stringify(latest.data) !== JSON.stringify(draft.baseline))
+        throw Error("The baseline changed or could not be verified. Reload before submitting.");
+      const body = encodePhoneChanges(draft.baseline, draft.plan);
+      // Once dispatched, any ambiguous failure must be checked in history first.
+      setUncertain(true);
       const { error } = await db.from("receptionist_feedback").insert({
         tenant_id: tenant,
         category: "routing",
         priority: "normal",
-        title: "Birchills · phone configuration request",
+        title: "Phone system · apply my changes",
         body,
       });
-      if (error)
-        throw Error(
-          "Save could not be confirmed. Check request history before trying again; Birchills has not been changed.",
-        );
+      if (error) {
+        setUncertain(true);
+        throw Error("Save could not be confirmed. Check the request history before retrying.");
+      }
+      setDraft(null);
+      setUncertain(false);
       setReview(false);
-      setPlan(emptyPhonePlan());
       setMessage(
-        "Request saved for OpenFolk review. Birchills has not changed. Slack delivery is tracked separately under Make Emma better.",
+        "Changes saved · awaiting OpenFolk. Your verified setup stays unchanged until the provider change has been applied and tested.",
       );
-      await qc.invalidateQueries({ queryKey: ["phone-plan-requests"] });
-      await qc.invalidateQueries({ queryKey: ["receptionist-feedback"] });
-      await qc.invalidateQueries({ queryKey: ["receptionist-delivery"] });
+      await Promise.all(
+        ["phone-plan-requests", "receptionist-feedback", "receptionist-delivery"].map((key) =>
+          qc.invalidateQueries({ queryKey: [key] }),
+        ),
+      );
     } catch (e) {
-      setUncertain(true);
       setMessage((e as Error).message);
     } finally {
       setBusy(false);
@@ -108,394 +129,259 @@ export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }
   return (
     <div className="pp">
       <section className="rw-panel pp-intro">
-        <span className="rw-pill">Birchills · managed by OpenFolk</span>
-        <h2>Your phones. Your team. One simple plan.</h2>
+        <span className="rw-pill">Your phone system · Birchills</span>
+        <h2>The right call. The right people.</h2>
         <p>
-          Drag phones into call groups, name them clearly and tell us what should happen next.
-          OpenFolk reviews and applies the changes for you.
+          See who rings, who answers and what happens next. Change a phone name or add someone to a
+          group; OpenFolk handles the provider update and checks it works.
         </p>
-        <p className="pp-caution">
-          <strong>Proposal builder — not live configuration.</strong> Current Birchills settings are
-          not synchronised here. Start a proposed plan or copy a previous request. Nothing changes
-          on your phone system when you move a card.
-        </p>
+        {baseline && (
+          <p className="rw-footnote">
+            Last verified{" "}
+            {new Date(baseline.observedAt).toLocaleString("en-GB", { timeZone: "Europe/London" })} ·{" "}
+            {baseline.version}. A verified snapshot, not continuous live synchronisation.
+          </p>
+        )}
       </section>
-      <div className="pp-flow" aria-label="Change process">
-        <span>1 · Arrange</span>
-        <span>2 · Review & submit</span>
-        <span>3 · OpenFolk applies</span>
-        <span>4 · Test & confirm</span>
-      </div>
-      <fieldset disabled={busy || uncertain} className="pp-editor">
-        <div className="pp-columns">
-          <section className="rw-panel">
-            <h3>People & phones</h3>
-            <p>Add existing extensions. These are proposed labels, not new phone accounts.</p>
-            {plan.phones.map((p) => (
-              <article
-                className="pp-phone"
-                key={p.id}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/openfolk-phone", p.id);
-                  e.dataTransfer.effectAllowed = "copy";
-                }}
-              >
-                <span className="pp-grip" aria-hidden="true">
-                  ⠿
-                </span>
-                <label>
-                  Phone name
-                  <input
-                    aria-label={`Phone name ${p.extension || "new"}`}
-                    maxLength={80}
-                    value={p.name}
-                    onChange={(e) =>
-                      update({
-                        ...plan,
-                        phones: plan.phones.map((x) =>
-                          x.id === p.id ? { ...x, name: e.target.value } : x,
-                        ),
-                      })
-                    }
-                  />
-                </label>
-                <label>
-                  Extension
-                  <input
-                    inputMode="numeric"
-                    maxLength={8}
-                    value={p.extension}
-                    onChange={(e) =>
-                      update({
-                        ...plan,
-                        phones: plan.phones.map((x) =>
-                          x.id === p.id ? { ...x, extension: e.target.value } : x,
-                        ),
-                      })
-                    }
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="rw-text-btn"
-                  onClick={() =>
-                    update({
-                      ...plan,
-                      phones: plan.phones.filter((x) => x.id !== p.id),
-                      groups: plan.groups.map((g) => ({
-                        ...g,
-                        members: g.members.filter((id) => id !== p.id),
-                      })),
-                    })
-                  }
-                >
-                  Remove from plan
-                </button>
-              </article>
-            ))}
-            {!plan.phones.length && (
-              <p className="pp-empty">No phones added. No live inventory is being claimed.</p>
-            )}
-            <button
-              className="rw-btn"
-              disabled={plan.phones.length >= 40}
-              onClick={() =>
-                update({
-                  ...plan,
-                  phones: [...plan.phones, { id: crypto.randomUUID(), name: "", extension: "" }],
-                })
-              }
-            >
-              + Add phone
-            </button>
-          </section>
-          <section className="pp-groups">
-            {plan.groups.map((g) => (
-              <article
-                className="rw-panel pp-group"
-                key={g.id}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "copy";
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (!busy && !uncertain)
-                    update(
-                      addPhoneToGroup(
-                        plan,
-                        e.dataTransfer.getData("application/openfolk-phone"),
-                        g.id,
-                      ),
-                    );
-                }}
-              >
-                <label>
-                  Call group name
-                  <input
-                    maxLength={80}
-                    value={g.name}
-                    onChange={(e) =>
-                      update({
-                        ...plan,
-                        groups: plan.groups.map((x) =>
-                          x.id === g.id ? { ...x, name: e.target.value } : x,
-                        ),
-                      })
-                    }
-                  />
-                </label>
+      {snapshot.isLoading && <section className="rw-panel">Loading your verified setup…</section>}
+      {snapshot.isError && (
+        <section className="rw-panel" role="alert">
+          {snapshot.error.message} <button onClick={() => void snapshot.refetch()}>Retry</button>
+        </section>
+      )}
+      {!baseline && !snapshot.isLoading && !snapshot.isError && (
+        <section className="rw-panel">
+          <h3>OpenFolk is verifying your phone setup</h3>
+          <p>
+            Your actual phones, ring groups and fallback routes will appear here after the current
+            Birchills settings have been checked. You do not need to build them yourself.
+          </p>
+          <p>
+            No live configuration is being guessed. Editing becomes available once the baseline is
+            verified.
+          </p>
+        </section>
+      )}
+      {plan && baseline && (
+        <>
+          <div className="pp-flow">
+            <span>{plan.phones.length} phones</span>
+            <span>{plan.groups.length} call groups</span>
+            <span>{plan.hours}</span>
+          </div>
+          <fieldset className="pp-editor" disabled={busy || uncertain || stale || snapshot.isError}>
+            <div className="pp-columns">
+              <section className="rw-panel">
+                <h3>People & phones</h3>
                 <p>
-                  Drop phones here, or add one using the menu. A phone can belong to several groups.
+                  Rename below. Drag a phone onto a group to add it, or use Add person. To move
+                  someone, also remove them from their old group.
                 </p>
-                <ol className="pp-members">
-                  {g.members.map((id, index) => (
-                    <li key={id}>
-                      <span>
-                        {plan.phones.find((p) => p.id === id)?.name || "Unnamed phone"} ·{" "}
-                        {plan.phones.find((p) => p.id === id)?.extension}
-                      </span>
-                      <button
-                        aria-label={`Move member ${index + 1} earlier in ${g.name || "group"}`}
-                        disabled={index === 0}
-                        onClick={() => {
-                          const members = [...g.members];
-                          [members[index - 1], members[index]] = [
-                            members[index]!,
-                            members[index - 1]!,
-                          ];
-                          update({
+                {plan.phones.map((p) => (
+                  <article
+                    className="pp-phone"
+                    key={p.id}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData("application/openfolk-phone", p.id)}
+                  >
+                    <span className="pp-grip" aria-hidden="true">
+                      ⠿
+                    </span>
+                    <label>
+                      Extension {p.extension}
+                      <input
+                        aria-label={`Name for extension ${p.extension}`}
+                        value={p.name}
+                        maxLength={80}
+                        onChange={(e) =>
+                          edit({
                             ...plan,
-                            groups: plan.groups.map((x) => (x.id === g.id ? { ...x, members } : x)),
-                          });
-                        }}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        aria-label={`Remove member ${index + 1} from ${g.name || "group"}`}
-                        onClick={() =>
-                          update({
-                            ...plan,
-                            groups: plan.groups.map((x) =>
-                              x.id === g.id
-                                ? { ...x, members: x.members.filter((i) => i !== id) }
-                                : x,
+                            phones: plan.phones.map((x) =>
+                              x.id === p.id ? { ...x, name: e.target.value } : x,
                             ),
                           })
                         }
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-                <label>
-                  Add phone to {g.name || "group"}
-                  <select
-                    value=""
-                    onChange={(e) => update(addPhoneToGroup(plan, e.target.value, g.id))}
-                  >
-                    <option value="">Choose a phone…</option>
-                    {plan.phones
-                      .filter((p) => !g.members.includes(p.id))
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name || "Unnamed"} · {p.extension}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <div className="pp-two">
-                  <label>
-                    Ring pattern
-                    <select
-                      value={g.strategy}
-                      onChange={(e) =>
-                        update({
-                          ...plan,
-                          groups: plan.groups.map((x) =>
-                            x.id === g.id
-                              ? { ...x, strategy: e.target.value as "Together" | "In order" }
-                              : x,
-                          ),
-                        })
-                      }
-                    >
-                      <option>Together</option>
-                      <option>In order</option>
-                    </select>
-                  </label>
-                  <label>
-                    Ring time (seconds)
-                    <input
-                      type="number"
-                      min={5}
-                      max={120}
-                      value={g.seconds}
-                      onChange={(e) =>
-                        update({
-                          ...plan,
-                          groups: plan.groups.map((x) =>
-                            x.id === g.id ? { ...x, seconds: Number(e.target.value) } : x,
-                          ),
-                        })
-                      }
-                    />
-                  </label>
-                </div>
-                <label>
-                  If nobody answers
-                  <textarea
-                    maxLength={300}
-                    value={g.fallback}
-                    placeholder="For example: send to the scheduling voicemail. OpenFolk will verify the destination."
-                    onChange={(e) =>
-                      update({
-                        ...plan,
-                        groups: plan.groups.map((x) =>
-                          x.id === g.id ? { ...x, fallback: e.target.value } : x,
+                      />
+                    </label>
+                  </article>
+                ))}
+              </section>
+              <section className="pp-groups" aria-label="Verified ring groups with pending edits">
+                {plan.groups.map((g) => (
+                  <article
+                    className="rw-panel pp-group"
+                    key={g.id}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      edit(
+                        addPhoneToGroup(
+                          plan,
+                          e.dataTransfer.getData("application/openfolk-phone"),
+                          g.id,
                         ),
-                      })
-                    }
-                  />
-                </label>
-                <button
-                  className="rw-text-btn"
-                  onClick={() =>
-                    update({ ...plan, groups: plan.groups.filter((x) => x.id !== g.id) })
-                  }
-                >
-                  Remove group from proposal
-                </button>
-              </article>
-            ))}
-            <button
-              className="rw-btn"
-              disabled={plan.groups.length >= 12}
-              onClick={() =>
-                update({
-                  ...plan,
-                  groups: [
-                    ...plan.groups,
-                    {
-                      id: crypto.randomUUID(),
-                      name: "",
-                      members: [],
-                      strategy: "Together",
-                      seconds: 25,
-                      fallback: "",
-                    },
-                  ],
-                })
-              }
-            >
-              + Add call group
-            </button>
-          </section>
-        </div>
-        <section className="rw-panel pp-instructions">
-          <label>
-            Working hours, time zone & out-of-hours behaviour
-            <textarea
-              maxLength={500}
-              value={plan.hours}
-              placeholder="Include weekdays, hours, time zone and what should happen outside these hours."
-              onChange={(e) => update({ ...plan, hours: e.target.value })}
-            />
-          </label>
-          <label>
-            What else should OpenFolk know?
-            <textarea
-              maxLength={1000}
-              value={plan.notes}
-              placeholder="Which incoming number should use these groups? Which existing settings must stay unchanged?"
-              onChange={(e) => update({ ...plan, notes: e.target.value })}
-            />
-          </label>
-          <p>
-            Unlisted groups and routes must remain unchanged. OpenFolk will confirm extension
-            identities, existing routes, emergency handling and provider support before applying any
-            proposal.
-          </p>
-          <button className="rw-btn" onClick={reviewPlan}>
-            Review my request →
-          </button>
-        </section>
-      </fieldset>
-      {review && (
-        <section className="rw-panel pp-review">
-          <h3>Review before sending</h3>
-          <pre>{describePhonePlan(plan)}</pre>
-          <p>
-            This sends the proposal to OpenFolk, not to Birchills. It does not book a delivery date
-            or agree a price.
-          </p>
-          <button
-            className="rw-btn"
-            disabled={busy || uncertain || (!demo && (!requests.isSuccess || requests.isFetching))}
-            onClick={() => void submit()}
-          >
-            {busy ? "Saving…" : "Submit to OpenFolk"}
-          </button>
-        </section>
+                      );
+                    }}
+                  >
+                    <h3>{g.name}</h3>
+                    <p>
+                      Rings {g.strategy.toLowerCase()} · {g.seconds} seconds
+                    </p>
+                    <ol className="pp-members">
+                      {g.members.map((id, index) => {
+                        const p = plan.phones.find((p) => p.id === id)!;
+                        return (
+                          <li key={id}>
+                            <span>
+                              {p.name} · {p.extension}
+                            </span>
+                            <button
+                              aria-label={`Move ${p.name} earlier in ${g.name}`}
+                              disabled={index === 0}
+                              onClick={() => {
+                                const members = [...g.members];
+                                [members[index - 1], members[index]] = [
+                                  members[index]!,
+                                  members[index - 1]!,
+                                ];
+                                edit({
+                                  ...plan,
+                                  groups: plan.groups.map((x) =>
+                                    x.id === g.id ? { ...x, members } : x,
+                                  ),
+                                });
+                              }}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              disabled={g.members.length === 1}
+                              aria-label={`Remove ${p.name} from ${g.name}`}
+                              onClick={() =>
+                                edit({
+                                  ...plan,
+                                  groups: plan.groups.map((x) =>
+                                    x.id === g.id
+                                      ? { ...x, members: x.members.filter((m) => m !== id) }
+                                      : x,
+                                  ),
+                                })
+                              }
+                            >
+                              ×
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                    <label>
+                      Add person
+                      <select
+                        value=""
+                        onChange={(e) => edit(addPhoneToGroup(plan, e.target.value, g.id))}
+                      >
+                        <option value="">Choose a phone…</option>
+                        {plan.phones
+                          .filter((p) => !g.members.includes(p.id))
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} · {p.extension}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <p className="pp-caution">
+                      <strong>If nobody answers</strong>
+                      <br />
+                      {g.fallback}
+                    </p>
+                  </article>
+                ))}
+              </section>
+            </div>
+          </fieldset>
+          {draft && (
+            <section className="rw-panel">
+              <h3>{changes.length} pending changes</h3>
+              {validation && <p role="alert">{validation}</p>}
+              {stale && (
+                <p role="alert">
+                  The verified setup has changed. Discard this draft and review the latest version.
+                </p>
+              )}
+              <ul>
+                {changes.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+              <p>
+                Pending changes are separate from the verified setup. OpenFolk will apply and test
+                them. Automated Mac mini execution is not connected yet.
+              </p>
+              <button
+                className="rw-btn"
+                disabled={
+                  busy ||
+                  uncertain ||
+                  stale ||
+                  !changes.length ||
+                  !!validation ||
+                  !requests.isSuccess
+                }
+                onClick={() => (review ? void save() : setReview(true))}
+              >
+                {busy ? "Saving…" : review ? "Confirm changes" : "Review changes"}
+              </button>{" "}
+              <button
+                className="rw-text-btn"
+                disabled={busy || uncertain}
+                onClick={() => {
+                  setDraft(null);
+                  setReview(false);
+                }}
+              >
+                Discard draft
+              </button>
+            </section>
+          )}
+        </>
       )}
       {message && (
-        <p role="status" className="pp-message">
+        <p className="pp-message" role="status">
           {message}
         </p>
       )}
       <section className="rw-panel">
-        <h3>Request history</h3>
+        <h3>Changes & updates</h3>
         <p>
-          Saved requests and OpenFolk responses. A closed request is not an automatic
-          live-configuration certificate. Check the response for application and test evidence.
+          Track your request here. “Resolved” alone does not certify a provider change; OpenFolk's
+          response and an updated verified snapshot provide the evidence.
         </p>
-        {requests.isPending && !demo && <p>Loading saved requests…</p>}
-        {requests.isError && (
-          <p role="alert">
-            {requests.error.message} <button onClick={() => void requests.refetch()}>Retry</button>
-          </p>
-        )}
-        {uncertain && (
+        {requests.isError && <p role="alert">{requests.error.message}</p>}
+        {(requests.isError || uncertain) && (
           <button
             onClick={async () => {
-              const result = await requests.refetch();
-              if (result.isSuccess) {
+              const r = await requests.refetch();
+              if (r.isSuccess) {
                 setUncertain(false);
-                setMessage(
-                  "History refreshed. Check whether your request is already present before submitting again.",
-                );
+                setMessage("History refreshed. Check for your request before submitting again.");
               }
             }}
           >
-            Refresh history to check the save
+            Refresh request history
           </button>
         )}
-        {(requests.data ?? []).map((r) => (
-          <details key={r.id} className="pp-history">
-            <summary>
+        {requests.data?.map((r) => (
+          <article className="pp-history" key={r.id}>
+            <strong>{r.title}</strong>
+            <p>
               {new Date(r.created_at).toLocaleString("en-GB")} · {r.status}
-            </summary>
-            <pre>{describePhonePlan(decodePhonePlan(r.body)!)}</pre>
-            {r.response && <p className="pp-message">OpenFolk: {r.response}</p>}
-            <button
-              className="rw-text-btn"
-              disabled={busy || uncertain || plan.phones.length > 0 || plan.groups.length > 0}
-              onClick={() => update(decodePhonePlan(r.body)!)}
-            >
-              Copy as a new proposal
-            </button>
-          </details>
+            </p>
+            {r.response && <p>{r.response}</p>}
+          </article>
         ))}
-        {((requests.isSuccess && !requests.data.length) || demo) && (
-          <p>No saved phone plans{demo ? " in this preview" : " yet"}.</p>
-        )}
-        <p className="pp-footnote">
-          OpenFolk manages requests in “Make Emma better”. Draft edits stay on this page until
-          submitted; leaving the page discards them. No automated Birchills connection is enabled.
-        </p>
+        {requests.isSuccess && !requests.data.length && <p>No changes requested yet.</p>}
+        {requests.isLoading && <p>Loading request history…</p>}
       </section>
     </div>
   );

@@ -21,17 +21,26 @@ Deno.serve(async (req) => {
         .eq("tenant_id", job.tenant_id)
         .single();
       const webhook = w?.slack_secret_name ? Deno.env.get(w.slack_secret_name) : null;
-      if (!webhook) throw new Error("Slack delivery not configured");
+      if (!w || !webhook) throw new Error("Slack delivery not configured");
       const parsed = new URL(webhook);
       if (parsed.protocol !== "https:" || parsed.hostname !== "hooks.slack.com")
         throw new Error("Invalid Slack destination");
       const receptionist = job.source_type === "receptionist_feedback";
+      const feedback = receptionist
+        ? await db
+            .from("receptionist_feedback")
+            .select("practice_session_id,call_id")
+            .eq("tenant_id", job.tenant_id)
+            .eq("id", job.source_id)
+            .maybeSingle()
+        : null;
+      if (feedback?.error) throw new Error("Feedback context unavailable");
       const label = receptionist
-        ? `${w.name}: receptionist feedback`
+        ? `${w.name}: ${feedback?.data?.practice_session_id ? "Practice & improve feedback" : "receptionist feedback"}`
         : job.source_type === "programme_updated"
           ? "Client programme updated"
           : "Client programme feedback";
-      const url = `https://app.openfolk.ai/${receptionist ? "receptionist" : "client"}?tenant=${job.tenant_id}`;
+      const url = `https://app.openfolk.ai/${receptionist ? "receptionist" : "client"}?tenant=${job.tenant_id}${receptionist ? "&view=improvements" : ""}`;
       const text = `${job.priority.toUpperCase()} · ${w.company}\n${label} is ready for review in OpenFolk.\n${url}\nReference: ${job.source_id} · revision ${job.source_version}`;
       const response = await fetch(webhook, {
         method: "POST",

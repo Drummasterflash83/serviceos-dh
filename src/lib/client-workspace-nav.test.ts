@@ -108,7 +108,8 @@ test("home status is scoped source data, never a fabricated health score", () =>
   const home = read("../components/client-portal/WorkspaceHome.tsx");
   assert.match(home, /\.eq\("tenant_id", tenant\)/);
   assert.match(home, /maybeSingle\(\)/);
-  assert.match(home, /Recorded stage:/);
+  assert.match(home, /receptionist.data.launch_stage/);
+  assert.match(home, /Activation pending/);
   assert.match(home, /isError/);
   assert.match(home, /refetch\(\)/);
   assert.doesNotMatch(home, /100%|All systems operational|createClient|service_role/);

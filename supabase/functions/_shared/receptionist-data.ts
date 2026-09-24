@@ -37,16 +37,23 @@ export function normalizeCall(raw: unknown): ReceptionistCall {
   const outputs = Object.values(record(artifact.structuredOutputs))
     .map((v) => record(v))
     .map((v) => ({ name: str(v.name) ?? "Call assessment", result: v.result ?? null }));
+  if (Object.keys(record(a.structuredData)).length)
+    outputs.push({ name: "Legacy structured assessment", result: record(a.structuredData) });
   const structured = Object.assign(
     {},
     record(a.structuredData),
     ...outputs.map((v) => record(v.result)),
   );
   const sentiment = str(structured.callerSentiment) ?? str(structured.sentiment);
-  const success =
-    typeof a.successEvaluation === "boolean"
-      ? String(a.successEvaluation)
-      : str(a.successEvaluation);
+  const evaluated = [
+    a.successEvaluation,
+    ...outputs
+      .filter((o) => /^(success[ _-]?evaluation|call[ _-]?success)$/i.test(o.name.trim()))
+      .map((o) => o.result),
+  ]
+    .filter((v) => typeof v === "boolean" || v === "true" || v === "false")
+    .map(String);
+  const success = new Set(evaluated).size === 1 ? evaluated[0] : null;
   const start = str(c.startedAt),
     end = str(c.endedAt);
   const seconds = start && end ? (Date.parse(end) - Date.parse(start)) / 1000 : NaN;
@@ -62,12 +69,19 @@ export function normalizeCall(raw: unknown): ReceptionistCall {
     status: str(c.status) ?? "unknown",
     duration: Number.isFinite(seconds) && seconds >= 0 ? Math.round(seconds) : null,
     cost: typeof c.cost === "number" && Number.isFinite(c.cost) ? c.cost : null,
-    summary: str(a.summary) ?? str(c.summary) ?? str(structured.summary),
+    summary:
+      str(a.summary) ??
+      str(c.summary) ??
+      str(structured.summary) ??
+      str(outputs.find((o) => /^(call[ _-])?summary$/i.test(o.name.trim()))?.result),
     success,
     sentiment,
     endedReason,
     transcript: str(artifact.transcript) ?? str(c.transcript),
-    recording: secureUrl(artifact.recordingUrl) ?? secureUrl(c.recordingUrl),
+    recording:
+      secureUrl(record(record(artifact.recording).mono).combinedUrl) ??
+      secureUrl(artifact.recordingUrl) ??
+      secureUrl(c.recordingUrl),
     outputs,
     needsReview:
       success === "false" ||
