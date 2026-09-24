@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -20,8 +20,10 @@ import {
   Headphones,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { selectedWorkspace } from "@/lib/client-workspace-nav";
 import { ClientInvestment } from "./ClientInvestment";
 import "@/styles/client-investment.css";
+import "@/styles/client-workspace.css";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   programmeSchema,
@@ -45,12 +47,12 @@ import {
 } from "@/components/ui/dialog";
 
 const nav = [
-  { id: "overview", label: "Your programme", Icon: LayoutDashboard },
-  { id: "investment", label: "Invoices & delivery", Icon: ShieldCheck },
-  { id: "outcomes", label: "Outcomes & investment", Icon: Layers },
+  { id: "overview", label: "Workspace", Icon: LayoutDashboard },
+  { id: "investment", label: "Invoices", Icon: ShieldCheck },
+  { id: "outcomes", label: "Programme", Icon: Layers },
   { id: "systems", label: "Systems & connections", Icon: Plug },
   { id: "links", label: "Useful links", Icon: Link2 },
-  { id: "notes", label: "Review & feedback", Icon: MessageSquare },
+  { id: "notes", label: "Feedback", Icon: MessageSquare },
 ] as const;
 type Section = (typeof nav)[number]["id"];
 function Status({ children }: { children: ReactNode }) {
@@ -89,8 +91,14 @@ function date(value: string) {
 export function ClientPortal() {
   const { user, signOut } = useAuth();
   const qc = useQueryClient();
-  const [section, setSection] = useState<Section>("overview");
-  const [selected, setSelected] = useState("");
+  const search = useSearch({ from: "/client" });
+  const navigate = useNavigate();
+  const section = search.section ?? "overview";
+  const selected = search.tenant ?? "";
+  const setSection = (section: Section) =>
+    void navigate({ to: "/client", search: { tenant, section } });
+  const setSelected = (tenant: string) =>
+    void navigate({ to: "/client", search: { tenant, section: "overview" } });
   const [editing, setEditing] = useState<OutcomePackage | null>(null);
   const [settings, setSettings] = useState(false);
   const [editorVersion, setEditorVersion] = useState<number | null>(null);
@@ -125,8 +133,21 @@ export function ClientPortal() {
       return !error && data === true;
     },
   });
-  const row = programmes.data?.find((p) => p.tenant_id === selected) ?? programmes.data?.[0];
+  const row = selectedWorkspace(programmes.data, selected);
   const tenant = row?.tenant_id;
+  const receptionist = useQuery({
+    queryKey: ["client-receptionist", user?.id, tenant],
+    enabled: !!user && !!tenant,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("receptionist_workspaces")
+        .select("name,launch_stage,launch_note")
+        .eq("tenant_id", tenant!)
+        .maybeSingle();
+      if (error) throw Error("Receptionist availability could not be checked.");
+      return data;
+    },
+  });
   const notes = useQuery({
     queryKey: ["client-programme-notes", user?.id, tenant],
     enabled: !!user && !!tenant,
@@ -140,6 +161,22 @@ export function ClientPortal() {
       if (error) throw new Error("Feedback could not be loaded. Please try again.");
       return (data ?? []) as ProgrammeNote[];
     },
+  });
+  const delivery = useQuery({
+    queryKey: ["client-note-delivery", user?.id, tenant],
+    enabled: !!user && !!tenant && section === "notes",
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("client_notification_outbox")
+        .select("source_id,state")
+        .eq("tenant_id", tenant!)
+        .eq("source_type", "programme_note")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw Error("Delivery status unavailable");
+      return data;
+    },
+    refetchInterval: 30000,
   });
   useEffect(() => {
     setNotice("");
@@ -190,7 +227,8 @@ export function ClientPortal() {
       if (error) throw new Error("Your feedback was not saved. Please try again.");
       setNote("");
       await qc.invalidateQueries({ queryKey: ["client-programme-notes", user?.id, tenant] });
-      setNotice("Feedback saved for the programme review.");
+      await qc.invalidateQueries({ queryKey: ["client-note-delivery", user?.id, tenant] });
+      setNotice("Feedback saved. Slack delivery is shown separately below.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Your feedback was not saved.");
     } finally {
@@ -230,17 +268,21 @@ export function ClientPortal() {
       <div className="cp-page-heading">
         <div>
           <p className="of-eyebrow">OPENFOLK × {p.company.toUpperCase()}</p>
-          <h1>{section === "overview" ? p.title : nav.find((n) => n.id === section)?.label}</h1>
+          <h1>
+            {section === "overview" ? "Get to work." : nav.find((n) => n.id === section)?.label}
+          </h1>
           <p>
             {section === "overview"
-              ? "A shared plan. Clear outcomes. One step at a time."
+              ? "Your tools, your progress and your OpenFolk team. All here."
               : section === "outcomes"
                 ? "Define the result, agree the investment, then build."
                 : section === "systems"
                   ? "What each system does, who owns it and what happens next."
-                  : section === "links"
-                    ? "Your programme’s shared resources, in one place."
-                    : "Questions, priorities and findings to shape what we build next."}
+                  : section === "investment"
+                    ? "Your invoices, payments and the work they support."
+                    : section === "links"
+                      ? "Your programme’s shared resources, in one place."
+                      : "Questions, priorities and findings to shape what we build next."}
           </p>
         </div>
         <div className="cp-heading-actions">
@@ -283,105 +325,77 @@ export function ClientPortal() {
         <ClientInvestment tenant={tenant} userId={user.id} />
       )}
       {section === "overview" && (
-        <>
-          <section className="cp-north-star">
-            <div>
-              <p className="of-eyebrow">YOUR DIRECTION · PROPOSED FOR REVIEW</p>
-              <h2>{p.objective}</h2>
-              <p>
-                We’ll agree the baseline and success measures together before committing to
-                delivery.
-              </p>
+        <div className="cp-launch-grid">
+          <section className="cp-launch-emma">
+            <div className="cp-launch-icon">
+              <Headphones size={30} />
             </div>
-            <div className="cp-north-symbol" aria-hidden="true">
-              ↗
+            <div className="cp-launch-copy">
+              <p className="of-eyebrow">AI RECEPTIONIST</p>
+              <h2>{receptionist.data?.name ?? "Your receptionist"}</h2>
+              <p>See who called, what happened and which conversations need a closer look.</p>
+              {receptionist.data ? (
+                <>
+                  <span className="cp-launch-stage">{receptionist.data.launch_stage}</span>
+                  <p className="cp-launch-note">{receptionist.data.launch_note}</p>
+                  <a className="cp-launch-open" href={`/receptionist?tenant=${tenant}`}>
+                    Open {receptionist.data.name} <ArrowRight size={18} />
+                  </a>
+                </>
+              ) : (
+                <p role={receptionist.isError ? "alert" : "status"}>
+                  {receptionist.isError
+                    ? "Receptionist status unavailable."
+                    : receptionist.isPending
+                      ? "Checking availability…"
+                      : "Your receptionist workspace is being prepared."}
+                  {receptionist.isError && (
+                    <button className="cp-text-button" onClick={() => void receptionist.refetch()}>
+                      Try again
+                    </button>
+                  )}
+                </p>
+              )}
             </div>
           </section>
-          <div className="cp-metrics">
-            <div>
-              <span>Outcome packages</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => !o.optional)
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>In your proposed programme</small>
-            </div>
-            <div>
-              <span>Future opportunities</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => o.optional)
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>Add when the time is right</small>
-            </div>
-            <div>
-              <span>Completed outcomes</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => o.status === "Delivered")
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>Measured against agreed criteria</small>
-            </div>
+          <div className="cp-launch-shortcuts">
+            <button className="cp-work-tile" onClick={() => setSection("outcomes")}>
+              <Layers size={23} />
+              <span>
+                <strong>Programme</strong>
+                <small>What we’re building. What’s next.</small>
+              </span>
+              <ArrowRight size={18} />
+            </button>
+            <button className="cp-work-tile" onClick={() => setSection("investment")}>
+              <ShieldCheck size={23} />
+              <span>
+                <strong>Invoices</strong>
+                <small>Payments, spend and downloadable invoices.</small>
+              </span>
+              <ArrowRight size={18} />
+            </button>
+            <button className="cp-work-tile" onClick={() => setSection("notes")}>
+              <MessageSquare size={23} />
+              <span>
+                <strong>Talk to OpenFolk</strong>
+                <small>Ask a question or share feedback.</small>
+              </span>
+              <ArrowRight size={18} />
+            </button>
           </div>
-          <div className="cp-overview-grid">
-            <section className="cp-card">
-              <div className="cp-card-heading">
-                <h2>Your next step</h2>
-                <Status>Needs input</Status>
-              </div>
-              <p className="cp-next-step">{p.nextStep}</p>
-              <button className="cp-text-button" onClick={() => setSection("notes")}>
-                Share findings or feedback <ArrowRight size={15} />
-              </button>
-            </section>
-            <section className="cp-card cp-commercial">
-              <p className="of-eyebrow">AN OUTCOME-LED PARTNERSHIP</p>
-              <h2>
-                Start with a result.
-                <br />
-                Build from there.
-              </h2>
-              <p>{p.commercialNote}</p>
-              <button className="cp-text-button" onClick={() => setSection("outcomes")}>
-                Explore your programme <ArrowRight size={15} />
-              </button>
-            </section>
-          </div>
-          <section className="cp-card">
-            <div className="cp-card-heading">
-              <h2>The programme at a glance</h2>
-              <button className="cp-text-button" onClick={() => setSection("outcomes")}>
-                View all <ArrowUpRight size={14} />
-              </button>
-            </div>
-            {p.outcomes
-              .filter((o) => !o.optional)
-              .map((o, i) => (
-                <button className="cp-stage-row" key={o.id} onClick={() => setSection("outcomes")}>
-                  <span className="cp-stage-index">{String(i + 1).padStart(2, "0")}</span>
-                  <span>
-                    <strong>{o.title}</strong>
-                    <small>{o.outcome}</small>
-                  </span>
-                  <Status>{o.status}</Status>
-                  <ArrowUpRight size={15} />
-                </button>
-              ))}
-          </section>
-        </>
+          <p className="cp-launch-footer">
+            Your workspace grows with your business. Future modules and proposals live in Programme.
+          </p>
+        </div>
       )}
       {section === "outcomes" && (
         <>
+          {tenant && user && <ClientInvestment tenant={tenant} userId={user.id} view="delivery" />}
           <div className="cp-investment">
             <div>
               <p className="of-eyebrow">PROPOSED INVESTMENT</p>
-              <h2>Pay for a defined result.</h2>
+              <h2>Next packages</h2>
               <p>
                 Every package has its own scope and success criteria. Optional additions are
                 excluded from the programme subtotal. Prices shown are proposed until agreed in
@@ -481,6 +495,51 @@ export function ClientPortal() {
                 }
               />
             ))}
+          <details className="cp-concept-section">
+            <summary>
+              Explore the card system <ChevronDown size={16} />
+            </summary>
+            <p>
+              Design concepts for future modules. These are not live records or agreed deliverables.
+            </p>
+            <div className="cp-concept-grid">
+              {[
+                [
+                  "Customer card",
+                  "One customer. The full relationship.",
+                  "Sites & contacts",
+                  "Communication history",
+                  "Open work & relationship health",
+                ],
+                [
+                  "Job card",
+                  "Every job, from first call to final cost.",
+                  "Progress & next action",
+                  "Parts, costs & gross profit",
+                  "Who we’re waiting on",
+                ],
+                [
+                  "Engineer card",
+                  "The right person. Ready for the work.",
+                  "Skills & availability",
+                  "Assigned work & handovers",
+                  "Support & outstanding actions",
+                ],
+              ].map(([title, subtitle, ...fields]) => (
+                <article className="cp-concept-card" key={title}>
+                  <span>CONCEPT PREVIEW</span>
+                  <h3>{title}</h3>
+                  <p>{subtitle}</p>
+                  {fields.map((field) => (
+                    <div key={field}>
+                      <span>{field}</span>
+                      <i aria-hidden="true" />
+                    </div>
+                  ))}
+                </article>
+              ))}
+            </div>
+          </details>
           <p className="cp-footnote">
             {p.commercialNote} Tax treatment, third-party charges, payment milestones and any
             result-linked fees must be agreed in the final quotation. This page does not accept a
@@ -549,9 +608,9 @@ export function ClientPortal() {
       {section === "notes" && (
         <>
           <section className="cp-card">
-            <h2>Keep the conversation with the plan.</h2>
+            <h2>Talk to OpenFolk</h2>
             <p>
-              Paste the Perplexity findings, suggest a priority or ask a question. Feedback is
+              Ask a question, suggest an improvement or tell us what isn’t working. Feedback is
               shared with OpenFolk and authorised members of this client programme.
             </p>
             <form onSubmit={postNote} className="cp-note-form">
@@ -566,9 +625,12 @@ export function ClientPortal() {
                 required
               />
               <div>
-                <span>{note.length.toLocaleString()} / 10,000 · Saved here, no email sent</span>
+                <span>
+                  {note.length.toLocaleString()} / 10,000 · Saved here; Slack delivery tracked
+                  separately
+                </span>
                 <button className="cp-primary" disabled={posting || !note.trim()}>
-                  {posting ? "Saving…" : "Save feedback"}
+                  {posting ? "Saving…" : "Send feedback"}
                   <ArrowUpRight size={15} />
                 </button>
               </div>
@@ -590,6 +652,17 @@ export function ClientPortal() {
                   <time dateTime={n.created_at}>{date(n.created_at)}</time>
                 </div>
                 <p>{n.body}</p>
+                <small className="cp-footnote">
+                  {delivery.isError
+                    ? "Slack status unavailable"
+                    : delivery.isPending
+                      ? "Checking Slack delivery…"
+                      : delivery.data?.find((d) => d.source_id === n.id)?.state === "sent"
+                        ? "Sent to OpenFolk on Slack"
+                        : delivery.data?.find((d) => d.source_id === n.id)?.state === "failed"
+                          ? "Saved · Slack delivery needs attention"
+                          : "Saved · Slack delivery not yet confirmed"}
+                </small>
               </article>
             ))
           ) : (
@@ -641,16 +714,14 @@ export function ClientPortal() {
       </a>
       <aside className="cp-sidebar">
         <Link to="/" className="of-wordmark">
-          <img src="/brand/openfolk-icon.svg" alt="" />
-          OpenFolk
-          <span className="of-brand-dot" />
+          openfolk<span className="cp-wordmark-colon">:</span>
         </Link>
-        <div className="cp-workspace-label">CLIENT WORKSPACE</div>
+        <div className="cp-workspace-label">SERVICE OS · CLIENT WORKSPACE</div>
         <div className="cp-client-identity">
           <span>{p?.company.slice(0, 1) ?? "O"}</span>
           <div>
             <strong>{p?.company ?? "Your workspace"}</strong>
-            <small>Your improvement programme</small>
+            <small>Your Service OS</small>
           </div>
         </div>
         {(programmes.data?.length ?? 0) > 1 && (
@@ -685,21 +756,23 @@ export function ClientPortal() {
           >
             <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
           </a>
-          {nav.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              className={section === id ? "is-active" : ""}
-              aria-current={section === id ? "page" : undefined}
-              onClick={() => {
-                setSection(id);
-                setNotice("");
-                setError("");
-              }}
-            >
-              <Icon size={17} />
-              {label}
-            </button>
-          ))}
+          {nav
+            .filter((n) => (n.id !== "links" || !!p?.links.length) && (n.id !== "systems" || admin))
+            .map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                className={section === id ? "is-active" : ""}
+                aria-current={section === id ? "page" : undefined}
+                onClick={() => {
+                  setSection(id);
+                  setNotice("");
+                  setError("");
+                }}
+              >
+                <Icon size={17} />
+                {label}
+              </button>
+            ))}
         </nav>
         <div className="cp-sidebar-bottom">
           <div className="cp-private">

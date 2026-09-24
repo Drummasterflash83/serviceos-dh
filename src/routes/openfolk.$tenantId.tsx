@@ -243,6 +243,7 @@ function WorkspacePage() {
   const tenantName = workspace.summary.display_name ?? tenantId.slice(0, 8);
   return (
     <OpenfolkShell
+      tenantId={tenantId}
       tenantName={tenantName}
       section={section}
       onSectionChange={setSection}

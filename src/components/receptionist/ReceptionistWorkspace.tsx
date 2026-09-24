@@ -24,8 +24,10 @@ import {
   FileText,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { getSupabaseClient } from "@/lib/supabase";
 import { callerGroups, durationLabel, type ReceptionistCall } from "@/lib/receptionist-data";
+import { callOutcome, rankCalls, reviewCall, sameNumberHistory } from "@/lib/receptionist-review";
 import {
   Dialog,
   DialogContent,
@@ -70,8 +72,8 @@ type Page = {
 };
 type View = "today" | "calls" | "callers" | "improvements" | "details" | "phones";
 const views = [
-  { id: "today", label: "Your daily view", Icon: LayoutDashboard },
-  { id: "calls", label: "Call journal", Icon: Phone },
+  { id: "today", label: "Overview", Icon: LayoutDashboard },
+  { id: "calls", label: "Conversations", Icon: Phone },
   { id: "callers", label: "People who called", Icon: Users },
   { id: "phones", label: "Phones & call groups", Icon: Phone },
   { id: "improvements", label: "Make Emma better", Icon: Sparkles },
@@ -179,6 +181,8 @@ export function ReceptionistWorkspace({
     [search, setSearch] = useState(""),
     [period, setPeriod] = useState("7"),
     [reviewOnly, setReviewOnly] = useState(false),
+    [sort, setSort] = useState("recent"),
+    [playbackError, setPlaybackError] = useState(false),
     [selectedCall, setSelectedCall] = useState<ReceptionistCall | null>(null),
     [composer, setComposer] = useState(false),
     [noteCall, setNoteCall] = useState<string | null>(null),
@@ -203,10 +207,9 @@ export function ReceptionistWorkspace({
       return data as Workspace[];
     },
   });
-  const w = demo
-    ? demoWorkspace
-    : (workspaces.data?.find((w) => w.tenant_id === selectedTenant) ?? workspaces.data?.[0]);
+  const w = demo ? demoWorkspace : selectedWorkspace(workspaces.data, selectedTenant);
   const tenant = w?.tenant_id;
+  const workspaceHref = clientWorkspaceHref(demo ? undefined : tenant);
   const operator = useQuery({
     queryKey: ["receptionist-operator", user?.id],
     enabled: !!user && !demo,
@@ -297,16 +300,21 @@ export function ReceptionistWorkspace({
   const visible = calls.filter(
     (c) =>
       (period === "all" || Date.parse(c.createdAt) >= Date.now() - Number(period) * 86400000) &&
-      (!reviewOnly || c.needsReview) &&
+      (!reviewOnly || reviewCall(c).priority > 0) &&
       `${c.caller} ${c.number ?? ""} ${c.summary ?? ""}`
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
   const open = notes.filter((n) => n.status !== "Resolved"),
-    attention = visible.filter((c) => c.needsReview),
+    attention = rankCalls(visible.filter((c) => reviewCall(c).priority > 0)),
     evaluated = visible.filter((c) => c.success === "true" || c.success === "false"),
     passed = evaluated.filter((c) => c.success === "true");
   const groups = callerGroups(visible);
+  const unassessed = visible.filter((c) => !reviewCall(c).assessmentAvailable);
+  const repeatGroups = groups.filter((g) => g.number && g.calls.length > 1);
+  useEffect(() => {
+    setPlaybackError(false);
+  }, [selectedCall?.id]);
   const loading = !demo && (workspaces.isLoading || callsQuery.isLoading);
   useEffect(() => {
     setSelectedTenant(tenantId ?? "");
@@ -424,7 +432,7 @@ export function ReceptionistWorkspace({
       <div className="rw-call-list">
         {items.map((c) => (
           <button className="rw-call-row" key={c.id} onClick={() => setSelectedCall(c)}>
-            <span className={`rw-call-icon ${c.needsReview ? "rw-warn" : ""}`}>
+            <span className={`rw-call-icon ${reviewCall(c).priority > 0 ? "rw-warn" : ""}`}>
               <Phone size={18} />
             </span>
             <span className="rw-caller">
@@ -439,9 +447,16 @@ export function ReceptionistWorkspace({
                   : date(c.createdAt)}
               </small>
             </span>
-            <span className="rw-call-summary">{c.summary ?? "Call summary not available yet"}</span>
-            <span className={`rw-pill ${c.needsReview ? "rw-pill-amber" : ""}`}>
-              {c.needsReview ? "Review suggested" : c.status === "ended" ? "Completed" : c.status}
+            <span className="rw-call-summary">
+              {c.summary ?? "Call summary not available yet"}
+              <small className="rw-outcome">{callOutcome(c)}</small>
+            </span>
+            <span className={`rw-pill ${reviewCall(c).priority > 0 ? "rw-pill-amber" : ""}`}>
+              {reviewCall(c).priority > 0
+                ? reviewCall(c).label
+                : reviewCall(c).assessmentAvailable
+                  ? "Assessed"
+                  : "Not assessed"}
             </span>
             <span className="rw-call-time">
               {time(c.createdAt)}
@@ -478,7 +493,7 @@ export function ReceptionistWorkspace({
         <p>
           {workspaces.error?.message ?? "A receptionist has not been assigned to this login yet."}
         </p>
-        <a href="/client">Back to your programme</a>
+        <a href="/client">Back to workspace</a>
       </div>
     );
   return (
@@ -487,15 +502,14 @@ export function ReceptionistWorkspace({
         Skip to dashboard
       </a>
       <aside className="rw-sidebar">
-        <a href="/client" className="rw-brand">
-          <img src="/brand/openfolk-icon.svg" alt="" />
-          OpenFolk<span>●</span>
+        <a href={workspaceHref} className="rw-brand">
+          openfolk<span>:</span>
         </a>
         <div className="rw-company">
           <span className="rw-company-icon">{w.company.slice(0, 1)}</span>
           <div>
             <strong>{w.company}</strong>
-            <small>Your receptionist workspace</small>
+            <small>Service OS · AI receptionist</small>
           </div>
         </div>
         {(workspaces.data?.length ?? 0) > 1 && (
@@ -511,7 +525,7 @@ export function ReceptionistWorkspace({
             ))}
           </select>
         )}
-        <p className="rw-nav-caption">A WARMER WELCOME</p>
+        <p className="rw-nav-caption">AI RECEPTIONIST</p>
         <nav aria-label="Receptionist workspace">
           {views.map(({ id, label, Icon }) => (
             <button
@@ -543,9 +557,14 @@ export function ReceptionistWorkspace({
           </button>
         </div>
         <div className="rw-sidebar-bottom">
-          <a href="/client">
-            <ArrowLeft size={15} /> Your OpenFolk programme
+          <a href={workspaceHref}>
+            <ArrowLeft size={15} /> Back to workspace
           </a>
+          {operator.data && (
+            <a href="/openfolk">
+              <ShieldCheck size={15} /> OpenFolk overview
+            </a>
+          )}
           <small>
             <ShieldCheck size={14} /> Private client workspace
           </small>
@@ -565,9 +584,9 @@ export function ReceptionistWorkspace({
       </aside>
       <div className="rw-shell">
         <header className="rw-topbar">
-          <span>
-            {w.company} <span>/</span> AI receptionist
-          </span>
+          <a href={workspaceHref} className="rw-btn rw-btn-light">
+            <ArrowLeft size={16} /> Workspace <span>/</span> {w.name}
+          </a>
           <div>
             <span className="rw-user-avatar">{(user?.email ?? "M").slice(0, 1).toUpperCase()}</span>
             <span>{demo ? "Mary’s view · design preview" : user?.email}</span>
@@ -606,14 +625,14 @@ export function ReceptionistWorkspace({
               </p>
               <h1>
                 {view === "today"
-                  ? `A good day starts with ${w.name}.`
+                  ? w.name
                   : view === "improvements"
                     ? `Make ${w.name} better.`
                     : views.find((v) => v.id === view)?.label + "."}
               </h1>
               <p>
                 {view === "today"
-                  ? "Every conversation, a clearer picture. Here’s what deserves your attention."
+                  ? "Who called. What happened. What needs your attention."
                   : view === "calls"
                     ? "A clear record of who called, what happened and what to learn."
                     : view === "callers"
@@ -625,9 +644,6 @@ export function ReceptionistWorkspace({
                           : "The essentials, the launch stage and the evidence behind the status."}
               </p>
             </div>
-            <button className="rw-btn rw-btn-light" onClick={() => setSettings(true)}>
-              <SlidersHorizontal size={16} /> Make it yours
-            </button>
           </div>
           <div
             className="rw-toolbar"
@@ -665,48 +681,53 @@ export function ReceptionistWorkspace({
           </div>
           {view === "today" && (
             <>
-              <section className="rw-hero">
-                <div className="rw-emma-orb">
-                  <Headphones size={48} />
-                  <span />
-                </div>
-                <div className="rw-hero-copy">
-                  <div className="rw-hero-label">
-                    MEET YOUR RECEPTIONIST <span className="rw-pill">{w.launch_stage}</span>
+              <section className="rw-health-strip" aria-label="Receptionist health">
+                <div className="rw-health-identity">
+                  <span className="rw-health-orb">
+                    <Headphones size={25} />
+                  </span>
+                  <div>
+                    <strong>{w.name} · AI receptionist</strong>
+                    <small>{w.launch_stage} workspace</small>
                   </div>
-                  <h2>
-                    {w.name}
-                    <span>Calm. Clear. Here to help.</span>
-                  </h2>
-                  <p>{w.launch_note}</p>
-                  <button onClick={() => setView("details")}>
-                    Receptionist details <ArrowRight size={15} />
-                  </button>
                 </div>
-                <div className="rw-connection">
-                  <span className={`rw-dot ${connected ? "on" : ""}`} />
+                <div>
+                  <span className="rw-health-label">Call data</span>
                   <strong>
                     {demo
-                      ? "Example connection"
+                      ? "Illustrative data"
                       : callsQuery.isError
-                        ? "Connection needs attention"
-                        : connected
-                          ? "Vapi data connected"
-                          : "Awaiting Vapi connection"}
+                        ? "Needs attention"
+                        : loading
+                          ? "Checking…"
+                          : connected
+                            ? "Connected to Vapi"
+                            : "Not connected"}
                   </strong>
                   <small>
-                    {connected
-                      ? `Last fetched ${time(callsQuery.data?.pages[0]?.checkedAt ?? new Date().toISOString())} · London time`
-                      : "Call evidence will appear after connection."}
+                    {callsQuery.data?.pages[0]?.checkedAt
+                      ? `Updated ${date(callsQuery.data.pages[0].checkedAt)}`
+                      : "No verified refresh time"}
                   </small>
-                  <div className="rw-wave">
-                    {[13, 23, 36, 20, 43, 29, 17, 37, 49, 25, 14, 31, 40, 22, 12].map((h, i) => (
-                      <i key={i} style={{ height: h }} />
-                    ))}
-                  </div>
-                  <small>Data connection is separate from phone-line health.</small>
                 </div>
+                <div>
+                  <span className="rw-health-label">Phone routing</span>
+                  <strong>
+                    {w.launch_stage === "Testing"
+                      ? "Test stage · not a live-line claim"
+                      : "See launch details"}
+                  </strong>
+                  <small>Data availability does not prove phone-line health.</small>
+                </div>
+                <button className="rw-btn rw-btn-light" onClick={() => setView("details")}>
+                  Details <ArrowRight size={15} />
+                </button>
               </section>
+              <p className="rw-coverage">
+                {w.launch_note} Call totals below cover {visible.length} loaded records in this view
+                {callsQuery.hasNextPage ? "; more history is available in Conversations" : ""}.
+                Test-stage results are not live customer satisfaction statistics.
+              </p>
               <section className="rw-metrics" aria-label="Call metrics">
                 <Metric
                   label="Calls in this view"
@@ -715,14 +736,14 @@ export function ReceptionistWorkspace({
                   icon={<Phone size={17} />}
                 />
                 <Metric
-                  label="Worth a closer look"
+                  label="Needs review"
                   value={connected ? String(attention.length) : "—"}
-                  detail="Provider signals · review suggested"
+                  detail="Handling or assessment flags"
                   icon={<CircleAlert size={17} />}
                   accent
                 />
                 <Metric
-                  label="Vapi success assessment"
+                  label="Provider assessment passed"
                   value={
                     evaluated.length
                       ? `${Math.round((passed.length / evaluated.length) * 100)}%`
@@ -732,82 +753,78 @@ export function ReceptionistWorkspace({
                   icon={<Check size={17} />}
                 />
                 <Metric
-                  label="Open improvements"
-                  value={feedback.isError ? "—" : String(open.length)}
-                  detail="Shared observations and change requests"
+                  label="Not yet assessed"
+                  value={connected ? String(unassessed.length) : "—"}
+                  detail="No outcome or sentiment assessment"
                   icon={<Sparkles size={17} />}
                 />
               </section>
-              <div className="rw-main-grid">
-                <section className="rw-panel">
-                  <div className="rw-panel-title">
-                    <div>
-                      <p className="rw-eyebrow">A LITTLE ATTENTION GOES A LONG WAY</p>
-                      <h2>Your next best steps</h2>
-                    </div>
-                    <span className="rw-pill">Daily review</span>
-                  </div>
-                  <div className="rw-focus">
-                    <span>YOUR FOCUS</span>
-                    <p>{focus}</p>
+              <section className="rw-panel rw-attention">
+                <div className="rw-panel-title">
+                  <div>
+                    <p className="rw-eyebrow">REVIEW FIRST</p>
+                    <h2>Needs your attention</h2>
                   </div>
                   <button
-                    className="rw-next"
+                    className="rw-text-btn"
                     onClick={() => {
                       setView("calls");
                       setReviewOnly(true);
+                      setSort("attention");
                     }}
                   >
-                    <span className="rw-number">01</span>
+                    View review queue <ArrowRight size={16} />
+                  </button>
+                </div>
+                <p className="rw-queue-help">
+                  Handling issues first, then provider assessment flags. Open a conversation to see
+                  the evidence—not a customer satisfaction score.
+                </p>
+                {attention.length ? (
+                  <CallList items={attention.slice(0, 5)} />
+                ) : (
+                  <div className="rw-queue-empty">
+                    <ShieldCheck size={22} />
                     <div>
-                      <strong>Look at calls that need a review</strong>
+                      <strong>
+                        {loading
+                          ? "Checking call evidence…"
+                          : callsQuery.isError || !connected
+                            ? "Call evidence unavailable"
+                            : "No automatic review flags in this view"}
+                      </strong>
                       <p>
-                        {connected
-                          ? `${attention.length} in this view. Read the evidence before deciding.`
-                          : "Waiting for call evidence from Vapi."}
+                        {connected && !callsQuery.isError
+                          ? `${unassessed.length} calls have no outcome or sentiment assessment. Unflagged does not mean verified successful.`
+                          : "Refresh the connection before drawing conclusions."}
                       </p>
                     </div>
-                    <ArrowUpRight size={18} />
-                  </button>
-                  <button className="rw-next" onClick={() => setView("improvements")}>
-                    <span className="rw-number">02</span>
-                    <div>
-                      <strong>Follow the improvements</strong>
-                      <p>
-                        {open.length} open. See what is being reviewed and what is ready to test.
-                      </p>
-                    </div>
-                    <ArrowUpRight size={18} />
-                  </button>
-                  <button className="rw-next" onClick={() => addNote()}>
-                    <span className="rw-number">03</span>
-                    <div>
-                      <strong>Tell us what you noticed</strong>
-                      <p>A confusing answer, a good handover, an idea worth trying.</p>
-                    </div>
-                    <ArrowUpRight size={18} />
-                  </button>
-                </section>
-                <section className="rw-note-card">
-                  <div className="rw-note-art">
-                    <MessageSquare size={38} />
-                    <Sparkles size={24} />
                   </div>
-                  <p className="rw-eyebrow">BUILT WITH YOUR KNOWLEDGE</p>
-                  <h2>
-                    You know your callers.
-                    <br />
-                    Help {w.name} know them too.
-                  </h2>
-                  <p>
-                    Leave a note while it’s fresh. OpenFolk can review it, explain the change and
-                    bring it back for testing.
-                  </p>
-                  <button className="rw-btn" onClick={() => addNote()}>
-                    <Plus size={17} /> Add an observation
-                  </button>
-                  <small>Saved in your workspace. Delivery status stays visible.</small>
-                </section>
+                )}
+              </section>
+              <div className="rw-insight-grid">
+                <button onClick={() => setView("callers")}>
+                  <Users size={22} />
+                  <span>
+                    <strong>{repeatGroups.length} numbers called more than once</strong>
+                    <small>
+                      Explore caller history. Repeat calls are not necessarily repeat issues.
+                    </small>
+                  </span>
+                  <ArrowRight size={18} />
+                </button>
+                <button onClick={() => setView("improvements")}>
+                  <MessageSquare size={22} />
+                  <span>
+                    <strong>
+                      {feedback.isError
+                        ? "Feedback unavailable"
+                        : `${open.length} open improvements`}
+                    </strong>
+                    <small>Your observations, OpenFolk responses and Slack delivery status.</small>
+                  </span>
+                  <ArrowRight size={18} />
+                </button>
               </div>
               <section className="rw-panel rw-journal">
                 <div className="rw-panel-title">
@@ -835,6 +852,14 @@ export function ReceptionistWorkspace({
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </label>
+                <select
+                  aria-label="Sort conversations"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                >
+                  <option value="recent">Newest first</option>
+                  <option value="attention">Attention first</option>
+                </select>
                 <button
                   className={`rw-btn rw-btn-light ${reviewOnly ? "rw-selected" : ""}`}
                   aria-pressed={reviewOnly}
@@ -852,7 +877,7 @@ export function ReceptionistWorkspace({
               </p>
               {view === "calls" ? (
                 <section className="rw-panel">
-                  <CallList items={visible} />
+                  <CallList items={sort === "attention" ? rankCalls(visible) : visible} />
                 </section>
               ) : (
                 <div className="rw-people-grid">
@@ -1093,12 +1118,23 @@ export function ReceptionistWorkspace({
             <>
               <div className="rw-detail-badges">
                 <span className="rw-pill">{selectedCall.status}</span>
-                <span className="rw-pill">
-                  {selectedCall.needsReview ? "Review suggested" : "No automatic review flag"}
-                </span>
+                <span className="rw-pill">{reviewCall(selectedCall).label}</span>
               </div>
               <h3>What happened</h3>
               <p>{selectedCall.summary ?? "Vapi has not provided a summary for this call."}</p>
+              <p className="rw-outcome-detail">{callOutcome(selectedCall)}</p>
+              {reviewCall(selectedCall).signals.length > 0 && (
+                <section className="rw-evidence" aria-label="Reasons to review">
+                  <h3>Why this call is flagged</h3>
+                  {reviewCall(selectedCall).signals.map((signal) => (
+                    <div key={signal.label}>
+                      <strong>{signal.label}</strong>
+                      <p>{signal.evidence}</p>
+                      <small>{signal.source} · verify against the conversation</small>
+                    </div>
+                  ))}
+                </section>
+              )}
               <dl className="rw-facts">
                 <div>
                   <dt>Vapi success assessment</dt>
@@ -1136,14 +1172,26 @@ export function ReceptionistWorkspace({
                 conversation and add your own observation.
               </p>
               {selectedCall.recording ? (
-                <a
-                  className="rw-btn rw-btn-light"
-                  href={selectedCall.recording}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Headphones size={16} /> Listen to recording <ArrowUpRight size={15} />
-                </a>
+                <div className="rw-recording">
+                  <p>
+                    <Headphones size={16} /> Call recording
+                  </p>
+                  <audio
+                    key={selectedCall.id}
+                    controls
+                    preload="none"
+                    src={selectedCall.recording}
+                    onError={() => setPlaybackError(true)}
+                    onCanPlay={() => setPlaybackError(false)}
+                    aria-label="Play call recording"
+                    style={{ width: "100%" }}
+                  />
+                  <p className="rw-footnote" role={playbackError ? "alert" : undefined}>
+                    {playbackError
+                      ? "This recording could not be played. Close this conversation, refresh calls and try again. The transcript remains available below."
+                      : "Listen here without leaving your workspace."}
+                  </p>
+                </div>
               ) : (
                 <p className="rw-footnote">Recording not supplied by Vapi.</p>
               )}
@@ -1154,6 +1202,25 @@ export function ReceptionistWorkspace({
                 <p className="rw-preserve">
                   {selectedCall.transcript ?? "Transcript not supplied by Vapi."}
                 </p>
+              </details>
+              <details className="rw-transcript">
+                <summary>
+                  <Users size={16} /> Same-number history ·{" "}
+                  {sameNumberHistory(selectedCall, calls).length} loaded calls
+                </summary>
+                <p className="rw-footnote">
+                  Numbers can be shared. This does not establish a customer, a Job link or repeated
+                  unresolved chasing.
+                </p>
+                {sameNumberHistory(selectedCall, calls).map((c) => (
+                  <button key={c.id} className="rw-person-call" onClick={() => setSelectedCall(c)}>
+                    <span>
+                      {date(c.createdAt)}
+                      <small>{c.summary ?? "Summary unavailable"}</small>
+                    </span>
+                    <ChevronRight size={16} />
+                  </button>
+                ))}
               </details>
               {selectedCall.outputs.length > 0 && (
                 <details className="rw-transcript">

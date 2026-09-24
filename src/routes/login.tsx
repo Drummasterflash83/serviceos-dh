@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { friendlySignInError } from "@/lib/auth-errors";
+import { getSupabaseClient } from "@/lib/supabase";
 import "@/styles/openfolk-home.css";
 
 // Public signup is OFF unless explicitly enabled. Access is invite-only.
@@ -56,13 +57,37 @@ function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const dest = redirect ?? "/client";
-
   // A recovery link creates a session specifically so the password can be
   // changed here; do not auto-redirect that session away from the form.
   useEffect(() => {
-    if (!loading && session && mode !== "reset") navigate({ to: dest, replace: true });
-  }, [loading, session, mode, dest, navigate]);
+    if (loading || !session || mode === "reset") return;
+    let cancelled = false;
+    async function routeToWorkspace() {
+      // Explicit client/receptionist links remain explicit. Default login is
+      // capability-based, never based on an email address or a tenant role.
+      if (redirect) {
+        if (!cancelled) await navigate({ to: redirect, replace: true });
+        return;
+      }
+      const { data, error: gateError } = await getSupabaseClient().rpc(
+        "current_user_is_openfolk_operator",
+        { required_permission: "platform.controlplane.view" },
+      );
+      if (cancelled) return;
+      if (gateError) {
+        setError("Your workspace access could not be checked. Please refresh to retry.");
+        return;
+      }
+      await navigate({ to: data === true ? "/openfolk" : "/client", replace: true });
+    }
+    void routeToWorkspace().catch(() => {
+      if (!cancelled)
+        setError("Your workspace access could not be checked. Please refresh to retry.");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, session, mode, redirect, navigate]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

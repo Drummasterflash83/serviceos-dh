@@ -23,9 +23,11 @@ function OpenFolkHome() {
           </span>
           <span className="of-minimal-promise">Your business working better.</span>
         </h1>
-        <a className="of-glass-login" href="https://app.openfolk.ai/login?redirect=%2Fclient">
+        <a className="of-glass-login" href="https://app.openfolk.ai/login">
           Client Login
-          <span className="of-login-arrow" aria-hidden="true">↗</span>
+          <span className="of-login-arrow" aria-hidden="true">
+            ↗
+          </span>
         </a>
       </div>
     </main>
