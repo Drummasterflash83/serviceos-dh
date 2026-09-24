@@ -1,6 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { record, normalizeCall, secureUrl } from "../_shared/receptionist-data.ts";
 import {
+  webCallToken,
+  definitiveWebCallRejection,
+  practiceCallMatches,
+} from "../_shared/receptionist-web-call.ts";
+import {
   practiceAssistant,
   assistantOverview,
   allowedQueryTools,
@@ -80,7 +85,7 @@ Deno.serve(async (req) => {
       }
       if (!s.call_id) return reply({ session: s, call: null });
       const call = await provider("call/" + s.call_id);
-      if (record(call.metadata).openfolkPracticeSession !== s.id)
+      if (!practiceCallMatches(call, s.id, body.tenantId))
         return reply({ error: "Practice evidence mismatch" }, 409);
       if (body.action === "recording") {
         const r = await fetch(`https://api.vapi.ai/call/${s.call_id}/mono-recording`, {
@@ -160,11 +165,38 @@ Deno.serve(async (req) => {
       );
     try {
       const duration = body.mode === "listen" ? 25 : 180;
-      const call = await provider("call", {
-        assistant: { ...candidate, maxDurationSeconds: duration },
-        transport: { provider: "daily", roomDeleteOnUserLeaveEnabled: true },
-        metadata: { openfolkPracticeSession: body.sessionId, openfolkTenant: body.tenantId },
+      const token = await webCallToken(key, String(assistant.orgId ?? ""));
+      const response = await fetch("https://api.vapi.ai/call/web", {
+        method: "POST",
+        redirect: "error",
+        signal: AbortSignal.timeout(20000),
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assistant: {
+            ...candidate,
+            maxDurationSeconds: duration,
+            metadata: { openfolkPracticeSession: body.sessionId, openfolkTenant: body.tenantId },
+          },
+          roomDeleteOnUserLeaveEnabled: true,
+        }),
       });
+      if (!response.ok && definitiveWebCallRejection(response.status)) {
+        const released = await service
+          .from("receptionist_practice_sessions")
+          .update({ state: "failed" })
+          .eq("id", body.sessionId)
+          .eq("tenant_id", body.tenantId);
+        return reply(
+          {
+            error: released.error
+              ? "Vapi rejected this attempt, but its reservation could not be released. Wait five minutes before another attempt."
+              : `Vapi rejected the browser-call request (HTTP ${response.status}). No call started. OpenFolk needs to check the connection; no five-minute wait is required.`,
+          },
+          502,
+        );
+      }
+      if (!response.ok) throw Error("Unconfirmed web call response");
+      const call = record(await response.json());
       if (!uuid(call.id)) throw Error("Missing call reference");
       const webCallUrl = practiceRoom(call.webCallUrl ?? record(call.transport).callUrl);
       const saved = await service

@@ -222,10 +222,21 @@ export function PracticeImprove({
         body: { tenantId: tenant, action: "start", sessionId: id, mode: nextMode },
       });
       if (!alive.current || attempt !== generation.current) return;
-      if (error || data?.error)
+      if (error || data?.error) {
+        let reason = data?.error;
+        if (!reason && error?.context instanceof Response) {
+          const body = await error.context
+            .clone()
+            .json()
+            .catch(() => null);
+          reason = body?.error;
+        }
         throw Error(
-          data?.error ?? "Voice could not connect. Wait five minutes before a new attempt.",
+          typeof reason === "string"
+            ? reason
+            : "Voice could not connect. The call status is unconfirmed; wait five minutes before a new attempt.",
         );
+      }
       setSession({ id, callId: data.callId });
       const voice = new VapiClient("", undefined, undefined, {
         audioSource: nextMode !== "listen",

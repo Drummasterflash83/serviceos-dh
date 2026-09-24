@@ -264,7 +264,10 @@ test("practice creation is authenticated and database-reserved before any paid p
     "utf8",
   );
   assert.ok(edge.indexOf("db.auth.getUser") < edge.indexOf("reserve_receptionist_practice"));
-  assert.ok(edge.indexOf("reserve_receptionist_practice") < edge.indexOf('provider("call",'));
+  assert.ok(
+    edge.indexOf("reserve_receptionist_practice") <
+      edge.indexOf('fetch("https://api.vapi.ai/call/web"'),
+  );
   assert.match(edge, /openfolkPracticeSession/);
   assert.match(edge, /roomDeleteOnUserLeaveEnabled: true/);
 });
