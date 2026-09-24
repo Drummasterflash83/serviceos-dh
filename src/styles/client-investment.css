@@ -65,6 +65,21 @@
   margin-bottom: 36px;
 }
 @media (max-width: 680px) {
+  .cp-invoices-page .cp-metrics {
+    grid-template-columns: 1fr;
+  }
+  .cp-invoices-page .cp-metrics > div {
+    padding: 20px;
+    min-width: 0;
+  }
+  .cp-invoices-page .cp-metrics > div + div {
+    border-top: 1px solid #e3e7ed;
+    border-left: 0;
+  }
+  .cp-invoices-page .cp-metrics span,
+  .cp-invoices-page .cp-metrics small {
+    font-size: 12px;
+  }
   .cp-invoice-list {
     grid-template-columns: 1fr;
   }

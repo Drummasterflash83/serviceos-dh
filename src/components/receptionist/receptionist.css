@@ -1848,7 +1848,33 @@
   text-align: left;
   cursor: pointer;
 }
+.rw-dialog .rw-transcript {
+  color: #5f506b;
+  font-size: 13px;
+}
+.rw-dialog .rw-transcript p {
+  font-size: 14px;
+}
+.rw-dialog .rw-footnote {
+  font-size: 12px;
+  color: #64586e;
+}
 @media (max-width: 800px) {
+  .rw-sidebar nav button {
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .rw-topbar > a {
+    font-size: 12px;
+  }
+  .rw-call-row .rw-caller > strong {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .rw-text-btn {
+    font-size: 12px;
+    min-height: 40px;
+  }
   .rw-insight-grid {
     grid-template-columns: 1fr;
   }
