@@ -738,7 +738,7 @@ export function ReceptionistWorkspace({
               {view !== "today" && <p className="rw-eyebrow">THE RECEPTIONIST WORKSPACE</p>}
               <h1>
                 {view === "today"
-                  ? w.name
+                  ? "Your receptionist"
                   : view === "improvements"
                     ? `Make ${w.name} better.`
                     : views.find((v) => v.id === view)?.label + "."}
@@ -795,44 +795,53 @@ export function ReceptionistWorkspace({
           {view === "today" && (
             <>
               <section className="rw-emma-pulse" aria-label="Emma at a glance">
-                <button
-                  className={`rw-emma-pulse-main rw-emma-tone-${healthCards[0].tone}`}
-                  onClick={() => setSelectedHealthCard("service")}
-                >
-                  <span className="rw-emma-pulse-icon">
-                    {healthCards[0].tone === "watch" ? (
-                      <CircleAlert size={30} />
-                    ) : (
-                      <Headphones size={30} />
-                    )}
-                  </span>
-                  <span className="rw-emma-pulse-copy">
-                    <span className="rw-eyebrow">{w.name.toUpperCase()} · YOUR RECEPTIONIST</span>
-                    <strong>{healthCards[0].headline}</strong>
-                    <span>{healthCards[0].summary}</span>
-                    {!demo && (
+                <div className="rw-emma-pulse-feature">
+                  <button
+                    className={`rw-emma-pulse-main rw-emma-tone-${healthCards[0].tone}`}
+                    onClick={() => setSelectedHealthCard("service")}
+                    aria-label={`${w.name}: ${healthCards[0].headline}. Open status details`}
+                  >
+                    <span className="rw-emma-pulse-icon">
+                      {healthCards[0].tone === "watch" ? (
+                        <CircleAlert size={30} />
+                      ) : (
+                        <Headphones size={30} />
+                      )}
+                    </span>
+                    <span className="rw-emma-pulse-copy">
+                      <span className="rw-eyebrow">{w.name.toUpperCase()} AT A GLANCE</span>
+                      <strong>{healthCards[0].headline}</strong>
+                      <span>{healthCards[0].summary}</span>
+                      {!demo && (
+                        <small>
+                          {connected
+                            ? "Call data connected to OpenFolk"
+                            : callsQuery.isError
+                              ? "Call data needs a check"
+                              : "Call data awaiting update"}
+                          {" · "}
+                          {mainNumberStatus(w.launch_stage)}
+                        </small>
+                      )}
                       <small>
-                        {connected
-                          ? "Call data connected to OpenFolk"
-                          : callsQuery.isError
-                            ? "Call data needs a check"
-                            : "Call data awaiting update"}
-                        {" · "}
-                        {mainNumberStatus(w.launch_stage)}
+                        {demo
+                          ? "Illustrative preview"
+                          : callsQuery.data?.pages[0]?.checkedAt
+                            ? `Last checked ${date(callsQuery.data.pages[0].checkedAt)}`
+                            : "Latest check in progress"}
                       </small>
-                    )}
-                    <small>
-                      {demo
-                        ? "Illustrative preview"
-                        : callsQuery.data?.pages[0]?.checkedAt
-                          ? `Last checked ${date(callsQuery.data.pages[0].checkedAt)}`
-                          : "Latest check in progress"}
-                    </small>
-                  </span>
-                  <span className="rw-emma-pulse-action">
-                    Details <ArrowRight size={17} />
-                  </span>
-                </button>
+                    </span>
+                    <ChevronRight className="rw-emma-pulse-chevron" size={20} aria-hidden="true" />
+                  </button>
+                  <div className="rw-emma-shortcuts" aria-label="Receptionist shortcuts">
+                    <button type="button" onClick={() => setView("practice")}>
+                      <Mic size={18} /> Practise with Emma <ArrowRight size={17} />
+                    </button>
+                    <button type="button" onClick={() => setView("improvements")}>
+                      <Sparkles size={18} /> Make Emma better <ArrowRight size={17} />
+                    </button>
+                  </div>
+                </div>
                 <div className="rw-emma-signal-grid">
                   {healthCards.slice(1).map((card) => (
                     <button
@@ -852,10 +861,10 @@ export function ReceptionistWorkspace({
                         </span>
                         <span className="rw-emma-signal-state">
                           {card.tone === "good"
-                            ? "Looking good"
+                            ? "Healthy"
                             : card.tone === "watch"
-                              ? "Worth a look"
-                              : "Building a picture"}
+                              ? "Needs attention"
+                              : "Evidence building"}
                         </span>
                       </span>
                       <span className="rw-emma-signal-title">{card.title}</span>

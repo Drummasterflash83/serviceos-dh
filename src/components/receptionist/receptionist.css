@@ -2351,6 +2351,12 @@ button.rw-score-card:hover {
 .rw-emma-pulse {
   margin: 24px 0 30px;
 }
+.rw-emma-pulse-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 14px;
+  align-items: stretch;
+}
 .rw-emma-pulse-main {
   --rw-pulse-accent: #408366;
   display: flex;
@@ -2426,14 +2432,40 @@ button.rw-score-card:hover {
   color: #81768a;
   font-size: 11px;
 }
-.rw-emma-pulse-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+.rw-emma-pulse-chevron {
+  flex: 0 0 auto;
   color: #644880;
-  font-size: 12px;
+}
+.rw-emma-shortcuts {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.rw-emma-shortcuts button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 17px;
+  border: 1px solid #e7dfef;
+  border-radius: 19px;
+  background: #f8f5fb;
+  color: #49375e;
+  font-size: 13px;
   font-weight: 700;
-  white-space: nowrap;
+  text-align: left;
+}
+.rw-emma-shortcuts button:hover {
+  border-color: #b8a2d3;
+  background: #f0eaf7;
+}
+.rw-emma-shortcuts button:focus-visible {
+  outline: 3px solid #9d73c1;
+  outline-offset: 2px;
+}
+.rw-emma-shortcuts button > svg:last-child {
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 .rw-emma-signal-grid {
   display: grid;
@@ -2478,6 +2510,10 @@ button.rw-score-card:hover {
   font-weight: 700;
   font-size: 10px;
   text-align: right;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rw-pulse-accent) 11%, white);
+  line-height: 1.2;
 }
 .rw-emma-signal-title {
   color: #766484;
@@ -2574,6 +2610,13 @@ button.rw-score-card:hover {
   color: #776c80;
 }
 @media (max-width: 1100px) {
+  .rw-emma-pulse-feature {
+    grid-template-columns: 1fr;
+  }
+  .rw-emma-shortcuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
   .rw-emma-signal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2582,6 +2625,11 @@ button.rw-score-card:hover {
   }
 }
 @media (max-width: 700px) {
+  .rw-emma-shortcuts button {
+    min-height: 54px;
+    padding: 12px;
+    font-size: 12px;
+  }
   .rw-emma-pulse-main {
     padding: 22px;
     gap: 14px;
@@ -2622,7 +2670,7 @@ button.rw-score-card:hover {
   .rw-emma-pulse-copy {
     flex-basis: calc(100% - 70px);
   }
-  .rw-emma-pulse-action {
+  .rw-emma-pulse-chevron {
     margin-left: auto;
   }
   .rw-health-detail-facts {
