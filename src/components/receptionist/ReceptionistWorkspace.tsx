@@ -31,6 +31,7 @@ import { useAuth } from "@/lib/auth";
 import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { getSupabaseClient } from "@/lib/supabase";
 import { callerGroups, durationLabel, type ReceptionistCall } from "@/lib/receptionist-data";
+import { emmaHealthDials, healthDialCalls, type EmmaHealthDialId } from "@/lib/emma-health";
 import {
   callBrief,
   experienceCards,
@@ -206,6 +207,7 @@ export function ReceptionistWorkspace({
     [experienceFilter, setExperienceFilter] = useState(""),
     [sort, setSort] = useState("recent"),
     [selectedCall, setSelectedCall] = useState<ReceptionistCall | null>(null),
+    [selectedHealthDial, setSelectedHealthDial] = useState<EmmaHealthDialId | null>(null),
     [composer, setComposer] = useState(false),
     [noteCall, setNoteCall] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
@@ -351,12 +353,13 @@ export function ReceptionistWorkspace({
               .includes(search.toLowerCase()),
         );
   const open = notes.filter((n) => n.status !== "Resolved"),
-    attention = rankCalls(visible.filter((c) => reviewCall(c).priority > 0)),
-    evaluated = visible.filter((c) => c.success === "true" || c.success === "false"),
-    passed = evaluated.filter((c) => c.success === "true");
+    attention = rankCalls(visible.filter((c) => reviewCall(c).priority > 0));
   const groups = callerGroups(visible);
   const unassessed = visible.filter((c) => !reviewCall(c).assessmentAvailable);
   const repeatGroups = groups.filter((g) => g.number && g.calls.length > 1);
+  const healthDials = useMemo(() => emmaHealthDials(calls, connected), [calls, connected]);
+  const healthDial = healthDials.find((dial) => dial.id === selectedHealthDial);
+  const healthDetailCalls = healthDial ? healthDialCalls(healthDial, calls) : [];
   const loading = !demo && (workspaces.isLoading || callsQuery.isLoading);
   useEffect(() => {
     setSelectedTenant(tenantId ?? "");
@@ -366,6 +369,7 @@ export function ReceptionistWorkspace({
   }, [initialView]);
   useEffect(() => {
     setSelectedCall(null);
+    setSelectedHealthDial(null);
     setComposer(false);
     setEditing(null);
     setSearch("");
@@ -471,13 +475,15 @@ export function ReceptionistWorkspace({
   };
   function CallList({
     items = visible.slice(0, view === "today" ? 5 : visible.length),
+    onSelect = setSelectedCall,
   }: {
     items?: ReceptionistCall[];
+    onSelect?: (call: ReceptionistCall) => void;
   }) {
     return items.length ? (
       <div className="rw-call-list">
         {items.map((c) => (
-          <button className="rw-call-row" key={c.id} onClick={() => setSelectedCall(c)}>
+          <button className="rw-call-row" key={c.id} onClick={() => onSelect(c)}>
             <span className={`rw-call-icon ${reviewCall(c).priority > 0 ? "rw-warn" : ""}`}>
               <Phone size={18} />
             </span>
@@ -773,89 +779,57 @@ export function ReceptionistWorkspace({
                   Details <ArrowRight size={15} />
                 </button>
               </section>
-              <section className="rw-metrics" aria-label="Call metrics">
-                <Metric
-                  label="Calls in this view"
-                  value={connected ? String(visible.length) : "—"}
-                  detail="Within the loaded call history"
-                  icon={<Phone size={17} />}
-                />
-                <Metric
-                  label="Needs review"
-                  value={connected ? String(attention.length) : "—"}
-                  detail="Handling or assessment flags"
-                  icon={<CircleAlert size={17} />}
-                  accent
-                />
-                <Metric
-                  label="Provider assessment passed"
-                  value={
-                    evaluated.length
-                      ? `${Math.round((passed.length / evaluated.length) * 100)}%`
-                      : "—"
-                  }
-                  detail={`${evaluated.length} assessed · not a happiness score`}
-                  icon={<Check size={17} />}
-                />
-                <Metric
-                  label="Not yet assessed"
-                  value={connected ? String(unassessed.length) : "—"}
-                  detail="No outcome or sentiment assessment"
-                  icon={<Sparkles size={17} />}
-                />
-              </section>
-              <section className="rw-scorecards" aria-label="Emma experience scorecards">
+              <section className="rw-health-dashboard" aria-label="Emma health dials">
                 <div className="rw-panel-title">
                   <div>
-                    <p className="rw-eyebrow">THE CALLER EXPERIENCE</p>
+                    <p className="rw-eyebrow">AT A GLANCE</p>
                     <h2>How is {w.name} doing?</h2>
                   </div>
+                  <span className="rw-health-scope">
+                    {connected
+                      ? `${calls.length} loaded calls${callsQuery.hasNextPage ? " · more history available" : ""}`
+                      : "Call evidence unavailable"}
+                  </span>
                 </div>
-                <p className="rw-footnote">
-                  Each card uses the available call records. Unknown means the source has not
-                  assessed it—not that everything went well.
-                </p>
-                <div className="rw-score-grid">
-                  {experienceCards(visible).map((card) => (
+                <div className="rw-health-dials">
+                  {healthDials.map((dial) => (
                     <button
-                      className="rw-score-card"
-                      key={card.id}
-                      onClick={() => {
-                        setView("calls");
-                        setReviewOnly(false);
-                        setExperienceFilter(card.id);
-                        setSort("attention");
-                      }}
+                      className={`rw-health-dial rw-health-dial-${connected ? dial.tone : "unknown"}`}
+                      key={dial.id}
+                      onClick={() => setSelectedHealthDial(dial.id)}
+                      style={
+                        {
+                          "--rw-dial-coverage": `${Math.round((connected ? (dial.coverage ?? 0) : 0) * 100)}%`,
+                        } as React.CSSProperties
+                      }
+                      aria-label={`${dial.title}: ${connected ? dial.value : "Unavailable"}. Open details`}
                     >
-                      <span>{card.title}</span>
-                      <strong>
-                        {!connected || callsQuery.isError
-                          ? "Unavailable"
-                          : card.assessed
-                            ? `${card.flagged} ${card.id === "human" ? "requests" : "flagged"}`
-                            : "Not assessed"}
-                      </strong>
-                      <p>{card.detail}</p>
+                      <span className="rw-health-dial-label">{dial.title}</span>
+                      <span
+                        className={`rw-health-dial-gauge ${dial.coverage === null ? "rw-health-dial-gauge-status" : ""}`}
+                      >
+                        <strong>{connected ? dial.value : "Unavailable"}</strong>
+                      </span>
+                      <span className="rw-health-dial-caption">
+                        {connected ? dial.description : "Call evidence unavailable"}
+                      </span>
                       <small>
-                        {card.assessed} assessed · {card.unknown} unknown
+                        {!connected
+                          ? "Check connection"
+                          : dial.id === "service"
+                            ? "Call data only · tap for detail"
+                            : `${dial.assessed} assessed · ${dial.unknown} unknown`}
                       </small>
-                      <span className="rw-score-action">Review conversations →</span>
+                      <span className="rw-health-dial-open">
+                        Explore <ArrowRight size={14} />
+                      </span>
                     </button>
                   ))}
-                  <article className="rw-score-card">
-                    <span>Can we review the conversations?</span>
-                    <strong>
-                      {!connected || callsQuery.isError
-                        ? "Unavailable"
-                        : `${visible.filter((c) => c.transcript).length} transcripts`}
-                    </strong>
-                    <p>
-                      {visible.filter((c) => c.summary).length} provider summaries. Recording
-                      availability is checked securely when opened.
-                    </p>
-                    <small>Missing content requires a provider check, not a guessed summary.</small>
-                  </article>
                 </div>
+                <p className="rw-health-legend">
+                  The arcs show how many loaded calls have evidence, not an Emma score. Unknown does
+                  not mean good.
+                </p>
               </section>
               <section className="rw-panel rw-attention">
                 <div className="rw-panel-title">
@@ -1221,6 +1195,98 @@ export function ReceptionistWorkspace({
           </footer>
         </main>
       </div>
+      <Dialog open={!!healthDial} onOpenChange={(open) => !open && setSelectedHealthDial(null)}>
+        <DialogContent className="rw-dialog rw-health-detail">
+          <DialogHeader>
+            <DialogTitle>{healthDial?.title}</DialogTitle>
+            <DialogDescription>
+              {healthDial &&
+                (connected
+                  ? `${healthDial.value} · ${healthDial.total} loaded calls`
+                  : "Call evidence unavailable")}
+            </DialogDescription>
+          </DialogHeader>
+          {healthDial && (
+            <>
+              <p className="rw-health-detail-explanation">{healthDial.explanation}</p>
+              {healthDial.id === "service" && (
+                <div className="rw-health-detail-facts">
+                  <div>
+                    <span>Call data</span>
+                    <strong>{connected ? "Connected to Vapi" : "Unavailable"}</strong>
+                  </div>
+                  <div>
+                    <span>Last checked</span>
+                    <strong>
+                      {callsQuery.data?.pages[0]?.checkedAt
+                        ? date(callsQuery.data.pages[0].checkedAt)
+                        : "Not verified"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Main number</span>
+                    <strong>
+                      {w?.launch_stage === "Testing" || w?.launch_stage === "Ready"
+                        ? "Not activated"
+                        : "Check launch details"}
+                    </strong>
+                  </div>
+                </div>
+              )}
+              {connected && healthDial.id !== "service" && (
+                <div className="rw-health-detail-facts">
+                  <div>
+                    <span>Flagged</span>
+                    <strong>{healthDial.affected}</strong>
+                  </div>
+                  <div>
+                    <span>Assessed</span>
+                    <strong>{healthDial.assessed}</strong>
+                  </div>
+                  <div>
+                    <span>Unknown</span>
+                    <strong>{healthDial.unknown}</strong>
+                  </div>
+                </div>
+              )}
+              {connected && healthDetailCalls.length > 0 && (
+                <section className="rw-health-detail-calls">
+                  <h3>
+                    {healthDial.id === "evidence"
+                      ? "Calls without a transcript or summary"
+                      : "Conversations to review"}
+                  </h3>
+                  <CallList
+                    items={healthDetailCalls.slice(0, 5)}
+                    onSelect={(call) => {
+                      setSelectedHealthDial(null);
+                      setSelectedCall(call);
+                    }}
+                  />
+                </section>
+              )}
+              {connected && healthDetailCalls.length === 0 && (
+                <p className="rw-health-detail-empty">
+                  No flagged or unknown calls for this dial in the loaded history. This is not a
+                  guarantee about calls outside this view.
+                </p>
+              )}
+              <button
+                className="rw-btn rw-health-detail-all"
+                onClick={() => {
+                  setSelectedHealthDial(null);
+                  setReviewOnly(false);
+                  setExperienceFilter("");
+                  setSort("attention");
+                  setView("calls");
+                }}
+              >
+                Open call journal <ArrowRight size={16} />
+              </button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={!!selectedCall}
         onOpenChange={(open) => {
@@ -1491,30 +1557,6 @@ export function ReceptionistWorkspace({
           )}
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-function Metric({
-  label,
-  value,
-  detail,
-  icon,
-  accent = false,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  icon: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    <div className={`rw-metric ${accent ? "rw-metric-accent" : ""}`}>
-      <div>
-        {label}
-        {icon}
-      </div>
-      <strong>{value}</strong>
-      <small>{detail}</small>
     </div>
   );
 }
