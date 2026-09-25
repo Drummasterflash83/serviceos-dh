@@ -1,99 +1,119 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalizeCall } from "./receptionist-data.ts";
-import { emmaHealthDials, healthDialCalls } from "./emma-health.ts";
+import { emmaHealthCards, healthCardCalls } from "./emma-health.ts";
 
+const connected = { connected: true, loading: false, error: false, launchStage: "Ready" };
 const assessed = (id: string, structuredData: Record<string, unknown>) =>
   normalizeCall({ id, createdAt: `2026-09-25T0${id.length}:00:00Z`, analysis: { structuredData } });
 
-test("five dials keep missing assessments unknown rather than successful", () => {
-  const calls = [
-    normalizeCall({ id: "a" }),
-    assessed("b", { callerConfused: false, repeatedQuestions: false }),
-  ];
-  const dials = emmaHealthDials(calls, true);
+test("quiet connected data shows a positive readiness state, not a fake score", () => {
+  const cards = emmaHealthCards([], connected);
   assert.deepEqual(
-    dials.map((dial) => dial.id),
-    ["service", "help", "understanding", "experience", "evidence"],
+    cards.map((card) => card.id),
+    ["service", "experience", "help", "handover"],
   );
-  const understanding = dials[2]!;
-  assert.equal(understanding.affected, 0);
-  assert.equal(understanding.assessed, 1);
-  assert.equal(understanding.unknown, 1);
-  assert.equal(understanding.coverage, 0.5);
-  assert.equal(dials[1]!.value, "Not assessed");
-  assert.equal(dials[3]!.value, "Not assessed");
+  assert.equal(cards[0]!.headline, "Call view is ready");
+  assert.equal(cards[0]!.tone, "waiting");
+  assert.match(cards[0]!.explanation, /Main-number activation is a separate step/);
+  assert.equal(cards[1]!.headline, "Learning from conversations");
 });
 
-test("normal request for a person is not a failure or unresolved follow-up", () => {
-  const call = assessed("person", { humanRequested: true });
-  const dials = emmaHealthDials([call], true);
-  assert.equal(dials[1]!.affected, 0);
-  assert.equal(dials[3]!.affected, 0);
+test("observed calls without handling errors show Emma taking calls, not full phone verification", () => {
+  const call = normalizeCall({ id: "a", endedReason: "customer-ended-call" });
+  const service = emmaHealthCards([call], connected)[0]!;
+  assert.equal(service.headline, "Emma is taking calls");
+  assert.equal(service.tone, "good");
+  assert.match(service.explanation, /does not.*verify the main number/);
 });
 
-test("difficulty, confusion, repetition and negative tone open exact call evidence", () => {
-  const difficult = assessed("difficulty", {
-    humanRequestedAfterDifficulty: true,
-    callerConfused: true,
-    repeatedQuestions: true,
-    sentiment: "frustrated",
+test("a retrieval failure stays visible instead of being recast as awaiting data", () => {
+  const cards = emmaHealthCards([assessed("old", { sentiment: "frustrated" })], {
+    connected: false,
+    loading: false,
+    error: true,
   });
-  const routine = assessed("routine", {
-    humanRequestedAfterDifficulty: false,
+  const service = cards[0]!;
+  assert.equal(service.tone, "watch");
+  assert.equal(service.headline, "Call data needs a check");
+  assert.equal(cards[1]!.tone, "waiting");
+  assert.deepEqual(cards[1]!.flaggedIds, []);
+});
+
+test("missing assessments create no client-facing unknown-call task", () => {
+  const call = normalizeCall({ id: "unknown", status: "ended" });
+  const cards = emmaHealthCards([call], connected);
+  assert.equal(cards[1]!.headline, "Learning from conversations");
+  assert.equal(cards[2]!.headline, "Watching for follow-ups");
+  assert.equal(cards[1]!.flaggedIds.length, 0);
+  assert.equal(cards[2]!.flaggedIds.length, 0);
+});
+
+test("ordinary human request is not an experience or follow-up problem", () => {
+  const call = assessed("normal", {
+    humanRequested: true,
     callerConfused: false,
     repeatedQuestions: false,
+    humanRequestedAfterDifficulty: false,
     unresolved: false,
     requiresFollowUp: false,
     callbackRequested: false,
     sentiment: "neutral",
   });
-  const dials = emmaHealthDials([routine, difficult], true);
-  for (const index of [1, 2, 3]) {
-    assert.equal(dials[index]!.affected, 1);
-    assert.deepEqual(
-      healthDialCalls(dials[index]!, [routine, difficult]).map((call) => call.id),
-      ["difficulty"],
-    );
-  }
-});
-
-test("a failed call is reviewed, but a transfer is not counted as confirmed help", () => {
-  const failed = normalizeCall({ id: "failed", endedReason: "transfer-error" });
-  const transferred = normalizeCall({ id: "transferred", endedReason: "assistant-forwarded-call" });
-  const dials = emmaHealthDials([failed, transferred], true);
-  assert.equal(dials[0]!.affected, 1);
-  assert.equal(dials[1]!.affected, 1);
-  assert.equal(dials[1]!.unknown, 1);
-  assert.deepEqual(
-    healthDialCalls(dials[1]!, [transferred, failed]).map((call) => call.id),
-    ["failed", "transferred"],
+  const cards = emmaHealthCards(
+    [call, { ...call, id: "normal-2" }, { ...call, id: "normal-3" }],
+    connected,
   );
+  assert.equal(cards[1]!.tone, "good");
+  assert.equal(cards[2]!.tone, "good");
+  assert.equal(cards[1]!.flaggedIds.length, 0);
+  assert.equal(cards[2]!.flaggedIds.length, 0);
 });
 
-test("reviewability requires a transcript or provider summary, not duration", () => {
-  const short = normalizeCall({
-    id: "short",
-    startedAt: "2026-09-25T10:00:00Z",
-    endedAt: "2026-09-25T10:00:12Z",
+test("one assessed call among many does not become a green experience rating", () => {
+  const neutral = assessed("neutral", { sentiment: "neutral" });
+  const unknown = Array.from({ length: 9 }, (_, index) =>
+    normalizeCall({ id: `unknown-${index}` }),
+  );
+  const experience = emmaHealthCards([neutral, ...unknown], connected)[1]!;
+  assert.equal(experience.tone, "waiting");
+  assert.equal(experience.headline, "Learning from conversations");
+});
+
+test("confusion, repetition and frustration focus only relevant conversations", () => {
+  const affected = assessed("affected", {
+    callerConfused: true,
+    repeatedQuestions: true,
+    humanRequestedAfterDifficulty: true,
+    sentiment: "frustrated",
   });
-  const summary = normalizeCall({ id: "summary", analysis: { summary: "Asked about a booking" } });
-  const dial = emmaHealthDials([short, summary], true)[4]!;
-  assert.equal(dial.value, "1/2");
-  assert.equal(dial.unknown, 1);
+  const routine = assessed("routine", { sentiment: "neutral" });
+  const cards = emmaHealthCards([routine, affected], connected);
+  assert.equal(cards[1]!.tone, "watch");
+  assert.equal(cards[2]!.tone, "watch");
   assert.deepEqual(
-    healthDialCalls(dial, [short, summary]).map((call) => call.id),
-    ["short"],
+    healthCardCalls(cards[1]!, [routine, affected]).map((call) => call.id),
+    ["affected"],
   );
 });
 
-test("service data access is not a global live-phone score", () => {
-  const call = normalizeCall({ id: "a" });
-  const online = emmaHealthDials([call], true)[0]!;
-  const offline = emmaHealthDials([call], false)[0]!;
-  assert.equal(online.value, "Connected");
-  assert.equal(offline.value, "Unavailable");
-  assert.equal(online.coverage, null);
-  assert.equal(offline.coverage, null);
-  assert.match(online.explanation, /do not verify.*main phone line/);
+test("a transfer attempt is not a confirmed answer, while failure is actionable", () => {
+  const transferred = normalizeCall({ id: "transferred", endedReason: "assistant-forwarded-call" });
+  const failed = normalizeCall({ id: "failed", endedReason: "transfer-error" });
+  const good = emmaHealthCards([transferred], connected)[3]!;
+  assert.equal(good.headline, "Emma is routing calls");
+  assert.match(good.explanation, /Whether the recipient answered/);
+  const watch = emmaHealthCards([transferred, failed], connected)[3]!;
+  assert.equal(watch.tone, "watch");
+  assert.deepEqual(
+    healthCardCalls(watch, [transferred, failed]).map((call) => call.id),
+    ["failed"],
+  );
+});
+
+test("recorded handling failure is a service concern and possible human follow-up", () => {
+  const failed = normalizeCall({ id: "failed", endedReason: "silence-timed-out" });
+  const cards = emmaHealthCards([failed], connected);
+  assert.equal(cards[0]!.tone, "watch");
+  assert.equal(cards[2]!.tone, "watch");
 });
