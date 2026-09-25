@@ -19,11 +19,11 @@
   font-size: 11px;
   text-align: left;
   white-space: normal;
-  color: #c7c1d8;
+  color: #fff;
 }
 .cp-root .cp-sidebar nav .cp-receptionist-nav button.is-current {
   background: #ffffff12;
-  color: #f1bd78;
+  color: #fff;
 }
 .cp-root .cp-content.cp-receptionist-content {
   padding: 0;
@@ -75,17 +75,20 @@
 .cp-root .cp-sidebar {
   width: 246px;
   background: #242337;
-  color: #d2cfdf;
+  color: #fff;
   border: 0;
   padding: 34px 20px 24px;
   overflow-y: auto;
 }
+.cp-root .cp-sidebar svg {
+  color: #cc8625;
+}
 .cp-root .cp-workspace-label {
-  color: #b9b1ce;
+  color: #fff;
   margin: 25px 8px 0;
 }
 .cp-root .cp-sidebar .cp-field {
-  color: #d2cfdf;
+  color: #fff;
 }
 .cp-root .cp-sidebar select {
   color: #25253a;
@@ -103,7 +106,7 @@
   padding: 12px;
   border-radius: 8px;
   text-decoration: none;
-  color: #c7c1d8;
+  color: #fff;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -117,9 +120,10 @@
   color: #fff;
 }
 .cp-root .cp-sidebar-bottom,
+.cp-root .cp-sidebar-bottom a,
 .cp-root .cp-sidebar-bottom button,
 .cp-root .cp-private {
-  color: #bcb5cd;
+  color: #fff;
 }
 .cp-operator-controls {
   display: grid;

@@ -87,7 +87,7 @@ test("receptionist shares the client shell and keeps old links working", () => {
   const styles = read("../components/receptionist/receptionist.css");
   const portal = read("../components/client-portal/ClientPortal.tsx");
   assert.match(emma, /<WorkspaceMenu/);
-  assert.match(portal, /<WorkspaceMenu/);
+  assert.doesNotMatch(portal, /WorkspaceMenu/);
   assert.match(emma, /onClick=\{goBack\}/);
   assert.match(emma, /window\.history\.back\(\)/);
   assert.match(emma, /window\.location\.assign\(workspaceHref\)/);
@@ -104,6 +104,19 @@ test("receptionist shares the client shell and keeps old links working", () => {
   assert.match(route, /throw redirect\(/);
   assert.match(route, /section: "receptionist"/);
   assert.match(route, /replace: true/);
+});
+
+test("unified sidebar uses orange icons, white labels and no duplicate workspace dropdown", () => {
+  const portal = read("../components/client-portal/ClientPortal.tsx");
+  const css = read("../styles/client-workspace.css");
+  const brand = read("../styles/workspace-navigation.css");
+  assert.doesNotMatch(portal, /WorkspaceMenu|of-workspace-switch/);
+  assert.match(portal, /<nav aria-label="Client workspace">/);
+  assert.match(portal, /className="cp-receptionist-nav"/);
+  assert.match(css, /\.cp-root \.cp-sidebar svg\s*\{\s*color: #cc8625;/);
+  assert.match(brand, /\.of-drummonds-emblem\s*\{[^}]*background: #cc8625;/);
+  assert.match(css, /\.cp-root \.cp-sidebar nav button,[^}]*color: #fff;/);
+  assert.match(css, /\.cp-receptionist-nav button\.is-current\s*\{[^}]*color: #fff;/);
 });
 
 test("receptionist pages round-trip through the same client route", () => {
