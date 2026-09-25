@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Headphones, ArrowRight, Layers, Receipt, MessageSquare } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { receptionistHref, type ClientSection } from "@/lib/client-workspace-nav";
+import { type ClientSection } from "@/lib/client-workspace-nav";
 import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
 import type { ReceptionistCall } from "@/lib/receptionist-data";
 
@@ -89,9 +89,9 @@ export function WorkspaceHome({
             <small>No receptionist workspace has been assigned yet.</small>
           )}
         </div>
-        <a className="cp-open-emma" href={receptionistHref(tenant)}>
+        <button className="cp-open-emma" onClick={() => open("receptionist")}>
           Open AI Receptionist <ArrowRight size={18} />
-        </a>
+        </button>
       </section>
       <div className="cp-home-intro">
         <h2>Your workspace, at a glance.</h2>

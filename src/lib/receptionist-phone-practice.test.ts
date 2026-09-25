@@ -22,7 +22,7 @@ test("every reserved test with a call ID appears in history even without feedbac
   );
   assert.match(ui, /\.from\("receptionist_practice_sessions"\)/);
   assert.match(ui, /\.eq\("author_id", userId!\)/);
-  assert.match(ui, /Without feedback/);
+  assert.match(ui, /No feedback yet/);
   assert.match(ui, /With feedback/);
   assert.match(ui, /autoLoad/);
   assert.doesNotMatch(ui, /Check recording|KEEP THE LEARNING WITH THE CALL/);

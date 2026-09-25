@@ -34,7 +34,7 @@ test("Drummonds uses its orange emblem and short name in both client headers", (
   );
   assert.match(
     read("src/components/client-portal/ClientPortal.tsx"),
-    /<ClientHeaderBrand company=\{p\?\.company/,
+    /<ClientHeaderBrand company=\{company\}/,
   );
   assert.match(read("src/components/ClientHeaderBrand.tsx"), /of-drummonds-emblem/);
   assert.match(read("src/lib/client-brand.ts"), /"Drummond's"/);

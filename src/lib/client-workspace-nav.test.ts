@@ -55,7 +55,7 @@ test("section and tenant survive refresh and back/forward URL round trips", () =
     tenant: "tenant-a",
     section: "investment",
   });
-  assert.equal(receptionistHref("tenant-a"), "/receptionist?tenant=tenant-a");
+  assert.equal(receptionistHref("tenant-a"), "/client?tenant=tenant-a&section=receptionist");
 });
 test("inaccessible explicit tenant never falls through to another client", () => {
   assert.equal(selectedWorkspace([{ tenant_id: "other" }], "missing"), undefined);
@@ -72,7 +72,7 @@ test("tenant values cannot inject routes or additional query parameters", () => 
   ]) {
     const url = new URL(href, "https://app.openfolk.ai");
     assert.equal(url.searchParams.get("tenant"), "a&section=notes");
-    assert.equal(url.searchParams.has("section"), false);
+    assert.notEqual(url.searchParams.get("section"), "notes");
   }
 });
 test("company menu provides accessible home, receptionist, programme and invoice links", () => {
@@ -82,7 +82,7 @@ test("company menu provides accessible home, receptionist, programme and invoice
   for (const name of ["Workspace home", "AI Receptionist", "Your programme", "Invoices & delivery"])
     assert.ok(menu.includes(name));
 });
-test("both workspaces share the company menu; Emma has a sticky browser back action", () => {
+test("receptionist shares the client shell and keeps old links working", () => {
   const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");
   const styles = read("../components/receptionist/receptionist.css");
   const portal = read("../components/client-portal/ClientPortal.tsx");
@@ -96,6 +96,43 @@ test("both workspaces share the company menu; Emma has a sticky browser back act
   assert.ok(emma.indexOf('className="rw-workspace-back"') < emma.indexOf('id="receptionist-main"'));
   assert.match(emma, /selectedWorkspace\(workspaces.data, selectedTenant\)/);
   assert.match(portal, /selectedWorkspace\(programmes.data, tenantId\)/);
+  assert.match(portal, /<ReceptionistWorkspace[\s\S]*?embedded/);
+  assert.match(emma, /!embedded && \([\s\S]*?<aside/);
+  assert.match(emma, /!embedded && !demo && !mobileMenuOpen/);
+  assert.match(emma, /const view = embedded \? receptionistView\(initialView\) : localView/);
+  const route = read("../routes/receptionist.tsx");
+  assert.match(route, /throw redirect\(/);
+  assert.match(route, /section: "receptionist"/);
+  assert.match(route, /replace: true/);
+});
+
+test("receptionist pages round-trip through the same client route", () => {
+  for (const view of [
+    "today",
+    "practice",
+    "improvements",
+    "callers",
+    "phones",
+    "details",
+    "calls",
+  ] as const) {
+    const url = new URL(receptionistHref("tenant-a", view), "https://app.openfolk.ai");
+    assert.equal(url.pathname, "/client");
+    assert.deepEqual(clientSearch(Object.fromEntries(url.searchParams)), {
+      tenant: "tenant-a",
+      section: "receptionist",
+      view,
+    });
+  }
+  assert.deepEqual(clientSearch({ section: "receptionist", view: "bad" }), {
+    tenant: undefined,
+    section: "receptionist",
+    view: "today",
+  });
+  assert.deepEqual(clientSearch({ section: "investment", view: "practice" }), {
+    tenant: undefined,
+    section: "investment",
+  });
 });
 test("mobile workspaces use one persistent menu and an explicit pull refresh", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");

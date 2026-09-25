@@ -15,6 +15,14 @@
 .rw * {
   box-sizing: border-box;
 }
+.rw.rw-embedded {
+  min-height: 0;
+  display: block;
+  width: 100%;
+}
+.rw-embedded .rw-shell {
+  width: 100%;
+}
 .rw :where(button, a, input, select, textarea) {
   font: inherit;
 }

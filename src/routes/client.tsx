@@ -16,10 +16,10 @@ export const Route = createFileRoute("/client")({
   component: ClientPage,
 });
 function ClientPage() {
-  const { tenant, section } = Route.useSearch();
+  const { tenant, section, view } = Route.useSearch();
   return (
     <RequireAuth>
-      <ClientPortal tenantId={tenant} section={section} />
+      <ClientPortal tenantId={tenant} section={section} receptionistPage={view} />
     </RequireAuth>
   );
 }
