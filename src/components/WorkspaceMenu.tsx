@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { clientWorkspaceHref, receptionistHref } from "@/lib/client-workspace-nav";
+import { clientDisplayName, hasDrummondsBrand } from "@/lib/client-brand";
 import "@/styles/workspace-navigation.css";
 
 /** Navigation only: no tenant switching or impersonation is performed here. */
@@ -18,19 +19,19 @@ export function WorkspaceMenu({
   tenant?: string;
   active: "home" | "receptionist" | "programme";
 }) {
-  const isDrummonds = company === "Drummond Heating";
+  const isDrummonds = hasDrummondsBrand(company);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="of-workspace-switch" aria-label={`${company} workspace menu`}>
-          <span
-            className={`of-workspace-initial${isDrummonds ? " is-drummonds" : ""}`}
-            aria-hidden="true"
-          >
-            {isDrummonds ? <span className="of-drummonds-emblem" /> : company.slice(0, 1)}
+        <button
+          className={`of-workspace-switch${isDrummonds ? " is-drummonds" : ""}`}
+          aria-label={`${clientDisplayName(company)} workspace menu`}
+        >
+          <span className="of-workspace-initial" aria-hidden="true">
+            {clientDisplayName(company).slice(0, 1)}
           </span>
           <span>
-            <strong>{company}</strong>
+            <strong>{clientDisplayName(company)}</strong>
             <small>Your workspace</small>
           </span>
           <ChevronDown size={16} aria-hidden="true" />

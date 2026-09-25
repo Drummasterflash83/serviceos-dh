@@ -96,6 +96,8 @@ export function PracticeImprove({
   const sdk = useRef<Vapi | null>(null),
     media = useRef<{ stop: () => void } | null>(null),
     providerCreated = useRef(false),
+    micInCall = useRef(false),
+    joinStage = useRef<"not_started" | "started" | "completed">("not_started"),
     lifecycle = useRef<PracticeLifecycle | null>(null),
     alive = useRef(true),
     generation = useRef(0),
@@ -197,6 +199,8 @@ export function PracticeImprove({
     media.current = null;
     setState(providerCreated.current ? "ended" : "idle");
     setMuted(false);
+    micInCall.current = false;
+    joinStage.current = "not_started";
   }
   useEffect(() => {
     alive.current = true;
@@ -245,6 +249,8 @@ export function PracticeImprove({
     lifecycle.current = connection;
     setState("connecting");
     providerCreated.current = false;
+    micInCall.current = false;
+    joinStage.current = "not_started";
     setSession(null);
     endedAt.current = 0;
     setError("");
@@ -301,30 +307,59 @@ export function PracticeImprove({
       // browsers, causing the call to end before the tester could speak.
       const voice = new VapiClient("", undefined, undefined, { audioSource: track });
       sdk.current = voice;
-      const ready = () => {
-        if (alive.current && attempt === generation.current && connection.ready()) {
+      const ready = async () => {
+        if (!alive.current || attempt !== generation.current || connection.ended) return;
+        try {
+          // Daily can replace its input track while preparing audio processing.
+          // Reattach the checked live track after join instead of assuming the
+          // factory option still represents the microphone being transmitted.
+          await voice.setInputDevicesAsync({ audioSource: track });
+          if (!alive.current || attempt !== generation.current || !connection.ready()) return;
+          voice.setMuted(false);
           if (timer.current) clearTimeout(timer.current);
           setState("active");
-          setConnectionNote(
-            "Call connected. Speak to Emma; your microphone was checked before joining.",
-          );
+          setConnectionNote("Call connected. Speak to Emma; checking audio in the call…");
           timer.current = setTimeout(() => stop(), data.maxSeconds * 1000);
+        } catch {
+          if (alive.current && attempt === generation.current) {
+            setError(
+              "Your microphone worked locally, but the call could not attach it. Check this browser’s microphone and try again.",
+            );
+            stop();
+          }
         }
       };
-      voice.on("call-start", ready);
+      voice.on("call-start", () => void ready());
       voice.on("call-start-progress", (event) => {
-        if (alive.current && attempt === generation.current && event.stage === "daily-call-join")
+        if (alive.current && attempt === generation.current && event.stage === "daily-call-join") {
+          joinStage.current = event.status === "started" ? "started" : "completed";
           setConnectionNote(
             event.status === "started"
               ? "Connecting your microphone to Emma…"
               : "Audio connection joined. Waiting for Emma…",
           );
+        }
+      });
+      voice.on("local-volume-level", (level) => {
+        if (
+          alive.current &&
+          attempt === generation.current &&
+          !micInCall.current &&
+          level > 0.008
+        ) {
+          micInCall.current = true;
+          setConnectionNote(
+            "Microphone audio detected in the call. Emma should be able to hear you.",
+          );
+        }
       });
       voice.on("call-end", () => {
         if (alive.current && attempt === generation.current && connection.end()) {
           if (!connection.wasReady)
             setError(
-              "The call ended before audio was ready. Open the saved test below to see the provider’s reason.",
+              joinStage.current === "completed"
+                ? "The call joined but ended before audio was ready. Open the saved test below for Vapi’s end reason."
+                : "The browser could not finish joining the call. Open the saved test below for Vapi’s end reason.",
             );
           setState("ended");
           endedAt.current = Date.now();
@@ -514,7 +549,7 @@ export function PracticeImprove({
               {state === "connecting"
                 ? connectionNote
                 : state === "active"
-                  ? "You’re speaking with Emma."
+                  ? connectionNote
                   : state === "ended"
                     ? "Conversation ended."
                     : "Ready when you are."}
@@ -818,6 +853,9 @@ export function PracticeEvidence({
             <>
               <p>{callBrief(evidence.data).text}</p>
               <small>{callBrief(evidence.data).source}</small>
+              {practiceEndedMessage(evidence.data.endedReason) && (
+                <p role="status">{practiceEndedMessage(evidence.data.endedReason)}</p>
+              )}
               {evidence.data.transcript && (
                 <details>
                   <summary>Conversation transcript</summary>

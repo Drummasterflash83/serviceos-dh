@@ -67,15 +67,6 @@
   padding: 0 12px;
   letter-spacing: -1px;
 }
-.rw-brand img {
-  width: auto;
-  max-width: 190px;
-  height: 38px;
-  object-fit: contain;
-}
-.rw-brand .rw-client-logo {
-  filter: brightness(0) invert(1);
-}
 .rw-company {
   border-top: 1px solid #ffffff14;
   border-bottom: 1px solid #ffffff14;
