@@ -798,27 +798,6 @@
 .ep[hidden] {
   display: none;
 }
-.ep-welcome {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin: 0 0 24px;
-  padding: 28px;
-  background: linear-gradient(115deg, #f0e7f6, #faf6f0);
-  border: 1px solid #e1d4e8;
-  border-radius: 22px;
-}
-.ep-welcome h2 {
-  color: #352341;
-  font-size: 24px;
-  letter-spacing: -0.7px;
-  margin: 8px 0;
-}
-.ep-welcome p {
-  color: #685672;
-  font-size: 14px;
-}
 .ep-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(310px, 0.8fr);
@@ -1108,20 +1087,10 @@
   .ep-grid {
     grid-template-columns: 1fr;
   }
-  .ep-welcome {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
 @media (max-width: 640px) {
   .ep-stage {
     padding: 26px 18px;
-  }
-  .ep-welcome {
-    padding: 22px;
-  }
-  .ep-welcome h2 {
-    font-size: 22px;
   }
   .ep-note > div {
     align-items: flex-start;

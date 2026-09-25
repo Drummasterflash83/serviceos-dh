@@ -733,16 +733,6 @@ export function ReceptionistWorkspace({
           </div>
           {view === "today" && (
             <>
-              <section className="ep-welcome">
-                <div>
-                  <span className="rw-eyebrow">YOUR RECEPTIONIST, WORKING BETTER</span>
-                  <h2>A warmer welcome. A clearer next step.</h2>
-                  <p>Understand the calls. Spot who needs help. Shape how {w.name} responds.</p>
-                </div>
-                <button className="rw-btn rw-btn-primary" onClick={() => setView("practice")}>
-                  <Mic size={18} /> Practice & improve <ArrowRight size={17} />
-                </button>
-              </section>
               <section className="rw-health-strip" aria-label="Receptionist health">
                 <div className="rw-health-identity">
                   <span className="rw-health-orb">
