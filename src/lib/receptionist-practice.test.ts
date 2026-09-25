@@ -35,6 +35,17 @@ test("practice feedback has reopenable evidence and separates save from Slack de
   assert.match(ui, /Saved · Slack delivery pending/);
   assert.match(ui, /\.eq\("submission_key", submission.current\)/);
 });
+test("practice checks live microphone audio before reserving a call and has expandable history", () => {
+  const ui = readFileSync(
+    new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.ok(ui.indexOf("await microphoneHasSignal(track)") < ui.indexOf('action: "start"'));
+  assert.match(ui, /No test call was placed/);
+  assert.match(ui, /aria-expanded=\{expandedSession === test\.id\}/);
+  assert.match(ui, /expanded=\{expandedSession === test\.id\}/);
+  assert.match(ui, /Only the SDK's call-start event can confirm a joined call/);
+});
 const source = {
   name: "Emma",
   updatedAt: "2026-09-24T10:00:00Z",

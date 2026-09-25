@@ -44,6 +44,32 @@ export function practiceEndedMessage(reason: string | null | undefined) {
   return null;
 }
 
+// Check actual input before reserving a provider call. Permission alone proves
+// only that a track exists; a muted device can still produce silent calls.
+export async function microphoneHasSignal(track: MediaStreamTrack, timeoutMs = 8000) {
+  const context = new AudioContext();
+  const source = context.createMediaStreamSource(new MediaStream([track]));
+  const analyser = context.createAnalyser();
+  analyser.fftSize = 1024;
+  source.connect(analyser);
+  const samples = new Float32Array(analyser.fftSize);
+  try {
+    await context.resume();
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline && track.readyState === "live" && track.enabled) {
+      analyser.getFloatTimeDomainData(samples);
+      let energy = 0;
+      for (const sample of samples) energy += sample * sample;
+      if (Math.sqrt(energy / samples.length) > 0.008) return true;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return false;
+  } finally {
+    source.disconnect();
+    await context.close();
+  }
+}
+
 // One-way terminal latch: join() may finish after call-end/error/cancel.
 // Its late completion must not resurrect a terminated call or start a timer.
 export class PracticeLifecycle {
@@ -61,5 +87,8 @@ export class PracticeLifecycle {
   }
   get ended() {
     return this.finished;
+  }
+  get wasReady() {
+    return this.connected;
   }
 }
