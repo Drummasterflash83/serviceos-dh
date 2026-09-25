@@ -82,12 +82,17 @@ test("company menu provides accessible home, receptionist, programme and invoice
   for (const name of ["Workspace home", "AI Receptionist", "Your programme", "Invoices & delivery"])
     assert.ok(menu.includes(name));
 });
-test("both workspaces share the company menu; Emma has persistent top return action", () => {
+test("both workspaces share the company menu; Emma has a sticky browser back action", () => {
   const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");
+  const styles = read("../components/receptionist/receptionist.css");
   const portal = read("../components/client-portal/ClientPortal.tsx");
   assert.match(emma, /<WorkspaceMenu/);
   assert.match(portal, /<WorkspaceMenu/);
-  assert.match(emma, /href=\{workspaceHref\} className="rw-workspace-back"/);
+  assert.match(emma, /onClick=\{goBack\}/);
+  assert.match(emma, /window\.history\.back\(\)/);
+  assert.match(emma, /window\.location\.assign\(workspaceHref\)/);
+  assert.match(emma, /to: "\/receptionist"/);
+  assert.match(styles, /\.rw-topbar\s*\{[^}]*position: sticky;[^}]*top: 0;/);
   assert.ok(emma.indexOf('className="rw-workspace-back"') < emma.indexOf('id="receptionist-main"'));
   assert.match(emma, /selectedWorkspace\(workspaces.data, selectedTenant\)/);
   assert.match(portal, /selectedWorkspace\(programmes.data, tenantId\)/);
