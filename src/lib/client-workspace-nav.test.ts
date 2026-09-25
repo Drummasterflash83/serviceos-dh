@@ -117,6 +117,19 @@ test("mobile workspaces use one persistent menu and an explicit pull refresh", (
   assert.match(refresh, /TRIGGER_DISTANCE = 76/);
   assert.doesNotMatch(refresh, /preventDefault/);
 });
+test("Emma overview has honest health labels and direct practice and improvement paths", () => {
+  const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");
+  const mobileHome = read("../styles/client-workspace.css");
+  assert.match(emma, /\? "Your receptionist"/);
+  assert.match(
+    emma,
+    /aria-label=\{`\$\{w.name\}: \$\{healthCards\[0\].headline\}. Open status details`\}/,
+  );
+  assert.match(emma, /onClick=\{\(\) => setView\("practice"\)\}/);
+  assert.match(emma, /onClick=\{\(\) => setView\("improvements"\)\}/);
+  assert.match(emma, /\? "Healthy"[\s\S]*\? "Needs attention"[\s\S]*: "Evidence building"/);
+  assert.match(mobileHome, /\.cp-emma-entry\s*\{[\s\S]*?background: #242337/);
+});
 test("client view is default; editing still requires real operator authority", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
   assert.match(portal, /\[operatorTools, setOperatorTools\] = useState\(false\)/);
