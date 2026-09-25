@@ -818,6 +818,80 @@
   border-radius: 18px;
   background: #ffffff0c;
 }
+.ep-current-call {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #ffffff36;
+  border-radius: 14px;
+  background: #ffffff12;
+  text-align: left;
+}
+.ep-current-call-header,
+.ep-test-row > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ep-current-call-header strong {
+  font-size: 14px;
+}
+.ep-current-call-header small {
+  color: #e5d8eb;
+}
+.ep-current-call > p {
+  margin: 10px 0;
+  color: #efe7f3;
+  font-size: 13px;
+}
+.ep-current-call .rw-recording {
+  margin: 10px 0;
+  padding: 10px 0 0;
+  border-top: 1px solid #ffffff30;
+}
+.ep-inline-feedback {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.ep-inline-feedback label {
+  font-size: 13px;
+  font-weight: 700;
+}
+.ep-inline-feedback textarea {
+  width: 100%;
+  min-height: 85px;
+  padding: 12px;
+  border: 1px solid #d8c5e1;
+  border-radius: 10px;
+  font: inherit;
+  color: #34243e;
+}
+.ep-inline-feedback .rw-btn {
+  justify-self: start;
+}
+.ep-inline-feedback small {
+  color: #dfd0e6;
+}
+.ep-test-row {
+  padding: 14px 0;
+  border-top: 1px solid #eee7f0;
+}
+.ep-test-row strong {
+  color: #45304f;
+  font-size: 14px;
+}
+.ep-test-row small {
+  display: block;
+  margin: 6px 0;
+  color: #786a82;
+}
+.ep-test-row p {
+  margin: 8px 0;
+  color: #57475f;
+  font-size: 13px;
+}
 .ep-transcript {
   max-height: 220px;
   overflow: auto;

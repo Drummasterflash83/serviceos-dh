@@ -125,9 +125,13 @@ test("actual UI checks microphone before reservation and guards late completion"
     "utf8",
   );
   assert.match(ui, /getUserMedia\(\{ audio: true \}\)/);
-  assert.match(ui, /const voice = new VapiClient\(""\)/);
+  assert.match(
+    ui,
+    /const voice = new VapiClient\("", undefined, undefined, \{ audioSource: track \}\)/,
+  );
   assert.match(ui, /if \(!connection.ended\) ready\(\)/);
   assert.match(ui, /if \(issue.fatal\)/);
-  assert.match(ui, /setSession\(\{ id, callId: data\.callId \}\)/);
+  assert.match(ui, /setSession\(\{ id, callId: data\.callId, startedAt:/);
+  assert.doesNotMatch(ui, /media\.current\?\.stop\(\);\s*media\.current = null;\s*const voice/);
   assert.match(ui, /media.current\?\.stop\(\)/);
 });
