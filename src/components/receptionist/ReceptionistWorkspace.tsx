@@ -648,9 +648,7 @@ export function ReceptionistWorkspace({
           )}
           <div className="rw-heading">
             <div>
-              <p className="rw-eyebrow">
-                {view === "today" ? "YOUR DAILY RECEPTIONIST BRIEF" : "THE RECEPTIONIST WORKSPACE"}
-              </p>
+              {view !== "today" && <p className="rw-eyebrow">THE RECEPTIONIST WORKSPACE</p>}
               <h1>
                 {view === "today"
                   ? w.name
