@@ -9,7 +9,6 @@ test("OpenFolk public and workspace headers use the approved shared wordmark", (
     "src/components/OpenFolkHome.tsx",
     "src/routes/login.tsx",
     "src/components/Nav.tsx",
-    "src/components/client-portal/ClientPortal.tsx",
   ]) {
     const text = read(path);
     assert.match(text, /<OpenFolkWordmark[\s/>]/, path);
@@ -28,23 +27,32 @@ test("brand remains lowercase, navy/white and gold, without a backing box or ico
   assert.doesNotMatch(source, /background|borderRadius|padding|<img|<svg|●/);
 });
 
-test("Drummonds Emma workspace uses the client's mark in white without a logo box", () => {
+test("Drummonds uses its orange emblem and short name in both client headers", () => {
   assert.match(
     read("src/components/receptionist/ReceptionistWorkspace.tsx"),
-    /w\.company === "Drummond Heating"[\s\S]*src="\/brand\/drummond-logo\.png"/,
+    /<ClientHeaderBrand company=\{w\.company\}/,
   );
-  assert.match(read("src/components/receptionist/receptionist.css"), /\.rw-brand \.rw-client-logo\s*\{\s*filter: brightness\(0\) invert\(1\)/);
-  assert.match(read("src/components/receptionist/ReceptionistWorkspace.tsx"), /Powered by OpenFolk/);
+  assert.match(
+    read("src/components/client-portal/ClientPortal.tsx"),
+    /<ClientHeaderBrand company=\{p\?\.company/,
+  );
+  assert.match(read("src/components/ClientHeaderBrand.tsx"), /of-drummonds-emblem/);
+  assert.match(read("src/lib/client-brand.ts"), /"Drummond's"/);
+  assert.match(
+    read("src/components/receptionist/ReceptionistWorkspace.tsx"),
+    /Powered by OpenFolk/,
+  );
 });
 
-test("Drummonds workspace menu reuses the supplied emblem in OpenFolk gold", () => {
+test("Drummonds workspace menu keeps its initial and uses warm text", () => {
   const menu = read("src/components/WorkspaceMenu.tsx");
   const css = read("src/styles/workspace-navigation.css");
-  assert.match(menu, /company === "Drummond Heating"/);
-  assert.match(menu, /of-drummonds-emblem/);
+  assert.match(menu, /hasDrummondsBrand\(company\)/);
+  assert.doesNotMatch(menu, /of-drummonds-emblem/);
   assert.match(css, /Black%20Icon\.png/);
   assert.match(css, /background: #cc8625/);
-  assert.match(menu, /company\.slice\(0, 1\)/);
+  assert.match(menu, /clientDisplayName\(company\)\.slice\(0, 1\)/);
+  assert.match(css, /\.of-workspace-switch\.is-drummonds small/);
 });
 
 test("homepage and login retain their existing responsive sizes", () => {

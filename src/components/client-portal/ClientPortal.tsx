@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
-import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
+import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
+import { clientDisplayName } from "@/lib/client-brand";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
@@ -270,10 +271,10 @@ export function ClientPortal({
     <>
       <div className="cp-page-heading">
         <div>
-          <p className="of-eyebrow">OPENFOLK × {p.company.toUpperCase()}</p>
+          <p className="of-eyebrow">YOUR WORKSPACE</p>
           <h1>
             {section === "home"
-              ? p.company
+              ? clientDisplayName(p.company)
               : section === "overview"
                 ? "Your programme"
                 : nav.find((n) => n.id === section)?.label}
@@ -332,7 +333,12 @@ export function ClientPortal({
         <ClientInvestment tenant={tenant} userId={user.id} />
       )}
       {section === "home" && tenant && user && (
-        <WorkspaceHome tenant={tenant} userId={user.id} company={p.company} open={setSection} />
+        <WorkspaceHome
+          tenant={tenant}
+          userId={user.id}
+          company={clientDisplayName(p.company)}
+          open={setSection}
+        />
       )}
       {section === "overview" && (
         <>
@@ -650,7 +656,7 @@ export function ClientPortal({
         </>
       )}
       <footer className="cp-content-footer">
-        <span>OpenFolk × {p.company}</span>
+        <span>{clientDisplayName(p.company)}</span>
         <span>
           Programme version {row.version} · Updated {date(row.updated_at)}
         </span>
@@ -695,9 +701,9 @@ export function ClientPortal({
         <a
           href={clientWorkspaceHref(tenantId ?? tenant)}
           className="of-wordmark"
-          aria-label="OpenFolk — workspace home"
+          aria-label={`${clientDisplayName(p?.company ?? "Your workspace")} — workspace home`}
         >
-          <OpenFolkWordmark onDark />
+          <ClientHeaderBrand company={p?.company ?? "Your workspace"} />
         </a>
         <button
           type="button"
@@ -710,14 +716,7 @@ export function ClientPortal({
           {mobileMenuOpen ? <CloseIcon size={23} /> : <Menu size={23} />}
         </button>
         <div id="client-mobile-navigation" className="cp-mobile-menu-panel">
-          <p
-            className={`of-mobile-company${p?.company === "Drummond Heating" ? " is-drummonds" : ""}`}
-          >
-            {p?.company === "Drummond Heating" && (
-              <span className="of-drummonds-emblem" aria-hidden="true" />
-            )}
-            {p?.company ?? "Your workspace"}
-          </p>
+          <p className="of-mobile-company">{clientDisplayName(p?.company ?? "Your workspace")}</p>
           <div className="cp-workspace-label">CLIENT WORKSPACE</div>
           <WorkspaceMenu
             company={p?.company ?? "Your workspace"}
@@ -811,7 +810,7 @@ export function ClientPortal({
         </div>
         <header className="cp-topbar">
           <a className="cp-home-breadcrumb" href={clientWorkspaceHref(tenantId ?? tenant)}>
-            {p?.company ?? "Your workspace"} <span>/</span>{" "}
+            {clientDisplayName(p?.company ?? "Your workspace")} <span>/</span>{" "}
             {nav.find((n) => n.id === section)?.label}
           </a>
           <span className="cp-user">{user?.email}</span>

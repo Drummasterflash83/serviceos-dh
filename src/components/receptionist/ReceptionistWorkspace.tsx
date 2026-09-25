@@ -1,4 +1,6 @@
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
+import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
+import { clientDisplayName } from "@/lib/client-brand";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -593,13 +595,9 @@ export function ReceptionistWorkspace({
         <a
           href={workspaceHref}
           className="rw-brand"
-          aria-label={`${w.company} — back to workspace`}
+          aria-label={`${clientDisplayName(w.company)} — back to workspace`}
         >
-          {w.company === "Drummond Heating" ? (
-            <img className="rw-client-logo" src="/brand/drummond-logo.png" alt="Drummonds" />
-          ) : (
-            <span>{w.company}</span>
-          )}
+          <ClientHeaderBrand company={w.company} />
         </a>
         <button
           type="button"
@@ -612,14 +610,7 @@ export function ReceptionistWorkspace({
           {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
         </button>
         <div id="receptionist-mobile-navigation" className="rw-mobile-menu-panel">
-          <p
-            className={`of-mobile-company${w.company === "Drummond Heating" ? " is-drummonds" : ""}`}
-          >
-            {w.company === "Drummond Heating" && (
-              <span className="of-drummonds-emblem" aria-hidden="true" />
-            )}
-            {w.company}
-          </p>
+          <p className="of-mobile-company">{clientDisplayName(w.company)}</p>
           <WorkspaceMenu
             company={w.company}
             tenant={demo ? undefined : tenant}
@@ -633,7 +624,7 @@ export function ReceptionistWorkspace({
             >
               {workspaces.data?.map((w) => (
                 <option key={w.tenant_id} value={w.tenant_id}>
-                  {w.company}
+                  {clientDisplayName(w.company)}
                 </option>
               ))}
             </select>
@@ -1157,7 +1148,7 @@ export function ReceptionistWorkspace({
                 <dl className="rw-facts">
                   {[
                     ["Receptionist", w.name],
-                    ["Company", w.company],
+                    ["Company", clientDisplayName(w.company)],
                     ["Role", w.role],
                     ["Phone routing", mainNumberStatus(w.launch_stage)],
                     ["Configured number", w.phone_number ?? "To confirm"],
