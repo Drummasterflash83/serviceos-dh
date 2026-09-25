@@ -9,6 +9,7 @@ import {
   practiceVoiceError,
   practiceEndedMessage,
   microphoneHasSignal,
+  resolveVapiConstructor,
 } from "@/lib/receptionist-practice-runtime";
 import type Vapi from "@vapi-ai/web";
 import { CallRecording } from "./CallRecording";
@@ -278,8 +279,12 @@ export function PracticeImprove({
         );
       if (!alive.current || attempt !== generation.current) return;
       setConnectionNote("Preparing Emma’s secure connection…");
-      const { default: VapiClient } = await import("@vapi-ai/web");
+      const VapiClient = resolveVapiConstructor(await import("@vapi-ai/web"));
       if (!alive.current || attempt !== generation.current) return;
+      // Construct locally before reserving a provider call. A module/constructor
+      // failure must never leave Vapi waiting in an empty voice room.
+      const voice = new VapiClient("", undefined, undefined, { audioSource: track });
+      sdk.current = voice;
       const id = crypto.randomUUID();
       const { data, error } = await db.functions.invoke("receptionist-practice", {
         body: { tenantId: tenant, action: "start", sessionId: id, mode: "conversation" },
@@ -305,10 +310,9 @@ export function PracticeImprove({
       // Keep the already-authorised, live microphone track through Daily's
       // join. Releasing it here left Vapi with no customer audio on some
       // browsers, causing the call to end before the tester could speak.
-      const voice = new VapiClient("", undefined, undefined, { audioSource: track });
-      sdk.current = voice;
       const ready = async () => {
         if (!alive.current || attempt !== generation.current || connection.ended) return;
+        if (!connection.beginReadiness()) return;
         try {
           // Daily can replace its input track while preparing audio processing.
           // Reattach the checked live track after join instead of assuming the
