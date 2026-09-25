@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Headphones, ArrowRight, Layers, Receipt, MessageSquare } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { receptionistHref, type ClientSection } from "@/lib/client-workspace-nav";
+import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
+import type { ReceptionistCall } from "@/lib/receptionist-data";
 
 export function WorkspaceHome({
   tenant,
@@ -19,7 +21,7 @@ export function WorkspaceHome({
     queryFn: async () => {
       const { data, error } = await getSupabaseClient()
         .from("receptionist_workspaces")
-        .select("name,launch_stage,launch_note")
+        .select("name,launch_stage")
         .eq("tenant_id", tenant)
         .maybeSingle();
       if (error) throw new Error("Receptionist details are temporarily unavailable.");
@@ -27,6 +29,27 @@ export function WorkspaceHome({
     },
     staleTime: 30_000,
   });
+  const callEvidence = useQuery({
+    queryKey: ["workspace-emma-calls", userId, tenant],
+    enabled: !!userId && !!receptionist.data,
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient().functions.invoke("receptionist-calls", {
+        body: { tenantId: tenant, before: null },
+      });
+      if (error || data?.error) throw new Error("Emma's latest calls could not be checked.");
+      if (!Array.isArray(data?.calls) || typeof data?.connection !== "string")
+        throw new Error("Emma's call response needs a check.");
+      return data as { connection: string; calls: ReceptionistCall[]; checkedAt: string };
+    },
+    staleTime: 45_000,
+    refetchInterval: 60_000,
+  });
+  const status = emmaHealthCards(callEvidence.data?.calls ?? [], {
+    connected: callEvidence.data?.connection === "connected" && !callEvidence.isError,
+    loading: callEvidence.isPending,
+    error: callEvidence.isError,
+    launchStage: receptionist.data?.launch_stage,
+  })[0]!;
   return (
     <div className="cp-work-home">
       <section className="cp-emma-entry" aria-label="AI Receptionist">
@@ -36,7 +59,19 @@ export function WorkspaceHome({
         <div className="cp-emma-copy">
           <p className="of-eyebrow">YOUR AI RECEPTIONIST</p>
           <h2>{receptionist.data?.name || "Your receptionist"}</h2>
-          <p>See who called, review the conversation and help make the next call better.</p>
+          <p>Every call in view. The next step clear.</p>
+          {receptionist.data && (
+            <div className={`cp-emma-status cp-emma-status-${status.tone}`}>
+              <span>HOW EMMA IS DOING</span>
+              <strong>{status.headline}</strong>
+              <small>{status.summary}</small>
+              {callEvidence.data?.connection === "connected" && (
+                <small>
+                  Call data connected to OpenFolk · Latest {callEvidence.data.calls.length} calls
+                </small>
+              )}
+            </div>
+          )}
           {receptionist.isPending ? (
             <small role="status">Loading receptionist details…</small>
           ) : receptionist.isError ? (
@@ -47,11 +82,8 @@ export function WorkspaceHome({
           ) : receptionist.data ? (
             <>
               <span className="cp-recorded-stage">
-                {receptionist.data.launch_stage === "Testing"
-                  ? "Activation pending"
-                  : receptionist.data.launch_stage || "Not recorded"}
+                {mainNumberStatus(receptionist.data.launch_stage)}
               </span>
-              <small>{receptionist.data.launch_note}</small>
             </>
           ) : (
             <small>No receptionist workspace has been assigned yet.</small>

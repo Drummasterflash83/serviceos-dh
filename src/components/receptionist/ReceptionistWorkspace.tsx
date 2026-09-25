@@ -26,11 +26,14 @@ import {
   LogOut,
   Sparkles,
   FileText,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { getSupabaseClient } from "@/lib/supabase";
 import { callerGroups, durationLabel, type ReceptionistCall } from "@/lib/receptionist-data";
+import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
   emmaHealthCards,
   healthCardCalls,
@@ -221,7 +224,29 @@ export function ReceptionistWorkspace({
     [settings, setSettings] = useState(false),
     [compact, setCompact] = useState(false),
     [focus, setFocus] = useState("Start with calls that need a closer look."),
-    [editing, setEditing] = useState<Feedback | null>(null);
+    [editing, setEditing] = useState<Feedback | null>(null),
+    [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pull = usePullToRefresh(
+    () =>
+      qc.refetchQueries({
+        type: "active",
+        predicate: (query) => String(query.queryKey[0]).startsWith("receptionist-"),
+      }),
+    !demo && !mobileMenuOpen,
+  );
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", close);
+    };
+  }, [mobileMenuOpen]);
   const workspaces = useQuery({
     queryKey: ["receptionist-workspaces", user?.id],
     enabled: !!user && !demo,
@@ -241,6 +266,7 @@ export function ReceptionistWorkspace({
   const info = useEmmaInfo(tenant ?? "", user?.id, demo);
   const workspaceHref = clientWorkspaceHref(demo ? undefined : tenant);
   function setView(next: View) {
+    setMobileMenuOpen(false);
     if (next === view) return;
     setViewState(next);
     void navigate({
@@ -565,86 +591,108 @@ export function ReceptionistWorkspace({
       <a className="rw-skip" href="#receptionist-main">
         Skip to dashboard
       </a>
-      <aside className="rw-sidebar">
+      <aside className={`rw-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
         <a href={workspaceHref} className="rw-brand" aria-label="OpenFolk — back to workspace">
           <OpenFolkWordmark onDark />
         </a>
-        <WorkspaceMenu
-          company={w.company}
-          tenant={demo ? undefined : tenant}
-          active="receptionist"
-        />
-        {(workspaces.data?.length ?? 0) > 1 && (
-          <select
-            aria-label="Company"
-            value={tenant}
-            onChange={(e) => setSelectedTenant(e.target.value)}
-          >
-            {workspaces.data?.map((w) => (
-              <option key={w.tenant_id} value={w.tenant_id}>
-                {w.company}
-              </option>
-            ))}
-          </select>
-        )}
-        <p className="rw-nav-caption">AI RECEPTIONIST</p>
-        <nav aria-label="Receptionist workspace">
-          <a href={workspaceHref} className="rw-workspace-nav">
-            <ArrowLeft size={18} /> Workspace home
-          </a>
-          {views.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              onClick={() => {
-                setView(id);
-                setSearch("");
-                setReviewOnly(false);
-                setExperienceFilter("");
-              }}
-              className={view === id ? "active" : ""}
-              aria-current={view === id ? "page" : undefined}
+        <button
+          type="button"
+          className="of-mobile-menu-toggle"
+          aria-label={mobileMenuOpen ? "Close receptionist menu" : "Open receptionist menu"}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="receptionist-mobile-navigation"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
+        </button>
+        <div id="receptionist-mobile-navigation" className="rw-mobile-menu-panel">
+          <p className="of-mobile-company">{w.company}</p>
+          <WorkspaceMenu
+            company={w.company}
+            tenant={demo ? undefined : tenant}
+            active="receptionist"
+          />
+          {(workspaces.data?.length ?? 0) > 1 && (
+            <select
+              aria-label="Company"
+              value={tenant}
+              onChange={(e) => setSelectedTenant(e.target.value)}
             >
-              <Icon size={18} />
-              {id === "improvements" ? `Make ${w.name} better` : label}
-              {id === "improvements" && open.length > 0 && <span>{open.length}</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="rw-sidebar-card">
-          <AudioLines size={28} />
-          <strong>
-            Small observations.
-            <br />
-            Better conversations.
-          </strong>
-          <p>Your feedback helps us improve the next call.</p>
-          <button onClick={() => addNote()}>
-            Share an observation <ArrowUpRight size={16} />
-          </button>
-        </div>
-        <div className="rw-sidebar-bottom">
-          <a href={workspaceHref}>
-            <ArrowLeft size={15} /> Back to workspace
-          </a>
-          {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
-          <small>
-            <ShieldCheck size={14} /> Private client workspace
-          </small>
-          {!demo && (
-            <button
-              onClick={async () => {
-                await signOut();
-                qc.removeQueries({
-                  predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
-                });
-              }}
-            >
-              <LogOut size={14} /> Sign out
-            </button>
+              {workspaces.data?.map((w) => (
+                <option key={w.tenant_id} value={w.tenant_id}>
+                  {w.company}
+                </option>
+              ))}
+            </select>
           )}
+          <p className="rw-nav-caption">AI RECEPTIONIST</p>
+          <nav aria-label="Receptionist workspace">
+            <a href={workspaceHref} className="rw-workspace-nav">
+              <ArrowLeft size={18} /> Workspace home
+            </a>
+            {views.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => {
+                  setView(id);
+                  setSearch("");
+                  setReviewOnly(false);
+                  setExperienceFilter("");
+                }}
+                className={view === id ? "active" : ""}
+                aria-current={view === id ? "page" : undefined}
+              >
+                <Icon size={18} />
+                {id === "improvements" ? `Make ${w.name} better` : label}
+                {id === "improvements" && open.length > 0 && <span>{open.length}</span>}
+              </button>
+            ))}
+          </nav>
+          <div className="rw-sidebar-card">
+            <AudioLines size={28} />
+            <strong>
+              Small observations.
+              <br />
+              Better conversations.
+            </strong>
+            <p>Your feedback helps us improve the next call.</p>
+            <button onClick={() => addNote()}>
+              Share an observation <ArrowUpRight size={16} />
+            </button>
+          </div>
+          <div className="rw-sidebar-bottom">
+            <a href={workspaceHref}>
+              <ArrowLeft size={15} /> Back to workspace
+            </a>
+            {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
+            <small>
+              <ShieldCheck size={14} /> Private client workspace
+            </small>
+            {!demo && (
+              <button
+                onClick={async () => {
+                  await signOut();
+                  qc.removeQueries({
+                    predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
+                  });
+                }}
+              >
+                <LogOut size={14} /> Sign out
+              </button>
+            )}
+          </div>
         </div>
       </aside>
       <div className="rw-shell">
+        <div className="of-pull-status" role="status" aria-live="polite">
+          {pull.refreshing
+            ? "Updating Emma’s calls…"
+            : pull.ready
+              ? "Release to refresh"
+              : pull.distance > 0
+                ? "Pull to refresh"
+                : ""}
+        </div>
         <header className="rw-topbar">
           <button
             type="button"

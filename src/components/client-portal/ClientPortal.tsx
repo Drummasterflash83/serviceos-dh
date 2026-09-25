@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   X,
   Headphones,
+  Menu,
+  X as CloseIcon,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
@@ -25,6 +27,7 @@ import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
+import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
   clientWorkspaceHref,
   receptionistHref,
@@ -109,9 +112,25 @@ export function ClientPortal({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [operatorTools, setOperatorTools] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pull = usePullToRefresh(() => qc.refetchQueries({ type: "active" }), !mobileMenuOpen);
   function setSection(next: ClientSection) {
+    setMobileMenuOpen(false);
     void navigate({ to: "/client", search: { tenant: tenantId ?? tenant, section: next } });
   }
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", close);
+    };
+  }, [mobileMenuOpen]);
   const [editing, setEditing] = useState<OutcomePackage | null>(null);
   const [settings, setSettings] = useState(false);
   const [editorVersion, setEditorVersion] = useState<number | null>(null);
@@ -668,11 +687,11 @@ export function ClientPortal({
     </>
   );
   return (
-    <div className="cp-root">
+    <div className={`cp-root ${section === "home" ? "cp-home-section" : ""}`}>
       <a href="#client-main" className="of-skip">
         Skip to workspace
       </a>
-      <aside className="cp-sidebar">
+      <aside className={`cp-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
         <a
           href={clientWorkspaceHref(tenantId ?? tenant)}
           className="of-wordmark"
@@ -680,84 +699,109 @@ export function ClientPortal({
         >
           <OpenFolkWordmark onDark />
         </a>
-        <div className="cp-workspace-label">CLIENT WORKSPACE</div>
-        <WorkspaceMenu
-          company={p?.company ?? "Your workspace"}
-          tenant={tenantId ?? tenant}
-          active={section === "home" ? "home" : "programme"}
-        />
-        {(programmes.data?.length ?? 0) > 1 && (
-          <label className="cp-field">
-            <span>Client programme</span>
-            <select
-              aria-label="Client programme"
-              value={tenant ?? ""}
-              onChange={(e) =>
-                void navigate({
-                  to: "/client",
-                  search: { tenant: e.target.value, section: "home" },
-                })
-              }
-            >
-              {programmes.data?.map((r) => (
-                <option value={r.tenant_id} key={r.tenant_id}>
-                  {r.content.company}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <nav aria-label="Client workspace">
-          <a href={receptionistHref(tenantId ?? tenant)} className="cp-emma-nav">
-            <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
-          </a>
-          {nav
-            .filter(({ id }) => id !== "links" || (p?.links.length ?? 0) > 0)
-            .map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                className={section === id ? "is-active" : ""}
-                aria-current={section === id ? "page" : undefined}
-                onClick={() => {
-                  setSection(id);
-                  setNotice("");
-                  setError("");
-                }}
+        <button
+          type="button"
+          className="of-mobile-menu-toggle"
+          aria-label={mobileMenuOpen ? "Close workspace menu" : "Open workspace menu"}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="client-mobile-navigation"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <CloseIcon size={23} /> : <Menu size={23} />}
+        </button>
+        <div id="client-mobile-navigation" className="cp-mobile-menu-panel">
+          <p className="of-mobile-company">{p?.company ?? "Your workspace"}</p>
+          <div className="cp-workspace-label">CLIENT WORKSPACE</div>
+          <WorkspaceMenu
+            company={p?.company ?? "Your workspace"}
+            tenant={tenantId ?? tenant}
+            active={section === "home" ? "home" : "programme"}
+          />
+          {(programmes.data?.length ?? 0) > 1 && (
+            <label className="cp-field">
+              <span>Client programme</span>
+              <select
+                aria-label="Client programme"
+                value={tenant ?? ""}
+                onChange={(e) =>
+                  void navigate({
+                    to: "/client",
+                    search: { tenant: e.target.value, section: "home" },
+                  })
+                }
               >
-                <Icon size={17} />
-                {label}
-              </button>
-            ))}
-        </nav>
-        <div className="cp-sidebar-bottom">
-          <div className="cp-private">
-            <ShieldCheck size={16} />
-            Private client workspace
-          </div>
-          <a href="mailto:chris@openfolk.ai">
-            Your OpenFolk contact <ArrowUpRight size={14} />
-          </a>
-          {operator.data === true && (
-            <div className="cp-operator-controls">
-              <button aria-pressed={operatorTools} onClick={() => setOperatorTools(!operatorTools)}>
-                {operatorTools ? "Return to client view" : "OpenFolk editing tools"}
-              </button>
-            </div>
+                {programmes.data?.map((r) => (
+                  <option value={r.tenant_id} key={r.tenant_id}>
+                    {r.content.company}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
-          <OpenFolkAdminLink email={user?.email} authorised={operator.data} />
-          <button
-            onClick={async () => {
-              await signOut();
-              qc.removeQueries({ queryKey: ["client-programmes"] });
-              qc.removeQueries({ queryKey: ["client-programme-notes"] });
-            }}
-          >
-            <LogOut size={15} />
-            Sign out
-          </button>
+          <nav aria-label="Client workspace">
+            <a href={receptionistHref(tenantId ?? tenant)} className="cp-emma-nav">
+              <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
+            </a>
+            {nav
+              .filter(({ id }) => id !== "links" || (p?.links.length ?? 0) > 0)
+              .map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  className={section === id ? "is-active" : ""}
+                  aria-current={section === id ? "page" : undefined}
+                  onClick={() => {
+                    setSection(id);
+                    setNotice("");
+                    setError("");
+                  }}
+                >
+                  <Icon size={17} />
+                  {label}
+                </button>
+              ))}
+          </nav>
+          <div className="cp-sidebar-bottom">
+            <div className="cp-private">
+              <ShieldCheck size={16} />
+              Private client workspace
+            </div>
+            <a href="mailto:chris@openfolk.ai">
+              Your OpenFolk contact <ArrowUpRight size={14} />
+            </a>
+            {operator.data === true && (
+              <div className="cp-operator-controls">
+                <button
+                  aria-pressed={operatorTools}
+                  onClick={() => setOperatorTools(!operatorTools)}
+                >
+                  {operatorTools ? "Return to client view" : "OpenFolk editing tools"}
+                </button>
+              </div>
+            )}
+            <OpenFolkAdminLink email={user?.email} authorised={operator.data} />
+            <button
+              onClick={async () => {
+                await signOut();
+                qc.removeQueries({ queryKey: ["client-programmes"] });
+                qc.removeQueries({ queryKey: ["client-programme-notes"] });
+              }}
+            >
+              <LogOut size={15} />
+              Sign out
+            </button>
+          </div>
         </div>
       </aside>
       <div className="cp-main">
+        <div className="of-pull-status" role="status" aria-live="polite">
+          {pull.refreshing
+            ? "Updating workspace…"
+            : pull.ready
+              ? "Release to refresh"
+              : pull.distance > 0
+                ? "Pull to refresh"
+                : ""}
+        </div>
         <header className="cp-topbar">
           <a className="cp-home-breadcrumb" href={clientWorkspaceHref(tenantId ?? tenant)}>
             {p?.company ?? "Your workspace"} <span>/</span>{" "}
