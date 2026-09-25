@@ -245,6 +245,40 @@
   color: #625b72;
   margin-top: 8px;
 }
+.cp-emma-status {
+  display: grid;
+  gap: 5px;
+  max-width: 490px;
+  margin-top: 18px;
+  padding: 15px 17px;
+  border: 1px solid #d7e9dd;
+  border-radius: 15px;
+  background: #f2faf5;
+}
+.cp-emma-status-watch {
+  background: #fff8ee;
+  border-color: #eadcc8;
+}
+.cp-emma-status-waiting {
+  background: #f8f4fc;
+  border-color: #e9e1ef;
+}
+.cp-emma-status > span {
+  color: #756590;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.cp-emma-status > strong {
+  color: #30243b;
+  font-size: 18px;
+  line-height: 1.25;
+}
+.cp-emma-status > small {
+  margin: 0;
+  color: #625b72;
+  line-height: 1.5;
+}
 .cp-emma-copy button {
   text-decoration: underline;
   color: #514669;
@@ -424,5 +458,110 @@
 @media (prefers-reduced-motion: reduce) {
   .cp-home-card {
     transition: none;
+  }
+}
+
+/* Mobile is a focused workspace, not a compressed desktop sidebar. */
+@media (max-width: 800px) {
+  .cp-root .cp-sidebar.cp-sidebar {
+    position: sticky;
+    top: 0;
+    height: calc(66px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 18px 0;
+    overflow: visible;
+  }
+  .cp-root .cp-sidebar.cp-sidebar.is-mobile-open {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    overflow: visible;
+  }
+  .cp-root .cp-sidebar nav {
+    display: grid;
+    overflow: visible;
+    padding: 0;
+  }
+  .cp-root .cp-sidebar nav > * {
+    flex-shrink: 1;
+  }
+  .cp-root .cp-sidebar-bottom {
+    display: grid;
+  }
+  .cp-root .cp-topbar {
+    display: none;
+  }
+  .cp-root .cp-content {
+    padding: 16px 16px 32px;
+  }
+  .cp-root.cp-home-section .cp-page-heading {
+    display: none;
+  }
+  .cp-emma-entry {
+    display: block;
+    padding: 25px 22px;
+    border: 0;
+    border-radius: 24px;
+    background: linear-gradient(155deg, #38304f 0%, #55446f 62%, #6a5279 100%);
+    color: white;
+    box-shadow: 0 16px 35px #40325725;
+  }
+  .cp-emma-orb {
+    display: none;
+  }
+  .cp-emma-copy {
+    display: block;
+  }
+  .cp-emma-copy .of-eyebrow {
+    color: #d7c4ec;
+  }
+  .cp-emma-copy h2 {
+    margin: 4px 0 5px;
+    color: white;
+    font-size: 40px;
+    line-height: 1.05;
+  }
+  .cp-emma-copy > p:not(.of-eyebrow) {
+    margin: 0;
+    color: #e3dcea;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .cp-emma-status,
+  .cp-emma-status-watch,
+  .cp-emma-status-waiting {
+    margin: 20px 0 0;
+    padding: 15px;
+    border-color: #ffffff30;
+    background: #ffffff16;
+  }
+  .cp-emma-status > span,
+  .cp-emma-status > strong,
+  .cp-emma-status > small,
+  .cp-emma-copy > small {
+    color: white;
+  }
+  .cp-emma-status > span,
+  .cp-emma-status > small {
+    color: #e6dcec;
+  }
+  .cp-recorded-stage {
+    color: #f1e7f9;
+    border-color: #ffffff4d;
+    margin-top: 13px;
+  }
+  .cp-open-emma {
+    width: 100%;
+    min-height: 52px;
+    margin: 20px 0 0;
+    background: white;
+    color: #3c3151;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .cp-open-emma:hover {
+    background: #f6efff;
+  }
+  .cp-home-intro {
+    margin: 28px 4px 14px;
   }
 }

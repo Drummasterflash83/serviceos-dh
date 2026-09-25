@@ -9,6 +9,8 @@ export const Route = createFileRoute("/client")({
     meta: [
       { title: "Your workspace · OpenFolk" },
       { name: "robots", content: "noindex, nofollow" },
+      { name: "theme-color", content: "#242337" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
     ],
   }),
   component: ClientPage,

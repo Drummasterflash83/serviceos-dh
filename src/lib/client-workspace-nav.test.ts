@@ -97,6 +97,26 @@ test("both workspaces share the company menu; Emma has a sticky browser back act
   assert.match(emma, /selectedWorkspace\(workspaces.data, selectedTenant\)/);
   assert.match(portal, /selectedWorkspace\(programmes.data, tenantId\)/);
 });
+test("mobile workspaces use one persistent menu and an explicit pull refresh", () => {
+  const portal = read("../components/client-portal/ClientPortal.tsx");
+  const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");
+  const navigation = read("../styles/workspace-navigation.css");
+  const refresh = read("./use-pull-to-refresh.ts");
+  for (const source of [portal, emma]) {
+    assert.match(source, /aria-expanded=\{mobileMenuOpen\}/);
+    assert.match(source, /usePullToRefresh/);
+    assert.match(source, /setMobileMenuOpen\(false\)/);
+  }
+  assert.match(navigation, /position: sticky/);
+  assert.match(navigation, /height: 100dvh/);
+  assert.match(
+    navigation,
+    /\.cp-root \.cp-sidebar nav,[\s\S]*\.rw \.rw-sidebar nav\s*\{\s*display: grid/,
+  );
+  assert.match(refresh, /window\.scrollY > 2/);
+  assert.match(refresh, /TRIGGER_DISTANCE = 76/);
+  assert.doesNotMatch(refresh, /preventDefault/);
+});
 test("client view is default; editing still requires real operator authority", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
   assert.match(portal, /\[operatorTools, setOperatorTools\] = useState\(false\)/);
@@ -114,7 +134,8 @@ test("home status is scoped source data, never a fabricated health score", () =>
   assert.match(home, /\.eq\("tenant_id", tenant\)/);
   assert.match(home, /maybeSingle\(\)/);
   assert.match(home, /receptionist.data.launch_stage/);
-  assert.match(home, /Activation pending/);
+  assert.match(home, /mainNumberStatus\(receptionist.data.launch_stage\)/);
+  assert.match(home, /workspace-emma-calls/);
   assert.match(home, /isError/);
   assert.match(home, /refetch\(\)/);
   assert.doesNotMatch(home, /100%|All systems operational|createClient|service_role/);
