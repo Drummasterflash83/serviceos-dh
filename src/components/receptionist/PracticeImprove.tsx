@@ -95,6 +95,7 @@ export function PracticeImprove({
     qc = useQueryClient();
   const sdk = useRef<Vapi | null>(null),
     media = useRef<{ stop: () => void } | null>(null),
+    providerCreated = useRef(false),
     lifecycle = useRef<PracticeLifecycle | null>(null),
     alive = useRef(true),
     generation = useRef(0),
@@ -194,7 +195,7 @@ export function PracticeImprove({
     sdk.current = null;
     media.current?.stop();
     media.current = null;
-    setState("ended");
+    setState(providerCreated.current ? "ended" : "idle");
     setMuted(false);
   }
   useEffect(() => {
@@ -219,7 +220,9 @@ export function PracticeImprove({
       sdk.current = null;
       media.current?.stop();
       media.current = null;
-      setState((s) => (s === "active" || s === "connecting" ? "ended" : s));
+      setState((s) =>
+        s === "active" || s === "connecting" ? (providerCreated.current ? "ended" : "idle") : s,
+      );
     }
   }, [active]);
   async function start() {
@@ -241,6 +244,8 @@ export function PracticeImprove({
     const connection = new PracticeLifecycle();
     lifecycle.current = connection;
     setState("connecting");
+    providerCreated.current = false;
+    setSession(null);
     endedAt.current = 0;
     setError("");
     setConnectionNote("Preparing audio…");
@@ -290,6 +295,7 @@ export function PracticeImprove({
         );
       }
       setSession({ id, callId: data.callId, startedAt: new Date().toISOString() });
+      providerCreated.current = true;
       // Keep the already-authorised, live microphone track through Daily's
       // join. Releasing it here left Vapi with no customer audio on some
       // browsers, causing the call to end before the tester could speak.
