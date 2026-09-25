@@ -44,15 +44,16 @@ test("Drummonds uses its orange emblem and short name in both client headers", (
   );
 });
 
-test("Drummonds workspace menu keeps its initial and uses warm text", () => {
+test("workspace menu has a single navigation label below the client brand", () => {
   const menu = read("src/components/WorkspaceMenu.tsx");
   const css = read("src/styles/workspace-navigation.css");
   assert.match(menu, /hasDrummondsBrand\(company\)/);
   assert.doesNotMatch(menu, /of-drummonds-emblem/);
   assert.match(css, /Black%20Icon\.png/);
   assert.match(css, /background: #cc8625/);
-  assert.match(menu, /clientDisplayName\(company\)\.slice\(0, 1\)/);
-  assert.match(css, /\.of-workspace-switch\.is-drummonds small/);
+  assert.match(menu, /className="of-workspace-label">Your Workspace<\/span>/);
+  assert.doesNotMatch(menu, /<strong>\{clientDisplayName\(company\)\}/);
+  assert.match(css, /\.of-workspace-switch\.is-drummonds \.of-workspace-label/);
 });
 
 test("homepage and login retain their existing responsive sizes", () => {

@@ -610,7 +610,7 @@ export function ReceptionistWorkspace({
           {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
         </button>
         <div id="receptionist-mobile-navigation" className="rw-mobile-menu-panel">
-          <p className="of-mobile-company">{clientDisplayName(w.company)}</p>
+          <p className="of-mobile-company">Your Workspace</p>
           <WorkspaceMenu
             company={w.company}
             tenant={demo ? undefined : tenant}

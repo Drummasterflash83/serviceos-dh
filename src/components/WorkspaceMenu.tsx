@@ -27,13 +27,8 @@ export function WorkspaceMenu({
           className={`of-workspace-switch${isDrummonds ? " is-drummonds" : ""}`}
           aria-label={`${clientDisplayName(company)} workspace menu`}
         >
-          <span className="of-workspace-initial" aria-hidden="true">
-            {clientDisplayName(company).slice(0, 1)}
-          </span>
-          <span>
-            <strong>{clientDisplayName(company)}</strong>
-            <small>Your workspace</small>
-          </span>
+          <Home size={19} aria-hidden="true" />
+          <span className="of-workspace-label">Your Workspace</span>
           <ChevronDown size={16} aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>
