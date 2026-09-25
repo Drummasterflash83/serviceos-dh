@@ -6,10 +6,10 @@ const source = readFileSync(
   new URL("../components/receptionist/ReceptionistWorkspace.tsx", import.meta.url),
   "utf8",
 );
-test("Overview omits date controls while call browsing keeps them", () => {
+test("Overview omits the call toolbar while call browsing keeps its controls", () => {
   assert.match(
     source,
-    /view !== "today" &&\s*\(?\s*<div className="rw-segment" aria-label="Call period">/,
+    /\(view === "calls" \|\| view === "callers"\) &&\s*\(\s*<div className="rw-toolbar">/,
   );
   for (const label of ["Last 7 days", "Last 30 days", "All loaded calls"])
     assert.ok(source.includes(label));
