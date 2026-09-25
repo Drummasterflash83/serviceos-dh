@@ -147,6 +147,25 @@ test("receptionist pages round-trip through the same client route", () => {
     section: "investment",
   });
 });
+test("active receptionist click only toggles its submenu without navigating or replacing content", () => {
+  const portal = read("../components/client-portal/ClientPortal.tsx");
+  assert.match(portal, /useState\(section === "receptionist"\)/);
+  assert.match(
+    portal,
+    /const receptionistExpanded = section === "receptionist" && receptionistMenuOpen/,
+  );
+  assert.match(
+    portal,
+    /if \(id === "receptionist" && section === "receptionist"\) \{\s*setReceptionistMenuOpen\(\(open\) => !open\);\s*return;\s*\}\s*setSection\(id\)/,
+  );
+  assert.match(portal, /id === "receptionist" && receptionistExpanded/);
+  assert.match(
+    portal,
+    /aria-expanded=\{id === "receptionist" \? receptionistExpanded : undefined\}/,
+  );
+  assert.match(portal, /receptionistExpanded \? "cp-nav-chevron is-open"/);
+  assert.match(portal, /section === "receptionist" \? receptionistContent : content/);
+});
 test("mobile workspaces use one persistent menu and an explicit pull refresh", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
   const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");

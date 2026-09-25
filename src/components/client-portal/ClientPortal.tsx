@@ -130,6 +130,11 @@ export function ClientPortal({
   const qc = useQueryClient();
   const [operatorTools, setOperatorTools] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [receptionistMenuOpen, setReceptionistMenuOpen] = useState(section === "receptionist");
+  const receptionistExpanded = section === "receptionist" && receptionistMenuOpen;
+  useEffect(() => {
+    setReceptionistMenuOpen(section === "receptionist");
+  }, [section, tenantId]);
   const pull = usePullToRefresh(() => qc.refetchQueries({ type: "active" }), !mobileMenuOpen);
   function setSection(next: ClientSection) {
     setMobileMenuOpen(false);
@@ -823,7 +828,13 @@ export function ClientPortal({
                   <button
                     className={section === id ? "is-active" : ""}
                     aria-current={section === id ? "page" : undefined}
+                    aria-expanded={id === "receptionist" ? receptionistExpanded : undefined}
+                    aria-controls={id === "receptionist" ? "client-receptionist-pages" : undefined}
                     onClick={() => {
+                      if (id === "receptionist" && section === "receptionist") {
+                        setReceptionistMenuOpen((open) => !open);
+                        return;
+                      }
                       setSection(id);
                       setNotice("");
                       setError("");
@@ -834,12 +845,18 @@ export function ClientPortal({
                     {id === "receptionist" && (
                       <ChevronDown
                         size={14}
-                        className={section === id ? "cp-nav-chevron is-open" : "cp-nav-chevron"}
+                        className={
+                          receptionistExpanded ? "cp-nav-chevron is-open" : "cp-nav-chevron"
+                        }
                       />
                     )}
                   </button>
-                  {id === "receptionist" && section === "receptionist" && (
-                    <div className="cp-receptionist-nav" aria-label="AI Receptionist pages">
+                  {id === "receptionist" && receptionistExpanded && (
+                    <div
+                      id="client-receptionist-pages"
+                      className="cp-receptionist-nav"
+                      aria-label="AI Receptionist pages"
+                    >
                       {receptionistNavigation.map(({ id: page, label: title }) => (
                         <button
                           key={page}
