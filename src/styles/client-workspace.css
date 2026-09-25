@@ -1,4 +1,41 @@
 /* Same visual language as Emma. Scoped so legacy ServiceOS screens are unaffected. */
+.cp-nav-chevron {
+  margin-left: auto;
+  transform: rotate(-90deg);
+}
+.cp-nav-chevron.is-open {
+  transform: rotate(0);
+}
+.cp-root .cp-sidebar nav .cp-receptionist-nav {
+  display: grid;
+  gap: 3px;
+  margin: 0 0 9px 20px;
+  padding-left: 12px;
+  border-left: 1px solid #ffffff24;
+}
+.cp-root .cp-sidebar nav .cp-receptionist-nav button {
+  min-height: 38px;
+  padding: 9px 10px;
+  font-size: 11px;
+  text-align: left;
+  white-space: normal;
+  color: #c7c1d8;
+}
+.cp-root .cp-sidebar nav .cp-receptionist-nav button.is-current {
+  background: #ffffff12;
+  color: #f1bd78;
+}
+.cp-root .cp-content.cp-receptionist-content {
+  padding: 0;
+  max-width: none;
+  width: 100%;
+}
+@media (max-width: 800px) {
+  .cp-root .cp-sidebar nav .cp-receptionist-nav button {
+    min-height: 44px;
+    font-size: 13px;
+  }
+}
 .cp-root .cp-commercial,
 .cp-root .cp-investment {
   background: #f2eef7;

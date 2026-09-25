@@ -16,8 +16,6 @@ import {
   RefreshCw,
   Users,
   MessageSquare,
-  LayoutDashboard,
-  SlidersHorizontal,
   ShieldCheck,
   Clock,
   Check,
@@ -32,7 +30,13 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
+import {
+  clientWorkspaceHref,
+  selectedWorkspace,
+  receptionistView,
+  type ReceptionistView,
+} from "@/lib/client-workspace-nav";
+import { receptionistNavigation as views } from "./ReceptionistNavigation";
 import { getSupabaseClient } from "@/lib/supabase";
 import { callerGroups, durationLabel, type ReceptionistCall } from "@/lib/receptionist-data";
 import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
@@ -96,15 +100,7 @@ type Page = {
   nextCursor: string | null;
   checkedAt: string;
 };
-type View = "today" | "calls" | "callers" | "improvements" | "details" | "phones" | "practice";
-const views = [
-  { id: "today", label: "Overview", Icon: LayoutDashboard },
-  { id: "practice", label: "Practise and improve", Icon: Mic },
-  { id: "improvements", label: "Make Emma better", Icon: Sparkles },
-  { id: "callers", label: "People who called", Icon: Users },
-  { id: "phones", label: "Phone system", Icon: Phone },
-  { id: "details", label: "About your receptionist", Icon: SlidersHorizontal },
-] as const;
+type View = ReceptionistView;
 const stages = ["New", "Reviewing", "In progress", "Ready to test", "Resolved"];
 const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", {
@@ -196,18 +192,20 @@ export function ReceptionistWorkspace({
   demo = false,
   tenantId,
   initialView,
+  embedded = false,
+  onViewChange,
 }: {
   demo?: boolean;
   tenantId?: string;
   initialView?: string;
+  embedded?: boolean;
+  onViewChange?: (view: ReceptionistView) => void;
 }) {
   const { user, signOut } = useAuth();
   const db = getSupabaseClient();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [view, setViewState] = useState<View>(
-      views.some((v) => v.id === initialView) ? (initialView as View) : "today",
-    ),
+  const [localView, setViewState] = useState<View>(receptionistView(initialView)),
     [selectedTenant, setSelectedTenant] = useState(tenantId ?? ""),
     [search, setSearch] = useState(""),
     [period, setPeriod] = useState("7"),
@@ -226,13 +224,15 @@ export function ReceptionistWorkspace({
     [focus, setFocus] = useState("Start with calls that need a closer look."),
     [editing, setEditing] = useState<Feedback | null>(null),
     [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const view = embedded ? receptionistView(initialView) : localView;
+  const ContentTag = embedded ? "div" : "main";
   const pull = usePullToRefresh(
     () =>
       qc.refetchQueries({
         type: "active",
         predicate: (query) => String(query.queryKey[0]).startsWith("receptionist-"),
       }),
-    !demo && !mobileMenuOpen,
+    !embedded && !demo && !mobileMenuOpen,
   );
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -268,6 +268,13 @@ export function ReceptionistWorkspace({
   function setView(next: View) {
     setMobileMenuOpen(false);
     if (next === view) return;
+    if (embedded) {
+      setSearch("");
+      setReviewOnly(false);
+      setExperienceFilter("");
+      onViewChange?.(next);
+      return;
+    }
     setViewState(next);
     void navigate({
       to: "/receptionist",
@@ -587,131 +594,141 @@ export function ReceptionistWorkspace({
       </div>
     );
   return (
-    <div className={`rw ${compact ? "rw-compact" : ""}`}>
-      <a className="rw-skip" href="#receptionist-main">
-        Skip to dashboard
-      </a>
-      <aside className={`rw-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
-        <a
-          href={workspaceHref}
-          className="rw-brand"
-          aria-label={`${clientDisplayName(w.company)} — back to workspace`}
-        >
-          <ClientHeaderBrand company={w.company} />
+    <div className={`rw ${compact ? "rw-compact" : ""}${embedded ? " rw-embedded" : ""}`}>
+      {!embedded && (
+        <a className="rw-skip" href="#receptionist-main">
+          Skip to dashboard
         </a>
-        <button
-          type="button"
-          className="of-mobile-menu-toggle"
-          aria-label={mobileMenuOpen ? "Close receptionist menu" : "Open receptionist menu"}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="receptionist-mobile-navigation"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
-        </button>
-        <div id="receptionist-mobile-navigation" className="rw-mobile-menu-panel">
-          <p className="of-mobile-company">Your Workspace</p>
-          <WorkspaceMenu
-            company={w.company}
-            tenant={demo ? undefined : tenant}
-            active="receptionist"
-          />
-          {(workspaces.data?.length ?? 0) > 1 && (
-            <select
-              aria-label="Company"
-              value={tenant}
-              onChange={(e) => setSelectedTenant(e.target.value)}
-            >
-              {workspaces.data?.map((w) => (
-                <option key={w.tenant_id} value={w.tenant_id}>
-                  {clientDisplayName(w.company)}
-                </option>
-              ))}
-            </select>
-          )}
-          <p className="rw-nav-caption">AI RECEPTIONIST</p>
-          <nav aria-label="Receptionist workspace">
-            <a href={workspaceHref} className="rw-workspace-nav">
-              <ArrowLeft size={18} /> Workspace home
-            </a>
-            {views.map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                onClick={() => {
-                  setView(id);
-                  setSearch("");
-                  setReviewOnly(false);
-                  setExperienceFilter("");
-                }}
-                className={view === id ? "active" : ""}
-                aria-current={view === id ? "page" : undefined}
-              >
-                <Icon size={18} />
-                {id === "improvements" ? `Make ${w.name} better` : label}
-                {id === "improvements" && open.length > 0 && <span>{open.length}</span>}
-              </button>
-            ))}
-          </nav>
-          <div className="rw-sidebar-card">
-            <AudioLines size={28} />
-            <strong>
-              Small observations.
-              <br />
-              Better conversations.
-            </strong>
-            <p>Your feedback helps us improve the next call.</p>
-            <button onClick={() => addNote()}>
-              Share an observation <ArrowUpRight size={16} />
-            </button>
-          </div>
-          <div className="rw-sidebar-bottom">
-            <a href={workspaceHref}>
-              <ArrowLeft size={15} /> Back to workspace
-            </a>
-            {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
-            <small>
-              <ShieldCheck size={14} /> Private client workspace
-            </small>
-            {!demo && (
-              <button
-                onClick={async () => {
-                  await signOut();
-                  qc.removeQueries({
-                    predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
-                  });
-                }}
-              >
-                <LogOut size={14} /> Sign out
-              </button>
-            )}
-          </div>
-        </div>
-      </aside>
-      <div className="rw-shell">
-        <div className="of-pull-status" role="status" aria-live="polite">
-          {pull.refreshing
-            ? "Updating Emma’s calls…"
-            : pull.ready
-              ? "Release to refresh"
-              : pull.distance > 0
-                ? "Pull to refresh"
-                : ""}
-        </div>
-        <header className="rw-topbar">
+      )}
+      {!embedded && (
+        <aside className={`rw-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
+          <a
+            href={workspaceHref}
+            className="rw-brand"
+            aria-label={`${clientDisplayName(w.company)} — back to workspace`}
+          >
+            <ClientHeaderBrand company={w.company} />
+          </a>
           <button
             type="button"
-            onClick={goBack}
-            className="rw-workspace-back"
-            aria-label="Go back to previous page"
+            className="of-mobile-menu-toggle"
+            aria-label={mobileMenuOpen ? "Close receptionist menu" : "Open receptionist menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="receptionist-mobile-navigation"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <ArrowLeft size={17} /> Back
+            {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
           </button>
-          <div>
-            <span className="rw-user-avatar">{(user?.email ?? "M").slice(0, 1).toUpperCase()}</span>
-            <span>{demo ? "Mary’s view · design preview" : user?.email}</span>
+          <div id="receptionist-mobile-navigation" className="rw-mobile-menu-panel">
+            <p className="of-mobile-company">Your Workspace</p>
+            <WorkspaceMenu
+              company={w.company}
+              tenant={demo ? undefined : tenant}
+              active="receptionist"
+            />
+            {(workspaces.data?.length ?? 0) > 1 && (
+              <select
+                aria-label="Company"
+                value={tenant}
+                onChange={(e) => setSelectedTenant(e.target.value)}
+              >
+                {workspaces.data?.map((w) => (
+                  <option key={w.tenant_id} value={w.tenant_id}>
+                    {clientDisplayName(w.company)}
+                  </option>
+                ))}
+              </select>
+            )}
+            <p className="rw-nav-caption">AI RECEPTIONIST</p>
+            <nav aria-label="Receptionist workspace">
+              <a href={workspaceHref} className="rw-workspace-nav">
+                <ArrowLeft size={18} /> Workspace home
+              </a>
+              {views.map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => {
+                    setView(id);
+                    setSearch("");
+                    setReviewOnly(false);
+                    setExperienceFilter("");
+                  }}
+                  className={view === id ? "active" : ""}
+                  aria-current={view === id ? "page" : undefined}
+                >
+                  <Icon size={18} />
+                  {id === "improvements" ? `Make ${w.name} better` : label}
+                  {id === "improvements" && open.length > 0 && <span>{open.length}</span>}
+                </button>
+              ))}
+            </nav>
+            <div className="rw-sidebar-card">
+              <AudioLines size={28} />
+              <strong>
+                Small observations.
+                <br />
+                Better conversations.
+              </strong>
+              <p>Your feedback helps us improve the next call.</p>
+              <button onClick={() => addNote()}>
+                Share an observation <ArrowUpRight size={16} />
+              </button>
+            </div>
+            <div className="rw-sidebar-bottom">
+              <a href={workspaceHref}>
+                <ArrowLeft size={15} /> Back to workspace
+              </a>
+              {!demo && <OpenFolkAdminLink email={user?.email} authorised={operator.data} />}
+              <small>
+                <ShieldCheck size={14} /> Private client workspace
+              </small>
+              {!demo && (
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    qc.removeQueries({
+                      predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
+                    });
+                  }}
+                >
+                  <LogOut size={14} /> Sign out
+                </button>
+              )}
+            </div>
           </div>
-        </header>
-        <main id="receptionist-main" className="rw-main">
+        </aside>
+      )}
+      <div className="rw-shell">
+        {!embedded && (
+          <>
+            <div className="of-pull-status" role="status" aria-live="polite">
+              {pull.refreshing
+                ? "Updating Emma’s calls…"
+                : pull.ready
+                  ? "Release to refresh"
+                  : pull.distance > 0
+                    ? "Pull to refresh"
+                    : ""}
+            </div>
+            <header className="rw-topbar">
+              <button
+                type="button"
+                onClick={goBack}
+                className="rw-workspace-back"
+                aria-label="Go back to previous page"
+              >
+                <ArrowLeft size={17} /> Back
+              </button>
+              <div>
+                <span className="rw-user-avatar">
+                  {(user?.email ?? "M").slice(0, 1).toUpperCase()}
+                </span>
+                <span>{demo ? "Mary’s view · design preview" : user?.email}</span>
+              </div>
+            </header>
+          </>
+        )}
+        <ContentTag id="receptionist-main" className="rw-main">
           {demo && (
             <div className="rw-banner">
               DESIGN PREVIEW · Illustrative calls, not live customer data. No messages or
@@ -741,11 +758,13 @@ export function ReceptionistWorkspace({
             <div>
               {view !== "today" && <p className="rw-eyebrow">THE RECEPTIONIST WORKSPACE</p>}
               <h1>
-                {view === "today"
-                  ? "Your receptionist"
-                  : view === "improvements"
-                    ? `Make ${w.name} better.`
-                    : views.find((v) => v.id === view)?.label + "."}
+                {view === "calls"
+                  ? "Call journal"
+                  : view === "today"
+                    ? "Your receptionist"
+                    : view === "improvements"
+                      ? `Make ${w.name} better.`
+                      : views.find((v) => v.id === view)?.label + "."}
               </h1>
               <p>
                 {view === "today"
@@ -1213,7 +1232,7 @@ export function ReceptionistWorkspace({
             </span>
             <span>Powered by OpenFolk</span>
           </footer>
-        </main>
+        </ContentTag>
       </div>
       <Dialog open={!!healthCard} onOpenChange={(open) => !open && setSelectedHealthCard(null)}>
         <DialogContent className="rw-dialog rw-health-detail">

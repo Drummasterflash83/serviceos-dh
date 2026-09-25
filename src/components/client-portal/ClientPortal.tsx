@@ -1,6 +1,14 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -28,12 +36,13 @@ import { clientDisplayName } from "@/lib/client-brand";
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
+import { receptionistNavigation } from "@/components/receptionist/ReceptionistNavigation";
 import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
-  clientWorkspaceHref,
-  receptionistHref,
+  receptionistView,
   selectedWorkspace,
   type ClientSection,
+  type ReceptionistView,
 } from "@/lib/client-workspace-nav";
 import "@/styles/client-investment.css";
 import "@/styles/client-workspace.css";
@@ -59,8 +68,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+const ReceptionistWorkspace = lazy(() =>
+  import("@/components/receptionist/ReceptionistWorkspace").then((module) => ({
+    default: module.ReceptionistWorkspace,
+  })),
+);
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
+  { id: "receptionist", label: "AI Receptionist", Icon: Headphones },
   { id: "overview", label: "Your programme", Icon: LayoutDashboard },
   { id: "investment", label: "Invoices & delivery", Icon: ShieldCheck },
   { id: "outcomes", label: "Outcomes & investment", Icon: Layers },
@@ -105,9 +120,11 @@ function date(value: string) {
 export function ClientPortal({
   tenantId,
   section = "home",
+  receptionistPage = "today",
 }: {
   tenantId?: string;
   section?: ClientSection;
+  receptionistPage?: ReceptionistView;
 }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -119,6 +136,16 @@ export function ClientPortal({
     setMobileMenuOpen(false);
     void navigate({ to: "/client", search: { tenant: tenantId ?? tenant, section: next } });
   }
+  function openReceptionist(view: ReceptionistView) {
+    setMobileMenuOpen(false);
+    void navigate({
+      to: "/client",
+      search: { tenant: tenantId ?? tenant, section: "receptionist", view },
+    });
+  }
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [section, receptionistPage, tenantId]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const previous = document.body.style.overflow;
@@ -167,7 +194,25 @@ export function ClientPortal({
     },
   });
   const row = selectedWorkspace(programmes.data, tenantId);
-  const tenant = row?.tenant_id;
+  // Existing receptionist-only accounts keep their authorised access when old
+  // /receptionist links enter the shared shell; a programme is not an access grant.
+  const receptionistAccess = useQuery({
+    queryKey: ["client-receptionist-access", user?.id],
+    enabled: !!user && section === "receptionist",
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("receptionist_workspaces")
+        .select("tenant_id,company")
+        .order("company");
+      if (error) throw Error("Your receptionist workspace could not be loaded.");
+      return data ?? [];
+    },
+  });
+  const receptionistWorkspace =
+    section === "receptionist"
+      ? selectedWorkspace(receptionistAccess.data, tenantId ?? row?.tenant_id)
+      : undefined;
+  const tenant = row?.tenant_id ?? receptionistWorkspace?.tenant_id;
   const notes = useQuery({
     queryKey: ["client-programme-notes", user?.id, tenant],
     enabled: !!user && !!tenant,
@@ -240,7 +285,38 @@ export function ClientPortal({
     }
   }
   const p = row?.content;
+  const company = p?.company ?? receptionistWorkspace?.company ?? "Your workspace";
   const admin = operator.data === true && operatorTools;
+  const receptionistContent = tenant ? (
+    <Suspense fallback={<div className="rw-loading">Opening your receptionist…</div>}>
+      <ReceptionistWorkspace
+        key={tenant}
+        tenantId={tenant}
+        embedded
+        initialView={receptionistPage}
+        onViewChange={openReceptionist}
+      />
+    </Suspense>
+  ) : (
+    <div className="cp-empty" role="status">
+      <h1>
+        {receptionistAccess.isPending
+          ? "Opening your receptionist…"
+          : "Your receptionist workspace"}
+      </h1>
+      <p>
+        {receptionistAccess.error?.message ??
+          (!receptionistAccess.isPending
+            ? "A receptionist has not been assigned to this workspace yet."
+            : "")}
+      </p>
+      {receptionistAccess.isError && (
+        <button className="cp-primary" onClick={() => void receptionistAccess.refetch()}>
+          Try again
+        </button>
+      )}
+    </div>
+  );
   const content = !p ? (
     <div className="cp-empty">
       <Layers size={30} />
@@ -698,13 +774,14 @@ export function ClientPortal({
         Skip to workspace
       </a>
       <aside className={`cp-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
-        <a
-          href={clientWorkspaceHref(tenantId ?? tenant)}
+        <Link
+          to="/client"
+          search={{ tenant: tenantId ?? tenant, section: "home" }}
           className="of-wordmark"
-          aria-label={`${clientDisplayName(p?.company ?? "Your workspace")} — workspace home`}
+          aria-label={`${clientDisplayName(company)} — workspace home`}
         >
-          <ClientHeaderBrand company={p?.company ?? "Your workspace"} />
-        </a>
+          <ClientHeaderBrand company={company} />
+        </Link>
         <button
           type="button"
           className="of-mobile-menu-toggle"
@@ -719,9 +796,15 @@ export function ClientPortal({
           <p className="of-mobile-company">Your Workspace</p>
           <div className="cp-workspace-label">CLIENT WORKSPACE</div>
           <WorkspaceMenu
-            company={p?.company ?? "Your workspace"}
+            company={company}
             tenant={tenantId ?? tenant}
-            active={section === "home" ? "home" : "programme"}
+            active={
+              section === "home"
+                ? "home"
+                : section === "receptionist"
+                  ? "receptionist"
+                  : "programme"
+            }
           />
           {(programmes.data?.length ?? 0) > 1 && (
             <label className="cp-field">
@@ -745,25 +828,48 @@ export function ClientPortal({
             </label>
           )}
           <nav aria-label="Client workspace">
-            <a href={receptionistHref(tenantId ?? tenant)} className="cp-emma-nav">
-              <Headphones size={17} /> AI receptionist <ArrowUpRight size={14} />
-            </a>
             {nav
               .filter(({ id }) => id !== "links" || (p?.links.length ?? 0) > 0)
               .map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  className={section === id ? "is-active" : ""}
-                  aria-current={section === id ? "page" : undefined}
-                  onClick={() => {
-                    setSection(id);
-                    setNotice("");
-                    setError("");
-                  }}
-                >
-                  <Icon size={17} />
-                  {label}
-                </button>
+                <Fragment key={id}>
+                  <button
+                    className={section === id ? "is-active" : ""}
+                    aria-current={section === id ? "page" : undefined}
+                    onClick={() => {
+                      setSection(id);
+                      setNotice("");
+                      setError("");
+                    }}
+                  >
+                    <Icon size={17} />
+                    {label}
+                    {id === "receptionist" && (
+                      <ChevronDown
+                        size={14}
+                        className={section === id ? "cp-nav-chevron is-open" : "cp-nav-chevron"}
+                      />
+                    )}
+                  </button>
+                  {id === "receptionist" && section === "receptionist" && (
+                    <div className="cp-receptionist-nav" aria-label="AI Receptionist pages">
+                      {receptionistNavigation.map(({ id: page, label: title }) => (
+                        <button
+                          key={page}
+                          type="button"
+                          className={
+                            receptionistView(receptionistPage) === page ? "is-current" : ""
+                          }
+                          aria-current={
+                            receptionistView(receptionistPage) === page ? "page" : undefined
+                          }
+                          onClick={() => openReceptionist(page)}
+                        >
+                          {title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </Fragment>
               ))}
           </nav>
           <div className="cp-sidebar-bottom">
@@ -809,14 +915,20 @@ export function ClientPortal({
                 : ""}
         </div>
         <header className="cp-topbar">
-          <a className="cp-home-breadcrumb" href={clientWorkspaceHref(tenantId ?? tenant)}>
-            {clientDisplayName(p?.company ?? "Your workspace")} <span>/</span>{" "}
-            {nav.find((n) => n.id === section)?.label}
-          </a>
+          <Link
+            className="cp-home-breadcrumb"
+            to="/client"
+            search={{ tenant: tenantId ?? tenant, section: "home" }}
+          >
+            {clientDisplayName(company)} <span>/</span> {nav.find((n) => n.id === section)?.label}
+          </Link>
           <span className="cp-user">{user?.email}</span>
         </header>
-        <main id="client-main" className="cp-content">
-          {content}
+        <main
+          id="client-main"
+          className={`cp-content${section === "receptionist" ? " cp-receptionist-content" : ""}`}
+        >
+          {section === "receptionist" ? receptionistContent : content}
         </main>
       </div>
     </div>

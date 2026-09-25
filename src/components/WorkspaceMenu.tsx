@@ -1,11 +1,11 @@
 import { ChevronDown, Home, Headphones, Layers, Receipt } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { clientWorkspaceHref, receptionistHref } from "@/lib/client-workspace-nav";
 import { clientDisplayName, hasDrummondsBrand } from "@/lib/client-brand";
 import "@/styles/workspace-navigation.css";
 
@@ -34,30 +34,32 @@ export function WorkspaceMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={8} className="of-workspace-menu">
         <DropdownMenuItem asChild>
-          <a
-            href={clientWorkspaceHref(tenant)}
+          <Link
+            to="/client"
+            search={{ tenant, section: "home" }}
             aria-current={active === "home" ? "page" : undefined}
           >
             <Home size={17} /> Workspace home
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a
-            href={receptionistHref(tenant)}
+          <Link
+            to="/client"
+            search={{ tenant, section: "receptionist", view: "today" }}
             aria-current={active === "receptionist" ? "page" : undefined}
           >
             <Headphones size={17} /> AI Receptionist
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href={clientWorkspaceHref(tenant, "overview")}>
+          <Link to="/client" search={{ tenant, section: "overview" }}>
             <Layers size={17} /> Your programme
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href={clientWorkspaceHref(tenant, "investment")}>
+          <Link to="/client" search={{ tenant, section: "investment" }}>
             <Receipt size={17} /> Invoices & delivery
-          </a>
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
