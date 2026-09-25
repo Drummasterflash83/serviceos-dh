@@ -1,5 +1,30 @@
 # Emma — Practice & improve, 24 September 2026
 
+## 25 September: direct-number launch path
+
+The browser WebRTC path remains without audible acceptance and is no longer the
+primary client test. Practice & improve now displays the configured Vapi test number
+and a `tel:` action. The tester calls it from their own phone (or a computer with a
+calling app), then enters the caller number to find only exact-number calls in the
+latest Vapi page and previous 24 hours. UK national mobile format is normalised to
+`44` format. Withheld numbers and calls outside the recent page cannot be linked by
+this finder; no guessed association is made. The selected call becomes a reviewable
+conversation with provider summary, transcript if supplied, and a fresh private
+recording link. Its feedback stores the exact call ID; history reopens that call
+through a tenant/assistant-scoped provider read. The main number and Birchills
+routing are unchanged. Because this exercises live test-line behaviour, testers must
+use fictional customer details: configured actions might run.
+
+The former right-hand feedback panel is now inside the single practice flow and
+appears after selecting a call or explicitly choosing to send an unlinked idea.
+Typed feedback is editable and reviewed by OpenFolk. The existing Slack dispatcher
+currently posts an ID/link pointer, not full call or feedback transcripts. Full
+transcript delivery and dedicated voice notes require an approved private Slack
+destination and speech-processing/data-retention design; they are not represented as
+complete. Call recording and transcript availability remain provider facts to verify
+with an actual signed-in phone test. The direct-number path is not a claim that
+browser voice has been fixed.
+
 ## Browser media and reservation correction
 
 The actual user attempt created at 2026-09-24T20:07:34.771266Z was confirmed through

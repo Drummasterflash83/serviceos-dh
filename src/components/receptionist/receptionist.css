@@ -800,7 +800,7 @@
 }
 .ep-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(310px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: stretch;
 }
@@ -811,6 +811,139 @@
   color: #fff;
   text-align: center;
   overflow: hidden;
+}
+.ep-phone-start,
+.ep-find-call,
+.ep-phone-result,
+.ep-notes {
+  max-width: 720px;
+  margin: 22px auto !important;
+  text-align: left;
+}
+.ep-phone-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #ffffff50;
+  border-radius: 18px;
+  background: #ffffff16;
+}
+.ep-phone-start strong {
+  font-size: 21px;
+  letter-spacing: 0.02em;
+}
+.ep-phone-start a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 20px;
+  border-radius: 12px;
+  background: #efe2f5;
+  color: #302039;
+  text-decoration: none;
+  font-weight: 700;
+}
+.ep-phone-start small {
+  flex-basis: 100%;
+  color: #dfd3e7;
+  line-height: 1.5;
+}
+.ep-phone-safety {
+  max-width: 720px;
+  margin: 12px auto;
+}
+.ep-find-call,
+.ep-phone-result {
+  padding: 22px;
+  border: 1px solid #ffffff36;
+  border-radius: 18px;
+  background: #ffffff10;
+}
+.ep-find-call h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.ep-find-call p,
+.ep-phone-result p {
+  color: #e8dcec;
+  line-height: 1.6;
+}
+.ep-find-call label {
+  display: block;
+  margin: 16px 0 10px;
+  color: #f6eefa;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ep-find-call input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 13px;
+  border: 1px solid #d7c4e2;
+  border-radius: 10px;
+  background: #fff;
+  color: #33233d;
+  font-size: 16px;
+}
+.ep-call-choices {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.ep-call-choices button {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #ffffff50;
+  border-radius: 10px;
+  background: #ffffff12;
+  color: #fff;
+  text-align: left;
+}
+.ep-call-choices button[aria-pressed="true"] {
+  background: #eadcf5;
+  color: #392443;
+}
+.ep-call-choices small {
+  font-size: 12px;
+}
+.ep-phone-result details {
+  margin: 14px 0;
+}
+.ep-phone-result summary {
+  cursor: pointer;
+}
+.ep-phone-result .rw-preserve {
+  max-height: 260px;
+  overflow: auto;
+}
+.ep-phone-result .rw-recording {
+  color: #34243e;
+}
+.ep-idea-link {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  color: #f2e7f8;
+  text-decoration: underline;
+  font-size: 13px;
+}
+.ep-browser-legacy {
+  max-width: 720px;
+  margin: 20px auto 0;
+  color: #d9cbe1;
+  font-size: 12px;
+  text-align: left;
+}
+.ep-browser-legacy summary {
+  cursor: pointer;
 }
 .ep-kicker {
   color: #d3c0df;
@@ -941,9 +1074,10 @@
   color: #cbbad6;
 }
 .ep-notes {
-  margin: 0 !important;
   display: flex;
   flex-direction: column;
+  background: #fff;
+  color: #3c2b49;
 }
 .ep-notes h2,
 .ep-history h2,
@@ -1091,6 +1225,20 @@
 @media (max-width: 640px) {
   .ep-stage {
     padding: 26px 18px;
+  }
+  .ep-phone-start {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ep-phone-start a {
+    width: 100%;
+  }
+  .ep-phone-start strong {
+    text-align: center;
+  }
+  .ep-find-call,
+  .ep-phone-result {
+    padding: 16px;
   }
   .ep-note > div {
     align-items: flex-start;

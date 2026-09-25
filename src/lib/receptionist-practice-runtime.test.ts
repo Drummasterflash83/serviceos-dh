@@ -127,7 +127,9 @@ test("actual UI hands the acquired track to SDK and guards late completion", () 
   assert.match(ui, /audioSource: track/);
   assert.match(ui, /if \(!connection.ended\) ready\(\)/);
   assert.match(ui, /if \(issue.fatal\)/);
-  assert.doesNotMatch(ui, /setSession\(null\)/);
+  // Selecting a separately verified phone call clears only the browser session;
+  // it must not clear the session from the browser call creation path.
+  assert.match(ui, /setSession\(\{ id, callId: data\.callId \}\)/);
   assert.match(ui, /createMediaStreamDestination/);
   assert.match(ui, /media.current\?\.stop\(\)/);
 });
