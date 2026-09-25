@@ -18,12 +18,16 @@ export function WorkspaceMenu({
   tenant?: string;
   active: "home" | "receptionist" | "programme";
 }) {
+  const isDrummonds = company === "Drummond Heating";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="of-workspace-switch" aria-label={`${company} workspace menu`}>
-          <span className="of-workspace-initial" aria-hidden="true">
-            {company.slice(0, 1)}
+          <span
+            className={`of-workspace-initial${isDrummonds ? " is-drummonds" : ""}`}
+            aria-hidden="true"
+          >
+            {isDrummonds ? <span className="of-drummonds-emblem" /> : company.slice(0, 1)}
           </span>
           <span>
             <strong>{company}</strong>

@@ -37,6 +37,16 @@ test("Drummonds Emma workspace uses the client's mark in white without a logo bo
   assert.match(read("src/components/receptionist/ReceptionistWorkspace.tsx"), /Powered by OpenFolk/);
 });
 
+test("Drummonds workspace menu reuses the supplied emblem in OpenFolk gold", () => {
+  const menu = read("src/components/WorkspaceMenu.tsx");
+  const css = read("src/styles/workspace-navigation.css");
+  assert.match(menu, /company === "Drummond Heating"/);
+  assert.match(menu, /of-drummonds-emblem/);
+  assert.match(css, /Black%20Icon\.png/);
+  assert.match(css, /background: #cc8625/);
+  assert.match(menu, /company\.slice\(0, 1\)/);
+});
+
 test("homepage and login retain their existing responsive sizes", () => {
   for (const path of ["src/components/OpenFolkHome.tsx", "src/routes/login.tsx"]) {
     assert.match(read(path), /<OpenFolkWordmark size="inherit" \/>/);
