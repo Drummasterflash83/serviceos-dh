@@ -1,7 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalizeCall } from "./receptionist-data.ts";
-import { emmaHealthCards, healthCardCalls } from "./emma-health.ts";
+import { emmaHealthCards, healthCardCalls, mainNumberStatus } from "./emma-health.ts";
+
+test("main-number status follows reviewed activation stage without claiming live line health", () => {
+  assert.equal(mainNumberStatus("Testing"), "Main number not activated");
+  assert.equal(mainNumberStatus("Ready"), "Main number not activated");
+  assert.equal(mainNumberStatus("Live"), "Main number marked active");
+  assert.equal(mainNumberStatus("Paused"), "Main number paused");
+  assert.equal(mainNumberStatus(), "Main number status to confirm");
+});
 
 const connected = { connected: true, loading: false, error: false, launchStage: "Ready" };
 const assessed = (id: string, structuredData: Record<string, unknown>) =>
