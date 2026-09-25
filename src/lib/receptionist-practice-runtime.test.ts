@@ -5,11 +5,30 @@ import {
   PracticeLifecycle,
   practiceVoiceError,
   practiceEndedMessage,
+  resolveVapiConstructor,
 } from "./receptionist-practice-runtime.ts";
 import {
   reconcilePracticeSessions,
   practiceReservationFailure,
 } from "../../supabase/functions/_shared/receptionist-web-call.ts";
+
+test("voice constructor handles direct, ESM and CommonJS dynamic-import shapes", () => {
+  class Voice {
+    reconnect() {}
+    stop() {}
+  }
+  for (const shape of [Voice, { default: Voice }, { default: { default: Voice } }])
+    assert.equal(resolveVapiConstructor(shape), Voice);
+  for (const shape of [null, {}, { default: {} }, () => null])
+    assert.throws(() => resolveVapiConstructor(shape), /No test call was placed/);
+});
+test("the installed Vapi package dynamically imports to a usable constructor", async () => {
+  const module = await import("@vapi-ai/web");
+  const Voice = resolveVapiConstructor(module);
+  const client = new Voice("");
+  assert.equal(typeof client.reconnect, "function");
+  assert.equal(typeof client.stop, "function");
+});
 
 test("end before delayed join never resurrects a call", async () => {
   const lifecycle = new PracticeLifecycle();
@@ -28,6 +47,36 @@ test("only one readiness event starts the call timer; terminal state is final", 
   assert.equal(lifecycle.ready(), true);
   assert.equal(lifecycle.ready(), false);
   assert.equal(lifecycle.end(), true);
+  assert.equal(lifecycle.ready(), false);
+});
+test("duplicate SDK readiness cannot rebind the microphone while the first bind is pending", async () => {
+  const lifecycle = new PracticeLifecycle();
+  let finishBind!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    finishBind = resolve;
+  });
+  let binds = 0;
+  let timers = 0;
+  async function onStart() {
+    if (!lifecycle.beginReadiness()) return;
+    binds++;
+    await pending;
+    if (lifecycle.ready()) timers++;
+  }
+  const first = onStart();
+  await onStart();
+  assert.equal(binds, 1);
+  finishBind();
+  await first;
+  await onStart();
+  assert.equal(binds, 1);
+  assert.equal(timers, 1);
+});
+test("hang-up during microphone preparation prevents a late ready state", async () => {
+  const lifecycle = new PracticeLifecycle();
+  assert.equal(lifecycle.beginReadiness(), true);
+  assert.equal(lifecycle.end(), true);
+  assert.equal(lifecycle.beginReadiness(), false);
   assert.equal(lifecycle.ready(), false);
 });
 test("optional audio enhancement failure does not terminate a connected conversation", () => {
@@ -125,12 +174,22 @@ test("actual UI checks microphone before reservation and guards late completion"
     "utf8",
   );
   assert.match(ui, /getUserMedia\(\{ audio: true \}\)/);
+  assert.match(ui, /resolveVapiConstructor\(await import\("@vapi-ai\/web"\)\)/);
+  assert.ok(
+    ui.indexOf("new VapiClient(") < ui.indexOf('action: "start"'),
+    "SDK construction must succeed before a provider call is reserved",
+  );
   assert.match(
     ui,
     /const voice = new VapiClient\("", undefined, undefined, \{ audioSource: track \}\)/,
   );
   assert.match(ui, /voice\.on\("call-start", \(\) => void ready\(\)\)/);
   assert.match(ui, /await voice\.setInputDevicesAsync\(\{ audioSource: track \}\)/);
+  assert.ok(
+    ui.indexOf("if (!connection.beginReadiness()) return") <
+      ui.indexOf("await voice.setInputDevicesAsync"),
+    "Readiness must be claimed before touching the microphone",
+  );
   assert.doesNotMatch(ui, /if \(!connection.ended\) ready\(\)/);
   assert.match(ui, /await microphoneHasSignal\(track\)/);
   assert.match(ui, /if \(issue.fatal\)/);

@@ -1,3 +1,27 @@
+import type Vapi from "@vapi-ai/web";
+
+// Vapi 2.x ships CommonJS (`exports.default`). Production dynamic imports can
+// wrap it as {default: {default: Vapi}}, unlike Vite's development interop.
+// Resolve and validate before reserving a paid call, not after creating it.
+export function resolveVapiConstructor(module: unknown): typeof Vapi {
+  let candidate = module;
+  for (let depth = 0; depth < 3; depth++) {
+    if (typeof candidate === "function") {
+      if (
+        typeof candidate.prototype?.reconnect === "function" &&
+        typeof candidate.prototype?.stop === "function"
+      )
+        return candidate as typeof Vapi;
+      break;
+    }
+    if (!candidate || typeof candidate !== "object") break;
+    candidate = (candidate as { default?: unknown }).default;
+  }
+  throw Error(
+    "The voice client could not load. Refresh this page before trying again. No test call was placed.",
+  );
+}
+
 // SDK errors include recoverable audio-enhancement failures. Never hang up merely
 // because optional noise cancellation could not start.
 export function practiceVoiceError(value: unknown) {
@@ -75,6 +99,14 @@ export async function microphoneHasSignal(track: MediaStreamTrack, timeoutMs = 8
 export class PracticeLifecycle {
   private finished = false;
   private connected = false;
+  private preparing = false;
+  // The SDK can emit call-start from both the join completion and its
+  // "listening" message. Claim readiness before any asynchronous device work.
+  beginReadiness() {
+    if (this.finished || this.connected || this.preparing) return false;
+    this.preparing = true;
+    return true;
+  }
   ready() {
     if (this.finished || this.connected) return false;
     this.connected = true;
