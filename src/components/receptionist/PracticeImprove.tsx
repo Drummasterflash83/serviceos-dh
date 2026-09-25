@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, PhoneOff, Headphones, Send, MessageSquare } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Headphones, Send, MessageSquare, ChevronDown } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { type ReceptionistCall } from "@/lib/receptionist-data";
 import { callBrief } from "@/lib/receptionist-review";
@@ -8,6 +8,7 @@ import {
   PracticeLifecycle,
   practiceVoiceError,
   practiceEndedMessage,
+  microphoneHasSignal,
 } from "@/lib/receptionist-practice-runtime";
 import type Vapi from "@vapi-ai/web";
 import { CallRecording } from "./CallRecording";
@@ -112,7 +113,8 @@ export function PracticeImprove({
     [transcript, setTranscript] = useState<{ role: string; text: string }[]>([]);
   const [noticed, setNoticed] = useState(""),
     [sending, setSending] = useState(false),
-    [saved, setSaved] = useState<string | null>(null);
+    [saved, setSaved] = useState<string | null>(null),
+    [expandedSession, setExpandedSession] = useState<string | null>(null);
   const submission = useRef(crypto.randomUUID()),
     pendingPayload = useRef<Record<string, unknown> | null>(null);
   const notes = useQuery({
@@ -258,6 +260,11 @@ export function PracticeImprove({
         throw Error(
           "No working microphone was found. Check your input device before trying again.",
         );
+      setConnectionNote("Say ‘hello’ now so we can check your microphone before calling Emma…");
+      if (!(await microphoneHasSignal(track)))
+        throw Error(
+          "Your microphone is connected but no sound is coming through. Check the selected input and its volume, then try again. No test call was placed.",
+        );
       if (!alive.current || attempt !== generation.current) return;
       setConnectionNote("Preparing Emma’s secure connection…");
       const { default: VapiClient } = await import("@vapi-ai/web");
@@ -292,13 +299,27 @@ export function PracticeImprove({
         if (alive.current && attempt === generation.current && connection.ready()) {
           if (timer.current) clearTimeout(timer.current);
           setState("active");
-          setConnectionNote("Microphone connected. You can speak to Emma.");
+          setConnectionNote(
+            "Call connected. Speak to Emma; your microphone was checked before joining.",
+          );
           timer.current = setTimeout(() => stop(), data.maxSeconds * 1000);
         }
       };
       voice.on("call-start", ready);
+      voice.on("call-start-progress", (event) => {
+        if (alive.current && attempt === generation.current && event.stage === "daily-call-join")
+          setConnectionNote(
+            event.status === "started"
+              ? "Connecting your microphone to Emma…"
+              : "Audio connection joined. Waiting for Emma…",
+          );
+      });
       voice.on("call-end", () => {
         if (alive.current && attempt === generation.current && connection.end()) {
+          if (!connection.wasReady)
+            setError(
+              "The call ended before audio was ready. Open the saved test below to see the provider’s reason.",
+            );
           setState("ended");
           endedAt.current = Date.now();
           setMuted(false);
@@ -351,7 +372,8 @@ export function PracticeImprove({
         await voice.stop();
         return;
       }
-      if (!connection.ended) ready();
+      // Only the SDK's call-start event can confirm a joined call. A resolved
+      // reconnect promise alone is not proof that customer audio reached Vapi.
     } catch (e) {
       if (alive.current && attempt === generation.current) {
         setError(
@@ -623,26 +645,63 @@ export function PracticeImprove({
             );
             return (
               <article key={test.id} className="ep-test-row">
-                <div>
-                  <strong>{new Date(test.created_at).toLocaleString("en-GB")}</strong>
-                  <span className="rw-pill">{n ? "With feedback" : "Without feedback"}</span>
+                <button
+                  type="button"
+                  className="ep-test-toggle"
+                  aria-expanded={expandedSession === test.id}
+                  aria-controls={`ep-test-detail-${test.id}`}
+                  onClick={() => setExpandedSession(expandedSession === test.id ? null : test.id)}
+                >
+                  <span className="ep-test-main">
+                    <strong>
+                      <time dateTime={test.created_at}>
+                        {new Intl.DateTimeFormat("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(test.created_at))}
+                      </time>
+                    </strong>
+                    <small>
+                      {tester} · {test.state === "ended" ? "Call ended" : "Test call"}
+                    </small>
+                  </span>
+                  <span className="ep-test-trailing">
+                    <span className="rw-pill">{n ? "With feedback" : "No feedback yet"}</span>
+                    <ChevronDown size={18} aria-hidden="true" />
+                  </span>
+                </button>
+                <div
+                  id={`ep-test-detail-${test.id}`}
+                  hidden={expandedSession !== test.id}
+                  className="ep-test-detail"
+                >
+                  {n && (
+                    <p className="rw-preserve">
+                      <strong>Your feedback</strong>
+                      <br />
+                      {n.body}
+                    </p>
+                  )}
+                  {n && (
+                    <small>
+                      {delivery.isError
+                        ? "Slack status unavailable"
+                        : d?.state === "sent"
+                          ? "Delivered to Slack"
+                          : d?.state === "failed"
+                            ? "Saved · Slack delivery needs attention"
+                            : "Saved · Slack delivery pending"}
+                    </small>
+                  )}
+                  <PracticeEvidence
+                    tenant={tenant}
+                    sessionId={test.id}
+                    viewerId={userId!}
+                    expanded={expandedSession === test.id}
+                  />
                 </div>
-                <small>
-                  {tester} · {test.state === "ended" ? "Call ended" : "Call saved"}
-                </small>
-                {n && <p className="rw-preserve">{n.body}</p>}
-                {n && (
-                  <small>
-                    {delivery.isError
-                      ? "Slack status unavailable"
-                      : d?.state === "sent"
-                        ? "Delivered to Slack"
-                        : d?.state === "failed"
-                          ? "Saved · Slack delivery needs attention"
-                          : "Saved · Slack delivery pending"}
-                  </small>
-                )}
-                <PracticeEvidence tenant={tenant} sessionId={test.id} viewerId={userId!} />
               </article>
             );
           })
@@ -713,15 +772,18 @@ export function PracticeEvidence({
   tenant,
   sessionId,
   viewerId,
+  expanded,
 }: {
   tenant: string;
   sessionId: string;
   viewerId: string;
+  expanded?: boolean;
 }) {
   const [opened, setOpened] = useState(false);
+  const visible = expanded ?? opened;
   const evidence = useQuery({
     queryKey: ["receptionist-practice-evidence", viewerId, tenant, sessionId],
-    enabled: opened,
+    enabled: visible,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().functions.invoke("receptionist-practice", {
         body: { tenantId: tenant, action: "result", sessionId },
@@ -733,10 +795,12 @@ export function PracticeEvidence({
   });
   return (
     <div className="ep-evidence">
-      <button className="rw-text-btn" onClick={() => setOpened(!opened)}>
-        {opened ? "Hide" : "Open"} practice conversation
-      </button>
-      {opened &&
+      {expanded === undefined && (
+        <button className="rw-text-btn" onClick={() => setOpened(!opened)}>
+          {opened ? "Hide" : "Open"} practice conversation
+        </button>
+      )}
+      {visible &&
         (evidence.isPending ? (
           <p>Loading conversation…</p>
         ) : evidence.isError ? (
