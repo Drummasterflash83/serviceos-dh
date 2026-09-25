@@ -1,6 +1,7 @@
 import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Phone,
@@ -194,7 +195,8 @@ export function ReceptionistWorkspace({
   const { user, signOut } = useAuth();
   const db = getSupabaseClient();
   const qc = useQueryClient();
-  const [view, setView] = useState<View>(
+  const navigate = useNavigate();
+  const [view, setViewState] = useState<View>(
       views.some((v) => v.id === initialView) ? (initialView as View) : "today",
     ),
     [selectedTenant, setSelectedTenant] = useState(tenantId ?? ""),
@@ -231,6 +233,18 @@ export function ReceptionistWorkspace({
   const tenant = w?.tenant_id;
   const info = useEmmaInfo(tenant ?? "", user?.id, demo);
   const workspaceHref = clientWorkspaceHref(demo ? undefined : tenant);
+  function setView(next: View) {
+    if (next === view) return;
+    setViewState(next);
+    void navigate({
+      to: "/receptionist",
+      search: { tenant: demo ? undefined : tenant, demo: demo ? "1" : undefined, view: next },
+    });
+  }
+  function goBack() {
+    if (window.history.length > 1) window.history.back();
+    else window.location.assign(workspaceHref);
+  }
   const operator = useQuery({
     queryKey: ["receptionist-operator", user?.id],
     enabled: !!user && !demo,
@@ -347,6 +361,9 @@ export function ReceptionistWorkspace({
   useEffect(() => {
     setSelectedTenant(tenantId ?? "");
   }, [tenantId]);
+  useEffect(() => {
+    setViewState(views.some((item) => item.id === initialView) ? (initialView as View) : "today");
+  }, [initialView]);
   useEffect(() => {
     setSelectedCall(null);
     setComposer(false);
@@ -612,9 +629,14 @@ export function ReceptionistWorkspace({
       </aside>
       <div className="rw-shell">
         <header className="rw-topbar">
-          <a href={workspaceHref} className="rw-workspace-back">
-            <ArrowLeft size={17} /> Back to workspace
-          </a>
+          <button
+            type="button"
+            onClick={goBack}
+            className="rw-workspace-back"
+            aria-label="Go back to previous page"
+          >
+            <ArrowLeft size={17} /> Back
+          </button>
           <div>
             <span className="rw-user-avatar">{(user?.email ?? "M").slice(0, 1).toUpperCase()}</span>
             <span>{demo ? "Mary’s view · design preview" : user?.email}</span>

@@ -241,9 +241,13 @@
   min-width: 0;
 }
 .rw-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   height: 74px;
   border-bottom: 1px solid var(--line);
-  background: #fff9;
+  background: rgba(250, 249, 246, 0.96);
+  backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -251,6 +255,10 @@
   font-size: 11px;
   color: #787381;
   gap: 15px;
+}
+.rw-topbar .rw-workspace-back {
+  border: 0;
+  cursor: pointer;
 }
 .rw-topbar > span > span {
   margin: 0 12px;
@@ -2247,7 +2255,7 @@
     font-size: 12px;
     min-height: 44px;
   }
-  .rw-topbar > a {
+  .rw-topbar .rw-workspace-back {
     font-size: 12px;
   }
   .rw-call-row .rw-caller > strong {
