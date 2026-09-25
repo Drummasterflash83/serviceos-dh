@@ -1,5 +1,41 @@
 # Emma — Practice & improve, 24 September 2026
 
+## 25 September: in-app practice correction (pending audible acceptance)
+
+The primary flow is now Test Emma inside the authenticated app → hang up →
+provider conversation/recording/transcript in the same panel → typed report bound
+to the exact practice session and call. Caller-number search and the external
+`tel:` workflow are removed from this page. The menu is Overview, Practise and
+improve, Make Emma better, People who called, Phone system, About your
+receptionist. The Drummonds sidebar uses the white Drummonds mark; Powered by
+OpenFolk remains in the footer. Reports are newest first without the previous
+explanatory preamble.
+
+Vapi documents a 15-second default web-join timeout and identifies
+`assistant-did-not-receive-customer-audio` as the outcome when permission/network/
+WebRTC join exceeds it. Our safe transient assistant now allows 60 seconds and
+the browser lets the Vapi SDK own its audio input after a pre-reservation
+microphone permission check. This is a grounded fix candidate, not an audible
+acceptance claim. Web practice talks to a safe projection of the same assistant;
+it does not dial the Vapi phone number or exercise Birchills/PSTN transfer.
+
+Chris confirmed all backend reports belong in OpenFolk Slack. The existing
+`RECEPTIONIST_SLACK_DRUMMONDS` webhook was independently identified in the
+private `#dh` channel of the **Openfolk** workspace (OpenFolk Alerts connection
+test there, 22 September). The dispatcher now includes typed feedback and a
+tenant/session-verified provider transcript for completed practice calls. The
+recording stays behind the authenticated app link; it is not a public Slack URL.
+If Vapi has not supplied a transcript, Slack explicitly says so. Oversized
+reports link to the app instead of silently truncating. A sent receipt still
+requires Slack's success response.
+
+Chris approved typed reports first. Voice-note recording/transcription is not
+claimed or enabled yet: it needs a defined processor, retention and secure
+storage path. The browser's implicit speech-recognition service is not used.
+
+References: https://docs.vapi.ai/calls/customer-join-timeout and
+https://docs.vapi.ai/quickstart/web.
+
 ## 25 September: direct-number launch path
 
 The browser WebRTC path remains without audible acceptance and is no longer the

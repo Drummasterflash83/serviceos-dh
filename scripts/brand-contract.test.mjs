@@ -4,13 +4,12 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("all public and client headers use the approved shared wordmark", () => {
+test("OpenFolk public and workspace headers use the approved shared wordmark", () => {
   for (const path of [
     "src/components/OpenFolkHome.tsx",
     "src/routes/login.tsx",
     "src/components/Nav.tsx",
     "src/components/client-portal/ClientPortal.tsx",
-    "src/components/receptionist/ReceptionistWorkspace.tsx",
   ]) {
     const text = read(path);
     assert.match(text, /<OpenFolkWordmark[\s/>]/, path);
@@ -29,15 +28,13 @@ test("brand remains lowercase, navy/white and gold, without a backing box or ico
   assert.doesNotMatch(source, /background|borderRadius|padding|<img|<svg|●/);
 });
 
-test("Emma uses the dark-background variant without legacy dot styling", () => {
+test("Drummonds Emma workspace uses the client's mark in white without a logo box", () => {
   assert.match(
     read("src/components/receptionist/ReceptionistWorkspace.tsx"),
-    /<OpenFolkWordmark onDark \/>/,
+    /w\.company === "Drummond Heating"[\s\S]*src="\/brand\/drummond-logo\.png"/,
   );
-  assert.doesNotMatch(
-    read("src/components/receptionist/receptionist.css"),
-    /\.rw-brand > span\s*\{/,
-  );
+  assert.match(read("src/components/receptionist/receptionist.css"), /\.rw-brand \.rw-client-logo\s*\{\s*filter: brightness\(0\) invert\(1\)/);
+  assert.match(read("src/components/receptionist/ReceptionistWorkspace.tsx"), /Powered by OpenFolk/);
 });
 
 test("homepage and login retain their existing responsive sizes", () => {

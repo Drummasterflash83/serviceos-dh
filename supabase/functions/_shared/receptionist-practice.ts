@@ -171,6 +171,9 @@ export function practiceAssistant(source: unknown, queryToolIds: string[]) {
       "backoffSeconds",
     ]),
     maxDurationSeconds: PRACTICE_SECONDS,
+    // Vapi's default web join window is only 15 seconds. Mobile permission
+    // prompts and the WebRTC handshake can legitimately take longer.
+    customerJoinTimeoutSeconds: 60,
     silenceTimeoutSeconds: 30,
     clientMessages: ["transcript", "status-update"],
     serverMessages: [],

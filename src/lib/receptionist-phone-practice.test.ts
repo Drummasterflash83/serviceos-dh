@@ -2,17 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-test("phone practice only binds an explicitly selected, exact-number Vapi call", () => {
+test("practice connects in the app and binds the exact reserved session", () => {
   const ui = readFileSync(
     new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(ui, /callerDigits\(call\.number\) === callerDigits\(userPhone\)/);
-  assert.match(ui, /Date\.parse\(call\.createdAt\) > Date\.now\(\) - 24/);
-  assert.match(ui, /call_id: selectedPhoneCall\?\.id/);
-  assert.match(ui, /disabled=\{!!pendingPayload\.current\}/);
-  assert.match(ui, /<PhonePracticeEvidence/);
-  assert.match(ui, /action: "detail", callId/);
+  assert.match(ui, /Test \{name\}/);
+  assert.match(ui, /voice\.reconnect\(\{ webCallUrl: data\.webCallUrl, id: data\.callId \}\)/);
+  assert.match(ui, /practice_session_id: session\?\.id/);
+  assert.match(ui, /call_id: session\?\.callId/);
+  assert.match(ui, /key=\{session\.id\}/);
+  assert.doesNotMatch(ui, /Find my call|callerDigits|href=\{dialHref\}/);
 });
 
 test("detail and recording requests are tenant-scoped and assistant-verified", () => {
@@ -26,12 +26,12 @@ test("detail and recording requests are tenant-scoped and assistant-verified", (
   assert.match(edge, /recordingLink\(body\.callId, w\.assistant_id, key\)/);
 });
 
-test("direct test number does not activate the main number or send voice data to another provider", () => {
+test("web practice does not claim to verify the phone route or use unapproved speech processing", () => {
   const ui = readFileSync(
     new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(ui, /href=\{dialHref\}/);
-  assert.match(ui, /main-number route is unchanged/);
-  assert.doesNotMatch(ui, /SpeechRecognition|MediaRecorder/);
+  assert.match(ui, /not the phone transfer or Birchills route/);
+  assert.match(ui, /cannot change customer records/);
+  assert.doesNotMatch(ui, /SpeechRecognition/);
 });

@@ -17,5 +17,5 @@ test("Overview omits the call toolbar while call browsing keeps its controls", (
 });
 test("Overview is independent of hidden call-browser filters", () => {
   assert.match(source, /view === "today"\s*\? calls\s*:\s*calls\.filter/);
-  assert.ok(source.includes("Each card uses the available call records."));
+  assert.match(source, /emmaHealthCards\(calls,\s*\{/);
 });
