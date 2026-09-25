@@ -1,17 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Mic,
-  MicOff,
-  PhoneOff,
-  Phone,
-  RefreshCw,
-  Headphones,
-  Send,
-  ArrowRight,
-  MessageSquare,
-  ShieldCheck,
-} from "lucide-react";
+import { Mic, MicOff, PhoneOff, Headphones, Send, MessageSquare } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { type ReceptionistCall } from "@/lib/receptionist-data";
 import { callBrief } from "@/lib/receptionist-review";
@@ -86,15 +75,10 @@ type SavedNote = {
   practice_session_id: string | null;
   call_id: string | null;
 };
-const callerDigits = (value: string | null) => {
-  const digits = (value ?? "").replace(/\D/g, "");
-  return digits.startsWith("0") && digits.length === 11 ? `44${digits.slice(1)}` : digits;
-};
 export function PracticeImprove({
   tenant,
   userId,
   name,
-  testNumber,
   demo,
   active,
   info,
@@ -102,7 +86,6 @@ export function PracticeImprove({
   tenant: string;
   userId?: string;
   name: string;
-  testNumber: string | null;
   demo: boolean;
   active: boolean;
   info: ReturnType<typeof useEmmaInfo>;
@@ -114,6 +97,7 @@ export function PracticeImprove({
     lifecycle = useRef<PracticeLifecycle | null>(null),
     alive = useRef(true),
     generation = useRef(0),
+    endedAt = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [state, setState] = useState<"idle" | "connecting" | "active" | "ended">("idle"),
     [muted, setMuted] = useState(false),
@@ -121,11 +105,8 @@ export function PracticeImprove({
     [connectionNote, setConnectionNote] = useState(""),
     [scenario, setScenario] = useState(scenarios[0]);
   const [session, setSession] = useState<{ id: string; callId: string | null } | null>(null),
-    [selectedPhoneCall, setSelectedPhoneCall] = useState<ReceptionistCall | null>(null),
     [showFeedback, setShowFeedback] = useState(false),
-    [userPhone, setUserPhone] = useState(""),
-    [excerpt, setExcerpt] = useState(""),
-    [mode, setMode] = useState("conversation");
+    [transcript, setTranscript] = useState<{ role: string; text: string }[]>([]);
   const [noticed, setNoticed] = useState(""),
     [change, setChange] = useState(""),
     [sending, setSending] = useState(false),
@@ -148,46 +129,6 @@ export function PracticeImprove({
       return data as SavedNote[];
     },
   });
-  const phoneCalls = useQuery({
-    queryKey: ["receptionist-practice-phone-calls", userId, tenant],
-    enabled: !!userId && !demo && active,
-    queryFn: async () => {
-      const { data, error } = await db.functions.invoke("receptionist-calls", {
-        body: { tenantId: tenant, before: null },
-      });
-      if (error || data?.error || !Array.isArray(data?.calls))
-        throw Error("Recent calls could not be checked. Your feedback is still safe.");
-      return (data.calls as ReceptionistCall[]).filter((call) => call.type !== "webCall");
-    },
-    staleTime: 0,
-  });
-  const dialHref =
-    testNumber && /^\+?[\d\s()-]+$/.test(testNumber)
-      ? `tel:${testNumber.replace(/[^\d+]/g, "")}`
-      : null;
-  const matchingPhoneCalls =
-    callerDigits(userPhone).length >= 8
-      ? (phoneCalls.data ?? []).filter(
-          (call) =>
-            callerDigits(call.number) === callerDigits(userPhone) &&
-            Date.parse(call.createdAt) > Date.now() - 24 * 60 * 60 * 1000,
-        )
-      : [];
-  const phoneDetail = useQuery({
-    queryKey: ["receptionist-practice-selected-call", userId, tenant, selectedPhoneCall?.id],
-    enabled: !!selectedPhoneCall && !!userId && !demo && active,
-    queryFn: async () => {
-      const { data, error } = await db.functions.invoke("receptionist-calls", {
-        body: { tenantId: tenant, action: "detail", callId: selectedPhoneCall!.id },
-      });
-      if (error || data?.error || !data?.call)
-        throw Error(
-          "Full call details could not be loaded. Retry before reviewing the transcript.",
-        );
-      return data.call as ReceptionistCall;
-    },
-  });
-  const reviewCall = phoneDetail.data ?? selectedPhoneCall;
   const delivery = useQuery({
     queryKey: ["receptionist-practice-delivery", userId, tenant],
     enabled: !!userId && !demo && active,
@@ -207,19 +148,23 @@ export function PracticeImprove({
   const result = useQuery({
     queryKey: ["receptionist-practice-result", userId, tenant, session?.id],
     enabled: !!session?.callId && state === "ended" && !demo,
-    refetchInterval: active ? 15000 : false,
+    refetchInterval: (query) =>
+      active &&
+      endedAt.current > 0 &&
+      Date.now() - endedAt.current < 60000 &&
+      !query.state.data?.transcript
+        ? 3000
+        : false,
     queryFn: async () => {
       const { data, error } = await db.functions.invoke("receptionist-practice", {
         body: { tenantId: tenant, action: "result", sessionId: session!.id },
       });
-      if (error || data?.error)
-        throw Error(
-          "Conversation summary is not available yet. You can still send your observation.",
-        );
+      if (error || data?.error) throw Error("Conversation is still processing. Try again shortly.");
       return data.call as ReceptionistCall | null;
     },
   });
   function stop() {
+    endedAt.current = Date.now();
     lifecycle.current?.end();
     generation.current++;
     if (timer.current) clearTimeout(timer.current);
@@ -255,7 +200,7 @@ export function PracticeImprove({
       setState((s) => (s === "active" || s === "connecting" ? "ended" : s));
     }
   }, [active]);
-  async function start(nextMode: "listen" | "conversation") {
+  async function start() {
     if (demo || state === "active" || state === "connecting") return;
     if (!info.data?.enabled) {
       setError(
@@ -274,53 +219,32 @@ export function PracticeImprove({
     const connection = new PracticeLifecycle();
     lifecycle.current = connection;
     setState("connecting");
-    setMode(nextMode);
+    endedAt.current = 0;
     setError("");
     setConnectionNote("Preparing audio…");
-    setExcerpt("");
+    setTranscript([]);
+    setShowFeedback(false);
     setSaved(null);
     setMuted(false);
     try {
-      let track: MediaStreamTrack;
-      if (nextMode === "conversation") {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (!alive.current || attempt !== generation.current) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        media.current = { stop: () => stream.getTracks().forEach((t) => t.stop()) };
-        track = stream.getAudioTracks()[0];
-        if (!track || track.readyState !== "live")
-          throw Error(
-            "No working microphone was found. Check your input device before trying again.",
-          );
-      } else {
-        // Daily needs an audio track even for welcome-only playback. A silent
-        // generated track avoids opening/recording the visitor's microphone.
-        const context = new AudioContext();
-        const destination = context.createMediaStreamDestination();
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        gain.gain.value = 0;
-        oscillator.connect(gain).connect(destination);
-        oscillator.start();
-        media.current = {
-          stop: () => {
-            destination.stream.getTracks().forEach((t) => t.stop());
-            oscillator.stop();
-            void context.close();
-          },
-        };
-        await context.resume();
-        track = destination.stream.getAudioTracks()[0];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!alive.current || attempt !== generation.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
       }
+      media.current = { stop: () => stream.getTracks().forEach((t) => t.stop()) };
+      const track = stream.getAudioTracks()[0];
+      if (!track || track.readyState !== "live")
+        throw Error(
+          "No working microphone was found. Check your input device before trying again.",
+        );
       if (!alive.current || attempt !== generation.current) return;
       setConnectionNote("Preparing Emma’s secure connection…");
       const { default: VapiClient } = await import("@vapi-ai/web");
       if (!alive.current || attempt !== generation.current) return;
       const id = crypto.randomUUID();
       const { data, error } = await db.functions.invoke("receptionist-practice", {
-        body: { tenantId: tenant, action: "start", sessionId: id, mode: nextMode },
+        body: { tenantId: tenant, action: "start", sessionId: id, mode: "conversation" },
       });
       if (!alive.current || attempt !== generation.current) return;
       if (error || data?.error) {
@@ -339,20 +263,17 @@ export function PracticeImprove({
         );
       }
       setSession({ id, callId: data.callId });
-      setSelectedPhoneCall(null);
-      const voice = new VapiClient("", undefined, undefined, {
-        audioSource: track,
-      });
+      // The SDK owns the browser microphone lifecycle. We still obtain consent
+      // before reserving a paid Vapi call, then release our preflight track.
+      media.current?.stop();
+      media.current = null;
+      const voice = new VapiClient("");
       sdk.current = voice;
       const ready = () => {
         if (alive.current && attempt === generation.current && connection.ready()) {
           if (timer.current) clearTimeout(timer.current);
           setState("active");
-          setConnectionNote(
-            nextMode === "listen"
-              ? "Listening to Emma — your microphone is not being used."
-              : "Microphone connected. You can speak to Emma.",
-          );
+          setConnectionNote("Microphone connected. You can speak to Emma.");
           timer.current = setTimeout(() => stop(), data.maxSeconds * 1000);
         }
       };
@@ -360,6 +281,7 @@ export function PracticeImprove({
       voice.on("call-end", () => {
         if (alive.current && attempt === generation.current && connection.end()) {
           setState("ended");
+          endedAt.current = Date.now();
           setMuted(false);
           setConnectionNote("Conversation ended. Checking the call record…");
           if (timer.current) clearTimeout(timer.current);
@@ -391,7 +313,10 @@ export function PracticeImprove({
           m.transcriptType === "final" &&
           typeof m.transcript === "string"
         )
-          setExcerpt(`${m.role === "assistant" ? name : "You"}: ${m.transcript}`);
+          setTranscript((lines) => [
+            ...lines,
+            { role: m.role === "assistant" ? name : "You", text: m.transcript! },
+          ]);
       });
       setConnectionNote("Connecting microphone and speaker…");
       timer.current = setTimeout(() => {
@@ -423,21 +348,28 @@ export function PracticeImprove({
   }
   async function send(e: FormEvent) {
     e.preventDefault();
-    if (sending || state === "connecting" || !userId || demo || (!noticed.trim() && !change.trim()))
+    if (
+      sending ||
+      state === "connecting" ||
+      state === "active" ||
+      !userId ||
+      demo ||
+      (!noticed.trim() && !change.trim())
+    )
       return;
     setSending(true);
     setError("");
     const payload = pendingPayload.current ?? {
       tenant_id: tenant,
-      call_id: selectedPhoneCall?.id ?? session?.callId ?? null,
-      practice_session_id: selectedPhoneCall ? null : (session?.id ?? null),
+      call_id: session?.callId ?? null,
+      practice_session_id: session?.id ?? null,
       submission_key: submission.current,
       category: "improvement",
       priority: "normal",
       title: `Practice & improve · ${scenario}`,
       body: [
         `Scenario: ${scenario}`,
-        `Mode: ${selectedPhoneCall ? "Phone test to Emma's number" : session ? mode : "Written feedback — no practice call"}`,
+        `Mode: ${session ? "In-app conversation" : "Written feedback — no practice call"}`,
         noticed.trim() ? `What I noticed:\n${noticed.trim()}` : "",
         change.trim() ? `What I would like changed:\n${change.trim()}` : "",
       ]
@@ -485,42 +417,19 @@ export function PracticeImprove({
     <div className="ep" hidden={!active}>
       <div className="ep-grid">
         <section className="ep-stage" aria-label="Practice conversation">
-          <span className="ep-kicker">THE REAL TEST LINE · NO MAIN-NUMBER CHANGE</span>
+          <span className="ep-kicker">A PRIVATE CONVERSATION, RIGHT HERE</span>
           <div className="ep-orb" aria-hidden="true">
             <Headphones size={46} />
           </div>
           <h2>Get to know {name}.</h2>
           <p>
-            Call her test number and speak as a caller would. When you return, find your call here,
-            listen back, and tell OpenFolk what to improve.
+            Speak to {name} in the app. End the conversation, hear it back and send one clear report
+            to OpenFolk.
           </p>
-          {dialHref ? (
-            <div className="ep-phone-start">
-              <strong>{testNumber}</strong>
-              <a
-                href={dialHref}
-                onClick={() => {
-                  if (pendingPayload.current) return;
-                  setSelectedPhoneCall(null);
-                  setSession(null);
-                }}
-              >
-                <Phone size={19} /> Call {name}'s test number
-              </a>
-              <small>
-                On a computer this opens your calling app if one is configured. Otherwise dial the
-                number from your phone.
-              </small>
-            </div>
-          ) : (
-            <p role="alert" className="ep-connection">
-              The test number is not configured. Ask OpenFolk to verify it before testing.
-            </p>
-          )}
           <p className="ep-phone-safety">
-            Use fictional customer details. This is Emma’s live test-line behaviour, so her
-            configured actions may run. The call uses provider minutes and may be recorded.
-            Drummonds’ main-number route is unchanged.
+            Allow microphone access and use fictional customer details. This tests Emma’s voice and
+            answers, not the phone transfer or Birchills route. Practice is recorded, uses provider
+            minutes and cannot change customer records.
           </p>
           <div className="ep-scenarios" aria-label="Practice scenario">
             {scenarios.map((s) => (
@@ -534,210 +443,134 @@ export function PracticeImprove({
               </button>
             ))}
           </div>
-          <div className="ep-find-call">
-            <div>
-              <h3>Find your conversation</h3>
-              <p>
-                After your call, enter the number you called from. Only matching recent calls can be
-                linked.
-              </p>
-            </div>
-            <label>
-              Your calling number, including country code
-              <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={userPhone}
-                disabled={!!pendingPayload.current}
-                onChange={(event) => {
-                  setUserPhone(event.target.value);
-                  setSelectedPhoneCall(null);
-                }}
-                placeholder="+44…"
-              />
-            </label>
-            <button
-              type="button"
-              className="rw-btn rw-btn-light"
-              disabled={demo || phoneCalls.isFetching || callerDigits(userPhone).length < 8}
-              onClick={() => void phoneCalls.refetch()}
-            >
-              <RefreshCw size={17} /> {phoneCalls.isFetching ? "Checking calls…" : "Find my call"}
-            </button>
-            {phoneCalls.isError && <p role="alert">{phoneCalls.error.message}</p>}
-            {callerDigits(userPhone).length >= 8 &&
-              !phoneCalls.isFetching &&
-              !matchingPhoneCalls.length && (
-                <p>
-                  No matching call in the latest 100 records yet. It may take a moment to appear;
-                  check the number and try again.
-                </p>
-              )}
-            {!!matchingPhoneCalls.length && (
-              <div className="ep-call-choices" aria-label="Your recent calls to Emma">
-                {matchingPhoneCalls.map((call) => (
-                  <button
-                    type="button"
-                    key={call.id}
-                    aria-pressed={selectedPhoneCall?.id === call.id}
-                    disabled={!!pendingPayload.current}
-                    onClick={() => {
-                      setSelectedPhoneCall(call);
-                      setSession(null);
-                      setShowFeedback(true);
-                      setSaved(null);
-                    }}
-                  >
-                    <span>{new Date(call.createdAt).toLocaleString("en-GB")}</span>
-                    <small>{callBrief(call).text}</small>
+          <div className="ep-call-console">
+            <div className="ep-controls">
+              {speaking ? (
+                <>
+                  <button className="rw-btn rw-btn-primary" onClick={stop}>
+                    <PhoneOff size={18} /> {state === "connecting" ? "Cancel" : "Hang up"}
                   </button>
+                  {state === "active" && (
+                    <button
+                      className="rw-btn rw-btn-light"
+                      aria-pressed={muted}
+                      onClick={() => {
+                        sdk.current?.setMuted(!muted);
+                        setMuted(!muted);
+                      }}
+                    >
+                      {muted ? <MicOff size={18} /> : <Mic size={18} />} {muted ? "Unmute" : "Mute"}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button
+                    className="rw-btn rw-btn-primary"
+                    disabled={demo || info.isPending}
+                    onClick={() => void start()}
+                  >
+                    <Mic size={18} /> Test {name}
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                className="rw-btn rw-btn-light"
+                disabled={speaking || !session?.callId}
+                onClick={() => setShowFeedback(true)}
+              >
+                <MessageSquare size={18} /> Give feedback
+              </button>
+            </div>
+            <div className="ep-live-caption" role="status">
+              {state === "connecting"
+                ? connectionNote
+                : state === "active"
+                  ? "You’re speaking with Emma."
+                  : state === "ended"
+                    ? "Conversation ended."
+                    : "Ready when you are."}
+            </div>
+            {!!transcript.length && (
+              <div className="ep-transcript" aria-label="Live conversation transcript">
+                {transcript.map((line, index) => (
+                  <p key={`${index}-${line.role}`}>
+                    <strong>{line.role}</strong> {line.text}
+                  </p>
                 ))}
               </div>
             )}
-          </div>
-          {selectedPhoneCall && (
-            <div className="ep-phone-result">
-              <strong>That’s your conversation</strong>
-              {phoneDetail.isPending && <p>Loading the full call record…</p>}
-              {phoneDetail.isError && (
-                <p role="alert">
-                  {phoneDetail.error.message}{" "}
-                  <button type="button" onClick={() => void phoneDetail.refetch()}>
-                    Retry
-                  </button>
-                </p>
-              )}
-              <p>{callBrief(reviewCall!).text}</p>
-              {reviewCall?.transcript ? (
-                <details>
-                  <summary>Read the conversation transcript</summary>
-                  <p className="rw-preserve">{reviewCall.transcript}</p>
-                </details>
-              ) : (
-                <small>
-                  Transcript not supplied yet. Refresh calls after Vapi finishes processing.
-                </small>
-              )}
-              <CallRecording tenant={tenant} call={reviewCall!} demo={demo} />
-            </div>
-          )}
-          <button type="button" className="ep-idea-link" onClick={() => setShowFeedback(true)}>
-            Have an idea without a call? Send it to OpenFolk <ArrowRight size={15} />
-          </button>
-          <details className="ep-browser-legacy">
-            <summary>Why isn’t browser voice the main test?</summary>
-            <p>
-              The browser microphone connection has ended before audio reached Emma. We have paused
-              it as a launch route; the direct test number exercises the actual phone experience.
-            </p>
-            <div hidden>
-              <div className="ep-controls">
-                {speaking ? (
+            {state === "ended" && result.data && practiceEndedMessage(result.data.endedReason) && (
+              <p className="rw-footnote" role="status">
+                {practiceEndedMessage(result.data.endedReason)}
+              </p>
+            )}
+            {state === "ended" && session?.callId && (
+              <div className="ep-phone-result">
+                <strong>Your conversation</strong>
+                {result.data ? (
                   <>
-                    <button className="rw-btn rw-btn-primary" onClick={stop}>
-                      <PhoneOff size={18} />{" "}
-                      {state === "connecting" ? "Cancel" : "End conversation"}
-                    </button>
-                    {mode === "conversation" && state === "active" && (
-                      <button
-                        className="rw-btn rw-btn-light"
-                        aria-pressed={muted}
-                        onClick={() => {
-                          sdk.current?.setMuted(!muted);
-                          setMuted(!muted);
-                        }}
-                      >
-                        {muted ? <MicOff size={18} /> : <Mic size={18} />}{" "}
-                        {muted ? "Unmute" : "Mute"}
-                      </button>
+                    <p>{callBrief(result.data).text}</p>
+                    {result.data.transcript ? (
+                      <details>
+                        <summary>Read the full transcript</summary>
+                        <p className="rw-preserve">{result.data.transcript}</p>
+                      </details>
+                    ) : (
+                      <small>Transcript is still processing or was not supplied.</small>
                     )}
+                    <CallRecording
+                      key={session.id}
+                      tenant={tenant}
+                      call={result.data}
+                      demo={demo}
+                      practiceSessionId={session.id}
+                    />
                   </>
                 ) : (
-                  <>
-                    <button
-                      className="rw-btn rw-btn-primary"
-                      disabled={demo || info.isPending}
-                      onClick={() => void start("conversation")}
-                    >
-                      <Mic size={18} /> Talk to {name}
-                    </button>
-                    <button
-                      className="rw-btn rw-btn-light"
-                      disabled={demo || info.isPending}
-                      onClick={() => void start("listen")}
-                    >
-                      <Headphones size={18} /> Hear her welcome
-                    </button>
-                  </>
-                )}
-              </div>
-              <div className="ep-live-caption" role="status">
-                {state === "connecting"
-                  ? connectionNote
-                  : excerpt ||
-                    (state === "ended" ? "Conversation ended." : connectionNote) ||
-                    "Your conversation appears here as you speak."}
-              </div>
-              {state === "ended" &&
-                result.data &&
-                practiceEndedMessage(result.data.endedReason) && (
-                  <p className="rw-footnote" role="status">
-                    {practiceEndedMessage(result.data.endedReason)}
+                  <p>
+                    {result.isError ? result.error.message : "Preparing recording and transcript…"}
                   </p>
                 )}
-              {result.data && (
-                <div className="ep-recap">
-                  <strong>Your conversation</strong>
-                  <p>{callBrief(result.data).text}</p>
-                  <small>{callBrief(result.data).source}</small>
-                </div>
-              )}
-              {result.data && session && (
-                <CallRecording
-                  key={session.id}
-                  tenant={tenant}
-                  call={result.data}
-                  demo={demo}
-                  practiceSessionId={session.id}
-                />
-              )}
-              {result.isError && <p className="rw-footnote">{result.error.message}</p>}
-              <p className="ep-safety">
-                <ShieldCheck size={16} /> Practice only. No staff phones ring and no appointments or
-                customer records change.
+                <button
+                  type="button"
+                  className="rw-btn rw-btn-light"
+                  onClick={() => void result.refetch()}
+                >
+                  Check recording
+                </button>
+              </div>
+            )}
+            <small className="ep-limit">
+              Up to 3 minutes · recorded for your review · 10 sessions per person and 30 per
+              workspace in 24 hours
+            </small>
+            {!info.data?.enabled && (
+              <p className="ep-connection">
+                {demo
+                  ? "Design preview — voice is not connected."
+                  : info.isPending
+                    ? "Checking the voice connection…"
+                    : info.isError
+                      ? info.error.message
+                      : (info.data?.unavailableReason ??
+                        "Voice practice is awaiting OpenFolk verification. You can send feedback now.")}{" "}
+                {!demo && !info.isPending && (
+                  <button onClick={() => void info.refetch()} disabled={info.isFetching}>
+                    Recheck connection
+                  </button>
+                )}
               </p>
-              <small className="ep-limit">
-                Up to 3 minutes. Practice audio is recorded for review and uses provider minutes. 10
-                sessions per person / 30 per workspace in 24 hours. Browser practice does not test
-                the telephone transfer.
-              </small>
-              {!info.data?.enabled && (
-                <p className="ep-connection">
-                  {demo
-                    ? "Design preview — voice is not connected."
-                    : info.isPending
-                      ? "Checking the voice connection…"
-                      : info.isError
-                        ? info.error.message
-                        : (info.data?.unavailableReason ??
-                          "Voice practice is awaiting OpenFolk verification. You can send feedback now.")}{" "}
-                  {!demo && !info.isPending && (
-                    <button onClick={() => void info.refetch()} disabled={info.isFetching}>
-                      Recheck connection
-                    </button>
-                  )}
-                </p>
-              )}
-            </div>
-          </details>
-          {(showFeedback || !!selectedPhoneCall) && (
+            )}
+          </div>
+          {(showFeedback || (state === "ended" && !!session?.callId)) && (
             <section className="rw-panel ep-notes">
               <span className="rw-eyebrow">KEEP THE LEARNING WITH THE CALL</span>
               <h2>Help {name} get better</h2>
               <p>
                 Tell us what happened and what you’d like changed. Your note is saved with the
-                selected conversation; OpenFolk will review it before changing Emma.
+                conversation above; OpenFolk will review it before changing Emma.
               </p>
               <form onSubmit={(e) => void send(e)}>
                 <label>
@@ -761,23 +594,21 @@ export function PracticeImprove({
                   />
                 </label>
                 <small>
-                  {selectedPhoneCall?.id
-                    ? "This phone conversation is attached to your feedback."
+                  {session?.callId
+                    ? "This exact conversation is attached to your feedback."
                     : "This idea has no call attached."}{" "}
                   Feedback does not change Emma automatically.
                 </small>
                 <button
                   className="rw-btn rw-btn-primary"
-                  disabled={
-                    demo || sending || state === "connecting" || (!noticed.trim() && !change.trim())
-                  }
+                  disabled={demo || sending || speaking || (!noticed.trim() && !change.trim())}
                 >
                   <Send size={17} />
                   {sending
                     ? "Saving…"
                     : pendingPayload.current
                       ? "Check & retry submission"
-                      : "Send to OpenFolk"}
+                      : "Send report"}
                 </button>
               </form>
               {saved && (
@@ -797,15 +628,11 @@ export function PracticeImprove({
       <section className="rw-panel ep-history">
         <div className="rw-panel-title">
           <div>
-            <span className="rw-eyebrow">A VISIBLE IMPROVEMENT LOOP</span>
-            <h2>Your feedback & our response</h2>
+            <span className="rw-eyebrow">LATEST FIRST</span>
+            <h2>Your reports</h2>
           </div>
           <MessageSquare size={25} />
         </div>
-        <p>
-          Sent by you · latest 30 observations. OpenFolk reviews, makes the change, then invites you
-          to check it again.
-        </p>
         {notes.isError ? (
           <p role="alert">
             {notes.error.message} <button onClick={() => void notes.refetch()}>Retry</button>
@@ -813,9 +640,7 @@ export function PracticeImprove({
         ) : notes.isPending && !demo ? (
           <p>Loading your observations…</p>
         ) : !notes.data?.length ? (
-          <div className="ep-empty">
-            <ArrowRight size={20} /> Your first observation starts the conversation.
-          </div>
+          <div className="ep-empty">Your completed reports will appear here.</div>
         ) : (
           notes.data.map((n) => {
             const d = delivery.data?.find(

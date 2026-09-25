@@ -119,17 +119,15 @@ test("failed reconciliation write is not silently treated as successful", async 
     ),
   );
 });
-test("actual UI hands the acquired track to SDK and guards late completion", () => {
+test("actual UI checks microphone before reservation and guards late completion", () => {
   const ui = readFileSync(
     new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(ui, /audioSource: track/);
+  assert.match(ui, /getUserMedia\(\{ audio: true \}\)/);
+  assert.match(ui, /const voice = new VapiClient\(""\)/);
   assert.match(ui, /if \(!connection.ended\) ready\(\)/);
   assert.match(ui, /if \(issue.fatal\)/);
-  // Selecting a separately verified phone call clears only the browser session;
-  // it must not clear the session from the browser call creation path.
   assert.match(ui, /setSession\(\{ id, callId: data\.callId \}\)/);
-  assert.match(ui, /createMediaStreamDestination/);
   assert.match(ui, /media.current\?\.stop\(\)/);
 });

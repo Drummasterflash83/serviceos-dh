@@ -89,6 +89,7 @@ test("actual legacy Google model knowledge becomes a safe query using the exact 
   };
   const before = JSON.stringify(input);
   const result = practiceAssistant(input, []);
+  assert.equal(result.customerJoinTimeoutSeconds, 60);
   assert.equal(result.model.tools?.length, 1);
   assert.equal(result.model.tools?.[0].function?.name, "openfolk_practice_knowledge");
   assert.deepEqual(result.model.tools?.[0].knowledgeBases[0].fileIds, [query]);

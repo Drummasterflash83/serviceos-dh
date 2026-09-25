@@ -57,7 +57,6 @@ import {
 } from "@/components/ui/dialog";
 import "./receptionist.css";
 import { PhonePlanner } from "./PhonePlanner";
-import { OpenFolkWordmark } from "@/components/OpenFolkWordmark";
 import { CallRecording } from "./CallRecording";
 import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
@@ -98,11 +97,10 @@ type Page = {
 type View = "today" | "calls" | "callers" | "improvements" | "details" | "phones" | "practice";
 const views = [
   { id: "today", label: "Overview", Icon: LayoutDashboard },
-  { id: "calls", label: "Call journal", Icon: Phone },
-  { id: "callers", label: "People who called", Icon: Users },
-  { id: "practice", label: "Practice & improve", Icon: Mic },
-  { id: "phones", label: "Phone system", Icon: Phone },
+  { id: "practice", label: "Practise and improve", Icon: Mic },
   { id: "improvements", label: "Make Emma better", Icon: Sparkles },
+  { id: "callers", label: "People who called", Icon: Users },
+  { id: "phones", label: "Phone system", Icon: Phone },
   { id: "details", label: "About your receptionist", Icon: SlidersHorizontal },
 ] as const;
 const stages = ["New", "Reviewing", "In progress", "Ready to test", "Resolved"];
@@ -122,7 +120,7 @@ const time = (s: string) =>
   });
 const demoWorkspace: Workspace = {
   tenant_id: "demo",
-  company: "Drummonds",
+  company: "Drummond Heating",
   name: "Emma",
   role: "AI receptionist",
   phone_number: "+44 7426 924154",
@@ -592,8 +590,16 @@ export function ReceptionistWorkspace({
         Skip to dashboard
       </a>
       <aside className={`rw-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`}>
-        <a href={workspaceHref} className="rw-brand" aria-label="OpenFolk — back to workspace">
-          <OpenFolkWordmark onDark />
+        <a
+          href={workspaceHref}
+          className="rw-brand"
+          aria-label={`${w.company} — back to workspace`}
+        >
+          {w.company === "Drummond Heating" ? (
+            <img className="rw-client-logo" src="/brand/drummond-logo.png" alt="Drummonds" />
+          ) : (
+            <span>{w.company}</span>
+          )}
         </a>
         <button
           type="button"
@@ -878,6 +884,37 @@ export function ReceptionistWorkspace({
                   ))}
                 </div>
               </section>
+              <section className="rw-panel rw-emma-roadmap" aria-label="Where Emma is heading">
+                <div className="rw-panel-title">
+                  <div>
+                    <p className="rw-eyebrow">BUILT AROUND YOUR BUSINESS</p>
+                    <h2>Where Emma is heading</h2>
+                  </div>
+                </div>
+                <div className="rw-emma-roadmap-steps">
+                  <div>
+                    <small>NOW</small>
+                    <strong>Answer and learn</strong>
+                    <span>See calls, spot confusion and tell us what to improve.</span>
+                  </div>
+                  <div>
+                    <small>NEXT</small>
+                    <strong>Know the caller</strong>
+                    <span>Connect verified conversations with customer and site cards.</span>
+                  </div>
+                  <div>
+                    <small>THEN</small>
+                    <strong>Know the work</strong>
+                    <span>
+                      Use linked job, asset and team context to guide the right next step.
+                    </span>
+                  </div>
+                </div>
+                <p>
+                  Each connection will be checked before Emma uses it. She won’t guess which
+                  customer or job a call belongs to.
+                </p>
+              </section>
               <section className="rw-panel rw-journal">
                 <div className="rw-panel-title">
                   <div>
@@ -995,11 +1032,12 @@ export function ReceptionistWorkspace({
             <>
               <div className="rw-board-intro">
                 <p>
-                  Your team’s observations and OpenFolk’s responses, in one place.
+                  Tell us what Emma missed. We review it, improve her, and ask you to test the
+                  change.
                   <br />
                   <small>
-                    Urgent flags are highlighted here. WhatsApp and phone escalation are not
-                    connected yet.
+                    Over time, verified customer, site and job cards will help Emma give more useful
+                    answers.
                   </small>
                 </p>
                 <button className="rw-btn" onClick={() => addNote()}>
@@ -1095,7 +1133,6 @@ export function ReceptionistWorkspace({
               tenant={tenant}
               userId={user?.id}
               name={w.name}
-              testNumber={w.phone_number}
               demo={demo}
               active={view === "practice"}
               info={info}
