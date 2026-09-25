@@ -15,6 +15,21 @@ export type EmmaHealthCard = {
   flaggedIds: string[];
 };
 
+// This is the reviewed launch configuration, not a live Birchills line-health check.
+export function mainNumberStatus(launchStage?: string) {
+  switch (launchStage) {
+    case "Testing":
+    case "Ready":
+      return "Main number not activated";
+    case "Live":
+      return "Main number marked active";
+    case "Paused":
+      return "Main number paused";
+    default:
+      return "Main number status to confirm";
+  }
+}
+
 const negativeTone = /^(angry|upset|frustrated|unhappy|negative|dissatisfied|distressed)$/i;
 const knownTone =
   /^(positive|neutral|happy|satisfied|calm|angry|upset|frustrated|unhappy|negative|dissatisfied|distressed)$/i;

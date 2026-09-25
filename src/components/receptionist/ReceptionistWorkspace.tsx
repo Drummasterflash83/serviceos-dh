@@ -31,7 +31,12 @@ import { useAuth } from "@/lib/auth";
 import { clientWorkspaceHref, selectedWorkspace } from "@/lib/client-workspace-nav";
 import { getSupabaseClient } from "@/lib/supabase";
 import { callerGroups, durationLabel, type ReceptionistCall } from "@/lib/receptionist-data";
-import { emmaHealthCards, healthCardCalls, type EmmaHealthCardId } from "@/lib/emma-health";
+import {
+  emmaHealthCards,
+  healthCardCalls,
+  mainNumberStatus,
+  type EmmaHealthCardId,
+} from "@/lib/emma-health";
 import {
   callBrief,
   experienceCards,
@@ -757,6 +762,17 @@ export function ReceptionistWorkspace({
                     <span className="rw-eyebrow">{w.name.toUpperCase()} · YOUR RECEPTIONIST</span>
                     <strong>{healthCards[0].headline}</strong>
                     <span>{healthCards[0].summary}</span>
+                    {!demo && (
+                      <small>
+                        {connected
+                          ? "Call data connected to OpenFolk"
+                          : callsQuery.isError
+                            ? "Call data needs a check"
+                            : "Call data awaiting update"}
+                        {" · "}
+                        {mainNumberStatus(w.launch_stage)}
+                      </small>
+                    )}
                     <small>
                       {demo
                         ? "Illustrative preview"
@@ -1040,14 +1056,17 @@ export function ReceptionistWorkspace({
                     ["Receptionist", w.name],
                     ["Company", w.company],
                     ["Role", w.role],
-                    ["Recorded launch stage", w.launch_stage],
+                    ["Phone routing", mainNumberStatus(w.launch_stage)],
                     ["Configured number", w.phone_number ?? "To confirm"],
                     ["Knowledge / prompt", w.knowledge_version ?? "To verify with Vapi"],
                     [
                       "Configuration reviewed",
                       w.reviewed_at ? date(w.reviewed_at) : "Awaiting live verification",
                     ],
-                    ["Call evidence", connected ? "Connected to Vapi" : "Connection pending"],
+                    [
+                      "Call evidence",
+                      connected ? "Call data connected to OpenFolk" : "Call data awaiting update",
+                    ],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <dt>{k}</dt>
