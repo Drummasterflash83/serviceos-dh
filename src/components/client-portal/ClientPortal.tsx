@@ -710,7 +710,14 @@ export function ClientPortal({
           {mobileMenuOpen ? <CloseIcon size={23} /> : <Menu size={23} />}
         </button>
         <div id="client-mobile-navigation" className="cp-mobile-menu-panel">
-          <p className="of-mobile-company">{p?.company ?? "Your workspace"}</p>
+          <p
+            className={`of-mobile-company${p?.company === "Drummond Heating" ? " is-drummonds" : ""}`}
+          >
+            {p?.company === "Drummond Heating" && (
+              <span className="of-drummonds-emblem" aria-hidden="true" />
+            )}
+            {p?.company ?? "Your workspace"}
+          </p>
           <div className="cp-workspace-label">CLIENT WORKSPACE</div>
           <WorkspaceMenu
             company={p?.company ?? "Your workspace"}
