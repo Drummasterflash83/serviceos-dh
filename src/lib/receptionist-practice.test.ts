@@ -42,6 +42,7 @@ test("practice checks live microphone audio before reserving a call and has expa
   );
   assert.ok(ui.indexOf("await microphoneHasSignal(track)") < ui.indexOf('action: "start"'));
   assert.match(ui, /No test call was placed/);
+  assert.match(ui, /setState\(providerCreated\.current \? "ended" : "idle"\)/);
   assert.match(ui, /aria-expanded=\{expandedSession === test\.id\}/);
   assert.match(ui, /expanded=\{expandedSession === test\.id\}/);
   assert.match(ui, /Only the SDK's call-start event can confirm a joined call/);
