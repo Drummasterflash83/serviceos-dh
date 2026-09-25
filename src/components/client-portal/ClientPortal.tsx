@@ -33,7 +33,6 @@ import { useAuth } from "@/lib/auth";
 import { ClientInvestment } from "./ClientInvestment";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
-import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
 import { WorkspaceHome } from "./WorkspaceHome";
 import { receptionistNavigation } from "@/components/receptionist/ReceptionistNavigation";
@@ -795,17 +794,6 @@ export function ClientPortal({
         <div id="client-mobile-navigation" className="cp-mobile-menu-panel">
           <p className="of-mobile-company">Your Workspace</p>
           <div className="cp-workspace-label">CLIENT WORKSPACE</div>
-          <WorkspaceMenu
-            company={company}
-            tenant={tenantId ?? tenant}
-            active={
-              section === "home"
-                ? "home"
-                : section === "receptionist"
-                  ? "receptionist"
-                  : "programme"
-            }
-          />
           {(programmes.data?.length ?? 0) > 1 && (
             <label className="cp-field">
               <span>Client programme</span>
