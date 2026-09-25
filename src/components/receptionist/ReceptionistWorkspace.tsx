@@ -1095,6 +1095,7 @@ export function ReceptionistWorkspace({
               tenant={tenant}
               userId={user?.id}
               name={w.name}
+              testNumber={w.phone_number}
               demo={demo}
               active={view === "practice"}
               info={info}

@@ -1,6 +1,6 @@
 // Read-only Vapi view. Does not ingest duplicate interactions or alter the assistant.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { scopedCalls, record } from "../_shared/receptionist-data.ts";
+import { scopedCalls, record, normalizeCall } from "../_shared/receptionist-data.ts";
 import { recordingLink } from "../_shared/receptionist-recording.ts";
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -33,8 +33,25 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (error || !w) return reply({ error: "Workspace unavailable" }, 403);
     const key = Deno.env.get(w.vapi_secret_name);
-    if (body.action && body.action !== "recording")
+    if (body.action && body.action !== "recording" && body.action !== "detail")
       return reply({ error: "Unsupported action" }, 400);
+    if (body.action === "detail") {
+      if (!key) return reply({ error: "Call connection unavailable" }, 503);
+      if (
+        typeof body.callId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.callId)
+      )
+        return reply({ error: "Invalid call reference" }, 400);
+      const call = await fetch(`https://api.vapi.ai/call/${body.callId}`, {
+        headers: { Authorization: `Bearer ${key}` },
+        redirect: "manual",
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!call.ok) return reply({ error: "Call unavailable" }, 404);
+      const raw = record(await call.json());
+      if (raw.assistantId !== w.assistant_id) return reply({ error: "Call unavailable" }, 404);
+      return reply({ call: normalizeCall(raw) });
+    }
     if (body.action === "recording") {
       if (!key) return reply({ error: "Recording connection unavailable" }, 503);
       try {
