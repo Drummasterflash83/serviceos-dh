@@ -2081,14 +2081,10 @@
   color: #675776;
   margin-bottom: 5px;
 }
-.rw-coverage,
 .rw-queue-help {
   font-size: 12px;
   color: #645c70;
   line-height: 1.65;
-}
-.rw-coverage {
-  margin: 12px 0 22px;
 }
 .rw-queue-help {
   padding: 0 24px;

@@ -773,11 +773,6 @@ export function ReceptionistWorkspace({
                   Details <ArrowRight size={15} />
                 </button>
               </section>
-              <p className="rw-coverage">
-                {w.launch_note} Call totals below cover {visible.length} loaded records in this view
-                {callsQuery.hasNextPage ? "; more history is available in Conversations" : ""}.
-                Practice and pre-launch calls are not customer satisfaction statistics.
-              </p>
               <section className="rw-metrics" aria-label="Call metrics">
                 <Metric
                   label="Calls in this view"
