@@ -1132,6 +1132,7 @@ export function ReceptionistWorkspace({
               key={`practice:${tenant}:${user?.id}`}
               tenant={tenant}
               userId={user?.id}
+              tester={user?.email ?? "Signed-in tester"}
               name={w.name}
               demo={demo}
               active={view === "practice"}

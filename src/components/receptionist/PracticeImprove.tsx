@@ -56,14 +56,6 @@ export function useEmmaInfo(tenant: string, userId: string | undefined, demo: bo
     },
   });
 }
-const scenarios = [
-  "A named person",
-  "Booking or appointment",
-  "An invoice question",
-  "A job update",
-  "An unhappy caller",
-  "My own scenario",
-];
 type SavedNote = {
   id: string;
   title: string;
@@ -75,9 +67,16 @@ type SavedNote = {
   practice_session_id: string | null;
   call_id: string | null;
 };
+type PracticeSession = {
+  id: string;
+  call_id: string | null;
+  state: string;
+  created_at: string;
+};
 export function PracticeImprove({
   tenant,
   userId,
+  tester,
   name,
   demo,
   active,
@@ -85,6 +84,7 @@ export function PracticeImprove({
 }: {
   tenant: string;
   userId?: string;
+  tester: string;
   name: string;
   demo: boolean;
   active: boolean;
@@ -102,13 +102,15 @@ export function PracticeImprove({
   const [state, setState] = useState<"idle" | "connecting" | "active" | "ended">("idle"),
     [muted, setMuted] = useState(false),
     [error, setError] = useState(""),
-    [connectionNote, setConnectionNote] = useState(""),
-    [scenario, setScenario] = useState(scenarios[0]);
-  const [session, setSession] = useState<{ id: string; callId: string | null } | null>(null),
+    [connectionNote, setConnectionNote] = useState("");
+  const [session, setSession] = useState<{
+      id: string;
+      callId: string | null;
+      startedAt: string;
+    } | null>(null),
     [showFeedback, setShowFeedback] = useState(false),
     [transcript, setTranscript] = useState<{ role: string; text: string }[]>([]);
   const [noticed, setNoticed] = useState(""),
-    [change, setChange] = useState(""),
     [sending, setSending] = useState(false),
     [saved, setSaved] = useState<string | null>(null);
   const submission = useRef(crypto.randomUUID()),
@@ -123,10 +125,28 @@ export function PracticeImprove({
         .select("id,title,body,status,response,version,created_at,practice_session_id,call_id")
         .eq("tenant_id", tenant)
         .eq("author_id", userId!)
+        .not("practice_session_id", "is", null)
         .order("created_at", { ascending: false })
         .limit(30);
       if (error) throw Error("Your improvement history is unavailable");
       return data as SavedNote[];
+    },
+  });
+  const sessions = useQuery({
+    queryKey: ["receptionist-practice-sessions", userId, tenant],
+    enabled: !!userId && !demo,
+    refetchInterval: active ? 15000 : false,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("receptionist_practice_sessions")
+        .select("id,call_id,state,created_at")
+        .eq("tenant_id", tenant)
+        .eq("author_id", userId!)
+        .not("call_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw Error("Your test calls are unavailable");
+      return data as PracticeSession[];
     },
   });
   const delivery = useQuery({
@@ -209,7 +229,7 @@ export function PracticeImprove({
       );
       return;
     }
-    if ((noticed.trim() || change.trim()) && !saved) {
+    if (noticed.trim() && !saved) {
       setError(
         "Send or clear your current feedback before starting another conversation, so it stays linked to the right call.",
       );
@@ -262,12 +282,11 @@ export function PracticeImprove({
             : "Voice could not connect. The call status is unconfirmed; wait five minutes before a new attempt.",
         );
       }
-      setSession({ id, callId: data.callId });
-      // The SDK owns the browser microphone lifecycle. We still obtain consent
-      // before reserving a paid Vapi call, then release our preflight track.
-      media.current?.stop();
-      media.current = null;
-      const voice = new VapiClient("");
+      setSession({ id, callId: data.callId, startedAt: new Date().toISOString() });
+      // Keep the already-authorised, live microphone track through Daily's
+      // join. Releasing it here left Vapi with no customer audio on some
+      // browsers, causing the call to end before the tester could speak.
+      const voice = new VapiClient("", undefined, undefined, { audioSource: track });
       sdk.current = voice;
       const ready = () => {
         if (alive.current && attempt === generation.current && connection.ready()) {
@@ -354,7 +373,7 @@ export function PracticeImprove({
       state === "active" ||
       !userId ||
       demo ||
-      (!noticed.trim() && !change.trim())
+      !noticed.trim()
     )
       return;
     setSending(true);
@@ -366,15 +385,8 @@ export function PracticeImprove({
       submission_key: submission.current,
       category: "improvement",
       priority: "normal",
-      title: `Practice & improve · ${scenario}`,
-      body: [
-        `Scenario: ${scenario}`,
-        `Mode: ${session ? "In-app conversation" : "Written feedback — no practice call"}`,
-        noticed.trim() ? `What I noticed:\n${noticed.trim()}` : "",
-        change.trim() ? `What I would like changed:\n${change.trim()}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n\n"),
+      title: "Emma test feedback",
+      body: noticed.trim(),
     };
     pendingPayload.current = payload;
     try {
@@ -400,7 +412,6 @@ export function PracticeImprove({
       }
       setSaved(id!);
       setNoticed("");
-      setChange("");
       pendingPayload.current = null;
       submission.current = crypto.randomUUID();
       await qc.invalidateQueries({
@@ -431,18 +442,6 @@ export function PracticeImprove({
             answers, not the phone transfer or Birchills route. Practice is recorded, uses provider
             minutes and cannot change customer records.
           </p>
-          <div className="ep-scenarios" aria-label="Practice scenario">
-            {scenarios.map((s) => (
-              <button
-                key={s}
-                disabled={speaking || !!pendingPayload.current}
-                aria-pressed={scenario === s}
-                onClick={() => setScenario(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
           <div className="ep-call-console">
             <div className="ep-controls">
               {speaking ? (
@@ -477,7 +476,7 @@ export function PracticeImprove({
               <button
                 type="button"
                 className="rw-btn rw-btn-light"
-                disabled={speaking || !session?.callId}
+                disabled={speaking || !session?.callId || state !== "ended"}
                 onClick={() => setShowFeedback(true)}
               >
                 <MessageSquare size={18} /> Give feedback
@@ -507,39 +506,60 @@ export function PracticeImprove({
               </p>
             )}
             {state === "ended" && session?.callId && (
-              <div className="ep-phone-result">
-                <strong>Your conversation</strong>
+              <div className="ep-current-call">
+                <div className="ep-current-call-header">
+                  <strong>Your test call</strong>
+                  <small>
+                    {new Date(session.startedAt).toLocaleString("en-GB")} · {tester}
+                  </small>
+                </div>
                 {result.data ? (
                   <>
-                    <p>{callBrief(result.data).text}</p>
-                    {result.data.transcript ? (
-                      <details>
-                        <summary>Read the full transcript</summary>
-                        <p className="rw-preserve">{result.data.transcript}</p>
-                      </details>
+                    {result.data.status === "ended" && <p>{callBrief(result.data).text}</p>}
+                    {result.data.status === "ended" ? (
+                      <CallRecording
+                        key={session.id}
+                        tenant={tenant}
+                        call={result.data}
+                        demo={demo}
+                        practiceSessionId={session.id}
+                        autoLoad
+                      />
                     ) : (
-                      <small>Transcript is still processing or was not supplied.</small>
+                      <p>Finishing your call record…</p>
                     )}
-                    <CallRecording
-                      key={session.id}
-                      tenant={tenant}
-                      call={result.data}
-                      demo={demo}
-                      practiceSessionId={session.id}
-                    />
                   </>
                 ) : (
-                  <p>
-                    {result.isError ? result.error.message : "Preparing recording and transcript…"}
+                  <p>{result.isError ? result.error.message : "Preparing your call record…"}</p>
+                )}
+                {showFeedback && (
+                  <form className="ep-inline-feedback" onSubmit={(e) => void send(e)}>
+                    <label htmlFor="emma-test-feedback">What should Emma do differently?</label>
+                    <textarea
+                      id="emma-test-feedback"
+                      value={noticed}
+                      maxLength={3500}
+                      disabled={sending || !!pendingPayload.current}
+                      onChange={(e) => setNoticed(e.target.value)}
+                      placeholder="Tell OpenFolk what happened or what you want changed."
+                    />
+                    <button
+                      className="rw-btn rw-btn-primary"
+                      disabled={demo || sending || !noticed.trim()}
+                    >
+                      <Send size={17} /> {sending ? "Saving…" : "Save feedback"}
+                    </button>
+                    <small>
+                      The test call is saved even if you leave without feedback. Feedback does not
+                      change Emma automatically.
+                    </small>
+                  </form>
+                )}
+                {saved && (
+                  <p className="ep-saved" role="status">
+                    Feedback saved with this call.
                   </p>
                 )}
-                <button
-                  type="button"
-                  className="rw-btn rw-btn-light"
-                  onClick={() => void result.refetch()}
-                >
-                  Check recording
-                </button>
               </div>
             )}
             <small className="ep-limit">
@@ -564,60 +584,6 @@ export function PracticeImprove({
               </p>
             )}
           </div>
-          {(showFeedback || (state === "ended" && !!session?.callId)) && (
-            <section className="rw-panel ep-notes">
-              <span className="rw-eyebrow">KEEP THE LEARNING WITH THE CALL</span>
-              <h2>Help {name} get better</h2>
-              <p>
-                Tell us what happened and what you’d like changed. Your note is saved with the
-                conversation above; OpenFolk will review it before changing Emma.
-              </p>
-              <form onSubmit={(e) => void send(e)}>
-                <label>
-                  What did you notice?
-                  <textarea
-                    value={noticed}
-                    maxLength={3500}
-                    disabled={sending || !!pendingPayload.current}
-                    onChange={(e) => setNoticed(e.target.value)}
-                    placeholder="For example: I asked for Mary, but Emma asked me to explain the reason again."
-                  />
-                </label>
-                <label>
-                  What would you like her to do instead?
-                  <textarea
-                    value={change}
-                    maxLength={3500}
-                    disabled={sending || !!pendingPayload.current}
-                    onChange={(e) => setChange(e.target.value)}
-                    placeholder="For example: When someone asks for Mary, connect them without another question."
-                  />
-                </label>
-                <small>
-                  {session?.callId
-                    ? "This exact conversation is attached to your feedback."
-                    : "This idea has no call attached."}{" "}
-                  Feedback does not change Emma automatically.
-                </small>
-                <button
-                  className="rw-btn rw-btn-primary"
-                  disabled={demo || sending || speaking || (!noticed.trim() && !change.trim())}
-                >
-                  <Send size={17} />
-                  {sending
-                    ? "Saving…"
-                    : pendingPayload.current
-                      ? "Check & retry submission"
-                      : "Send report"}
-                </button>
-              </form>
-              {saved && (
-                <p className="ep-saved" role="status">
-                  Saved. Follow delivery and our response below.
-                </p>
-              )}
-            </section>
-          )}
         </section>
       </div>
       {error && (
@@ -629,51 +595,54 @@ export function PracticeImprove({
         <div className="rw-panel-title">
           <div>
             <span className="rw-eyebrow">LATEST FIRST</span>
-            <h2>Your reports</h2>
+            <h2>Your test calls</h2>
           </div>
-          <MessageSquare size={25} />
+          <Headphones size={25} />
         </div>
-        {notes.isError ? (
+        {sessions.isError || notes.isError ? (
           <p role="alert">
-            {notes.error.message} <button onClick={() => void notes.refetch()}>Retry</button>
+            Your test history is unavailable.{" "}
+            <button
+              onClick={() => {
+                void sessions.refetch();
+                void notes.refetch();
+              }}
+            >
+              Retry
+            </button>
           </p>
-        ) : notes.isPending && !demo ? (
-          <p>Loading your observations…</p>
-        ) : !notes.data?.length ? (
-          <div className="ep-empty">Your completed reports will appear here.</div>
+        ) : (sessions.isPending || notes.isPending) && !demo ? (
+          <p>Loading your test calls…</p>
+        ) : !sessions.data?.length ? (
+          <div className="ep-empty">Your test calls will appear here automatically.</div>
         ) : (
-          notes.data.map((n) => {
+          sessions.data.map((test) => {
+            const n = notes.data?.find((note) => note.practice_session_id === test.id);
             const d = delivery.data?.find(
-              (d) => d.source_id === n.id && d.source_version === n.version,
+              (d) => d.source_id === n?.id && d.source_version === n?.version,
             );
             return (
-              <article key={n.id} className="ep-note">
+              <article key={test.id} className="ep-test-row">
                 <div>
-                  <strong>{n.title}</strong>
-                  <span className="rw-pill">{n.status}</span>
+                  <strong>{new Date(test.created_at).toLocaleString("en-GB")}</strong>
+                  <span className="rw-pill">{n ? "With feedback" : "Without feedback"}</span>
                 </div>
                 <small>
-                  {new Date(n.created_at).toLocaleString("en-GB")} ·{" "}
-                  {delivery.isError
-                    ? "Slack status unavailable"
-                    : d?.state === "sent"
-                      ? "Delivered to Slack"
-                      : d?.state === "failed"
-                        ? "Saved · Slack delivery needs attention"
-                        : "Saved · Slack delivery pending"}
+                  {tester} · {test.state === "ended" ? "Call ended" : "Call saved"}
                 </small>
-                <p className="rw-preserve">{n.body}</p>
-                <p>{n.response || "OpenFolk’s response will appear here."}</p>
-                {n.practice_session_id && (
-                  <PracticeEvidence
-                    tenant={tenant}
-                    sessionId={n.practice_session_id}
-                    viewerId={userId!}
-                  />
+                {n && <p className="rw-preserve">{n.body}</p>}
+                {n && (
+                  <small>
+                    {delivery.isError
+                      ? "Slack status unavailable"
+                      : d?.state === "sent"
+                        ? "Delivered to Slack"
+                        : d?.state === "failed"
+                          ? "Saved · Slack delivery needs attention"
+                          : "Saved · Slack delivery pending"}
+                  </small>
                 )}
-                {n.call_id && !n.practice_session_id && (
-                  <PhonePracticeEvidence tenant={tenant} callId={n.call_id} viewerId={userId!} />
-                )}
+                <PracticeEvidence tenant={tenant} sessionId={test.id} viewerId={userId!} />
               </article>
             );
           })

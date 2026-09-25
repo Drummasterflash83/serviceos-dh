@@ -15,6 +15,19 @@ test("practice connects in the app and binds the exact reserved session", () => 
   assert.doesNotMatch(ui, /Find my call|callerDigits|href=\{dialHref\}/);
 });
 
+test("every reserved test with a call ID appears in history even without feedback", () => {
+  const ui = readFileSync(
+    new URL("../components/receptionist/PracticeImprove.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(ui, /\.from\("receptionist_practice_sessions"\)/);
+  assert.match(ui, /\.eq\("author_id", userId!\)/);
+  assert.match(ui, /Without feedback/);
+  assert.match(ui, /With feedback/);
+  assert.match(ui, /autoLoad/);
+  assert.doesNotMatch(ui, /Check recording|KEEP THE LEARNING WITH THE CALL/);
+});
+
 test("detail and recording requests are tenant-scoped and assistant-verified", () => {
   const edge = readFileSync(
     new URL("../../supabase/functions/receptionist-calls/index.ts", import.meta.url),
