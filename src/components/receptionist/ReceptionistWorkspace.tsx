@@ -695,12 +695,8 @@ export function ReceptionistWorkspace({
               </p>
             </div>
           </div>
-          <div
-            className="rw-toolbar"
-            hidden={!["today", "calls", "callers"].includes(view)}
-            style={!["today", "calls", "callers"].includes(view) ? { display: "none" } : undefined}
-          >
-            {view !== "today" && (
+          {(view === "calls" || view === "callers") && (
+            <div className="rw-toolbar">
               <div className="rw-segment" aria-label="Call period">
                 {[
                   ["7", "Last 7 days"],
@@ -717,20 +713,20 @@ export function ReceptionistWorkspace({
                   </button>
                 ))}
               </div>
-            )}
-            <button
-              className="rw-refresh"
-              disabled={demo || callsQuery.isFetching}
-              onClick={() => void callsQuery.refetch()}
-            >
-              <RefreshCw size={14} className={callsQuery.isFetching ? "rw-spin" : ""} />
-              {callsQuery.isFetching
-                ? "Refreshing…"
-                : connected
-                  ? "Refresh calls"
-                  : "Check connection"}
-            </button>
-          </div>
+              <button
+                className="rw-refresh"
+                disabled={demo || callsQuery.isFetching}
+                onClick={() => void callsQuery.refetch()}
+              >
+                <RefreshCw size={14} className={callsQuery.isFetching ? "rw-spin" : ""} />
+                {callsQuery.isFetching
+                  ? "Refreshing…"
+                  : connected
+                    ? "Refresh calls"
+                    : "Check connection"}
+              </button>
+            </div>
+          )}
           {view === "today" && (
             <>
               <section className="rw-health-strip" aria-label="Receptionist health">
