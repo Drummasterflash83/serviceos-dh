@@ -319,17 +319,23 @@ export function ReceptionistWorkspace({
     : (feedback.data ?? []);
   const connected =
     demo || (!callsQuery.isError && callsQuery.data?.pages[0]?.connection === "connected");
-  const visible = calls.filter(
-    (c) =>
-      (period === "all" || Date.parse(c.createdAt) >= Date.now() - Number(period) * 86400000) &&
-      (!reviewOnly || reviewCall(c).priority > 0) &&
-      (!experienceFilter ||
-        view !== "calls" ||
-        experienceCards([c]).some((card) => card.id === experienceFilter && card.flagged > 0)) &&
-      `${c.caller} ${c.number ?? ""} ${c.summary ?? ""}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-  );
+  const visible =
+    view === "today"
+      ? calls
+      : calls.filter(
+          (c) =>
+            (period === "all" ||
+              Date.parse(c.createdAt) >= Date.now() - Number(period) * 86400000) &&
+            (!reviewOnly || reviewCall(c).priority > 0) &&
+            (!experienceFilter ||
+              view !== "calls" ||
+              experienceCards([c]).some(
+                (card) => card.id === experienceFilter && card.flagged > 0,
+              )) &&
+            `${c.caller} ${c.number ?? ""} ${c.summary ?? ""}`
+              .toLowerCase()
+              .includes(search.toLowerCase()),
+        );
   const open = notes.filter((n) => n.status !== "Resolved"),
     attention = rankCalls(visible.filter((c) => reviewCall(c).priority > 0)),
     evaluated = visible.filter((c) => c.success === "true" || c.success === "false"),
@@ -674,22 +680,24 @@ export function ReceptionistWorkspace({
             hidden={!["today", "calls", "callers"].includes(view)}
             style={!["today", "calls", "callers"].includes(view) ? { display: "none" } : undefined}
           >
-            <div className="rw-segment" aria-label="Call period">
-              {[
-                ["7", "Last 7 days"],
-                ["30", "Last 30 days"],
-                ["all", "All loaded calls"],
-              ].map(([value, label]) => (
-                <button
-                  aria-pressed={period === value}
-                  className={period === value ? "active" : ""}
-                  key={value}
-                  onClick={() => setPeriod(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            {view !== "today" && (
+              <div className="rw-segment" aria-label="Call period">
+                {[
+                  ["7", "Last 7 days"],
+                  ["30", "Last 30 days"],
+                  ["all", "All loaded calls"],
+                ].map(([value, label]) => (
+                  <button
+                    aria-pressed={period === value}
+                    className={period === value ? "active" : ""}
+                    key={value}
+                    onClick={() => setPeriod(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               className="rw-refresh"
               disabled={demo || callsQuery.isFetching}
@@ -803,7 +811,7 @@ export function ReceptionistWorkspace({
                   </div>
                 </div>
                 <p className="rw-footnote">
-                  Each card uses the calls loaded for this period. Unknown means the source has not
+                  Each card uses the available call records. Unknown means the source has not
                   assessed it—not that everything went well.
                 </p>
                 <div className="rw-score-grid">
