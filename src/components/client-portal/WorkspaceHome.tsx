@@ -3,7 +3,7 @@ import { Headphones, ArrowRight, Layers, Receipt, MessageSquare } from "lucide-r
 import { getSupabaseClient } from "@/lib/supabase";
 import { type ClientSection } from "@/lib/client-workspace-nav";
 import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
-import type { ReceptionistCall } from "@/lib/receptionist-data";
+import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
 
 export function WorkspaceHome({
   tenant,
@@ -29,23 +29,10 @@ export function WorkspaceHome({
     },
     staleTime: 30_000,
   });
-  const callEvidence = useQuery({
-    queryKey: ["workspace-emma-calls", userId, tenant],
-    enabled: !!userId && !!receptionist.data,
-    queryFn: async () => {
-      const { data, error } = await getSupabaseClient().functions.invoke("receptionist-calls", {
-        body: { tenantId: tenant, before: null },
-      });
-      if (error || data?.error) throw new Error("Emma's latest calls could not be checked.");
-      if (!Array.isArray(data?.calls) || typeof data?.connection !== "string")
-        throw new Error("Emma's call response needs a check.");
-      return data as { connection: string; calls: ReceptionistCall[]; checkedAt: string };
-    },
-    staleTime: 45_000,
-    refetchInterval: 60_000,
-  });
-  const status = emmaHealthCards(callEvidence.data?.calls ?? [], {
-    connected: callEvidence.data?.connection === "connected" && !callEvidence.isError,
+  const callEvidence = useReceptionistCalls(userId, tenant, !!receptionist.data);
+  const latestCalls = callEvidence.data?.pages[0];
+  const status = emmaHealthCards(latestCalls?.calls ?? [], {
+    connected: latestCalls?.connection === "connected" && !callEvidence.isError,
     loading: callEvidence.isPending,
     error: callEvidence.isError,
     launchStage: receptionist.data?.launch_stage,
@@ -65,9 +52,9 @@ export function WorkspaceHome({
               <span>HOW EMMA IS DOING</span>
               <strong>{status.headline}</strong>
               <small>{status.summary}</small>
-              {callEvidence.data?.connection === "connected" && (
+              {latestCalls?.connection === "connected" && (
                 <small>
-                  Call data connected to OpenFolk · Latest {callEvidence.data.calls.length} calls
+                  Call data connected to OpenFolk · Latest {latestCalls.calls.length} calls
                 </small>
               )}
             </div>

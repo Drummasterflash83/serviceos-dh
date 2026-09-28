@@ -417,6 +417,10 @@ export interface AuditEntry {
 }
 
 export const listTenants = () => invoke<{ tenants: TenantSummary[] }>({ action: "tenants.list" });
+export const listTenantDirectory = () =>
+  invoke<{ tenants: Pick<TenantSummary, "tenant_id" | "slug" | "display_name">[] }>({
+    action: "tenants.directory",
+  });
 export const getWorkspace = (tenant_id: string) =>
   invoke<Workspace>({ action: "workspace", tenant_id });
 export const getReadiness = (tenant_id: string) =>

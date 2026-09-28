@@ -30,7 +30,6 @@ import {
   X as CloseIcon,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { ClientInvestment } from "./ClientInvestment";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
@@ -71,6 +70,9 @@ const ReceptionistWorkspace = lazy(() =>
   import("@/components/receptionist/ReceptionistWorkspace").then((module) => ({
     default: module.ReceptionistWorkspace,
   })),
+);
+const ClientInvestment = lazy(() =>
+  import("./ClientInvestment").then((module) => ({ default: module.ClientInvestment })),
 );
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
@@ -204,7 +206,7 @@ export function ClientPortal({
   // /receptionist links enter the shared shell; a programme is not an access grant.
   const receptionistAccess = useQuery({
     queryKey: ["client-receptionist-access", user?.id],
-    enabled: !!user && section === "receptionist",
+    enabled: !!user && section === "receptionist" && !row,
     queryFn: async () => {
       const { data, error } = await db
         .from("receptionist_workspaces")
@@ -221,7 +223,7 @@ export function ClientPortal({
   const tenant = row?.tenant_id ?? receptionistWorkspace?.tenant_id;
   const notes = useQuery({
     queryKey: ["client-programme-notes", user?.id, tenant],
-    enabled: !!user && !!tenant,
+    enabled: !!user && !!tenant && section === "notes",
     queryFn: async () => {
       const { data, error } = await db
         .from("client_programme_notes")
@@ -416,7 +418,9 @@ export function ClientPortal({
         </div>
       )}
       {section === "investment" && tenant && user && (
-        <ClientInvestment tenant={tenant} userId={user.id} />
+        <Suspense fallback={<p role="status">Opening invoices…</p>}>
+          <ClientInvestment tenant={tenant} userId={user.id} />
+        </Suspense>
       )}
       {section === "home" && tenant && user && (
         <WorkspaceHome

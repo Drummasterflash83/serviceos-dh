@@ -32,6 +32,7 @@ export function ClientInvestment({
   });
   const delivery = useQuery({
     queryKey: ["client-delivery", userId, tenant],
+    enabled: showDelivery,
     queryFn: async () => {
       const r = await db
         .from("client_delivery_updates")

@@ -29,10 +29,15 @@ export type EmmaInfo = {
     sections: { title: string; text: string }[];
   };
 };
-export function useEmmaInfo(tenant: string, userId: string | undefined, demo: boolean) {
+export function useEmmaInfo(
+  tenant: string,
+  userId: string | undefined,
+  demo: boolean,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["receptionist-info", userId, tenant],
-    enabled: !!userId && !!tenant && !demo,
+    enabled: enabled && !!userId && !!tenant && !demo,
     staleTime: 60000,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().functions.invoke("receptionist-practice", {
