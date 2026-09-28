@@ -1,0 +1,191 @@
+import { lazy, Suspense } from "react";
+import { BellRing, Headphones, ClipboardList, Receipt, Layers, ArrowRight } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { ClientPortal } from "@/components/client-portal/ClientPortal";
+import { ClientInvestment } from "@/components/client-portal/ClientInvestment";
+import { OperatorDelivery } from "./OperatorDelivery";
+import { useOperatorHealth } from "./useOperatorHealth";
+import { healthSignal, type OperatorModule } from "@/lib/operator-workspace";
+import type { ReceptionistView } from "@/lib/client-workspace-nav";
+
+const ReceptionistWorkspace = lazy(() =>
+  import("@/components/receptionist/ReceptionistWorkspace").then((module) => ({
+    default: module.ReceptionistWorkspace,
+  })),
+);
+const tabs: { view: ReceptionistView; label: string }[] = [
+  { view: "improvements", label: "Feedback & responses" },
+  { view: "today", label: "Receptionist overview" },
+  { view: "practice", label: "Practise & improve" },
+  { view: "callers", label: "People who called" },
+  { view: "phones", label: "Phone system" },
+  { view: "details", label: "Training & setup" },
+];
+export function OperatorModules({
+  tenantId,
+  company,
+  module,
+  onModule,
+  view,
+  onView,
+}: {
+  tenantId: string;
+  company: string;
+  module: OperatorModule;
+  onModule: (module: OperatorModule) => void;
+  view: ReceptionistView;
+  onView: (view: ReceptionistView) => void;
+}) {
+  const { user } = useAuth();
+  const health = useOperatorHealth(tenantId);
+  const data = health.isError ? undefined : health.data;
+  const signal = healthSignal(data);
+  if (module === "receptionist")
+    return (
+      <>
+        <div className="op-heading">
+          <p className="op-eyebrow">RELEASED MODULE · AI RECEPTIONIST</p>
+          <h1>{data?.receptionist?.name ?? "Receptionist"}, from your side.</h1>
+          <p>Review the call. Respond to the client. Keep each improvement moving.</p>
+        </div>
+        <nav className="op-inline-nav" aria-label="Receptionist tools">
+          {tabs.map((tab) => (
+            <button
+              key={tab.view}
+              aria-current={view === tab.view ? "page" : undefined}
+              onClick={() => onView(tab.view)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
+          <ReceptionistWorkspace
+            key={tenantId}
+            tenantId={tenantId}
+            embedded
+            initialView={view}
+            onViewChange={onView}
+          />
+        </Suspense>
+      </>
+    );
+  if (module === "programme")
+    return (
+      <>
+        <p className="op-shared-note">
+          This is the client’s shared programme. Edits here update their workspace; only authorised
+          OpenFolk editors can publish.
+        </p>
+        <ClientPortal key={tenantId} tenantId={tenantId} section="overview" operatorEmbedded />
+      </>
+    );
+  if (module === "invoices")
+    return (
+      <>
+        <div className="op-heading">
+          <p className="op-eyebrow">CLIENT INVESTMENT</p>
+          <h1>Invoices, explained.</h1>
+          <p>The same invoices and delivery notes your client sees.</p>
+        </div>
+        <OperatorDelivery key={`${tenantId}-invoices`} tenantId={tenantId} mode="invoices" />
+        <div className="cp-root op-embedded" style={{ marginTop: 24 }}>
+          {user && <ClientInvestment tenant={tenantId} userId={user.id} showDelivery={false} />}
+        </div>
+      </>
+    );
+  if (module === "outcomes")
+    return (
+      <>
+        <OperatorDelivery key={`${tenantId}-delivery`} tenantId={tenantId} mode="outcomes" />
+        <div style={{ marginTop: 28 }}>
+          <p className="op-shared-note">
+            Outcome packages below share the client’s programme. Changes to scope, prices and
+            delivery status publish to their workspace.
+          </p>
+          <ClientPortal key={tenantId} tenantId={tenantId} section="outcomes" operatorEmbedded />
+        </div>
+      </>
+    );
+  return (
+    <>
+      <div className="op-heading">
+        <p className="op-eyebrow">OPENFOLK · CLIENT WORKSPACE</p>
+        <h1>{company}</h1>
+        <p>Keep the service working. Move the next outcome forward.</p>
+      </div>
+      {health.isError && (
+        <div className="op-error" role="alert">
+          {health.error.message}{" "}
+          <button onClick={() => void health.refetch()}>Retry health check</button>
+        </div>
+      )}
+      <div className="op-metrics">
+        <div className="op-metric">
+          <span className={`op-status op-status-${signal.tone}`}>
+            {signal.tone === "urgent" && <BellRing size={15} />} {signal.label}
+          </span>
+          <p className="op-note">Saved reports & delivery checks</p>
+        </div>
+        <button className="op-metric" onClick={() => onView("improvements")}>
+          <strong>{data?.open ?? "—"}</strong>
+          <span>Open feedback · view reports</span>
+        </button>
+        <div className="op-metric">
+          <strong>{data ? data.failed + data.overdue : "—"}</strong>
+          <span>Notification delivery issues</span>
+        </div>
+      </div>
+      {!!data?.urgent && (
+        <div className="op-error">
+          <BellRing size={18} />
+          <strong>
+            {" "}
+            {data.urgent} urgent report{data.urgent === 1 ? "" : "s"}
+          </strong>
+          <p>Open the receptionist feedback queue to review and respond.</p>
+          <button className="op-button" onClick={() => onView("improvements")}>
+            Review urgent feedback <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
+      <div className="op-module-grid">
+        <button className="op-card op-module-card" onClick={() => onView("improvements")}>
+          <Headphones size={27} />
+          <h2>{data?.receptionist?.name ?? "AI receptionist"}</h2>
+          <p>Calls, feedback, practice reports and the next improvement.</p>
+          <p className="op-note">
+            {data?.receptionist
+              ? `Recorded stage: ${data.receptionist.launch_stage}. Phone routing is verified separately.`
+              : "Check receptionist setup and access."}
+          </p>
+          <span className="op-button">
+            Open receptionist <ArrowRight size={16} />
+          </span>
+        </button>
+        <button className="op-card op-module-card" onClick={() => onModule("programme")}>
+          <ClipboardList size={27} />
+          <h2>Programme</h2>
+          <p>Shape the shared plan, priorities and next steps.</p>
+        </button>
+        <button className="op-card op-module-card" onClick={() => onModule("invoices")}>
+          <Receipt size={27} />
+          <h2>Invoices</h2>
+          <p>See the investment. Explain what each invoice delivered.</p>
+        </button>
+        <button className="op-card op-module-card" onClick={() => onModule("outcomes")}>
+          <Layers size={27} />
+          <h2>Delivery outcomes</h2>
+          <p>Publish progress, scope and fixed-price packages.</p>
+        </button>
+      </div>
+      <p className="op-note">
+        {data
+          ? `Checked ${new Date(data.checkedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}. `
+          : ""}
+        Saved operational signals refresh every minute. New modules will join this workspace as they
+        are released.
+      </p>
+    </>
+  );
+}

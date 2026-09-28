@@ -1,98 +1,117 @@
-/**
- * OpenFolk Control Plane — tenant list (/openfolk). PLATFORM-OPERATOR ONLY.
- *
- * Server-gated: the openfolk-control-plane function requires an active
- * platform.controlplane grant. A non-operator receives 403 and the access panel below —
- * never surfaced in tenant navigation; relies on the server gate, not frontend hiding.
- * Auth is enforced by the parent layout (openfolk.tsx).
- */
-import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldAlert, ShieldCheck, ChevronRight } from "lucide-react";
-import { listTenants, type TenantSummary } from "@/lib/openfolk";
-import { BuildBadge } from "@/components/BuildBadge";
+import { useQuery, useQueries } from "@tanstack/react-query";
+import { BellRing, ChevronRight } from "lucide-react";
+import { listTenants } from "@/lib/openfolk";
+import { useAuth } from "@/lib/auth";
+import { OperatorShell } from "@/components/app/OperatorShell";
+import { loadOperatorHealth } from "@/components/app/useOperatorHealth";
+import { healthSignal } from "@/lib/operator-workspace";
 
-export const Route = createFileRoute("/openfolk/")({
-  component: OpenfolkList,
-});
-
+export const Route = createFileRoute("/openfolk/")({ component: OpenfolkList });
 function OpenfolkList() {
-  const [tenants, setTenants] = useState<TenantSummary[] | null>(null);
-  const [error, setError] = useState<{ code: string; message: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const res = await listTenants();
-    if (res.ok) {
-      setTenants(res.data.tenants);
-      setError(null);
-    } else {
-      setError(res.error);
-    }
-    setLoading(false);
-  }, []);
-  useEffect(() => {
-    void load();
-  }, [load]);
-
+  const { user } = useAuth();
+  const directory = useQuery({
+    queryKey: ["operator-directory", user?.id],
+    queryFn: async () => {
+      const result = await listTenants();
+      if (!result.ok)
+        throw Error(
+          "The client directory could not be opened. OpenFolk operator access is required.",
+        );
+      return result.data.tenants;
+    },
+  });
+  const tenants = directory.data ?? [];
+  const health = useQueries({
+    queries: tenants.map((tenant) => ({
+      queryKey: ["operator-module-health", user?.id, tenant.tenant_id],
+      queryFn: () => loadOperatorHealth(tenant.tenant_id),
+      refetchInterval: 60000,
+    })),
+  });
+  const complete =
+    !directory.isPending && !directory.isError && health.every((q) => q.isSuccess && !q.isError);
+  const urgent = health.reduce(
+    (sum, q) => sum + (q.data?.urgent ?? 0) + (q.data?.failed ?? 0) + (q.data?.overdue ?? 0),
+    0,
+  );
+  const reviews = health.reduce((sum, q) => sum + (q.data?.open ?? 0), 0);
   return (
-    <div className="min-h-screen bg-surface-alt/30">
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-        <div className="mb-4 flex items-center gap-2 rounded-full border border-hairline bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-          OpenFolk Control Plane — managed-service administration
-        </div>
-
-        {loading && <p className="px-1 text-sm text-muted-foreground">Loading…</p>}
-
-        {!loading && error && (
-          <div className="rounded-xl border border-hairline bg-white p-5">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-display">
-              <ShieldAlert className="h-4 w-4 text-destructive" />
-              {error.code === "forbidden" || error.code.startsWith("http_403")
-                ? "Platform authority required"
-                : "Could not load"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              The Control Plane is restricted to authorised OpenFolk operators (an active
-              platform.controlplane grant). Access is enforced server-side.
-            </p>
-          </div>
-        )}
-
-        {!loading && !error && tenants && (
-          <div className="space-y-2">
-            {tenants.map((t) => (
-              <Link
-                key={t.tenant_id}
-                to="/openfolk/$tenantId"
-                params={{ tenantId: t.tenant_id }}
-                className="flex items-center justify-between rounded-xl border border-hairline bg-white p-4 hover:border-accent/40"
-              >
-                <div>
-                  <div className="text-sm font-semibold text-display">
-                    {t.display_name ?? t.slug ?? t.tenant_id.slice(0, 8)}
-                  </div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    {t.people} people · {t.endpoints_total} endpoints · {t.endpoints_unmapped}{" "}
-                    unmapped
-                    {t.ambiguous_assignments > 0 && (
-                      <span className="text-amber-600"> · {t.ambiguous_assignments} conflicts</span>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Link>
-            ))}
-            {tenants.length === 0 && (
-              <p className="px-1 text-xs italic text-muted-foreground">No tenants.</p>
-            )}
-          </div>
-        )}
-
-        <BuildBadge />
+    <OperatorShell>
+      <div className="op-heading">
+        <p className="op-eyebrow">YOUR CLIENTS, WORKING BETTER</p>
+        <h1>A clear view. The right next step.</h1>
+        <p>Every client. Every released module. Start with what needs you.</p>
       </div>
-    </div>
+      <div className="op-metrics">
+        <div className="op-metric">
+          <strong>{directory.isSuccess ? tenants.length : "—"}</strong>
+          <span>Client workspaces</span>
+        </div>
+        <div className="op-metric">
+          <strong>{complete ? urgent : "—"}</strong>
+          <span>Urgent reports & delivery issues</span>
+        </div>
+        <div className="op-metric">
+          <strong>{complete ? reviews : "—"}</strong>
+          <span>Open feedback reports</span>
+        </div>
+      </div>
+      {directory.isPending && <p role="status">Opening your clients…</p>}
+      {directory.isError && (
+        <div className="op-error" role="alert">
+          {directory.error.message} <button onClick={() => void directory.refetch()}>Retry</button>
+        </div>
+      )}
+      <div className="op-client-grid">
+        {tenants.map((tenant, index) => {
+          const query = health[index];
+          const data = query.isError ? undefined : query.data;
+          const signal = healthSignal(data);
+          return (
+            <Link
+              key={tenant.tenant_id}
+              to="/openfolk/$tenantId"
+              params={{ tenantId: tenant.slug ?? tenant.tenant_id }}
+              className="op-card op-client-card"
+            >
+              <div className="op-client-top">
+                <span className="op-avatar">
+                  {(tenant.display_name ?? tenant.slug ?? "C").slice(0, 1)}
+                </span>
+                <span className={`op-status op-status-${signal.tone}`}>
+                  {signal.tone === "urgent" && <BellRing size={15} />}{" "}
+                  {query.isError ? "Health check unavailable" : signal.label}
+                </span>
+              </div>
+              <h2>{tenant.display_name ?? tenant.slug ?? "Client workspace"}</h2>
+              <p>
+                {data?.receptionist
+                  ? `${data.receptionist.name} · AI receptionist`
+                  : "Modules & delivery"}
+              </p>
+              <p>
+                {data
+                  ? `${data.open} open reports · ${data.urgent} urgent · ${data.failed + data.overdue} notification issues`
+                  : "Open the workspace to check its modules."}
+              </p>
+              <footer>
+                Open workspace <ChevronRight size={18} />
+              </footer>
+            </Link>
+          );
+        })}
+      </div>
+      {directory.isSuccess && tenants.length === 0 && (
+        <div className="op-card">
+          Your first client will appear here when their workspace is added.
+        </div>
+      )}
+      <p className="op-note">
+        Health reflects saved feedback and notification delivery, refreshed every minute. “No
+        reported issues” is not a live phone-line test. Urgent reports are included in open
+        feedback.
+      </p>
+    </OperatorShell>
   );
 }
