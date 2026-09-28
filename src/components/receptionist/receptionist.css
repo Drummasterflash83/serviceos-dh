@@ -818,8 +818,8 @@
   background: #ffffff0c;
 }
 .ep-current-call {
-  margin-top: 16px;
-  padding: 14px 16px;
+  margin-top: 24px;
+  padding: clamp(16px, 3vw, 24px);
   border: 1px solid #ffffff36;
   border-radius: 14px;
   background: #ffffff12;
@@ -830,23 +830,27 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px 20px;
 }
 .ep-current-call-header strong {
   font-size: 14px;
 }
 .ep-current-call-header small {
   color: #e5d8eb;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
 }
 .ep-current-call > p {
-  margin: 10px 0;
+  margin: 16px 0;
   color: #efe7f3;
   font-size: 13px;
+  line-height: 1.7;
 }
 .ep-current-call .rw-recording {
-  margin: 10px 0;
-  padding: 10px 0 0;
-  border-top: 1px solid #ffffff30;
+  margin: 20px 0 0;
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid #e6dded;
 }
 .ep-inline-feedback {
   display: grid;
@@ -958,21 +962,47 @@
   }
 }
 .ep-transcript {
-  max-height: 220px;
+  max-height: 300px;
   overflow: auto;
+  scrollbar-gutter: stable;
   text-align: left;
-  padding: 8px 16px;
+  padding: 20px 12px;
   border-top: 1px solid #ffffff26;
   border-bottom: 1px solid #ffffff26;
 }
 .ep-transcript p {
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 6px 0;
   color: #f5eaf8;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.7;
+}
+.ep-transcript span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .ep-transcript strong {
   color: #d8b9e7;
-  margin-right: 8px;
+}
+.ep-transcript:focus-visible {
+  outline: 2px solid #d8b9e7;
+  outline-offset: 4px;
+}
+@media (max-width: 520px) {
+  .ep-transcript {
+    padding: 16px 0;
+  }
+  .ep-transcript p {
+    grid-template-columns: 3.5em minmax(0, 1fr);
+    gap: 8px;
+  }
+  .ep-current-call-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .rw-emma-roadmap {
   margin: 20px 0;
@@ -2553,6 +2583,37 @@
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
+  min-width: 0;
+}
+.rw-recording-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.rw-recording .rw-recording-header h3 {
+  margin: 0;
+  color: #30263f;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+.rw-recording .rw-recording-header .rw-btn {
+  margin: 0;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.rw-recording audio {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 20px;
+}
+.rw-recording .rw-footnote {
+  color: #655570;
+  margin: 14px 0 0;
+  line-height: 1.6;
 }
 .rw-dialog .rw-person-call {
   width: 100%;

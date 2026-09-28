@@ -41,7 +41,7 @@ export function CallRecording({
           if (!cancelled) {
             setUrl(fresh);
             setError("");
-            setState("Ready — press play below.");
+            setState("Ready to play");
           }
           break;
         } catch {
@@ -60,10 +60,11 @@ export function CallRecording({
     setBusy(true);
     setError("");
     setUrl(null);
+    setState("");
     try {
       const fresh = await recordingUrl(tenant, call.id, practiceSessionId);
       setUrl(fresh);
-      setState("Ready — press play below.");
+      setState("Ready to play");
     } catch (e) {
       setError(
         "The recording could not be retrieved. It may still be processing; retry shortly or ask OpenFolk to check this call.",
@@ -74,7 +75,19 @@ export function CallRecording({
   }
   return (
     <section className="rw-recording" aria-label="Call recording">
-      <h3>Listen to the conversation</h3>
+      <div className="rw-recording-header">
+        <h3>Listen to the conversation</h3>
+        {!demo && (
+          <button
+            type="button"
+            className="rw-btn rw-btn-light"
+            disabled={busy}
+            onClick={() => void load()}
+          >
+            {busy ? "Retrieving recording…" : url || error ? "Reload recording" : "Open recording"}
+          </button>
+        )}
+      </div>
       {!autoLoad && (
         <p className="rw-footnote">
           A fresh private playback link is requested when you open the recording.
@@ -84,9 +97,6 @@ export function CallRecording({
         <p>Example only — no real recording.</p>
       ) : (
         <>
-          <button className="rw-btn rw-btn-light" disabled={busy} onClick={() => void load()}>
-            {busy ? "Retrieving recording…" : url || error ? "Reload recording" : "Open recording"}
-          </button>
           {url && (
             <audio
               key={url}
@@ -94,9 +104,23 @@ export function CallRecording({
               preload="metadata"
               src={url}
               aria-label="Play call recording"
-              style={{ width: "100%", marginTop: 12 }}
-              onCanPlay={() => setState("Ready — press play below.")}
+              onCanPlay={(event) => {
+                const audio = event.currentTarget;
+                setState(
+                  audio.ended
+                    ? "Recording finished"
+                    : audio.paused
+                      ? audio.currentTime > 0
+                        ? "Paused"
+                        : "Ready to play"
+                      : "Playing",
+                );
+              }}
               onPlaying={() => setState("Playing")}
+              onPause={(event) =>
+                setState(event.currentTarget.ended ? "Recording finished" : "Paused")
+              }
+              onEnded={() => setState("Recording finished")}
               onWaiting={() =>
                 setState("Buffering… If playback does not resume, reload the recording.")
               }
