@@ -60,6 +60,13 @@ test("operator branding is isolated from the client shell", () => {
   assert.match(client, /<ClientHeaderBrand company=\{company\}/);
   assert.match(client, /operator\.data === true && \(operatorTools \|\| operatorEmbedded\)/);
 });
+test("active route highlighting never paints a box behind the operator logo", () => {
+  const css = read("styles/operator-workspace.css");
+  assert.match(css, /\.op-brand\s*\{[^}]*background: transparent;/);
+  assert.match(css, /\.op-sidebar \[aria-current="page"\]:not\(\.op-brand\)/);
+  assert.doesNotMatch(css, /\.op-sidebar \[aria-current="page"\]\s*\{/);
+  assert.match(css, /\.op-sidebar a:not\(\.op-brand\):hover/);
+});
 test("health uses exact counts, safe columns and refuses failed reads", () => {
   const source = read("components/app/useOperatorHealth.ts");
   assert.match(source, /head: true, count: "exact"/);

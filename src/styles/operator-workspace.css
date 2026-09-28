@@ -37,6 +37,7 @@
 }
 .op-brand {
   display: block;
+  background: transparent;
   font-size: 36px;
   letter-spacing: -2px;
   font-weight: 800;
@@ -70,7 +71,7 @@
 .op-sidebar a:not(.op-brand):hover {
   background: #ffffff0d;
 }
-.op-sidebar [aria-current="page"] {
+.op-sidebar [aria-current="page"]:not(.op-brand) {
   background: #514669;
 }
 .op-company {
