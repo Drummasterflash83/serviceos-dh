@@ -559,10 +559,16 @@ export function PracticeImprove({
                     : "Ready when you are."}
             </div>
             {!!transcript.length && (
-              <div className="ep-transcript" aria-label="Live conversation transcript">
+              <div
+                className="ep-transcript"
+                role="region"
+                tabIndex={0}
+                aria-label="Live conversation transcript"
+              >
                 {transcript.map((line, index) => (
                   <p key={`${index}-${line.role}`}>
-                    <strong>{line.role}</strong> {line.text}
+                    <strong>{line.role}</strong>
+                    <span>{line.text}</span>
                   </p>
                 ))}
               </div>
