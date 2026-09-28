@@ -863,12 +863,34 @@
 }
 .ep-inline-feedback textarea {
   width: 100%;
-  min-height: 85px;
-  padding: 12px;
-  border: 1px solid #d8c5e1;
+  min-height: 128px;
+  padding: 14px 16px;
+  border: 1px solid #b7a5c5;
   border-radius: 10px;
+  background: #ffffff;
   font: inherit;
+  font-size: 16px;
+  line-height: 1.6;
   color: #34243e;
+  caret-color: #34243e;
+  resize: vertical;
+  color-scheme: light;
+}
+.ep-inline-feedback textarea::placeholder {
+  color: #655570;
+  opacity: 1;
+}
+.ep-inline-feedback textarea:focus-visible {
+  border-color: #655570;
+  outline: 3px solid #d8b9e7;
+  outline-offset: 3px;
+}
+.ep-inline-feedback textarea:disabled {
+  background: #f5f1fa;
+  color: #34243e;
+  -webkit-text-fill-color: #34243e;
+  opacity: 1;
+  cursor: wait;
 }
 .ep-inline-feedback .rw-btn {
   justify-self: start;
