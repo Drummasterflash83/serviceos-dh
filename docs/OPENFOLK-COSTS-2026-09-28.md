@@ -8,9 +8,30 @@ no financial credentials read or stored by this work. The browser security-polic
 failure during AI-account setup remains unresolved. Actual Vapi billing inspection
 remains open; do not bypass browser controls.
 
+## APIs follow-up
+
+- Canonical route is now `/openfolk/apis`; `/openfolk/costs` redirects there.
+- The operator menu has an APIs heading below client modules, with Accounts & costs.
+- One setup card focuses on Vapi and OpenFolk AI. Later Gmail connections are not
+  represented as already connected. Other existing provider records remain readable.
+- Created private OpenFolk `#apis`: team `T0BLG3N4KN1`, channel `C0C513YT52N`.
+- Setup message delivered and read back:
+  https://openfolk.slack.com/archives/C0C513YT52N/p1790612333089489
+  This was sent via ChatGPT's Slack connector, NOT the application's notification
+  worker. Automated app delivery remains unconfigured.
+- Fresh production secret-name inventory still lacks the new OpenFolk Slack bot
+  connection. No secret values were obtained or changed; CLI returns digests.
+- Read-only production migration history ends with the separately applied
+  `20261021120000` release. New care/cost migrations are absent. Do not run blanket
+  `db push`: the linked repository also has an unrelated older migration backlog.
+- The browser was retried normally at `/openfolk` and again refused access because
+  admin-enforced policy could not be verified. No alternative bypass was attempted.
+- Latest UI verification: 326 Node tests, TypeScript, scoped lint and Vercel-target
+  build pass. No signed-in browser acceptance or production promotion.
+
 ## Implemented
 
-- Global operator-only `/openfolk/costs`, separate from client invoices.
+- Global operator-only APIs / Accounts & costs, separate from client invoices.
 - One account per provider/account reference, with multiple supported clients.
   Shared credit is not duplicated; client assignment is not a cost allocation.
 - Vapi, OpenAI, Supabase, Vercel, telephony and other categories. No seeded figures.

@@ -35,6 +35,7 @@ export function OperatorShell({
   section,
   onSection,
   children,
+  pageTitle,
 }: {
   company?: string;
   tenantId?: string;
@@ -43,6 +44,7 @@ export function OperatorShell({
   section?: WorkspaceSection;
   onSection?: (section: WorkspaceSection) => void;
   children: ReactNode;
+  pageTitle?: string;
 }) {
   const { user, signOut } = useAuth();
   const [menu, setMenu] = useState(false);
@@ -85,9 +87,6 @@ export function OperatorShell({
           <Link to="/openfolk" className="op-all" onClick={() => setMenu(false)}>
             <Building2 size={18} /> All clients
           </Link>
-          <Link to="/openfolk/costs" className="op-all" onClick={() => setMenu(false)}>
-            <Wallet size={18} /> Costs
-          </Link>
           {company && (
             <>
               <p className="op-company">{company}</p>
@@ -106,34 +105,40 @@ export function OperatorShell({
                   </button>
                 ))}
               </nav>
-              <div className="op-future">
-                <button aria-expanded={future} onClick={() => setFuture(!future)}>
-                  <Settings2 size={18} /> Future tools{" "}
-                  <ChevronDown size={16} className={future ? "is-open" : ""} />
-                </button>
-                {future && (
-                  <nav aria-label="Future tools">
-                    {NAV_GROUPS.map((group) => (
-                      <div key={group.title}>
-                        <p>{group.title}</p>
-                        {group.items.map((item) => (
-                          <button
-                            key={item.key}
-                            aria-current={section === item.section ? "page" : undefined}
-                            onClick={() => {
-                              onSection?.(item.section);
-                              setMenu(false);
-                            }}
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                  </nav>
-                )}
-              </div>
             </>
+          )}
+          <p className="op-company">APIs</p>
+          <Link to="/openfolk/apis" className="op-all" onClick={() => setMenu(false)}>
+            <Wallet size={18} /> Accounts & costs
+          </Link>
+          {company && (
+            <div className="op-future">
+              <button aria-expanded={future} onClick={() => setFuture(!future)}>
+                <Settings2 size={18} /> Future tools{" "}
+                <ChevronDown size={16} className={future ? "is-open" : ""} />
+              </button>
+              {future && (
+                <nav aria-label="Future tools">
+                  {NAV_GROUPS.map((group) => (
+                    <div key={group.title}>
+                      <p>{group.title}</p>
+                      {group.items.map((item) => (
+                        <button
+                          key={item.key}
+                          aria-current={section === item.section ? "page" : undefined}
+                          onClick={() => {
+                            onSection?.(item.section);
+                            setMenu(false);
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </nav>
+              )}
+            </div>
           )}
           <footer>
             {tenantId && (
@@ -154,7 +159,7 @@ export function OperatorShell({
       <div className="op-main-column">
         <header className="op-topbar">
           <span>
-            OpenFolk <span aria-hidden="true">/</span> {company ?? "All clients"}
+            OpenFolk <span aria-hidden="true">/</span> {company ?? pageTitle ?? "All clients"}
           </span>
           <small>{user?.email}</small>
         </header>

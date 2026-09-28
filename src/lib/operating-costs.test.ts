@@ -1,6 +1,29 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { costHealth, costMoney, type CostAccount } from "./operating-costs.ts";
+
+test("APIs has its own operator heading below client modules", () => {
+  const shell = readFileSync(
+    new URL("../components/app/OperatorShell.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(shell, />APIs<\/p>/);
+  assert.match(shell, /to="\/openfolk\/apis"/);
+  assert.ok(shell.indexOf(">APIs</p>") > shell.indexOf("modules.map"));
+  assert.ok(shell.indexOf(">APIs</p>") < shell.indexOf('className="op-future"'));
+});
+test("API setup focuses on Vapi and AI without claiming billing or Slack is active", () => {
+  const page = readFileSync(new URL("../routes/openfolk.apis.tsx", import.meta.url), "utf8");
+  assert.match(page, /aria-label="API account setup"/);
+  assert.match(page, /Automatic app delivery awaits verification/);
+  assert.match(page, /C0C513YT52N/);
+  assert.doesNotMatch(page, /<option value="(?:supabase|vercel|telephony|other)"/);
+});
+test("old Costs bookmark redirects to APIs", () => {
+  const route = readFileSync(new URL("../routes/openfolk.costs.tsx", import.meta.url), "utf8");
+  assert.match(route, /redirect\(\{ to: "\/openfolk\/apis", replace: true \}\)/);
+});
 const now = Date.parse("2026-09-28T12:00:00Z");
 const base: CostAccount = {
   id: "a",
