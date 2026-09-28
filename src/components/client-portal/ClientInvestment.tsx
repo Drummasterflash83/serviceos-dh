@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { money } from "@/lib/client-portal";
+import { ClientDeliverySummary } from "./ClientDeliverySummary";
 
 export function ClientInvestment({
   tenant,
@@ -27,19 +28,6 @@ export function ClientInvestment({
         .eq("tenant_id", tenant)
         .order("reference");
       if (r.error) throw new Error("Invoices unavailable");
-      return r.data;
-    },
-  });
-  const delivery = useQuery({
-    queryKey: ["client-delivery", userId, tenant],
-    enabled: showDelivery,
-    queryFn: async () => {
-      const r = await db
-        .from("client_delivery_updates")
-        .select("content,verified_at")
-        .eq("tenant_id", tenant)
-        .maybeSingle();
-      if (r.error) throw new Error("Delivery unavailable");
       return r.data;
     },
   });
@@ -98,7 +86,7 @@ export function ClientInvestment({
             </div>
           </div>
           <p className="cp-investment-note">
-            Private to your programme. Proposed packages are not included in these totals.
+            Private to your workspace. Proposed packages are not included in these totals.
           </p>
           {rows.length === 0 && <p>No invoices published yet.</p>}
           <div className="cp-invoice-list">
@@ -142,45 +130,7 @@ export function ClientInvestment({
           {error}
         </p>
       )}
-      {showDelivery && (
-        <div className="cp-delivery-summary">
-          <p className="of-eyebrow">WHAT YOUR INVESTMENT IS BUILDING</p>
-          <h2>From foundations to everyday use.</h2>
-          {delivery.isPending ? (
-            <p>Loading delivery update…</p>
-          ) : delivery.isError ? (
-            <p role="alert">
-              Delivery update unavailable.{" "}
-              <button onClick={() => void delivery.refetch()}>Retry</button>
-            </p>
-          ) : !delivery.data ? (
-            <p>Your next delivery update is being prepared.</p>
-          ) : (
-            <>
-              <p>{delivery.data.content.summary}</p>
-              <div className="cp-invoice-list">
-                {(
-                  delivery.data.content.areas as { title: string; status: string; detail: string }[]
-                ).map((a) => (
-                  <article className="cp-invoice" key={a.title}>
-                    <span className="cp-status">{a.status}</span>
-                    <h3>{a.title}</h3>
-                    <p>{a.detail}</p>
-                  </article>
-                ))}
-              </div>
-              <p className="cp-investment-note">{delivery.data.content.readinessNote}</p>
-              <p>
-                <strong>Next:</strong> {delivery.data.content.next}
-              </p>
-              <small>
-                Recorded {new Date(delivery.data.verified_at).toLocaleDateString("en-GB")}. Build
-                checkpoints are not live monitoring.
-              </small>
-            </>
-          )}
-        </div>
-      )}
+      {showDelivery && <ClientDeliverySummary tenant={tenant} userId={userId} />}
     </section>
   );
 }

@@ -71,7 +71,14 @@ test("non-visible notes, delivery and training do not fetch in the background", 
     read("../components/client-portal/ClientPortal.tsx"),
     /enabled: !!user && !!tenant && section === "notes"/,
   );
-  assert.match(read("../components/client-portal/ClientInvestment.tsx"), /enabled: showDelivery/);
+  assert.match(
+    read("../components/client-portal/ClientInvestment.tsx"),
+    /showDelivery && <ClientDeliverySummary/,
+  );
+  assert.doesNotMatch(
+    read("../components/client-portal/ClientInvestment.tsx"),
+    /from\("client_delivery_updates"\)/,
+  );
   assert.match(
     read("../components/receptionist/ReceptionistWorkspace.tsx"),
     /view === "practice" \|\| view === "details"/,

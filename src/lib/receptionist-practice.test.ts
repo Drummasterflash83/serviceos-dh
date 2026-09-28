@@ -33,7 +33,12 @@ test("practice feedback has reopenable evidence and separates save from Slack de
   assert.match(ui, /practiceSessionId=\{sessionId\}/);
   assert.match(ui, /d\?\.state === "sent"/);
   assert.match(ui, /Saved · Slack delivery pending/);
-  assert.match(ui, /\.eq\("submission_key", submission.current\)/);
+  const feedback = readFileSync(
+    new URL("../components/receptionist/PracticeFeedback.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(feedback, /p_submission: next\.id/);
+  assert.match(feedback, /complete_receptionist_practice_draft/);
 });
 test("practice checks live microphone audio before reserving a call and has expandable history", () => {
   const ui = readFileSync(
@@ -266,7 +271,7 @@ test("browser joins a server-created call without a private or public API key", 
   );
   assert.match(ui, /voice\.reconnect/);
   assert.doesNotMatch(ui, /(?:voice|sdk\.current\??)\.start\(/);
-  assert.match(ui, /submission_key/);
+  assert.match(ui, /PracticeFeedback/);
   assert.match(ui, /practice_session_id/);
   assert.match(ui, /Slack delivery pending/);
   assert.match(ui, /sdk\.current\?\.stop/);

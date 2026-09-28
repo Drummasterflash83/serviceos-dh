@@ -25,6 +25,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { migrationForwardReferences } from "./lib/migration-order.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "supabase/migrations");
@@ -32,7 +33,6 @@ const files = readdirSync(dir)
   .filter((f) => f.endsWith(".sql"))
   .sort();
 
-const IDENT = "[a-z_][a-z0-9_]*";
 let failures = 0;
 let checked = 0;
 
@@ -78,53 +78,11 @@ for (const [version, paths] of byVersion) {
 }
 
 for (const file of files) {
-  const lines = readFileSync(join(dir, file), "utf8").split("\n");
-
-  // 1) tables this file CREATES → earliest 1-indexed line.
-  const created = new Map();
-  lines.forEach((ln, i) => {
-    const m = ln.match(
-      new RegExp(`create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?(${IDENT})`, "i"),
+  for (const r of migrationForwardReferences(readFileSync(join(dir, file), "utf8"))) {
+    console.log(
+      `  [FAIL] ${file}:${r.line} references '${r.name}' (${r.kind}) but it is created later at line ${r.createdLine}`,
     );
-    if (m) {
-      const name = m[1].toLowerCase();
-      if (!created.has(name)) created.set(name, i + 1);
-    }
-  });
-
-  // 2) references to a table, with the line they occur on.
-  const refs = [];
-  let inArray = false;
-  lines.forEach((ln, i) => {
-    const line = i + 1;
-    const push = (re, kind) => {
-      for (const m of ln.matchAll(re)) refs.push({ name: m[1].toLowerCase(), line, kind });
-    };
-    push(new RegExp(`references\\s+(${IDENT})\\s*\\(`, "gi"), "fk");
-    push(new RegExp(`insert\\s+into\\s+(${IDENT})`, "gi"), "insert");
-    push(new RegExp(`alter\\s+table\\s+(?:if\\s+exists\\s+)?(${IDENT})`, "gi"), "alter");
-    push(new RegExp(`\\bon\\s+(${IDENT})`, "gi"), "on"); // create index/policy/trigger ... on <table>
-
-    // Table names inside a (possibly multi-line) `array[ ... ]` literal — the dynamic
-    // RLS/registry loops. Only scan within the array so seed VALUES are never mistaken.
-    if (/array\s*\[/i.test(ln)) inArray = true;
-    if (inArray) {
-      for (const m of ln.matchAll(new RegExp(`'(${IDENT})'`, "g"))) {
-        refs.push({ name: m[1].toLowerCase(), line, kind: "array" });
-      }
-    }
-    if (inArray && /\]/.test(ln)) inArray = false;
-  });
-
-  // 3) flag any reference to a same-file table created on a LATER line.
-  for (const r of refs) {
-    const createdLine = created.get(r.name);
-    if (createdLine !== undefined && createdLine > r.line) {
-      console.log(
-        `  [FAIL] ${file}:${r.line} references '${r.name}' (${r.kind}) but it is created later at line ${createdLine}`,
-      );
-      failures++;
-    }
+    failures++;
   }
   checked++;
 }

@@ -503,3 +503,30 @@
     transition: none;
   }
 }
+.op-feedback-inbox {
+  margin-top: 24px;
+}
+.op-feedback-inbox h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.op-feedback-list {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.op-feedback-note {
+  padding: 18px;
+  border: 1px solid #e0dbe7;
+  border-radius: 14px;
+  background: #faf8fc;
+}
+.op-feedback-note p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.op-feedback-note time {
+  color: #6b6178;
+  font-size: 13px;
+}

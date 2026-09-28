@@ -52,13 +52,13 @@ export function WorkspaceMenu({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/client" search={{ tenant, section: "overview" }}>
-            <Layers size={17} /> Your programme
+          <Link to="/client" search={{ tenant, section: "modules" }}>
+            <Layers size={17} /> Modules
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/client" search={{ tenant, section: "investment" }}>
-            <Receipt size={17} /> Invoices & delivery
+          <Link to="/client" search={{ tenant, section: "invoices" }}>
+            <Receipt size={17} /> Invoices
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

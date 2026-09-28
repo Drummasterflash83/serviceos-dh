@@ -7,6 +7,8 @@ import {
   receptionistHref,
   selectedWorkspace,
   canShowOpenFolkAdmin,
+  clientSections,
+  resolveClientSection,
 } from "./client-workspace-nav.ts";
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
 
@@ -53,7 +55,7 @@ test("section and tenant survive refresh and back/forward URL round trips", () =
   const url = new URL(clientWorkspaceHref("tenant-a", "investment"), "https://app.openfolk.ai");
   assert.deepEqual(clientSearch(Object.fromEntries(url.searchParams)), {
     tenant: "tenant-a",
-    section: "investment",
+    section: "invoices",
   });
   assert.equal(receptionistHref("tenant-a"), "/client?tenant=tenant-a&section=receptionist");
 });
@@ -75,12 +77,13 @@ test("tenant values cannot inject routes or additional query parameters", () => 
     assert.notEqual(url.searchParams.get("section"), "notes");
   }
 });
-test("company menu provides accessible home, receptionist, programme and invoice links", () => {
+test("company menu provides accessible home, receptionist, module and invoice links", () => {
   const menu = read("../components/WorkspaceMenu.tsx");
   assert.match(menu, /DropdownMenuTrigger asChild/);
   assert.match(menu, /workspace menu/);
-  for (const name of ["Workspace home", "AI Receptionist", "Your programme", "Invoices & delivery"])
+  for (const name of ["Workspace home", "AI Receptionist", "Modules", "Invoices"])
     assert.ok(menu.includes(name));
+  assert.doesNotMatch(menu, /Your programme|Invoices & delivery/);
 });
 test("receptionist shares the client shell and keeps old links working", () => {
   const emma = read("../components/receptionist/ReceptionistWorkspace.tsx");
@@ -144,8 +147,49 @@ test("receptionist pages round-trip through the same client route", () => {
   });
   assert.deepEqual(clientSearch({ section: "investment", view: "practice" }), {
     tenant: undefined,
-    section: "investment",
+    section: "invoices",
   });
+});
+test("released client navigation contains only the five requested destinations", () => {
+  assert.deepEqual(clientSections, ["home", "receptionist", "modules", "invoices", "notes"]);
+  const portal = read("../components/client-portal/ClientPortal.tsx");
+  const nav = portal.slice(
+    portal.indexOf("const nav = ["),
+    portal.indexOf("] as const;", portal.indexOf("const nav = [")),
+  );
+  for (const section of clientSections) assert.ok(nav.includes(`id: "${section}"`));
+  assert.doesNotMatch(
+    nav,
+    /Your programme|Systems & connections|Useful links|Outcomes & investment/,
+  );
+});
+test("legacy programme and delivery bookmarks map to modules without dropping tenant", () => {
+  for (const legacy of ["overview", "outcomes"]) {
+    assert.deepEqual(clientSearch({ tenant: "tenant-a", section: legacy }), {
+      tenant: "tenant-a",
+      section: "modules",
+    });
+  }
+  assert.equal(resolveClientSection("investment"), "invoices");
+  for (const hidden of ["systems", "links"]) assert.equal(resolveClientSection(hidden), "home");
+  assert.equal(
+    clientWorkspaceHref("tenant-a", "outcomes"),
+    "/client?tenant=tenant-a&section=modules",
+  );
+});
+test("modules preserve source statuses and published delivery, without marketing completion claims", () => {
+  const portal = read("../components/client-portal/ClientPortal.tsx");
+  const summary = read("../components/client-portal/ClientDeliverySummary.tsx");
+  assert.match(
+    portal,
+    /section === "modules"[\s\S]*?<ClientDeliverySummary tenant=\{tenant\} userId=\{user.id\}/,
+  );
+  assert.match(portal, /<Status>\{o.status\}<\/Status>/);
+  assert.match(summary, /\.from\("client_delivery_updates"\)/);
+  assert.match(summary, /\.eq\("tenant_id", tenant\)/);
+  assert.match(summary, /delivery.isError/);
+  assert.match(summary, /\{area.status\}/);
+  assert.doesNotMatch(summary, /100%|All systems operational/);
 });
 test("active receptionist click only toggles its submenu without navigating or replacing content", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
