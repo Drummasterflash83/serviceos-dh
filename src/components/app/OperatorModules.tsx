@@ -1,9 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BellRing, Headphones, ClipboardList, Receipt, Layers, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { ClientPortal } from "@/components/client-portal/ClientPortal";
-import { ClientInvestment } from "@/components/client-portal/ClientInvestment";
-import { OperatorDelivery } from "./OperatorDelivery";
+import "@/styles/client-investment.css";
+import "@/styles/client-workspace.css";
 import { useOperatorHealth } from "./useOperatorHealth";
 import { healthSignal, type OperatorModule } from "@/lib/operator-workspace";
 import type { ReceptionistView } from "@/lib/client-workspace-nav";
@@ -13,6 +12,19 @@ const ReceptionistWorkspace = lazy(() =>
     default: module.ReceptionistWorkspace,
   })),
 );
+const ClientPortal = lazy(() =>
+  import("@/components/client-portal/ClientPortal").then((module) => ({
+    default: module.ClientPortal,
+  })),
+);
+const ClientInvestment = lazy(() =>
+  import("@/components/client-portal/ClientInvestment").then((module) => ({
+    default: module.ClientInvestment,
+  })),
+);
+const OperatorDelivery = lazy(() =>
+  import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
+);
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "improvements", label: "Feedback & responses" },
   { view: "today", label: "Receptionist overview" },
@@ -21,7 +33,7 @@ const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "phones", label: "Phone system" },
   { view: "details", label: "Training & setup" },
 ];
-export function OperatorModules({
+function OperatorModuleContent({
   tenantId,
   company,
   module,
@@ -187,5 +199,13 @@ export function OperatorModules({
         are released.
       </p>
     </>
+  );
+}
+
+export function OperatorModules(props: Parameters<typeof OperatorModuleContent>[0]) {
+  return (
+    <Suspense fallback={<p role="status">Opening module…</p>}>
+      <OperatorModuleContent {...props} />
+    </Suspense>
   );
 }

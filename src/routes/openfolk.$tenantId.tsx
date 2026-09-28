@@ -6,7 +6,7 @@
  * ownership) require an admin grant server-side; a viewer's write returns 403 (surfaced
  * inline). Never in tenant navigation.
  */
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
@@ -15,7 +15,7 @@ import { OperatorShell } from "@/components/app/OperatorShell";
 import { OperatorModules } from "@/components/app/OperatorModules";
 import { findOperatorTenant, operatorModule, type OperatorModule } from "@/lib/operator-workspace";
 import { receptionistView, type ReceptionistView } from "@/lib/client-workspace-nav";
-import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
+import type { WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
 import {
   resolveSection,
   sectionSearchValue,
@@ -23,7 +23,7 @@ import {
 } from "@/lib/openfolk-workspace-nav";
 import {
   archiveEndpoint,
-  listTenants,
+  listTenantDirectory,
   assignOwnership,
   createManualEndpoint,
   discoverEmail,
@@ -45,6 +45,12 @@ import {
   type Workspace,
 } from "@/lib/openfolk";
 import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
+
+const OpenfolkWorkspace = lazy(() =>
+  import("@/components/app/OpenfolkWorkspace").then((module) => ({
+    default: module.OpenfolkWorkspace,
+  })),
+);
 
 // The active workspace section + selected endpoint are durable URL state, so a mutation
 // refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
@@ -78,7 +84,7 @@ function WorkspacePage() {
   const directory = useQuery({
     queryKey: ["operator-directory", user?.id],
     queryFn: async () => {
-      const result = await listTenants();
+      const result = await listTenantDirectory();
       if (!result.ok)
         throw Error("Client directory unavailable. Check your OpenFolk operator access.");
       return result.data.tenants;
@@ -113,10 +119,16 @@ function WorkspacePage() {
         </div>
       </OperatorShell>
     );
-  return <TenantWorkspace key={tenant.tenant_id} tenantId={tenant.tenant_id} />;
+  return (
+    <TenantWorkspace
+      key={tenant.tenant_id}
+      tenantId={tenant.tenant_id}
+      tenantName={tenant.display_name ?? tenant.slug ?? "Client workspace"}
+    />
+  );
 }
 
-function TenantWorkspace({ tenantId }: { tenantId: string }) {
+function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantName: string }) {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -183,6 +195,8 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
   }, [tenantId]);
 
   useEffect(() => {
+    // Released modules do not depend on legacy discovery, readiness or audit data.
+    if (!search.tools) return;
     let active = true;
     setLoading(true);
     void fetchAll().finally(() => {
@@ -191,7 +205,7 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
     return () => {
       active = false;
     };
-  }, [fetchAll]);
+  }, [fetchAll, search.tools]);
 
   const guard = async (fn: () => Promise<{ ok: boolean; error?: { message: string } }>) => {
     if (busy) return false;
@@ -273,7 +287,32 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
     },
   };
 
-  // Loading / access-denied render without the shell (there is no tenant to frame yet).
+  const setModule = (module: OperatorModule) => void navigate({ search: { module, tools: false } });
+  // The authorised directory already identified this client. Every module enforces
+  // its own server/RLS access; legacy tool requests must not gate this shell.
+  if (!search.tools)
+    return (
+      <OperatorShell
+        company={tenantName}
+        tenantId={tenantId}
+        module={operatorModule(search.module)}
+        onSection={setSection}
+        onModule={setModule}
+      >
+        <OperatorModules
+          tenantId={tenantId}
+          company={tenantName}
+          module={operatorModule(search.module)}
+          onModule={setModule}
+          view={receptionistView(search.view)}
+          onView={(view) =>
+            void navigate({ search: { module: "receptionist", view, tools: false } })
+          }
+        />
+      </OperatorShell>
+    );
+
+  // Future tools keep their original independently authorised loading/access gate.
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-alt/30">
@@ -300,8 +339,6 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
       </div>
     );
 
-  const tenantName = workspace.summary.display_name ?? tenantId.slice(0, 8);
-  const setModule = (module: OperatorModule) => void navigate({ search: { module, tools: false } });
   return (
     <OperatorShell
       company={tenantName}
@@ -320,18 +357,7 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
           {actionError}
         </div>
       )}
-      {!search.tools ? (
-        <OperatorModules
-          tenantId={tenantId}
-          company={tenantName}
-          module={operatorModule(search.module)}
-          onModule={setModule}
-          view={receptionistView(search.view)}
-          onView={(view) =>
-            void navigate({ search: { module: "receptionist", view, tools: false } })
-          }
-        />
-      ) : (
+      <Suspense fallback={<p role="status">Opening future tools…</p>}>
         <OpenfolkWorkspace
           tenantName={tenantName}
           workspace={workspace}
@@ -349,7 +375,7 @@ function TenantWorkspace({ tenantId }: { tenantId: string }) {
           onSelectPerson={setPerson}
           delegatedActions={delegatedActions}
         />
-      )}
+      </Suspense>
     </OperatorShell>
   );
 }

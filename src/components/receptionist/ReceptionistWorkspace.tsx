@@ -2,9 +2,10 @@ import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
 import {
   Phone,
   Mic,
@@ -62,7 +63,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import "./receptionist.css";
-import { PhonePlanner } from "./PhonePlanner";
+const PhonePlanner = lazy(() =>
+  import("./PhonePlanner").then((module) => ({ default: module.PhonePlanner })),
+);
 import { CallRecording } from "./CallRecording";
 import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
@@ -93,12 +96,6 @@ type Feedback = {
   version: number;
   created_at: string;
   author_id: string;
-};
-type Page = {
-  connection: string;
-  calls: ReceptionistCall[];
-  nextCursor: string | null;
-  checkedAt: string;
 };
 type View = ReceptionistView;
 const stages = ["New", "Reviewing", "In progress", "Ready to test", "Resolved"];
@@ -263,7 +260,7 @@ export function ReceptionistWorkspace({
   });
   const w = demo ? demoWorkspace : selectedWorkspace(workspaces.data, selectedTenant);
   const tenant = w?.tenant_id;
-  const info = useEmmaInfo(tenant ?? "", user?.id, demo);
+  const info = useEmmaInfo(tenant ?? "", user?.id, demo, view === "practice" || view === "details");
   const workspaceHref = clientWorkspaceHref(demo ? undefined : tenant);
   function setView(next: View) {
     setMobileMenuOpen(false);
@@ -286,7 +283,7 @@ export function ReceptionistWorkspace({
     else window.location.assign(workspaceHref);
   }
   const operator = useQuery({
-    queryKey: ["receptionist-operator", user?.id],
+    queryKey: ["client-programme-editor", user?.id],
     enabled: !!user && !demo,
     queryFn: async () => {
       const { data, error } = await db.rpc("current_user_is_openfolk_operator", {
@@ -295,25 +292,10 @@ export function ReceptionistWorkspace({
       return !error && data === true;
     },
   });
-  const callsQuery = useInfiniteQuery({
-    queryKey: ["receptionist-calls", user?.id, tenant],
-    enabled: !!user && !!tenant && !demo,
-    initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => {
-      const { data, error } = await db.functions.invoke("receptionist-calls", {
-        body: { tenantId: tenant, before: pageParam },
-      });
-      if (error || data?.error)
-        throw Error(data?.error ?? "Call data is unavailable. Your saved feedback is still safe.");
-      return data as Page;
-    },
-    getNextPageParam: (p) => p.nextCursor ?? undefined,
-    staleTime: 45000,
-    refetchInterval: 60000,
-  });
+  const callsQuery = useReceptionistCalls(user?.id, tenant, !demo);
   const feedback = useQuery({
     queryKey: ["receptionist-feedback", user?.id, tenant],
-    enabled: !!user && !!tenant && !demo,
+    enabled: !!user && !!tenant && !demo && view === "improvements",
     queryFn: async () => {
       const { data, error } = await db
         .from("receptionist_feedback")
@@ -328,7 +310,7 @@ export function ReceptionistWorkspace({
   });
   const delivery = useQuery({
     queryKey: ["receptionist-delivery", user?.id, tenant],
-    enabled: !!user && !!tenant && !demo,
+    enabled: !!user && !!tenant && !demo && view === "improvements",
     queryFn: async () => {
       const { data, error } = await db
         .from("client_notification_outbox")
@@ -1143,7 +1125,11 @@ export function ReceptionistWorkspace({
               </p>
             </>
           )}
-          {view === "phones" && tenant && <PhonePlanner key={tenant} tenant={tenant} demo={demo} />}
+          {view === "phones" && tenant && (
+            <Suspense fallback={<p role="status">Opening phone system…</p>}>
+              <PhonePlanner key={tenant} tenant={tenant} demo={demo} />
+            </Suspense>
+          )}
           {tenant && (
             <PracticeImprove
               key={`practice:${tenant}:${user?.id}`}

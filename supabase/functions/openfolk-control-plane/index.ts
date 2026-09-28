@@ -101,6 +101,7 @@ const fail = (code: string, message: string, s: number) =>
 type Row = Record<string, any>;
 
 const READ_ACTIONS = new Set([
+  "tenants.directory",
   "tenants.list",
   "workspace",
   "resolve",
@@ -188,6 +189,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     switch (action) {
       // ── Reads (view) ──
+      case "tenants.directory": {
+        // Module navigation only needs identities, not five inventory queries per
+        // tenant. Keep the same platform gate and paginate without a silent cap.
+        const tenants = [];
+        for (let offset = 0; ; offset += 1000) {
+          const { data, error } = await admin
+            .from("tenants")
+            .select("tenant_id:id,slug,display_name")
+            .order("slug")
+            .order("id")
+            .range(offset, offset + 999);
+          if (error) return fail("directory_unavailable", "Client directory unavailable", 503);
+          tenants.push(...(data ?? []));
+          if ((data?.length ?? 0) < 1000) break;
+        }
+        return json({ ok: true, data: { tenants } });
+      }
       case "tenants.list": {
         const { data: tenants } = await admin.from("tenants").select("id").order("slug");
         const summaries = [];

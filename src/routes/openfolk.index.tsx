@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { BellRing, ChevronRight } from "lucide-react";
-import { listTenants } from "@/lib/openfolk";
+import { listTenantDirectory } from "@/lib/openfolk";
 import { useAuth } from "@/lib/auth";
 import { OperatorShell } from "@/components/app/OperatorShell";
 import { loadOperatorHealth } from "@/components/app/useOperatorHealth";
@@ -13,7 +13,7 @@ function OpenfolkList() {
   const directory = useQuery({
     queryKey: ["operator-directory", user?.id],
     queryFn: async () => {
-      const result = await listTenants();
+      const result = await listTenantDirectory();
       if (!result.ok)
         throw Error(
           "The client directory could not be opened. OpenFolk operator access is required.",

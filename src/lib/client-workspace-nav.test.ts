@@ -218,7 +218,7 @@ test("home status is scoped source data, never a fabricated health score", () =>
   assert.match(home, /maybeSingle\(\)/);
   assert.match(home, /receptionist.data.launch_stage/);
   assert.match(home, /mainNumberStatus\(receptionist.data.launch_stage\)/);
-  assert.match(home, /workspace-emma-calls/);
+  assert.match(home, /useReceptionistCalls\(userId, tenant/);
   assert.match(home, /isError/);
   assert.match(home, /refetch\(\)/);
   assert.doesNotMatch(home, /100%|All systems operational|createClient|service_role/);
