@@ -297,3 +297,6 @@ verify_jwt = false
 
 [functions.client-notifications]
 verify_jwt = false
+
+[functions.receptionist-care]
+verify_jwt = false

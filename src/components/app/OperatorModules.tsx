@@ -12,6 +12,9 @@ const ReceptionistWorkspace = lazy(() =>
     default: module.ReceptionistWorkspace,
   })),
 );
+const ReceptionistCare = lazy(() =>
+  import("./ReceptionistCare").then((module) => ({ default: module.ReceptionistCare })),
+);
 const ClientPortal = lazy(() =>
   import("@/components/client-portal/ClientPortal").then((module) => ({
     default: module.ClientPortal,
@@ -26,7 +29,7 @@ const OperatorDelivery = lazy(() =>
   import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
 );
 const tabs: { view: ReceptionistView; label: string }[] = [
-  { view: "improvements", label: "Feedback & responses" },
+  { view: "improvements", label: "OpenFolk review desk" },
   { view: "today", label: "Receptionist overview" },
   { view: "practice", label: "Practise & improve" },
   { view: "callers", label: "People who called" },
@@ -72,13 +75,17 @@ function OperatorModuleContent({
           ))}
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
-          <ReceptionistWorkspace
-            key={tenantId}
-            tenantId={tenantId}
-            embedded
-            initialView={view}
-            onViewChange={onView}
-          />
+          {view === "improvements" ? (
+            <ReceptionistCare key={tenantId} tenantId={tenantId} />
+          ) : (
+            <ReceptionistWorkspace
+              key={tenantId}
+              tenantId={tenantId}
+              embedded
+              initialView={view}
+              onViewChange={onView}
+            />
+          )}
         </Suspense>
       </>
     );

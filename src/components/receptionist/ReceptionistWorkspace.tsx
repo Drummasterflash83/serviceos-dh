@@ -67,6 +67,7 @@ const PhonePlanner = lazy(() =>
   import("./PhonePlanner").then((module) => ({ default: module.PhonePlanner })),
 );
 import { CallRecording } from "./CallRecording";
+import { CareProgress } from "./CareProgress";
 import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
 import { PracticeImprove, PracticeEvidence, EmmaTraining, useEmmaInfo } from "./PracticeImprove";
@@ -1031,8 +1032,8 @@ export function ReceptionistWorkspace({
             <>
               <div className="rw-board-intro">
                 <p>
-                  Tell us what Emma missed. We review it, improve her, and ask you to test the
-                  change.
+                  You decide what better looks like. Tell us what Emma missed; OpenFolk will check
+                  it, explain the next step and keep you updated.
                   <br />
                   <small>
                     Over time, verified customer, site and job cards will help Emma give more useful
@@ -1063,6 +1064,7 @@ export function ReceptionistWorkspace({
                       <span className={`rw-priority ${n.priority}`}>{n.priority} priority</span>
                     </div>
                     <h2>{n.title}</h2>
+                    {!demo && tenant && <CareProgress tenantId={tenant} feedbackId={n.id} />}
                     <p className="rw-preserve">
                       {describePhoneChanges(n.body) ??
                         (decodePhonePlan(n.body)
