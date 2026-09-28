@@ -85,25 +85,25 @@ export function WorkspaceHome({
         <p>The essentials for {company}. Choose what you need.</p>
       </div>
       <div className="cp-home-cards">
-        <button className="cp-home-card" onClick={() => open("overview")}>
+        <button className="cp-home-card" onClick={() => open("modules")}>
           <Layers size={24} />
-          <h3>Your programme</h3>
-          <p>What we’re building, the outcomes and what comes next.</p>
+          <h3>Your modules</h3>
+          <p>What each module does, its progress and the result it will deliver.</p>
           <span>
-            View programme <ArrowRight size={16} />
+            View modules <ArrowRight size={16} />
           </span>
         </button>
-        <button className="cp-home-card" onClick={() => open("investment")}>
+        <button className="cp-home-card" onClick={() => open("invoices")}>
           <Receipt size={24} />
-          <h3>Invoices & delivery</h3>
-          <p>See your recorded spend, download invoices and follow delivery.</p>
+          <h3>Invoices</h3>
+          <p>See what you’ve paid, what it delivered and download your invoices.</p>
           <span>
             View invoices <ArrowRight size={16} />
           </span>
         </button>
         <button className="cp-home-card" onClick={() => open("notes")}>
           <MessageSquare size={24} />
-          <h3>Talk to OpenFolk</h3>
+          <h3>Review & feedback</h3>
           <p>Share feedback, ask a question or flag something that needs attention.</p>
           <span>
             Leave feedback <ArrowRight size={16} />

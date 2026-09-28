@@ -19,6 +19,9 @@ Deno.serve(async (req) => {
   let sent = 0;
   for (const job of jobs ?? []) {
     try {
+      const routing = await db.rpc("care_legacy_notification_allowed", { p_id: job.id });
+      if (routing.error) throw new Error("Notification routing could not be verified");
+      if (routing.data !== true) continue;
       const { data: w } = await db
         .from("receptionist_workspaces")
         .select("company,name,slack_secret_name,vapi_secret_name")

@@ -2,6 +2,11 @@
 
 28 September 2026. **Local implementation, not a completed or deployed service.**
 
+**Later checkpoint:** see [operator care acceptance](EMMA-CARE-ACCEPTANCE-2026-09-28.md)
+for the durable worker, feedback, notification, menu and acceptance work completed
+after this initial foundation. The verification counts and remaining work below are
+historical, not the latest status.
+
 ## Approved outcome
 
 Every call reviewed against approved rules; evidence-backed issues; an accountable

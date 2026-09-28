@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   LogOut,
-  ClipboardList,
   Settings2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -23,9 +22,8 @@ import "@/styles/operator-workspace.css";
 const modules = [
   { key: "home", label: "Client overview", Icon: LayoutDashboard },
   { key: "receptionist", label: "AI receptionist", Icon: Headphones },
-  { key: "programme", label: "Programme", Icon: ClipboardList },
+  { key: "modules", label: "Modules", Icon: Layers },
   { key: "invoices", label: "Invoices", Icon: Receipt },
-  { key: "outcomes", label: "Delivery outcomes", Icon: Layers },
 ] as const;
 
 export function OperatorShell({

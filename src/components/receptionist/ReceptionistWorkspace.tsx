@@ -2,7 +2,7 @@ import { WorkspaceMenu } from "@/components/WorkspaceMenu";
 import { ClientHeaderBrand } from "@/components/ClientHeaderBrand";
 import { clientDisplayName } from "@/lib/client-brand";
 import { OpenFolkAdminLink } from "@/components/OpenFolkAdminLink";
-import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
@@ -203,6 +203,7 @@ export function ReceptionistWorkspace({
   const db = getSupabaseClient();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const observationSubmission = useRef(crypto.randomUUID());
   const [localView, setViewState] = useState<View>(receptionistView(initialView)),
     [selectedTenant, setSelectedTenant] = useState(tenantId ?? ""),
     [search, setSearch] = useState(""),
@@ -428,6 +429,7 @@ export function ReceptionistWorkspace({
     }
   }
   function addNote(callId: string | null = null) {
+    observationSubmission.current = crypto.randomUUID();
     setNoteCall(callId);
     setSelectedCall(null);
     setComposer(true);
@@ -446,15 +448,21 @@ export function ReceptionistWorkspace({
     setBusy(true);
     setError("");
     try {
-      const { error } = await db.from("receptionist_feedback").insert({
-        tenant_id: tenant,
-        call_id: noteCall,
-        title: String(form.get("title")).trim(),
-        body: String(form.get("body")).trim(),
-        category: form.get("category"),
-        priority: form.get("priority"),
+      const { error } = await db.rpc("submit_receptionist_observation", {
+        p_tenant: tenant,
+        p_submission: observationSubmission.current,
+        p_call: noteCall,
+        p_title: String(form.get("title")).trim(),
+        p_body: String(form.get("body")).trim(),
+        p_category: form.get("category"),
+        p_priority: form.get("priority"),
       });
-      if (error) throw Error("Your note was not saved. Please try again.");
+      if (error)
+        throw Error(
+          error.code === "40001"
+            ? "This observation was already saved with different details. Close it and open a new observation for another change."
+            : "Save is not yet confirmed. Retry the same details; the same receipt prevents duplicate observations.",
+        );
       await qc.invalidateQueries({ queryKey: ["receptionist-feedback"] });
       await qc.invalidateQueries({ queryKey: ["receptionist-delivery"] });
       setComposer(false);
@@ -498,7 +506,9 @@ export function ReceptionistWorkspace({
       ? "Sent to Slack"
       : d?.state === "failed"
         ? "Slack delivery needs attention"
-        : "Saved · Slack delivery pending";
+        : d?.state === "superseded"
+          ? "Saved in OpenFolk’s review desk"
+          : "Saved · Slack delivery pending";
   };
   function CallList({
     items = visible.slice(0, view === "today" ? 5 : visible.length),

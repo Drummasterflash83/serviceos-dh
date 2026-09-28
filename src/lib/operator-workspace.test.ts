@@ -5,6 +5,7 @@ import {
   findOperatorTenant,
   operatorModule,
   healthSignal,
+  operatorModules,
   type OperatorHealth,
 } from "./operator-workspace.ts";
 const base: OperatorHealth = {
@@ -27,10 +28,27 @@ test("tenant names and old IDs resolve only through the authorised directory", (
   assert.equal(findOperatorTenant([], "drummonds"), undefined);
 });
 test("module links are validated", () => {
-  for (const module of ["home", "receptionist", "programme", "invoices", "outcomes"])
+  for (const module of ["home", "receptionist", "modules", "invoices"])
     assert.equal(operatorModule(module), module);
   for (const invalid of [null, {}, "../bad", "phones"])
     assert.equal(operatorModule(invalid), "home");
+});
+test("retired programme and delivery links use the same modules records", () => {
+  assert.deepEqual(operatorModules, ["home", "receptionist", "modules", "invoices"]);
+  assert.equal(operatorModule("programme"), "modules");
+  assert.equal(operatorModule("outcomes"), "modules");
+});
+test("operator receptionist is a dedicated care desk, not a duplicate client dashboard", () => {
+  const source = read("components/app/OperatorModules.tsx");
+  assert.match(source, /<ReceptionistCare key=\{tenantId\} tenantId=\{tenantId\}/);
+  assert.doesNotMatch(
+    source,
+    /ReceptionistWorkspace|Practise & improve|Receptionist overview|People who called|const tabs/,
+  );
+  assert.match(source, /section="modules" operatorEmbedded/);
+  const shell = read("components/app/OperatorShell.tsx");
+  assert.match(shell, /key: "modules", label: "Modules"/);
+  assert.doesNotMatch(shell, /key: "programme"|label: "Delivery outcomes"/);
 });
 test("missing health never becomes healthy or zero", () =>
   assert.equal(healthSignal(undefined).tone, "waiting"));
@@ -79,4 +97,30 @@ test("shared editors retain optimistic concurrency", () => {
   const edit = read("components/app/OperatorDelivery.tsx");
   assert.match(edit, /p_version: edit.version/);
   assert.match(edit, /Publish to client/);
+});
+test("general client feedback reaches the operator overview and paginates by a stable key", () => {
+  const source = read("components/app/OperatorFeedbackInbox.tsx");
+  assert.match(
+    read("components/app/OperatorModules.tsx"),
+    /<OperatorFeedbackInbox key=\{tenantId\} tenantId=\{tenantId\}/,
+  );
+  assert.match(source, /useInfiniteQuery/);
+  assert.match(source, /queryKey: \["operator-feedback-notes", user\?\.id, tenantId\]/);
+  assert.match(source, /\.from\("client_programme_notes"\)/);
+  assert.match(source, /\.eq\("tenant_id", tenantId\)/);
+  assert.match(source, /\.order\("created_at", \{ ascending: false \}\)/);
+  assert.match(source, /\.order\("id", \{ ascending: false \}\)/);
+  assert.match(source, /created_at\.lt\./);
+  assert.match(source, /id\.lt\./);
+  assert.match(source, /Load earlier feedback/);
+  assert.doesNotMatch(source, /select\("\*"\)|service_role|dangerouslySetInnerHTML/);
+});
+test("operator replies append to the same client conversation without spoofing the author", () => {
+  const source = read("components/app/OperatorFeedbackInbox.tsx");
+  assert.match(source, /authority.data !== true/);
+  assert.match(source, /\.insert\(\{ tenant_id: tenantId, body \}\)/);
+  assert.doesNotMatch(source, /\.update\(|\.delete\(|author_id: user/);
+  assert.match(source, /queryKey: \["client-programme-notes"\]/);
+  assert.match(source, /Reply saved\. The client can read it/);
+  assert.match(source, /not an unread or resolved count/);
 });

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, PhoneOff, Headphones, Send, MessageSquare, ChevronDown } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Headphones, MessageSquare, ChevronDown } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { type ReceptionistCall } from "@/lib/receptionist-data";
 import { callBrief } from "@/lib/receptionist-review";
@@ -13,6 +13,11 @@ import {
 } from "@/lib/receptionist-practice-runtime";
 import type Vapi from "@vapi-ai/web";
 import { CallRecording } from "./CallRecording";
+import {
+  PracticeFeedback,
+  SavedPracticeFeedback,
+  type PracticeFeedbackHandle,
+} from "./PracticeFeedback";
 
 export type EmmaInfo = {
   enabled: boolean;
@@ -120,12 +125,37 @@ export function PracticeImprove({
     } | null>(null),
     [showFeedback, setShowFeedback] = useState(false),
     [transcript, setTranscript] = useState<{ role: string; text: string }[]>([]);
-  const [noticed, setNoticed] = useState(""),
-    [sending, setSending] = useState(false),
-    [saved, setSaved] = useState<string | null>(null),
+  const [saved, setSaved] = useState<string | null>(null),
     [expandedSession, setExpandedSession] = useState<string | null>(null);
-  const submission = useRef(crypto.randomUUID()),
-    pendingPayload = useRef<Record<string, unknown> | null>(null);
+  const feedbackHandle = useRef<PracticeFeedbackHandle | null>(null);
+  const restoredDraft = useRef(false),
+    starting = useRef(false);
+  const drafts = useQuery({
+    queryKey: ["receptionist-practice-drafts", userId, tenant],
+    enabled: !!userId && !demo,
+    queryFn: async () => {
+      const result = await db
+        .from("receptionist_practice_drafts")
+        .select("session_id,receptionist_practice_sessions!inner(id,call_id,created_at)")
+        .eq("tenant_id", tenant)
+        .eq("author_id", userId!)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (result.error) throw Error("Saved feedback drafts could not be loaded.");
+      return result.data;
+    },
+  });
+  useEffect(() => {
+    if (drafts.isPending || drafts.isError || restoredDraft.current) return;
+    restoredDraft.current = true;
+    const pending = drafts.data?.[0]?.receptionist_practice_sessions as unknown as
+      PracticeSession | undefined;
+    if (!session && pending?.call_id) {
+      setSession({ id: pending.id, callId: pending.call_id, startedAt: pending.created_at });
+      setState("ended");
+      setShowFeedback(true);
+    }
+  }, [drafts.data, drafts.isPending, drafts.isError, session]);
   const notes = useQuery({
     queryKey: ["receptionist-practice-notes", userId, tenant],
     enabled: !!userId && !demo,
@@ -236,7 +266,7 @@ export function PracticeImprove({
     }
   }, [active]);
   async function start() {
-    if (demo || state === "active" || state === "connecting") return;
+    if (demo || state === "active" || state === "connecting" || starting.current) return;
     if (!info.data?.enabled) {
       setError(
         info.data?.unavailableReason ??
@@ -244,16 +274,24 @@ export function PracticeImprove({
       );
       return;
     }
-    if (noticed.trim() && !saved) {
-      setError(
-        "Send or clear your current feedback before starting another conversation, so it stays linked to the right call.",
-      );
+    starting.current = true;
+    const beforeFeedbackFlush = generation.current;
+    try {
+      await feedbackHandle.current?.complete();
+    } catch (e) {
+      starting.current = false;
+      setError(e instanceof Error ? e.message : "Save your feedback before starting another test.");
+      return;
+    }
+    if (!alive.current || beforeFeedbackFlush !== generation.current) {
+      starting.current = false;
       return;
     }
     const attempt = ++generation.current;
     const connection = new PracticeLifecycle();
     lifecycle.current = connection;
     setState("connecting");
+    starting.current = false;
     providerCreated.current = false;
     micInCall.current = false;
     joinStage.current = "not_started";
@@ -437,64 +475,6 @@ export function PracticeImprove({
       }
     }
   }
-  async function send(e: FormEvent) {
-    e.preventDefault();
-    if (
-      sending ||
-      state === "connecting" ||
-      state === "active" ||
-      !userId ||
-      demo ||
-      !noticed.trim()
-    )
-      return;
-    setSending(true);
-    setError("");
-    const payload = pendingPayload.current ?? {
-      tenant_id: tenant,
-      call_id: session?.callId ?? null,
-      practice_session_id: session?.id ?? null,
-      submission_key: submission.current,
-      category: "improvement",
-      priority: "normal",
-      title: "Emma test feedback",
-      body: noticed.trim(),
-    };
-    pendingPayload.current = payload;
-    try {
-      const { data, error } = await db
-        .from("receptionist_feedback")
-        .insert(payload)
-        .select("id")
-        .single();
-      let id = data?.id;
-      if (error) {
-        const previous = await db
-          .from("receptionist_feedback")
-          .select("id")
-          .eq("tenant_id", tenant)
-          .eq("author_id", userId)
-          .eq("submission_key", submission.current)
-          .maybeSingle();
-        if (previous.error || !previous.data)
-          throw Error(
-            "Save could not be confirmed. Your draft is kept; retry checks the same submission, not a duplicate.",
-          );
-        id = previous.data.id;
-      }
-      setSaved(id!);
-      setNoticed("");
-      pendingPayload.current = null;
-      submission.current = crypto.randomUUID();
-      await qc.invalidateQueries({
-        predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
-      });
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSending(false);
-    }
-  }
   const speaking = state === "active" || state === "connecting";
   return (
     <div className="ep" hidden={!active}>
@@ -610,28 +590,21 @@ export function PracticeImprove({
                 ) : (
                   <p>{result.isError ? result.error.message : "Preparing your call record…"}</p>
                 )}
-                {showFeedback && (
-                  <form className="ep-inline-feedback" onSubmit={(e) => void send(e)}>
-                    <label htmlFor="emma-test-feedback">What should Emma do differently?</label>
-                    <textarea
-                      id="emma-test-feedback"
-                      value={noticed}
-                      maxLength={3500}
-                      disabled={sending || !!pendingPayload.current}
-                      onChange={(e) => setNoticed(e.target.value)}
-                      placeholder="Tell OpenFolk what happened or what you want changed."
-                    />
-                    <button
-                      className="rw-btn rw-btn-primary"
-                      disabled={demo || sending || !noticed.trim()}
-                    >
-                      <Send size={17} /> {sending ? "Saving…" : "Save feedback"}
-                    </button>
-                    <small>
-                      The test call is saved even if you leave without feedback. Feedback does not
-                      change Emma automatically.
-                    </small>
-                  </form>
+                {showFeedback && userId && !demo && (
+                  <PracticeFeedback
+                    key={session.id}
+                    sessionId={session.id}
+                    userId={userId}
+                    tenant={tenant}
+                    active={active}
+                    handle={feedbackHandle}
+                    onSaved={(id) => {
+                      if (alive.current) setSaved(id);
+                      void qc.invalidateQueries({
+                        predicate: (q) => String(q.queryKey[0]).startsWith("receptionist-"),
+                      });
+                    }}
+                  />
                 )}
                 {saved && (
                   <p className="ep-saved" role="status">
@@ -667,6 +640,14 @@ export function PracticeImprove({
       {error && (
         <div className="rw-banner rw-error" role="alert">
           {error}
+        </div>
+      )}
+      {drafts.isError && (
+        <div className="rw-banner rw-error" role="alert">
+          Saved feedback drafts could not be checked. Your existing reports are unchanged.{" "}
+          <button type="button" onClick={() => void drafts.refetch()}>
+            Retry drafts
+          </button>
         </div>
       )}
       <section className="rw-panel ep-history">
@@ -748,7 +729,9 @@ export function PracticeImprove({
                           ? "Delivered to Slack"
                           : d?.state === "failed"
                             ? "Saved · Slack delivery needs attention"
-                            : "Saved · Slack delivery pending"}
+                            : d?.state === "superseded"
+                              ? "Saved in OpenFolk’s review desk"
+                              : "Saved · Slack delivery pending"}
                     </small>
                   )}
                   <PracticeEvidence
@@ -757,6 +740,14 @@ export function PracticeImprove({
                     viewerId={userId!}
                     expanded={expandedSession === test.id}
                   />
+                  {!n && userId && expandedSession === test.id && test.id !== session?.id && (
+                    <SavedPracticeFeedback
+                      sessionId={test.id}
+                      userId={userId}
+                      tenant={tenant}
+                      active={active}
+                    />
+                  )}
                 </div>
               </article>
             );

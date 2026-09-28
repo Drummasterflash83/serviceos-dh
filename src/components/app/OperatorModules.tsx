@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BellRing, Headphones, ClipboardList, Receipt, Layers, ArrowRight } from "lucide-react";
+import { BellRing, Headphones, Receipt, Layers, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import "@/styles/client-investment.css";
 import "@/styles/client-workspace.css";
@@ -7,11 +7,6 @@ import { useOperatorHealth } from "./useOperatorHealth";
 import { healthSignal, type OperatorModule } from "@/lib/operator-workspace";
 import type { ReceptionistView } from "@/lib/client-workspace-nav";
 
-const ReceptionistWorkspace = lazy(() =>
-  import("@/components/receptionist/ReceptionistWorkspace").then((module) => ({
-    default: module.ReceptionistWorkspace,
-  })),
-);
 const ReceptionistCare = lazy(() =>
   import("./ReceptionistCare").then((module) => ({ default: module.ReceptionistCare })),
 );
@@ -28,20 +23,14 @@ const ClientInvestment = lazy(() =>
 const OperatorDelivery = lazy(() =>
   import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
 );
-const tabs: { view: ReceptionistView; label: string }[] = [
-  { view: "improvements", label: "OpenFolk review desk" },
-  { view: "today", label: "Receptionist overview" },
-  { view: "practice", label: "Practise & improve" },
-  { view: "callers", label: "People who called" },
-  { view: "phones", label: "Phone system" },
-  { view: "details", label: "Training & setup" },
-];
+const OperatorFeedbackInbox = lazy(() =>
+  import("./OperatorFeedbackInbox").then((module) => ({ default: module.OperatorFeedbackInbox })),
+);
 function OperatorModuleContent({
   tenantId,
   company,
   module,
   onModule,
-  view,
   onView,
 }: {
   tenantId: string;
@@ -60,43 +49,12 @@ function OperatorModuleContent({
       <>
         <div className="op-heading">
           <p className="op-eyebrow">RELEASED MODULE · AI RECEPTIONIST</p>
-          <h1>{data?.receptionist?.name ?? "Receptionist"}, from your side.</h1>
-          <p>Review the call. Respond to the client. Keep each improvement moving.</p>
+          <h1>Keep {data?.receptionist?.name ?? "the receptionist"} working well.</h1>
+          <p>See what needs attention. Check the evidence. Approve the next improvement.</p>
         </div>
-        <nav className="op-inline-nav" aria-label="Receptionist tools">
-          {tabs.map((tab) => (
-            <button
-              key={tab.view}
-              aria-current={view === tab.view ? "page" : undefined}
-              onClick={() => onView(tab.view)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
-          {view === "improvements" ? (
-            <ReceptionistCare key={tenantId} tenantId={tenantId} />
-          ) : (
-            <ReceptionistWorkspace
-              key={tenantId}
-              tenantId={tenantId}
-              embedded
-              initialView={view}
-              onViewChange={onView}
-            />
-          )}
+          <ReceptionistCare key={tenantId} tenantId={tenantId} />
         </Suspense>
-      </>
-    );
-  if (module === "programme")
-    return (
-      <>
-        <p className="op-shared-note">
-          This is the client’s shared programme. Edits here update their workspace; only authorised
-          OpenFolk editors can publish.
-        </p>
-        <ClientPortal key={tenantId} tenantId={tenantId} section="overview" operatorEmbedded />
       </>
     );
   if (module === "invoices")
@@ -113,16 +71,16 @@ function OperatorModuleContent({
         </div>
       </>
     );
-  if (module === "outcomes")
+  if (module === "modules")
     return (
       <>
         <OperatorDelivery key={`${tenantId}-delivery`} tenantId={tenantId} mode="outcomes" />
         <div style={{ marginTop: 28 }}>
           <p className="op-shared-note">
-            Outcome packages below share the client’s programme. Changes to scope, prices and
-            delivery status publish to their workspace.
+            The same modules your client sees. Publish clear scope, agreed prices and verified
+            progress to their workspace.
           </p>
-          <ClientPortal key={tenantId} tenantId={tenantId} section="outcomes" operatorEmbedded />
+          <ClientPortal key={tenantId} tenantId={tenantId} section="modules" operatorEmbedded />
         </div>
       </>
     );
@@ -172,7 +130,7 @@ function OperatorModuleContent({
         <button className="op-card op-module-card" onClick={() => onView("improvements")}>
           <Headphones size={27} />
           <h2>{data?.receptionist?.name ?? "AI receptionist"}</h2>
-          <p>Calls, feedback, practice reports and the next improvement.</p>
+          <p>Performance, client feedback and improvements that need your decision.</p>
           <p className="op-note">
             {data?.receptionist
               ? `Recorded stage: ${data.receptionist.launch_stage}. Phone routing is verified separately.`
@@ -182,22 +140,18 @@ function OperatorModuleContent({
             Open receptionist <ArrowRight size={16} />
           </span>
         </button>
-        <button className="op-card op-module-card" onClick={() => onModule("programme")}>
-          <ClipboardList size={27} />
-          <h2>Programme</h2>
-          <p>Shape the shared plan, priorities and next steps.</p>
+        <button className="op-card op-module-card" onClick={() => onModule("modules")}>
+          <Layers size={27} />
+          <h2>Modules</h2>
+          <p>Publish progress, scope and fixed-price outcomes.</p>
         </button>
         <button className="op-card op-module-card" onClick={() => onModule("invoices")}>
           <Receipt size={27} />
           <h2>Invoices</h2>
           <p>See the investment. Explain what each invoice delivered.</p>
         </button>
-        <button className="op-card op-module-card" onClick={() => onModule("outcomes")}>
-          <Layers size={27} />
-          <h2>Delivery outcomes</h2>
-          <p>Publish progress, scope and fixed-price packages.</p>
-        </button>
       </div>
+      <OperatorFeedbackInbox key={tenantId} tenantId={tenantId} />
       <p className="op-note">
         {data
           ? `Checked ${new Date(data.checkedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}. `

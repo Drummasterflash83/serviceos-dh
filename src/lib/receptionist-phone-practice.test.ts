@@ -9,8 +9,13 @@ test("practice connects in the app and binds the exact reserved session", () => 
   );
   assert.match(ui, /Test \{name\}/);
   assert.match(ui, /voice\.reconnect\(\{ webCallUrl: data\.webCallUrl, id: data\.callId \}\)/);
-  assert.match(ui, /practice_session_id: session\?\.id/);
-  assert.match(ui, /call_id: session\?\.callId/);
+  const feedback = readFileSync(
+    new URL("../components/receptionist/PracticeFeedback.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(ui, /sessionId=\{session\.id\}/);
+  assert.match(feedback, /p_session: sessionId/);
+  assert.match(feedback, /complete_receptionist_practice_draft/);
   assert.match(ui, /key=\{session\.id\}/);
   assert.doesNotMatch(ui, /Find my call|callerDigits|href=\{dialHref\}/);
 });

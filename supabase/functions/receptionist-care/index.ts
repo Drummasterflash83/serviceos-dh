@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { normalizeCall, record } from "../_shared/receptionist-data.ts";
 import { practiceCallMatches } from "../_shared/receptionist-web-call.ts";
 import { verifyCareChannel, postCareAlert } from "../_shared/care-slack.ts";
-import { REVIEW_VERSION, evidenceHash, reviewConversation } from "../_shared/receptionist-care.ts";
+import { evidenceHash } from "../_shared/receptionist-care.ts";
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization,apikey,content-type,x-client-info",
@@ -49,6 +49,44 @@ Deno.serve(async (req) => {
       return reply({ error: "Leave client preview before reviewing" }, 403);
     const body = record(await req.json());
     if (!uuid(body.tenantId)) return reply({ error: "Valid workspace required" }, 400);
+    if (body.action === "activate_notifications") {
+      const secret = Deno.env.get("RECEPTIONIST_CARE_WORKER_SECRET");
+      if (!secret) return reply({ error: "The care worker awaits setup" }, 503);
+      const probe = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/receptionist-care-worker`,
+        {
+          method: "POST",
+          redirect: "error",
+          signal: AbortSignal.timeout(15000),
+          headers: { "Content-Type": "application/json", "x-care-secret": secret },
+          body: JSON.stringify({ action: "readiness" }),
+        },
+      );
+      if (!probe.ok)
+        return reply({ error: "The deployed worker has not passed its setup check" }, 503);
+      const readiness = await probe.json();
+      if (!uuid(readiness.receipt) || readiness.version !== "care-worker-v1")
+        return reply({ error: "Worker readiness receipt unavailable" }, 503);
+      const activation = await userDb.rpc("care_enable_notifications", {
+        p_tenant: body.tenantId,
+        p_worker_receipt: readiness.receipt,
+      });
+      if (activation.error)
+        return reply(
+          {
+            code:
+              activation.error.message === "legacy_delivery_uncertain"
+                ? "legacy_delivery_uncertain"
+                : "notification_setup_incomplete",
+            error:
+              activation.error.message === "legacy_delivery_uncertain"
+                ? "An earlier report may already have reached Slack. Check its delivery before switching routes; retrying must not send it twice."
+                : "Not activated. Verify all three routes and allow any in-flight report to finish, then retry.",
+          },
+          409,
+        );
+      return reply({ activated: true, providerChanges: 0 });
+    }
     if (body.action === "verify_alert_route") {
       if (!["updates", "attention", "urgent"].includes(String(body.kind)))
         return reply({ error: "Invalid alert route" }, 400);
@@ -110,10 +148,7 @@ Deno.serve(async (req) => {
       .single();
     if (workspace.error) return reply({ error: "Workspace unavailable" }, 404);
     const providerKey = Deno.env.get(workspace.data.vapi_secret_name);
-    const reviewKey = Deno.env.get("OPENFOLK_REVIEW_OPENAI_KEY");
-    const model = Deno.env.get("OPENFOLK_REVIEW_MODEL");
-    if (!providerKey || !reviewKey || !model)
-      return reply({ error: "Review connection awaits setup" }, 503);
+    if (!providerKey) return reply({ error: "Review connection awaits setup" }, 503);
     const provider = await fetch(`https://api.vapi.ai/call/${body.callId}`, {
       headers: { Authorization: `Bearer ${providerKey}` },
       redirect: "error",
@@ -139,56 +174,22 @@ Deno.serve(async (req) => {
     const call = normalizeCall(raw);
     if (call.status !== "ended" || !call.transcript)
       return reply({ error: "Awaiting completed call evidence" }, 409);
-    const feedback: string[] = [];
-    for (let page = 0; ; page++) {
-      const rows = await admin
-        .from("receptionist_feedback")
-        .select("body")
-        .eq("tenant_id", body.tenantId)
-        .eq("call_id", body.callId)
-        .order("id")
-        .range(page * 100, (page + 1) * 100 - 1);
-      if (rows.error) throw Error("feedback_unavailable");
-      feedback.push(...rows.data.map((r) => r.body));
-      if (feedback.join("\n").length > 20000)
-        return reply({ error: "This call needs a manual review: extensive feedback" }, 422);
-      if (rows.data.length < 100) break;
-    }
+    // Manual requests join the same leased, budgeted lane as background review.
+    // A second browser click cannot bypass quotas or race a second paid model request.
     const hash = await evidenceHash({
       transcript: call.transcript,
-      rules: settings.data.approved_rules,
+      updatedAt: raw.updatedAt,
       rulesVersion: settings.data.version,
-      feedback,
-      callType: call.type,
     });
-    const reviewer = `${REVIEW_VERSION}:${model}`;
-    const prior = await admin
-      .from("receptionist_call_reviews")
-      .select("assessment")
-      .eq("tenant_id", body.tenantId)
-      .eq("call_id", body.callId)
-      .eq("evidence_hash", hash)
-      .eq("reviewer_version", reviewer)
-      .maybeSingle();
-    if (prior.error) throw Error("review_store_unavailable");
-    if (prior.data) return reply({ assessment: prior.data.assessment, replayed: true });
-    const assessment = await reviewConversation({
-      transcript: call.transcript,
-      approvedRules: settings.data.approved_rules,
-      feedback,
-      callType: call.type,
-      key: reviewKey,
-      model,
-    });
-    const saved = await admin.rpc("care_store_review", {
+    const saved = await admin.rpc("care_enqueue_review", {
       p_tenant: body.tenantId,
       p_call: body.callId,
-      p_hash: hash,
-      p_reviewer: reviewer,
-      p_assessment: assessment,
+      p_observation_key: `manual:${hash}`,
+      p_observed_at: new Date().toISOString(),
+      p_source: "manual",
     });
     if (saved.error) throw Error("review_save_failed");
-    return reply({ assessment, replayed: saved.data === false });
+    return reply({ queued: true, replayed: saved.data === false });
   } catch {
     // Provider text, credentials and call content must never become error diagnostics.
     return reply({ error: "Review did not complete. No changes were made to Emma." }, 502);

@@ -47,6 +47,73 @@
 .care-list small {
   color: #686176;
 }
+.care-metrics em {
+  font-size: 18px;
+  font-style: normal;
+  color: #70697c;
+}
+.care-service-status {
+  display: flex;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid #ded6e7;
+  border-radius: 20px;
+  background: #f2eef7;
+  margin-bottom: 20px;
+}
+.care-service-status h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+.care-service-status p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+.care-service-status small {
+  color: #625a70;
+}
+.care-service-status svg {
+  flex-shrink: 0;
+}
+.care-tone-good {
+  background: #edf5ed;
+  border-color: #cbdcc9;
+}
+.care-tone-attention {
+  background: #fff6e9;
+  border-color: #e9d5b7;
+}
+.care-performance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.care-stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #ece7f0;
+  padding: 14px 0;
+}
+.care-stat-row strong {
+  color: #665085;
+}
+.care-next-actions {
+  margin-top: 20px;
+}
+.care-root .care-action-row {
+  width: 100%;
+  text-align: left;
+  justify-content: space-between;
+  padding: 18px;
+  background: #faf8fc;
+  margin-top: 10px;
+}
+.care-action-row small {
+  display: block;
+  color: #696174;
+  margin-top: 6px;
+}
 .care-tabs {
   display: flex;
   gap: 8px;
@@ -200,6 +267,12 @@
   .care-desk,
   .care-route-grid {
     grid-template-columns: 1fr;
+  }
+  .care-performance-grid {
+    grid-template-columns: 1fr;
+  }
+  .care-service-status {
+    padding: 20px;
   }
   .care-metrics > div {
     padding: 18px;

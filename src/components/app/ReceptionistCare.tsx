@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, Bell, CheckCircle2, UserCheck, ArrowRight } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { careHealth, type CareSummary } from "@/lib/care-health";
+import { CareEvidence } from "./CareEvidence";
 import "@/styles/receptionist-care.css";
 
 type Issue = {
@@ -38,7 +40,7 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
   const db = getSupabaseClient(),
     qc = useQueryClient(),
     { user } = useAuth();
-  const [tab, setTab] = useState("queue"),
+  const [tab, setTab] = useState("performance"),
     [selected, setSelected] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState(""),
@@ -60,7 +62,7 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
         issues.push(...r.data);
         if (r.data.length < 500) break;
       }
-      const [settings, routes, permission, reviews] = await Promise.all([
+      const [settings, routes, permission, reviews, operating] = await Promise.all([
         db.from("receptionist_review_settings").select("*").eq("tenant_id", tenantId).maybeSingle(),
         db
           .from("module_alert_routes")
@@ -75,8 +77,9 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
           .select("call_id", { count: "exact", head: true })
           .eq("tenant_id", tenantId)
           .eq("state", "reviewed"),
+        db.rpc("care_operating_summary", { p_tenant: tenantId }),
       ]);
-      if (settings.error || routes.error || permission.error || reviews.error)
+      if (settings.error || routes.error || permission.error || reviews.error || operating.error)
         throw Error("Review setup could not be loaded.");
       return {
         issues,
@@ -84,6 +87,7 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
         routes: routes.data,
         admin: permission.data === true,
         reviewCount: reviews.count,
+        operating: operating.data as CareSummary,
       };
     },
   });
@@ -101,7 +105,9 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
         throw Error(
           r.error.code === "40001"
             ? "This record changed. Reload and review it before continuing."
-            : "Not saved. Check the required details, permissions and current stage.",
+            : r.error.code === "legacy_delivery_uncertain"
+              ? "An earlier report may already have reached Slack. Check its delivery before switching routes; we will not risk sending it twice."
+              : "Not saved. Check the required details, permissions and current stage.",
         );
       setMessage(success);
       await qc.invalidateQueries({ queryKey: ["receptionist-care"] });
@@ -146,9 +152,10 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
       <header className="care-intro">
         <div>
           <p className="op-eyebrow">OPENFOLK CARE · AI RECEPTIONIST</p>
-          <h2>Keep every improvement moving.</h2>
+          <h2>Your client calls. We keep watch.</h2>
           <p>
-            Your client stays in control. OpenFolk checks the evidence and owns the follow-through.
+            See what is working, what needs you and what your client is testing. One place to own
+            the follow-through.
           </p>
         </div>
         <ShieldCheck aria-hidden="true" size={30} />
@@ -177,15 +184,20 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
               <small>Changes never approve themselves</small>
             </div>
             <div>
-              <span>Review coverage</span>
-              <strong>{data.reviewCount ?? "—"}</strong>
+              <span>Calls reviewed</span>
+              <strong>
+                {data.operating.reviews.reviewed} <em>/ {data.operating.reviews.observed}</em>
+              </strong>
               <small>
-                Saved assessments · not a count of all calls. Continuous monitoring awaits
-                activation.
+                Of calls observed by this service ·{" "}
+                {data.operating.reviews.queued + data.operating.reviews.processing} waiting
               </small>
             </div>
           </div>
           <nav className="care-tabs" aria-label="OpenFolk care">
+            <button aria-pressed={tab === "performance"} onClick={() => setTab("performance")}>
+              Performance & checks
+            </button>
             <button aria-pressed={tab === "queue"} onClick={() => setTab("queue")}>
               Review desk
             </button>
@@ -205,6 +217,117 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
             <p className="care-success" role="status">
               {message}
             </p>
+          )}
+          {tab === "performance" && (
+            <>
+              <div className={`care-service-status care-tone-${careHealth(data.operating).tone}`}>
+                <ShieldCheck size={28} aria-hidden="true" />
+                <div>
+                  <h3>{careHealth(data.operating).title}</h3>
+                  <p>{careHealth(data.operating).detail}</p>
+                  <small>
+                    {data.operating.monitoring.last_scan_at
+                      ? `Last completed check: ${date(data.operating.monitoring.last_scan_at)}`
+                      : "No completed background scan recorded"}
+                  </small>
+                </div>
+              </div>
+              <div className="care-performance-grid">
+                <article className="care-detail">
+                  <p className="op-eyebrow">THE CLIENT IS IN CONTROL</p>
+                  <h3>Practice & feedback</h3>
+                  <div className="care-stat-row">
+                    <span>Completed test calls</span>
+                    <strong>{data.operating.practice.completed}</strong>
+                  </div>
+                  <div className="care-stat-row">
+                    <span>Tests with client feedback</span>
+                    <strong>{data.operating.practice.with_feedback}</strong>
+                  </div>
+                  <p>
+                    Tests and feedback feed the review desk. You only need to step in where
+                    judgement is needed.
+                  </p>
+                  <button onClick={() => setTab("queue")}>
+                    Review their feedback <ArrowRight size={16} />
+                  </button>
+                </article>
+                <article className="care-detail">
+                  <p className="op-eyebrow">NOTHING QUIETLY DISAPPEARS</p>
+                  <h3>Review & delivery</h3>
+                  <div className="care-stat-row">
+                    <span>Awaiting call evidence</span>
+                    <strong>{data.operating.reviews.awaiting_evidence}</strong>
+                  </div>
+                  <div className="care-stat-row">
+                    <span>Reviews needing attention</span>
+                    <strong>{data.operating.reviews.failed}</strong>
+                  </div>
+                  <div className="care-stat-row">
+                    <span>Alerts waiting to be delivered</span>
+                    <strong>{data.operating.alerts.pending}</strong>
+                  </div>
+                  <div className="care-stat-row">
+                    <span>Alerts needing a delivery check</span>
+                    <strong>
+                      {data.operating.alerts.failed + data.operating.alerts.delivery_unknown}
+                    </strong>
+                  </div>
+                  <p>
+                    Only a confirmed Slack receipt counts as delivered. A missing response is never
+                    treated as success.
+                  </p>
+                  <button onClick={() => setTab("alerts")}>
+                    Notification settings <ArrowRight size={16} />
+                  </button>
+                </article>
+              </div>
+              <article className="care-detail care-next-actions">
+                <h3>Start with what needs you.</h3>
+                {open.length ? (
+                  open
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        (a.priority === "urgent" ? -1 : 1) - (b.priority === "urgent" ? -1 : 1),
+                    )
+                    .slice(0, 5)
+                    .map((i) => (
+                      <button
+                        className="care-action-row"
+                        key={i.id}
+                        onClick={() => {
+                          setSelected(i.id);
+                          setTab("queue");
+                        }}
+                      >
+                        <span>
+                          <strong>{i.title}</strong>
+                          <small>
+                            {labels[i.stage]} ·{" "}
+                            {i.priority === "urgent"
+                              ? "Urgent"
+                              : i.owner_id
+                                ? "Assigned"
+                                : "Needs an owner"}
+                          </small>
+                        </span>
+                        <ArrowRight size={18} />
+                      </button>
+                    ))
+                ) : (
+                  <p>No open issues. Review coverage above shows what has actually been checked.</p>
+                )}
+                {open.length > 5 && (
+                  <button onClick={() => setTab("queue")}>See all {open.length} open issues</button>
+                )}
+              </article>
+              <p className="care-note">
+                Automatic review checks completed transcripts against your approved rules. Listening
+                tests, phone-routing tests and any changes to Emma remain separate, recorded checks.
+                No call is placed and no instruction is changed by monitoring.
+              </p>
+            </>
           )}
           {tab === "queue" && (
             <div className="care-desk">
@@ -240,6 +363,13 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
                     <p className="op-eyebrow">{labels[issue.stage]}</p>
                     <h3>{issue.title}</h3>
                     <p className="care-preserve">{issue.detail}</p>
+                    <CareEvidence
+                      key={issue.id}
+                      tenantId={tenantId}
+                      issueId={issue.id}
+                      sourceKey={issue.source_key}
+                      feedbackId={issue.feedback_id}
+                    />
                     <div className="care-client-message">
                       <strong>What your client sees</strong>
                       <p>{issue.customer_update}</p>
@@ -363,7 +493,7 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
                   defaultChecked={data.settings?.enabled ?? false}
                   disabled={!admin}
                 />{" "}
-                Allow on-demand transcript review against these rules
+                Enable background transcript review against these rules
               </label>
               <p className="care-note">
                 Transcripts and feedback are reviewed by OpenAI. Audio stays in Vapi. No live
@@ -378,87 +508,120 @@ export function ReceptionistCare({ tenantId }: { tenantId: string }) {
             </form>
           )}
           {tab === "alerts" && (
-            <div className="care-route-grid">
-              {["updates", "attention", "urgent"].map((kind) => {
-                const route = data.routes.find((r) => r.kind === kind);
-                return (
-                  <form
-                    className="care-detail"
-                    key={`${kind}:${route?.channel_id}`}
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const f = new FormData(e.currentTarget);
-                      void perform(
-                        () =>
-                          db.rpc("care_save_alert_route", {
-                            p_tenant: tenantId,
-                            p_kind: kind,
-                            p_team: String(f.get("team")).trim(),
-                            p_channel: String(f.get("channel")).trim(),
-                          }),
-                        "Destination saved, awaiting verified Slack connection. No messages have been redirected.",
-                      );
-                    }}
-                  >
-                    <h3>
-                      {kind === "updates"
-                        ? "Improvements made"
-                        : kind === "attention"
-                          ? "Needs our attention"
-                          : "Urgent incidents"}
-                    </h3>
-                    <p>
-                      {route?.enabled
-                        ? `Verified: #${route.verified_channel_name}`
-                        : "Awaiting destination verification"}
-                    </p>
-                    <label>
-                      OpenFolk workspace ID
-                      <input
-                        name="team"
-                        required
-                        pattern="T[A-Z0-9]+"
-                        defaultValue={route?.team_id ?? ""}
-                        disabled={!admin}
-                      />
-                    </label>
-                    <label>
-                      Channel ID
-                      <input
-                        name="channel"
-                        required
-                        pattern="C[A-Z0-9]+"
-                        defaultValue={route?.channel_id ?? ""}
-                        disabled={!admin}
-                      />
-                    </label>
-                    <button disabled={!admin || busy}>Save destination</button>
-                    {route && !route.enabled && (
-                      <button
-                        type="button"
-                        disabled={!admin || busy}
-                        onClick={() =>
-                          void perform(async () => {
-                            const r = await db.functions.invoke("receptionist-care", {
-                              body: { tenantId, action: "verify_alert_route", kind },
-                            });
-                            return {
-                              error: r.error || (r.data?.error ? { message: r.data.error } : null),
-                            };
-                          }, "Slack workspace and channel verified. A routing-test message was delivered.")
+            <>
+              <article className="care-detail">
+                <h3>One verified route for every report.</h3>
+                <p>
+                  {data.settings?.care_notifications_enabled
+                    ? "Managed notifications are selected. Delivery receipts and any held reports are shown in Performance & checks."
+                    : "Verify the three destinations below, then switch from the older notification route. Existing reports are handed over without being marked delivered."}
+                </p>
+                {!data.settings?.care_notifications_enabled && (
+                  <button
+                    disabled={!admin || busy || data.routes.filter((r) => r.enabled).length !== 3}
+                    onClick={() =>
+                      void perform(async () => {
+                        const r = await db.functions.invoke("receptionist-care", {
+                          body: { tenantId, action: "activate_notifications" },
+                        });
+                        let code = r.data?.code;
+                        if (r.error?.context instanceof Response) {
+                          const result = await r.error.context.json().catch(() => null);
+                          if (result?.code === "legacy_delivery_uncertain") code = result.code;
                         }
-                      >
-                        Verify and send a routing test
-                      </button>
-                    )}
-                    <small>
-                      Changing a destination pauses this route until its workspace and channel are
-                      verified.
-                    </small>
-                  </form>
-                );
-              })}
-            </div>
+                        return {
+                          error: r.error || r.data?.error ? { code } : null,
+                        };
+                      }, "Managed notifications selected. Queued reports still require confirmed delivery.")
+                    }
+                  >
+                    Activate verified notifications
+                  </button>
+                )}
+              </article>
+              <div className="care-route-grid">
+                {["updates", "attention", "urgent"].map((kind) => {
+                  const route = data.routes.find((r) => r.kind === kind);
+                  return (
+                    <form
+                      className="care-detail"
+                      key={`${kind}:${route?.channel_id}`}
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const f = new FormData(e.currentTarget);
+                        void perform(
+                          () =>
+                            db.rpc("care_save_alert_route", {
+                              p_tenant: tenantId,
+                              p_kind: kind,
+                              p_team: String(f.get("team")).trim(),
+                              p_channel: String(f.get("channel")).trim(),
+                            }),
+                          "Destination saved, awaiting verified Slack connection. No messages have been redirected.",
+                        );
+                      }}
+                    >
+                      <h3>
+                        {kind === "updates"
+                          ? "Improvements made"
+                          : kind === "attention"
+                            ? "Needs our attention"
+                            : "Urgent incidents"}
+                      </h3>
+                      <p>
+                        {route?.enabled
+                          ? `Verified: #${route.verified_channel_name}`
+                          : "Awaiting destination verification"}
+                      </p>
+                      <label>
+                        OpenFolk workspace ID
+                        <input
+                          name="team"
+                          required
+                          pattern="T[A-Z0-9]+"
+                          defaultValue={route?.team_id ?? ""}
+                          disabled={!admin}
+                        />
+                      </label>
+                      <label>
+                        Channel ID
+                        <input
+                          name="channel"
+                          required
+                          pattern="C[A-Z0-9]+"
+                          defaultValue={route?.channel_id ?? ""}
+                          disabled={!admin}
+                        />
+                      </label>
+                      <button disabled={!admin || busy}>Save destination</button>
+                      {route && !route.enabled && (
+                        <button
+                          type="button"
+                          disabled={!admin || busy}
+                          onClick={() =>
+                            void perform(async () => {
+                              const r = await db.functions.invoke("receptionist-care", {
+                                body: { tenantId, action: "verify_alert_route", kind },
+                              });
+                              return {
+                                error:
+                                  r.error || (r.data?.error ? { message: r.data.error } : null),
+                              };
+                            }, "Slack workspace and channel verified. A routing-test message was delivered.")
+                          }
+                        >
+                          Verify and send a routing test
+                        </button>
+                      )}
+                      <small>
+                        Changing a destination pauses this route until its workspace and channel are
+                        verified.
+                      </small>
+                    </form>
+                  );
+                })}
+              </div>
+            </>
           )}
         </>
       )}
@@ -502,7 +665,9 @@ function CallReview({
               throw Error(
                 r.data?.error ?? "Review unavailable. Check the connection and call reference.",
               );
-            setResult(r.data.assessment.summary + " No changes were made to Emma.");
+            setResult(
+              "Review requested. The background service will process it within the workspace limit. Emma is unchanged.",
+            );
             onDone();
           } catch (e) {
             setResult(e instanceof Error ? e.message : "Review failed.");
@@ -511,7 +676,7 @@ function CallReview({
           }
         }}
       >
-        {busy ? "Checking the conversation…" : "Review this call"}
+        {busy ? "Adding to the review queue…" : "Queue this call for review"}
       </button>
       {result && <p role="status">{result}</p>}
     </div>

@@ -300,3 +300,10 @@ verify_jwt = false
 
 [functions.receptionist-care]
 verify_jwt = false
+
+# Scheduler only. Explicit x-care-secret gate; no tenant-facing service role access.
+[functions.receptionist-care-worker]
+verify_jwt = false
+
+[functions.receptionist-care-scheduled-sync]
+verify_jwt = false

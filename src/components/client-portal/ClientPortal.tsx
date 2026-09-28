@@ -14,8 +14,6 @@ import {
   ArrowRight,
   LayoutDashboard,
   Layers,
-  Plug,
-  Link2,
   MessageSquare,
   LogOut,
   Plus,
@@ -24,6 +22,7 @@ import {
   Printer,
   ChevronDown,
   ShieldCheck,
+  Receipt,
   X,
   Headphones,
   Menu,
@@ -38,8 +37,10 @@ import { receptionistNavigation } from "@/components/receptionist/ReceptionistNa
 import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
   receptionistView,
+  resolveClientSection,
   selectedWorkspace,
   type ClientSection,
+  type ClientSectionInput,
   type ReceptionistView,
 } from "@/lib/client-workspace-nav";
 import "@/styles/client-investment.css";
@@ -74,17 +75,16 @@ const ReceptionistWorkspace = lazy(() =>
 const ClientInvestment = lazy(() =>
   import("./ClientInvestment").then((module) => ({ default: module.ClientInvestment })),
 );
+const ClientDeliverySummary = lazy(() =>
+  import("./ClientDeliverySummary").then((module) => ({ default: module.ClientDeliverySummary })),
+);
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
   { id: "receptionist", label: "AI Receptionist", Icon: Headphones },
-  { id: "overview", label: "Your programme", Icon: LayoutDashboard },
-  { id: "investment", label: "Invoices & delivery", Icon: ShieldCheck },
-  { id: "outcomes", label: "Outcomes & investment", Icon: Layers },
-  { id: "systems", label: "Systems & connections", Icon: Plug },
-  { id: "links", label: "Useful links", Icon: Link2 },
+  { id: "modules", label: "Modules", Icon: Layers },
+  { id: "invoices", label: "Invoices", Icon: Receipt },
   { id: "notes", label: "Review & feedback", Icon: MessageSquare },
 ] as const;
-type Section = (typeof nav)[number]["id"];
 function Status({ children }: { children: ReactNode }) {
   return (
     <span
@@ -120,15 +120,16 @@ function date(value: string) {
 
 export function ClientPortal({
   tenantId,
-  section = "home",
+  section: requestedSection = "home",
   receptionistPage = "today",
   operatorEmbedded = false,
 }: {
   tenantId?: string;
-  section?: ClientSection;
+  section?: ClientSectionInput;
   receptionistPage?: ReceptionistView;
   operatorEmbedded?: boolean;
 }) {
+  const section = resolveClientSection(requestedSection);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -184,7 +185,7 @@ export function ClientPortal({
         .from("client_programmes")
         .select("tenant_id,content,version,updated_at")
         .order("updated_at", { ascending: false });
-      if (error) throw new Error("Your programme could not be loaded. Please try again.");
+      if (error) throw new Error("Your workspace could not be loaded. Please try again.");
       return (data ?? []).map((row) => ({
         ...row,
         content: programmeSchema.parse(row.content),
@@ -260,12 +261,12 @@ export function ClientPortal({
       if (error) throw new Error("The update was not saved. Please try again.");
       if (!data?.length)
         throw new Error(
-          "This programme changed, or your editing access changed. Reload it before saving. Your edits are still here.",
+          "This workspace changed, or your editing access changed. Reload it before saving. Your edits are still here.",
         );
       await qc.invalidateQueries({ queryKey: ["client-programmes", user?.id] });
       setEditing(null);
       setSettings(false);
-      setNotice("Programme updated. Your client can see this version.");
+      setNotice("Modules updated. Your client can see this version.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "The update was not saved.");
     } finally {
@@ -285,7 +286,7 @@ export function ClientPortal({
       if (error) throw new Error("Your feedback was not saved. Please try again.");
       setNote("");
       await qc.invalidateQueries({ queryKey: ["client-programme-notes", user?.id, tenant] });
-      setNotice("Feedback saved for the programme review.");
+      setNotice("Feedback saved for OpenFolk to review.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Your feedback was not saved.");
     } finally {
@@ -330,16 +331,16 @@ export function ClientPortal({
       <Layers size={30} />
       <h1>
         {programmes.isPending
-          ? "Loading your programme…"
+          ? "Loading your workspace…"
           : programmes.isError
-            ? "We couldn’t load your programme"
+            ? "We couldn’t load your workspace"
             : "Your workspace is being prepared."}
       </h1>
       <p>
         {programmes.isError
           ? "Please try again. If the problem continues, contact OpenFolk."
           : !programmes.isPending
-            ? "Your login is secure. OpenFolk will link your programme to this account."
+            ? "Your login is secure. OpenFolk will link your workspace to this account."
             : ""}
       </p>
       {programmes.isError && (
@@ -361,24 +362,16 @@ export function ClientPortal({
           <h1>
             {section === "home"
               ? clientDisplayName(p.company)
-              : section === "overview"
-                ? operatorEmbedded
-                  ? "Programme"
-                  : "Your programme"
-                : nav.find((n) => n.id === section)?.label}
+              : nav.find((n) => n.id === section)?.label}
           </h1>
           <p>
             {section === "home"
               ? "Your business, in view. Start with what matters today."
-              : section === "overview"
-                ? "A shared plan. Clear outcomes. One step at a time."
-                : section === "outcomes"
-                  ? "Define the result, agree the investment, then build."
-                  : section === "systems"
-                    ? "What each system does, who owns it and what happens next."
-                    : section === "links"
-                      ? "Your programme’s shared resources, in one place."
-                      : "Questions, priorities and findings to shape what we build next."}
+              : section === "modules"
+                ? "Your modules. Clear scope, progress and agreed results."
+                : section === "invoices"
+                  ? "What you’ve paid, what it delivered and your invoices to download."
+                  : "Tell OpenFolk what would make your business work better."}
           </p>
         </div>
         <div className="cp-heading-actions">
@@ -392,7 +385,7 @@ export function ClientPortal({
               }}
             >
               <Pencil size={14} />
-              Edit programme
+              Edit workspace details
             </button>
           )}
           <button
@@ -417,9 +410,9 @@ export function ClientPortal({
           {error}
         </div>
       )}
-      {section === "investment" && tenant && user && (
+      {section === "invoices" && tenant && user && (
         <Suspense fallback={<p role="status">Opening invoices…</p>}>
-          <ClientInvestment tenant={tenant} userId={user.id} />
+          <ClientInvestment tenant={tenant} userId={user.id} showDelivery={false} />
         </Suspense>
       )}
       {section === "home" && tenant && user && (
@@ -430,109 +423,20 @@ export function ClientPortal({
           open={setSection}
         />
       )}
-      {section === "overview" && (
+      {section === "modules" && (
         <>
-          <section className="cp-north-star">
-            <div>
-              <p className="of-eyebrow">YOUR DIRECTION · PROPOSED FOR REVIEW</p>
-              <h2>{p.objective}</h2>
-              <p>
-                We’ll agree the baseline and success measures together before committing to
-                delivery.
-              </p>
-            </div>
-            <div className="cp-north-symbol" aria-hidden="true">
-              ↗
-            </div>
-          </section>
-          <div className="cp-metrics">
-            <div>
-              <span>Outcome packages</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => !o.optional)
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>In your proposed programme</small>
-            </div>
-            <div>
-              <span>Future opportunities</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => o.optional)
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>Add when the time is right</small>
-            </div>
-            <div>
-              <span>Completed outcomes</span>
-              <strong>
-                {p.outcomes
-                  .filter((o) => o.status === "Delivered")
-                  .length.toString()
-                  .padStart(2, "0")}
-              </strong>
-              <small>Measured against agreed criteria</small>
-            </div>
-          </div>
-          <div className="cp-overview-grid">
-            <section className="cp-card">
-              <div className="cp-card-heading">
-                <h2>Your next step</h2>
-                <Status>Needs input</Status>
-              </div>
-              <p className="cp-next-step">{p.nextStep}</p>
-              <button className="cp-text-button" onClick={() => setSection("notes")}>
-                Share findings or feedback <ArrowRight size={15} />
-              </button>
-            </section>
-            <section className="cp-card cp-commercial">
-              <p className="of-eyebrow">AN OUTCOME-LED PARTNERSHIP</p>
-              <h2>
-                Start with a result.
-                <br />
-                Build from there.
-              </h2>
-              <p>{p.commercialNote}</p>
-              <button className="cp-text-button" onClick={() => setSection("outcomes")}>
-                Explore your programme <ArrowRight size={15} />
-              </button>
-            </section>
-          </div>
-          <section className="cp-card">
-            <div className="cp-card-heading">
-              <h2>The programme at a glance</h2>
-              <button className="cp-text-button" onClick={() => setSection("outcomes")}>
-                View all <ArrowUpRight size={14} />
-              </button>
-            </div>
-            {p.outcomes
-              .filter((o) => !o.optional)
-              .map((o, i) => (
-                <button className="cp-stage-row" key={o.id} onClick={() => setSection("outcomes")}>
-                  <span className="cp-stage-index">{String(i + 1).padStart(2, "0")}</span>
-                  <span>
-                    <strong>{o.title}</strong>
-                    <small>{o.outcome}</small>
-                  </span>
-                  <Status>{o.status}</Status>
-                  <ArrowUpRight size={15} />
-                </button>
-              ))}
-          </section>
-        </>
-      )}
-      {section === "outcomes" && (
-        <>
+          {!operatorEmbedded && tenant && user && (
+            <Suspense fallback={<p role="status">Opening module progress…</p>}>
+              <ClientDeliverySummary tenant={tenant} userId={user.id} />
+            </Suspense>
+          )}
           <div className="cp-investment">
             <div>
               <p className="of-eyebrow">PROPOSED INVESTMENT</p>
               <h2>Pay for a defined result.</h2>
               <p>
                 Every package has its own scope and success criteria. Optional additions are
-                excluded from the programme subtotal. Prices shown are proposed until agreed in
+                excluded from the module subtotal. Prices shown are proposed until agreed in
                 writing.
               </p>
             </div>
@@ -540,7 +444,7 @@ export function ClientPortal({
               const s = pricedSubtotal(p.outcomes, field);
               return (
                 <div className="cp-price-summary" key={field}>
-                  <span>{field === "setup" ? "One-off programme" : "Ongoing monthly"}</span>
+                  <span>{field === "setup" ? "One-off modules" : "Ongoing monthly"}</span>
                   <strong>
                     {s.count === 0
                       ? "Not scoped"
@@ -559,7 +463,7 @@ export function ClientPortal({
             })}
           </div>
           <div className="cp-section-title">
-            <h2>Proposed programme</h2>
+            <h2>Your modules</h2>
             {admin && (
               <button
                 className="cp-secondary"
@@ -570,7 +474,7 @@ export function ClientPortal({
                 }}
               >
                 <Plus size={14} />
-                Add outcome
+                Add module
               </button>
             )}
           </div>
@@ -595,7 +499,7 @@ export function ClientPortal({
           <div className="cp-section-title">
             <div>
               <h2>Build on your foundation</h2>
-              <p>Optional outcomes to add when the business is ready.</p>
+              <p>Optional modules to add when the business is ready.</p>
             </div>
             {admin && (
               <button
@@ -636,71 +540,13 @@ export function ClientPortal({
           </p>
         </>
       )}
-      {section === "systems" && (
-        <>
-          <div className="cp-info">
-            This is a reviewed systems register. A listed system is not proof of a live connection.
-            Status is recorded by OpenFolk; automated uptime monitoring is not enabled in this
-            portal.
-          </div>
-          <div className="cp-systems-grid">
-            {p.systems.map((s) => (
-              <article className="cp-card" key={s.id}>
-                <div className="cp-card-heading">
-                  <h2>{s.name}</h2>
-                  <Status>{s.status}</Status>
-                </div>
-                <p>{s.purpose}</p>
-                <dl>
-                  <Detail label="Owner">{s.owner}</Detail>
-                  <Detail label="Last verified">{s.checkedAt || "Not yet verified"}</Detail>
-                  <Detail label="Next action">{s.nextAction}</Detail>
-                </dl>
-              </article>
-            ))}
-          </div>
-          {!p.systems.length && (
-            <p className="cp-info">Your systems register will appear here after discovery.</p>
-          )}
-        </>
-      )}
-      {section === "links" && (
-        <div className="cp-links-grid">
-          {p.links.length ? (
-            p.links.map((l) => (
-              <a
-                href={l.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cp-card cp-resource"
-                key={l.id}
-              >
-                <Link2 size={20} />
-                <h2>{l.title}</h2>
-                <p>{l.description}</p>
-                <span>
-                  Open resource <ArrowUpRight size={16} />
-                </span>
-              </a>
-            ))
-          ) : (
-            <div className="cp-card">
-              <h2>Your shared library starts here.</h2>
-              <p>
-                OpenFolk will add the agreed reports, working documents and useful links as your
-                programme develops.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
       {section === "notes" && (
         <>
           <section className="cp-card">
-            <h2>Keep the conversation with the plan.</h2>
+            <h2>What would you like to improve?</h2>
             <p>
-              Paste the Perplexity findings, suggest a priority or ask a question. Feedback is
-              shared with OpenFolk and authorised members of this client programme.
+              Ask a question, share an idea or flag something that needs attention. Your notes stay
+              here for you, your authorised team and OpenFolk.
             </p>
             <form onSubmit={postNote} className="cp-note-form">
               <label htmlFor="programme-note">Your feedback or findings</label>
@@ -722,7 +568,7 @@ export function ClientPortal({
               </div>
             </form>
           </section>
-          <h2 className="cp-section-title">Programme conversation</h2>
+          <h2 className="cp-section-title">Your feedback</h2>
           {notes.isError ? (
             <div role="alert" className="cp-error">
               Feedback could not be loaded.{" "}
@@ -734,7 +580,7 @@ export function ClientPortal({
             notes.data.map((n) => (
               <article className="cp-card cp-note" key={n.id}>
                 <div>
-                  <strong>{n.author_id === user?.id ? "You" : "Programme member"}</strong>
+                  <strong>{n.author_id === user?.id ? "You" : "Workspace member"}</strong>
                   <time dateTime={n.created_at}>{date(n.created_at)}</time>
                 </div>
                 <p>{n.body}</p>
@@ -748,7 +594,7 @@ export function ClientPortal({
       <footer className="cp-content-footer">
         <span>{clientDisplayName(p.company)}</span>
         <span>
-          Programme version {row.version} · Updated {date(row.updated_at)}
+          Workspace version {row.version} · Updated {date(row.updated_at)}
         </span>
       </footer>
       {editing && (
@@ -812,9 +658,9 @@ export function ClientPortal({
           <div className="cp-workspace-label">CLIENT WORKSPACE</div>
           {(programmes.data?.length ?? 0) > 1 && (
             <label className="cp-field">
-              <span>Client programme</span>
+              <span>Client workspace</span>
               <select
-                aria-label="Client programme"
+                aria-label="Client workspace"
                 value={tenant ?? ""}
                 onChange={(e) =>
                   void navigate({
@@ -832,61 +678,55 @@ export function ClientPortal({
             </label>
           )}
           <nav aria-label="Client workspace">
-            {nav
-              .filter(({ id }) => id !== "links" || (p?.links.length ?? 0) > 0)
-              .map(({ id, label, Icon }) => (
-                <Fragment key={id}>
-                  <button
-                    className={section === id ? "is-active" : ""}
-                    aria-current={section === id ? "page" : undefined}
-                    aria-expanded={id === "receptionist" ? receptionistExpanded : undefined}
-                    aria-controls={id === "receptionist" ? "client-receptionist-pages" : undefined}
-                    onClick={() => {
-                      if (id === "receptionist" && section === "receptionist") {
-                        setReceptionistMenuOpen((open) => !open);
-                        return;
-                      }
-                      setSection(id);
-                      setNotice("");
-                      setError("");
-                    }}
-                  >
-                    <Icon size={17} />
-                    {label}
-                    {id === "receptionist" && (
-                      <ChevronDown
-                        size={14}
-                        className={
-                          receptionistExpanded ? "cp-nav-chevron is-open" : "cp-nav-chevron"
-                        }
-                      />
-                    )}
-                  </button>
-                  {id === "receptionist" && receptionistExpanded && (
-                    <div
-                      id="client-receptionist-pages"
-                      className="cp-receptionist-nav"
-                      aria-label="AI Receptionist pages"
-                    >
-                      {receptionistNavigation.map(({ id: page, label: title }) => (
-                        <button
-                          key={page}
-                          type="button"
-                          className={
-                            receptionistView(receptionistPage) === page ? "is-current" : ""
-                          }
-                          aria-current={
-                            receptionistView(receptionistPage) === page ? "page" : undefined
-                          }
-                          onClick={() => openReceptionist(page)}
-                        >
-                          {title}
-                        </button>
-                      ))}
-                    </div>
+            {nav.map(({ id, label, Icon }) => (
+              <Fragment key={id}>
+                <button
+                  className={section === id ? "is-active" : ""}
+                  aria-current={section === id ? "page" : undefined}
+                  aria-expanded={id === "receptionist" ? receptionistExpanded : undefined}
+                  aria-controls={id === "receptionist" ? "client-receptionist-pages" : undefined}
+                  onClick={() => {
+                    if (id === "receptionist" && section === "receptionist") {
+                      setReceptionistMenuOpen((open) => !open);
+                      return;
+                    }
+                    setSection(id);
+                    setNotice("");
+                    setError("");
+                  }}
+                >
+                  <Icon size={17} />
+                  {label}
+                  {id === "receptionist" && (
+                    <ChevronDown
+                      size={14}
+                      className={receptionistExpanded ? "cp-nav-chevron is-open" : "cp-nav-chevron"}
+                    />
                   )}
-                </Fragment>
-              ))}
+                </button>
+                {id === "receptionist" && receptionistExpanded && (
+                  <div
+                    id="client-receptionist-pages"
+                    className="cp-receptionist-nav"
+                    aria-label="AI Receptionist pages"
+                  >
+                    {receptionistNavigation.map(({ id: page, label: title }) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={receptionistView(receptionistPage) === page ? "is-current" : ""}
+                        aria-current={
+                          receptionistView(receptionistPage) === page ? "page" : undefined
+                        }
+                        onClick={() => openReceptionist(page)}
+                      >
+                        {title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Fragment>
+            ))}
           </nav>
           <div className="cp-sidebar-bottom">
             <div className="cp-private">
@@ -1045,7 +885,7 @@ function OutcomeEditor({
         <DialogHeader>
           <DialogTitle>Edit outcome package</DialogTitle>
           <DialogDescription>
-            Saving updates the client’s shared programme. Leave prices blank until scoped.
+            Saving updates the client’s modules. Leave prices blank until scoped.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="cp-edit-form">
@@ -1116,7 +956,7 @@ function OutcomeEditor({
               checked={value.optional}
               onChange={(e) => update("optional", e.target.checked)}
             />
-            Optional addition (excluded from programme subtotal)
+            Optional addition (excluded from module subtotal)
           </label>
           {(error || validation) && (
             <p role="alert" className="cp-error">
@@ -1169,9 +1009,9 @@ function ProgrammeEditor({
     >
       <DialogContent className="cp-dialog">
         <DialogHeader>
-          <DialogTitle>Edit shared programme</DialogTitle>
+          <DialogTitle>Edit workspace details</DialogTitle>
           <DialogDescription>
-            Everything saved here is visible to this programme’s client members.
+            Saved details are shared with this workspace’s authorised client members.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="cp-edit-form">
@@ -1341,7 +1181,7 @@ function ProgrammeEditor({
               Cancel
             </button>
             <button className="cp-primary" disabled={busy}>
-              {busy ? "Saving…" : "Save programme"}
+              {busy ? "Saving…" : "Save workspace details"}
             </button>
           </div>
         </form>

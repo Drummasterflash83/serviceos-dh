@@ -124,7 +124,7 @@ export function OperatorDelivery({
     <section className="op-card">
       <div className="op-row-heading">
         <div>
-          <h2>{mode === "invoices" ? "Invoice delivery notes" : "Published delivery update"}</h2>
+          <h2>{mode === "invoices" ? "Invoice delivery notes" : "Published module progress"}</h2>
           <p>
             {mode === "invoices"
               ? "Explain what each invoice delivered. Issued PDFs, amounts and payment records stay protected."
@@ -208,7 +208,7 @@ export function OperatorDelivery({
         </>
       )}
       {mode === "outcomes" && delivery.isSuccess && !delivery.data && (
-        <p>No delivery update published yet.</p>
+        <p>No module progress update published yet.</p>
       )}
       <Dialog
         open={!!edit}
@@ -221,7 +221,7 @@ export function OperatorDelivery({
             <DialogTitle>
               {edit?.kind === "invoice"
                 ? `Delivery note · ${edit.reference}`
-                : "Edit delivery update"}
+                : "Edit module progress"}
             </DialogTitle>
             <DialogDescription>
               Saving publishes this change to the client. The change and your reason are recorded.

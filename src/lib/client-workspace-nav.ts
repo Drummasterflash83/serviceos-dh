@@ -1,14 +1,19 @@
-export const clientSections = [
-  "home",
-  "receptionist",
+export const clientSections = ["home", "receptionist", "modules", "invoices", "notes"] as const;
+export type ClientSection = (typeof clientSections)[number];
+export const legacyClientSections = [
   "overview",
   "investment",
   "outcomes",
   "systems",
   "links",
-  "notes",
 ] as const;
-export type ClientSection = (typeof clientSections)[number];
+export type ClientSectionInput = ClientSection | (typeof legacyClientSections)[number];
+/** Old bookmarks retain their tenant and data, without restoring retired menu pages. */
+export function resolveClientSection(value: unknown): ClientSection {
+  if (value === "overview" || value === "outcomes") return "modules";
+  if (value === "investment") return "invoices";
+  return clientSections.find((section) => section === value) ?? "home";
+}
 export const receptionistViews = [
   "today",
   "practice",
@@ -29,7 +34,7 @@ export function clientSearch(search: Record<string, unknown>): {
 } {
   return {
     tenant: typeof search.tenant === "string" && search.tenant ? search.tenant : undefined,
-    section: clientSections.find((section) => section === search.section) ?? "home",
+    section: resolveClientSection(search.section),
     ...(search.section === "receptionist" ? { view: receptionistView(search.view) } : {}),
   };
 }
@@ -39,7 +44,8 @@ export function selectedWorkspace<T extends { tenant_id: string }>(
 ) {
   return requested ? rows?.find((row) => row.tenant_id === requested) : rows?.[0];
 }
-export function clientWorkspaceHref(tenant?: string, section: ClientSection = "home") {
+export function clientWorkspaceHref(tenant?: string, requested: ClientSectionInput = "home") {
+  const section = resolveClientSection(requested);
   const params = new URLSearchParams();
   if (tenant) params.set("tenant", tenant);
   if (section !== "home") params.set("section", section);
