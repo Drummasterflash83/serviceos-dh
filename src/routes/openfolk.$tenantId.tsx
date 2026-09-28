@@ -8,9 +8,13 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { OpenfolkShell } from "@/components/app/OpenfolkShell";
+import { OperatorShell } from "@/components/app/OperatorShell";
+import { OperatorModules } from "@/components/app/OperatorModules";
+import { findOperatorTenant, operatorModule, type OperatorModule } from "@/lib/operator-workspace";
+import { receptionistView, type ReceptionistView } from "@/lib/client-workspace-nav";
 import { OpenfolkWorkspace, type WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
 import {
   resolveSection,
@@ -19,6 +23,7 @@ import {
 } from "@/lib/openfolk-workspace-nav";
 import {
   archiveEndpoint,
+  listTenants,
   assignOwnership,
   createManualEndpoint,
   discoverEmail,
@@ -44,20 +49,74 @@ import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
 // The active workspace section + selected endpoint are durable URL state, so a mutation
 // refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
 // invalid `?section=` fails safely to Overview.
-type WorkspaceSearch = { section?: WorkspaceSection; endpoint?: string; person?: string };
+type WorkspaceSearch = {
+  section?: WorkspaceSection;
+  endpoint?: string;
+  person?: string;
+  module?: OperatorModule;
+  view?: ReceptionistView;
+  tools?: boolean;
+};
 
 export const Route = createFileRoute("/openfolk/$tenantId")({
   validateSearch: (search: Record<string, unknown>): WorkspaceSearch => ({
     section: sectionSearchValue(search.section),
     endpoint: typeof search.endpoint === "string" && search.endpoint ? search.endpoint : undefined,
     person: typeof search.person === "string" && search.person ? search.person : undefined,
+    module: operatorModule(search.module),
+    view: receptionistView(search.view),
+    tools: search.tools === true || search.tools === "true" || typeof search.section === "string",
   }),
   component: WorkspacePage,
 });
 
 function WorkspacePage() {
-  const { tenantId } = Route.useParams();
+  const { tenantId: key } = Route.useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const directory = useQuery({
+    queryKey: ["operator-directory", user?.id],
+    queryFn: async () => {
+      const result = await listTenants();
+      if (!result.ok)
+        throw Error("Client directory unavailable. Check your OpenFolk operator access.");
+      return result.data.tenants;
+    },
+  });
+  const tenant = findOperatorTenant(directory.data ?? [], key);
+  useEffect(() => {
+    if (tenant?.slug && key !== tenant.slug)
+      void navigate({
+        to: "/openfolk/$tenantId",
+        params: { tenantId: tenant.slug },
+        search,
+        replace: true,
+      });
+  }, [key, tenant?.slug, navigate, search]);
+  if (!tenant)
+    return (
+      <OperatorShell>
+        <div className="op-card">
+          <h1>
+            {directory.isPending ? "Opening client workspace…" : "Client workspace unavailable"}
+          </h1>
+          <p>
+            {directory.error?.message ??
+              (directory.isPending ? "" : "Choose a client from your directory.")}
+          </p>
+          {directory.isError && (
+            <button className="op-button" onClick={() => void directory.refetch()}>
+              Retry
+            </button>
+          )}
+        </div>
+      </OperatorShell>
+    );
+  return <TenantWorkspace key={tenant.tenant_id} tenantId={tenant.tenant_id} />;
+}
+
+function TenantWorkspace({ tenantId }: { tenantId: string }) {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
@@ -77,6 +136,7 @@ function WorkspacePage() {
         // selection when leaving Ownership so it doesn't leak into other sections.
         search: (prev) => ({
           ...prev,
+          tools: true,
           section: sectionSearchValue(s),
           endpoint: s === "ownership" ? prev.endpoint : undefined,
           person: s === "people" ? prev.person : undefined,
@@ -241,13 +301,15 @@ function WorkspacePage() {
     );
 
   const tenantName = workspace.summary.display_name ?? tenantId.slice(0, 8);
+  const setModule = (module: OperatorModule) => void navigate({ search: { module, tools: false } });
   return (
-    <OpenfolkShell
-      tenantName={tenantName}
-      section={section}
-      onSectionChange={setSection}
-      readiness={readiness}
-      operatorLabel={user?.email ?? undefined}
+    <OperatorShell
+      company={tenantName}
+      tenantId={tenantId}
+      module={operatorModule(search.module)}
+      section={search.tools ? section : undefined}
+      onSection={setSection}
+      onModule={setModule}
     >
       {actionError && (
         <div
@@ -258,23 +320,36 @@ function WorkspacePage() {
           {actionError}
         </div>
       )}
-      <OpenfolkWorkspace
-        tenantName={tenantName}
-        workspace={workspace}
-        readiness={readiness}
-        audit={audit}
-        writeCapable={true}
-        busy={busy}
-        lastRefresh={lastRefresh}
-        actions={actions}
-        section={section}
-        onSectionChange={setSection}
-        selectedEndpoint={search.endpoint ?? null}
-        onSelectEndpoint={setEndpoint}
-        selectedPerson={search.person ?? null}
-        onSelectPerson={setPerson}
-        delegatedActions={delegatedActions}
-      />
-    </OpenfolkShell>
+      {!search.tools ? (
+        <OperatorModules
+          tenantId={tenantId}
+          company={tenantName}
+          module={operatorModule(search.module)}
+          onModule={setModule}
+          view={receptionistView(search.view)}
+          onView={(view) =>
+            void navigate({ search: { module: "receptionist", view, tools: false } })
+          }
+        />
+      ) : (
+        <OpenfolkWorkspace
+          tenantName={tenantName}
+          workspace={workspace}
+          readiness={readiness}
+          audit={audit}
+          writeCapable={true}
+          busy={busy}
+          lastRefresh={lastRefresh}
+          actions={actions}
+          section={section}
+          onSectionChange={setSection}
+          selectedEndpoint={search.endpoint ?? null}
+          onSelectEndpoint={setEndpoint}
+          selectedPerson={search.person ?? null}
+          onSelectPerson={setPerson}
+          delegatedActions={delegatedActions}
+        />
+      )}
+    </OperatorShell>
   );
 }

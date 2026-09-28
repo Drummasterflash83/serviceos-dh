@@ -120,10 +120,12 @@ export function ClientPortal({
   tenantId,
   section = "home",
   receptionistPage = "today",
+  operatorEmbedded = false,
 }: {
   tenantId?: string;
   section?: ClientSection;
   receptionistPage?: ReceptionistView;
+  operatorEmbedded?: boolean;
 }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -290,7 +292,7 @@ export function ClientPortal({
   }
   const p = row?.content;
   const company = p?.company ?? receptionistWorkspace?.company ?? "Your workspace";
-  const admin = operator.data === true && operatorTools;
+  const admin = operator.data === true && (operatorTools || operatorEmbedded);
   const receptionistContent = tenant ? (
     <Suspense fallback={<div className="rw-loading">Opening your receptionist…</div>}>
       <ReceptionistWorkspace
@@ -351,12 +353,16 @@ export function ClientPortal({
     <>
       <div className="cp-page-heading">
         <div>
-          <p className="of-eyebrow">YOUR WORKSPACE</p>
+          <p className="of-eyebrow">
+            {operatorEmbedded ? "SHARED CLIENT RECORD" : "YOUR WORKSPACE"}
+          </p>
           <h1>
             {section === "home"
               ? clientDisplayName(p.company)
               : section === "overview"
-                ? "Your programme"
+                ? operatorEmbedded
+                  ? "Programme"
+                  : "Your programme"
                 : nav.find((n) => n.id === section)?.label}
           </h1>
           <p>
@@ -772,6 +778,7 @@ export function ClientPortal({
       )}
     </>
   );
+  if (operatorEmbedded) return <div className="cp-root op-embedded">{content}</div>;
   return (
     <div className={`cp-root ${section === "home" ? "cp-home-section" : ""}`}>
       <a href="#client-main" className="of-skip">

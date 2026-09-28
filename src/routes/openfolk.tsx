@@ -11,6 +11,13 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { RequireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/openfolk")({
+  head: () => ({
+    meta: [
+      { title: "OpenFolk · Your clients, working better" },
+      { name: "robots", content: "noindex, nofollow" },
+      { name: "theme-color", content: "#242337" },
+    ],
+  }),
   component: () => (
     <RequireAuth>
       <Outlet />

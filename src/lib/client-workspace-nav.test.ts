@@ -202,7 +202,8 @@ test("Emma overview has honest health labels and direct practice and improvement
 test("client view is default; editing still requires real operator authority", () => {
   const portal = read("../components/client-portal/ClientPortal.tsx");
   assert.match(portal, /\[operatorTools, setOperatorTools\] = useState\(false\)/);
-  assert.match(portal, /operator.data === true && operatorTools/);
+  assert.match(portal, /operatorEmbedded = false/);
+  assert.match(portal, /operator.data === true && \(operatorTools \|\| operatorEmbedded\)/);
   assert.match(portal, /current_user_is_openfolk_operator/);
   assert.match(portal, /setOperatorTools\(false\)/);
 });

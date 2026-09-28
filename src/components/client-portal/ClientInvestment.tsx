@@ -4,7 +4,15 @@ import { Download } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { money } from "@/lib/client-portal";
 
-export function ClientInvestment({ tenant, userId }: { tenant: string; userId: string }) {
+export function ClientInvestment({
+  tenant,
+  userId,
+  showDelivery = true,
+}: {
+  tenant: string;
+  userId: string;
+  showDelivery?: boolean;
+}) {
   const db = getSupabaseClient();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -133,43 +141,45 @@ export function ClientInvestment({ tenant, userId }: { tenant: string; userId: s
           {error}
         </p>
       )}
-      <div className="cp-delivery-summary">
-        <p className="of-eyebrow">WHAT YOUR INVESTMENT IS BUILDING</p>
-        <h2>From foundations to everyday use.</h2>
-        {delivery.isPending ? (
-          <p>Loading delivery update…</p>
-        ) : delivery.isError ? (
-          <p role="alert">
-            Delivery update unavailable.{" "}
-            <button onClick={() => void delivery.refetch()}>Retry</button>
-          </p>
-        ) : !delivery.data ? (
-          <p>Your next delivery update is being prepared.</p>
-        ) : (
-          <>
-            <p>{delivery.data.content.summary}</p>
-            <div className="cp-invoice-list">
-              {(
-                delivery.data.content.areas as { title: string; status: string; detail: string }[]
-              ).map((a) => (
-                <article className="cp-invoice" key={a.title}>
-                  <span className="cp-status">{a.status}</span>
-                  <h3>{a.title}</h3>
-                  <p>{a.detail}</p>
-                </article>
-              ))}
-            </div>
-            <p className="cp-investment-note">{delivery.data.content.readinessNote}</p>
-            <p>
-              <strong>Next:</strong> {delivery.data.content.next}
+      {showDelivery && (
+        <div className="cp-delivery-summary">
+          <p className="of-eyebrow">WHAT YOUR INVESTMENT IS BUILDING</p>
+          <h2>From foundations to everyday use.</h2>
+          {delivery.isPending ? (
+            <p>Loading delivery update…</p>
+          ) : delivery.isError ? (
+            <p role="alert">
+              Delivery update unavailable.{" "}
+              <button onClick={() => void delivery.refetch()}>Retry</button>
             </p>
-            <small>
-              Recorded {new Date(delivery.data.verified_at).toLocaleDateString("en-GB")}. Build
-              checkpoints are not live monitoring.
-            </small>
-          </>
-        )}
-      </div>
+          ) : !delivery.data ? (
+            <p>Your next delivery update is being prepared.</p>
+          ) : (
+            <>
+              <p>{delivery.data.content.summary}</p>
+              <div className="cp-invoice-list">
+                {(
+                  delivery.data.content.areas as { title: string; status: string; detail: string }[]
+                ).map((a) => (
+                  <article className="cp-invoice" key={a.title}>
+                    <span className="cp-status">{a.status}</span>
+                    <h3>{a.title}</h3>
+                    <p>{a.detail}</p>
+                  </article>
+                ))}
+              </div>
+              <p className="cp-investment-note">{delivery.data.content.readinessNote}</p>
+              <p>
+                <strong>Next:</strong> {delivery.data.content.next}
+              </p>
+              <small>
+                Recorded {new Date(delivery.data.verified_at).toLocaleDateString("en-GB")}. Build
+                checkpoints are not live monitoring.
+              </small>
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }
