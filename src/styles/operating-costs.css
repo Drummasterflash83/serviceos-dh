@@ -1,0 +1,130 @@
+.cost-notice {
+  padding: 20px 24px;
+  border: 1px solid #dfd4bb;
+  background: #fff8e9;
+  border-radius: 18px;
+  margin-bottom: 24px;
+}
+.cost-notice p {
+  margin: 8px 0 0;
+}
+.cost-toolbar,
+.cost-card header,
+.cost-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.cost-toolbar {
+  margin: 28px 0 16px;
+}
+.cost-grid {
+  display: grid;
+  gap: 22px;
+}
+.cost-card {
+  overflow-wrap: anywhere;
+}
+.cost-card header h2 {
+  margin-top: 4px;
+}
+.cost-card dl,
+.cost-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.cost-card dl {
+  background: #f4f0f8;
+  padding: 20px;
+  border-radius: 14px;
+  margin: 20px 0;
+}
+.cost-card dt {
+  color: #655b72;
+}
+.cost-card dd {
+  font-size: 25px;
+  font-weight: 650;
+  margin: 6px 0;
+}
+.cost-card footer {
+  margin-top: 24px;
+}
+.cost-card footer a {
+  text-decoration: underline;
+}
+.cost-button {
+  background: #584571;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  min-height: 44px;
+  font-weight: 600;
+}
+.cost-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.cost-form {
+  margin: 22px 0;
+}
+.cost-form label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+  color: #352b43;
+}
+.cost-form input,
+.cost-form select,
+.cost-form textarea {
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  color: #272233;
+  border: 1px solid #aba0b9;
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 44px;
+  font: inherit;
+}
+.cost-form textarea {
+  min-height: 95px;
+  margin-bottom: 16px;
+}
+.cost-form input:focus-visible,
+.cost-form select:focus-visible,
+.cost-form textarea:focus-visible {
+  outline: 3px solid #cc8625;
+  outline-offset: 2px;
+}
+.cost-form fieldset {
+  padding: 16px 0;
+}
+.cost-form .cost-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+.cost-check input {
+  width: 20px;
+  min-height: 24px;
+}
+.cost-fields {
+  margin: 18px 0;
+}
+@media (max-width: 600px) {
+  .cost-card dl,
+  .cost-fields {
+    grid-template-columns: 1fr;
+  }
+  .cost-card header {
+    align-items: flex-start;
+  }
+  .cost-button {
+    width: 100%;
+  }
+}

@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   Settings2,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { NAV_GROUPS, type WorkspaceSection } from "@/lib/openfolk-workspace-nav";
@@ -83,6 +84,9 @@ export function OperatorShell({
         <div id="operator-navigation" className="op-navigation">
           <Link to="/openfolk" className="op-all" onClick={() => setMenu(false)}>
             <Building2 size={18} /> All clients
+          </Link>
+          <Link to="/openfolk/costs" className="op-all" onClick={() => setMenu(false)}>
+            <Wallet size={18} /> Costs
           </Link>
           {company && (
             <>
