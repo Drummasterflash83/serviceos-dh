@@ -263,7 +263,7 @@ test("Emma overview has honest health labels and direct practice and improvement
   );
   assert.match(emma, /onClick=\{\(\) => setView\("practice"\)\}/);
   assert.match(emma, /onClick=\{\(\) => setView\("improvements"\)\}/);
-  assert.match(emma, /\? "Healthy"[\s\S]*\? "Needs attention"[\s\S]*: "Evidence building"/);
+  assert.match(emma, /\? "Healthy"[\s\S]*\? "Needs attention"[\s\S]*: "Awaiting data"/);
   assert.match(mobileHome, /\.cp-emma-entry\s*\{[\s\S]*?background: #242337/);
 });
 test("client view is default; editing still requires real operator authority", () => {

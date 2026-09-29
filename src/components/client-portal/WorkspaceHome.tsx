@@ -4,17 +4,20 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { type ClientSection } from "@/lib/client-workspace-nav";
 import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
 import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
+import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
 
 export function WorkspaceHome({
   tenant,
   userId,
   company,
   open,
+  openFeedback,
 }: {
   tenant: string;
   userId: string;
   company: string;
   open: (section: ClientSection) => void;
+  openFeedback: () => void;
 }) {
   const receptionist = useQuery({
     queryKey: ["workspace-receptionist-summary", userId, tenant],
@@ -39,6 +42,7 @@ export function WorkspaceHome({
   })[0]!;
   return (
     <div className="cp-work-home">
+      <EmmaIssueSummary tenant={tenant} onOpen={openFeedback} />
       <section className="cp-emma-entry" aria-label="AI Receptionist">
         <div className="cp-emma-orb" aria-hidden="true">
           <Headphones size={42} />

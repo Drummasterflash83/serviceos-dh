@@ -71,6 +71,8 @@ import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
 import { PracticeImprove, PracticeEvidence, EmmaTraining, useEmmaInfo } from "./PracticeImprove";
 import { ClientFeedbackDesk } from "./ClientFeedbackDesk";
+import { useEmmaHealth, type HealthIssue } from "@/lib/use-emma-health";
+import { EmmaIssueSummary, HealthIssueList } from "./EmmaIssueSummary";
 
 type Workspace = {
   tenant_id: string;
@@ -192,12 +194,16 @@ export function ReceptionistWorkspace({
   initialView,
   embedded = false,
   onViewChange,
+  operatorView = false,
+  onOpenIssue,
 }: {
   demo?: boolean;
   tenantId?: string;
   initialView?: string;
   embedded?: boolean;
   onViewChange?: (view: ReceptionistView) => void;
+  operatorView?: boolean;
+  onOpenIssue?: (issue?: HealthIssue) => void;
 }) {
   const { user, signOut } = useAuth();
   const db = getSupabaseClient();
@@ -212,6 +218,8 @@ export function ReceptionistWorkspace({
     [sort, setSort] = useState("recent"),
     [selectedCall, setSelectedCall] = useState<ReceptionistCall | null>(null),
     [selectedHealthCard, setSelectedHealthCard] = useState<EmmaHealthCardId | null>(null),
+    [healthMetric, setHealthMetric] = useState<string | null>(null),
+    [feedbackToOpen, setFeedbackToOpen] = useState<string | undefined>(),
     [composer, setComposer] = useState(false),
     [noteCall, setNoteCall] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
@@ -261,6 +269,17 @@ export function ReceptionistWorkspace({
   });
   const w = demo ? demoWorkspace : selectedWorkspace(workspaces.data, selectedTenant);
   const tenant = w?.tenant_id;
+  const careHealth = useEmmaHealth(tenant, !demo);
+  const healthIssues = careHealth.isError ? [] : (careHealth.data?.issues ?? []);
+  function openHealthIssue(issue?: HealthIssue) {
+    setSelectedHealthCard(null);
+    if (operatorView && onOpenIssue) {
+      onOpenIssue(issue);
+      return;
+    }
+    setFeedbackToOpen(issue?.feedback_id ?? undefined);
+    setView("improvements");
+  }
   const info = useEmmaInfo(tenant ?? "", user?.id, demo, view === "practice" || view === "details");
   const workspaceHref = clientWorkspaceHref(demo ? undefined : tenant);
   function setView(next: View) {
@@ -377,7 +396,20 @@ export function ReceptionistWorkspace({
     [calls, connected, loading, callsQuery.isError, w?.launch_stage],
   );
   const healthCard = healthCards.find((card) => card.id === selectedHealthCard);
-  const healthDetailCalls = healthCard ? healthCardCalls(healthCard, calls) : [];
+  const selectedMetric = healthCard?.metrics.find((m) => m.label === healthMetric);
+  const relatedIssues = healthIssues.filter((issue) =>
+    issue.categories.includes(healthCard?.id ?? "general"),
+  );
+  const healthDetailCalls = selectedMetric
+    ? calls
+        .filter((call) => selectedMetric.callIds.includes(call.id))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    : healthCard
+      ? healthCardCalls(healthCard, calls)
+      : [];
+  useEffect(() => {
+    setHealthMetric(null);
+  }, [selectedHealthCard]);
   useEffect(() => {
     setSelectedTenant(tenantId ?? "");
   }, [tenantId]);
@@ -780,6 +812,13 @@ export function ReceptionistWorkspace({
           )}
           {view === "today" && (
             <>
+              {!demo && (
+                <EmmaIssueSummary
+                  tenant={tenant}
+                  operator={operatorView}
+                  onOpen={openHealthIssue}
+                />
+              )}
               <section className="rw-emma-pulse" aria-label="Emma at a glance">
                 <div className="rw-emma-pulse-feature">
                   <button
@@ -816,6 +855,12 @@ export function ReceptionistWorkspace({
                             ? `Last checked ${date(callsQuery.data.pages[0].checkedAt)}`
                             : "Latest check in progress"}
                       </small>
+                      {!!healthIssues.filter((i) => i.categories.includes("service")).length && (
+                        <span className="eh-count">
+                          {healthIssues.filter((i) => i.categories.includes("service")).length} open
+                          call-handling reports
+                        </span>
+                      )}
                     </span>
                     <ChevronRight className="rw-emma-pulse-chevron" size={20} aria-hidden="true" />
                   </button>
@@ -829,39 +874,61 @@ export function ReceptionistWorkspace({
                   </div>
                 </div>
                 <div className="rw-emma-signal-grid">
-                  {healthCards.slice(1).map((card) => (
-                    <button
-                      key={card.id}
-                      className={`rw-emma-signal rw-emma-tone-${card.tone}`}
-                      onClick={() => setSelectedHealthCard(card.id)}
-                    >
-                      <span className="rw-emma-signal-top">
-                        <span className="rw-emma-signal-icon">
-                          {card.id === "experience" ? (
-                            <Sparkles size={19} />
-                          ) : card.id === "help" ? (
-                            <Users size={19} />
-                          ) : (
-                            <Phone size={19} />
-                          )}
+                  {healthCards.slice(1).map((card) => {
+                    const reportCount = healthIssues.filter((i) =>
+                      i.categories.includes(card.id),
+                    ).length;
+                    const tone =
+                      reportCount || card.tone === "watch"
+                        ? "watch"
+                        : !demo && (!careHealth.data || careHealth.isError)
+                          ? "waiting"
+                          : card.tone;
+                    return (
+                      <button
+                        key={card.id}
+                        className={`rw-emma-signal rw-emma-tone-${tone}`}
+                        onClick={() => setSelectedHealthCard(card.id)}
+                      >
+                        <span className="rw-emma-signal-top">
+                          <span className="rw-emma-signal-icon">
+                            {card.id === "experience" ? (
+                              <Sparkles size={19} />
+                            ) : card.id === "help" ? (
+                              <Users size={19} />
+                            ) : (
+                              <Phone size={19} />
+                            )}
+                          </span>
+                          <span className="rw-emma-signal-state">
+                            {tone === "good"
+                              ? "Healthy"
+                              : tone === "watch"
+                                ? "Needs attention"
+                                : "Awaiting data"}
+                          </span>
                         </span>
-                        <span className="rw-emma-signal-state">
-                          {card.tone === "good"
-                            ? "Healthy"
-                            : card.tone === "watch"
-                              ? "Needs attention"
-                              : "Evidence building"}
+                        <span className="rw-emma-signal-title">{card.title}</span>
+                        <strong>{card.headline}</strong>
+                        <span className="rw-emma-signal-summary">{card.summary}</span>
+                        {!!card.flaggedIds.length && (
+                          <span className="eh-count">
+                            {card.flaggedIds.length} flagged{" "}
+                            {card.flaggedIds.length === 1 ? "call" : "calls"}
+                          </span>
+                        )}
+                        {!!reportCount && (
+                          <span className="eh-count">
+                            {reportCount} open {reportCount === 1 ? "report" : "reports"}
+                          </span>
+                        )}
+                        <span className="rw-emma-signal-action">
+                          {card.flaggedIds.length ? "See the calls" : "See details"}{" "}
+                          <ArrowRight size={15} />
                         </span>
-                      </span>
-                      <span className="rw-emma-signal-title">{card.title}</span>
-                      <strong>{card.headline}</strong>
-                      <span className="rw-emma-signal-summary">{card.summary}</span>
-                      <span className="rw-emma-signal-action">
-                        {card.flaggedIds.length ? "See the calls" : "See details"}{" "}
-                        <ArrowRight size={15} />
-                      </span>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               </section>
               <section className="rw-panel rw-emma-roadmap" aria-label="Where Emma is heading">
@@ -1032,6 +1099,7 @@ export function ReceptionistWorkspace({
               {tenant && (
                 <ClientFeedbackDesk
                   tenant={tenant}
+                  initialFeedbackId={feedbackToOpen}
                   notes={notes.map((n) => ({
                     ...n,
                     body:
@@ -1193,25 +1261,64 @@ export function ReceptionistWorkspace({
                   </div>
                 </div>
               )}
-              {connected && healthCard.id !== "service" && (
+              {connected && (
                 <div className="rw-health-detail-facts">
-                  <div>
-                    <span>Calls observed</span>
-                    <strong>{healthCard.observed}</strong>
-                  </div>
-                  <div>
-                    <span>With this signal assessed</span>
-                    <strong>{healthCard.assessed}</strong>
-                  </div>
-                  <div>
-                    <span>Calls worth a look</span>
-                    <strong>{healthCard.flaggedIds.length}</strong>
-                  </div>
+                  {healthCard.metrics.map((metric) => (
+                    <button
+                      key={metric.label}
+                      disabled={!metric.callIds.length}
+                      onClick={() => setHealthMetric(metric.label)}
+                      aria-pressed={healthMetric === metric.label}
+                    >
+                      <span>{metric.label}</span>
+                      <strong>{metric.value}</strong>
+                      {!!metric.callIds.length && <small>See conversations →</small>}
+                    </button>
+                  ))}
                 </div>
+              )}
+              <p className="rw-health-detail-explanation">
+                These figures cover {calls.length} loaded calls, including any practice calls in
+                that history. Awaiting data does not mean zero problems.
+              </p>
+              {healthCard.id === "experience" && (
+                <p className="rw-health-detail-explanation">
+                  The improvement loop: capture the call → assess what happened → review the fix →
+                  verify the result. These cards show evidence; they do not mean Emma changes
+                  herself after every call.
+                </p>
+              )}
+              {careHealth.isError && <p role="alert">{careHealth.error.message}</p>}
+              {!!relatedIssues.length && (
+                <section>
+                  <h3>
+                    {operatorView ? "OpenFolk action queue" : "OpenFolk is looking into this"}
+                  </h3>
+                  <HealthIssueList
+                    issues={relatedIssues}
+                    operator={operatorView}
+                    availableCallIds={calls.map((c) => c.id)}
+                    onOpen={openHealthIssue}
+                    onCall={(id) => {
+                      const call = calls.find((c) => c.id === id);
+                      if (call) {
+                        setSelectedHealthCard(null);
+                        setSelectedCall(call);
+                      }
+                    }}
+                  />
+                </section>
               )}
               {connected && healthDetailCalls.length > 0 && (
                 <section className="rw-health-detail-calls">
-                  <h3>Conversations worth a look</h3>
+                  <div className="eh-metric-heading">
+                    <h3>{selectedMetric?.label ?? "Conversations worth a look"}</h3>
+                    {selectedMetric && (
+                      <button className="rw-btn" onClick={() => setHealthMetric(null)}>
+                        Back to flagged calls
+                      </button>
+                    )}
+                  </div>
                   <CallList
                     items={healthDetailCalls}
                     onSelect={(call) => {
@@ -1224,7 +1331,7 @@ export function ReceptionistWorkspace({
               {connected && healthDetailCalls.length === 0 && (
                 <p className="rw-health-detail-empty">
                   {healthCard.tone === "waiting"
-                    ? "There is nothing for you to review here yet. This view will develop as calls arrive and are assessed."
+                    ? "No calls are flagged in the available evidence. Choose a measure above to inspect its calls; missing assessments still need to be completed."
                     : "No calls need your review under this signal in the loaded history."}
                 </p>
               )}

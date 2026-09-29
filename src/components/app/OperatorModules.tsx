@@ -1,4 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
+import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
+import type { HealthIssue } from "@/lib/use-emma-health";
 import { BellRing, Headphones, Receipt, Layers, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import "@/styles/client-investment.css";
@@ -53,6 +55,11 @@ function OperatorModuleContent({
   onView: (view: ReceptionistView) => void;
 }) {
   const { user } = useAuth();
+  const [issueToOpen, setIssueToOpen] = useState<string | undefined>();
+  function openIssue(issue?: HealthIssue) {
+    setIssueToOpen(issue?.id);
+    onView("improvements");
+  }
   const health = useOperatorHealth(tenantId);
   const data = health.isError ? undefined : health.data;
   const signal = healthSignal(data);
@@ -77,7 +84,7 @@ function OperatorModuleContent({
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
           {view === "improvements" ? (
-            <FeedbackDesk key={tenantId} tenantId={tenantId} />
+            <FeedbackDesk key={tenantId} tenantId={tenantId} initialIssueId={issueToOpen} />
           ) : (
             <ReceptionistWorkspace
               key={tenantId}
@@ -85,6 +92,8 @@ function OperatorModuleContent({
               embedded
               initialView={view}
               onViewChange={onView}
+              operatorView
+              onOpenIssue={openIssue}
             />
           )}
         </Suspense>
@@ -146,6 +155,7 @@ function OperatorModuleContent({
           <span>Notification delivery issues</span>
         </div>
       </div>
+      <EmmaIssueSummary tenant={tenantId} operator onOpen={openIssue} />
       {!!data?.urgent && (
         <div className="op-error">
           <BellRing size={18} />

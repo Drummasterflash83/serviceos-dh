@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, CheckCircle2, ClipboardList } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -49,6 +49,7 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
   error,
   demo,
   evidence,
+  initialFeedbackId,
 }: {
   tenant: string;
   notes: T[];
@@ -56,8 +57,10 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
   error?: string;
   demo: boolean;
   evidence: (note: T) => ReactNode;
+  initialFeedbackId?: string;
 }) {
   const { user } = useAuth();
+  const openedInitial = useRef<string | undefined>(undefined);
   const [stage, setStage] = useState<ClientFeedbackStage>("submitted"),
     [sort, setSort] = useState("priority"),
     [selected, setSelected] = useState<string | null>(null);
@@ -84,6 +87,14 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
     sort,
   );
   const note = rows.find((n) => n.id === selected);
+  const initialStage = rows.find((n) => n.id === initialFeedbackId)?.stage;
+  useEffect(() => {
+    if (initialFeedbackId && initialStage && openedInitial.current !== initialFeedbackId) {
+      openedInitial.current = initialFeedbackId;
+      setSelected(initialFeedbackId);
+      setStage(initialStage);
+    }
+  }, [initialFeedbackId, initialStage]);
   const update = progress.data?.find((p) => p.feedback_id === selected);
   return (
     <section className="fd" aria-label="Feedback task board">
