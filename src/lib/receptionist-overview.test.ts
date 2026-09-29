@@ -29,12 +29,20 @@ const rule = (selector: string) => {
   assert.ok(start >= 0, `Missing ${selector}`);
   return css.slice(start, css.indexOf("}", start));
 };
-test("Emma roadmap inverts the surfaces and insets its cards at all viewport sizes", () => {
+test("Emma roadmap uses menu-purple with white headings and unchanged inset cards", () => {
   assert.match(rule(".rw-emma-roadmap"), /padding: clamp\(18px, 2.5vw, 25px\)/);
-  assert.match(rule(".rw-emma-roadmap"), /background: #eee7f5/);
+  assert.match(rule(".rw-emma-roadmap"), /background: #242337/);
+  assert.match(rule(".rw-emma-roadmap"), /border-color: #242337/);
+  assert.match(
+    css,
+    /\.rw-emma-roadmap \.rw-panel-title h2,\s*\.rw-emma-roadmap \.rw-panel-title \.rw-eyebrow\s*\{\s*color: #fff/,
+  );
   assert.match(rule(".rw-emma-roadmap .rw-panel-title"), /padding: 0 0 18px/);
   assert.match(rule(".rw-emma-roadmap-steps > div"), /background: #fff/);
   assert.match(rule(".rw-emma-roadmap-steps > div"), /min-width: 0/);
+  assert.match(rule(".rw-emma-roadmap-steps small"), /color: #765b93/);
+  assert.match(rule(".rw-emma-roadmap-steps strong"), /color: #302b40/);
+  assert.match(rule(".rw-emma-roadmap-steps span"), /color: #71677a/);
   assert.match(
     css,
     /@media \(max-width: 680px\)\s*{\s*\.rw-emma-roadmap-steps\s*{\s*grid-template-columns: 1fr/,
