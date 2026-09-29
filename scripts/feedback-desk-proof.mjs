@@ -11,6 +11,7 @@ ${sqlFile('20261023150000_approved_wording_rehearsals.sql')}
 ${sqlFile('20261023151000_rehearsal_progress_notifications.sql')}
 ${sqlFile('20261023152000_approved_voice_rehearsals.sql')}
 ${sqlFile('20261023160000_receptionist_direct_release.sql')}
+${sqlFile('20261023180000_feedback_archive.sql')}
 create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
 grant select on ids to authenticated,service_role;
 update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
@@ -104,6 +105,24 @@ select public.care_claim_release(r.id,p.admin_id,'publish') from public.receptio
 select pg_temp.ok((select stage='approval' and approved_at is null from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'direct publish does not require a testing approval or rehearsal');
 select public.care_finish_release(r.id,'uncertain',null) from public.receptionist_releases r,ids p where r.tenant_id=p.tenant and r.state='publishing';
 select pg_temp.ok((select release_ref is null and stage='approval' from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'uncertain provider result does not claim release');
+select pg_temp.refuses(format('select public.care_close_accepted_report(%L,%L,%L,%s,%L,%L)',i.tenant_id,i.id,p.admin_id,i.version,'accept','Operator accepts this published change'),'uncertain release cannot be accepted') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_finish_release(r.id,'applied','confirmed-v4') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant and r.state='uncertain';
+select public.care_close_accepted_report(i.tenant_id,i.id,p.admin_id,i.version,'accept','Chris explicitly accepts the published change; fresh call verification remains pending.') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.ok((select stage='resolved' and verification like 'Operator acceptance (not%' from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'manual acceptance is not recorded as a voice test pass');
+select pg_temp.ok((select status='Resolved' from public.receptionist_feedback f,ids p where f.id=p.feedback),'accepted closure reaches client record');
+insert into public.receptionist_feedback(tenant_id,author_id,title,body) select tenant,client_id,'Obsolete test','Synthetic older test to archive' from ids;
+create temp table before_archive as select count(*) n from public.client_notification_outbox;
+select public.care_close_accepted_report(i.tenant_id,i.id,p.admin_id,i.version,'archive','Chris requested removal of this earlier test, preserving evidence.') from public.receptionist_care_issues i,ids p where i.tenant_id=p.tenant and i.title='Obsolete test';
+select pg_temp.ok((select archived_at is not null from public.receptionist_care_issues i,ids p where i.tenant_id=p.tenant and i.title='Obsolete test'),'obsolete issue preserved in archive');
+select pg_temp.ok((select count(*)=(select n from before_archive) from public.client_notification_outbox),'archiving does not resend old feedback to Slack');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
+select pg_temp.ok((select count(*)=0 from public.receptionist_feedback where title='Obsolete test'),'archived feedback hidden from client');
+select pg_temp.ok((select count(*)=1 from public.care_customer_progress((select tenant from ids))),'client projection excludes archived report');
+select pg_temp.refuses(format('select public.care_close_accepted_report(%L,%L,%L,1,%L,%L)',tenant,feedback,admin_id,'accept','Impersonated acceptance attempt'),'browser cannot impersonate service for closure') from ids;
+select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
+select pg_temp.ok((select count(*)=0 from public.receptionist_care_issues where title='Obsolete test'),'archived report hidden from operator board');
 reset role;
 insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) select tenant,admin_id,'role','Synthetic proof' from ids;
 set local role authenticated;
