@@ -308,5 +308,8 @@ verify_jwt = false
 [functions.receptionist-rehearsal]
 verify_jwt = false
 
+[functions.receptionist-testing]
+verify_jwt = false
+
 [functions.receptionist-release]
 verify_jwt = false

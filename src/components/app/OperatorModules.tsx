@@ -18,6 +18,9 @@ const ReceptionistWorkspace = lazy(() =>
 const FeedbackDesk = lazy(() =>
   import("./FeedbackDesk").then((m) => ({ default: m.FeedbackDesk })),
 );
+const ReceptionistTesting = lazy(() =>
+  import("./ReceptionistTesting").then((m) => ({ default: m.ReceptionistTesting })),
+);
 const ClientPortal = lazy(() =>
   import("@/components/client-portal/ClientPortal").then((module) => ({
     default: module.ClientPortal,
@@ -32,6 +35,7 @@ const OperatorDelivery = lazy(() =>
   import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
 );
 const tabs: { view: ReceptionistView; label: string }[] = [
+  { view: "testing", label: "Automated voice tests" },
   { view: "improvements", label: "Feedback & responses" },
   { view: "today", label: "Receptionist overview" },
   { view: "practice", label: "Practise & improve" },
@@ -83,7 +87,9 @@ function OperatorModuleContent({
           ))}
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
-          {view === "improvements" ? (
+          {view === "testing" ? (
+            <ReceptionistTesting key={tenantId} tenantId={tenantId} />
+          ) : view === "improvements" ? (
             <FeedbackDesk key={tenantId} tenantId={tenantId} initialIssueId={issueToOpen} />
           ) : (
             <ReceptionistWorkspace
