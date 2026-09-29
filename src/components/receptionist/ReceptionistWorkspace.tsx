@@ -70,6 +70,7 @@ import { CallRecording } from "./CallRecording";
 import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
 import { PracticeImprove, PracticeEvidence, EmmaTraining, useEmmaInfo } from "./PracticeImprove";
+import { ClientFeedbackDesk } from "./ClientFeedbackDesk";
 
 type Workspace = {
   tenant_id: string;
@@ -297,30 +298,20 @@ export function ReceptionistWorkspace({
     queryKey: ["receptionist-feedback", user?.id, tenant],
     enabled: !!user && !!tenant && !demo && view === "improvements",
     queryFn: async () => {
-      const { data, error } = await db
-        .from("receptionist_feedback")
-        .select("*")
-        .eq("tenant_id", tenant!)
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw Error("Saved feedback could not be loaded.");
-      return data as Feedback[];
-    },
-    refetchInterval: 30000,
-  });
-  const delivery = useQuery({
-    queryKey: ["receptionist-delivery", user?.id, tenant],
-    enabled: !!user && !!tenant && !demo && view === "improvements",
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("client_notification_outbox")
-        .select("source_id,source_version,state")
-        .eq("tenant_id", tenant!)
-        .eq("source_type", "receptionist_feedback")
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw Error("Notification status unavailable");
-      return data ?? [];
+      const all: Feedback[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await db
+          .from("receptionist_feedback")
+          .select("*")
+          .eq("tenant_id", tenant!)
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(offset, offset + 499);
+        if (error) throw Error("Saved feedback could not be loaded.");
+        all.push(...(data as Feedback[]));
+        if (data.length < 500) break;
+      }
+      return all;
     },
     refetchInterval: 30000,
   });
@@ -489,16 +480,6 @@ export function ReceptionistWorkspace({
       setBusy(false);
     }
   }
-  const noteDelivery = (n: Feedback) => {
-    if (demo) return "Example · not sent";
-    if (delivery.isError) return "Slack status unavailable";
-    const d = delivery.data?.find((x) => x.source_id === n.id && x.source_version === n.version);
-    return d?.state === "sent"
-      ? "Sent to Slack"
-      : d?.state === "failed"
-        ? "Slack delivery needs attention"
-        : "Saved · Slack delivery pending";
-  };
   function CallList({
     items = visible.slice(0, view === "today" ? 5 : visible.length),
     onSelect = setSelectedCall,
@@ -1036,8 +1017,8 @@ export function ReceptionistWorkspace({
             <>
               <div className="rw-board-intro">
                 <p>
-                  Tell us what Emma missed. We review it, improve her, and ask you to test the
-                  change.
+                  Tell us what Emma missed. OpenFolk reviews it, handles the improvement, and keeps
+                  you updated.
                   <br />
                   <small>
                     Over time, verified customer, site and job cards will help Emma give more useful
@@ -1048,86 +1029,44 @@ export function ReceptionistWorkspace({
                   <Plus size={17} /> Add an observation
                 </button>
               </div>
-              <div className="rw-stage-track">
-                {stages.map((s, i) => (
-                  <div key={s}>
-                    <span>{i + 1}</span>
-                    <strong>{s}</strong>
-                    <small>{notes.filter((n) => n.status === s).length} items</small>
-                  </div>
-                ))}
-              </div>
-              <div className="rw-feedback-grid">
-                {notes.map((n) => (
-                  <article
-                    key={n.id}
-                    className={`rw-panel rw-feedback ${n.priority === "urgent" ? "rw-urgent" : ""}`}
-                  >
-                    <div className="rw-feedback-top">
-                      <span className="rw-pill">{n.status}</span>
-                      <span className={`rw-priority ${n.priority}`}>{n.priority} priority</span>
-                    </div>
-                    <h2>{n.title}</h2>
-                    <p className="rw-preserve">
-                      {describePhoneChanges(n.body) ??
-                        (decodePhonePlan(n.body)
-                          ? describePhonePlan(decodePhonePlan(n.body)!)
-                          : n.body)}
-                    </p>
-                    <div className="rw-feedback-meta">
-                      <span>{n.category.replace("-", " ")}</span>
-                      <span>{date(n.created_at)}</span>
-                    </div>
-                    {n.practice_session_id && tenant && user && (
+              {tenant && (
+                <ClientFeedbackDesk
+                  tenant={tenant}
+                  notes={notes.map((n) => ({
+                    ...n,
+                    body:
+                      describePhoneChanges(n.body) ??
+                      (decodePhonePlan(n.body)
+                        ? describePhonePlan(decodePhonePlan(n.body)!)
+                        : n.body),
+                  }))}
+                  demo={demo}
+                  loading={!demo && feedback.isPending}
+                  error={feedback.error?.message}
+                  evidence={(n) =>
+                    n.practice_session_id && user ? (
                       <PracticeEvidence
                         tenant={tenant}
                         sessionId={n.practice_session_id}
                         viewerId={user.id}
                       />
-                    )}
-                    {n.call_id && !n.practice_session_id && (
-                      <button
-                        className="rw-text-btn"
-                        onClick={() => {
-                          const c = calls.find((c) => c.id === n.call_id);
-                          if (c) setSelectedCall(c);
-                          else
-                            setNotice(
-                              "This note relates to an older call. Load older calls in the call journal to open its evidence.",
-                            );
-                        }}
-                      >
-                        <Phone size={14} /> Linked call <ArrowUpRight size={14} />
-                      </button>
-                    )}
-                    {n.response && (
-                      <div className="rw-response">
-                        <strong>OpenFolk’s response</strong>
-                        <p className="rw-preserve">{n.response}</p>
-                      </div>
-                    )}
-                    <footer>
-                      <small>{noteDelivery(n)}</small>
-                      {operator.data && (
-                        <button onClick={() => setEditing(n)}>
-                          Update <ArrowRight size={14} />
-                        </button>
-                      )}
-                    </footer>
-                  </article>
-                ))}
-                {!notes.length && (
-                  <Empty
-                    icon={<MessageSquare />}
-                    title="The best improvements start with an observation"
-                    text="Add a note about a call, a routing change or something Emma handled well."
-                  />
-                )}
-              </div>
-              <p className="rw-footnote">
-                Showing the latest 200 observations. Feedback does not change Emma’s live
-                instructions automatically.
-              </p>
+                    ) : n.call_id ? (
+                      calls.find((c) => c.id === n.call_id) ? (
+                        <CallRecording
+                          tenant={tenant}
+                          call={calls.find((c) => c.id === n.call_id)!}
+                          demo={demo}
+                        />
+                      ) : (
+                        <p>
+                          Linked call saved. Load older calls in the call journal to review this
+                          recording.
+                        </p>
+                      )
+                    ) : null
+                  }
+                />
+              )}
             </>
           )}
           {view === "phones" && tenant && (

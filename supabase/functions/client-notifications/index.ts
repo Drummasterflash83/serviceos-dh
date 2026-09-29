@@ -135,9 +135,40 @@ Deno.serve(async (req) => {
           }
         }
       }
+      let releaseReport = "";
+      if (
+        receptionist &&
+        /published the improvement|restored the previous version|checking the outcome|newer configuration/.test(
+          feedback?.data?.response ?? "",
+        )
+      ) {
+        const issue = await db
+          .from("receptionist_care_issues")
+          .select("id")
+          .eq("tenant_id", job.tenant_id)
+          .eq("feedback_id", job.source_id)
+          .maybeSingle();
+        if (issue.error) throw Error("Release context unavailable");
+        if (issue.data) {
+          const latest = await db
+            .from("receptionist_releases")
+            .select("id,state,operation,instruction,provider_version,finished_at")
+            .eq("tenant_id", job.tenant_id)
+            .eq("issue_id", issue.data.id)
+            .neq("state", "prepared")
+            .order("finished_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latest.error) throw Error("Release receipt unavailable");
+          if (latest.data) {
+            const r = latest.data;
+            releaseReport = `\n\nLatest Vapi release · ${r.id}\n${slackText(r.operation)}: ${slackText(r.state)}\nProvider version: ${slackText(r.provider_version ?? "Unconfirmed")}\nExact instructions: ${slackText(r.instruction)}\nPublished is not the same as verified fixed. OpenFolk review remains required.`;
+          }
+        }
+      }
       const report =
         receptionist && feedback?.data
-          ? `\n\n${slackText(feedback.data.title)}\nStatus: ${slackText(feedback.data.status ?? "New")}${feedback.data.response ? `\nOpenFolk update: ${slackText(feedback.data.response)}` : ""}${rehearsalReport}\n\nCustomer feedback\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
+          ? `\n\n${slackText(feedback.data.title)}\nStatus: ${slackText(feedback.data.status ?? "New")}${feedback.data.response ? `\nOpenFolk update: ${slackText(feedback.data.response)}` : ""}${rehearsalReport}${releaseReport}\n\nCustomer feedback\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
           : "";
       const text =
         header +

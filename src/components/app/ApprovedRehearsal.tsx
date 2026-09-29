@@ -66,7 +66,7 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
   }
   return (
     <section className="fd-block fd-form">
-      <h3>4. Test the approved wording</h3>
+      <h3>Test the approved wording</h3>
       <p>
         Compare Emma’s current reply with the approved change in an isolated Vapi text rehearsal.
         Both start after the original call’s spoken welcome. No phone calls, transfers or live

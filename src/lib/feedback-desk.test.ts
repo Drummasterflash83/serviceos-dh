@@ -43,7 +43,8 @@ test("review desk is only mounted on the operator page", () => {
     new URL("../components/receptionist/ReceptionistWorkspace.tsx", import.meta.url),
     "utf8",
   );
-  assert.doesNotMatch(client, /FeedbackDesk/);
+  assert.doesNotMatch(client, /import\s*\{\s*FeedbackDesk\s*\}|<FeedbackDesk\b/);
+  assert.match(client, /ClientFeedbackDesk/);
 });
 test("review endpoint never writes Vapi and explicitly requires Chris and actor permission", () => {
   const s = readFileSync(
@@ -57,9 +58,12 @@ test("review endpoint never writes Vapi and explicitly requires Chris and actor 
   assert.doesNotMatch(s, /method:\s*['"](?:PATCH|PUT|DELETE)['"]/);
   assert.match(s, /providerChanges:\s*0/);
 });
-test("task dialog cannot turn an approval into a provider release", () => {
+test("testing approval and explicit live publishing are distinct actions", () => {
   const s = readFileSync(new URL("../components/app/FeedbackDesk.tsx", import.meta.url), "utf8");
-  assert.match(s, /Approval here is not a Vapi release/);
-  assert.match(s, /No automatic Vapi change is enabled/);
+  const choice = readFileSync(new URL("../components/app/ReleaseChoice.tsx", import.meta.url), "utf8");
+  assert.match(s, /ReleaseChoice/);
+  assert.match(choice, /Approve for testing/);
+  assert.match(choice, /Confirm and publish to Vapi/);
+  assert.match(choice, /PUBLISH_TO_VAPI/);
   assert.doesNotMatch(s, /action\(['"]resolve/);
 });

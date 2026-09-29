@@ -300,6 +300,34 @@
 .fd-client {
   background: #f0f5f1;
 }
+.fd-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+.fd-choice-grid button {
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 20px;
+}
+.fd-choice-grid button span {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.fd-release > details {
+  margin-top: 20px;
+}
+.fd-release .fd-approval {
+  margin: 18px 0;
+}
+.fd-release .fd-approval input {
+  flex-shrink: 0;
+}
+.fd-dialog .fd-block > details {
+  margin-top: 14px;
+}
 .fd-finding {
   border-left: 3px solid #c8b8db;
   padding: 8px 15px;
@@ -351,6 +379,9 @@
   outline-offset: 3px;
 }
 @media (max-width: 760px) {
+  .fd-choice-grid {
+    grid-template-columns: 1fr;
+  }
   .fd-stages {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

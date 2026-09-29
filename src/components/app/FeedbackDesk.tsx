@@ -4,7 +4,6 @@ import {
   ArrowRight,
   CheckCircle2,
   ClipboardList,
-  ShieldCheck,
   Sparkles,
   MessageSquare,
   Clock3,
@@ -15,7 +14,6 @@ import {
   deskStages,
   deskQueue,
   stageLabel,
-  canApprove,
   type DeskStage,
   type DeskIssue,
 } from "@/lib/feedback-desk";
@@ -27,7 +25,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CareEvidence } from "./CareEvidence";
-import { ApprovedRehearsal } from "./ApprovedRehearsal";
+import { ReleaseChoice } from "./ReleaseChoice";
 import "@/styles/feedback-desk.css";
 
 type Review = {
@@ -96,7 +94,7 @@ export function FeedbackDesk({ tenantId }: { tenantId: string }) {
         <div>
           <p className="fd-eyebrow">THE IMPROVEMENT DESK</p>
           <h2>One report. A clear next step.</h2>
-          <p>Review the evidence, agree the improvement, then prove it works.</p>
+          <p>Review the issue. Agree the fix. Test it or publish it.</p>
         </div>
         <ClipboardList size={30} />
       </header>
@@ -199,7 +197,6 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
   const [diagnosis, setDiagnosis] = useState(issue.diagnosis),
     [proposal, setProposal] = useState(issue.proposal),
     [tests, setTests] = useState(issue.test_plan);
-  const [confirm, setConfirm] = useState(false);
   const review = useQuery({
     queryKey: ["task-review", user?.id, issue.tenant_id, issue.id],
     queryFn: async () => {
@@ -303,7 +300,7 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
         </p>
       )}
       <section className="fd-block">
-        <h3>1. What needs attention?</h3>
+        <h3>1. The problem</h3>
         <p className="fd-preserve">{issue.detail}</p>
         {["received", "reviewing"].includes(issue.stage) && issue.owner_id !== user?.id && (
           <button className="fd-primary" disabled={busy} onClick={() => void action("claim")}>
@@ -311,15 +308,18 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
           </button>
         )}
       </section>
-      <CareEvidence
-        tenantId={issue.tenant_id}
-        issueId={issue.id}
-        sourceKey={issue.source_key}
-        feedbackId={issue.feedback_id}
-      />
+      <details className="fd-block">
+        <summary>Original call and recording</summary>
+        <CareEvidence
+          tenantId={issue.tenant_id}
+          issueId={issue.id}
+          sourceKey={issue.source_key}
+          feedbackId={issue.feedback_id}
+        />
+      </details>
       <section className="fd-block">
         <div className="fd-block-heading">
-          <h3>2. What does the evidence show?</h3>
+          <h3>AI’s recommendation</h3>
           <button
             className="fd-secondary"
             disabled={
@@ -362,22 +362,25 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
               </p>
             )}
             <p>{assessment.summary}</p>
-            {assessment.feedbackResponse && (
-              <article className="fd-finding">
-                <strong>The client's request</strong>
-                <p>{assessment.feedbackResponse}</p>
-              </article>
-            )}
-            {assessment.findings.map((f, i) => (
-              <article className="fd-finding" key={i}>
-                <strong>{f.category}</strong>
-                <blockquote>{f.evidence}</blockquote>
-                <p>{f.explanation}</p>
-                <p>
-                  <b>Recommendation:</b> {f.suggestedChange}
-                </p>
-              </article>
-            ))}
+            <details>
+              <summary>Why this is recommended</summary>
+              {assessment.feedbackResponse && (
+                <article className="fd-finding">
+                  <strong>The client's request</strong>
+                  <p>{assessment.feedbackResponse}</p>
+                </article>
+              )}
+              {assessment.findings.map((f, i) => (
+                <article className="fd-finding" key={i}>
+                  <strong>{f.category}</strong>
+                  <blockquote>{f.evidence}</blockquote>
+                  <p>{f.explanation}</p>
+                  <p>
+                    <b>Recommendation:</b> {f.suggestedChange}
+                  </p>
+                </article>
+              ))}
+            </details>
             {!!assessment.unchanged?.length && (
               <details>
                 <summary>Keep unchanged</summary>
@@ -404,9 +407,9 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
         )}
       </section>
       <form className="fd-block fd-form" onSubmit={submit}>
-        <h3>3. Agree the fix and the test</h3>
+        <h3>2. The proposed fix</h3>
         <p>
-          Only the proposal you approve should become a change. Approval here is not a Vapi release.
+          Save the instructions you want Emma to follow, then choose testing or publishing below.
         </p>
         {assessment && editable && !diagnosis && !proposal && (
           <button
@@ -447,7 +450,7 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
           />
         </label>
         <label>
-          How we will test it
+          What to check after the change
           <textarea
             value={tests}
             disabled={!editable || busy}
@@ -464,40 +467,18 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
               : "Save proposal for approval"}
           </button>
         )}
-        {canApprove(issue) && (
-          <div className="fd-approval">
-            <label>
-              <input
-                type="checkbox"
-                checked={confirm}
-                onChange={(e) => setConfirm(e.target.checked)}
-              />{" "}
-              I have reviewed the saved proposal and test plan.
-            </label>
-            <button
-              type="button"
-              className="fd-primary"
-              disabled={
-                !confirm ||
-                busy ||
-                diagnosis !== issue.diagnosis ||
-                proposal !== issue.proposal ||
-                tests !== issue.test_plan
-              }
-              onClick={() => void action("approve")}
-            >
-              <ShieldCheck size={17} />
-              Approve for testing
-            </button>
-          </div>
-        )}
-        {issue.approved_at && (
+        {issue.approved_at && issue.stage === "approved" && (
           <p className="fd-success">
             Approved {date(issue.approved_at)}. Emma’s live setup has not changed.
           </p>
         )}
       </form>
-      <ApprovedRehearsal issue={issue} />
+      <ReleaseChoice
+        issue={issue}
+        unsaved={
+          diagnosis !== issue.diagnosis || proposal !== issue.proposal || tests !== issue.test_plan
+        }
+      />
       <section className="fd-block fd-client">
         <h3>
           <MessageSquare size={18} /> What the client sees
@@ -509,14 +490,14 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
         </small>
       </section>
       <section className="fd-block">
-        <h3>5. Release, retest, prevent a repeat</h3>
+        <h3>Keep this on OpenFolk’s radar</h3>
         <p>
-          No automatic Vapi change is enabled yet. A version-checked release and a verified retest
-          are required before this can be marked fixed.
+          Publishing is not the same as verifying a fix. Keep the report open until the recorded
+          result confirms the improvement.
         </p>
         <p>
-          Future automation should spot the same issue and propose the approved remedy—not rewrite
-          Emma from an unverified report.
+          Updates go to the configured OpenFolk Slack channel. No client feedback changes Emma
+          without your approval.
         </p>
         {["approved", "verifying", "resolved"].includes(issue.stage) && (
           <button
