@@ -12,6 +12,7 @@ ${sqlFile('20261023151000_rehearsal_progress_notifications.sql')}
 ${sqlFile('20261023152000_approved_voice_rehearsals.sql')}
 ${sqlFile('20261023160000_receptionist_direct_release.sql')}
 ${sqlFile('20261023180000_feedback_archive.sql')}
+${sqlFile('20261023190000_serviceos_build_investment.sql')}
 create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
 grant select on ids to authenticated,service_role;
 update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
@@ -27,6 +28,7 @@ create function pg_temp.refuses(q text,t text) returns void language plpgsql as 
 set local role authenticated;
 select set_config('request.jwt.claim.sub',(select other_admin::text from ids),true);
 select pg_temp.ok(not public.care_desk_operator(),'other admin is refused despite having authority');
+select pg_temp.refuses('select public.openfolk_build_investment()','build estimate refuses another admin');
 select pg_temp.ok((select count(*)=0 from public.receptionist_care_issues),'other admin cannot read care issues');
 select pg_temp.refuses(format('select public.care_issue_action(%L,%L,1,%L)',tenant,(select id from public.receptionist_care_issues limit 1),'claim'),'other admin cannot mutate') from ids;
 select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
@@ -128,6 +130,17 @@ insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) 
 set local role authenticated;
 select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
 select pg_temp.ok(not public.care_desk_operator(),'View-As cannot enter task desk');
+select pg_temp.refuses('select public.openfolk_build_investment()','build estimate refuses View-As');
+reset role;
+update public.view_as_context set ended_at=now() where actor_user_id=(select admin_id from ids);
+set local role authenticated;
+select pg_temp.ok((public.openfolk_build_investment()->>'estimatedHours')::int=320,'Chris can read private estimated hours');
+select pg_temp.ok(public.openfolk_build_investment()->>'confidence'='Low','estimate is explicitly low confidence');
+select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
+select pg_temp.refuses('select public.openfolk_build_investment()','client cannot read private build estimate');
+reset role;
+set local role anon;
+select pg_temp.refuses('select public.openfolk_build_investment()','anonymous cannot read private build estimate');
 rollback;`;
 execFileSync('docker',['exec','-i','supabase_db_serviceos-dh','psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],{input:sql,stdio:['pipe','pipe','inherit']});
 console.log('Task desk proof passed; all schema and fixtures rolled back.');

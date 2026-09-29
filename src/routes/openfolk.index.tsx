@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { OperatorShell } from "@/components/app/OperatorShell";
 import { loadOperatorHealth } from "@/components/app/useOperatorHealth";
 import { healthSignal } from "@/lib/operator-workspace";
+import { BuildInvestment } from "@/components/app/BuildInvestment";
 
 export const Route = createFileRoute("/openfolk/")({ component: OpenfolkList });
 function OpenfolkList() {
@@ -107,6 +108,7 @@ function OpenfolkList() {
           Your first client will appear here when their workspace is added.
         </div>
       )}
+      <BuildInvestment />
       <p className="op-note">
         Health reflects saved feedback and notification delivery, refreshed every minute. “No
         reported issues” is not a live phone-line test. Urgent reports are included in open
