@@ -88,6 +88,7 @@ export function PracticeImprove({
   demo,
   active,
   info,
+  approvedTask,
 }: {
   tenant: string;
   userId?: string;
@@ -96,6 +97,7 @@ export function PracticeImprove({
   demo: boolean;
   active: boolean;
   info: ReturnType<typeof useEmmaInfo>;
+  approvedTask?: { id: string; version: number };
 }) {
   const db = getSupabaseClient(),
     qc = useQueryClient();
@@ -144,11 +146,23 @@ export function PracticeImprove({
     },
   });
   const sessions = useQuery({
-    queryKey: ["receptionist-practice-sessions", userId, tenant],
+    queryKey: ["receptionist-practice-sessions", userId, tenant, approvedTask?.id ?? "standard"],
     enabled: !!userId && !demo,
     refetchInterval: active ? 15000 : false,
     queryFn: async () => {
-      const { data, error } = await db
+      let allowedSessions: string[] | null = null;
+      if (approvedTask) {
+        const bindings = await db
+          .from("receptionist_approved_voice_tests")
+          .select("session_id")
+          .eq("tenant_id", tenant)
+          .eq("issue_id", approvedTask.id)
+          .eq("actor_id", userId!);
+        if (bindings.error) throw Error("Approved test history is unavailable");
+        allowedSessions = bindings.data.map((x) => x.session_id);
+        if (!allowedSessions.length) return [] as PracticeSession[];
+      }
+      let query = db
         .from("receptionist_practice_sessions")
         .select("id,call_id,state,created_at")
         .eq("tenant_id", tenant)
@@ -156,6 +170,8 @@ export function PracticeImprove({
         .not("call_id", "is", null)
         .order("created_at", { ascending: false })
         .limit(30);
+      if (allowedSessions) query = query.in("id", allowedSessions);
+      const { data, error } = await query;
       if (error) throw Error("Your test calls are unavailable");
       return data as PracticeSession[];
     },
@@ -292,7 +308,15 @@ export function PracticeImprove({
       sdk.current = voice;
       const id = crypto.randomUUID();
       const { data, error } = await db.functions.invoke("receptionist-practice", {
-        body: { tenantId: tenant, action: "start", sessionId: id, mode: "conversation" },
+        body: {
+          tenantId: tenant,
+          action: "start",
+          sessionId: id,
+          mode: "conversation",
+          ...(approvedTask
+            ? { careIssueId: approvedTask.id, careVersion: approvedTask.version }
+            : {}),
+        },
       });
       if (!alive.current || attempt !== generation.current) return;
       if (error || data?.error) {
@@ -457,7 +481,7 @@ export function PracticeImprove({
       submission_key: submission.current,
       category: "improvement",
       priority: "normal",
-      title: "Emma test feedback",
+      title: approvedTask ? "Approved Emma change — voice test feedback" : "Emma test feedback",
       body: noticed.trim(),
     };
     pendingPayload.current = payload;
@@ -504,7 +528,7 @@ export function PracticeImprove({
           <div className="ep-orb" aria-hidden="true">
             <Headphones size={46} />
           </div>
-          <h2>Get to know {name}.</h2>
+          <h2>{approvedTask ? "Hear the approved change." : `Get to know ${name}.`}</h2>
           <p>
             Speak to {name} in the app. End the conversation, hear it back and send one clear report
             to OpenFolk.

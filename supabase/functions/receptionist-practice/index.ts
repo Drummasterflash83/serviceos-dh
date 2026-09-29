@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { record, normalizeCall, secureUrl } from "../_shared/receptionist-data.ts";
+import { evidenceHash } from "../_shared/receptionist-care.ts";
+import { approvedVoiceSource } from "../_shared/receptionist-rehearsal.ts";
 import {
   webCallToken,
   definitiveWebCallRejection,
@@ -112,6 +114,59 @@ Deno.serve(async (req) => {
       return reply({ error: "Unsupported action" }, 400);
     const assistant = await provider("assistant/" + w.assistant_id);
     if (assistant.id !== w.assistant_id) throw Error("Assistant scope mismatch");
+    let voiceApproval: { id: string; proposal: string; opening: string } | null = null;
+    if (body.careIssueId !== undefined) {
+      const allowed = await db.rpc("care_desk_operator");
+      if (
+        allowed.error ||
+        allowed.data !== true ||
+        auth.user.email?.toLowerCase() !== "chris@openfolk.ai"
+      )
+        return reply(
+          { error: "Only OpenFolk can test an approved change. Leave client preview first." },
+          403,
+        );
+      if (!uuid(body.careIssueId) || !Number.isInteger(body.careVersion) || body.action !== "start")
+        return reply({ error: "Choose an approved task." }, 400);
+      const issue = await service
+        .from("receptionist_care_issues")
+        .select("stage,version,proposal,approved_at")
+        .eq("tenant_id", body.tenantId)
+        .eq("id", body.careIssueId)
+        .single();
+      if (
+        issue.error ||
+        issue.data.stage !== "approved" ||
+        issue.data.version !== body.careVersion ||
+        !issue.data.approved_at
+      )
+        return reply({ error: "The approved proposal changed. Reload before testing." }, 409);
+      const rehearsal = await service
+        .from("receptionist_rehearsals")
+        .select("id,proposal,opening,assistant_hash,result")
+        .eq("tenant_id", body.tenantId)
+        .eq("issue_id", body.careIssueId)
+        .eq("state", "completed")
+        .eq("approved_at", issue.data.approved_at)
+        .eq("proposal", issue.data.proposal)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (
+        rehearsal.error ||
+        !rehearsal.data ||
+        record(rehearsal.data.result).version !== "approved-wording-v2-recorded-opening" ||
+        rehearsal.data.assistant_hash !== (await evidenceHash(assistant))
+      )
+        return reply(
+          {
+            error:
+              "Run a fresh approved wording rehearsal first. Emma's configuration must still match.",
+          },
+          409,
+        );
+      voiceApproval = rehearsal.data;
+    }
     const ids = record(assistant.model).toolIds;
     if (ids !== undefined && (!Array.isArray(ids) || ids.length > 30 || ids.some((x) => !uuid(x))))
       throw Error("Tool configuration needs review");
@@ -125,7 +180,12 @@ Deno.serve(async (req) => {
       ? null
       : "Browser practice is not enabled for this workspace.";
     try {
-      candidate = practiceAssistant(assistant, queryIds);
+      candidate = practiceAssistant(
+        voiceApproval
+          ? approvedVoiceSource(assistant, voiceApproval.proposal, voiceApproval.opening)
+          : assistant,
+        queryIds,
+      );
     } catch (e) {
       candidate = null;
       // Only expose our own fixed validation messages, never provider response bodies.
@@ -188,6 +248,31 @@ Deno.serve(async (req) => {
       const failure = practiceReservationFailure(reserveError?.message, reserved);
       return reply({ error: failure.error, code: failure.code }, failure.status);
     }
+    if (voiceApproval) {
+      const bound = await service.rpc("care_bind_voice_test", {
+        p_tenant: body.tenantId,
+        p_issue: body.careIssueId,
+        p_actor: auth.user.id,
+        p_version: body.careVersion,
+        p_session: body.sessionId,
+        p_rehearsal: voiceApproval.id,
+        p_hash: await evidenceHash(candidate),
+      });
+      if (bound.error) {
+        await service
+          .from("receptionist_practice_sessions")
+          .update({ state: "failed" })
+          .eq("id", body.sessionId)
+          .eq("tenant_id", body.tenantId);
+        return reply(
+          {
+            error:
+              "The proposal could not be bound to this call. No voice call was requested; reload the task.",
+          },
+          409,
+        );
+      }
+    }
     try {
       const duration = body.mode === "listen" ? 25 : 180;
       const token = await webCallToken(key, String(assistant.orgId ?? ""));
@@ -200,7 +285,13 @@ Deno.serve(async (req) => {
           assistant: {
             ...candidate,
             maxDurationSeconds: duration,
-            metadata: { openfolkPracticeSession: body.sessionId, openfolkTenant: body.tenantId },
+            metadata: {
+              openfolkPracticeSession: body.sessionId,
+              openfolkTenant: body.tenantId,
+              ...(voiceApproval
+                ? { openfolkCareIssue: body.careIssueId, openfolkRehearsal: voiceApproval.id }
+                : {}),
+            },
           },
           roomDeleteOnUserLeaveEnabled: true,
         }),

@@ -3,11 +3,13 @@ import {readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 const sqlFile=p=>readFileSync(new URL('../supabase/migrations/'+p,import.meta.url),'utf8').replace(/^begin;\s*$/gim,'').replace(/^commit;\s*$/gim,'');
 const sql=`begin;
+${sqlFile('20261020120000_receptionist_practice.sql')}
 ${sqlFile('20261022120000_receptionist_care_loop.sql')}
 ${sqlFile('20261023120000_operator_notifications.sql')}
 ${sqlFile('20261023130000_receptionist_review_desk.sql')}
 ${sqlFile('20261023150000_approved_wording_rehearsals.sql')}
 ${sqlFile('20261023151000_rehearsal_progress_notifications.sql')}
+${sqlFile('20261023152000_approved_voice_rehearsals.sql')}
 create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
 grant select on ids to authenticated,service_role;
 update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
@@ -64,6 +66,16 @@ update public.receptionist_rehearsals set created_at=now()-interval '2 minutes' 
 select public.care_reserve_rehearsal(i.tenant_id,i.id,p.admin_id,7,'source-v1','hash1','hash2','Hello','Unclear name') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
 select public.care_finish_rehearsal(r.id,'{"baseline":{"reply":"Original"},"candidate":{"reply":"Candidate"},"liveChanges":0}') from public.receptionist_rehearsals r,ids p where r.tenant_id=p.tenant and r.state='running';
 select pg_temp.ok((select count(*)=8 from public.client_notification_outbox o,ids p where o.source_id=p.feedback),'repeat rehearsal notifies Slack even with unchanged progress wording');
+insert into public.receptionist_practice_sessions(id,tenant_id,author_id) select gen_random_uuid(),tenant,admin_id from ids;
+select pg_temp.refuses(format('select public.care_bind_voice_test(%L,%L,%L,8,%L,%L,%L)',i.tenant_id,i.id,p.admin_id,s.id,r.id,repeat('a',64)),'voice test requires valid recorded-opening rehearsal') from public.receptionist_care_issues i,ids p,public.receptionist_practice_sessions s,public.receptionist_rehearsals r where i.feedback_id=p.feedback and s.tenant_id=p.tenant and r.tenant_id=p.tenant limit 1;
+update public.receptionist_rehearsals set result=result||'{"version":"approved-wording-v2-recorded-opening"}'::jsonb where tenant_id=(select tenant from ids);
+select public.care_bind_voice_test(i.tenant_id,i.id,p.admin_id,8,s.id,r.id,repeat('a',64)) from public.receptionist_care_issues i,ids p,public.receptionist_practice_sessions s,public.receptionist_rehearsals r where i.feedback_id=p.feedback and s.tenant_id=p.tenant and r.tenant_id=p.tenant limit 1;
+select pg_temp.ok((select count(*)=1 from public.receptionist_approved_voice_tests v,ids p where v.tenant_id=p.tenant),'approved voice session bound to immutable proposal and text test');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
+select pg_temp.ok((select count(*)=0 from public.receptionist_approved_voice_tests),'client cannot read operator voice approval records');
+select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
 reset role;
 insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) select tenant,admin_id,'role','Synthetic proof' from ids;
 set local role authenticated;
