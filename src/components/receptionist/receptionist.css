@@ -2814,43 +2814,43 @@ button.rw-score-card:hover {
   }
 }
 
-/* Client overview: soft section surfaces, with dark purple reserved for actions. */
-.cp-root:not(.op-embedded) .rw-emma-roadmap {
+/* Shared overview: soft section surfaces, with dark purple reserved for actions. */
+.rw .rw-emma-roadmap {
   margin: 24px 0;
   padding: clamp(18px, 2.5vw, 25px);
   background: #f3eff7;
   border-color: #e2dbe9;
   border-radius: 22px;
 }
-.cp-root:not(.op-embedded) .rw-emma-roadmap .rw-panel-title h2 {
+.rw .rw-emma-roadmap .rw-panel-title h2 {
   color: #302b40;
 }
-.cp-root:not(.op-embedded) .rw-emma-roadmap .rw-panel-title .rw-eyebrow {
+.rw .rw-emma-roadmap .rw-panel-title .rw-eyebrow {
   color: #6d587e;
 }
-.cp-root:not(.op-embedded) .rw-emma-roadmap-steps {
+.rw .rw-emma-roadmap-steps {
   gap: 14px;
 }
-.cp-root:not(.op-embedded) .rw-emma-roadmap-steps > div {
+.rw .rw-emma-roadmap-steps > div {
   border-color: #e2dbe9;
   border-radius: 16px;
   padding: 18px;
 }
-.cp-root:not(.op-embedded) .rw-emma-pulse {
+.rw .rw-emma-pulse {
   margin: 24px 0;
 }
-.cp-root:not(.op-embedded) .rw-emma-pulse-main {
+.rw .rw-emma-pulse-main {
   border-radius: 22px;
 }
-.cp-root:not(.op-embedded) .rw-emma-signal {
+.rw .rw-emma-signal {
   border-radius: 18px;
 }
-.cp-root:not(.op-embedded) .rw-journal {
+.rw .rw-journal {
   margin-top: 24px;
   border-color: #e2dbe9;
   border-radius: 22px;
 }
-.cp-root:not(.op-embedded) .rw-journal .rw-panel-title {
+.rw .rw-journal .rw-panel-title {
   padding: clamp(18px, 2.5vw, 25px);
 }
 
@@ -2880,32 +2880,6 @@ button.rw-score-card:hover {
   text-align: left;
   cursor: pointer;
 }
-/* Activity cue follows the existing good status, never loading or error states. */
-.rw-emma-pulse-main.rw-emma-tone-good::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border: 1px solid #242337;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.2;
-  animation: rw-emma-active-border 4s ease-in-out infinite;
-}
-@keyframes rw-emma-active-border {
-  0%,
-  100% {
-    opacity: 0.15;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rw-emma-pulse-main.rw-emma-tone-good::after {
-    animation: none;
-    opacity: 0.25;
-  }
-}
 .rw-emma-tone-watch {
   --rw-pulse-accent: #a86c32;
 }
@@ -2920,11 +2894,11 @@ button.rw-score-card:hover {
   border-color: #e5dcec;
   background: linear-gradient(115deg, #f8f4fc 0%, #fff 58%, #faf8fd 100%);
 }
-/* Client workspace: a steady outline, with the existing card content unchanged. */
-.cp-root:not(.op-embedded) .rw-emma-pulse-main {
+/* Both workspaces: a steady outline, with existing card content unchanged. */
+.rw .rw-emma-pulse-main {
   border: 2pt solid #242337;
 }
-.cp-root:not(.op-embedded) .rw-emma-pulse-main::after {
+.rw .rw-emma-pulse-main::after {
   content: none;
   animation: none;
 }
