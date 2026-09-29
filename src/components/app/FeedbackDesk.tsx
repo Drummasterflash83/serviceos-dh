@@ -377,6 +377,22 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
         <p>
           Only the proposal you approve should become a change. Approval here is not a Vapi release.
         </p>
+        {assessment && editable && !diagnosis && !proposal && (
+          <button
+            className="fd-secondary"
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setDiagnosis(assessment.summary);
+              setProposal(assessment.findings.map((f) => f.suggestedChange).join("\n\n"));
+              setNotice(
+                "Recommendations copied into your draft. Check the wording and add a test plan before saving.",
+              );
+            }}
+          >
+            Use recommendations as a draft
+          </button>
+        )}
         <label>
           Issue and cause
           <textarea

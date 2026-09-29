@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       const feedback = receptionist
         ? await db
             .from("receptionist_feedback")
-            .select("practice_session_id,call_id,title,body")
+            .select("practice_session_id,call_id,title,body,status,response")
             .eq("tenant_id", job.tenant_id)
             .eq("id", job.source_id)
             .maybeSingle()
@@ -101,11 +101,13 @@ Deno.serve(async (req) => {
         : job.source_type === "programme_updated"
           ? "Client programme updated"
           : "Client programme feedback";
-      const url = `https://app.openfolk.ai/${receptionist ? "receptionist" : "client"}?tenant=${job.tenant_id}${receptionist ? "&view=improvements" : ""}`;
+      const url = receptionist
+        ? `https://app.openfolk.ai/openfolk/${job.tenant_id}?module=receptionist&view=improvements&tools=false`
+        : `https://app.openfolk.ai/client?tenant=${job.tenant_id}`;
       const header = `${job.priority.toUpperCase()} · ${w.company}\n${label}\n${url}\nReference: ${job.source_id} · revision ${job.source_version}`;
       const report =
         receptionist && feedback?.data
-          ? `\n\n${slackText(feedback.data.title)}\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
+          ? `\n\n${slackText(feedback.data.title)}\nStatus: ${slackText(feedback.data.status ?? "New")}${feedback.data.response ? `\nOpenFolk update: ${slackText(feedback.data.response)}` : ""}\n\nCustomer feedback\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
           : "";
       const text =
         header +
