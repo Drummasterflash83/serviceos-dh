@@ -10,6 +10,7 @@ ${sqlFile('20261023130000_receptionist_review_desk.sql')}
 ${sqlFile('20261023150000_approved_wording_rehearsals.sql')}
 ${sqlFile('20261023151000_rehearsal_progress_notifications.sql')}
 ${sqlFile('20261023152000_approved_voice_rehearsals.sql')}
+${sqlFile('20261023160000_receptionist_direct_release.sql')}
 create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
 grant select on ids to authenticated,service_role;
 update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
@@ -75,7 +76,34 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
 select pg_temp.ok((select count(*)=0 from public.receptionist_approved_voice_tests),'client cannot read operator voice approval records');
+select pg_temp.ok((select count(*)=0 from public.receptionist_releases),'client cannot read internal release instructions');
+select pg_temp.refuses('select * from public.receptionist_release_snapshots','client cannot read private configuration snapshots');
+select pg_temp.ok((select stage='approved' from public.care_customer_progress((select tenant from ids)) where feedback_id=(select feedback from ids)),'client receives exact safe status for matching board');
 select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
+select pg_temp.refuses('select * from public.receptionist_release_snapshots','even operator browser cannot read snapshot credentials');
+reset role;
+set local role service_role;
+select public.care_prepare_release(i.tenant_id,i.id,p.admin_id,i.version,w.assistant_id::text,'v1',repeat('a',64),repeat('b',64),'Exact approved instruction','{"model":{"messages":[]}}','{"model":{"messages":[{"role":"system","content":"Approved"}]}}') from public.receptionist_care_issues i,ids p,public.receptionist_workspaces w where i.feedback_id=p.feedback and w.tenant_id=p.tenant;
+select public.care_claim_release(r.id,p.admin_id,'publish') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant;
+select pg_temp.refuses(format('select public.care_claim_release(%L,%L,%L)',r.id,p.admin_id,'publish'),'duplicate publish is refused') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant;
+select pg_temp.refuses(format('update public.receptionist_care_issues set proposal=%L where id=%L','Edited while publishing',i.id),'in-flight proposal cannot change') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_finish_release(r.id,'applied','v2') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant;
+select pg_temp.ok((select stage='verifying' and release_ref is not null and customer_update like '%published%' from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'verified provider write is published but not resolved');
+select public.care_claim_release(r.id,p.admin_id,'rollback') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant;
+select public.care_finish_release(r.id,'applied','v3') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant;
+select pg_temp.ok((select state='rolled_back' from public.receptionist_releases r,ids p where r.tenant_id=p.tenant),'rollback is auditable');
+select pg_temp.ok((select stage='reviewing' and release_ref is null from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'rollback returns report to review');
+select pg_temp.ok((select count(*)=10 from public.client_notification_outbox o,ids p where o.source_id=p.feedback),'publish and rollback both enter Slack outbox');
+reset role;
+set local role authenticated;
+select public.care_issue_action(i.tenant_id,i.id,i.version,'propose','{"diagnosis":"Simple repetition","proposal":"Say the office is closed only once","test_plan":"Watch next calls"}') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+reset role;
+set local role service_role;
+select public.care_prepare_release(i.tenant_id,i.id,p.admin_id,i.version,w.assistant_id::text,'v3',repeat('c',64),repeat('d',64),'Saved exact proposal','{"model":{}}','{"model":{"messages":[]}}') from public.receptionist_care_issues i,ids p,public.receptionist_workspaces w where i.feedback_id=p.feedback and w.tenant_id=p.tenant;
+select public.care_claim_release(r.id,p.admin_id,'publish') from public.receptionist_releases r,ids p where r.tenant_id=p.tenant and r.state='prepared';
+select pg_temp.ok((select stage='approval' and approved_at is null from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'direct publish does not require a testing approval or rehearsal');
+select public.care_finish_release(r.id,'uncertain',null) from public.receptionist_releases r,ids p where r.tenant_id=p.tenant and r.state='publishing';
+select pg_temp.ok((select release_ref is null and stage='approval' from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'uncertain provider result does not claim release');
 reset role;
 insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) select tenant,admin_id,'role','Synthetic proof' from ids;
 set local role authenticated;
