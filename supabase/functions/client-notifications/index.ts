@@ -3,6 +3,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { normalizeCall, record } from "../_shared/receptionist-data.ts";
 import { practiceCallMatches } from "../_shared/receptionist-web-call.ts";
+import { dispatchCustomerNotifications } from "../_shared/customer-notification-dispatch.ts";
 import {
   notificationEvent,
   OPENFOLK_TEAM,
@@ -238,5 +239,6 @@ Deno.serve(async (req) => {
         .eq("id", job.id);
     }
   }
-  return Response.json({ sent, processed: jobs?.length ?? 0 });
+  const customer = await dispatchCustomerNotifications(db);
+  return Response.json({ sent, processed: jobs?.length ?? 0, customer });
 });

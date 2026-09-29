@@ -25,6 +25,7 @@ import {
   Receipt,
   X,
   Headphones,
+  Bell,
   Menu,
   X as CloseIcon,
 } from "lucide-react";
@@ -78,12 +79,16 @@ const ClientInvestment = lazy(() =>
 const ClientDeliverySummary = lazy(() =>
   import("./ClientDeliverySummary").then((module) => ({ default: module.ClientDeliverySummary })),
 );
+const ClientNotifications = lazy(() =>
+  import("./ClientNotifications").then((m) => ({ default: m.ClientNotifications })),
+);
 const nav = [
   { id: "home", label: "Workspace home", Icon: LayoutDashboard },
   { id: "receptionist", label: "AI Receptionist", Icon: Headphones },
   { id: "modules", label: "Modules", Icon: Layers },
   { id: "invoices", label: "Invoices", Icon: Receipt },
   { id: "notes", label: "Review & feedback", Icon: MessageSquare },
+  { id: "notifications", label: "Notifications", Icon: Bell },
 ] as const;
 function Status({ children }: { children: ReactNode }) {
   return (
@@ -371,7 +376,9 @@ export function ClientPortal({
                 ? "Your modules. Clear scope, progress and agreed results."
                 : section === "invoices"
                   ? "What you’ve paid, what it delivered and your invoices to download."
-                  : "Tell OpenFolk what would make your business work better."}
+                  : section === "notifications"
+                    ? "Choose how your team hears from OpenFolk."
+                    : "Tell OpenFolk what would make your business work better."}
           </p>
         </div>
         <div className="cp-heading-actions">
@@ -413,6 +420,11 @@ export function ClientPortal({
       {section === "invoices" && tenant && user && (
         <Suspense fallback={<p role="status">Opening invoices…</p>}>
           <ClientInvestment tenant={tenant} userId={user.id} showDelivery={false} />
+        </Suspense>
+      )}
+      {section === "notifications" && tenant && user && (
+        <Suspense fallback={<p role="status">Opening notifications…</p>}>
+          <ClientNotifications tenant={tenant} userId={user.id} />
         </Suspense>
       )}
       {section === "home" && tenant && user && (

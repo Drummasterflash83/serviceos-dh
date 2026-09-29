@@ -167,7 +167,14 @@ test("receptionist pages round-trip through the same client route", () => {
   });
 });
 test("released client navigation contains only the five requested destinations", () => {
-  assert.deepEqual(clientSections, ["home", "receptionist", "modules", "invoices", "notes"]);
+  assert.deepEqual(clientSections, [
+    "home",
+    "receptionist",
+    "modules",
+    "invoices",
+    "notes",
+    "notifications",
+  ]);
   const portal = read("../components/client-portal/ClientPortal.tsx");
   const nav = portal.slice(
     portal.indexOf("const nav = ["),
