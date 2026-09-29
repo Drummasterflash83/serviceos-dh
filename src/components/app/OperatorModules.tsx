@@ -38,6 +38,7 @@ const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "callers", label: "People who called" },
   { view: "phones", label: "Phone system" },
   { view: "details", label: "Training & setup" },
+  { view: "voicemails", label: "Voicemails" },
 ];
 function OperatorModuleContent({
   tenantId,

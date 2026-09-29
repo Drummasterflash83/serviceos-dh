@@ -28,6 +28,7 @@ export const receptionistViews = [
   "callers",
   "phones",
   "details",
+  "voicemails",
   "calls",
 ] as const;
 export type ReceptionistView = (typeof receptionistViews)[number];
