@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -54,7 +54,14 @@ const date = (s: string) =>
     timeStyle: "short",
     timeZone: "Europe/London",
   });
-export function FeedbackDesk({ tenantId }: { tenantId: string }) {
+export function FeedbackDesk({
+  tenantId,
+  initialIssueId,
+}: {
+  tenantId: string;
+  initialIssueId?: string;
+}) {
+  const openedInitial = useRef<string | undefined>(undefined);
   const { user } = useAuth(),
     db = getSupabaseClient();
   const [stage, setStage] = useState<DeskStage>("received"),
@@ -87,6 +94,14 @@ export function FeedbackDesk({ tenantId }: { tenantId: string }) {
     (issues.data ?? []).filter((x) => x.stage === stage),
     sort,
   );
+  useEffect(() => {
+    const initial = issues.data?.find((i) => i.id === initialIssueId);
+    if (initial && openedInitial.current !== initial.id) {
+      openedInitial.current = initial.id;
+      setSelected(initial.id);
+      setStage(initial.stage);
+    }
+  }, [initialIssueId, issues.data]);
   const issue = issues.data?.find((x) => x.id === selected);
   return (
     <section className="fd" aria-label="Feedback task board">

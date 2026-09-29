@@ -24,7 +24,7 @@ test("quiet connected data shows a positive readiness state, not a fake score", 
   assert.equal(cards[0]!.headline, "Call view is ready");
   assert.equal(cards[0]!.tone, "waiting");
   assert.match(cards[0]!.explanation, /Main-number activation is a separate step/);
-  assert.equal(cards[1]!.headline, "Learning from conversations");
+  assert.equal(cards[1]!.headline, "Awaiting experience assessments");
 });
 
 test("observed calls without handling errors show Emma taking calls, not full phone verification", () => {
@@ -51,8 +51,8 @@ test("a retrieval failure stays visible instead of being recast as awaiting data
 test("missing assessments create no client-facing unknown-call task", () => {
   const call = normalizeCall({ id: "unknown", status: "ended" });
   const cards = emmaHealthCards([call], connected);
-  assert.equal(cards[1]!.headline, "Learning from conversations");
-  assert.equal(cards[2]!.headline, "Watching for follow-ups");
+  assert.equal(cards[1]!.headline, "Awaiting experience assessments");
+  assert.equal(cards[2]!.headline, "Awaiting follow-up assessments");
   assert.equal(cards[1]!.flaggedIds.length, 0);
   assert.equal(cards[2]!.flaggedIds.length, 0);
 });
@@ -66,6 +66,7 @@ test("ordinary human request is not an experience or follow-up problem", () => {
     unresolved: false,
     requiresFollowUp: false,
     callbackRequested: false,
+    repeatChaser: false,
     sentiment: "neutral",
   });
   const cards = emmaHealthCards(
@@ -85,7 +86,7 @@ test("one assessed call among many does not become a green experience rating", (
   );
   const experience = emmaHealthCards([neutral, ...unknown], connected)[1]!;
   assert.equal(experience.tone, "waiting");
-  assert.equal(experience.headline, "Learning from conversations");
+  assert.equal(experience.headline, "Awaiting experience assessments");
 });
 
 test("confusion, repetition and frustration focus only relevant conversations", () => {
@@ -109,7 +110,12 @@ test("a transfer attempt is not a confirmed answer, while failure is actionable"
   const transferred = normalizeCall({ id: "transferred", endedReason: "assistant-forwarded-call" });
   const failed = normalizeCall({ id: "failed", endedReason: "transfer-error" });
   const good = emmaHealthCards([transferred], connected)[3]!;
-  assert.equal(good.headline, "Emma is routing calls");
+  assert.equal(good.headline, "Handovers attempted · outcomes pending");
+  assert.equal(good.tone, "waiting");
+  assert.equal(
+    good.metrics.find((m) => m.label === "Confirmed answer rate")?.value,
+    "Awaiting outcome data",
+  );
   assert.match(good.explanation, /Whether the recipient answered/);
   const watch = emmaHealthCards([transferred, failed], connected)[3]!;
   assert.equal(watch.tone, "watch");
@@ -124,4 +130,49 @@ test("recorded handling failure is a service concern and possible human follow-u
   const cards = emmaHealthCards([failed], connected);
   assert.equal(cards[0]!.tone, "watch");
   assert.equal(cards[2]!.tone, "watch");
+});
+
+test("each area has its own measures; unknown signals are not zero", () => {
+  const cards = emmaHealthCards([normalizeCall({ id: "unknown" })], connected);
+  assert.deepEqual(
+    cards[1]!.metrics.find((m) => m.label === "Repeated questions"),
+    { label: "Repeated questions", value: "Awaiting data", callIds: [] },
+  );
+  assert.equal(
+    cards[2]!.metrics.find((m) => m.label === "Callback requested")?.value,
+    "Awaiting data",
+  );
+  assert.equal(cards[3]!.metrics.find((m) => m.label === "Transfer attempts")?.value, "0");
+  assert.equal(new Set(cards.map((c) => c.metrics.map((m) => m.label).join(","))).size, 4);
+});
+test("a neutral tone alone cannot prove callers were understood", () => {
+  const cards = emmaHealthCards(
+    ["a", "b", "c"].map((id) => assessed(id, { sentiment: "neutral" })),
+    connected,
+  );
+  assert.equal(cards[1]!.assessed, 0);
+  assert.equal(cards[1]!.tone, "waiting");
+});
+test("metric drilldowns contain only the matching calls and repeat chasing needs help", () => {
+  const calls = [
+    assessed("confused", { callerConfused: true }),
+    assessed("callback", { callbackRequested: true }),
+    assessed("chaser", { repeatChaser: true }),
+  ];
+  const cards = emmaHealthCards(calls, connected);
+  assert.deepEqual(cards[1]!.metrics.find((m) => m.label === "Caller confused")?.callIds, [
+    "confused",
+  ]);
+  assert.deepEqual(cards[2]!.metrics.find((m) => m.label === "Callback requested")?.callIds, [
+    "callback",
+  ]);
+  assert.deepEqual(cards[2]!.flaggedIds, ["callback", "chaser"]);
+});
+test("failed data refresh clears non-service metrics as well as flags", () => {
+  const cards = emmaHealthCards([assessed("old", { repeatedQuestions: true })], {
+    ...connected,
+    connected: false,
+    error: true,
+  });
+  for (const card of cards.slice(1)) assert.deepEqual(card.metrics, []);
 });

@@ -433,6 +433,7 @@ export function ClientPortal({
           userId={user.id}
           company={clientDisplayName(p.company)}
           open={setSection}
+          openFeedback={() => openReceptionist("improvements")}
         />
       )}
       {section === "modules" && (

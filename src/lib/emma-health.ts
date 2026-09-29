@@ -3,6 +3,7 @@ import { reviewCall } from "./receptionist-review.ts";
 
 export type EmmaHealthCardId = "service" | "experience" | "help" | "handover";
 export type EmmaHealthTone = "good" | "watch" | "waiting";
+export type HealthMetric = { label: string; value: string; callIds: string[] };
 export type EmmaHealthCard = {
   id: EmmaHealthCardId;
   title: string;
@@ -13,6 +14,7 @@ export type EmmaHealthCard = {
   observed: number;
   assessed: number;
   flaggedIds: string[];
+  metrics: HealthMetric[];
 };
 
 // This is the reviewed launch configuration, not a live Birchills line-health check.
@@ -50,6 +52,7 @@ function explicitFollowUp(call: ReceptionistCall) {
     "requiresFollowUp",
     "callbackRequested",
     "humanRequestedAfterDifficulty",
+    "repeatChaser",
   ];
   const flags = keys.map((key) => evidence(call, key));
   return {
@@ -106,6 +109,7 @@ export function emmaHealthCards(
     observed: calls.length,
     assessed: state.connected ? calls.length : 0,
     flaggedIds: serviceIssues.map((call) => call.id),
+    metrics: [],
   };
 
   const experienceFlags = calls.filter(
@@ -115,13 +119,14 @@ export function emmaHealthCards(
       evidence(call, "repeatedQuestions") === true ||
       evidence(call, "humanRequestedAfterDifficulty") === true,
   );
-  const experienceAssessed = calls.filter(
+  const experienceAssessedCalls = calls.filter(
     (call) =>
-      knownTone.test(call.sentiment?.trim() ?? "") ||
+      knownTone.test(call.sentiment?.trim() ?? "") &&
       ["callerConfused", "repeatedQuestions", "humanRequestedAfterDifficulty"].every(
         (key) => evidence(call, key) !== null,
       ),
-  ).length;
+  );
+  const experienceAssessed = experienceAssessedCalls.length;
   const experienceReady = enoughEvidence(experienceAssessed, calls.length);
   const experience: EmmaHealthCard = {
     id: "experience",
@@ -130,24 +135,26 @@ export function emmaHealthCards(
       ? `${experienceFlags.length} conversation${experienceFlags.length === 1 ? "" : "s"} worth a look`
       : experienceReady
         ? "No concerns surfaced so far"
-        : "Learning from conversations",
+        : "Awaiting experience assessments",
     summary: experienceFlags.length
       ? "Possible confusion, repetition or frustration was detected."
       : experienceReady
         ? "No experience concerns were flagged in assessed calls."
-        : "Emma's insights will build as conversations are assessed.",
+        : "Calls are recorded; full experience assessments are still needed.",
     explanation:
       "These are AI-assisted signals from available call evidence, not customer-satisfaction ratings. An ordinary request to speak to a person is not treated as a problem.",
     tone: experienceFlags.length ? "watch" : experienceReady ? "good" : "waiting",
     observed: calls.length,
     assessed: experienceAssessed,
     flaggedIds: experienceFlags.map((call) => call.id),
+    metrics: [],
   };
 
   const helpFlags = calls.filter(
     (call) => handlingFailure.test(call.endedReason ?? "") || explicitFollowUp(call).flagged,
   );
-  const helpAssessed = calls.filter((call) => explicitFollowUp(call).assessed).length;
+  const helpAssessedCalls = calls.filter((call) => explicitFollowUp(call).assessed);
+  const helpAssessed = helpAssessedCalls.length;
   const helpReady = enoughEvidence(helpAssessed, calls.length);
   const help: EmmaHealthCard = {
     id: "help",
@@ -156,7 +163,7 @@ export function emmaHealthCards(
       ? `${helpFlags.length} caller${helpFlags.length === 1 ? "" : "s"} may need help`
       : helpReady
         ? "No follow-ups flagged"
-        : "Watching for follow-ups",
+        : "Awaiting follow-up assessments",
     summary: helpFlags.length
       ? "Review these specific calls to decide the next step."
       : helpReady
@@ -168,6 +175,7 @@ export function emmaHealthCards(
     observed: calls.length,
     assessed: helpAssessed,
     flaggedIds: helpFlags.map((call) => call.id),
+    metrics: [],
   };
 
   const failedHandovers = calls.filter((call) => handoverFailure.test(call.endedReason ?? ""));
@@ -182,20 +190,75 @@ export function emmaHealthCards(
     headline: failedHandovers.length
       ? `${failedHandovers.length} handover issue${failedHandovers.length === 1 ? "" : "s"} to review`
       : attemptedHandovers.length
-        ? "Emma is routing calls"
+        ? "Handovers attempted · outcomes pending"
         : "No handovers to check yet",
     summary: failedHandovers.length
       ? "A recorded transfer or forwarding attempt appears to have failed."
       : attemptedHandovers.length
-        ? "No handover error appears in the observed attempts."
+        ? "Transfers were attempted. Whether someone answered is not yet confirmed."
         : "Handover activity will appear here when it occurs.",
     explanation:
       "Emma can show an attempted transfer or a recorded failure. Whether the recipient answered or the customer's issue was resolved needs telephone-system or human evidence.",
-    tone: failedHandovers.length ? "watch" : attemptedHandovers.length ? "good" : "waiting",
+    tone: failedHandovers.length ? "watch" : "waiting",
     observed: attemptedHandovers.length,
-    assessed: attemptedHandovers.length,
+    assessed: failedHandovers.length,
     flaggedIds: failedHandovers.map((call) => call.id),
+    metrics: [],
   };
+  const metric = (
+    label: string,
+    matches: ReceptionistCall[],
+    assessedCount?: number,
+  ): HealthMetric => ({
+    label,
+    value: assessedCount === 0 ? "Awaiting data" : String(matches.length),
+    callIds: matches.map((call) => call.id),
+  });
+  const flag = (label: string, key: string) =>
+    metric(
+      label,
+      calls.filter((call) => evidence(call, key) === true),
+      calls.filter((call) => evidence(call, key) !== null).length,
+    );
+  service.metrics = [metric("Calls loaded", calls), metric("Handling issues", serviceIssues)];
+  experience.metrics = [
+    {
+      label: "Fully assessed",
+      value: `${experienceAssessed} / ${calls.length}`,
+      callIds: experienceAssessedCalls.map((call) => call.id),
+    },
+    flag("Caller confused", "callerConfused"),
+    flag("Repeated questions", "repeatedQuestions"),
+    metric(
+      "Frustration detected",
+      calls.filter((call) => negativeTone.test(call.sentiment?.trim() ?? "")),
+      calls.filter((call) => knownTone.test(call.sentiment?.trim() ?? "")).length,
+    ),
+    flag("Asked for help after difficulty", "humanRequestedAfterDifficulty"),
+    metric("Conversations flagged", experienceFlags),
+  ];
+  help.metrics = [
+    {
+      label: "Follow-ups assessed",
+      value: `${helpAssessed} / ${calls.length}`,
+      callIds: helpAssessedCalls.map((call) => call.id),
+    },
+    flag("Callback requested", "callbackRequested"),
+    flag("Unresolved requests", "unresolved"),
+    flag("Follow-up requested", "requiresFollowUp"),
+    flag("Repeated chasing", "repeatChaser"),
+    metric("Calls worth a look", helpFlags),
+  ];
+  handover.metrics = [
+    flag("Asked for a person", "humanRequested"),
+    metric("Transfer attempts", attemptedHandovers),
+    metric("Recorded transfer failures", failedHandovers),
+    { label: "Confirmed answer rate", value: "Awaiting outcome data", callIds: [] },
+    metric(
+      "Unconfirmed outcomes",
+      attemptedHandovers.filter((call) => !handoverFailure.test(call.endedReason ?? "")),
+    ),
+  ];
   if (!state.connected) {
     return [
       service,
@@ -208,6 +271,7 @@ export function emmaHealthCards(
         tone: "waiting" as const,
         assessed: 0,
         flaggedIds: [],
+        metrics: [],
       })),
     ];
   }
