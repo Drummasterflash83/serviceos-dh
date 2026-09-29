@@ -56,14 +56,8 @@ test("Emma shortcuts use menu-purple with white text and retain both destination
   assert.match(source, /onClick=\{\(\) => setView\("practice"\)\}>\s*<Mic/);
   assert.match(source, /onClick=\{\(\) => setView\("improvements"\)\}>\s*<Sparkles/);
 });
-test("active border is faint, good-status-only and respects reduced motion", () => {
-  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /border: 1px solid #242337/);
-  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /pointer-events: none/);
-  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /4s ease-in-out infinite/);
-  assert.match(
-    css,
-    /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.rw-emma-pulse-main\.rw-emma-tone-good::after\s*\{\s*animation: none/,
-  );
+test("both overviews omit the old pulsing border", () => {
+  assert.doesNotMatch(css, /rw-emma-active-border/);
 });
 test("roadmap cards have consistent numbered circles in the top right", () => {
   for (const n of [1, 2, 3])
@@ -74,18 +68,15 @@ test("roadmap cards have consistent numbered circles in the top right", () => {
   assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /border-radius: 50%/);
   assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /right: 12px/);
 });
-test("client Emma card has a solid 2pt menu-purple border without the pulse", () => {
-  assert.match(rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main"), /border: 2pt solid #242337/);
-  const overlay = rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main::after");
+test("both Emma cards have a solid 2pt menu-purple border without the pulse", () => {
+  assert.match(rule(".rw .rw-emma-pulse-main"), /border: 2pt solid #242337/);
+  const overlay = rule(".rw .rw-emma-pulse-main::after");
   assert.match(overlay, /content: none/);
   assert.match(overlay, /animation: none/);
-  assert.doesNotMatch(
-    rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main"),
-    /background:|padding:|color:/,
-  );
+  assert.doesNotMatch(rule(".rw .rw-emma-pulse-main"), /background:|padding:|color:/);
 });
-test("client overview uses calm, distinct sections without restyling the operator surface", () => {
-  const scope = ".cp-root:not(.op-embedded)";
+test("both overviews share calm, distinct sections", () => {
+  const scope = ".rw";
   assert.match(rule(`${scope} .rw-emma-roadmap`), /background: #f3eff7/);
   assert.match(rule(`${scope} .rw-emma-roadmap .rw-panel-title h2`), /color: #302b40/);
   assert.match(rule(`${scope} .rw-emma-roadmap .rw-panel-title .rw-eyebrow`), /color: #6d587e/);
