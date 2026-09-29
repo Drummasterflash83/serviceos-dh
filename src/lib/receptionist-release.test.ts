@@ -5,6 +5,7 @@ import {
   releaseCandidate,
   releaseHash,
   applyExactRelease,
+  releaseDiagnosis,
 } from "../../supabase/functions/_shared/receptionist-release.ts";
 const source = {
   id: "assistant",
@@ -18,6 +19,20 @@ const source = {
     messages: [{ role: "system", content: "Original rules" }],
   },
 };
+test("diagnosis distinguishes unchanged from partially applied without exposing configuration", async () => {
+  const { candidate, instruction } = releaseCandidate(source, "Approved wording", "issue");
+  assert.deepEqual(await releaseDiagnosis(source, source, candidate, instruction), {
+    unchanged: true,
+    instructionPresent: false,
+    differingFields: ["model"],
+  });
+  const current = { ...candidate, server: { headers: { Authorization: "secret" } } };
+  const d = await releaseDiagnosis(current, source, candidate, instruction);
+  assert.equal(d.instructionPresent, true);
+  assert.equal(d.unchanged, false);
+  assert.deepEqual(d.differingFields, ["server"]);
+  assert.ok(!JSON.stringify(d).includes("secret"));
+});
 test("candidate adds exactly approved instructions without changing other configuration", () => {
   const { candidate, instruction } = releaseCandidate(
     source,
@@ -37,6 +52,33 @@ test("configuration hash ignores provider timestamps and key order, not real cha
     await releaseHash(source),
     await releaseHash({ ...source, firstMessage: "changed" }),
   );
+  assert.equal(
+    await releaseHash({ ...source, latestVersion: null }),
+    await releaseHash({ ...source, latestVersion: "v2" }),
+  );
+  assert.notEqual(
+    await releaseHash(source),
+    await releaseHash({ ...source, voice: { provider: "different" }, latestVersion: "v2" }),
+  );
+});
+test("Vapi generated version labels do not cause a false unconfirmed publish", async () => {
+  let current: Record<string, unknown> = { ...source, latestVersion: null };
+  const target = releaseCandidate(current, "Approved wording", "issue").candidate;
+  let writes = 0;
+  const result = await applyExactRelease(
+    {
+      get: async () => current,
+      patch: async (body) => {
+        writes++;
+        current = { ...current, ...body, latestVersion: "v2", updatedAt: "v2-time" };
+      },
+    },
+    await releaseHash(current),
+    target,
+  );
+  assert.equal(result.state, "applied");
+  assert.equal(writes, 1);
+  assert.equal(result.providerVersion, "v2-time");
 });
 test("stale configuration cannot be published", async () => {
   let patches = 0;
