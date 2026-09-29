@@ -1028,18 +1028,26 @@
 }
 .rw-emma-roadmap {
   margin: 20px 0;
+  padding: clamp(18px, 2.5vw, 25px);
+  background: #eee7f5;
+  border-color: #dbd0e6;
+}
+.rw-emma-roadmap .rw-panel-title {
+  padding: 0 0 18px;
 }
 .rw-emma-roadmap-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin: 18px 0;
+  margin: 0;
 }
 .rw-emma-roadmap-steps > div {
   display: grid;
   gap: 5px;
   padding: 17px;
-  background: #f5f0f9;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #dbd0e6;
   border-radius: 13px;
 }
 .rw-emma-roadmap-steps small {
@@ -1052,8 +1060,7 @@
   color: #302b40;
   font-size: 15px;
 }
-.rw-emma-roadmap-steps span,
-.rw-emma-roadmap > p {
+.rw-emma-roadmap-steps span {
   color: #71677a;
   font-size: 12px;
   line-height: 1.5;
@@ -2885,17 +2892,17 @@ button.rw-score-card:hover {
   gap: 10px;
   min-height: 64px;
   padding: 17px;
-  border: 1px solid #e7dfef;
+  border: 1px solid #242337;
   border-radius: 19px;
-  background: #f8f5fb;
-  color: #49375e;
+  background: #242337;
+  color: #fff;
   font-size: 13px;
   font-weight: 700;
   text-align: left;
 }
 .rw-emma-shortcuts button:hover {
-  border-color: #b8a2d3;
-  background: #f0eaf7;
+  border-color: #403952;
+  background: #403952;
 }
 .rw-emma-shortcuts button:focus-visible {
   outline: 3px solid #9d73c1;

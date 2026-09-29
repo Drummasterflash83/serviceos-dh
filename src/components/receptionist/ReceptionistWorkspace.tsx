@@ -909,10 +909,6 @@ export function ReceptionistWorkspace({
                     </span>
                   </div>
                 </div>
-                <p>
-                  Each connection will be checked before Emma uses it. She won’t guess which
-                  customer or job a call belongs to.
-                </p>
               </section>
               <section className="rw-panel rw-journal">
                 <div className="rw-panel-title">
