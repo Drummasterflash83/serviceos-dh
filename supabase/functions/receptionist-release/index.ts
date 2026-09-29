@@ -3,6 +3,7 @@ import {
   releaseCandidate,
   releaseHash,
   applyExactRelease,
+  releaseDiagnosis,
 } from "../_shared/receptionist-release.ts";
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -133,16 +134,42 @@ Deno.serve(async (req) => {
       if (!release.started_at || Date.now() - Date.parse(release.started_at) < 60000)
         return reply({ error: "The request may still be running. Check again in a minute." }, 409);
       const current = await transport.get();
-      const expected =
-        release.operation === "rollback" ? release.source_hash : release.candidate_hash;
-      if ((await releaseHash(current)) !== expected)
+      // Recompute from immutable snapshots so older receipts remain compatible when
+      // provider-generated metadata is excluded from the semantic comparison.
+      const snapshot = await db
+        .from("receptionist_release_snapshots")
+        .select("before_config,candidate_config")
+        .eq("release_id", release.id)
+        .single();
+      if (snapshot.error) throw Error("snapshot_missing");
+      const expected = await releaseHash(
+        release.operation === "rollback"
+          ? snapshot.data.before_config
+          : snapshot.data.candidate_config,
+      );
+      if ((await releaseHash(current)) !== expected) {
+        const diagnosis = await releaseDiagnosis(
+          current,
+          snapshot.data.before_config,
+          snapshot.data.candidate_config,
+          release.instruction,
+        );
         return reply(
           {
             error:
-              "Vapi does not yet match the intended version. No retry was sent. OpenFolk needs to review the provider state.",
+              (diagnosis.unchanged
+                ? "Vapi is still on the exact previous configuration; the approved change is not live. "
+                : diagnosis.instructionPresent
+                  ? "The approved instruction is present in Vapi, but other configuration differs. "
+                  : "Vapi has changed, but the approved instruction could not be confirmed. ") +
+              "Differences from the intended version: " +
+              diagnosis.differingFields.join(", ") +
+              ". No retry was sent.",
+            diagnosis,
           },
           409,
         );
+      }
       const done = await db.rpc("care_finish_release", {
         p_id: release.id,
         p_state: "applied",
@@ -169,7 +196,9 @@ Deno.serve(async (req) => {
     if (snapshot.error) throw Error("snapshot_missing");
     const target =
       body.action === "rollback" ? snapshot.data.before_config : snapshot.data.candidate_config;
-    const expected = body.action === "rollback" ? release.candidate_hash : release.source_hash;
+    const expected = await releaseHash(
+      body.action === "rollback" ? snapshot.data.candidate_config : snapshot.data.before_config,
+    );
     const reserved = await db.rpc("care_claim_release", {
       p_id: release.id,
       p_actor: auth.data.user.id,

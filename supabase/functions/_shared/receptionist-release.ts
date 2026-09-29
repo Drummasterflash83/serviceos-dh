@@ -1,6 +1,14 @@
 // The AI recommends; the operator approves. Publishing never generates fresh instructions.
 export function releaseConfiguration(source: Record<string, unknown>) {
-  const { id: _id, orgId: _org, createdAt: _created, updatedAt: _updated, ...config } = source;
+  // latestVersion is Vapi's generated version-history label, not assistant behaviour.
+  const {
+    id: _id,
+    orgId: _org,
+    createdAt: _created,
+    updatedAt: _updated,
+    latestVersion: _version,
+    ...config
+  } = source;
   return config;
 }
 export function stableJson(value: unknown): string {
@@ -22,6 +30,32 @@ export async function releaseHash(source: Record<string, unknown>) {
     new TextEncoder().encode(stableJson(releaseConfiguration(source))),
   );
   return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+// Report field names and comparisons only: provider configurations can contain secrets.
+export async function releaseDiagnosis(
+  current: Record<string, unknown>,
+  before: Record<string, unknown>,
+  candidate: Record<string, unknown>,
+  instruction: string,
+) {
+  const model = current.model as Record<string, unknown> | undefined;
+  const messages = Array.isArray(model?.messages) ? model.messages : [];
+  const target = releaseConfiguration(candidate),
+    actual = releaseConfiguration(current);
+  const changed = Object.keys({ ...target, ...actual }).filter(
+    (k) => stableJson(target[k]) !== stableJson(actual[k]),
+  );
+  const fields = changed.map((k) =>
+    /^[a-zA-Z][a-zA-Z0-9]{0,63}$/.test(k) ? k : "other configuration",
+  );
+  return {
+    unchanged: (await releaseHash(current)) === (await releaseHash(before)),
+    instructionPresent: messages.some(
+      (m) =>
+        m?.role === "system" && typeof m.content === "string" && m.content.includes(instruction),
+    ),
+    differingFields: fields,
+  };
 }
 export function releaseCandidate(source: Record<string, unknown>, proposal: string, issue: string) {
   const model = source.model as Record<string, unknown> | undefined;
