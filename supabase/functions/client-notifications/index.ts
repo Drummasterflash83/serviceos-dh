@@ -3,6 +3,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { normalizeCall, record } from "../_shared/receptionist-data.ts";
 import { practiceCallMatches } from "../_shared/receptionist-web-call.ts";
+import {
+  notificationEvent,
+  OPENFOLK_TEAM,
+  SlackRejected,
+  verifySlackChannel,
+  sendSlackMessage,
+} from "../_shared/notification-slack.ts";
 const slackText = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 Deno.serve(async (req) => {
@@ -18,17 +25,14 @@ Deno.serve(async (req) => {
   if (error) return new Response("Queue unavailable", { status: 500 });
   let sent = 0;
   for (const job of jobs ?? []) {
+    let posting = false;
     try {
       const { data: w } = await db
         .from("receptionist_workspaces")
         .select("company,name,slack_secret_name,vapi_secret_name")
         .eq("tenant_id", job.tenant_id)
         .single();
-      const webhook = w?.slack_secret_name ? Deno.env.get(w.slack_secret_name) : null;
-      if (!w || !webhook) throw new Error("Slack delivery not configured");
-      const parsed = new URL(webhook);
-      if (parsed.protocol !== "https:" || parsed.hostname !== "hooks.slack.com")
-        throw new Error("Invalid Slack destination");
+      if (!w) throw new Error("Notification workspace unavailable");
       const receptionist = job.source_type === "receptionist_feedback";
       const feedback = receptionist
         ? await db
@@ -39,6 +43,34 @@ Deno.serve(async (req) => {
             .maybeSingle()
         : null;
       if (feedback?.error) throw new Error("Feedback context unavailable");
+      if (receptionist && !feedback?.data) throw new Error("Feedback context unavailable");
+      let route = job.notification_route;
+      if (!route) {
+        const event = notificationEvent(
+          job.source_type,
+          job.priority,
+          Boolean(feedback?.data?.practice_session_id),
+        );
+        if (!event) throw new Error("Notification type unavailable");
+        const configured = await db
+          .from("operator_notification_routes")
+          .select("team_id,channel_id,channel_name,version")
+          .eq("tenant_id", job.tenant_id)
+          .eq("event_key", event)
+          .maybeSingle();
+        if (configured.error) throw new Error("Notification route unavailable");
+        route = configured.data
+          ? { mode: "bot", event, ...configured.data }
+          : { mode: "legacy", event };
+        const pinned = await db
+          .from("client_notification_outbox")
+          .update({ notification_route: route, slack_phase: "prepared" })
+          .eq("id", job.id)
+          .is("notification_route", null)
+          .select("id");
+        if (pinned.error || pinned.data?.length !== 1)
+          throw new Error("Notification route could not be pinned");
+      }
       let practiceTranscript = "";
       if (receptionist && feedback?.data?.practice_session_id) {
         const { data: session, error: sessionError } = await db
@@ -80,25 +112,62 @@ Deno.serve(async (req) => {
         (report.length <= 30000
           ? report
           : "\n\nFull report is too long for this Slack message. Open the private workspace link to review it.");
-      const response = await fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) throw new Error("Slack did not confirm delivery");
+      let receipt: { channel: string; ts: string } | null = null;
+      if (route.mode === "bot") {
+        if (route.team_id !== OPENFOLK_TEAM) throw new Error("Notification workspace mismatch");
+        const secret = await db.rpc("notification_slack_token");
+        if (secret.error || typeof secret.data !== "string")
+          throw new Error("Slack bot connection unavailable");
+        await verifySlackChannel(secret.data, route.channel_id);
+        const began = await db
+          .from("client_notification_outbox")
+          .update({ slack_phase: "posting" })
+          .eq("id", job.id)
+          .eq("slack_phase", "prepared")
+          .select("id");
+        if (began.error || began.data?.length !== 1)
+          throw new Error("Notification send could not be reserved");
+        posting = true;
+        receipt = await sendSlackMessage(secret.data, route.channel_id, text, job.id);
+      } else if (route.mode === "legacy") {
+        const webhook = w.slack_secret_name ? Deno.env.get(w.slack_secret_name) : null;
+        if (!webhook) throw new Error("Slack delivery not configured");
+        const parsed = new URL(webhook);
+        if (parsed.protocol !== "https:" || parsed.hostname !== "hooks.slack.com")
+          throw new Error("Invalid Slack destination");
+        const response = await fetch(webhook, {
+          method: "POST",
+          redirect: "error",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok || (await response.text()).trim() !== "ok")
+          throw new Error("Slack did not confirm delivery");
+      } else throw new Error("Notification route unavailable");
       const saved = await db
         .from("client_notification_outbox")
-        .update({ state: "sent", sent_at: new Date().toISOString(), last_error: null })
+        .update({
+          state: "sent",
+          sent_at: new Date().toISOString(),
+          last_error: null,
+          slack_phase: "confirmed",
+          slack_channel: receipt?.channel ?? null,
+          slack_ts: receipt?.ts ?? null,
+        })
         .eq("id", job.id);
       if (saved.error) throw new Error("Delivery receipt not saved");
       sent++;
     } catch (e) {
+      const uncertain = posting && !(e instanceof SlackRejected);
       await db
         .from("client_notification_outbox")
         .update({
           state: "failed",
-          last_error: e instanceof Error ? e.message : "Delivery failed",
+          slack_phase: uncertain ? "uncertain" : "prepared",
+          last_error: uncertain
+            ? "Slack delivery needs review before retrying; it may already have arrived."
+            : "Delivery not confirmed. Check the configured destination and provider connection.",
           available_at: new Date(
             Date.now() + Math.min(3600, 60 * 2 ** job.attempts) * 1000,
           ).toISOString(),

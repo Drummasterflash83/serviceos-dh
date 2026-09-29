@@ -297,3 +297,6 @@ verify_jwt = false
 
 [functions.client-notifications]
 verify_jwt = false
+
+[functions.operator-notifications]
+verify_jwt = false

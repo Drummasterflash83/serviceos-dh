@@ -18,6 +18,7 @@ import { Route as ClientRouteImport } from './routes/client'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
+import { Route as OpenfolkNotificationsRouteImport } from './routes/openfolk.notifications'
 import { Route as OpenfolkApisRouteImport } from './routes/openfolk.apis'
 import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
 import { Route as DemoOwnershipRouteImport } from './routes/demo.ownership'
@@ -69,6 +70,11 @@ const IndexRoute = IndexRouteImport.update({
 const OpenfolkIndexRoute = OpenfolkIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => OpenfolkRoute,
+} as any)
+const OpenfolkNotificationsRoute = OpenfolkNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => OpenfolkRoute,
 } as any)
 const OpenfolkApisRoute = OpenfolkApisRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
+  '/openfolk/notifications': typeof OpenfolkNotificationsRoute
   '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesByTo {
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
+  '/openfolk/notifications': typeof OpenfolkNotificationsRoute
   '/openfolk': typeof OpenfolkIndexRoute
 }
 export interface FileRoutesById {
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/demo/ownership': typeof DemoOwnershipRoute
   '/openfolk/$tenantId': typeof OpenfolkTenantIdRoute
   '/openfolk/apis': typeof OpenfolkApisRoute
+  '/openfolk/notifications': typeof OpenfolkNotificationsRoute
   '/openfolk/': typeof OpenfolkIndexRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/demo/ownership'
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
+    | '/openfolk/notifications'
     | '/openfolk/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/demo/ownership'
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
+    | '/openfolk/notifications'
     | '/openfolk'
   id:
     | '__root__'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/demo/ownership'
     | '/openfolk/$tenantId'
     | '/openfolk/apis'
+    | '/openfolk/notifications'
     | '/openfolk/'
   fileRoutesById: FileRoutesById
 }
@@ -298,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpenfolkIndexRouteImport
       parentRoute: typeof OpenfolkRoute
     }
+    '/openfolk/notifications': {
+      id: '/openfolk/notifications'
+      path: '/notifications'
+      fullPath: '/openfolk/notifications'
+      preLoaderRoute: typeof OpenfolkNotificationsRouteImport
+      parentRoute: typeof OpenfolkRoute
+    }
     '/openfolk/apis': {
       id: '/openfolk/apis'
       path: '/apis'
@@ -353,12 +372,14 @@ declare module '@tanstack/react-router' {
 interface OpenfolkRouteChildren {
   OpenfolkTenantIdRoute: typeof OpenfolkTenantIdRoute
   OpenfolkApisRoute: typeof OpenfolkApisRoute
+  OpenfolkNotificationsRoute: typeof OpenfolkNotificationsRoute
   OpenfolkIndexRoute: typeof OpenfolkIndexRoute
 }
 
 const OpenfolkRouteChildren: OpenfolkRouteChildren = {
   OpenfolkTenantIdRoute: OpenfolkTenantIdRoute,
   OpenfolkApisRoute: OpenfolkApisRoute,
+  OpenfolkNotificationsRoute: OpenfolkNotificationsRoute,
   OpenfolkIndexRoute: OpenfolkIndexRoute,
 }
 
