@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import {
   rehearsalAssistant,
   rehearsalOutput,
+  rehearsalOpening,
 } from "../../supabase/functions/_shared/receptionist-rehearsal.ts";
 import {
   validateAssessment,
@@ -109,6 +110,15 @@ test("rehearsal endpoint requires real Chris and current approval, with no live 
   assert.match(code, /chris@openfolk.ai/);
   assert.match(code, /care_reserve_rehearsal/);
   assert.doesNotMatch(code, /method:\s*["'](?:PATCH|DELETE|PUT)/);
-  assert.doesNotMatch(code, /api\.vapi\.ai\/call/);
+  assert.match(code, /practiceCallMatches/);
   assert.match(code, /api\.vapi\.ai\/chat/);
+});
+
+test("replay uses the historical spoken greeting and refuses unresolved templates", () => {
+  assert.equal(
+    rehearsalOpening("AI: Our office is closed.\nUser: Heidi please."),
+    "Our office is closed.",
+  );
+  assert.throws(() => rehearsalOpening("AI: {% if now %} hello"), /historical_greeting/);
+  assert.throws(() => rehearsalOpening("User: hello\nAI: welcome"), /historical_greeting/);
 });
