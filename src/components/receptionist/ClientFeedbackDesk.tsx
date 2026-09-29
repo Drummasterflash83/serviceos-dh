@@ -3,7 +3,13 @@ import { ArrowRight, CheckCircle2, ClipboardList } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { deskStages, deskQueue, stageLabel, type DeskStage } from "@/lib/feedback-desk";
+import { deskQueue, type DeskStage } from "@/lib/feedback-desk";
+import {
+  clientFeedbackStages,
+  clientFeedbackStage,
+  clientFeedbackLabel,
+  type ClientFeedbackStage,
+} from "@/lib/client-feedback";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +58,7 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
   evidence: (note: T) => ReactNode;
 }) {
   const { user } = useAuth();
-  const [stage, setStage] = useState<DeskStage>("received"),
+  const [stage, setStage] = useState<ClientFeedbackStage>("submitted"),
     [sort, setSort] = useState("priority"),
     [selected, setSelected] = useState<string | null>(null);
   // Only the safe client projection. Never query operator issues, proposals or releases here.
@@ -69,8 +75,9 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
   });
   const rows = notes.map((n) => ({
     ...n,
-    stage:
+    stage: clientFeedbackStage(
       progress.data?.find((p) => p.feedback_id === n.id)?.stage ?? fallback[n.status] ?? "received",
+    ),
   }));
   const queue = deskQueue(
     rows.filter((n) => n.stage === stage),
@@ -93,8 +100,8 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
           {error || progress.error?.message}
         </p>
       )}
-      <div className="fd-stages" aria-label="Filter tasks by status">
-        {deskStages.map((s) => (
+      <div className="fd-stages fd-client-stages" aria-label="Filter tasks by status">
+        {clientFeedbackStages.map((s) => (
           <button
             key={s.key}
             aria-pressed={stage === s.key}
@@ -109,16 +116,15 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
       <section
         className="fd-queue"
         id="client-feedback-queue"
-        aria-label={`${stageLabel(stage)} tasks`}
+        aria-label={`${clientFeedbackLabel(stage)} tasks`}
       >
         <header>
           <div>
-            <h3>{stageLabel(stage)}</h3>
+            <h3>{clientFeedbackLabel(stage)}</h3>
             <p>
               {loading
                 ? "Loading your reports…"
                 : `${queue.length} ${queue.length === 1 ? "report" : "reports"} in this queue`}
-              {stage === "approval" ? " · Awaiting OpenFolk’s approval" : ""}
             </p>
           </div>
           <label>
@@ -140,7 +146,7 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
             <span className="fd-row-meta">
               <time dateTime={n.created_at}>{date(n.created_at)}</time>
               <small>
-                {n.stage === "received"
+                {n.stage === "submitted"
                   ? "Saved for OpenFolk"
                   : n.stage === "resolved"
                     ? "Completed by OpenFolk"
@@ -172,7 +178,7 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
           {note && (
             <div className="fd-task">
               <div className="fd-task-meta">
-                <span className="fd-badge">{stageLabel(note.stage)}</span>
+                <span className="fd-badge">{clientFeedbackLabel(note.stage)}</span>
                 <span>{date(note.created_at)}</span>
               </div>
               <section className="fd-block">
@@ -187,9 +193,6 @@ export function ClientFeedbackDesk<T extends ClientFeedback>({
                     "Your report is saved. OpenFolk will review it and keep you updated here."}
                 </p>
                 {update && <small>Updated {date(update.updated_at)}</small>}
-                {note.stage === "approval" && (
-                  <p>OpenFolk is reviewing the proposed change. No approval is needed from you.</p>
-                )}
               </section>
               {evidence(note)}
             </div>

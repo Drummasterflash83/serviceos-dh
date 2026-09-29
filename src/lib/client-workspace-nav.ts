@@ -1,4 +1,11 @@
-export const clientSections = ["home", "receptionist", "modules", "invoices", "notes"] as const;
+export const clientSections = [
+  "home",
+  "receptionist",
+  "modules",
+  "invoices",
+  "notes",
+  "notifications",
+] as const;
 export type ClientSection = (typeof clientSections)[number];
 export const legacyClientSections = [
   "overview",

@@ -41,6 +41,14 @@
   gap: 12px;
   cursor: pointer;
 }
+.fd-stages.fd-client-stages {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 480px) {
+  .fd-client-stages button {
+    padding: 14px 10px;
+  }
+}
 .fd-stages button span {
   font-size: 13px;
 }

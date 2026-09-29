@@ -169,7 +169,7 @@ test("client board uses shared design and safe progress, not operator internals"
     new URL("../components/receptionist/ClientFeedbackDesk.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(s, /deskStages/);
+  assert.match(s, /clientFeedbackStages/);
   assert.match(s, /feedback-desk.css/);
   assert.match(s, /care_customer_progress/);
   assert.doesNotMatch(
