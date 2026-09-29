@@ -17,3 +17,10 @@ test("practice reports are scoped before any transcript enters OpenFolk Slack", 
   assert.doesNotMatch(source, /recordingUrl|completed\.recording/);
   assert.match(source, /Full report is too long for this Slack message/);
 });
+
+test("Slack includes customer progress and opens the operator desk", () => {
+  assert.match(source, /title,body,status,response/);
+  assert.match(source, /OpenFolk update:/);
+  assert.match(source, /slackText\(feedback\.data\.response\)/);
+  assert.match(source, /openfolk\/\$\{job\.tenant_id\}\?module=receptionist/);
+});

@@ -22,6 +22,16 @@ const safeError = (e: unknown) => {
     return "The review service is busy. Try again shortly. Emma is unchanged.";
   if (code === "evidence_too_large")
     return "This call needs manual review because its evidence exceeds the review size limit.";
+  if (code === "assessment_evidence_invalid")
+    return "The AI review included a quotation that did not exactly match the call. It was rejected. Retry the review; Emma is unchanged.";
+  if (code === "assessment_invalid")
+    return "The AI review did not meet the required evidence format. Retry the review; Emma is unchanged.";
+  if (code === "review_incomplete")
+    return "The AI review ended before returning a complete assessment. Retry the review; Emma is unchanged.";
+  if (code === "review_provider_unavailable")
+    return "OpenAI could not accept the review request. Check the dedicated project's model access and billing. Emma is unchanged.";
+  if (code === "review_save_failed")
+    return "The assessment could not be saved. Retry the review; Emma is unchanged.";
   return "The review could not complete. Check the call evidence and try again. No changes were made to Emma.";
 };
 Deno.serve(async (req) => {
