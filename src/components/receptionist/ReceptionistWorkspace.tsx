@@ -892,16 +892,25 @@ export function ReceptionistWorkspace({
                 </div>
                 <div className="rw-emma-roadmap-steps">
                   <div>
+                    <span className="rw-emma-step-number" aria-hidden="true">
+                      1
+                    </span>
                     <small>NOW</small>
                     <strong>Answer and learn</strong>
                     <span>See calls, spot confusion and tell us what to improve.</span>
                   </div>
                   <div>
+                    <span className="rw-emma-step-number" aria-hidden="true">
+                      2
+                    </span>
                     <small>NEXT</small>
                     <strong>Know the caller</strong>
                     <span>Connect verified conversations with customer and site cards.</span>
                   </div>
                   <div>
+                    <span className="rw-emma-step-number" aria-hidden="true">
+                      3
+                    </span>
                     <small>THEN</small>
                     <strong>Know the work</strong>
                     <span>

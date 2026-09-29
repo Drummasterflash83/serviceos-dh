@@ -56,3 +56,21 @@ test("Emma shortcuts use menu-purple with white text and retain both destination
   assert.match(source, /onClick=\{\(\) => setView\("practice"\)\}>\s*<Mic/);
   assert.match(source, /onClick=\{\(\) => setView\("improvements"\)\}>\s*<Sparkles/);
 });
+test("active border is faint, good-status-only and respects reduced motion", () => {
+  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /border: 1px solid #242337/);
+  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /pointer-events: none/);
+  assert.match(rule(".rw-emma-pulse-main.rw-emma-tone-good::after"), /4s ease-in-out infinite/);
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.rw-emma-pulse-main\.rw-emma-tone-good::after\s*\{\s*animation: none/,
+  );
+});
+test("roadmap cards have consistent numbered circles in the top right", () => {
+  for (const n of [1, 2, 3])
+    assert.match(
+      source,
+      new RegExp(`className="rw-emma-step-number" aria-hidden="true">\\s*${n}\\s*</span>`),
+    );
+  assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /border-radius: 50%/);
+  assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /right: 12px/);
+});
