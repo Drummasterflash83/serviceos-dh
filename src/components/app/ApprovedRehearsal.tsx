@@ -67,7 +67,8 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
       <h3>4. Test the approved wording</h3>
       <p>
         Compare Emma’s current reply with the approved change in an isolated Vapi text rehearsal.
-        Both start after her configured welcome. No phone calls, transfers or live changes.
+        Both start after the original call’s spoken welcome. No phone calls, transfers or live
+        changes.
       </p>
       {issue.stage === "approved" ? (
         <>
@@ -106,8 +107,14 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
             {r.issue_version}
           </summary>
           {r.safe_error && <p role="alert">{r.safe_error}</p>}
+          {/\{%|\{\{/.test(r.opening) && (
+            <p className="fd-error">
+              This earlier rehearsal used an unresolved welcome template. Do not use it as release
+              evidence. Run a new comparison using the recorded greeting.
+            </p>
+          )}
           <p>
-            <b>Welcome used:</b> {r.opening || "No configured welcome"}
+            <b>Welcome used:</b> {r.opening || "No recorded welcome"}
           </p>
           <p>
             <b>Caller:</b> {r.caller}

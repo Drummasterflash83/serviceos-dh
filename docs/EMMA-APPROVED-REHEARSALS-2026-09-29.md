@@ -4,7 +4,7 @@
 
 The review now separates the client's requested improvement from existing-rule compliance. It returns one overall decision and a separate `unchanged` list. Contradictory no-change findings are rejected; old assessments remain readable without rewriting history.
 
-The operator task desk can compare a caller sentence against the configured welcome, using current instructions and the exact saved, approved proposal. Vapi receives two transient text assistants, never an assistant PATCH. Tools, knowledge callbacks, phone transport, server URLs, hooks and destinations are excluded by construction. Only the existing OpenAI-backed Vapi model is supported initially.
+The operator task desk compares a caller sentence after the original call's transcribed spoken welcome, using current instructions and the exact saved, approved proposal. The call is tenant/session bound and must have ended. Unresolved time-of-day greeting templates are refused. Vapi receives two transient text assistants, never an assistant PATCH. Tools, knowledge callbacks, phone transport, server URLs, hooks and destinations are excluded by construction. Only the existing OpenAI-backed Vapi model is supported initially.
 
 ## Safety and evidence
 

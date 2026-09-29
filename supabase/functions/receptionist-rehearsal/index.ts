@@ -1,9 +1,11 @@
 // Approved, transient text comparison only. No PATCH, phone call or tool path.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import { record } from "../_shared/receptionist-data.ts";
+import { record, normalizeCall } from "../_shared/receptionist-data.ts";
+import { practiceCallMatches } from "../_shared/receptionist-web-call.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
 import {
   rehearsalAssistant,
+  rehearsalOpening,
   rehearsalOutput,
   REHEARSAL_VERSION,
   REHEARSAL_LIMITS,
@@ -58,7 +60,7 @@ Deno.serve(async (req) => {
       return reply({ error: "Choose the approved task and enter a caller sentence." }, 400);
     const issue = await db
       .from("receptionist_care_issues")
-      .select("stage,version,proposal,approved_at")
+      .select("stage,version,proposal,approved_at,feedback_id")
       .eq("tenant_id", body.tenantId)
       .eq("id", body.issueId)
       .single();
@@ -95,7 +97,45 @@ Deno.serve(async (req) => {
     const source = await getAssistant();
     const baseline = rehearsalAssistant(source, ""),
       candidate = rehearsalAssistant(source, issue.data.proposal);
-    const opening = typeof source.firstMessage === "string" ? source.firstMessage : "";
+    // Replay the *spoken* opening from the report, not a Liquid time-of-day
+    // template or today's in-hours greeting for an out-of-hours complaint.
+    const note = await db
+      .from("receptionist_feedback")
+      .select("call_id,practice_session_id")
+      .eq("tenant_id", body.tenantId)
+      .eq("id", issue.data.feedback_id)
+      .single();
+    if (note.error) throw Error("historical_greeting_required");
+    let callId = note.data.call_id;
+    if (note.data.practice_session_id) {
+      const session = await db
+        .from("receptionist_practice_sessions")
+        .select("call_id")
+        .eq("tenant_id", body.tenantId)
+        .eq("id", note.data.practice_session_id)
+        .single();
+      if (session.error || !session.data.call_id || (callId && session.data.call_id !== callId))
+        throw Error("historical_greeting_required");
+      callId = session.data.call_id;
+    }
+    if (!uuid(callId)) throw Error("historical_greeting_required");
+    const evidenceResponse = await fetch("https://api.vapi.ai/call/" + callId, {
+      headers: { Authorization: "Bearer " + key },
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!evidenceResponse.ok) throw Error("historical_greeting_required");
+    const evidence = record(await evidenceResponse.json());
+    if (
+      evidence.id !== callId ||
+      (note.data.practice_session_id
+        ? !practiceCallMatches(evidence, note.data.practice_session_id, body.tenantId)
+        : evidence.assistantId !== workspace.data.assistant_id)
+    )
+      throw Error("historical_greeting_required");
+    const original = normalizeCall(evidence);
+    if (original.status !== "ended") throw Error("historical_greeting_required");
+    const opening = rehearsalOpening(original.transcript ?? "");
     const sourceHash = await evidenceHash(source),
       candidateHash = await evidenceHash(candidate);
     const reserved = await db.rpc("care_reserve_rehearsal", {
@@ -140,6 +180,8 @@ Deno.serve(async (req) => {
     if (after.status !== "fulfilled") throw after.reason;
     const result = {
       version: REHEARSAL_VERSION,
+      sourceCallId: callId,
+      openingSource: "Original call transcript; current configured instructions",
       baseline: before.value,
       candidate: after.value,
       limits: REHEARSAL_LIMITS,
@@ -153,11 +195,13 @@ Deno.serve(async (req) => {
     const code = e instanceof Error ? e.message : "";
     const message = /^vapi_rehearsal_http_\d{3}$/.test(code)
       ? `Vapi could not run this isolated text rehearsal (HTTP ${code.slice(-3)}). The approved proposal is saved and Emma's live setup is unchanged.`
-      : code === "assistant_changed"
-        ? "Emma's configuration changed during the comparison. Do not use this result for release; review the new version first."
-        : code === "unsupported_rehearsal_model"
-          ? "This model needs a dedicated rehearsal adapter. Emma's live setup is unchanged."
-          : "The isolated rehearsal could not complete. No live change was made. Check Vapi availability before retrying.";
+      : code === "historical_greeting_required"
+        ? "A verified spoken greeting from the original call is required. This rehearsal will not guess a time-dependent welcome. Emma is unchanged."
+        : code === "assistant_changed"
+          ? "Emma's configuration changed during the comparison. Do not use this result for release; review the new version first."
+          : code === "unsupported_rehearsal_model"
+            ? "This model needs a dedicated rehearsal adapter. Emma's live setup is unchanged."
+            : "The isolated rehearsal could not complete. No live change was made. Check Vapi availability before retrying.";
     if (reservation)
       await db.rpc("care_finish_rehearsal", {
         p_id: reservation,
