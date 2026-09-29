@@ -9,6 +9,7 @@ import {
   verifySlackChannel,
   sendSlackMessage,
   SlackRejected,
+  slackRequest,
 } from "../../supabase/functions/_shared/notification-slack.ts";
 const channel = {
   id: "C123",
@@ -77,7 +78,7 @@ test("each send verifies workspace and exact channel with no outside URL", async
   });
   assert.deepEqual(calls, [
     "https://slack.com/api/auth.test",
-    "https://slack.com/api/conversations.info",
+    "https://slack.com/api/conversations.info?channel=C123",
   ]);
   await assert.rejects(
     verifySlackChannel(
@@ -89,6 +90,27 @@ test("each send verifies workspace and exact channel with no outside URL", async
       ]),
     ),
   );
+});
+test("Slack channel reads encode arguments in the query and keep credentials in headers", async () => {
+  for (const method of ["conversations.info", "conversations.list"]) {
+    await slackRequest(
+      "xoxb-synthetic",
+      method,
+      { channel: "C123", cursor: "next+/=", limit: 200, exclude_archived: true },
+      (async (input: string | URL | Request, init: RequestInit) => {
+        const url = new URL(String(input));
+        assert.equal(init.method, "GET");
+        assert.equal(init.body, undefined);
+        assert.equal(url.searchParams.get("channel"), "C123");
+        assert.equal(url.searchParams.get("cursor"), "next+/=");
+        assert.equal(url.searchParams.get("limit"), "200");
+        assert.equal(url.searchParams.get("exclude_archived"), "true");
+        assert.ok(!url.toString().includes("xoxb"));
+        assert.equal(new Headers(init.headers).get("Authorization"), "Bearer xoxb-synthetic");
+        return Response.json({ ok: true });
+      }) as typeof fetch,
+    );
+  }
 });
 test("message success requires an exact channel and timestamp receipt", async () => {
   const receipt = await sendSlackMessage("xoxb-synthetic", "C123", "Test only", "ref", (async (

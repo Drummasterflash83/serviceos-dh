@@ -49,14 +49,19 @@ export async function slackRequest(
   body: Record<string, unknown>,
   fetcher: typeof fetch = fetch,
 ) {
-  const r = await fetcher(`https://slack.com/api/${method}`, {
-    method: "POST",
+  // Slack conversation reads use query parameters, not a JSON POST body.
+  const read = method === "conversations.info" || method === "conversations.list";
+  const url = new URL(`https://slack.com/api/${method}`);
+  if (read)
+    for (const [key, value] of Object.entries(body)) url.searchParams.set(key, String(value));
+  const r = await fetcher(url.toString(), {
+    method: read ? "GET" : "POST",
     redirect: "error",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json; charset=utf-8",
     },
-    body: JSON.stringify(body),
+    body: read ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(10000),
   });
   if ([400, 401, 403, 404, 405, 413, 415, 422, 429].includes(r.status))
