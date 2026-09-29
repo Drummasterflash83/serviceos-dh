@@ -655,7 +655,6 @@ export function ClientPortal({
         </button>
         <div id="client-mobile-navigation" className="cp-mobile-menu-panel">
           <p className="of-mobile-company">Your Workspace</p>
-          <div className="cp-workspace-label">CLIENT WORKSPACE</div>
           {(programmes.data?.length ?? 0) > 1 && (
             <label className="cp-field">
               <span>Client workspace</span>
