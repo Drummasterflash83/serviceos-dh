@@ -2882,7 +2882,7 @@ button.rw-score-card:hover {
 }
 /* Client workspace: a steady outline, with the existing card content unchanged. */
 .cp-root:not(.op-embedded) .rw-emma-pulse-main {
-  border: 3pt solid #242337;
+  border: 2pt solid #242337;
 }
 .cp-root:not(.op-embedded) .rw-emma-pulse-main::after {
   content: none;
