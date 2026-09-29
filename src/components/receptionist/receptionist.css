@@ -2880,6 +2880,14 @@ button.rw-score-card:hover {
   border-color: #e5dcec;
   background: linear-gradient(115deg, #f8f4fc 0%, #fff 58%, #faf8fd 100%);
 }
+/* Client workspace: a steady outline, with the existing card content unchanged. */
+.cp-root:not(.op-embedded) .rw-emma-pulse-main {
+  border: 3pt solid #242337;
+}
+.cp-root:not(.op-embedded) .rw-emma-pulse-main::after {
+  content: none;
+  animation: none;
+}
 .rw-emma-pulse-main:hover,
 .rw-emma-signal:hover {
   box-shadow: 0 16px 38px #43215e1a;

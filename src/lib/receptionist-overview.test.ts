@@ -74,3 +74,13 @@ test("roadmap cards have consistent numbered circles in the top right", () => {
   assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /border-radius: 50%/);
   assert.match(rule(".rw-emma-roadmap-steps span.rw-emma-step-number"), /right: 12px/);
 });
+test("client Emma card has a solid 3pt menu-purple border without the pulse", () => {
+  assert.match(rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main"), /border: 3pt solid #242337/);
+  const overlay = rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main::after");
+  assert.match(overlay, /content: none/);
+  assert.match(overlay, /animation: none/);
+  assert.doesNotMatch(
+    rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main"),
+    /background:|padding:|color:/,
+  );
+});
