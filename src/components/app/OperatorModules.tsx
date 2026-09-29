@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BellRing, Headphones, ClipboardList, Receipt, Layers, ArrowRight } from "lucide-react";
+import { BellRing, Headphones, Receipt, Layers, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import "@/styles/client-investment.css";
 import "@/styles/client-workspace.css";
@@ -82,16 +82,6 @@ function OperatorModuleContent({
         </Suspense>
       </>
     );
-  if (module === "programme")
-    return (
-      <>
-        <p className="op-shared-note">
-          This is the client’s shared programme. Edits here update their workspace; only authorised
-          OpenFolk editors can publish.
-        </p>
-        <ClientPortal key={tenantId} tenantId={tenantId} section="overview" operatorEmbedded />
-      </>
-    );
   if (module === "invoices")
     return (
       <>
@@ -106,16 +96,16 @@ function OperatorModuleContent({
         </div>
       </>
     );
-  if (module === "outcomes")
+  if (module === "modules")
     return (
       <>
         <OperatorDelivery key={`${tenantId}-delivery`} tenantId={tenantId} mode="outcomes" />
         <div style={{ marginTop: 28 }}>
           <p className="op-shared-note">
-            Outcome packages below share the client’s programme. Changes to scope, prices and
-            delivery status publish to their workspace.
+            Modules below share the client’s workspace. Changes to scope, prices and delivery status
+            publish to their workspace.
           </p>
-          <ClientPortal key={tenantId} tenantId={tenantId} section="outcomes" operatorEmbedded />
+          <ClientPortal key={tenantId} tenantId={tenantId} section="modules" operatorEmbedded />
         </div>
       </>
     );
@@ -175,19 +165,14 @@ function OperatorModuleContent({
             Open receptionist <ArrowRight size={16} />
           </span>
         </button>
-        <button className="op-card op-module-card" onClick={() => onModule("programme")}>
-          <ClipboardList size={27} />
-          <h2>Programme</h2>
-          <p>Shape the shared plan, priorities and next steps.</p>
-        </button>
         <button className="op-card op-module-card" onClick={() => onModule("invoices")}>
           <Receipt size={27} />
           <h2>Invoices</h2>
           <p>See the investment. Explain what each invoice delivered.</p>
         </button>
-        <button className="op-card op-module-card" onClick={() => onModule("outcomes")}>
+        <button className="op-card op-module-card" onClick={() => onModule("modules")}>
           <Layers size={27} />
-          <h2>Delivery outcomes</h2>
+          <h2>Modules</h2>
           <p>Publish progress, scope and fixed-price packages.</p>
         </button>
       </div>
