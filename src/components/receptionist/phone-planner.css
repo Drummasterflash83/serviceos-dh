@@ -1,7 +1,7 @@
 .pp {
   display: grid;
   gap: 24px;
-  color: #203f70;
+  color: #29253d;
 }
 .pp .rw-panel {
   padding: 24px;
@@ -13,7 +13,7 @@
 }
 .pp p {
   line-height: 1.6;
-  color: #566779;
+  color: #70677f;
 }
 .pp-caution,
 .pp-message {
@@ -65,7 +65,7 @@
   border-radius: 10px;
   padding: 10px;
   background: white;
-  color: #203f70;
+  color: #29253d;
   font: inherit;
 }
 .pp textarea {
@@ -156,6 +156,208 @@
 .pp button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.ps-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  background: linear-gradient(120deg, #f2edf8, #fcfaf6);
+}
+.ps-summary > div {
+  flex: 1;
+}
+.ps-summary h3 {
+  font-size: 28px;
+  margin: 8px 0;
+  letter-spacing: -0.7px;
+}
+.ps-eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  color: #6c5689;
+  font-weight: 700;
+}
+.ps-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 24px;
+  background: #eee8f6;
+  color: #594376;
+  font-weight: 600;
+}
+.ps-source {
+  flex-basis: 100%;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid #e0d8e9;
+  font-size: 13px;
+}
+.ps-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.ps-heading > svg {
+  color: #cb852d;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.pp .ps-heading h3 {
+  margin: 0 0 5px;
+  font-size: 21px;
+}
+.pp .ps-heading p {
+  margin: 0;
+  font-size: 14px;
+}
+.ps-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+}
+.ps-route {
+  background: #f6f2fa;
+  border: 1px solid #e9e1f0;
+  border-radius: 18px;
+  padding: 22px;
+  min-width: 0;
+}
+.pp .ps-route h4 {
+  margin: 14px 0 8px;
+  font-size: 17px;
+}
+.pp .ps-route p {
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+.ps-route small {
+  color: #766d82;
+  font-size: 12px;
+}
+.ps-step {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #29253d;
+  color: white;
+  font-size: 13px;
+}
+.ps-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));
+  gap: 14px;
+}
+.ps-person {
+  border: 1px solid #e5dfed;
+  border-radius: 18px;
+  padding: 18px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+.ps-person-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ps-person-top > div {
+  flex: 1;
+  min-width: 0;
+}
+.pp .ps-person h4 {
+  margin: 0 0 3px;
+  font-size: 18px;
+}
+.ps-person-top span {
+  font-size: 12px;
+  color: #71667e;
+}
+.ps-person-top .ps-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: #a9681d;
+  background: #fbefdf;
+  font-size: 17px;
+  font-weight: 700;
+}
+.ps-extension {
+  font-size: 21px;
+  letter-spacing: 0.5px;
+  color: #5c4875;
+}
+.pp .ps-person p {
+  font-size: 13px;
+  flex: 1;
+  margin: 14px 0;
+}
+.ps-person button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 40px;
+}
+.ps-fallback {
+  padding-top: 12px;
+  border-top: 1px solid #e4dcea;
+  font-size: 13px;
+  color: #5e536f;
+  line-height: 1.6;
+}
+.ps-evidence {
+  margin-top: 22px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.ps-evidence summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #614b7a;
+  padding: 8px 0;
+}
+.ps-process {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.ps-process span {
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: #f4f0f8;
+  color: #665477;
+}
+.ps-request textarea {
+  margin: 10px 0 16px;
+  min-height: 105px;
+}
+.ps-request-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.ps-request-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #70677f;
+}
+.ps-request .rw-btn {
+  background: #29253d;
+  color: white;
 }
 @media (max-width: 800px) {
   .pp-columns {

@@ -10,6 +10,7 @@ import {
   type PhoneSnapshot,
 } from "@/lib/phone-changes";
 import "./phone-planner.css";
+import { PhoneSetupOverview } from "./PhoneSetupOverview";
 
 export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }) {
   const { user } = useAuth();
@@ -132,8 +133,8 @@ export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }
         <span className="rw-pill">Your phone system · Birchills</span>
         <h2>The right call. The right people.</h2>
         <p>
-          See who rings, who answers and what happens next. Change a phone name or add someone to a
-          group; OpenFolk handles the provider update and checks it works.
+          See your people, extensions and call routes. Request a change here; OpenFolk reviews it,
+          applies the approved settings and checks the result before confirming completion.
         </p>
         {baseline && (
           <p className="rw-footnote">
@@ -150,17 +151,7 @@ export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }
         </section>
       )}
       {!baseline && !snapshot.isLoading && !snapshot.isError && (
-        <section className="rw-panel">
-          <h3>OpenFolk is verifying your phone setup</h3>
-          <p>
-            Your actual phones, ring groups and fallback routes will appear here after the current
-            Birchills settings have been checked. You do not need to build them yourself.
-          </p>
-          <p>
-            No live configuration is being guessed. Editing becomes available once the baseline is
-            verified.
-          </p>
-        </section>
+        <PhoneSetupOverview key={tenant} tenant={tenant} demo={demo} />
       )}
       {plan && baseline && (
         <>
@@ -354,8 +345,8 @@ export function PhonePlanner({ tenant, demo }: { tenant: string; demo: boolean }
       <section className="rw-panel">
         <h3>Changes & updates</h3>
         <p>
-          Track your request here. “Resolved” alone does not certify a provider change; OpenFolk's
-          response and an updated verified snapshot provide the evidence.
+          Your requests and OpenFolk's replies, newest first. We'll confirm when an approved change
+          has been applied and checked at Birchills.
         </p>
         {requests.isError && <p role="alert">{requests.error.message}</p>}
         {(requests.isError || uncertain) && (
