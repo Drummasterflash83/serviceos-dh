@@ -2814,6 +2814,46 @@ button.rw-score-card:hover {
   }
 }
 
+/* Client overview: soft section surfaces, with dark purple reserved for actions. */
+.cp-root:not(.op-embedded) .rw-emma-roadmap {
+  margin: 24px 0;
+  padding: clamp(18px, 2.5vw, 25px);
+  background: #f3eff7;
+  border-color: #e2dbe9;
+  border-radius: 22px;
+}
+.cp-root:not(.op-embedded) .rw-emma-roadmap .rw-panel-title h2 {
+  color: #302b40;
+}
+.cp-root:not(.op-embedded) .rw-emma-roadmap .rw-panel-title .rw-eyebrow {
+  color: #6d587e;
+}
+.cp-root:not(.op-embedded) .rw-emma-roadmap-steps {
+  gap: 14px;
+}
+.cp-root:not(.op-embedded) .rw-emma-roadmap-steps > div {
+  border-color: #e2dbe9;
+  border-radius: 16px;
+  padding: 18px;
+}
+.cp-root:not(.op-embedded) .rw-emma-pulse {
+  margin: 24px 0;
+}
+.cp-root:not(.op-embedded) .rw-emma-pulse-main {
+  border-radius: 22px;
+}
+.cp-root:not(.op-embedded) .rw-emma-signal {
+  border-radius: 18px;
+}
+.cp-root:not(.op-embedded) .rw-journal {
+  margin-top: 24px;
+  border-color: #e2dbe9;
+  border-radius: 22px;
+}
+.cp-root:not(.op-embedded) .rw-journal .rw-panel-title {
+  padding: clamp(18px, 2.5vw, 25px);
+}
+
 /* A calm, actionable overview; status colours are never fabricated scores. */
 .rw-emma-pulse {
   margin: 24px 0 30px;

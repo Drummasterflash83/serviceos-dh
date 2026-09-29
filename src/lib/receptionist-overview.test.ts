@@ -25,9 +25,9 @@ const css = readFileSync(
   "utf8",
 );
 const rule = (selector: string) => {
-  const start = css.indexOf(`${selector} {`);
-  assert.ok(start >= 0, `Missing ${selector}`);
-  return css.slice(start, css.indexOf("}", start));
+  const blocks = css.split(`${selector} {`).slice(1);
+  assert.ok(blocks.length > 0, `Missing ${selector}`);
+  return blocks.map((block) => block.slice(0, block.indexOf("}"))).join("\n");
 };
 test("Emma roadmap uses menu-purple with white headings and unchanged inset cards", () => {
   assert.match(rule(".rw-emma-roadmap"), /padding: clamp\(18px, 2.5vw, 25px\)/);
@@ -83,4 +83,18 @@ test("client Emma card has a solid 2pt menu-purple border without the pulse", ()
     rule(".cp-root:not(.op-embedded) .rw-emma-pulse-main"),
     /background:|padding:|color:/,
   );
+});
+test("client overview uses calm, distinct sections without restyling the operator surface", () => {
+  const scope = ".cp-root:not(.op-embedded)";
+  assert.match(rule(`${scope} .rw-emma-roadmap`), /background: #f3eff7/);
+  assert.match(rule(`${scope} .rw-emma-roadmap .rw-panel-title h2`), /color: #302b40/);
+  assert.match(rule(`${scope} .rw-emma-roadmap .rw-panel-title .rw-eyebrow`), /color: #6d587e/);
+  for (const section of [".rw-emma-roadmap", ".rw-journal", ".rw-emma-pulse-main"])
+    assert.match(rule(`${scope} ${section}`), /border-radius: 22px/);
+  assert.match(rule(`${scope} .rw-emma-pulse`), /margin: 24px 0/);
+  assert.match(rule(`${scope} .rw-emma-roadmap`), /margin: 24px 0/);
+  assert.match(rule(`${scope} .rw-journal`), /margin-top: 24px/);
+  assert.match(rule(`${scope} .rw-emma-roadmap-steps > div`), /padding: 18px/);
+  assert.match(rule(".rw-emma-roadmap-steps > div"), /background: #fff/);
+  assert.match(rule(".rw-emma-shortcuts button"), /background: #242337/);
 });
