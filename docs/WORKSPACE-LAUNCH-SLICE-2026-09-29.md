@@ -29,3 +29,11 @@ Release requires fresh tests/build and authenticated preview smoke verification.
 Local verification: 192 Node tests passed, including seven provider-usage tests;
 46 prebuild navigation/branding/performance checks passed; Vercel-target build
 passed. Authenticated browser acceptance and production promotion are outstanding.
+
+Navigation follow-up: Chris reviewed the preview and reported seeing Vapi costs.
+Accounts & costs now carries the selected client in URL state, retains the full
+client menu and links back to that client's overview/modules/invoices/future tools.
+Changing clients updates the menu and call scope together; inaccessible explicit
+client references do not fall through to another client. Added three regression
+checks; the complete Node set now passes 195 tests. TypeScript, scoped lint and
+Vercel-target build pass. No production promotion or managed-care activation.

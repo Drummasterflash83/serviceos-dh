@@ -1,6 +1,9 @@
 import type { ReceptionistCall } from "./receptionist-data.ts";
 
 export type UsagePeriod = "day" | "week" | "month";
+export function providerUsageSearch(search: Record<string, unknown>) {
+  return { tenant: typeof search.tenant === "string" && search.tenant ? search.tenant : undefined };
+}
 export function usageRows(calls: ReceptionistCall[], period: UsagePeriod) {
   const rows = new Map<
     string,

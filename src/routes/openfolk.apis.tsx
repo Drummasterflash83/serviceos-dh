@@ -5,13 +5,19 @@ import { OperatorShell } from "@/components/app/OperatorShell";
 import { useAuth } from "@/lib/auth";
 import { listTenantDirectory } from "@/lib/openfolk";
 import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
-import { usageRows, type UsagePeriod } from "@/lib/provider-usage";
+import { usageRows, providerUsageSearch, type UsagePeriod } from "@/lib/provider-usage";
+import { findOperatorTenant } from "@/lib/operator-workspace";
+import { sectionSearchValue } from "@/lib/openfolk-workspace-nav";
 import "@/styles/provider-usage.css";
 
-export const Route = createFileRoute("/openfolk/apis")({ component: ProviderCosts });
+export const Route = createFileRoute("/openfolk/apis")({
+  validateSearch: providerUsageSearch,
+  component: ProviderCosts,
+});
 function ProviderCosts() {
   const { user } = useAuth();
-  const [selected, setSelected] = useState("");
+  const { tenant: selected } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const directory = useQuery({
     queryKey: ["operator-directory", user?.id],
     queryFn: async () => {
@@ -22,11 +28,32 @@ function ProviderCosts() {
   });
   const tenant =
     directory.isSuccess && !directory.isError
-      ? (directory.data.find((t) => t.tenant_id === selected) ??
-        (!selected ? directory.data[0] : undefined))
+      ? selected
+        ? findOperatorTenant(directory.data, selected)
+        : directory.data[0]
       : undefined;
   return (
-    <OperatorShell pageTitle="APIs">
+    <OperatorShell
+      pageTitle="APIs"
+      tenantId={tenant?.tenant_id}
+      company={tenant ? (tenant.display_name ?? tenant.slug ?? "Client workspace") : undefined}
+      onModule={(module) => {
+        if (tenant)
+          void navigate({
+            to: "/openfolk/$tenantId",
+            params: { tenantId: tenant.slug ?? tenant.tenant_id },
+            search: { module, tools: false },
+          });
+      }}
+      onSection={(section) => {
+        if (tenant)
+          void navigate({
+            to: "/openfolk/$tenantId",
+            params: { tenantId: tenant.slug ?? tenant.tenant_id },
+            search: { section: sectionSearchValue(section), tools: true },
+          });
+      }}
+    >
       <div className="op-heading">
         <p className="op-eyebrow">APIs · ACCOUNTS & COSTS</p>
         <h1>Your services. Your costs.</h1>
@@ -78,15 +105,24 @@ function ProviderCosts() {
             <select
               id="usage-client"
               value={tenant?.tenant_id ?? ""}
-              onChange={(e) => setSelected(e.target.value)}
+              onChange={(e) => void navigate({ search: { tenant: e.target.value } })}
             >
-              {!directory.data.length && <option value="">No clients available</option>}
+              {!tenant && (
+                <option value="">
+                  {directory.data.length ? "Choose an accessible client" : "No clients available"}
+                </option>
+              )}
               {directory.data.map((t) => (
                 <option key={t.tenant_id} value={t.tenant_id}>
                   {t.display_name ?? t.slug ?? "Client"}
                 </option>
               ))}
             </select>
+            {selected && !tenant && (
+              <p role="status">
+                This client is not in your accessible directory. Choose a client above.
+              </p>
+            )}
             {tenant && (
               <CallUsage key={tenant.tenant_id} tenant={tenant.tenant_id} userId={user?.id} />
             )}

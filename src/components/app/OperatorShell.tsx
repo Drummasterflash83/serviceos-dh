@@ -94,7 +94,7 @@ export function OperatorShell({
                 {modules.map(({ key, label, Icon }) => (
                   <button
                     key={key}
-                    aria-current={!section && module === key ? "page" : undefined}
+                    aria-current={!pageTitle && !section && module === key ? "page" : undefined}
                     onClick={() => {
                       onModule?.(key);
                       setMenu(false);
@@ -108,7 +108,12 @@ export function OperatorShell({
             </>
           )}
           <p className="op-company">APIs</p>
-          <Link to="/openfolk/apis" className="op-all" onClick={() => setMenu(false)}>
+          <Link
+            to="/openfolk/apis"
+            search={{ tenant: tenantId }}
+            className="op-all"
+            onClick={() => setMenu(false)}
+          >
             <Wallet size={18} /> Accounts & costs
           </Link>
           {company && (
@@ -160,6 +165,12 @@ export function OperatorShell({
         <header className="op-topbar">
           <span>
             OpenFolk <span aria-hidden="true">/</span> {company ?? pageTitle ?? "All clients"}
+            {company && pageTitle && (
+              <>
+                {" "}
+                <span aria-hidden="true">/</span> {pageTitle}
+              </>
+            )}
           </span>
           <small>{user?.email}</small>
         </header>

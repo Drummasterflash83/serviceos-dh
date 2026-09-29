@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { usageRows } from "./provider-usage.ts";
+import { usageRows, providerUsageSearch } from "./provider-usage.ts";
+import { findOperatorTenant } from "./operator-workspace.ts";
 import { normalizeCall } from "./receptionist-data.ts";
 const call = (id: string, date: string, cost?: number) =>
   normalizeCall({ id, startedAt: date, createdAt: date, endedAt: date, cost });
@@ -70,4 +71,34 @@ test("billing surface uses existing authorised feeds without undeployed cost RPC
     source,
     /costs_overview|costs_record_check|8\.26|service_role|OPENAI_API_KEY/,
   );
+});
+
+test("costs client selection survives URL round trips and refuses non-string values", () => {
+  for (const tenant of ["drummonds", "id-one", "a&module=invoices"]) {
+    const params = new URLSearchParams({ tenant });
+    assert.deepEqual(providerUsageSearch(Object.fromEntries(params)), { tenant });
+  }
+  for (const tenant of [undefined, null, {}, [], ""])
+    assert.deepEqual(providerUsageSearch({ tenant }), { tenant: undefined });
+});
+test("costs resolves explicit clients only from the authorised directory", () => {
+  const rows = [{ tenant_id: "id-one", slug: "drummonds" }];
+  assert.equal(findOperatorTenant(rows, "drummonds"), rows[0]);
+  assert.equal(findOperatorTenant(rows, "id-one"), rows[0]);
+  assert.equal(findOperatorTenant(rows, "inaccessible"), undefined);
+});
+test("costs retains the client menu, client view and working return routes", () => {
+  const source = readFileSync(new URL("../routes/openfolk.apis.tsx", import.meta.url), "utf8");
+  const shell = readFileSync(
+    new URL("../components/app/OperatorShell.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(shell, /search=\{\{ tenant: tenantId \}\}/);
+  assert.match(shell, /!pageTitle && !section && module === key/);
+  assert.match(source, /validateSearch: providerUsageSearch/);
+  assert.match(source, /tenantId=\{tenant\?\.tenant_id\}/);
+  assert.match(source, /params: \{ tenantId: tenant.slug \?\? tenant.tenant_id \}/);
+  assert.match(source, /search: \{ module, tools: false \}/);
+  assert.match(source, /section: sectionSearchValue\(section\), tools: true/);
+  assert.doesNotMatch(source, /setSelected|useState\(""\)/);
 });
