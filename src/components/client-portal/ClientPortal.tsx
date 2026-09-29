@@ -139,6 +139,7 @@ export function ClientPortal({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [operatorTools, setOperatorTools] = useState(false);
+  const [healthFeedbackId, setHealthFeedbackId] = useState<string | undefined>();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [receptionistMenuOpen, setReceptionistMenuOpen] = useState(section === "receptionist");
   const receptionistExpanded = section === "receptionist" && receptionistMenuOpen;
@@ -309,6 +310,7 @@ export function ClientPortal({
         embedded
         initialView={receptionistPage}
         onViewChange={openReceptionist}
+        initialFeedbackId={healthFeedbackId}
       />
     </Suspense>
   ) : (
@@ -433,7 +435,10 @@ export function ClientPortal({
           userId={user.id}
           company={clientDisplayName(p.company)}
           open={setSection}
-          openFeedback={() => openReceptionist("improvements")}
+          openFeedback={(issue) => {
+            setHealthFeedbackId(issue?.feedback_id ?? undefined);
+            openReceptionist("improvements");
+          }}
         />
       )}
       {section === "modules" && (

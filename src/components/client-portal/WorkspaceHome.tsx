@@ -5,6 +5,7 @@ import { type ClientSection } from "@/lib/client-workspace-nav";
 import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
 import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
 import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
+import type { HealthIssue } from "@/lib/use-emma-health";
 
 export function WorkspaceHome({
   tenant,
@@ -17,7 +18,7 @@ export function WorkspaceHome({
   userId: string;
   company: string;
   open: (section: ClientSection) => void;
-  openFeedback: () => void;
+  openFeedback: (issue?: HealthIssue) => void;
 }) {
   const receptionist = useQuery({
     queryKey: ["workspace-receptionist-summary", userId, tenant],

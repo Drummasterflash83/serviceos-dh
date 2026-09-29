@@ -196,6 +196,7 @@ export function ReceptionistWorkspace({
   onViewChange,
   operatorView = false,
   onOpenIssue,
+  initialFeedbackId,
 }: {
   demo?: boolean;
   tenantId?: string;
@@ -204,6 +205,7 @@ export function ReceptionistWorkspace({
   onViewChange?: (view: ReceptionistView) => void;
   operatorView?: boolean;
   onOpenIssue?: (issue?: HealthIssue) => void;
+  initialFeedbackId?: string;
 }) {
   const { user, signOut } = useAuth();
   const db = getSupabaseClient();
@@ -219,7 +221,7 @@ export function ReceptionistWorkspace({
     [selectedCall, setSelectedCall] = useState<ReceptionistCall | null>(null),
     [selectedHealthCard, setSelectedHealthCard] = useState<EmmaHealthCardId | null>(null),
     [healthMetric, setHealthMetric] = useState<string | null>(null),
-    [feedbackToOpen, setFeedbackToOpen] = useState<string | undefined>(),
+    [feedbackToOpen, setFeedbackToOpen] = useState<string | undefined>(initialFeedbackId),
     [composer, setComposer] = useState(false),
     [noteCall, setNoteCall] = useState<string | null>(null),
     [busy, setBusy] = useState(false),
@@ -231,6 +233,9 @@ export function ReceptionistWorkspace({
     [editing, setEditing] = useState<Feedback | null>(null),
     [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const view = embedded ? receptionistView(initialView) : localView;
+  useEffect(() => {
+    setFeedbackToOpen(initialFeedbackId);
+  }, [initialFeedbackId]);
   const ContentTag = embedded ? "div" : "main";
   const pull = usePullToRefresh(
     () =>

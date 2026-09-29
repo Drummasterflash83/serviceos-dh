@@ -7,7 +7,12 @@ const migration = readFileSync(
     import.meta.url,
   ),
   "utf8",
-).replace(/^begin;|^commit;/gm, "");
+)
+  .replace(/^begin;|^commit;/gm, "")
+  .replace(
+    "create function public.care_health_snapshot",
+    "create or replace function public.care_health_snapshot",
+  );
 const sql = `begin;
 ${migration}
 create temp table proof_ids as select gen_random_uuid() tenant,gen_random_uuid() other_tenant,gen_random_uuid() client_id,gen_random_uuid() feedback,gen_random_uuid() call_id;
