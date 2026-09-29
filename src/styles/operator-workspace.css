@@ -13,6 +13,42 @@
 .op-root * {
   box-sizing: border-box;
 }
+.op-card.op-build-investment {
+  margin-top: 24px;
+  background: #f3eef8;
+}
+.op-build-investment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.op-build-investment .op-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.op-build-investment-total {
+  display: grid;
+  gap: 4px;
+}
+.op-build-investment-total strong {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.15;
+  color: var(--op-purple);
+  letter-spacing: -1px;
+}
+.op-build-investment details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ded6e8;
+}
+.op-build-investment summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+}
 .op-root button,
 .op-root a {
   touch-action: manipulation;

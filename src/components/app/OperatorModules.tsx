@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import "@/styles/client-investment.css";
 import "@/styles/client-workspace.css";
 import { useOperatorHealth } from "./useOperatorHealth";
+import { BuildInvestment } from "./BuildInvestment";
 import { healthSignal, type OperatorModule } from "@/lib/operator-workspace";
 import type { ReceptionistView } from "@/lib/client-workspace-nav";
 
@@ -183,6 +184,7 @@ function OperatorModuleContent({
           <p>Publish progress, scope and fixed-price packages.</p>
         </button>
       </div>
+      {tenantId === "00000000-0000-0000-0000-000000000001" && <BuildInvestment />}
       <p className="op-note">
         {data
           ? `Checked ${new Date(data.checkedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}. `
