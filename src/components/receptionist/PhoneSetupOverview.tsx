@@ -4,6 +4,7 @@ import { Phone, Users, ArrowRight, MessageSquare, ShieldCheck } from "lucide-rea
 import { z } from "zod";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { PhoneRoutes } from "./PhoneRoutes";
 
 const referenceSchema = z.object({
   source: z.string(),
@@ -99,19 +100,10 @@ export function PhoneSetupOverview({ tenant, demo }: { tenant: string; demo: boo
               <Phone size={22} />
               <div>
                 <h3 id="phone-route-title">How a call reaches your team</h3>
-                <p>Follow the recorded route, from the first ring to the fallback.</p>
+                <p>Each caller choice, destination and fallback — at a glance.</p>
               </div>
             </div>
-            <div className="ps-route-grid">
-              {setup.routes.map((route, i) => (
-                <article className="ps-route" key={route.title}>
-                  <span className="ps-step">{i + 1}</span>
-                  <h4>{route.title}</h4>
-                  <p>{route.detail}</p>
-                  <small>{route.date}</small>
-                </article>
-              ))}
-            </div>
+            <PhoneRoutes routes={setup.routes} />
           </section>
           <section className="rw-panel" aria-labelledby="phone-people-title">
             <div className="ps-heading">
