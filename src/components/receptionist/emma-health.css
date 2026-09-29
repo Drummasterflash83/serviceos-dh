@@ -82,6 +82,20 @@
 .eh-review-proof p {
   flex-basis: 100%;
 }
+.eh-review-alerts {
+  border-top: 1px solid #e4ddeb;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+.eh-review-alerts > strong {
+  color: #8d5917;
+  font-size: 14px;
+}
+.eh-review-alerts button {
+  background: #fff8ec;
+  border-color: #d7b580;
+  margin-top: 8px;
+}
 .eh-dialog {
   max-width: 700px;
   max-height: 85dvh;

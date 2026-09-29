@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import { getSupabaseClient } from "@/lib/supabase";
 import { ArrowRight, CircleAlert } from "lucide-react";
 import { useEmmaHealth, type HealthIssue } from "@/lib/use-emma-health";
 import {
@@ -17,6 +20,62 @@ const healthAreas = [
   { id: "handover", label: "Handovers" },
   { id: "general", label: "Other feedback" },
 ] as const;
+function OperatorReviewStatus({
+  tenant,
+  issues,
+  onOpen,
+}: {
+  tenant: string;
+  issues: HealthIssue[];
+  onOpen: (issue?: HealthIssue) => void;
+}) {
+  const { user } = useAuth();
+  const reviews = useQuery({
+    queryKey: ["operator-review-health", user?.id, tenant],
+    enabled: !!user,
+    queryFn: async () => {
+      const latest = new Map<string, string>();
+      for (let offset = 0; ; offset += 500) {
+        const r = await getSupabaseClient()
+          .from("receptionist_task_reviews")
+          .select("id,issue_id,state,created_at")
+          .eq("tenant_id", tenant)
+          .order("created_at", { ascending: false })
+          .order("id")
+          .range(offset, offset + 499);
+        if (r.error) throw Error("Feedback analysis checks could not be refreshed.");
+        for (const row of r.data)
+          if (!latest.has(row.issue_id)) latest.set(row.issue_id, row.state);
+        if (r.data.length < 500) break;
+      }
+      return latest;
+    },
+    refetchInterval: 30_000,
+  });
+  const failed = issues.filter((i) => reviews.data?.get(i.id) === "failed");
+  if (reviews.isError) return <p role="alert">{reviews.error.message}</p>;
+  if (reviews.isPending) return <p>Checking feedback analysis…</p>;
+  return (
+    <div className="eh-review-alerts">
+      {failed.length ? (
+        <>
+          <strong>
+            {failed.length} feedback {failed.length === 1 ? "review needs" : "reviews need"} another
+            look
+          </strong>
+          <p>The latest analysis failed. These reports remain open; no fix is implied.</p>
+          {failed.map((issue) => (
+            <button key={issue.id} onClick={() => onOpen(issue)}>
+              {issue.title} · review failed <ArrowRight size={14} />
+            </button>
+          ))}
+        </>
+      ) : (
+        <p>No failed latest analyses on open feedback reports.</p>
+      )}
+    </div>
+  );
+}
 export function HealthIssueList({
   issues,
   onOpen,
@@ -147,6 +206,9 @@ export function EmmaIssueSummary({
             These counts do not prove continuous monitoring or audio testing.
           </p>
         </div>
+      )}
+      {operator && tenant && data && (
+        <OperatorReviewStatus tenant={tenant} issues={issues} onOpen={onOpen} />
       )}
       <Dialog open={!!area} onOpenChange={(open) => !open && setArea(null)}>
         <DialogContent className="eh-dialog">
