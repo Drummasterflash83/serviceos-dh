@@ -1,0 +1,52 @@
+// Real local database assertions, all schema and fixtures roll back.
+import {readFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+const sqlFile=p=>readFileSync(new URL('../supabase/migrations/'+p,import.meta.url),'utf8').replace(/^begin;\s*$/gim,'').replace(/^commit;\s*$/gim,'');
+const sql=`begin;
+${sqlFile('20261022120000_receptionist_care_loop.sql')}
+${sqlFile('20261023120000_operator_notifications.sql')}
+${sqlFile('20261023130000_receptionist_review_desk.sql')}
+create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
+grant select on ids to authenticated,service_role;
+update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
+insert into public.tenants(id,slug,display_name) select tenant,'desk-proof-'||tenant,'Synthetic desk proof' from ids;
+insert into auth.users(id,email) select admin_id,'chris@openfolk.ai' from ids union all select other_admin,'other-'||other_admin||'@example.invalid' from ids union all select client_id,'client-'||client_id||'@example.invalid' from ids;
+insert into public.profiles(id,tenant_id,role) select admin_id,tenant,'owner' from ids union all select other_admin,tenant,'owner' from ids union all select client_id,tenant,'viewer' from ids on conflict(id) do update set tenant_id=excluded.tenant_id;
+insert into public.platform_authority_grants(profile_id,permission,granted_by) select admin_id,'platform.controlplane.admin','proof' from ids union all select other_admin,'platform.controlplane.admin','proof' from ids;
+insert into public.receptionist_workspaces(tenant_id,company,name,assistant_id,vapi_secret_name) select tenant,'Synthetic proof','Emma',gen_random_uuid(),'RECEPTIONIST_VAPI_PROOF' from ids;
+insert into public.receptionist_feedback(id,tenant_id,author_id,title,body) select feedback,tenant,client_id,'Synthetic repetition','Synthetic feedback about repeated hours' from ids;
+insert into public.receptionist_access(tenant_id,profile_id) select tenant,client_id from ids;
+create function pg_temp.ok(b boolean,t text) returns void language plpgsql as $$begin if b is distinct from true then raise exception 'FAIL %',t;end if;raise notice 'PASS %',t;end$$;
+create function pg_temp.refuses(q text,t text) returns void language plpgsql as $$declare b boolean:=false;begin begin execute q;exception when others then b:=true;end;perform pg_temp.ok(b,t);end$$;
+set local role authenticated;
+select set_config('request.jwt.claim.sub',(select other_admin::text from ids),true);
+select pg_temp.ok(not public.care_desk_operator(),'other admin is refused despite having authority');
+select pg_temp.ok((select count(*)=0 from public.receptionist_care_issues),'other admin cannot read care issues');
+select pg_temp.refuses(format('select public.care_issue_action(%L,%L,1,%L)',tenant,(select id from public.receptionist_care_issues limit 1),'claim'),'other admin cannot mutate') from ids;
+select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
+select pg_temp.ok(not public.care_desk_operator(),'client is refused');
+select pg_temp.ok((select count(*)=0 from public.receptionist_task_reviews),'client cannot read internal reviews');
+select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
+select pg_temp.ok(public.care_desk_operator(),'Chris with authority is allowed');
+select public.care_issue_action(i.tenant_id,i.id,1,'claim') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.ok((select status='Reviewing' and response like 'OpenFolk has picked%' from public.receptionist_feedback f,ids p where f.id=p.feedback),'claim publishes honest client progress');
+select public.care_issue_action(i.tenant_id,i.id,2,'propose','{"diagnosis":"Repeated hours","proposal":"Avoid unnecessary repetition","test_plan":"Closed-hours, emergency and name-clarification cases"}') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_issue_action(i.tenant_id,i.id,3,'approve') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.ok((select status='In progress' and response like '%not been released%' from public.receptionist_feedback f,ids p where f.id=p.feedback),'approval is visible and not described as released');
+select pg_temp.refuses(format('select public.care_issue_action(%L,%L,4,%L)',i.tenant_id,i.id,'resolve'),'cannot claim unverified resolution') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_issue_action(i.tenant_id,i.id,4,'propose','{"diagnosis":"Changed diagnosis","proposal":"Changed proposal","test_plan":"Changed tests"}') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.ok((select approved_at is null from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'edited proposal clears approval');
+select pg_temp.ok((select count(*)=5 from public.client_notification_outbox o,ids p where o.source_id=p.feedback),'each customer update enters existing notification outbox');
+select pg_temp.refuses(format('select public.care_desk_reserve_review(%L,%L,%L)',i.tenant_id,i.id,p.admin_id),'browser cannot reserve by impersonating service') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+reset role;
+set local role service_role;
+select public.care_desk_reserve_review(i.tenant_id,i.id,p.admin_id) from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.refuses(format('select public.care_desk_reserve_review(%L,%L,%L)',i.tenant_id,i.id,p.admin_id),'concurrent paid review refused') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+reset role;
+insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) select tenant,admin_id,'role','Synthetic proof' from ids;
+set local role authenticated;
+select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
+select pg_temp.ok(not public.care_desk_operator(),'View-As cannot enter task desk');
+rollback;`;
+execFileSync('docker',['exec','-i','supabase_db_serviceos-dh','psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],{input:sql,stdio:['pipe','pipe','inherit']});
+console.log('Task desk proof passed; all schema and fixtures rolled back.');

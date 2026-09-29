@@ -12,6 +12,9 @@ const ReceptionistWorkspace = lazy(() =>
     default: module.ReceptionistWorkspace,
   })),
 );
+const FeedbackDesk = lazy(() =>
+  import("./FeedbackDesk").then((m) => ({ default: m.FeedbackDesk })),
+);
 const ClientPortal = lazy(() =>
   import("@/components/client-portal/ClientPortal").then((module) => ({
     default: module.ClientPortal,
@@ -72,13 +75,17 @@ function OperatorModuleContent({
           ))}
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
-          <ReceptionistWorkspace
-            key={tenantId}
-            tenantId={tenantId}
-            embedded
-            initialView={view}
-            onViewChange={onView}
-          />
+          {view === "improvements" ? (
+            <FeedbackDesk key={tenantId} tenantId={tenantId} />
+          ) : (
+            <ReceptionistWorkspace
+              key={tenantId}
+              tenantId={tenantId}
+              embedded
+              initialView={view}
+              onViewChange={onView}
+            />
+          )}
         </Suspense>
       </>
     );

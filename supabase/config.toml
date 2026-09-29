@@ -300,3 +300,7 @@ verify_jwt = false
 
 [functions.operator-notifications]
 verify_jwt = false
+
+# Authenticated OpenFolk-only review; identity and authority checked in the handler.
+[functions.receptionist-task-review]
+verify_jwt = false
