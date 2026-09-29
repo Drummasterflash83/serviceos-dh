@@ -5,7 +5,9 @@ import {
   rehearsalAssistant,
   rehearsalOutput,
   rehearsalOpening,
+  approvedVoiceSource,
 } from "../../supabase/functions/_shared/receptionist-rehearsal.ts";
+import { practiceAssistant } from "../../supabase/functions/_shared/receptionist-practice.ts";
 import {
   validateAssessment,
   REVIEW_INSTRUCTIONS,
@@ -121,4 +123,26 @@ test("replay uses the historical spoken greeting and refuses unresolved template
   );
   assert.throws(() => rehearsalOpening("AI: {% if now %} hello"), /historical_greeting/);
   assert.throws(() => rehearsalOpening("User: hello\nAI: welcome"), /historical_greeting/);
+});
+
+test("approved voice fixture preserves source and is still restricted by the practice adapter", () => {
+  const fixture = {
+    ...source,
+    voice: { provider: "11labs", voiceId: "test-voice" },
+    transcriber: { provider: "deepgram", model: "nova-2" },
+    model: { ...source.model, tools: undefined, knowledgeBase: undefined },
+  };
+  const changed = approvedVoiceSource(
+    fixture,
+    "Do not repeat closure.",
+    "Welcome. Our office is closed.",
+  );
+  const candidate = practiceAssistant(changed, []);
+  assert.equal(candidate.firstMessage, "Welcome. Our office is closed.");
+  assert.ok(JSON.stringify(candidate).includes("Do not repeat closure."));
+  assert.ok(JSON.stringify(candidate).includes("PRACTICE MODE"));
+  assert.ok(!JSON.stringify(candidate).includes("dangerous"));
+  assert.ok(!JSON.stringify(candidate).includes("never.invalid"));
+  assert.equal(source.model.messages.length, 1);
+  assert.throws(() => approvedVoiceSource(fixture, "change", "{% if now %}"));
 });

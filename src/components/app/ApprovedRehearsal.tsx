@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import type { DeskIssue } from "@/lib/feedback-desk";
+const ApprovedVoiceRehearsal = lazy(() => import("./ApprovedVoiceRehearsal"));
 type Receipt = {
   id: string;
   state: string;
@@ -21,6 +22,7 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
   const [caller, setCaller] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const receipts = useQuery({
     queryKey: ["approved-rehearsals", user?.id, issue.tenant_id, issue.id],
     queryFn: async () => {
@@ -84,7 +86,7 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
           </label>
           <button
             className="fd-primary"
-            disabled={busy || !caller.trim()}
+            disabled={busy || voiceOpen || !caller.trim()}
             onClick={() => void run()}
           >
             {busy ? "Comparing replies…" : "Run approved rehearsal"}
@@ -138,6 +140,19 @@ export function ApprovedRehearsal({ issue }: { issue: DeskIssue }) {
           </details>
         </details>
       ))}
+      {issue.stage === "approved" &&
+        receipts.data?.some((r) => r.state === "completed" && !/\{%|\{\{/.test(r.opening)) && (
+          <>
+            <button className="fd-primary" disabled={busy} onClick={() => setVoiceOpen(!voiceOpen)}>
+              {voiceOpen ? "Close voice rehearsal" : "Try the approved change by voice"}
+            </button>
+            {voiceOpen && (
+              <Suspense fallback={<p>Preparing approved voice rehearsal…</p>}>
+                <ApprovedVoiceRehearsal issue={issue} />
+              </Suspense>
+            )}
+          </>
+        )}
       <p>
         OpenFolk reviews every result during this initial supervised period. Completion means
         evidence is saved—not that a fix has passed or been released. Progress goes to the

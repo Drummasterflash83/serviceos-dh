@@ -29,3 +29,11 @@ This is text-only testing, not voice synthesis, network quality, production rout
 - Deno type checks passed for reviewer, rehearsal endpoint and dispatcher.
 
 Production browser and Slack receipts are recorded after publication, not assumed from these checks.
+
+## Approved voice handoff
+
+The desk now offers a lazy-loaded approved voice rehearsal after a valid text comparison. It reuses the existing practice SDK/microphone/recording/feedback flow. The server requires real Chris authority, the current task version and approval, a matching completed v2 historical-opening text rehearsal, and an unchanged live assistant hash. A service-only transaction binds the reserved voice session to immutable proposal/approval/source/candidate-hash evidence before Vapi is asked to create the transient call. Failure refuses the call and releases its unused reservation.
+
+The source instruction overlay is passed through the existing strict practice adapter; only approved read-only knowledge remains, and the final no-actions practice boundary remains last. The historical transcribed greeting recreates the reported scenario; it is not a change to production opening hours or greeting. Calls cannot transfer, book or mutate records. Voice feedback uses the existing verified Slack pipeline and is titled as an approved-change test. Related voice recordings are filtered to this task in the operator rehearsal history. Live production release/rollback remains unavailable pending actual recorded voice/regression evidence and separate release approval.
+
+49 practice/voice/rehearsal checks, 27 rollback DB assertions, 47 release-contract checks, Deno check and build pass. These are not a claim of a real microphone conversation or candidate voice acceptance.

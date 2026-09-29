@@ -9,6 +9,29 @@ export function rehearsalOpening(transcript: string) {
     throw Error("historical_greeting_required");
   return first;
 }
+
+export function approvedVoiceSource(source: unknown, proposal: string, opening: string) {
+  const s = record(source),
+    m = record(s.model);
+  if (!proposal.trim() || proposal.length > 20000 || !opening.trim() || /\{%|\{\{/.test(opening))
+    throw Error("Approved voice fixture invalid");
+  // practiceAssistant's existing allowlist is applied AFTER this addition and
+  // appends its non-action safety boundary last. Never send this source directly.
+  return {
+    ...s,
+    firstMessage: opening,
+    model: {
+      ...m,
+      messages: [
+        ...(Array.isArray(m.messages) ? m.messages : []),
+        {
+          role: "system",
+          content: "OPERATOR-APPROVED CHANGE FOR THIS ISOLATED REHEARSAL ONLY:\n" + proposal,
+        },
+      ],
+    },
+  };
+}
 export const REHEARSAL_LIMITS =
   "Text rehearsal only: voice, timing, knowledge lookups, emergency actions and actual transfers are not tested. No live assistant is changed. Human review and a recorded voice retest are required before release.";
 // Deliberate allowlist: never copy tool IDs, knowledge callbacks, servers, hooks,
