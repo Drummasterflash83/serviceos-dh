@@ -464,7 +464,7 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
           <button className="fd-primary" disabled={busy} type="submit">
             {issue.stage === "approved"
               ? "Revise proposal · requires new approval"
-              : "Save proposal for approval"}
+              : "Save proposed fix"}
           </button>
         )}
         {issue.approved_at && issue.stage === "approved" && (

@@ -117,11 +117,14 @@ export function ReleaseChoice({ issue, unsaved }: { issue: DeskIssue; unsaved: b
           {error}
         </p>
       )}
-      {eligible && (
+      {!eligible && issue.stage !== "verifying" && issue.stage !== "resolved" && (
+        <p>Save the proposed fix above to enable these two options.</p>
+      )}
+      {issue.stage !== "verifying" && issue.stage !== "resolved" && (
         <div className="fd-choice-grid">
           <button
             className="fd-secondary"
-            disabled={busy || unsaved || blocked}
+            disabled={!eligible || busy || unsaved || blocked}
             onClick={() => void test()}
           >
             <strong>
@@ -131,7 +134,7 @@ export function ReleaseChoice({ issue, unsaved }: { issue: DeskIssue; unsaved: b
           </button>
           <button
             className="fd-primary"
-            disabled={busy || unsaved || blocked}
+            disabled={!eligible || busy || unsaved || blocked}
             onClick={() => {
               setMode("publish");
               void invoke("prepare");
