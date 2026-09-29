@@ -21,6 +21,9 @@ test("stored evidence is copied from a source passage, never model prose", async
                 type: "output_text",
                 text: JSON.stringify({
                   summary: "Closure repeated.",
+                  decision: "change_recommended",
+                  feedbackResponse: "Remove the repeated closure message as requested.",
+                  unchanged: ["Keep the approved handover destinations."],
                   findings: [
                     {
                       category: "repetition",
@@ -97,6 +100,9 @@ test("review includes long assistant training without truncating the rules", asy
                 type: "output_text",
                 text: JSON.stringify({
                   summary: "No issue found in this sample.",
+                  decision: "no_change_recommended",
+                  feedbackResponse: "No specific improvement was requested in this sample.",
+                  unchanged: ["Keep the greeting."],
                   findings: [],
                   limitations: ["Text only."],
                 }),

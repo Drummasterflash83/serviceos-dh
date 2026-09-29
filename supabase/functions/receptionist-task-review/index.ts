@@ -2,7 +2,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { normalizeCall, record } from "../_shared/receptionist-data.ts";
 import { practiceCallMatches } from "../_shared/receptionist-web-call.ts";
-import { reviewConversation, evidenceHash } from "../_shared/receptionist-care.ts";
+import { reviewConversation, evidenceHash, REVIEW_VERSION } from "../_shared/receptionist-care.ts";
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization,apikey,content-type,x-client-info",
@@ -26,6 +26,8 @@ const safeError = (e: unknown) => {
     return "The AI review included a quotation that did not exactly match the call. It was rejected. Retry the review; Emma is unchanged.";
   if (code === "assessment_invalid")
     return "The AI review did not meet the required evidence format. Retry the review; Emma is unchanged.";
+  if (code === "assessment_conflicting_decision")
+    return "The review returned conflicting recommendations and was rejected. Retry the review; Emma is unchanged.";
   if (code === "review_incomplete")
     return "The AI review ended before returning a complete assessment. Retry the review; Emma is unchanged.";
   if (code === "review_provider_unavailable")
@@ -181,7 +183,7 @@ Deno.serve(async (req) => {
       .from("receptionist_task_reviews")
       .update({
         state: "completed",
-        assessment,
+        assessment: { ...assessment, reviewerVersion: REVIEW_VERSION },
         evidence_hash: hash,
         assistant_version: assistant.updatedAt ?? null,
         call_id: callId,

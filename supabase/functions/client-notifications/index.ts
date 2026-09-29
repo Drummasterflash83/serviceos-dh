@@ -105,9 +105,39 @@ Deno.serve(async (req) => {
         ? `https://app.openfolk.ai/openfolk/${job.tenant_id}?module=receptionist&view=improvements&tools=false`
         : `https://app.openfolk.ai/client?tenant=${job.tenant_id}`;
       const header = `${job.priority.toUpperCase()} · ${w.company}\n${label}\n${url}\nReference: ${job.source_id} · revision ${job.source_version}`;
+      let rehearsalReport = "";
+      if (receptionist && feedback?.data?.response?.includes("isolated wording rehearsal")) {
+        const issue = await db
+          .from("receptionist_care_issues")
+          .select("id")
+          .eq("tenant_id", job.tenant_id)
+          .eq("feedback_id", job.source_id)
+          .maybeSingle();
+        if (issue.error) throw Error("Rehearsal context unavailable");
+        if (issue.data) {
+          const test = await db
+            .from("receptionist_rehearsals")
+            .select("id,state,caller,opening,result,safe_error,finished_at")
+            .eq("tenant_id", job.tenant_id)
+            .eq("issue_id", issue.data.id)
+            .in("state", ["completed", "failed"])
+            .order("finished_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (test.error) throw Error("Rehearsal receipt unavailable");
+          if (test.data) {
+            const t = test.data,
+              result = record(t.result);
+            rehearsalReport = `\n\nLatest isolated wording rehearsal · ${t.id}\nFinished: ${t.finished_at}\nState: ${t.state} · human review required · live changes: 0\nWelcome: ${slackText(t.opening)}\nCaller: ${slackText(t.caller)}`;
+            if (t.state === "completed")
+              rehearsalReport += `\nCurrent wording: ${slackText(String(record(result.baseline).reply ?? ""))}\nApproved candidate: ${slackText(String(record(result.candidate).reply ?? ""))}\nLimits: ${slackText(String(result.limits ?? ""))}`;
+            else rehearsalReport += `\n${slackText(t.safe_error ?? "Rehearsal needs attention.")}`;
+          }
+        }
+      }
       const report =
         receptionist && feedback?.data
-          ? `\n\n${slackText(feedback.data.title)}\nStatus: ${slackText(feedback.data.status ?? "New")}${feedback.data.response ? `\nOpenFolk update: ${slackText(feedback.data.response)}` : ""}\n\nCustomer feedback\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
+          ? `\n\n${slackText(feedback.data.title)}\nStatus: ${slackText(feedback.data.status ?? "New")}${feedback.data.response ? `\nOpenFolk update: ${slackText(feedback.data.response)}` : ""}${rehearsalReport}\n\nCustomer feedback\n${slackText(feedback.data.body)}${practiceTranscript ? `\n\nConversation transcript\n${slackText(practiceTranscript)}` : ""}`
           : "";
       const text =
         header +

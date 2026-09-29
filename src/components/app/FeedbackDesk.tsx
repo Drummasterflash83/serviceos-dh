@@ -27,6 +27,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CareEvidence } from "./CareEvidence";
+import { ApprovedRehearsal } from "./ApprovedRehearsal";
 import "@/styles/feedback-desk.css";
 
 type Review = {
@@ -36,6 +37,9 @@ type Review = {
   assistant_version: string | null;
   created_at: string;
   assessment: {
+    decision?: "change_recommended" | "clarification_required" | "no_change_recommended";
+    feedbackResponse?: string;
+    unchanged?: string[];
     summary: string;
     findings: {
       category: string;
@@ -346,7 +350,24 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
           </p>
         ) : (
           <>
+            {assessment.decision && (
+              <p className="fd-badge">
+                {
+                  {
+                    change_recommended: "Change recommended",
+                    clarification_required: "Clarification needed",
+                    no_change_recommended: "No change recommended for this report",
+                  }[assessment.decision]
+                }
+              </p>
+            )}
             <p>{assessment.summary}</p>
+            {assessment.feedbackResponse && (
+              <article className="fd-finding">
+                <strong>The client's request</strong>
+                <p>{assessment.feedbackResponse}</p>
+              </article>
+            )}
             {assessment.findings.map((f, i) => (
               <article className="fd-finding" key={i}>
                 <strong>{f.category}</strong>
@@ -357,6 +378,16 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
                 </p>
               </article>
             ))}
+            {!!assessment.unchanged?.length && (
+              <details>
+                <summary>Keep unchanged</summary>
+                <ul>
+                  {assessment.unchanged.map((text, i) => (
+                    <li key={i}>{text}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
             <details>
               <summary>Evidence limits</summary>
               <ul>
@@ -466,6 +497,7 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
           </p>
         )}
       </form>
+      <ApprovedRehearsal issue={issue} />
       <section className="fd-block fd-client">
         <h3>
           <MessageSquare size={18} /> What the client sees
@@ -477,7 +509,7 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
         </small>
       </section>
       <section className="fd-block">
-        <h3>4. Release, retest, prevent a repeat</h3>
+        <h3>5. Release, retest, prevent a repeat</h3>
         <p>
           No automatic Vapi change is enabled yet. A version-checked release and a verified retest
           are required before this can be marked fixed.
@@ -515,6 +547,8 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
                   propose: "Proposal saved",
                   approve: "Approved for testing",
                   reopen: "Returned to review",
+                  rehearsal_completed: "Isolated rehearsal completed · review required",
+                  rehearsal_failed: "Isolated rehearsal needs attention",
                 } as Record<string, string>
               )[e.action] ?? e.action}
             </p>

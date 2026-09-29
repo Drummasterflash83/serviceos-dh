@@ -6,6 +6,7 @@ const sql=`begin;
 ${sqlFile('20261022120000_receptionist_care_loop.sql')}
 ${sqlFile('20261023120000_operator_notifications.sql')}
 ${sqlFile('20261023130000_receptionist_review_desk.sql')}
+${sqlFile('20261023150000_approved_wording_rehearsals.sql')}
 create temp table ids as select gen_random_uuid() tenant,gen_random_uuid() admin_id,gen_random_uuid() other_admin,gen_random_uuid() client_id,gen_random_uuid() feedback;
 grant select on ids to authenticated,service_role;
 update auth.users set email='local-proof-hidden-'||id||'@example.invalid' where lower(email)='chris@openfolk.ai';
@@ -26,6 +27,7 @@ select pg_temp.refuses(format('select public.care_issue_action(%L,%L,1,%L)',tena
 select set_config('request.jwt.claim.sub',(select client_id::text from ids),true);
 select pg_temp.ok(not public.care_desk_operator(),'client is refused');
 select pg_temp.ok((select count(*)=0 from public.receptionist_task_reviews),'client cannot read internal reviews');
+select pg_temp.ok((select count(*)=0 from public.receptionist_rehearsals),'client cannot read internal rehearsals');
 select set_config('request.jwt.claim.sub',(select admin_id::text from ids),true);
 select pg_temp.ok(public.care_desk_operator(),'Chris with authority is allowed');
 select public.care_issue_action(i.tenant_id,i.id,1,'claim') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
@@ -42,6 +44,21 @@ reset role;
 set local role service_role;
 select public.care_desk_reserve_review(i.tenant_id,i.id,p.admin_id) from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
 select pg_temp.refuses(format('select public.care_desk_reserve_review(%L,%L,%L)',i.tenant_id,i.id,p.admin_id),'concurrent paid review refused') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.refuses(format('select public.care_reserve_rehearsal(%L,%L,%L,5,%L,%L,%L,%L,%L)',i.tenant_id,i.id,p.admin_id,'source-v1','hash1','hash2','Hello','Heidi please'),'unapproved proposal cannot be rehearsed') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+reset role;
+set local role authenticated;
+select public.care_issue_action(i.tenant_id,i.id,5,'approve') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.refuses(format('select public.care_reserve_rehearsal(%L,%L,%L,6,%L,%L,%L,%L,%L)',i.tenant_id,i.id,p.admin_id,'source-v1','hash1','hash2','Hello','Heidi please'),'browser cannot impersonate service to reserve rehearsal') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+reset role;
+set local role service_role;
+select pg_temp.refuses(format('select public.care_reserve_rehearsal(%L,%L,%L,5,%L,%L,%L,%L,%L)',i.tenant_id,i.id,p.admin_id,'source-v1','hash1','hash2','Hello','Heidi please'),'stale approval version cannot be tested') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_reserve_rehearsal(i.tenant_id,i.id,p.admin_id,6,'source-v1','hash1','hash2','Hello','Heidi please') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select pg_temp.refuses(format('select public.care_reserve_rehearsal(%L,%L,%L,6,%L,%L,%L,%L,%L)',i.tenant_id,i.id,p.admin_id,'source-v1','hash1','hash2','Hello','Heidi please'),'duplicate concurrent rehearsal refused') from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback;
+select public.care_finish_rehearsal(r.id,'{"baseline":{"reply":"Original"},"candidate":{"reply":"Candidate"},"liveChanges":0}') from public.receptionist_rehearsals r,ids p where r.tenant_id=p.tenant;
+select pg_temp.ok((select stage='approved' and release_ref is null and approved_at is not null from public.receptionist_care_issues i,ids p where i.feedback_id=p.feedback),'completed rehearsal preserves approval without claiming release');
+select pg_temp.ok((select state='completed' and proposal='Changed proposal' from public.receptionist_rehearsals r,ids p where r.tenant_id=p.tenant),'exact approved proposal and test result saved');
+select pg_temp.ok((select count(*)=7 from public.client_notification_outbox o,ids p where o.source_id=p.feedback),'reapproval and rehearsal each enter Slack outbox');
+select pg_temp.refuses(format('select public.care_finish_rehearsal(%L,%L)',r.id,'{}'),'completed receipt cannot be overwritten') from public.receptionist_rehearsals r,ids p where r.tenant_id=p.tenant;
 reset role;
 insert into public.view_as_context(tenant_id,actor_user_id,subject_kind,reason) select tenant,admin_id,'role','Synthetic proof' from ids;
 set local role authenticated;
