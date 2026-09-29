@@ -13,6 +13,7 @@ import {
   LogOut,
   Settings2,
   Wallet,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { NAV_GROUPS, type WorkspaceSection } from "@/lib/openfolk-workspace-nav";
@@ -115,6 +116,15 @@ export function OperatorShell({
             onClick={() => setMenu(false)}
           >
             <Wallet size={18} /> Accounts & costs
+          </Link>
+          <p className="op-company">Notifications</p>
+          <Link
+            to="/openfolk/notifications"
+            search={{ tenant: tenantId }}
+            className="op-all"
+            onClick={() => setMenu(false)}
+          >
+            <Bell size={18} /> Slack
           </Link>
           {company && (
             <div className="op-future">
