@@ -130,6 +130,7 @@ test("unified sidebar uses orange icons, white labels and no duplicate workspace
   const brand = read("../styles/workspace-navigation.css");
   assert.doesNotMatch(portal, /WorkspaceMenu|of-workspace-switch/);
   assert.match(portal, /<nav aria-label="Client workspace">/);
+  assert.doesNotMatch(portal, /className="cp-workspace-label"|>CLIENT WORKSPACE</);
   assert.match(portal, /className="cp-receptionist-nav"/);
   assert.match(css, /\.cp-root \.cp-sidebar svg\s*\{\s*color: #cc8625;/);
   assert.match(brand, /\.of-drummonds-emblem\s*\{[^}]*background: #cc8625;/);
