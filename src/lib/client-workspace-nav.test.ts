@@ -33,6 +33,21 @@ test("admin return preserves the signed-in session and uses the existing guarded
   assert.match(link, /OpenFolk admin/);
   assert.doesNotMatch(link, /signOut|signIn|window\.open|target=|localStorage/);
 });
+test("all OpenFolk child routes wait for an account-scoped server admin check", () => {
+  const route = read("../routes/openfolk.tsx");
+  assert.match(route, /<RequireAuth>\s*<OperatorAccess \/>\s*<\/RequireAuth>/);
+  assert.match(route, /queryKey: \["openfolk-route-authority", user\?\.id\]/);
+  assert.match(route, /required_permission: "platform.controlplane.admin"/);
+  assert.match(route, /authority.isPending \|\| authority.isFetching/);
+  assert.match(
+    route,
+    /authority.isError \|\| !canShowOpenFolkAdmin\(user\?\.email, authority.data\)/,
+  );
+  assert.match(route, /if \(error\) throw new Error/);
+  assert.match(route, /return data === true/);
+  assert.match(route, /AbortSignal.timeout\(15_000\)/);
+  assert.ok(route.indexOf("authority.isError ||") < route.indexOf("return <Outlet />"));
+});
 test("both sidebar footers contain the same gated admin return", () => {
   for (const [path, marker] of [
     ["../components/client-portal/ClientPortal.tsx", 'className="cp-sidebar-bottom"'],

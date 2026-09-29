@@ -37,3 +37,38 @@ Changing clients updates the menu and call scope together; inaccessible explicit
 client references do not fall through to another client. Added three regression
 checks; the complete Node set now passes 195 tests. TypeScript, scoped lint and
 Vercel-target build pass. No production promotion or managed-care activation.
+
+## Final release review — 29 September
+
+Chris explicitly approved publishing this bounded release and confirmed the sole
+human operator email is `chris@openfolk.ai` (not the mistyped openolk address).
+Read-only production verification found exactly one effective platform grant:
+that account's `platform.controlplane.admin`. Its profile matches the same Auth
+identity. No legacy `role=openfolk` profiles exist. The grants table has RLS and
+only an operator SELECT policy; ordinary authenticated users cannot grant themselves
+authority. No permissions or identities were changed.
+
+Read-only transaction-local SQL identity simulations against the deployed gate:
+Chris can view/admin; an ungranted identity cannot view/admin and sees zero grants.
+This is database-layer evidence, not a separate-user browser login test.
+The parent `/openfolk` layout now also waits for server-verified admin authority,
+limits the UI to Chris, and fails closed on denied, pending, timeout or failed
+checks. Child reads/writes retain their independent backend gates.
+
+Fresh verification: all 196 library/brand tests, 21 control-plane authority checks,
+47 prebuild checks, TypeScript, scoped lint, Vercel-target build and diff checks pass.
+Chris has reviewed the preview and reported actual Vapi usage visible. Automated
+authenticated browser smoke remains incomplete: the browser tool refuses access
+because its admin-enforced security policy cannot be verified. No bypass attempted.
+Production publication is user-authorised with this testing gap explicitly reported;
+do not describe this as a complete end-to-end handover sign-off.
+
+Production receptionist workspace reads `Ready`; main-number activation is separate.
+One feedback record is `New`, with one outbox row marked `sent`. That status alone
+does not prove delivery to the approved OpenFolk #ai-emma destination. Managed-care
+automation, automatic diagnosis and that end-to-end delivery proof remain separate.
+
+Pre-release rollback target: `dpl_BMWdeNc3u1uzVnMwqCQTHN4SDGE9`
+(`serviceos-8fcfsxbc9-allkin.vercel.app`, Ready production before this release).
+No new backend migrations/functions, paid-service settings, phone routing or Heidi
+invitations are included.
