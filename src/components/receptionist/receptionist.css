@@ -1029,11 +1029,15 @@
 .rw-emma-roadmap {
   margin: 20px 0;
   padding: clamp(18px, 2.5vw, 25px);
-  background: #eee7f5;
-  border-color: #dbd0e6;
+  background: #242337;
+  border-color: #242337;
 }
 .rw-emma-roadmap .rw-panel-title {
   padding: 0 0 18px;
+}
+.rw-emma-roadmap .rw-panel-title h2,
+.rw-emma-roadmap .rw-panel-title .rw-eyebrow {
+  color: #fff;
 }
 .rw-emma-roadmap-steps {
   display: grid;
