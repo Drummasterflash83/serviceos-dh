@@ -120,3 +120,21 @@ test("repeated ordinary transfers override an AI judge pass; funding is not a wo
     "blocked_funding",
   );
 });
+test("repeated handover wording cannot be hidden by a provider pass", () => {
+  const report = (transcript: string) =>
+    itemReport({
+      status: "passed",
+      results: { passed: true, evaluations: [{}] },
+      metadata: { call: { transcript } },
+    });
+  const duplicate = report(
+    "AI: I'll put you through to the sales mailbox. I'll put you through to the sales voicemail now.",
+  );
+  assert.equal(duplicate.passed, false);
+  assert.equal(duplicate.outcome, "repeated_announcement");
+  assert.equal(
+    report("AI: I'll try Rob now.\nUser: No answer.\nAI: I'll try Tony now.").passed,
+    true,
+  );
+  assert.equal(report("User: I'll transfer you. I'll transfer you.\nAI: Goodbye.").passed, true);
+});

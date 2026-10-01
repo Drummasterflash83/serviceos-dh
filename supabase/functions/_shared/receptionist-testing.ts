@@ -128,6 +128,21 @@ export function itemReport(raw: unknown) {
     (e) => e.id && e.name === "Route-Call-to-Drummond-Team-20260929",
   );
   const repeatedTransfer = new Set(transfers.map((e) => e.id)).size > 1;
+  // Conservative transcript flag, not an audio diagnosis: a second handover
+  // promise in the SAME assistant turn needs review even if the AI judge passes.
+  const repeatedAnnouncement =
+    typeof call.transcript === "string" &&
+    call.transcript
+      .split(/\n(?=(?:User|AI|assistant):)/)
+      .filter((turn: string) => /^(?:AI|assistant):/i.test(turn))
+      .some(
+        (turn: string) =>
+          (
+            turn.match(
+              /\bI(?:['’]ll| will)\s+(?:put you through|transfer you|connect you|try\b)/gi,
+            ) ?? []
+          ).length > 1,
+      );
   const fundingBlocked =
     typeof i.failureReason === "string" &&
     /wallet balance|insufficient (?:credit|fund)|credit.balance.exhausted/i.test(i.failureReason) &&
@@ -143,17 +158,22 @@ export function itemReport(raw: unknown) {
       result.passed === true &&
       list(result.evaluations).length > 0 &&
       !repeatedTransfer &&
+      !repeatedAnnouncement &&
       !fundingBlocked,
     outcome: fundingBlocked
       ? "blocked_funding"
       : repeatedTransfer
         ? "repeated_transfer"
-        : result.passed === true
-          ? "passed"
-          : "needs_review",
+        : repeatedAnnouncement
+          ? "repeated_announcement"
+          : result.passed === true && list(result.evaluations).length > 0
+            ? "passed"
+            : "needs_review",
     evidenceIssue: repeatedTransfer
       ? "More than one ordinary transfer was invoked. Provider scoring does not override this safety check."
-      : null,
+      : repeatedAnnouncement
+        ? "The transcript repeats a handover announcement within one response. Review the recording; this flags wording evidence, not the cause of any audio stutter."
+        : null,
     transcript: typeof call.transcript === "string" ? call.transcript.slice(0, 40000) : null,
     recordingUrl: safeRecording(call.recordingUrl ?? object(call.artifact).recordingUrl),
     evaluations: list(result.evaluations),
