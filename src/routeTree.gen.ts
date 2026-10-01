@@ -9,52 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ReceptionistRouteImport } from './routes/receptionist'
-import { Route as OpenfolkRouteImport } from './routes/openfolk'
-import { Route as MarketingRouteImport } from './routes/marketing'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HealthShadowRouteImport } from './routes/health-shadow'
-import { Route as ClientRouteImport } from './routes/client'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
-import { Route as OpenfolkNotificationsRouteImport } from './routes/openfolk.notifications'
-import { Route as OpenfolkApisRouteImport } from './routes/openfolk.apis'
-import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
-import { Route as DemoOwnershipRouteImport } from './routes/demo.ownership'
-import { Route as DemoOpenfolkRouteImport } from './routes/demo.openfolk'
-import { Route as DemoLearningCentreRouteImport } from './routes/demo.learning-centre'
-import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as ClientRouteImport } from './routes/client'
+import { Route as HealthShadowRouteImport } from './routes/health-shadow'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MarketingRouteImport } from './routes/marketing'
+import { Route as OpenfolkRouteImport } from './routes/openfolk'
+import { Route as ReceptionistRouteImport } from './routes/receptionist'
 import { Route as DemoCommandCentreRouteImport } from './routes/demo.command-centre'
+import { Route as DemoCustomerHealthRouteImport } from './routes/demo.customer-health'
+import { Route as DemoLearningCentreRouteImport } from './routes/demo.learning-centre'
+import { Route as DemoOpenfolkRouteImport } from './routes/demo.openfolk'
+import { Route as DemoOwnershipRouteImport } from './routes/demo.ownership'
+import { Route as OpenfolkIndexRouteImport } from './routes/openfolk.index'
+import { Route as OpenfolkTenantIdRouteImport } from './routes/openfolk.$tenantId'
+import { Route as OpenfolkApisRouteImport } from './routes/openfolk.apis'
+import { Route as OpenfolkNotificationsRouteImport } from './routes/openfolk.notifications'
 
-const ReceptionistRoute = ReceptionistRouteImport.update({
-  id: '/receptionist',
-  path: '/receptionist',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpenfolkRoute = OpenfolkRouteImport.update({
-  id: '/openfolk',
-  path: '/openfolk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketingRoute = MarketingRouteImport.update({
-  id: '/marketing',
-  path: '/marketing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HealthShadowRoute = HealthShadowRouteImport.update({
-  id: '/health-shadow',
-  path: '/health-shadow',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClientRoute = ClientRouteImport.update({
-  id: '/client',
-  path: '/client',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -62,44 +37,39 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ClientRoute = ClientRouteImport.update({
+  id: '/client',
+  path: '/client',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OpenfolkIndexRoute = OpenfolkIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => OpenfolkRoute,
-} as any)
-const OpenfolkNotificationsRoute = OpenfolkNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => OpenfolkRoute,
-} as any)
-const OpenfolkApisRoute = OpenfolkApisRouteImport.update({
-  id: '/apis',
-  path: '/apis',
-  getParentRoute: () => OpenfolkRoute,
-} as any)
-const OpenfolkTenantIdRoute = OpenfolkTenantIdRouteImport.update({
-  id: '/$tenantId',
-  path: '/$tenantId',
-  getParentRoute: () => OpenfolkRoute,
-} as any)
-const DemoOwnershipRoute = DemoOwnershipRouteImport.update({
-  id: '/demo/ownership',
-  path: '/demo/ownership',
+const HealthShadowRoute = HealthShadowRouteImport.update({
+  id: '/health-shadow',
+  path: '/health-shadow',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoOpenfolkRoute = DemoOpenfolkRouteImport.update({
-  id: '/demo/openfolk',
-  path: '/demo/openfolk',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoLearningCentreRoute = DemoLearningCentreRouteImport.update({
-  id: '/demo/learning-centre',
-  path: '/demo/learning-centre',
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenfolkRoute = OpenfolkRouteImport.update({
+  id: '/openfolk',
+  path: '/openfolk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceptionistRoute = ReceptionistRouteImport.update({
+  id: '/receptionist',
+  path: '/receptionist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoCommandCentreRoute = DemoCommandCentreRouteImport.update({
+  id: '/demo/command-centre',
+  path: '/demo/command-centre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoCustomerHealthRoute = DemoCustomerHealthRouteImport.update({
@@ -107,10 +77,40 @@ const DemoCustomerHealthRoute = DemoCustomerHealthRouteImport.update({
   path: '/demo/customer-health',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoCommandCentreRoute = DemoCommandCentreRouteImport.update({
-  id: '/demo/command-centre',
-  path: '/demo/command-centre',
+const DemoLearningCentreRoute = DemoLearningCentreRouteImport.update({
+  id: '/demo/learning-centre',
+  path: '/demo/learning-centre',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoOpenfolkRoute = DemoOpenfolkRouteImport.update({
+  id: '/demo/openfolk',
+  path: '/demo/openfolk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoOwnershipRoute = DemoOwnershipRouteImport.update({
+  id: '/demo/ownership',
+  path: '/demo/ownership',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenfolkIndexRoute = OpenfolkIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OpenfolkRoute,
+} as any)
+const OpenfolkTenantIdRoute = OpenfolkTenantIdRouteImport.update({
+  id: '/$tenantId',
+  path: '/$tenantId',
+  getParentRoute: () => OpenfolkRoute,
+} as any)
+const OpenfolkApisRoute = OpenfolkApisRouteImport.update({
+  id: '/apis',
+  path: '/apis',
+  getParentRoute: () => OpenfolkRoute,
+} as any)
+const OpenfolkNotificationsRoute = OpenfolkNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => OpenfolkRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -247,46 +247,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/receptionist': {
-      id: '/receptionist'
-      path: '/receptionist'
-      fullPath: '/receptionist'
-      preLoaderRoute: typeof ReceptionistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/openfolk': {
-      id: '/openfolk'
-      path: '/openfolk'
-      fullPath: '/openfolk'
-      preLoaderRoute: typeof OpenfolkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/marketing': {
-      id: '/marketing'
-      path: '/marketing'
-      fullPath: '/marketing'
-      preLoaderRoute: typeof MarketingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/health-shadow': {
-      id: '/health-shadow'
-      path: '/health-shadow'
-      fullPath: '/health-shadow'
-      preLoaderRoute: typeof HealthShadowRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/client': {
-      id: '/client'
-      path: '/client'
-      fullPath: '/client'
-      preLoaderRoute: typeof ClientRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -296,60 +261,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/client': {
+      id: '/client'
+      path: '/client'
+      fullPath: '/client'
+      preLoaderRoute: typeof ClientRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/openfolk/': {
-      id: '/openfolk/'
-      path: '/'
-      fullPath: '/openfolk/'
-      preLoaderRoute: typeof OpenfolkIndexRouteImport
-      parentRoute: typeof OpenfolkRoute
-    }
-    '/openfolk/notifications': {
-      id: '/openfolk/notifications'
-      path: '/notifications'
-      fullPath: '/openfolk/notifications'
-      preLoaderRoute: typeof OpenfolkNotificationsRouteImport
-      parentRoute: typeof OpenfolkRoute
-    }
-    '/openfolk/apis': {
-      id: '/openfolk/apis'
-      path: '/apis'
-      fullPath: '/openfolk/apis'
-      preLoaderRoute: typeof OpenfolkApisRouteImport
-      parentRoute: typeof OpenfolkRoute
-    }
-    '/openfolk/$tenantId': {
-      id: '/openfolk/$tenantId'
-      path: '/$tenantId'
-      fullPath: '/openfolk/$tenantId'
-      preLoaderRoute: typeof OpenfolkTenantIdRouteImport
-      parentRoute: typeof OpenfolkRoute
-    }
-    '/demo/ownership': {
-      id: '/demo/ownership'
-      path: '/demo/ownership'
-      fullPath: '/demo/ownership'
-      preLoaderRoute: typeof DemoOwnershipRouteImport
+    '/health-shadow': {
+      id: '/health-shadow'
+      path: '/health-shadow'
+      fullPath: '/health-shadow'
+      preLoaderRoute: typeof HealthShadowRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/openfolk': {
-      id: '/demo/openfolk'
-      path: '/demo/openfolk'
-      fullPath: '/demo/openfolk'
-      preLoaderRoute: typeof DemoOpenfolkRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/learning-centre': {
-      id: '/demo/learning-centre'
-      path: '/demo/learning-centre'
-      fullPath: '/demo/learning-centre'
-      preLoaderRoute: typeof DemoLearningCentreRouteImport
+    '/marketing': {
+      id: '/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof MarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/openfolk': {
+      id: '/openfolk'
+      path: '/openfolk'
+      fullPath: '/openfolk'
+      preLoaderRoute: typeof OpenfolkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receptionist': {
+      id: '/receptionist'
+      path: '/receptionist'
+      fullPath: '/receptionist'
+      preLoaderRoute: typeof ReceptionistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/command-centre': {
+      id: '/demo/command-centre'
+      path: '/demo/command-centre'
+      fullPath: '/demo/command-centre'
+      preLoaderRoute: typeof DemoCommandCentreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/customer-health': {
@@ -359,12 +317,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoCustomerHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/command-centre': {
-      id: '/demo/command-centre'
-      path: '/demo/command-centre'
-      fullPath: '/demo/command-centre'
-      preLoaderRoute: typeof DemoCommandCentreRouteImport
+    '/demo/learning-centre': {
+      id: '/demo/learning-centre'
+      path: '/demo/learning-centre'
+      fullPath: '/demo/learning-centre'
+      preLoaderRoute: typeof DemoLearningCentreRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/openfolk': {
+      id: '/demo/openfolk'
+      path: '/demo/openfolk'
+      fullPath: '/demo/openfolk'
+      preLoaderRoute: typeof DemoOpenfolkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/ownership': {
+      id: '/demo/ownership'
+      path: '/demo/ownership'
+      fullPath: '/demo/ownership'
+      preLoaderRoute: typeof DemoOwnershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/openfolk/': {
+      id: '/openfolk/'
+      path: '/'
+      fullPath: '/openfolk/'
+      preLoaderRoute: typeof OpenfolkIndexRouteImport
+      parentRoute: typeof OpenfolkRoute
+    }
+    '/openfolk/$tenantId': {
+      id: '/openfolk/$tenantId'
+      path: '/$tenantId'
+      fullPath: '/openfolk/$tenantId'
+      preLoaderRoute: typeof OpenfolkTenantIdRouteImport
+      parentRoute: typeof OpenfolkRoute
+    }
+    '/openfolk/apis': {
+      id: '/openfolk/apis'
+      path: '/apis'
+      fullPath: '/openfolk/apis'
+      preLoaderRoute: typeof OpenfolkApisRouteImport
+      parentRoute: typeof OpenfolkRoute
+    }
+    '/openfolk/notifications': {
+      id: '/openfolk/notifications'
+      path: '/notifications'
+      fullPath: '/openfolk/notifications'
+      preLoaderRoute: typeof OpenfolkNotificationsRouteImport
+      parentRoute: typeof OpenfolkRoute
     }
   }
 }
