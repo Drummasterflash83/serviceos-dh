@@ -93,6 +93,10 @@ export function safeRecording(value: unknown) {
       !u.password &&
       (u.hostname.endsWith(".vapi.ai") ||
         u.hostname.endsWith(".vapi.co") ||
+        // Exact Vapi-owned recording origin verified from the signed audio
+        // displayed for this account's completed simulation. Not all R2 hosts.
+        u.hostname ===
+          "hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com" ||
         u.hostname.endsWith(".amazonaws.com"))
       ? u.href
       : null;

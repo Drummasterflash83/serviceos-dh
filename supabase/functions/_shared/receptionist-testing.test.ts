@@ -58,8 +58,15 @@ test("recording URLs reject arbitrary and non-HTTPS locations", () => {
     "https://vapi.ai.attacker.com/a",
     "javascript:alert(1)",
     "https://u:p@storage.vapi.ai/a",
+    "https://attacker.r2.cloudflarestorage.com/a",
   ])
     assert.equal(safeRecording(u), null);
+  assert.equal(
+    safeRecording(
+      "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+    ),
+    "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+  );
 });
 test("tool evidence keeps distinct invocations, not transcript repetitions or unrelated arguments", () => {
   const item = itemReport({

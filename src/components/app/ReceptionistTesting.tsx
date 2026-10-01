@@ -244,6 +244,15 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                       Open provider evidence ↗
                     </a>
                   )}
+                  {r.provider_id && !["running", "preparing"].includes(r.state) && (
+                    <button
+                      className="op-button-secondary"
+                      disabled={busy}
+                      onClick={() => void act("refresh", { runId: r.id })}
+                    >
+                      Refresh evidence & recordings
+                    </button>
+                  )}
                   {r.state === "running" && (
                     <button
                       className="op-button-secondary"
