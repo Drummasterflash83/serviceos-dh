@@ -2,6 +2,12 @@
 
 Status: UI and private storage/access foundation implemented. **Not a live Birchills voicemail connector.**
 
+1 October launch release: the schema and protected playback function are deployed;
+the menu and honest awaiting-connection view are included in the combined testing
+release. No historical messages have been imported and no manager grants were added.
+Provider inventory confirmed new mailbox 603, extension 109 and ring group 306;
+inventory access does not establish a voicemail-message/audio feed.
+
 The DH receptionist menu adds Voicemails immediately after About your receptionist. OpenFolk has the same view. Mailbox owners and individually authorised managers only; an OpenFolk operator role alone does not unlock recordings. The migration grants nobody access.
 
 ## Verified provider capability and remaining gap
@@ -29,7 +35,7 @@ The existing adapter ingests ordinary phone calls and call recordings, not voice
 2. Build and test the provider importer against that observed contract, with explicit account binding, pagination, deduplication, retry and deleted-message handling. Set `current` only after a successful complete sync; keep last successful timestamp on failure.
 3. Apply migration, deploy `receptionist-voicemail-recording`, confirm bucket remains private and test ACLs on staging.
 4. Map verified owners and approved managers; agree retention with the customer before copying historical recordings. No bulk historical import by default.
-5. Leave a controlled voicemail. Prove message/count/audio, email evidence and access denial as an unrelated user and another tenant. Verify mobile and desktop, then release via normal Git deployment.
+5. Leave a controlled voicemail. Prove message/count/audio, email evidence and access denial as an unrelated user and another tenant. Verify mobile and desktop before marking the connector live. The private UI may be released earlier only with an explicit awaiting-connection state.
 
 ## Local checks
 

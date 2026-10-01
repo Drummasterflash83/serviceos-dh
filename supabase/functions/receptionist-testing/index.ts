@@ -6,10 +6,13 @@ import {
   configurationChecks,
   assertSafeScenario,
   itemReport,
+  safeRecording,
   runState,
 } from "../_shared/receptionist-testing.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
 import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
+import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts";
+import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
 import {
   verifySlackBot,
   verifySlackChannel,
@@ -79,6 +82,48 @@ Deno.serve(async (req) => {
         );
       actor = auth.data.user.id;
     }
+    // Read-only launch inspection. Fixed, verified DH account; never accept an
+    // arbitrary provider URL or return SIP credentials / voicemail PINs.
+    if (body.action === "provider_inventory" && service) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001")
+        return reply({ error: "Provider binding not verified" }, 403);
+      const credentials = getSimwoodCredentials();
+      if (!credentials) return reply({ error: "Provider credentials unavailable" }, 503);
+      const base = "https://pbx.sipcentric.com/api/v1/customers/3950";
+      const read = async (url: string) => {
+        if (!url.startsWith(base + "/")) throw Error("Provider path outside verified account");
+        const r = await fetch(url, {
+          redirect: "error",
+          signal: AbortSignal.timeout(15000),
+          headers: { Authorization: basicAuthHeader(credentials), Accept: "application/json" },
+        });
+        return { status: r.status, data: r.ok ? await r.json() : null };
+      };
+      const result = await read(base + "/endpoints?pageSize=100");
+      const endpoints = list(result.data?.items).map((e) => ({
+        uri: e.uri,
+        type: e.type,
+        extension: e.shortNumber,
+        name: e.name,
+        voicemailEnabled: e.voicemailEnabled,
+        links: e.links,
+      }));
+      const details = [];
+      for (const id of [9304, 180997]) {
+        const endpoint = await read(base + "/endpoints/" + id);
+        const link = object(endpoint.data?.links).voicemail;
+        const vm = typeof link === "string" ? await read(link.replace(/^http:/, "https:")) : null;
+        details.push({
+          id,
+          endpointStatus: endpoint.status,
+          links: endpoint.data?.links,
+          voicemailStatus: vm?.status,
+          voicemailFields: Object.keys(object(vm?.data)),
+          voicemailLinks: object(vm?.data).links,
+        });
+      }
+      return reply({ status: result.status, endpoints, details });
+    }
     const settings = await db
       .from("receptionist_test_settings")
       .select("*")
@@ -128,6 +173,12 @@ Deno.serve(async (req) => {
     const hash = await evidenceHash({ assistant, tools });
     const main = body.tenantId === "00000000-0000-0000-0000-000000000001" ? "+441794341600" : null;
     const checks = configurationChecks(assistant, tools, main);
+    if (body.action === "prepare_suite" && service) {
+      if (body.expectedHash !== hash) return reply({ error: "Emma changed. Reload first." }, 409);
+      if (assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df")
+        return reply({ error: "Testing candidate required" }, 409);
+      return reply(await prepareLaunchSuite(db, api, settings.data, tools, actor, assistant));
+    }
     if (body.action === "prepare_candidate" && service) {
       if (body.expectedHash !== hash)
         return reply({ error: "Emma changed. Reload the checks before running." }, 409);
@@ -200,7 +251,7 @@ Deno.serve(async (req) => {
         const sim = await api("eval/simulation/" + id);
         if (!UUID.test(sim.scenarioId)) throw Error("Scenario unavailable");
         const scenario = await api("eval/simulation/scenario/" + sim.scenarioId);
-        assertSafeScenario(scenario, tools);
+        assertSafeScenario(scenario, tools, assistant);
       }
       const reserved = await db.rpc("receptionist_test_reserve", {
         p_tenant: body.tenantId,
@@ -259,7 +310,25 @@ Deno.serve(async (req) => {
     const rawItems = Array.isArray(result)
       ? result
       : list(result.results ?? result.data ?? result.items);
-    const items = rawItems.map(itemReport),
+    // Simulation metadata does not always include audio. Fetch only calls linked
+    // by this saved provider run, and verify their assistant before attaching it.
+    const items = await Promise.all(
+        rawItems.map(async (raw: unknown) => {
+          const item = itemReport(raw);
+          if (run.status === "ended" && !item.recordingUrl && UUID.test(item.callId ?? "")) {
+            try {
+              const call = await api("call/" + item.callId);
+              if (call.assistantId === row.data.assistant_id)
+                item.recordingUrl = safeRecording(
+                  call.recordingUrl ?? object(call.artifact).recordingUrl,
+                );
+            } catch {
+              /* Missing audio never becomes a pass or blocks other evidence. */
+            }
+          }
+          return item;
+        }),
+      ),
       state = runState(run, items);
     const report = {
       items,

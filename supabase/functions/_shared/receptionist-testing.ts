@@ -1,3 +1,4 @@
+import { approvedClockOverride } from "./receptionist-test-clock.ts";
 export const object = (x: unknown): Record<string, any> =>
   x && typeof x === "object" && !Array.isArray(x) ? (x as Record<string, any>) : {};
 export const list = (x: unknown): any[] => (Array.isArray(x) ? x : []);
@@ -62,7 +63,7 @@ export function configurationChecks(
     },
   ];
 }
-export function assertSafeScenario(scenario: unknown, tools: unknown[]) {
+export function assertSafeScenario(scenario: unknown, tools: unknown[], assistant?: unknown) {
   const s = object(scenario);
   if (!list(s.evaluations).length) throw Error("A scenario has no success criteria.");
   if (list(s.hooks).length) throw Error("Scenario webhooks require a separate review.");
@@ -70,7 +71,8 @@ export function assertSafeScenario(scenario: unknown, tools: unknown[]) {
   if (
     Object.keys(overrides).some(
       (k) => !["variableValues", "firstMessage", "maxDurationSeconds"].includes(k),
-    )
+    ) &&
+    !approvedClockOverride(overrides, assistant)
   )
     throw Error("Unsupported test overrides.");
   const mocks = list(s.toolMocks).map(object);
@@ -111,7 +113,7 @@ export function itemReport(raw: unknown) {
     failure: typeof i.failureReason === "string" ? i.failureReason.slice(0, 2000) : null,
     passed: result.passed === true && list(result.evaluations).length > 0,
     transcript: typeof call.transcript === "string" ? call.transcript.slice(0, 40000) : null,
-    recordingUrl: safeRecording(call.recordingUrl),
+    recordingUrl: safeRecording(call.recordingUrl ?? object(call.artifact).recordingUrl),
     evaluations: list(result.evaluations),
     latency: result.latencyMetrics ?? null,
   };
