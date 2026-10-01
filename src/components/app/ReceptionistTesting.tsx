@@ -10,6 +10,9 @@ type Item = {
   status: string;
   passed: boolean;
   failure?: string;
+  outcome?: string;
+  evidenceIssue?: string;
+  toolEvents?: { id: string | null; name: string | null; destination: string | null }[];
   transcript?: string;
   recordingUrl?: string;
   evaluations: unknown[];
@@ -200,13 +203,17 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   <span
                     className={`of-test-state of-test-${r.assistant_hash !== data.assistant.hash ? "not_tested" : r.state}`}
                   >
-                    {r.assistant_hash !== data.assistant.hash ? "Previous configuration" : label(r.state)}
+                    {r.assistant_hash !== data.assistant.hash
+                      ? "Previous configuration"
+                      : label(r.state)}
                   </span>
                   <strong>{date(r.created_at)}</strong>
                   <span>
                     {r.report.items?.filter((i) => i.passed).length ?? 0}/
                     {r.report.items?.length ?? 0} passed
                     {r.assistant_hash !== data.assistant.hash ? " at the time" : ""}
+                    {!!r.report.items?.filter((i) => i.outcome === "blocked_funding").length &&
+                      ` · ${r.report.items.filter((i) => i.outcome === "blocked_funding").length} not started (credit)`}
                   </span>
                 </summary>
                 <div className="of-test-run-body">
@@ -249,9 +256,39 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   {r.report.items?.map((i) => (
                     <article className="of-test-item" key={i.id}>
                       <h4>
-                        {i.name} · {i.passed ? "Passed" : label(i.status)}
+                        {i.name} ·{" "}
+                        {i.passed
+                          ? "Passed"
+                          : i.outcome === "blocked_funding"
+                            ? "Not started — credit unavailable"
+                            : i.status === "passed"
+                              ? "Needs attention"
+                              : label(i.status)}
                       </h4>
+                      {i.outcome === "blocked_funding" && (
+                        <p>
+                          This was a funding block, not a conversation-quality result. Fund the
+                          account, then run a new test.
+                        </p>
+                      )}
                       {i.failure && <p className="op-error">{i.failure}</p>}
+                      {i.evidenceIssue && <p className="op-error">{i.evidenceIssue}</p>}
+                      {!!i.toolEvents?.length && (
+                        <details>
+                          <summary>Actions attempted ({i.toolEvents.length})</summary>
+                          <ul>
+                            {i.toolEvents.map((e, n) => (
+                              <li key={`${e.id}-${n}`}>
+                                {e.name ?? "Unnamed action"}
+                                {e.destination ? ` → ${e.destination}` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="of-test-note">
+                            Intercepted test actions — not proof of a real handover.
+                          </p>
+                        </details>
+                      )}
                       {i.recordingUrl && (
                         <audio
                           controls
