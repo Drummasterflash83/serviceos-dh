@@ -308,5 +308,16 @@ verify_jwt = false
 [functions.receptionist-rehearsal]
 verify_jwt = false
 
+[functions.receptionist-testing]
+verify_jwt = false
+
+# Uses the existing platform scheduler secret, never a browser session.
+[functions.receptionist-test-collector]
+verify_jwt = false
+
 [functions.receptionist-release]
+verify_jwt = false
+
+# Handler verifies user identity and mailbox RLS before private playback.
+[functions.receptionist-voicemail-recording]
 verify_jwt = false

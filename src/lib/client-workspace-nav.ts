@@ -28,7 +28,9 @@ export const receptionistViews = [
   "callers",
   "phones",
   "details",
+  "voicemails",
   "calls",
+  "testing",
 ] as const;
 export type ReceptionistView = (typeof receptionistViews)[number];
 export function receptionistView(value: unknown): ReceptionistView {
@@ -42,7 +44,9 @@ export function clientSearch(search: Record<string, unknown>): {
   return {
     tenant: typeof search.tenant === "string" && search.tenant ? search.tenant : undefined,
     section: resolveClientSection(search.section),
-    ...(search.section === "receptionist" ? { view: receptionistView(search.view) } : {}),
+    ...(search.section === "receptionist"
+      ? { view: receptionistView(search.view === "testing" ? "today" : search.view) }
+      : {}),
   };
 }
 export function selectedWorkspace<T extends { tenant_id: string }>(

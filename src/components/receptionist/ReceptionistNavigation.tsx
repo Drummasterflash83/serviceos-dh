@@ -1,4 +1,12 @@
-import { LayoutDashboard, Mic, Sparkles, Users, Phone, SlidersHorizontal } from "lucide-react";
+import {
+  LayoutDashboard,
+  Mic,
+  Sparkles,
+  Users,
+  Phone,
+  SlidersHorizontal,
+  Voicemail,
+} from "lucide-react";
 
 export const receptionistNavigation = [
   { id: "today", label: "Overview", Icon: LayoutDashboard },
@@ -7,4 +15,5 @@ export const receptionistNavigation = [
   { id: "callers", label: "People who called", Icon: Users },
   { id: "phones", label: "Phone system", Icon: Phone },
   { id: "details", label: "About your receptionist", Icon: SlidersHorizontal },
+  { id: "voicemails", label: "Voicemails", Icon: Voicemail },
 ] as const;
