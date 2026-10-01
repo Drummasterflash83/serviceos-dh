@@ -6,6 +6,7 @@ import {
   itemReport,
   runState,
   safeRecording,
+  recordingCallMatches,
 } from "./receptionist-testing.ts";
 const tool = {
   type: "transferCall",
@@ -58,8 +59,15 @@ test("recording URLs reject arbitrary and non-HTTPS locations", () => {
     "https://vapi.ai.attacker.com/a",
     "javascript:alert(1)",
     "https://u:p@storage.vapi.ai/a",
+    "https://attacker.r2.cloudflarestorage.com/a",
   ])
     assert.equal(safeRecording(u), null);
+  assert.equal(
+    safeRecording(
+      "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+    ),
+    "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+  );
 });
 test("tool evidence keeps distinct invocations, not transcript repetitions or unrelated arguments", () => {
   const item = itemReport({
@@ -119,4 +127,33 @@ test("repeated ordinary transfers override an AI judge pass; funding is not a wo
     itemReport({ callId: "a", failureReason: "wallet balance" }).outcome,
     "blocked_funding",
   );
+});
+test("repeated handover wording cannot be hidden by a provider pass", () => {
+  const report = (transcript: string) =>
+    itemReport({
+      status: "passed",
+      results: { passed: true, evaluations: [{}] },
+      metadata: { call: { transcript } },
+    });
+  const duplicate = report(
+    "AI: I'll put you through to the sales mailbox. I'll put you through to the sales voicemail now.",
+  );
+  assert.equal(duplicate.passed, false);
+  assert.equal(duplicate.outcome, "repeated_announcement");
+  assert.equal(
+    report("AI: I'll try Rob now.\nUser: No answer.\nAI: I'll try Tony now.").passed,
+    true,
+  );
+  assert.equal(report("User: I'll transfer you. I'll transfer you.\nAI: Goodbye.").passed, true);
+});
+test("recording retrieval binds transient simulation calls to the verified run and organisation", () => {
+  const id = "00000000-0000-0000-0000-000000000001",
+    org = "00000000-0000-0000-0000-000000000002";
+  const run = { orgId: org, target: { assistantId: "candidate" } },
+    call = { id, orgId: org, assistantId: "transient-tester" };
+  assert.equal(recordingCallMatches(run, call, id, "candidate", true), true);
+  assert.equal(recordingCallMatches(run, call, id, "candidate", false), false);
+  assert.equal(recordingCallMatches(run, { ...call, id: org }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, { ...call, orgId: id }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, call, id, "other", true), false);
 });
