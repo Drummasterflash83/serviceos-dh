@@ -11,6 +11,7 @@ import {
 } from "../_shared/receptionist-testing.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
 import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
+import { launchWordingModel } from "../_shared/receptionist-launch-wording.ts";
 import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
 import { timingSafeEqualStr } from "../_shared/marketing_tracking.ts";
@@ -195,6 +196,29 @@ Deno.serve(async (req) => {
     const hash = await evidenceHash({ assistant, tools });
     const main = body.tenantId === "00000000-0000-0000-0000-000000000001" ? "+441794341600" : null;
     const checks = configurationChecks(assistant, tools, main);
+    if (body.action === "repair_candidate_wording" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || body.expectedHash !== hash)
+        return reply({ error: "Candidate changed; inspect before updating" }, 409);
+      const model = launchWordingModel(assistant, tools);
+      const audit = await db.from("phone_operations_audit").insert({
+        tenant_id: body.tenantId, actor_user_id: actor, actor_label: "OpenFolk launch maintenance",
+        action: "candidate_wording_repair_requested", resource_type: "vapi_test_candidate", resource_ref: assistant.id,
+        before_state: { model: assistant.model }, after_state: { model },
+        reason: "Single announcement source; factual staff availability and Mary overflow. Live assistant and shared tools unchanged.",
+      }).select("id").single();
+      if (audit.error) throw Error("Cannot save repair audit; no provider change sent");
+      await api("assistant/" + assistant.id, "PATCH", { model });
+      const verified = await api("assistant/" + assistant.id);
+      const matches = JSON.stringify(verified.model.messages) === JSON.stringify(model.messages)
+        && JSON.stringify(verified.model.toolIds) === JSON.stringify(model.toolIds)
+        && verified.model.tools?.length === 1
+        && verified.model.tools[0].destinations?.every((d: any) => d.message === "");
+      const saved = await db.from("phone_operations_audit").update({
+        action: matches ? "candidate_wording_repair_verified" : "candidate_wording_repair_needs_review",
+      }).eq("id", audit.data.id);
+      if (saved.error || !matches) throw Error("Candidate read-back requires review; no retry sent");
+      return reply({ state: "verified", assistantId: assistant.id, liveAssistantChanged: false, sharedToolsChanged: false });
+    }
     if (body.action === "prepare_suite" && service) {
       if (body.expectedHash !== hash) return reply({ error: "Emma changed. Reload first." }, 409);
       if (assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df")

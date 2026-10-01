@@ -92,7 +92,7 @@ export async function prepareLaunchSuite(
   actor: string,
   assistant: any,
 ) {
-  const key = "fixed-clock-routing-v4-conversation-quality";
+  const key = "fixed-clock-routing-v5-single-announcement";
   const existing = await db
     .from("receptionist_test_suite_setups")
     .select("*")
