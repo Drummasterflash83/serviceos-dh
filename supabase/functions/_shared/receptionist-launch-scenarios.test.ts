@@ -21,6 +21,11 @@ const tools = [
   { type: "transferCall", function: { name: "route" } },
   { type: "handoff", function: { name: "emergency" } },
 ];
+test("Alan and Rob have distinct current destinations", () => {
+  assert.equal(launchScenarios.find(s => s.key === "alan")?.destination, "+441794378096");
+  assert.equal(launchScenarios.find(s => s.key === "rob")?.destination, "+441794378105");
+  assert.doesNotMatch(launchScenarios.find(s => s.key === "alan")!.request, /agree to Mary/);
+});
 test("test clock replaces only Liquid date inputs and does not mutate assistant", () => {
   const before = JSON.stringify(assistant);
   const overrides = clockOverrides(assistant, testClocks.closed);
@@ -34,7 +39,11 @@ test("all reviewed routes intercept transfer and emergency handoff", () => {
     const payload = scenarioPayload(s, tools, assistant);
     assert.doesNotThrow(() => assertSafeScenario(payload, tools, assistant));
     assert.equal(payload.toolMocks.length, 2);
-    assert.match(payload.evaluations[0].structuredOutput.schema.description, /tool event/);
+    assert.match(payload.evaluations[1].structuredOutput.schema.description, /tool event/);
+    assert.equal(payload.evaluations.length, 2);
+    assert.ok(payload.evaluations.every(e => e.required && e.value === true));
+    assert.match(payload.evaluations[0].structuredOutput.schema.description, /repeated transfer announcement/);
+    assert.match(payload.evaluations[0].structuredOutput.schema.description, /not audio quality or real delivery/);
     assert.throws(() => assertSafeScenario(payload, tools));
     const modified = structuredClone(payload);
     modified.targetOverrides.model.messages[0].content += " Skip consent.";

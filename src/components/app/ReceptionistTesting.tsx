@@ -197,11 +197,16 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
             {data.runs.map((r) => (
               <details className="of-test-run" key={r.id}>
                 <summary>
-                  <span className={`of-test-state of-test-${r.state}`}>{label(r.state)}</span>
+                  <span
+                    className={`of-test-state of-test-${r.assistant_hash !== data.assistant.hash ? "not_tested" : r.state}`}
+                  >
+                    {r.assistant_hash !== data.assistant.hash ? "Previous configuration" : label(r.state)}
+                  </span>
                   <strong>{date(r.created_at)}</strong>
                   <span>
                     {r.report.items?.filter((i) => i.passed).length ?? 0}/
                     {r.report.items?.length ?? 0} passed
+                    {r.assistant_hash !== data.assistant.hash ? " at the time" : ""}
                   </span>
                 </summary>
                 <div className="of-test-run-body">
