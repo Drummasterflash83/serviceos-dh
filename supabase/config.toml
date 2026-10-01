@@ -313,3 +313,7 @@ verify_jwt = false
 
 [functions.receptionist-release]
 verify_jwt = false
+
+# Handler verifies user identity and mailbox RLS before private playback.
+[functions.receptionist-voicemail-recording]
+verify_jwt = false

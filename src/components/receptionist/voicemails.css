@@ -1,0 +1,236 @@
+.vm-inbox {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.vm-inbox .rw-panel {
+  padding: 24px;
+}
+.vm-inbox h2,
+.vm-inbox h3 {
+  line-height: 1.3;
+}
+.vm-inbox p {
+  line-height: 1.6;
+}
+.vm-intro,
+.vm-mailbox-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.vm-intro h2 {
+  margin: 0 0 10px;
+}
+.vm-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #66557e;
+  font-size: 13px;
+}
+.vm-mailboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.vm-mailbox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 20px;
+  border: 1px solid #ddd5e8;
+  border-radius: 16px;
+  background: white;
+  color: #29253e;
+  cursor: pointer;
+}
+.vm-mailbox > svg {
+  color: #cc8625;
+  flex-shrink: 0;
+}
+.vm-mailbox span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.vm-mailbox strong {
+  overflow-wrap: anywhere;
+}
+.vm-mailbox span span,
+.vm-count {
+  font-size: 13px;
+  color: #70657e;
+}
+.vm-mailbox .vm-count {
+  margin-left: auto;
+  text-align: center;
+  flex-shrink: 0;
+}
+.vm-count strong {
+  font-size: 23px;
+  color: #29253e;
+}
+.vm-mailbox.is-selected {
+  border-color: #665081;
+  background: #f5f0fa;
+  box-shadow: 0 0 0 1px #665081;
+}
+.vm-inbox button:focus-visible,
+.vm-message summary:focus-visible {
+  outline: 3px solid #cc8625;
+  outline-offset: 4px;
+}
+.vm-source {
+  padding: 16px 18px;
+  background: #f6f2fa;
+  border-radius: 12px;
+  margin: 16px 0 24px;
+  overflow-wrap: anywhere;
+}
+.vm-source p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.vm-source svg {
+  flex-shrink: 0;
+}
+.vm-source small {
+  color: #70657e;
+}
+.vm-message {
+  border: 1px solid #e5deed;
+  border-radius: 14px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.vm-message summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  list-style: none;
+  cursor: pointer;
+  padding: 18px;
+}
+.vm-message summary::-webkit-details-marker {
+  display: none;
+}
+.vm-message summary > span:first-child {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.vm-message summary strong {
+  overflow-wrap: anywhere;
+}
+.vm-message summary span span {
+  color: #756a83;
+  font-size: 13px;
+}
+.vm-message summary > svg {
+  flex-shrink: 0;
+}
+.vm-message[open] summary > svg {
+  transform: rotate(180deg);
+}
+.vm-email {
+  font-size: 12px;
+  color: #645772;
+  border-radius: 100px;
+  background: #f2edf7;
+  padding: 6px 10px;
+}
+.vm-email-sent,
+.vm-email-delivered {
+  color: #256046;
+  background: #edf6f0;
+}
+.vm-email-failed {
+  color: #8c4626;
+  background: #fff0e4;
+}
+.vm-message-content {
+  padding: 0 20px 20px;
+  border-top: 1px solid #eee8f3;
+}
+.vm-message-content > section {
+  margin-top: 20px;
+}
+.vm-message-content > section h3 {
+  margin-bottom: 10px;
+}
+.vm-message-content dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.vm-message-content dt {
+  color: #756a83;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.vm-message-content dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.vm-message-content dd span {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.vm-recording {
+  display: grid;
+  gap: 14px;
+  background: #f6f2fa;
+  padding: 20px;
+  border-radius: 12px;
+}
+.vm-recording h3 {
+  margin: 0;
+}
+.vm-recording button {
+  justify-self: start;
+}
+.vm-recording audio {
+  width: 100%;
+}
+.vm-transcript {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.vm-pages {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+@media (max-width: 640px) {
+  .vm-message summary {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .vm-message summary > span:first-child {
+    flex-basis: calc(100% - 35px);
+  }
+  .vm-message summary > svg {
+    order: -1;
+  }
+  .vm-message-content dl {
+    grid-template-columns: 1fr;
+  }
+  .vm-email {
+    margin-left: 28px;
+  }
+  .vm-inbox .rw-panel {
+    padding: 20px;
+  }
+}

@@ -66,6 +66,7 @@ import "./receptionist.css";
 const PhonePlanner = lazy(() =>
   import("./PhonePlanner").then((module) => ({ default: module.PhonePlanner })),
 );
+const VoicemailInbox = lazy(() => import("./VoicemailInbox"));
 import { CallRecording } from "./CallRecording";
 import { decodePhonePlan, describePhonePlan } from "@/lib/phone-plan";
 import { describePhoneChanges } from "@/lib/phone-changes";
@@ -779,7 +780,9 @@ export function ReceptionistWorkspace({
                           ? "Your current setup, clearly shown. OpenFolk applies and verifies your changes."
                           : view === "practice"
                             ? "Have a conversation. Tell us what you would change. See it through with OpenFolk."
-                            : "Her knowledge, her instructions and the evidence behind her setup."}
+                            : view === "voicemails"
+                              ? "Messages for your team. See who called, check email updates and listen here."
+                              : "Her knowledge, her instructions and the evidence behind her setup."}
               </p>
             </div>
           </div>
@@ -1145,6 +1148,16 @@ export function ReceptionistWorkspace({
           {view === "phones" && tenant && (
             <Suspense fallback={<p role="status">Opening phone system…</p>}>
               <PhonePlanner key={tenant} tenant={tenant} demo={demo} />
+            </Suspense>
+          )}
+          {view === "voicemails" && tenant && (
+            <Suspense fallback={<p role="status">Opening voicemails…</p>}>
+              <VoicemailInbox
+                key={`${tenant}:${user?.id}`}
+                tenant={tenant}
+                userId={user?.id}
+                demo={demo}
+              />
             </Suspense>
           )}
           {tenant && (

@@ -146,6 +146,7 @@ test("receptionist pages round-trip through the same client route", () => {
     "callers",
     "phones",
     "details",
+    "voicemails",
     "calls",
   ] as const) {
     const url = new URL(receptionistHref("tenant-a", view), "https://app.openfolk.ai");
