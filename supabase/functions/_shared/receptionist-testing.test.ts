@@ -61,3 +61,62 @@ test("recording URLs reject arbitrary and non-HTTPS locations", () => {
   ])
     assert.equal(safeRecording(u), null);
 });
+test("tool evidence keeps distinct invocations, not transcript repetitions or unrelated arguments", () => {
+  const item = itemReport({
+    metadata: {
+      call: {
+        transcript: "intercepted\nintercepted",
+        messages: [
+          {
+            role: "assistant",
+            tool_calls: [
+              {
+                id: "one",
+                function: {
+                  name: "transfer",
+                  arguments: '{"destination":"+441794378095","secret":"omit"}',
+                },
+              },
+            ],
+          },
+          { role: "tool", content: "intercepted" },
+          {
+            role: "assistant",
+            toolCalls: [{ id: "two", function: { name: "transfer", arguments: "invalid" } }],
+          },
+        ],
+      },
+    },
+  });
+  assert.deepEqual(item.toolEvents, [
+    { id: "one", name: "transfer", destination: "+441794378095" },
+    { id: "two", name: "transfer", destination: null },
+  ]);
+  assert.deepEqual(itemReport({}).toolEvents, []);
+});
+test("repeated ordinary transfers override an AI judge pass; funding is not a wording failure", () => {
+  const event = (id: string) => ({
+    id,
+    function: {
+      name: "Route-Call-to-Drummond-Team-20260929",
+      arguments: '{"destination":"+441794840043"}',
+    },
+  });
+  const report = (ids: string[]) =>
+    itemReport({
+      status: "passed",
+      results: { passed: true, evaluations: [{}] },
+      metadata: { call: { messages: [{ tool_calls: ids.map(event) }] } },
+    });
+  assert.equal(report(["one", "two"]).passed, false);
+  assert.equal(report(["one", "two"]).outcome, "repeated_transfer");
+  assert.equal(report(["one", "one"]).passed, true);
+  assert.equal(
+    itemReport({ failureReason: "Your Wallet Balance is -0.07" }).outcome,
+    "blocked_funding",
+  );
+  assert.notEqual(
+    itemReport({ callId: "a", failureReason: "wallet balance" }).outcome,
+    "blocked_funding",
+  );
+});

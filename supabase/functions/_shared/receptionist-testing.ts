@@ -105,17 +105,63 @@ export function itemReport(raw: unknown) {
     meta = object(i.metadata),
     call = object(meta.call),
     result = object(i.results);
+  const toolEvents = list(call.messages)
+    .flatMap((message) =>
+      list(object(message).tool_calls ?? object(message).toolCalls).map((event) => {
+        const e = object(event),
+          fn = object(e.function);
+        let args: Record<string, any> = {};
+        try {
+          args = object(typeof fn.arguments === "string" ? JSON.parse(fn.arguments) : fn.arguments);
+        } catch {
+          /* malformed evidence stays empty */
+        }
+        return {
+          id: typeof e.id === "string" ? e.id.slice(0, 200) : null,
+          name: typeof fn.name === "string" ? fn.name.slice(0, 200) : null,
+          destination: typeof args.destination === "string" ? args.destination.slice(0, 200) : null,
+        };
+      }),
+    )
+    .slice(0, 100);
+  const transfers = toolEvents.filter(
+    (e) => e.id && e.name === "Route-Call-to-Drummond-Team-20260929",
+  );
+  const repeatedTransfer = new Set(transfers.map((e) => e.id)).size > 1;
+  const fundingBlocked =
+    typeof i.failureReason === "string" &&
+    /wallet balance|insufficient (?:credit|fund)|credit.balance.exhausted/i.test(i.failureReason) &&
+    !i.callId &&
+    !call.transcript;
   return {
     id: i.id,
     name: object(meta.scenario).name ?? "Voice scenario",
     status: i.status,
     callId: i.callId ?? null,
     failure: typeof i.failureReason === "string" ? i.failureReason.slice(0, 2000) : null,
-    passed: result.passed === true && list(result.evaluations).length > 0,
+    passed:
+      result.passed === true &&
+      list(result.evaluations).length > 0 &&
+      !repeatedTransfer &&
+      !fundingBlocked,
+    outcome: fundingBlocked
+      ? "blocked_funding"
+      : repeatedTransfer
+        ? "repeated_transfer"
+        : result.passed === true
+          ? "passed"
+          : "needs_review",
+    evidenceIssue: repeatedTransfer
+      ? "More than one ordinary transfer was invoked. Provider scoring does not override this safety check."
+      : null,
     transcript: typeof call.transcript === "string" ? call.transcript.slice(0, 40000) : null,
     recordingUrl: safeRecording(call.recordingUrl ?? object(call.artifact).recordingUrl),
     evaluations: list(result.evaluations),
     latency: result.latencyMetrics ?? null,
+    // Structured call events distinguish actual repeated tool invocations from
+    // a provider transcript repeating the same tool-result text. Never infer
+    // transfer success from either. Keep only names, IDs and routing arguments.
+    toolEvents,
   };
 }
 export function runState(run: unknown, items: ReturnType<typeof itemReport>[]) {
