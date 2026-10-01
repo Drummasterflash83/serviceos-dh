@@ -5,6 +5,8 @@
 // (e.g. Deepgram for diarization/telephony) can be swapped in later without
 // touching the calling function. URL imports only — no npm dependencies.
 
+import { classifyTranscriptionError } from "./transcription-errors.ts";
+
 export const OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions";
 
 // Default transcription model. Override with OPENAI_TRANSCRIPTION_MODEL.
@@ -38,7 +40,7 @@ export function getAnalysisModel(): string {
 
 export type TranscribeResult =
   | { ok: true; text: string; language: string | null; model: string }
-  | { ok: false; code: string; message: string; httpStatus: number };
+  | { ok: false; code: string; message: string; httpStatus: number; providerStatus?: number };
 
 /**
  * Transcribe an audio Blob via the OpenAI audio transcription API. Classifies
@@ -73,29 +75,14 @@ export async function transcribeAudio(opts: {
     };
   }
 
-  if (resp.status === 401 || resp.status === 403) {
-    return {
-      ok: false,
-      code: "openai_auth_failed",
-      message: "OpenAI authentication failed — check OPENAI_API_KEY",
-      httpStatus: 502,
-    };
-  }
-  if (resp.status === 429) {
-    return {
-      ok: false,
-      code: "openai_rate_limited",
-      message: "OpenAI rate limit reached",
-      httpStatus: 429,
-    };
-  }
   if (!resp.ok) {
-    return {
-      ok: false,
-      code: "openai_error",
-      message: `OpenAI transcription error (${resp.status})`,
-      httpStatus: 502,
-    };
+    let body: unknown = null;
+    try {
+      body = await resp.json();
+    } catch {
+      /* opaque provider response */
+    }
+    return classifyTranscriptionError(resp.status, body);
   }
 
   let data: unknown;

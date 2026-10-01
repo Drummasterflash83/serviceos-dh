@@ -2,17 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **Branch note.** The "What this is" section below describes the `main` branch (a
-> front-end prototype with no backend). The `serviceos-backend-foundation` branch has
-> a **real Supabase Intelligence → Automation backend** (54 migrations, ~45 edge
-> functions). The definitive architecture for that platform — what ServiceOS is as an
+> **Current branch note (1 October 2026).** `main` contains real Supabase services,
+> authenticated client/operator workspaces and legacy preview screens.
+> The definitive architecture for that platform — what ServiceOS is as an
 > AI operating system, its Core Loop, engines, and the eight-screen product — is the
 > manual at **[docs/README.md](docs/README.md)**. Read it before doing backend or
-> product work on that branch.
+> product work. Current delivery order: [Service OS journey](docs/roadmap/SERVICEOS-DELIVERY-JOURNEY-2026-10-01.md).
 
 ## What this is
 
-**ServiceOS** — a bespoke, SSR React marketing + product-demo site built for Drummond Heating ("Drummonds"). It is a **presentation/prototype**, not a live system: there is no backend, database, or auth. Every view renders hard-coded demo data (jobs, calls, agents, health scores) defined inline in the components. When editing, you are shaping a pitch narrative, not wiring real data — keep the copy and numbers internally consistent with the "New Dawn engine" story in [.lovable/plan.md](.lovable/plan.md).
+**ServiceOS** is an authenticated, multi-tenant operating platform with Supabase
+and a Vercel frontend. Some original pitch and prototype screens still contain
+hard-coded examples. Verify the data source for each surface; never present demo
+jobs, performance scores or health as live business facts.
 
 Two surfaces:
 - `/` ([src/routes/index.tsx](src/routes/index.tsx)) — the long-scroll marketing pitch page.
@@ -32,7 +34,9 @@ bun run lint         # eslint over the repo
 bun run format       # prettier --write .
 ```
 
-There is **no test suite** and no typecheck script; `tsc` runs with `noEmit` for editor/IDE checks only. Verify changes by running `bun run dev` and `bun run lint`.
+Run focused Node tests for changed modules, `npx tsc --noEmit` and `npm run build`.
+Backend tests also live under `supabase/tests` and shared functions. Read each test's
+environment requirements before running it; do not run fixture writes on production.
 
 ## Architecture
 

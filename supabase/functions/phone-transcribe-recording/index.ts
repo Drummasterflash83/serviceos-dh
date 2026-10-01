@@ -256,6 +256,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     await markTranscriptFailed(transcriptId);
     return await finishFailed(result.code, result.message, result.httpStatus, {
       transcript_id: transcriptId,
+      provider_status: result.providerStatus ?? null,
+      audio_bytes: blob.size,
     });
   }
 

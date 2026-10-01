@@ -100,11 +100,10 @@ How the platform is run, verified, and monitored.
 
 ---
 
-## Note on the two branches
+## Current delivery sequence
 
-The root [CLAUDE.md](../CLAUDE.md) describes the `main` branch, where ServiceOS is a
-front-end demo with no backend. **This documentation describes the
-`serviceos-backend-foundation` branch, which has a real Supabase Intelligence →
-Automation backend** (54 migrations, ~45 edge functions). When reading CLAUDE.md's
-"there is no backend" note, understand it applies to `main`, not to the platform this
-manual documents.
+The [1 October Service OS journey](roadmap/SERVICEOS-DELIVERY-JOURNEY-2026-10-01.md)
+sets the reliability-first sequence, scorecard rules and acceptance gates.
+The original prototype and backend foundation are now combined on `main`.
+Real Supabase services coexist with legacy preview screens. Check code and current
+production evidence before treating any historical Live label as proof.
