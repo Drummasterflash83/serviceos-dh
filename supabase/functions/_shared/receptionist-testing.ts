@@ -188,6 +188,22 @@ export function itemReport(raw: unknown) {
     toolEvents,
   };
 }
+export function recordingCallMatches(
+  run: any,
+  call: any,
+  callId: string,
+  assistantId: string,
+  verifiedRunItem: boolean,
+) {
+  return (
+    UUID.test(callId) &&
+    UUID.test(run.orgId ?? "") &&
+    object(run.target).assistantId === assistantId &&
+    call.id === callId &&
+    call.orgId === run.orgId &&
+    (call.assistantId === assistantId || verifiedRunItem)
+  );
+}
 export function runState(run: unknown, items: ReturnType<typeof itemReport>[]) {
   const r = object(run);
   if (r.status !== "ended") return "running";

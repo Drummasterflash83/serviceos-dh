@@ -7,11 +7,16 @@ import {
   assertSafeScenario,
   itemReport,
   safeRecording,
+  recordingCallMatches,
   runState,
 } from "../_shared/receptionist-testing.ts";
 import { evidenceHash } from "../_shared/receptionist-care.ts";
 import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
-import { launchWordingModel, launchDialogueModel } from "../_shared/receptionist-launch-wording.ts";
+import {
+  launchWordingModel,
+  launchDialogueModel,
+  launchClosingModel,
+} from "../_shared/receptionist-launch-wording.ts";
 import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
 import { timingSafeEqualStr } from "../_shared/marketing_tracking.ts";
@@ -197,16 +202,22 @@ Deno.serve(async (req) => {
     const main = body.tenantId === "00000000-0000-0000-0000-000000000001" ? "+441794341600" : null;
     const checks = configurationChecks(assistant, tools, main);
     if (
-      ["repair_candidate_wording", "repair_candidate_dialogue"].includes(body.action) &&
+      [
+        "repair_candidate_wording",
+        "repair_candidate_dialogue",
+        "repair_candidate_closing",
+      ].includes(body.action) &&
       service &&
       !scheduled
     ) {
       if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || body.expectedHash !== hash)
         return reply({ error: "Candidate changed; inspect before updating" }, 409);
       const model =
-        body.action === "repair_candidate_dialogue"
-          ? launchDialogueModel(assistant)
-          : launchWordingModel(assistant, tools);
+        body.action === "repair_candidate_closing"
+          ? launchClosingModel(assistant)
+          : body.action === "repair_candidate_dialogue"
+            ? launchDialogueModel(assistant)
+            : launchWordingModel(assistant, tools);
       const audit = await db
         .from("phone_operations_audit")
         .insert({
@@ -219,9 +230,11 @@ Deno.serve(async (req) => {
           before_state: { model: assistant.model },
           after_state: { model },
           reason:
-            body.action === "repair_candidate_dialogue"
-              ? "Prevent repeated ordinary tool invocation; answer holiday follow-ups without repeating closed status. Live assistant and routes unchanged."
-              : "Single announcement source; factual staff availability and Mary overflow. Live assistant and shared tools unchanged.",
+            body.action === "repair_candidate_closing"
+              ? "One sales handover sentence and concise post-simulation closing. No route, safety or live assistant changes."
+              : body.action === "repair_candidate_dialogue"
+                ? "Prevent repeated ordinary tool invocation; answer holiday follow-ups without repeating closed status. Live assistant and routes unchanged."
+                : "Single announcement source; factual staff availability and Mary overflow. Live assistant and shared tools unchanged.",
         })
         .select("id")
         .single();
@@ -391,14 +404,44 @@ Deno.serve(async (req) => {
     // by this saved provider run, and verify their assistant before attaching it.
     const items = await Promise.all(
         rawItems.map(async (raw: unknown) => {
-          const item = itemReport(raw);
+          let item = itemReport(raw);
+          let verifiedRunItem = false;
+          // Vapi's list response can omit the signed recording while the
+          // individual run-item response (used by its dashboard) includes it.
+          if (run.status === "ended" && !item.recordingUrl && UUID.test(item.id ?? "")) {
+            try {
+              const detail = await api(
+                "eval/simulation/run/" + row.data.provider_id + "/item/" + item.id,
+              );
+              if (detail.id === item.id && detail.runId === row.data.provider_id) {
+                item = itemReport(detail);
+                verifiedRunItem = true;
+              }
+            } catch {
+              /* Retain list evidence; an unavailable recording is never a pass. */
+            }
+          }
           if (run.status === "ended" && !item.recordingUrl && UUID.test(item.callId ?? "")) {
             try {
               const call = await api("call/" + item.callId);
-              if (call.assistantId === row.data.assistant_id)
-                item.recordingUrl = safeRecording(
-                  call.recordingUrl ?? object(call.artifact).recordingUrl,
+              // A simulation's call can use a transient tester assistant. It
+              // must be linked by the verified run item AND belong to the same
+              // provider organisation; never accept a call ID from the browser.
+              if (
+                recordingCallMatches(run, call, item.callId, row.data.assistant_id, verifiedRunItem)
+              ) {
+                const recording = await fetch(
+                  "https://api.vapi.ai/call/" + item.callId + "/stereo-recording",
+                  {
+                    redirect: "manual",
+                    signal: AbortSignal.timeout(15000),
+                    headers: { Authorization: `Bearer ${key}` },
+                  },
                 );
+                // Never forward the Vapi credential to the storage origin.
+                if (recording.status === 302)
+                  item.recordingUrl = safeRecording(recording.headers.get("location"));
+              }
             } catch {
               /* Missing audio never becomes a pass or blocks other evidence. */
             }

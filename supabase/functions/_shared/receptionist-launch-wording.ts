@@ -78,3 +78,29 @@ Only describe an action as a simulation AFTER an actual tool result identifies i
     }),
   };
 }
+
+export function launchClosingModel(assistant: any) {
+  if (
+    assistant.id !== "dcfc2e66-a438-43ab-b863-467f5a5089df" ||
+    assistant.model.tools?.length !== 1 ||
+    assistant.model.tools[0].type !== "transferCall"
+  )
+    throw Error("Reviewed isolated candidate required");
+  if (
+    assistant.model.messages.some((m: any) =>
+      String(m.content).startsWith("FINAL HANDOVER WORDING"),
+    )
+  )
+    throw Error("Closing repair already applied");
+  return {
+    ...assistant.model,
+    messages: [
+      ...assistant.model.messages,
+      {
+        role: "system",
+        content:
+          "FINAL HANDOVER WORDING — launch regression correction. This changes only conversational wording, never safety advice, hours, consent or destinations. For a confirmed unsolicited sales caller, use exactly ONE handover sentence: 'I'll put you through to our sales mailbox now.' Invoke the ordinary transfer tool in that same response. Do not precede it with a second promise to put them through, repeat the destination afterwards, or explain fuel purchasing. After any intercepted ordinary transfer, if the caller says thanks or goodbye, respond only 'You're welcome. Goodbye.' Do not add 'If you need anything else', an invitation for more questions, a repeated announcement or another tool invocation. If the caller asks a substantive factual question instead, answer that question briefly without claiming a live connection or making another attempt. In a real completed blind transfer Emma leaves the call; never claim human acceptance or message delivery merely from initiating it.",
+      },
+    ],
+  };
+}

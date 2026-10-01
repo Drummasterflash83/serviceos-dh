@@ -6,6 +6,7 @@ import {
   itemReport,
   runState,
   safeRecording,
+  recordingCallMatches,
 } from "./receptionist-testing.ts";
 const tool = {
   type: "transferCall",
@@ -144,4 +145,15 @@ test("repeated handover wording cannot be hidden by a provider pass", () => {
     true,
   );
   assert.equal(report("User: I'll transfer you. I'll transfer you.\nAI: Goodbye.").passed, true);
+});
+test("recording retrieval binds transient simulation calls to the verified run and organisation", () => {
+  const id = "00000000-0000-0000-0000-000000000001",
+    org = "00000000-0000-0000-0000-000000000002";
+  const run = { orgId: org, target: { assistantId: "candidate" } },
+    call = { id, orgId: org, assistantId: "transient-tester" };
+  assert.equal(recordingCallMatches(run, call, id, "candidate", true), true);
+  assert.equal(recordingCallMatches(run, call, id, "candidate", false), false);
+  assert.equal(recordingCallMatches(run, { ...call, id: org }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, { ...call, orgId: id }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, call, id, "other", true), false);
 });

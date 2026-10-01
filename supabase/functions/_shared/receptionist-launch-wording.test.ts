@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { launchWordingModel, launchDialogueModel } from "./receptionist-launch-wording.ts";
+import {
+  launchWordingModel,
+  launchDialogueModel,
+  launchClosingModel,
+} from "./receptionist-launch-wording.ts";
 const ordinary = {
   id: "89c45170-c66f-4688-a349-4a354892ba57",
   type: "transferCall",
@@ -53,4 +57,13 @@ test("repair refuses live assistants and unexpected configuration", () => {
   assert.throws(() =>
     launchWordingModel({ ...candidate, model: { ...candidate.model, tools: [{}] } }, [ordinary]),
   );
+});
+test("closing repair preserves the complete reviewed model and changes no routes", () => {
+  const model = launchWordingModel(candidate, [ordinary]);
+  const next = launchClosingModel({ ...candidate, model });
+  assert.deepEqual(next.messages.slice(0, -1), model.messages);
+  assert.deepEqual(next.tools, model.tools);
+  assert.deepEqual(next.toolIds, model.toolIds);
+  assert.throws(() => launchClosingModel({ ...candidate, model: next }));
+  assert.throws(() => launchClosingModel({ ...candidate, id: "production", model }));
 });
