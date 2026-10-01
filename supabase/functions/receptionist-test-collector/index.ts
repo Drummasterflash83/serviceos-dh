@@ -39,11 +39,14 @@ Deno.serve(async (req) => {
             runId: r.id,
           }),
         });
-        return result.ok;
+      const body = await result.json().catch(() => ({}));
+      return { ok: result.ok, status: result.status,
+        error: typeof body.error === "string" ? body.error.slice(0, 180) : undefined };
       } catch {
-        return false;
+      return { ok: false, status: 0, error: "Collector request did not complete" };
       }
     }),
   );
-  return reply({ checked: results.length, updated: results.filter(Boolean).length });
+  return reply({ checked: results.length, updated: results.filter((r) => r.ok).length,
+    errors: results.filter((r) => !r.ok) });
 });

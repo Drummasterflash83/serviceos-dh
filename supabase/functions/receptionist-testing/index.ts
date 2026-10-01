@@ -111,7 +111,9 @@ Deno.serve(async (req) => {
       const details = [];
       for (const id of [9304, 180997]) {
         const endpoint = await read(base + "/endpoints/" + id);
-        const link = object(endpoint.data?.links).voicemail;
+        // The documented endpoint voicemail subresource may not be advertised
+        // in the account's links. Probe that one documented path only.
+        const link = object(endpoint.data?.links).voicemail ?? `${base}/endpoints/${id}/voicemail`;
         const vm = typeof link === "string" ? await read(link.replace(/^http:/, "https:")) : null;
         details.push({
           id,
