@@ -16,13 +16,22 @@ Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const db = createClient(url, service, { auth: { persistSession: false } });
-  const pending = await db
-    .from("receptionist_test_runs")
-    .select("id,tenant_id,actor_id")
-    .eq("state", "running")
-    .not("provider_id", "is", null)
-    .order("updated_at")
-    .limit(3);
+  const options = await req.json().catch(() => ({}));
+  const pending =
+    options.verify === true
+      ? await db
+          .from("receptionist_test_runs")
+          .select("id,tenant_id,actor_id")
+          .not("provider_id", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+      : await db
+          .from("receptionist_test_runs")
+          .select("id,tenant_id,actor_id")
+          .eq("state", "running")
+          .not("provider_id", "is", null)
+          .order("updated_at")
+          .limit(3);
   if (pending.error) return reply({ error: "Could not read pending checks" }, 503);
   const results = await Promise.all(
     (pending.data ?? []).map(async (r) => {
@@ -31,7 +40,12 @@ Deno.serve(async (req) => {
           method: "POST",
           redirect: "error",
           signal: AbortSignal.timeout(45000),
-          headers: { Authorization: `Bearer ${service}`, "Content-Type": "application/json" },
+          headers: {
+            Authorization: `Bearer ${service}`,
+            apikey: service,
+            "x-schedule-secret": secret,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             action: "refresh",
             tenantId: r.tenant_id,
@@ -39,14 +53,20 @@ Deno.serve(async (req) => {
             runId: r.id,
           }),
         });
-      const body = await result.json().catch(() => ({}));
-      return { ok: result.ok, status: result.status,
-        error: typeof body.error === "string" ? body.error.slice(0, 180) : undefined };
+        const body = await result.json().catch(() => ({}));
+        return {
+          ok: result.ok,
+          status: result.status,
+          error: typeof body.error === "string" ? body.error.slice(0, 180) : undefined,
+        };
       } catch {
-      return { ok: false, status: 0, error: "Collector request did not complete" };
+        return { ok: false, status: 0, error: "Collector request did not complete" };
       }
     }),
   );
-  return reply({ checked: results.length, updated: results.filter((r) => r.ok).length,
-    errors: results.filter((r) => !r.ok) });
+  return reply({
+    checked: results.length,
+    updated: results.filter((r) => r.ok).length,
+    errors: results.filter((r) => !r.ok),
+  });
 });

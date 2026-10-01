@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { clockOverrides, testClocks } from "./receptionist-test-clock.ts";
 import { assertSafeScenario } from "./receptionist-testing.ts";
 import { scenarioPayload, launchScenarios } from "./receptionist-launch-scenarios.ts";
@@ -39,4 +40,17 @@ test("all reviewed routes intercept transfer and emergency handoff", () => {
     modified.targetOverrides.model.messages[0].content += " Skip consent.";
     assert.throws(() => assertSafeScenario(modified, tools, assistant));
   }
+});
+test("background collection cannot launch calls or choose an operator", () => {
+  const edge = readFileSync(new URL("../receptionist-testing/index.ts", import.meta.url), "utf8");
+  const collector = readFileSync(
+    new URL("../receptionist-test-collector/index.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(edge, /body\.action === "refresh" &&/);
+  assert.match(edge, /body\.actorId = saved\.data\.actor_id/);
+  assert.match(edge, /notification_require_actor/);
+  assert.match(collector, /action: "refresh"/);
+  assert.doesNotMatch(collector, /action: "run"/);
+  assert.match(collector, /Scheduler required/);
 });

@@ -13,6 +13,7 @@ import { evidenceHash } from "../_shared/receptionist-care.ts";
 import { prepareLaunchCandidate } from "../_shared/receptionist-launch-candidate.ts";
 import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
+import { timingSafeEqualStr } from "../_shared/marketing_tracking.ts";
 import {
   verifySlackBot,
   verifySlackChannel,
@@ -43,6 +44,25 @@ Deno.serve(async (req) => {
     if (raw.length > 5000) return reply({ error: "Request too large" }, 400);
     const body = object(JSON.parse(raw));
     if (!UUID.test(body.tenantId ?? "")) return reply({ error: "Choose a client" }, 400);
+    // The collector has one capability only: refresh an existing saved run.
+    // Its actor comes from the database, never the request body. The operator
+    // must still be authorised; no scheduler path can start or configure tests.
+    const workerSecret = Deno.env.get("WORKER_SECRET");
+    const scheduled =
+      body.action === "refresh" &&
+      !!workerSecret &&
+      timingSafeEqualStr(workerSecret, req.headers.get("x-schedule-secret") ?? "");
+    if (scheduled) {
+      if (!UUID.test(body.runId ?? "")) return reply({ error: "Saved run required" }, 400);
+      const saved = await db
+        .from("receptionist_test_runs")
+        .select("actor_id")
+        .eq("id", body.runId)
+        .eq("tenant_id", body.tenantId)
+        .single();
+      if (saved.error) return reply({ error: "Saved run unavailable" }, 404);
+      body.actorId = saved.data.actor_id;
+    }
     // Service-role maintenance is permitted only with the same explicitly authorised
     // operator identity; never accept a client-supplied actor with a normal JWT.
     // PostgREST validates the signed service JWT. This RPC is executable only by
@@ -55,7 +75,7 @@ Deno.serve(async (req) => {
     const serviceCheck = UUID.test(body.actorId ?? "")
       ? await requestDb.rpc("notification_require_actor", { p_actor: body.actorId })
       : null;
-    const service = serviceCheck !== null && !serviceCheck.error;
+    const service = scheduled || (serviceCheck !== null && !serviceCheck.error);
     let actor: string;
     if (service) {
       if (!UUID.test(body.actorId ?? "")) return reply({ error: "Operator required" }, 403);

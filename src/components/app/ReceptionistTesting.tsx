@@ -255,6 +255,12 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                           aria-label={`${i.name} recording`}
                         />
                       )}
+                      {!i.recordingUrl && ["passed", "failed"].includes(i.status) && (
+                        <p className="of-test-note">
+                          No recording returned for this scenario. Voice clarity has not been
+                          verified.
+                        </p>
+                      )}
                       <details>
                         <summary>Transcript & assessment</summary>
                         <pre>{i.transcript || "No transcript returned."}</pre>
