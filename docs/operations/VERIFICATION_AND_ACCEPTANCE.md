@@ -176,6 +176,15 @@ never all-time history.
 
 ### 4.2 Selection and fairness
 
+**1 October corrective release:** the original selector below did not actually
+exclude permanently failing recordings. Four recordings were each retried 70 times
+in 24 hours. Migration `20261024100000_phone_retry_fairness.sql` adds per-recording
+cooldown, five-consecutive-failure review holds, terminal-error holds and a bounded
+fresh/backfill split. Held recordings remain incomplete in all health totals.
+Use `phone_pending_readiness(tenant)` to distinguish ready, cooldown, in_progress
+and needs_review. The numbered list below describes the older implementation;
+its permanent-failure claim was an intended property, not observed behaviour.
+
 1. **Oldest incomplete first** — `phone_select_pending` orders by
    `coalesce(started_at, created_at) ASC`; the longest-waiting work is always chosen.
 2. **Bounded batch** — default 5, max 10 per worker tick.

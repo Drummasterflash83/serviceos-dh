@@ -3,8 +3,8 @@
 // caller. Tenant is always caller-validated.
 //
 // SELECTION (Reliability v2): work is chosen DATABASE-SIDE via
-// phone_select_pending() — the OLDEST incomplete recordings first, bounded batch,
-// with a readiness delay applied only to the download stage. This replaces the
+// phone_select_pending() — bounded fresh/backfill lanes, per-recording retry
+// cooldown and review holds, with readiness delay only for downloads. This replaces the
 // former "scan the newest 40, filter in memory" logic, which starved old
 // recordings and produced the misleading `skipped: 40` no-op. See migration
 // 20260711120000_phone_pipeline_selection.sql.
@@ -53,8 +53,8 @@ export async function handlePhoneProcessPending(
   }
 
   try {
-    // Database-side selection: OLDEST incomplete recordings first (no starvation),
-    // bounded batch, download-readiness delay applied server-side.
+    // Database-side selection: fresh-flow capacity plus a historical lane;
+    // cooldown/review-held recordings do not monopolise the batch.
     const { data: selected, error: selErr } = await supabase.rpc("phone_select_pending", {
       p_tenant_id: tenantId,
       p_limit: batch,
@@ -87,7 +87,7 @@ export async function handlePhoneProcessPending(
           failed: 0,
           skipped: 0,
           eligible_backlog: eligibleBacklog,
-          reason: "no_eligible_recordings",
+          reason: eligibleBacklog > 0 ? "awaiting_retry_or_review" : "no_eligible_recordings",
           last_error: null,
           failed_step: null,
           failures: [],
