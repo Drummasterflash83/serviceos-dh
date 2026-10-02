@@ -29,6 +29,7 @@
 
 import { createSupabaseAdmin, PROVIDER } from "../_shared/simwood.ts";
 import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import { includeLocalCalls } from "../_shared/phone-sync-completeness.ts";
 import {
   completePlatformJob,
   createPlatformJob,
@@ -209,7 +210,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       };
 
       // Calls — invoke the existing idempotent function (service-role internal).
-      const callsRes = await invokeFunction("simwood-sync-calls", childBody, serviceKey);
+      const callsRes = await invokeFunction(
+        "simwood-sync-calls",
+        {
+          ...childBody,
+          include_local: includeLocalCalls(account.settings),
+        },
+        serviceKey,
+      );
       const callsOk = Boolean(callsRes.json?.success);
       const callsProcessed = recordsOf(callsRes.json);
 

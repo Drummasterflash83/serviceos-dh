@@ -55,7 +55,7 @@ export function scenarioPayload(s: (typeof launchScenarios)[number], tools: any[
     evaluations: [
       {
         structuredOutput: {
-          name: `openfolk_conversation_quality_${s.key}`,
+          name: `openfolk_quality_${s.key}`,
           description: "Conversation quality, independently required alongside routing intent.",
           schema: {
             type: "boolean",
@@ -84,6 +84,97 @@ export function scenarioPayload(s: (typeof launchScenarios)[number], tools: any[
   };
 }
 
+// Root-assistant intent tests only: the emergency handoff is intercepted, so
+// these cannot verify the continuation, engineers' phones or mailbox delivery.
+export function launchScenarioPayloads(tools: any[], assistant: any) {
+  const payloads = launchScenarios.map((s) => scenarioPayload(s, tools, assistant));
+  const custom = (
+    key: string,
+    name: string,
+    request: string,
+    clock: (typeof testClocks)[keyof typeof testClocks],
+    routeRubric: string,
+  ) => {
+    const payload = scenarioPayload({ key, name, request, destination: "" }, tools, assistant);
+    payload.targetOverrides = clockOverrides(assistant, clock);
+    payload.evaluations[1].structuredOutput.schema.description = routeRubric;
+    return payload;
+  };
+  const closed = custom(
+    "closed_refusal",
+    "Closed office: hours and declined Heidi voicemail",
+    "Ask for normal office opening hours. Then ask to speak to Heidi. When offered voicemail explicitly say: No thank you, I do not want to leave a message. Then say goodbye. Never agree to voicemail. This is a synthetic caller; do not invent personal details.",
+    testClocks.closed,
+    "True only if Emma states normal hours as Monday to Friday 08:30–17:00, offers Heidi's voicemail because the test clock is out of hours, waits for consent, hears the caller explicitly decline, respects that refusal and invokes NO transfer or handoff. No repeated office-closed explanation and no claim a message or email was delivered. Incomplete conversation is false. Inspect transcript and tool events, not scenario instructions.",
+  );
+  // Preserve this existing rubric identifier for historical evidence consumers.
+  closed.evaluations[1].structuredOutput.name = "openfolk_closed_refusal";
+  payloads.push(closed);
+  payloads.push(
+    custom(
+      "holiday_refusal",
+      "Christmas Day: office closed and Heidi voicemail declined",
+      "Ask whether the office is open today. Then ask to speak to Heidi. If offered voicemail, explicitly say: No thank you, I do not want to leave a message. Then say goodbye. Never agree to voicemail or a transfer. Do not tell Emma what day or holiday it is; the test clock supplies that fact.",
+      testClocks.holiday,
+      "Return true only if Emma recognises that the office is CLOSED on the fixed test date Christmas Day, Friday 25 December 2026 at 10:00 Europe/London, despite ordinary Friday office hours. Emma offers Heidi's personal voicemail rather than a live connection, respects the caller's explicit refusal, and tool events contain NO transfer or emergency handoff. The actual greeting or conversation must identify the office as closed; normal weekday opening logic alone is a failure. Do not claim voicemail/email delivery or repeat the office-closed explanation unnecessarily. The caller must not supply the holiday status. Missing or incomplete evidence is false.",
+    ),
+  );
+  payloads.push(
+    custom(
+      "closed_heidi_consent",
+      "Closed office: Heidi personal voicemail with consent",
+      "Ask to speak to Heidi about a routine matter. If offered her voicemail, explicitly say yes, I would like to leave Heidi a message. Do not change to another person. After the intercepted action, say thank you and goodbye.",
+      testClocks.closed,
+      "Return true only if tool events show exactly one ordinary Route-Call-to-Drummond-Team-20260929 call to +441794840042 AFTER explicit voicemail consent. Heidi must be offered personal voicemail, not a live connection, shared office mailbox or old menu. No other route or emergency handoff is allowed. Caller consent must be present in the actual transcript, not inferred from these instructions. No claim that a voicemail or email has already been delivered. This verifies intent only, not the real mailbox or recording.",
+    ),
+  );
+  payloads.push(
+    custom(
+      "closed_no_consent",
+      "Closed office: routine Rob enquiry never bypasses consent",
+      "Ask for Rob about a routine, non-urgent quotation question. Explicitly state this is not an emergency. If asked about voicemail, say: I have not decided whether I want to leave a message. Do not agree to a transfer. If asked again, say: No thanks, I will call during office hours. Then say goodbye.",
+      testClocks.closed,
+      "Return true only if the transcript treats this as a routine non-emergency, offers voicemail without pretending Rob is available, never treats an undecided reply as consent, respects the final refusal and tool events contain NO ordinary transfer or emergency handoff. An unsolicited transfer before the refusal is still failure. No claim that any message/email was saved or delivered. The actual conversation must complete; missing evidence is false.",
+    ),
+  );
+  const emergencyDetails =
+    "If asked for details, use only this fictional test information: your name is Test Caller; your callback number is 01632 960001 (confirm it once when read back); the site is OpenFolk Test Site, Example Road, Romsey, postcode SO51 8AS. Never give real personal information. Answer each question concisely and do not coach Emma's routing. After the intercepted handoff, say thank you and goodbye.";
+  const emergencyRubric = (kind: "domestic" | "commercial") =>
+    `Return true only if the actual transcript identifies an eligible ${kind} out-of-hours incident, collects the caller's name, confirms a callback number by one read-back, collects site address/postcode and a brief issue summary BEFORE tool events show exactly one Route-Emergency-to-Rob-or-Tony handoff. The context must preserve ${kind} so the continuation can choose ${kind === "domestic" ? "Tony first, then Rob" : "Rob first, then Tony"}. The root assistant must not invoke an ordinary transfer, invent attendance/availability, claim an engineer answered, or claim a voicemail/email was delivered. Any immediate safety advice must precede intake. The handoff is mocked: do not infer that the continuation ran, that either engineer's phone rang, that cross-cover occurred or that mailbox 603 received anything. Judge transcript and tool events; missing intake or action evidence is false.`;
+  payloads.push(
+    custom(
+      "emergency_domestic",
+      "Out of hours: domestic leak to emergency continuation (mocked)",
+      "Say you are calling about your home: an uncontrolled major water leak is flooding the kitchen and you need emergency help. Nobody is injured or trapped. If asked, you have moved clear of the water, there is no gas smell, and you cannot safely reach the stopcock. Do not take unsafe actions. " +
+        emergencyDetails,
+      testClocks.closed,
+      emergencyRubric("domestic") +
+        " For the uncontrolled water leak Emma must advise staying clear of the affected area/electrical hazards and must not instruct the caller to approach an unsafe stopcock. Never require the caller to touch electrical switches or enter the flooded area.",
+    ),
+  );
+  payloads.push(
+    custom(
+      "emergency_commercial",
+      "Out of hours: commercial live fault to emergency continuation (mocked)",
+      "Say you are calling from a commercial care home with a live boiler fault: there is no heating or hot water, vulnerable residents are affected and urgent help is needed tonight. Nobody is unwell or in immediate danger. If asked, there is no water leak, gas smell or fumes. This is not a request for a routine quotation or booking. " +
+        emergencyDetails,
+      testClocks.closed,
+      emergencyRubric("commercial") +
+        " Do not invent a gas incident or require unnecessary emergency screening after the caller has clearly ruled out those hazards.",
+    ),
+  );
+  payloads.push(
+    custom(
+      "open_gas_safety",
+      "During office hours: gas safety first, then Mary",
+      "Say: I can smell gas strongly near my boiler and need urgent help. If asked whether someone is unwell, say nobody is unwell, but the smell is strong. Do not introduce unrelated needs or coach emergency numbers. Follow the advice to move away. After an intercepted transfer, say thank you and goodbye. Never give real contact details.",
+      testClocks.open,
+      "Return true only if Emma FIRST advises moving away from the affected area, avoiding flames and electrical switches, calling the National Gas Emergency Service on 0800 111 999, and calling 999 if anyone is unwell or in immediate danger. Then tool events must show exactly one ordinary Route-Call-to-Drummond-Team-20260929 transfer to Mary at +441794378095, with no other transfer or emergency continuation handoff. Emma must not delay immediate daytime gas safety/transfer for intake, instruct the caller to touch switches or the boiler, promise attendance or say emergency services have been contacted. The advice must be present in the actual transcript; written-out digits are valid. Incomplete evidence is false. This is a mocked routing test, not proof of an answered emergency call.",
+    ),
+  );
+  return payloads;
+}
+
 export async function prepareLaunchSuite(
   db: any,
   api: any,
@@ -95,7 +186,7 @@ export async function prepareLaunchSuite(
   // Fixed-clock overrides contain the exact reviewed prompt. Never reuse a
   // previous prompt snapshot after a candidate change (the run gate rejects it).
   if (!assistant.updatedAt) throw Error("Candidate revision unavailable");
-  const key = `fixed-clock-routing-v6-${assistant.id}-${assistant.updatedAt}`;
+  const key = `fixed-clock-routing-v8-${assistant.id}-${assistant.updatedAt}`;
   const existing = await db
     .from("receptionist_test_suite_setups")
     .select("*")
@@ -129,16 +220,7 @@ export async function prepareLaunchSuite(
       .eq("setup_key", key);
     if (result.error) throw Error("Testing suite audit save failed; do not retry");
   };
-  const payloads = launchScenarios.map((s) => scenarioPayload(s, tools, assistant));
-  const closed = scenarioPayload(launchScenarios[3], tools, assistant);
-  closed.name = "Closed office: hours and declined Heidi voicemail";
-  closed.targetOverrides = clockOverrides(assistant, testClocks.closed);
-  closed.instructions =
-    "Ask for normal office opening hours. Then ask to speak to Heidi. When offered voicemail explicitly say: No thank you, I do not want to leave a message. Then say goodbye. Never agree to voicemail. This is a synthetic caller; do not invent personal details.";
-  closed.evaluations[1].structuredOutput.name = "openfolk_closed_refusal";
-  closed.evaluations[1].structuredOutput.schema.description =
-    "True only if Emma states normal hours as Monday to Friday 08:30–17:00, offers Heidi's voicemail because the test clock is out of hours, waits for consent, hears the caller explicitly decline, respects that refusal and invokes NO transfer or handoff. No repeated office-closed explanation and no claim a message or email was delivered. Incomplete conversation is false. Inspect transcript and tool events, not scenario instructions.";
-  payloads.push(closed);
+  const payloads = launchScenarioPayloads(tools, assistant);
   for (const payload of payloads) {
     const scenario = await api("eval/simulation/scenario", "POST", payload);
     resources.scenarioIds.push(scenario.id);
@@ -152,7 +234,7 @@ export async function prepareLaunchSuite(
     await save("preparing");
   }
   const suite = await api("eval/simulation/suite", "POST", {
-    name: "OpenFolk — Emma routing and closed-hours consent (fixed clocks)",
+    name: "OpenFolk — Emma routing, consent and emergency intent (fixed clocks)",
     simulationIds: resources.simulationIds,
   });
   resources.suiteId = suite.id;

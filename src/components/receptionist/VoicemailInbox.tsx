@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Mail, RefreshCw, ShieldCheck, Voicemail } from "lucide-react";
+import { ChevronDown, Info, Mail, RefreshCw, ShieldCheck, Voicemail } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   emailLabel,
+  voicemailConnectionNotice,
+  voicemailCountLabel,
   voicemailDate,
   voicemailDuration,
   type Mailbox,
@@ -77,6 +79,7 @@ export default function VoicemailInbox({
       return (data ?? []) as Mailbox[];
     },
   });
+  const connectionNotice = voicemailConnectionNotice(mailboxes.data ?? []);
   const mailbox = mailboxes.data?.find((m) => m.id === selected);
   const messages = useQuery({
     queryKey: ["receptionist-voicemail-messages", tenant, userId, selected, page, demo],
@@ -104,7 +107,7 @@ export default function VoicemailInbox({
       <section className="rw-panel vm-intro">
         <div>
           <p className="rw-eyebrow">YOUR TEAM’S MESSAGES</p>
-          <h2>Every voicemail, in the right hands.</h2>
+          <h2>Your team’s voicemail, kept private.</h2>
           <p>Choose a mailbox to see its saved messages, newest first.</p>
         </div>
         <span className="vm-privacy">
@@ -147,6 +150,15 @@ export default function VoicemailInbox({
         </section>
       ) : (
         <>
+          {connectionNotice && (
+            <section className="rw-panel vm-connection-notice" role="status">
+              <Info size={22} aria-hidden="true" />
+              <div>
+                <h3>{connectionNotice.title}</h3>
+                <p>{connectionNotice.detail}</p>
+              </div>
+            </section>
+          )}
           <div className="vm-mailboxes" aria-label="Choose a mailbox">
             {mailboxes.data.map((m) => (
               <button
@@ -166,7 +178,8 @@ export default function VoicemailInbox({
                   <span>Extension {m.extension}</span>
                 </span>
                 <span className="vm-count">
-                  <strong>{m.message_count}</strong> saved
+                  <strong>{voicemailCountLabel(m).value}</strong>
+                  {voicemailCountLabel(m).label}
                 </span>
               </button>
             ))}

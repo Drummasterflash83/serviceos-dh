@@ -141,10 +141,31 @@ test("repeated handover wording cannot be hidden by a provider pass", () => {
   assert.equal(duplicate.passed, false);
   assert.equal(duplicate.outcome, "repeated_announcement");
   assert.equal(
+    report("AI: I can connect you directly to Mary now. I'll try Mary for you.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
+    report("AI: I can put you through to Mary now. I will connect you to Mary.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
+    report("AI: I can connect you to Mary, I'll try Mary for you now.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
     report("AI: I'll try Rob now.\nUser: No answer.\nAI: I'll try Tony now.").passed,
     true,
   );
   assert.equal(report("User: I'll transfer you. I'll transfer you.\nAI: Goodbye.").passed, true);
+  assert.equal(
+    report("assistant: I'll try Rob now.\nuser: No answer.\nassistant: I'll try Tony now.").passed,
+    true,
+  );
+  assert.equal(
+    report("AI: I can connect you if you'd like.\nUser: Yes please.\nAI: I'll try Mary now.")
+      .passed,
+    true,
+  );
 });
 test("recording retrieval binds transient simulation calls to the verified run and organisation", () => {
   const id = "00000000-0000-0000-0000-000000000001",

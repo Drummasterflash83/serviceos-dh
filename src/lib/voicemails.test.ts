@@ -1,8 +1,34 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { emailLabel, voicemailDuration, voicemailDate } from "./voicemails.ts";
+import { emailLabel, voicemailDuration, voicemailDate, voicemailCountLabel, voicemailConnectionNotice, type Mailbox } from "./voicemails.ts";
 const read = (file: string) => readFileSync(new URL(file, import.meta.url), "utf8");
+const pendingMailbox: Mailbox = {
+  id: "example", display_name: "Example", extension: "100",
+  notification_email: null, email_enabled: null, last_synced_at: null,
+  sync_state: "awaiting_connection", message_count: 0,
+};
+test("an unconnected source is not shown as an empty provider inbox", () => {
+  assert.deepEqual(voicemailCountLabel(pendingMailbox), { value: "—", label: "Awaiting sync" });
+  assert.match(voicemailConnectionNotice([pendingMailbox])!.title, /not connected yet/);
+  assert.match(voicemailConnectionNotice([pendingMailbox])!.detail, /does not mean.*empty/);
+});
+test("saved messages stay visible through source failures", () => {
+  assert.deepEqual(voicemailCountLabel({ ...pendingMailbox, sync_state: "error", message_count: 3 }),
+    { value: "3", label: "saved" });
+  assert.deepEqual(voicemailCountLabel({ ...pendingMailbox, sync_state: "error" }),
+    { value: "—", label: "Check sync" });
+  assert.match(voicemailConnectionNotice([{ ...pendingMailbox, sync_state: "error" }])!.title, /needs attention/);
+});
+test("only a verified sync may show a saved zero without a connection warning", () => {
+  const synced: Mailbox = { ...pendingMailbox, sync_state: "current", last_synced_at: "2026-10-02T06:00:00Z" };
+  assert.deepEqual(voicemailCountLabel(synced), { value: "0", label: "saved" });
+  assert.equal(voicemailConnectionNotice([synced]), null);
+  assert.match(voicemailConnectionNotice([synced, pendingMailbox])!.title, /Some mailboxes/);
+  assert.match(voicemailCountLabel({ ...synced, last_synced_at: "invalid" }).label, /Awaiting/);
+  assert.notEqual(voicemailConnectionNotice([{ ...synced, last_synced_at: null }]), null);
+  assert.equal(voicemailConnectionNotice([]), null);
+});
 test("email setup is not delivery evidence", () => {
   assert.equal(emailLabel("unknown"), "Email status unconfirmed");
   assert.equal(emailLabel("sent"), "Email sent");
