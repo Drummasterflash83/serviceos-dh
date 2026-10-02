@@ -21,6 +21,9 @@ const FeedbackDesk = lazy(() =>
 const ReceptionistTesting = lazy(() =>
   import("./ReceptionistTesting").then((m) => ({ default: m.ReceptionistTesting })),
 );
+const PhoneCaptureCoverage = lazy(() =>
+  import("./PhoneCaptureCoverage").then((m) => ({ default: m.PhoneCaptureCoverage })),
+);
 const ClientPortal = lazy(() =>
   import("@/components/client-portal/ClientPortal").then((module) => ({
     default: module.ClientPortal,
@@ -88,6 +91,7 @@ function OperatorModuleContent({
           ))}
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
+          {view === "today" && <PhoneCaptureCoverage key={`capture-${tenantId}`} tenantId={tenantId} />}
           {view === "testing" ? (
             <ReceptionistTesting key={tenantId} tenantId={tenantId} />
           ) : view === "improvements" ? (

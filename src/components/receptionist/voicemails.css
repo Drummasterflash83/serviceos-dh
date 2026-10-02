@@ -31,6 +31,26 @@
   color: #66557e;
   font-size: 13px;
 }
+.vm-connection-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #f6f2fa;
+  border: 1px solid #ddd5e8;
+}
+.vm-connection-notice > svg {
+  flex-shrink: 0;
+  color: #66557e;
+  margin-top: 2px;
+}
+.vm-connection-notice h3,
+.vm-connection-notice p {
+  margin: 0;
+}
+.vm-connection-notice p {
+  margin-top: 6px;
+  color: #70657e;
+}
 .vm-mailboxes {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));

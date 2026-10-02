@@ -311,6 +311,10 @@ verify_jwt = false
 [functions.receptionist-testing]
 verify_jwt = false
 
+# Operator-only capture evidence; JWT/service authentication is enforced inside.
+[functions.phone-capture-coverage]
+verify_jwt = false
+
 # Uses the existing platform scheduler secret, never a browser session.
 [functions.receptionist-test-collector]
 verify_jwt = false

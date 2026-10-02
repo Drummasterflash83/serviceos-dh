@@ -22,6 +22,33 @@ export type VoicemailMessage = {
   email_recipient: string | null;
   recording_available: boolean;
 };
+/** Saved-message counts are not a provider-inbox count until its source is verified. */
+export function voicemailCountLabel(mailbox: Mailbox) {
+  const count = Number.isFinite(mailbox.message_count) && mailbox.message_count >= 0
+    ? mailbox.message_count
+    : null;
+  const synced = mailbox.sync_state === "current" && !!mailbox.last_synced_at &&
+    Number.isFinite(Date.parse(mailbox.last_synced_at));
+  if (count !== null && (count > 0 || synced)) return { value: String(count), label: "saved" };
+  return {
+    value: "—",
+    label: mailbox.sync_state === "error" ? "Check sync" : "Awaiting sync",
+  };
+}
+
+export function voicemailConnectionNotice(mailboxes: Mailbox[]) {
+  if (!mailboxes.length) return null;
+  const verified = mailboxes.filter((mailbox) => mailbox.sync_state === "current" &&
+    !!mailbox.last_synced_at && Number.isFinite(Date.parse(mailbox.last_synced_at))).length;
+  const failed = mailboxes.some((mailbox) => mailbox.sync_state === "error");
+  if (verified === mailboxes.length) return null;
+  return {
+    title: failed
+      ? "Voicemail sync needs attention"
+      : verified === 0 ? "Birchills messages are not connected yet" : "Some mailboxes are still being connected",
+    detail: "Keep using your existing phone mailbox while OpenFolk completes the connection. Saved messages remain available here; a dash does not mean your phone mailbox is empty.",
+  };
+}
 export function emailLabel(status: EmailState) {
   return (
     {

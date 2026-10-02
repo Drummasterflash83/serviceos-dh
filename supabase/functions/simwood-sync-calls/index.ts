@@ -25,7 +25,6 @@
 import {
   createSupabaseAdmin,
   discoverCustomerId,
-  extractItems,
   failResponse,
   getSimwoodCredentials,
   isUuid,
@@ -35,6 +34,11 @@ import {
   corsHeaders,
 } from "../_shared/simwood.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
+import {
+  completeProviderPage,
+  providerPageItems,
+  syncWindowComplete,
+} from "../_shared/phone-sync-completeness.ts";
 
 const PAGE_SIZE_MAX = 200; // Simwood cap
 const HARD_PAGE_CAP = 50; // safety bound: at most 50 pages (~10k rows) per run
@@ -76,6 +80,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return failResponse("invalid_json", "Request body must be valid JSON", 400);
   }
   const body = (parsed ?? {}) as Record<string, unknown>;
+  if (body.include_local !== undefined && typeof body.include_local !== "boolean")
+    return failResponse("invalid_local_scope", "include_local must be a boolean", 400);
+  const includeLocal = body.include_local === true;
 
   const direction = apiDirection(body.direction);
   if (!direction.ok) {
@@ -119,6 +126,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     direction: direction.value,
     limit,
     provider_customer_id_supplied: suppliedCustomerId !== null,
+    include_local: includeLocal,
   };
 
   // Open a sync run (status running) so even a mid-run failure is auditable.
@@ -209,12 +217,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let processed = 0;
   let skippedNoId = 0;
   let pagesFetched = 0;
+  let exhausted = false;
 
   for (let page = 1; page <= HARD_PAGE_CAP; page++) {
     const qs = new URLSearchParams({
       startedAfter: from,
       startedBefore: to,
-      includeLocal: "false",
+      includeLocal: String(includeLocal),
       pageSize: String(pageSize),
       page: String(page),
     });
@@ -232,12 +241,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
     pagesFetched++;
 
-    const items = extractItems(result.data);
-    if (items.length === 0) break;
+    const items = providerPageItems(result.data);
+    if (!items)
+      return await finishFailed(
+        "invalid_provider_page",
+        "Provider returned an invalid call list; cursor unchanged",
+        502,
+        processed,
+      );
+    if (items.length === 0) {
+      exhausted = true;
+      break;
+    }
 
     // Respect an explicit limit across pages.
     const room = limit && limit > 0 ? limit - processed : items.length;
     const slice = items.slice(0, Math.max(0, room));
+    exhausted = completeProviderPage({ returned: items.length, selected: slice.length, pageSize });
 
     const rows = slice
       .filter((c) => {
@@ -284,12 +304,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (items.length < pageSize) break;
   }
 
+  if (!syncWindowComplete(exhausted, skippedNoId)) {
+    return await finishFailed(
+      "incomplete_window",
+      "Call window is incomplete (page/record limit or missing provider IDs). The sync cursor must not advance; retry a smaller window.",
+      409,
+      processed,
+      { pages_fetched: pagesFetched, skipped_no_call_id: skippedNoId, window_complete: false },
+    );
+  }
+
   // --- success -------------------------------------------------------------
   const metadata = {
     ...baseMetadata,
     customer_id: customerId,
     pages_fetched: pagesFetched,
     skipped_no_call_id: skippedNoId,
+    window_complete: true,
   };
   await supabase
     .from("phone_sync_runs")
@@ -310,5 +341,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     to,
     customer_id: customerId,
     sync_run_id: syncRunId,
+    window_complete: true,
   });
 });

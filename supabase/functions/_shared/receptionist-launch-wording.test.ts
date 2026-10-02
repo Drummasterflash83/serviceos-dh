@@ -4,6 +4,7 @@ import {
   launchWordingModel,
   launchDialogueModel,
   launchClosingModel,
+  launchConsolidatedModel,
 } from "./receptionist-launch-wording.ts";
 const ordinary = {
   id: "89c45170-c66f-4688-a349-4a354892ba57",
@@ -66,4 +67,20 @@ test("closing repair preserves the complete reviewed model and changes no routes
   assert.deepEqual(next.toolIds, model.toolIds);
   assert.throws(() => launchClosingModel({ ...candidate, model: next }));
   assert.throws(() => launchClosingModel({ ...candidate, id: "production", model }));
+});
+test("consolidation removes superseded handover patches but preserves safety and route configuration", () => {
+  const first = launchWordingModel(candidate, [ordinary]);
+  first.messages[0].content += "\n# SAFETY\nDo not delay emergency action.\n# TRANSFER EXECUTION\nOld conflicting wording.\n# CONVERSATION QUALITY\nKeep identity private.";
+  const source = launchClosingModel({ ...candidate, model: first });
+  const result = launchConsolidatedModel({ ...candidate, model: source });
+  assert.deepEqual(result.tools, source.tools);
+  assert.deepEqual(result.toolIds, source.toolIds);
+  assert.equal(result.temperature, 0.1);
+  assert.match(result.messages[0].content, /Do not delay emergency action/);
+  assert.match(result.messages[0].content, /Keep identity private/);
+  assert.doesNotMatch(result.messages[0].content, /Old conflicting wording|SINGLE ANNOUNCEMENT AND FACTUAL HANDOVERS/);
+  assert.equal(result.messages.filter((m: any) => m.content.startsWith("CONSOLIDATED HANDOVER CONTRACT")).length, 1);
+  assert.ok(!result.messages.some((m: any) => m.content.startsWith("FINAL HANDOVER WORDING")));
+  assert.throws(() => launchConsolidatedModel({ ...candidate, id: "production", model: source }));
+  assert.throws(() => launchConsolidatedModel({ ...candidate, model: result }));
 });

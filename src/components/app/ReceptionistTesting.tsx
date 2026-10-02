@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { CheckCircle2, AlertCircle, Circle, Play, RefreshCw } from "lucide-react";
+import { testEvidence, testNextAction } from "@/lib/receptionist-test-evidence";
 import "@/styles/receptionist-testing.css";
 
 type Check = { key: string; label: string; state: string; detail: string };
@@ -44,6 +45,8 @@ const label = (s: string) =>
     uncertain: "Check provider history",
     cancelled: "Cancelled",
     not_tested: "Not yet verified",
+    queued: "Waiting to run",
+    canceled: "Cancelled",
   })[s] ?? s;
 export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
   const [data, setData] = useState<Status | null>(null),
@@ -210,7 +213,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   <strong>{date(r.created_at)}</strong>
                   <span>
                     {r.report.items?.filter((i) => i.passed).length ?? 0}/
-                    {r.report.items?.length ?? 0} passed
+                    {r.report.items?.length ?? 0} scenarios passed
                     {r.assistant_hash !== data.assistant.hash ? " at the time" : ""}
                     {!!r.report.items?.filter((i) => i.outcome === "blocked_funding").length &&
                       ` · ${r.report.items.filter((i) => i.outcome === "blocked_funding").length} not started (credit)`}
@@ -226,7 +229,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   <p>
                     Slack:{" "}
                     {r.slack_state === "sent"
-                      ? "Delivered"
+                      ? "Accepted by Slack"
                       : r.slack_state === "pending"
                         ? "Awaiting completed results"
                         : r.slack_state === "needs_review"
@@ -264,16 +267,20 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                   )}
                   {r.report.items?.map((i) => (
                     <article className="of-test-item" key={i.id}>
-                      <h4>
-                        {i.name} ·{" "}
-                        {i.passed
-                          ? "Passed"
-                          : i.outcome === "blocked_funding"
-                            ? "Not started — credit unavailable"
-                            : i.status === "passed"
-                              ? "Needs attention"
-                              : label(i.status)}
-                      </h4>
+                      <div className="of-test-item-heading">
+                        <h4>{i.name}</h4>
+                        <span
+                          className={`of-test-state of-test-${i.passed ? "passed" : ["passed", "failed"].includes(i.status) ? "failed" : "not_tested"}`}
+                        >
+                          {i.passed
+                            ? "Simulation passed"
+                            : i.outcome === "blocked_funding"
+                              ? "Not started — credit unavailable"
+                              : i.status === "passed"
+                                ? "Needs attention"
+                                : label(i.status)}
+                        </span>
+                      </div>
                       {i.outcome === "blocked_funding" && (
                         <p>
                           This was a funding block, not a conversation-quality result. Fund the
@@ -282,6 +289,31 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                       )}
                       {i.failure && <p className="op-error">{i.failure}</p>}
                       {i.evidenceIssue && <p className="op-error">{i.evidenceIssue}</p>}
+                      <div
+                        className="of-test-evidence-grid"
+                        aria-label={`${i.name} evidence coverage`}
+                      >
+                        {testEvidence(i).map((assessment) => (
+                          <div key={assessment.key} className="of-test-evidence">
+                            <h5>{assessment.title}</h5>
+                            <strong className={`of-test-${assessment.state}`}>
+                              {assessment.state === "passed" ? (
+                                <CheckCircle2 size={16} />
+                              ) : assessment.state === "failed" ? (
+                                <AlertCircle size={16} />
+                              ) : (
+                                <Circle size={16} />
+                              )}
+                              {assessment.label}
+                            </strong>
+                            <p>{assessment.detail}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="of-test-next-action">
+                        <strong>Next step</strong>
+                        <p>{testNextAction(i)}</p>
+                      </div>
                       {!!i.toolEvents?.length && (
                         <details>
                           <summary>Actions attempted ({i.toolEvents.length})</summary>
@@ -299,12 +331,19 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                         </details>
                       )}
                       {i.recordingUrl && (
-                        <audio
-                          controls
-                          preload="none"
-                          src={i.recordingUrl}
-                          aria-label={`${i.name} recording`}
-                        />
+                        <div className="of-test-recording">
+                          <strong>Listen to the test</strong>
+                          <p className="of-test-note">
+                            Includes Emma and an AI-generated caller with a different voice. Audio
+                            plays only when you press play.
+                          </p>
+                          <audio
+                            controls
+                            preload="none"
+                            src={i.recordingUrl}
+                            aria-label={`${i.name} recording`}
+                          />
+                        </div>
                       )}
                       {!i.recordingUrl && ["passed", "failed"].includes(i.status) && (
                         <p className="of-test-note">
@@ -313,8 +352,15 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                         </p>
                       )}
                       <details>
-                        <summary>Transcript & assessment</summary>
+                        <summary>Read the transcript</summary>
                         <pre>{i.transcript || "No transcript returned."}</pre>
+                      </details>
+                      <details className="of-test-diagnostics">
+                        <summary>Technical assessment details</summary>
+                        <p className="of-test-note">
+                          Provider scoring and rubric definitions for investigation. OpenFolk’s
+                          independent checks can override a provider pass.
+                        </p>
                         <pre>{JSON.stringify(i.evaluations, null, 2)}</pre>
                       </details>
                     </article>

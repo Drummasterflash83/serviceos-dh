@@ -2,11 +2,23 @@
 
 Status: UI and private storage/access foundation implemented. **Not a live Birchills voicemail connector.**
 
-1 October launch release: the schema and protected playback function are deployed;
-the menu and honest awaiting-connection view are included in the combined testing
-release. No historical messages have been imported and no manager grants were added.
-Provider inventory confirmed new mailbox 603, extension 109 and ring group 306;
-inventory access does not establish a voicemail-message/audio feed.
+2 October launch check: the schema, private bucket and protected playback function
+are deployed. A read-only database check confirmed 12 DH mailbox bindings, zero
+imported messages and `awaiting_connection` on every mailbox. Explicit manager
+grants are present for **chris@openfolk.ai** and **heidi@drummondheating.co.uk** only
+(12 mailboxes each). The bucket remains private with a 25 MB limit.
+
+Only Heidi's mailbox 108 currently has an owner user ID. The other personal owners
+still require binding to their verified ServiceOS identity before they can access
+their own messages; a Birchills app invitation is not a ServiceOS identity grant.
+No owners were inferred or access expanded during this check. No historical
+messages have been imported.
+
+Provider inventory confirmed mailbox 603 (Emergency Call-Outs), extension 109
+(Rob - Commercial) and ring group 306 (Office Overflow). Inventory access does
+not establish a voicemail-message/audio feed. The UI now shows **Awaiting sync**
+instead of an apparent empty inbox for unsynced mailboxes, and explains the
+missing provider connection before a mailbox is opened.
 
 The DH receptionist menu adds Voicemails immediately after About your receptionist. OpenFolk has the same view. Mailbox owners and individually authorised managers only; an OpenFolk operator role alone does not unlock recordings. The migration grants nobody access.
 
@@ -15,7 +27,42 @@ The DH receptionist menu adds Voicemails immediately after About your receptioni
 The official Sipcentric API specification documents endpoint names/extensions, voicemail-enabled settings and notification email addresses. It links an endpoint voicemail subresource but does not document a message listing, audio download, or per-message email delivery API:
 https://github.com/sipcentric/pbx-api-docs/blob/master/api/v1.md
 
+The current Hosted PBX documentation confirms the same distinction:
+https://developer.simwood.com/docs/direct/api/v1/
+
+On 2 October, the existing server-side credential successfully read the DH
+endpoint inventory for provider customer 3950. The documented voicemail
+subresources for mailbox 601 (endpoint 9304) and 603 (endpoint 180997) both
+returned **HTTP 405**, with no message resource links. Endpoint discovery did
+not advertise a voicemail-message collection. This is not evidence that the
+mailboxes are empty, and does not justify guessing message URLs or polling the
+signed-in browser session.
+
 The existing adapter ingests ordinary phone calls and call recordings, not voicemail messages. Do not treat those as equivalent. The inspected Birchills Communicator currently shows call history and SMS, not a voicemail inbox. A verified message source is required before this feature can be called live.
+
+## Exact provider handoff needed
+
+Ask Birchills for a supported mechanism for **customer 3950** covering:
+
+1. A mailbox-scoped message list with stable message IDs, received times, caller
+   details, duration, pagination and retention/deletion behaviour.
+2. An authenticated retrieval method for the actual deposited message audio,
+   distinct from greetings and ordinary call recordings.
+3. A webhook or incremental cursor for new/changed messages, including replay,
+   signing/authentication, retries and event IDs.
+4. Per-message notification evidence where available: intended recipient,
+   accepted/sent versus delivered/failed, event time and reference ID.
+5. Mailbox 603 delivery to **both Rob and Tony**, without changing personal
+   mailboxes 109/105. If the provider supports only one notification address,
+   use an approved managed distribution address whose membership is verified;
+   do not put a comma-separated list into a single-address field.
+
+A supported voicemail-to-email feed is an alternative, not an already-active
+connector. Before building it, obtain an actual authorised sample, verified
+sender/authentication metadata, attachment format, mailbox identity and stable
+message identifier; configure a dedicated restricted recipient and retention.
+Forwarding all staff email or merely trusting a claimed From/subject is not
+acceptable. Import receipt is not proof that both engineers received their copy.
 
 ## Data and privacy
 

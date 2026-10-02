@@ -27,7 +27,6 @@
 import {
   createSupabaseAdmin,
   discoverCustomerId,
-  extractItems,
   failResponse,
   getSimwoodCredentials,
   isUuid,
@@ -38,6 +37,11 @@ import {
 } from "../_shared/simwood.ts";
 import { triggerPipelineBackground } from "../_shared/phone_pipeline.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
+import {
+  completeProviderPage,
+  providerPageItems,
+  syncWindowComplete,
+} from "../_shared/phone-sync-completeness.ts";
 
 // Safety cap: at most this many newly-inserted recordings auto-trigger the
 // pipeline per sync run (backstop against a large backfill flooding OpenAI).
@@ -213,6 +217,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   let processed = 0;
   let skippedNoId = 0;
   let pagesFetched = 0;
+  let exhausted = false;
   const referencedCallIds = new Set<string>();
   const newRecordingIds: string[] = [];
 
@@ -238,12 +243,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
     pagesFetched++;
 
-    const items = extractItems(result.data);
-    if (items.length === 0) break;
+    const items = providerPageItems(result.data);
+    if (!items)
+      return await finishFailed(
+        "invalid_provider_page",
+        "Provider returned an invalid recording list; cursor unchanged",
+        502,
+        processed,
+      );
+    if (items.length === 0) {
+      exhausted = true;
+      break;
+    }
 
     // Respect an explicit limit across pages.
     const room = limit && limit > 0 ? limit - processed : items.length;
     const slice = items.slice(0, Math.max(0, room));
+    exhausted = completeProviderPage({ returned: items.length, selected: slice.length, pageSize });
 
     const rows = slice
       .map((c) => {
@@ -309,6 +325,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (items.length < pageSize) break;
   }
 
+  if (!syncWindowComplete(exhausted, skippedNoId)) {
+    return await finishFailed(
+      "incomplete_window",
+      "Recording window is incomplete (page/record limit or missing provider IDs). The sync cursor must not advance; retry a smaller window.",
+      409,
+      processed,
+      { pages_fetched: pagesFetched, skipped_no_recording_id: skippedNoId, window_complete: false },
+    );
+  }
+
   // --- best-effort soft link check (never fails the sync) ------------------
   // Recordings carry provider_call_id/linked_id as the durable link. Here we
   // only *report* how many referenced calls already exist in phone_calls.
@@ -339,6 +365,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     customer_id: customerId,
     pages_fetched: pagesFetched,
     skipped_no_recording_id: skippedNoId,
+    window_complete: true,
     call_ids_referenced: referencedCallIds.size,
     linked_calls_matched: linkedCallsMatched,
     new_recordings: newRecordingIds.length,
@@ -363,5 +390,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     to,
     customer_id: customerId,
     sync_run_id: syncRunId,
+    window_complete: true,
   });
 });

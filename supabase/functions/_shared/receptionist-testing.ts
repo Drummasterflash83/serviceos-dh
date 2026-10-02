@@ -137,13 +137,13 @@ export function itemReport(raw: unknown) {
   const repeatedAnnouncement =
     typeof call.transcript === "string" &&
     call.transcript
-      .split(/\n(?=(?:User|AI|assistant):)/)
+      .split(/\n(?=(?:User|AI|assistant):)/i)
       .filter((turn: string) => /^(?:AI|assistant):/i.test(turn))
       .some(
         (turn: string) =>
           (
             turn.match(
-              /\bI(?:['’]ll| will)\s+(?:put you through|transfer you|connect you|try\b)/gi,
+              /\bI(?:(?:['’]ll| will)\s+(?:put you through|transfer you|connect you|try\b)| can\s+(?:put you through|transfer you|connect you)(?=\s+directly|[^.!?\n]*\bnow\b))/gi,
             ) ?? []
           ).length > 1,
       );

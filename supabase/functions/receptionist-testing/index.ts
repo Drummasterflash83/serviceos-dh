@@ -16,8 +16,12 @@ import {
   launchWordingModel,
   launchDialogueModel,
   launchClosingModel,
+  launchConsolidatedModel,
 } from "../_shared/receptionist-launch-wording.ts";
 import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts";
+import { startPhysicalTest, inspectPhysicalTest } from "../_shared/receptionist-physical-run.ts";
+import { launchConsistencyPatch } from "../_shared/receptionist-launch-consistency.ts";
+import { invokeFunction } from "../_shared/phone_pipeline.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
 import { timingSafeEqualStr } from "../_shared/marketing_tracking.ts";
 import {
@@ -108,6 +112,31 @@ Deno.serve(async (req) => {
         );
       actor = auth.data.user.id;
     }
+    // One pre-authorised, audited recovery sample. No arbitrary function, tenant
+    // or recording can be supplied; concurrent/repeated requests never resubmit.
+    if (body.action === "retry_pcm_sample" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001")
+        return reply({ error: "Unapproved recovery tenant" }, 403);
+      const auditId = "03a1ca11-7ba1-4869-a83d-16c9075a6431";
+      const recordingId = "d6793aeb-382c-4c93-a971-ffddbe63d579";
+      const reserved = await db.from("phone_operations_audit").insert({
+        id: auditId, tenant_id: body.tenantId, actor_user_id: actor,
+        actor_label: "OpenFolk launch maintenance", action: "pcm_recovery_requested",
+        resource_type: "phone_recording", resource_ref: recordingId,
+        reason: "Retry one verified private PCM derivative using existing processing pipeline; original retained; no force or new recipients.",
+      });
+      if (reserved.error) return reply({ error: "Recovery already reserved; inspect its saved outcome before any retry" }, 409);
+      const result = await invokeFunction("phone-process-pipeline", {
+        tenant_id: body.tenantId, recording_id: recordingId, force: false,
+      }, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const safe = { http: result.status, success: result.json?.success === true,
+        code: object(result.json?.error).code ?? null, stage: result.json?.stage ?? null };
+      await db.from("phone_operations_audit").update({
+        action: safe.success ? "pcm_recovery_completed" : "pcm_recovery_needs_review",
+        after_state: safe,
+      }).eq("id", auditId);
+      return reply(safe);
+    }
     // Read-only launch inspection. Fixed, verified DH account; never accept an
     // arbitrary provider URL or return SIP credentials / voicemail PINs.
     if (body.action === "provider_inventory" && service) {
@@ -191,6 +220,16 @@ Deno.serve(async (req) => {
       return r.status === 204 ? {} : await r.json();
     };
     const assistant = await api("assistant/" + settings.data.assistant_id);
+    if (["physical_start", "physical_inspect"].includes(body.action) && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001") return reply({ error: "Unapproved physical test tenant" }, 403);
+      return reply(body.action === "physical_start"
+        ? await startPhysicalTest(db, api, body.tenantId, actor, assistant, body.destination)
+        : await inspectPhysicalTest(db, api, body.tenantId, body.destination));
+    }
+    if (body.action === "phone_sources" && service && !scheduled) {
+      const numbers = await api("phone-number");
+      return reply({ numbers: list(numbers).filter((n) => n.assistantId === workspace.data.assistant_id).map((n) => ({ id: n.id, number: n.number, provider: n.provider, assistantId: n.assistantId })) });
+    }
     const toolIds = list(object(assistant.model).toolIds);
     if (toolIds.length > 20 || toolIds.some((x) => !UUID.test(x)))
       throw Error("Assistant tool configuration requires review.");
@@ -206,18 +245,23 @@ Deno.serve(async (req) => {
         "repair_candidate_wording",
         "repair_candidate_dialogue",
         "repair_candidate_closing",
+        "consolidate_candidate",
+        "candidate_consistency",
       ].includes(body.action) &&
       service &&
       !scheduled
     ) {
       if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || body.expectedHash !== hash)
         return reply({ error: "Candidate changed; inspect before updating" }, 409);
-      const model =
-        body.action === "repair_candidate_closing"
+      const consistency = body.action === "candidate_consistency" ? launchConsistencyPatch(assistant) : null;
+      const model = consistency?.model ?? (
+        body.action === "consolidate_candidate"
+          ? launchConsolidatedModel(assistant)
+          : body.action === "repair_candidate_closing"
           ? launchClosingModel(assistant)
           : body.action === "repair_candidate_dialogue"
             ? launchDialogueModel(assistant)
-            : launchWordingModel(assistant, tools);
+            : launchWordingModel(assistant, tools));
       const audit = await db
         .from("phone_operations_audit")
         .insert({
@@ -227,10 +271,14 @@ Deno.serve(async (req) => {
           action: "candidate_wording_repair_requested",
           resource_type: "vapi_test_candidate",
           resource_ref: assistant.id,
-          before_state: { model: assistant.model },
-          after_state: { model },
+          before_state: { model: assistant.model, firstMessage: assistant.firstMessage },
+          after_state: { model, firstMessage: consistency?.firstMessage ?? assistant.firstMessage },
           reason:
-            body.action === "repair_candidate_closing"
+            body.action === "candidate_consistency"
+              ? "Remove conflicting legacy handoff/lookup/safety-repeat rules; apply verified approved England/Wales holiday closure calendar. Candidate only, no telephone or voice changes."
+              : body.action === "consolidate_candidate"
+              ? "Consolidate duplicate handover instructions; evidence-led availability and consent. Preserve safety, routes, voice, shared tools and live assistant."
+              : body.action === "repair_candidate_closing"
               ? "One sales handover sentence and concise post-simulation closing. No route, safety or live assistant changes."
               : body.action === "repair_candidate_dialogue"
                 ? "Prevent repeated ordinary tool invocation; answer holiday follow-ups without repeating closed status. Live assistant and routes unchanged."
@@ -239,9 +287,14 @@ Deno.serve(async (req) => {
         .select("id")
         .single();
       if (audit.error) throw Error("Cannot save repair audit; no provider change sent");
-      await api("assistant/" + assistant.id, "PATCH", { model });
+      // A provider 5xx can follow an applied PATCH. Reconcile by GET, never
+      // blindly repeat a mutation or leave an applied version labelled failed.
+      let patchError: unknown = null;
+      try { await api("assistant/" + assistant.id, "PATCH", consistency ?? { model }); }
+      catch (error) { patchError = error; }
       const verified = await api("assistant/" + assistant.id);
       const matches =
+        (!consistency || verified.firstMessage === consistency.firstMessage) &&
         JSON.stringify(verified.model.messages) === JSON.stringify(model.messages) &&
         JSON.stringify(verified.model.toolIds) === JSON.stringify(model.toolIds) &&
         verified.model.tools?.length === 1 &&
@@ -255,7 +308,7 @@ Deno.serve(async (req) => {
         })
         .eq("id", audit.data.id);
       if (saved.error || !matches)
-        throw Error("Candidate read-back requires review; no retry sent");
+        throw Error(`Candidate read-back requires review; no retry sent${patchError ? "; provider response was uncertain" : ""}`);
       return reply({
         state: "verified",
         assistantId: assistant.id,
