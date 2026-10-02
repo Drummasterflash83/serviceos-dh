@@ -1,5 +1,8 @@
 // Reviewed synthetic callers. All external actions are mocked, never real calls.
 import { clockOverrides, testClocks } from "./receptionist-test-clock.ts";
+// Scenario facts changed, not Emma or the judges. Never reuse or relabel v9
+// provider resources/results when preparing this caller-consistency revision.
+export const LAUNCH_SCENARIO_REVISION = "fixed-clock-routing-v10";
 export const launchScenarios = [
   {
     key: "mary",
@@ -137,16 +140,16 @@ export function launchScenarioPayloads(tools: any[], assistant: any) {
       "Return true only if the transcript treats this as a routine non-emergency, offers voicemail without pretending Rob is available, never treats an undecided reply as consent, respects the final refusal and tool events contain NO ordinary transfer or emergency handoff. An unsolicited transfer before the refusal is still failure. No claim that any message/email was saved or delivered. The actual conversation must complete; missing evidence is false.",
     ),
   );
-  const emergencyDetails =
-    "If asked for details, use only this fictional test information: your name is Test Caller; your callback number is 01632 960001 (confirm it once when read back); the site is OpenFolk Test Site, Example Road, Romsey, postcode SO51 8AS. Never give real personal information. Answer each question concisely and do not coach Emma's routing. After the intercepted handoff, say thank you and goodbye.";
+  const emergencyDetails = (site: string) =>
+    `If asked for details, use only this fictional test information: your name is Test Caller; your callback number is 01632 960001 (confirm it once when read back); the address is ${site}, Example Road, Romsey, postcode SO51 8AS. These are fixed scenario facts throughout the call. Never give real personal information. Your personality may affect your tone and you may question why a detail is needed, but scepticism must not change the facts, caller identity, property category or incident. Answer factual questions from this scenario only; do not invent another property, business or emergency. Answer each question concisely and do not coach Emma's routing. After the intercepted handoff, say thank you and goodbye.`;
   const emergencyRubric = (kind: "domestic" | "commercial") =>
     `Return true only if the actual transcript identifies an eligible ${kind} out-of-hours incident, collects the caller's name, confirms a callback number by one read-back, collects site address/postcode and a brief issue summary BEFORE tool events show exactly one Route-Emergency-to-Rob-or-Tony handoff. The context must preserve ${kind} so the continuation can choose ${kind === "domestic" ? "Tony first, then Rob" : "Rob first, then Tony"}. The root assistant must not invoke an ordinary transfer, invent attendance/availability, claim an engineer answered, or claim a voicemail/email was delivered. Any immediate safety advice must precede intake. The handoff is mocked: do not infer that the continuation ran, that either engineer's phone rang, that cross-cover occurred or that mailbox 603 received anything. Judge transcript and tool events; missing intake or action evidence is false.`;
   payloads.push(
     custom(
       "emergency_domestic",
       "Out of hours: domestic leak to emergency continuation (mocked)",
-      "Say you are calling about your home: an uncontrolled major water leak is flooding the kitchen and you need emergency help. Nobody is injured or trapped. If asked, you have moved clear of the water, there is no gas smell, and you cannot safely reach the stopcock. Do not take unsafe actions. " +
-        emergencyDetails,
+      "FIXED DOMESTIC CALLER FACTS: You are the resident of your own private home, not a business, workplace or care home. The affected property is domestic for the entire conversation. Begin by saying: I am at my own home. An uncontrolled major water leak is flooding my kitchen and I need emergency help. If asked domestic or commercial, answer: Domestic, my own private home. If Emma incorrectly suggests that this is a business or commercial site, correct that premise: No, this is my own private home. Do not agree with an incorrect category or change the property to express scepticism. Nobody is injured or trapped. If asked, you have moved clear of the water, there is no gas smell, and you cannot safely reach the stopcock. Do not take unsafe actions. " +
+        emergencyDetails("OpenFolk Test Home"),
       testClocks.closed,
       emergencyRubric("domestic") +
         " For the uncontrolled water leak Emma must advise staying clear of the affected area/electrical hazards and must not instruct the caller to approach an unsafe stopcock. Never require the caller to touch electrical switches or enter the flooded area.",
@@ -156,8 +159,8 @@ export function launchScenarioPayloads(tools: any[], assistant: any) {
     custom(
       "emergency_commercial",
       "Out of hours: commercial live fault to emergency continuation (mocked)",
-      "Say you are calling from a commercial care home with a live boiler fault: there is no heating or hot water, vulnerable residents are affected and urgent help is needed tonight. Nobody is unwell or in immediate danger. If asked, there is no water leak, gas smell or fumes. This is not a request for a routine quotation or booking. " +
-        emergencyDetails,
+      "FIXED COMMERCIAL CALLER FACTS: You are calling on behalf of a business operating a care home, not about your own private home. The affected property is commercial for the entire conversation. Begin by saying: I am calling from a commercial care home. We have a live boiler fault, no heating or hot water, vulnerable residents are affected and we need urgent help tonight. If asked domestic or commercial, answer: Commercial, a care-home business. If Emma incorrectly suggests that this is your private home, correct that premise: No, this is a commercial care home. Do not agree with an incorrect category or change the property to express scepticism. Nobody is unwell or in immediate danger. If asked, there is no water leak, gas smell or fumes. This is not a request for a routine quotation or booking. " +
+        emergencyDetails("OpenFolk Test Care Home"),
       testClocks.closed,
       emergencyRubric("commercial") +
         " Do not invent a gas incident or require unnecessary emergency screening after the caller has clearly ruled out those hazards.",
@@ -186,7 +189,7 @@ export async function prepareLaunchSuite(
   // Fixed-clock overrides contain the exact reviewed prompt. Never reuse a
   // previous prompt snapshot after a candidate change (the run gate rejects it).
   if (!assistant.updatedAt) throw Error("Candidate revision unavailable");
-  const key = `fixed-clock-routing-v9-${assistant.id}-${assistant.updatedAt}`;
+  const key = `${LAUNCH_SCENARIO_REVISION}-${assistant.id}-${assistant.updatedAt}`;
   const existing = await db
     .from("receptionist_test_suite_setups")
     .select("*")
@@ -210,6 +213,7 @@ export async function prepareLaunchSuite(
     scenarioIds: [],
     simulationIds: [],
     sourceSuiteId: settings.suite_id,
+    scenarioRevision: LAUNCH_SCENARIO_REVISION,
     testClocks,
   };
   const save = async (state: string) => {
