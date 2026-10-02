@@ -186,7 +186,7 @@ export async function prepareLaunchSuite(
   // Fixed-clock overrides contain the exact reviewed prompt. Never reuse a
   // previous prompt snapshot after a candidate change (the run gate rejects it).
   if (!assistant.updatedAt) throw Error("Candidate revision unavailable");
-  const key = `fixed-clock-routing-v8-${assistant.id}-${assistant.updatedAt}`;
+  const key = `fixed-clock-routing-v9-${assistant.id}-${assistant.updatedAt}`;
   const existing = await db
     .from("receptionist_test_suite_setups")
     .select("*")

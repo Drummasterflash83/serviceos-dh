@@ -40,6 +40,99 @@ signed-in browser session.
 
 The existing adapter ingests ordinary phone calls and call recordings, not voicemail messages. Do not treat those as equivalent. The inspected Birchills Communicator currently shows call history and SMS, not a voicemail inbox. A verified message source is required before this feature can be called live.
 
+### Bounded recording recovery — separate from voicemail activation
+
+On 2 October, five existing failed ordinary-call recordings were converted from
+their verified GSM WAV source to private PCM16 mono/8 kHz derivatives. Original
+objects were retained; source and derivative SHA-256 hashes, exact tenant scope,
+and compare-and-swap reference updates were audited before the existing pipeline
+was retried once per recording. No new processor or recipient was introduced.
+
+All five retries returned success. A separate database read confirmed
+`stage = complete`, a completed transcript, stored audio and an analysis record
+for each ID:
+
+- `6674a6d9-3f4f-4da1-9642-20d55280da83`
+- `1c31d8b8-8914-4fa3-8adc-876c717de426`
+- `d2d8ac9f-9314-4fc7-990e-1a8552220035`
+- `3b39a52c-10f0-425b-85ae-9e3412d827a1`
+- `6d9035bf-b658-4117-90d1-dcb29d14049b`
+
+The near-empty 125-byte source was not retried. This demonstrates a successful
+bounded recovery, not that GSM encoding was the only cause of all failures;
+completed comparator recordings also used that codec. It does **not** provide
+Birchills voicemail-message ingestion, mailbox receipt or email-delivery proof.
+
+Internal maintenance logs were additionally restricted with migration
+`20261028150000_phone_operations_audit_private`: the existing Chris-only active
+OpenFolk administrator gate is required, including its client-preview denial.
+All 16 then-existing audit records were preserved. Rollback-only live SQL tests
+proved Chris and the service role retained access while Heidi/client-manager,
+missing-identity and anonymous reads returned no records. Customer progress
+remains in the separate customer-facing feedback records, not raw provider
+configuration or internal test transcripts.
+
+### Original Alan greeting recovery — 2 October
+
+The existing 29 September rollback notes identify the original files in
+`/Users/chrisdrummond/Documents/DH Works/voicemail-audio/`. Silent transcription
+of exactly these two SHA-256-pinned files through the already-approved OpenFolk
+review key found an important filename/content mismatch:
+
+- `Alan_unavailable.mp3` (238,584 bytes,
+  `39af89039edced814102a72639774cc73547fce57aaf6965952eb1459f453040`)
+  correctly says: “Hi, you've reached Alan's voicemail at Drummonds. He's away
+  from his desk just now, so please leave your name, your number, and a short
+  message after the tone. Alan will get back to you as soon as he can. Thanks!”
+- `Alan_busy.mp3` (235,658 bytes,
+  `7ce6294868f86cf3b108125c90600d3896e76ad437251bd76d410e1c07578315`)
+  says **Tony**, not Alan. Do not restore it based on its filename.
+
+The correct unavailable original was subsequently edited locally to remove only
+the away-from-desk clause and its joining “so”, leaving a neutral greeting suitable
+for busy or unavailable use in the same original voice. No speech was generated.
+The word-timed cut is 2.90–5.35 seconds with a 10 ms crossfade between quiet
+segments (−59.3/−60.3 dBFS); the splice's maximum adjacent-sample jump is 11/32768,
+the source-rate edited audio has no clipped samples and peaks at −3.02 dBFS.
+The final 8 kHz mono PCM16 WAV is 11.411 seconds / 186,672 bytes:
+
+- `/private/tmp/Alan_neutral.wav`
+- SHA-256: `66a96d4edaec54fb32ead4b6f6700cf804c7e4c9164a1f98c2a1c99da3d7ad68`
+- Manifest: `/private/tmp/Alan_neutral_manifest.json`
+
+Independent transcription of that exact final WAV, without a content/name prompt,
+confirmed: “Hi, you've reached Alan's voicemail at Drummonds. Please leave your
+name, your number, and a short message after the tone. Alan will get back to you
+as soon as he can. Thanks!” This is an automated wording/signal check, not a claim
+of subjective listening or an end-to-end phone acceptance test.
+
+Verification did not change Birchills. The one-off
+`receptionist-greeting-verify` helper accepts only those two originals and the
+exact pinned neutral derivative, requires
+a signed service request plus the existing Chris-only actor gate, reserves one
+private audit ID per file before transcription, never retries uncertainty, and
+expires on 3 October UTC. The original unavailable file alone additionally has
+one fixed word-timing reservation using the same processor's documented
+`whisper-1` timestamp option. No caller recordings, new processor, arbitrary source
+URL or new credential were used. Both successful results are retained in the
+private audit; unauthenticated access was verified to return HTTP 401. Restoration
+to the two Alan104 greeting slots is a separate provider write; preparation does
+not itself claim that the provider has been updated.
+
+After both Alan104 slots were saved through Birchills, a separate GET-only
+read-back of provider endpoint 9356's `busy` and `unavail` greeting resources
+returned HTTP 200 and **bit-identical PCM audio** to the approved neutral file.
+Birchills removed WAV padding: both returned 182,620-byte files with full SHA-256
+`ed2f6d4fd41e0441d98706796fd7c3181dd6b422093c53fdfc091875a6e026c1`.
+Their 182,576-byte PCM payloads both match
+`fb10bc360eedd7dc9647c83f79f8cd1e91055dd2779d6caa9508149cbd9cdae6`.
+The fixed private remediation audit
+`03a1c104-7ba1-4869-a83d-16c9075a6432` records
+`alan_greetings_restored_verified`, both match flags, audio/transcript hashes and
+the original failed-call context. Rob109 was not accessed or changed by this
+verification. The prior physical failure remains historical evidence; the
+correct current label is **provider greeting restored; fresh call retest pending**.
+
 ## Exact provider handoff needed
 
 Ask Birchills for a supported mechanism for **customer 3950** covering:

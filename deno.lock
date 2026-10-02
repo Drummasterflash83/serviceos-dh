@@ -39,7 +39,7 @@
         "npm:@tailwindcss/vite@^4.2.1",
         "npm:@tanstack/react-query@^5.83.0",
         "npm:@tanstack/react-router@^1.168.25",
-        "npm:@tanstack/react-start@^1.167.50",
+        "npm:@tanstack/react-start@1.168.60",
         "npm:@tanstack/router-plugin@^1.167.28",
         "npm:@types/node@^22.16.5",
         "npm:@types/react-dom@^19.2.0",

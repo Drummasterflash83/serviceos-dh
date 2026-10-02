@@ -35,6 +35,7 @@ type Review = {
   assistant_version: string | null;
   created_at: string;
   assessment: {
+    source?: string;
     decision?: "change_recommended" | "clarification_required" | "no_change_recommended";
     feedbackResponse?: string;
     unchanged?: string[];
@@ -349,6 +350,12 @@ function TaskDetail({ issue }: { issue: DeskIssue }) {
             {busy ? "Working…" : "Review this call"}
           </button>
         </div>
+        {assessment?.source === "scheduled_feedback_review" && (
+          <p className="fd-muted">
+            OpenFolk reviewed this feedback automatically. The recommendation is ready for your
+            decision; Emma has not been changed.
+          </p>
+        )}
         {review.isError ? (
           <p role="alert">{review.error.message}</p>
         ) : review.data?.state === "failed" ? (

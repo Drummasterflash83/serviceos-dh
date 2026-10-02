@@ -47,6 +47,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { persistSession: false } },
     );
+    if (serviceGate && !serviceGate.error) {
+      const actor = await db.auth.admin.getUserById(body.actorId);
+      if (actor.error || actor.data.user?.email?.toLowerCase() !== "chris@openfolk.ai")
+        return reply({ error: "OpenFolk administrator required" }, 403);
+    }
     const workspace = await db
       .from("receptionist_workspaces")
       .select("tenant_id")
@@ -99,6 +104,7 @@ Deno.serve(async (req) => {
         .select("call_id", { head: true, count: "exact" })
         .eq("tenant_id", body.tenantId)
         .eq("state", "reviewed"),
+      db.rpc("care_auto_review_counts", { p_tenant: body.tenantId }),
     ]);
     if (result.some((r) => r.error))
       return reply({ error: "Capture evidence could not be refreshed" }, 502);
@@ -113,6 +119,7 @@ Deno.serve(async (req) => {
       connector,
       reviewSettings,
       reviews,
+      reviewCounts,
     ] = result;
     const accounts = connector.data
       ? await db
@@ -161,6 +168,12 @@ Deno.serve(async (req) => {
         state: reviewSettings.data?.scan_state ?? "not_configured",
         lastScanAt: reviewSettings.data?.last_scan_at ?? null,
         savedReviews: reviews.count,
+        pending: reviewCounts.data?.pending ?? null,
+        needsReview: reviewCounts.data?.needsReview ?? null,
+        alertsNeedReview: reviewCounts.data?.alertsNeedReview ?? null,
+        liveReviewed: reviewCounts.data?.liveReviewed ?? null,
+        practiceReviewed: reviewCounts.data?.practiceReviewed ?? null,
+        feedbackRevisionsReviewed: reviewCounts.data?.feedbackRevisionsReviewed ?? null,
       },
       localLegsIncluded:
         (accounts.data?.length ?? 0) > 0 &&

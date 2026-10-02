@@ -25,7 +25,8 @@ type Run = {
   created_at: string;
   assistant_hash: string;
   slack_state: string;
-  report: { items?: Item[]; error?: string; configurationChanged?: boolean };
+  report: { items?: Item[]; error?: string; configurationChanged?: boolean;
+    harnessCheck?: { state: string; detail: string; checkedAt: string } };
 };
 type Status = {
   settings: { label: string; production: boolean };
@@ -33,6 +34,10 @@ type Status = {
   checks: Check[];
   suite: { name: string; scenarioCount: number };
   runs: Run[];
+  budget?: { normalRunsPerRolling24Hours: number; launchAllowance: {
+    maximumExtraRuns: number; remainingExtraRuns: number; expiresAt: string; serviceOnly: boolean;
+  } | null };
+  physicalChecks?: { id: string; label: string; detail: string; state: string; checkedAt: string; providerCallId: string }[];
 };
 const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
@@ -149,9 +154,15 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
           </button>
         </div>
         <p className="of-test-note">
-          Uses Vapi credits. One run at a time, up to 8 runs a day. Action tools are intercepted:
+          Uses Vapi credits. One run at a time, normally up to 8 runs in a rolling 24 hours. Action tools are intercepted:
           these tests do not ring the team or change the live assistant.
         </p>
+        {data?.budget?.launchAllowance && (
+          <p className="of-test-note">
+            One-off launch allowance: {data.budget.launchAllowance.remainingExtraRuns} of {data.budget.launchAllowance.maximumExtraRuns} extra
+            {" "}isolated runs remain until {date(data.budget.launchAllowance.expiresAt)}. OpenFolk service maintenance only; normal safeguards stay in place.
+          </p>
+        )}
       </header>
       {error && (
         <p className="op-error" role="alert">
@@ -187,6 +198,22 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
               ))}
             </div>
           </div>
+          {!!data.physicalChecks?.length && (
+            <div className="of-test-card">
+              <h3>Real phone checks</h3>
+              <p>Recorded observations from authorised calls to the actual Birchills numbers. These are separate from the simulated voice checks.</p>
+              <div className="of-test-checks">
+                {data.physicalChecks.map(c => (
+                  <div key={c.id} className={`of-test-check ${c.state === "needs_attention" ? "of-test-failed" : "of-test-not_tested"}`}>
+                    {c.state === "needs_attention" ? <AlertCircle size={20} /> : <Circle size={20} />}
+                    <div><strong>{c.label}</strong><p>{c.detail}</p><p className="of-test-note">{date(c.checkedAt)} · Call {c.providerCallId.slice(0, 8)}</p></div>
+                    <span>{c.state === "needs_attention" ? "Needs attention" : "Observed"}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="of-test-note">Still to prove: two-way handset audio, emergency primary/backup order, emergency mailbox 603 and receipt by both engineers. No automatic live calls run from this page.</p>
+            </div>
+          )}
           <div className="of-test-card">
             <h3>Voice evidence</h3>
             <p>
@@ -238,6 +265,11 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
                     .
                   </p>
                   {r.report.error && <p role="alert">{r.report.error}</p>}
+                  {r.report.harnessCheck && (
+                    <p className={["changed", "unavailable"].includes(r.report.harnessCheck.state) ? "op-error" : undefined}>
+                      Test setup: {r.report.harnessCheck.detail}
+                    </p>
+                  )}
                   {r.provider_id && (
                     <a
                       href={`https://dashboard.vapi.ai/simulations/run/${r.provider_id}`}

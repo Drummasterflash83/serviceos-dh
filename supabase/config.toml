@@ -315,6 +315,10 @@ verify_jwt = false
 [functions.phone-capture-coverage]
 verify_jwt = false
 
+# Private existing scheduler credential; no browser invocation.
+[functions.receptionist-review-collector]
+verify_jwt = false
+
 # Uses the existing platform scheduler secret, never a browser session.
 [functions.receptionist-test-collector]
 verify_jwt = false
