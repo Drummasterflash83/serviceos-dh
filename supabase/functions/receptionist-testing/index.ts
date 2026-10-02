@@ -497,7 +497,7 @@ Deno.serve(async (req) => {
       });
       if (reserved.error)
         throw Error(body.useLaunchAllowance === true
-          ? "Another test is active, the two-minute cooldown applies, or the dated two-run launch allowance is unavailable. No provider run was sent."
+          ? "Another test is active, the two-minute cooldown applies, or the dated launch allowance is unavailable. No provider run was sent."
           : "Another test is active, or the test usage safeguard was reached.");
       reservation = reserved.data;
       // Persist preflight evidence BEFORE submitting a paid provider run.
