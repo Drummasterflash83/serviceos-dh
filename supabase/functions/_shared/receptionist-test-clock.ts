@@ -10,7 +10,9 @@ export function clockOverrides(assistant: any, clock: string) {
   const replace = (s: string) => s.replace(/(["'])now\1(?=\s*\|\s*date\s*:)/g, `"${clock}"`);
   return {
     firstMessage: replace(assistant.firstMessage ?? ""),
-    maxDurationSeconds: 120,
+    // Allow adversarial callers time to finish intake. This is not a latency
+    // pass and does not change any live assistant's duration or success rubric.
+    maxDurationSeconds: 180,
     model: {
       provider: assistant.model.provider,
       model: assistant.model.model,

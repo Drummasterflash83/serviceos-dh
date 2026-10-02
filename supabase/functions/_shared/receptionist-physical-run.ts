@@ -1,15 +1,16 @@
-import { physicalTestCall } from "./receptionist-physical-test.ts";
+import { physicalTestCall, physicalVoicemailTestCall } from "./receptionist-physical-test.ts";
 // Fixed one-off IDs make retries return the original audit, never another call.
 const tests: Record<string, string> = {
   office601: "03a1c601-7ba1-4869-a83d-16c9075a6431",
   rob109: "03a1c109-7ba1-4869-a83d-16c9075a6431",
   alan104: "03a1c104-7ba1-4869-a83d-16c9075a6431",
+  office601Deposit: "03a1c602-7ba1-4869-a83d-16c9075a6431",
 };
 const sourceId = "f498d946-a70a-48c1-9728-ae9bc1ef2966";
 export async function startPhysicalTest(db: any, api: any, tenant: string, actor: string, assistant: any, destination: string) {
   const id = tests[destination];
   if (!id) throw Error("Unapproved physical test destination");
-  const payload = physicalTestCall({ tenantId: tenant, destination, phoneNumberId: sourceId, auditId: id, voice: assistant.voice, now: new Date() });
+  const payload = (destination === "office601Deposit" ? physicalVoicemailTestCall : physicalTestCall)({ tenantId: tenant, destination: destination === "office601Deposit" ? "office601" : destination, phoneNumberId: sourceId, auditId: id, voice: assistant.voice, now: new Date() });
   const source = await api("phone-number/" + sourceId);
   if (source.number !== "+447426924154" || source.assistantId !== "4eb2bee8-ac25-47c9-b962-409ed250ceb6")
     throw Error("Physical test source changed");

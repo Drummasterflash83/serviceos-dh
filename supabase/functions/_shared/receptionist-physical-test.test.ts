@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertPhysicalTestWindow, physicalTestCall, PHYSICAL_TEST_DESTINATIONS } from "./receptionist-physical-test.ts";
+import { assertPhysicalTestWindow, physicalTestCall, physicalVoicemailTestCall, PHYSICAL_TEST_DESTINATIONS } from "./receptionist-physical-test.ts";
 
 const input = {
   tenantId: "00000000-0000-0000-0000-000000000001",
@@ -58,4 +58,55 @@ test("voice is the existing approved voice; credentials, fallbacks, URLs and too
     assert.throws(() => physicalTestCall({ ...input, voice: changed }));
   assert.throws(() => physicalTestCall({ ...input, phoneNumberId: "unverified" }));
   assert.throws(() => physicalTestCall({ ...input, auditId: "inject instructions" }));
+});
+
+test("voicemail v2 uses Vapi's fixed-script tool and the same processors, only for office 601", () => {
+  const call = physicalVoicemailTestCall(input);
+  const original = physicalTestCall(input);
+  assert.equal(call.customer.number, "+441794840043");
+  assert.equal(call.assistant.voicemailDetection, "off");
+  assert.deepEqual(call.assistant.voice, original.assistant.voice);
+  assert.deepEqual(call.assistant.transcriber, original.assistant.transcriber);
+  assert.equal(call.assistant.model.provider, original.assistant.model.provider);
+  assert.equal(call.assistant.model.model, original.assistant.model.model);
+  assert.equal(call.assistant.maxDurationSeconds, 60);
+  assert.equal(call.assistant.silenceTimeoutSeconds, 55);
+  assert.equal(call.assistant.firstMessageMode, "assistant-waits-for-user");
+  assert.equal(call.assistant.startSpeakingPlan.waitSeconds, 3);
+  assert.equal(call.assistant.metadata.physicalTestRevision, "office-voicemail-v2");
+  assert.deepEqual(call.assistant.model.tools.map(tool => tool.type), ["voicemail", "endCall"]);
+  const voicemail = call.assistant.model.tools[0];
+  assert.equal(voicemail.function?.name, "leave_office_test_voicemail");
+  assert.equal(voicemail.messages?.[0].type, "request-start");
+  assert.match(voicemail.messages?.[0].content ?? "", /No customer action is required/);
+  assert.match(voicemail.messages?.[0].content ?? "", /shared office mailbox six zero one/);
+  assert.match(voicemail.messages?.[0].content ?? "", /Test reference 0 0 0 0 0 0 0 0/);
+  assert.doesNotMatch(JSON.stringify(call), /gemini|transferCall|assistantId|schedulePlan|https:/);
+  for (const destination of ["rob109", "alan104", "emergency603", "+441794341600", "__proto__"])
+    assert.throws(() => physicalVoicemailTestCall({ ...input, destination }), /authorised only/);
+});
+
+test("voicemail v2 differentiates recorded greeting from abort and preserves immediate human stop", () => {
+  const prompt = physicalVoicemailTestCall(input).assistant.model.messages[0].content;
+  assert.match(prompt, /recorded Drummond's office greeting/);
+  assert.match(prompt, /not reasons to hang up/);
+  assert.match(prompt, /COMPLETE recorded greeting/);
+  assert.match(prompt, /beep may not be transcribed/);
+  assert.match(prompt, /Never call endCall alongside it/);
+  assert.match(prompt, /asks you to stop or declines, end immediately/);
+  assert.match(prompt, /explicit OTHER personal mailbox/);
+  assert.match(prompt, /independently find the new message in mailbox 601/);
+  assert.match(prompt, /play it back before marking receipt verified/);
+});
+
+test("voicemail v2 keeps original validation, avoids mutation and fails closed outside the window", () => {
+  const before = JSON.stringify(input);
+  const initial = physicalTestCall(input);
+  physicalVoicemailTestCall(input);
+  assert.equal(JSON.stringify(input), before);
+  assert.deepEqual(physicalTestCall(input), initial);
+  assert.throws(() => physicalVoicemailTestCall({ ...input, tenantId: "other" }), /tenant/);
+  assert.throws(() => physicalVoicemailTestCall({ ...input, auditId: "fake" }), /audit reference/);
+  assert.throws(() => physicalVoicemailTestCall({ ...input, now: new Date("2026-10-02T06:58:00Z") }), /window is closed/);
+  assert.throws(() => physicalVoicemailTestCall({ ...input, voice: { ...input.voice, provider: "newProcessor" } }), /voice changed/);
 });

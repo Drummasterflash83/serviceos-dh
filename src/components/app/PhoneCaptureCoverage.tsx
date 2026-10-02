@@ -30,9 +30,16 @@ type Coverage = {
     state: string;
     lastScanAt: string | null;
     savedReviews: number | null;
+    pending: number | null;
+    needsReview: number | null;
+    alertsNeedReview: number | null;
+    liveReviewed: number | null;
+    practiceReviewed: number | null;
+    feedbackRevisionsReviewed: number | null;
   };
 };
-const number = (n: number | null) => (n === null ? "Not verified" : n.toLocaleString("en-GB"));
+const number = (n: number | null | undefined) =>
+  typeof n === "number" ? n.toLocaleString("en-GB") : "Not verified";
 const stamp = (s: string | null) =>
   s
     ? new Date(s).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })
@@ -173,15 +180,36 @@ export function PhoneCaptureCoverage({ tenantId }: { tenantId: string }) {
           <div className="mt-4 rounded-xl bg-[#f5f1f8] p-4 text-sm text-[#2d243f]">
             <p className="font-semibold">Emma’s automatic call reviews</p>
             <p className="mt-1">
-              {data.emmaReview?.enabled
-                ? `Configured · last scan ${stamp(data.emmaReview.lastScanAt)}`
-                : "Not enabled. Practice feedback reviews and PBX call analysis are separate."}
+              {!data.emmaReview
+                ? "Automatic review status has not been verified."
+                : data.emmaReview.enabled
+                  ? `Configured · last scan ${stamp(data.emmaReview.lastScanAt)}`
+                  : "Not enabled. Practice feedback reviews and PBX call analysis are separate."}
             </p>
             {data.emmaReview && (
-              <p className="mt-1 text-xs text-slate-600">
-                {number(data.emmaReview.savedReviews)} saved call reviews · scan state:{" "}
-                {data.emmaReview.state}
-              </p>
+              <div className="mt-2 space-y-1 text-xs text-slate-600">
+                <p>
+                  {number(data.emmaReview.savedReviews)} saved call reviews · scan state:{" "}
+                  {data.emmaReview.state}
+                </p>
+                <p>
+                  {number(data.emmaReview.liveReviewed)} live calls reviewed ·{" "}
+                  {number(data.emmaReview.practiceReviewed)} practice calls reviewed ·{" "}
+                  {number(data.emmaReview.pending)} queued or awaiting evidence
+                </p>
+                <p>
+                  {number(data.emmaReview.needsReview)} reviews need attention ·{" "}
+                  {number(data.emmaReview.alertsNeedReview)} alert deliveries need checking
+                </p>
+                <p>
+                  {number(data.emmaReview.feedbackRevisionsReviewed)} feedback revisions assessed.
+                  New or edited feedback is checked separately without counting the same call twice.
+                </p>
+                <p>
+                  Evidence-based text review, not an audio-quality certification. Up to 100 review
+                  attempts per day; excess calls stay queued. Emma is never changed automatically.
+                </p>
+              </div>
             )}
           </div>
           <p className="mt-4 text-xs text-slate-500">

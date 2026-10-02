@@ -22,6 +22,11 @@ import { prepareLaunchSuite } from "../_shared/receptionist-launch-scenarios.ts"
 import { startPhysicalTest, inspectPhysicalTest } from "../_shared/receptionist-physical-run.ts";
 import { launchConsistencyPatch } from "../_shared/receptionist-launch-consistency.ts";
 import { invokeFunction } from "../_shared/phone_pipeline.ts";
+import { DH_APPROVED_REVIEW_POLICY } from "../_shared/receptionist-launch-review-policy.ts";
+import { clearLaunchModel } from "../_shared/receptionist-launch-clear-contract.ts";
+import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
+import { PHYSICAL_EVIDENCE_IDS, physicalEvidence } from "../_shared/receptionist-physical-evidence.ts";
+import { captureTestHarness, compareTestHarness, inspectTestPersonality } from "../_shared/receptionist-test-harness.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
 import { timingSafeEqualStr } from "../_shared/marketing_tracking.ts";
 import {
@@ -47,6 +52,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
   let reservation: string | null = null,
     submitted = false;
+  let harnessSnapshot: Awaited<ReturnType<typeof captureTestHarness>> | null = null;
   const db = dbClient();
   try {
     const authHeader = req.headers.get("authorization") ?? "";
@@ -117,8 +123,13 @@ Deno.serve(async (req) => {
     if (body.action === "retry_pcm_sample" && service && !scheduled) {
       if (body.tenantId !== "00000000-0000-0000-0000-000000000001")
         return reply({ error: "Unapproved recovery tenant" }, 403);
-      const auditId = "03a1ca11-7ba1-4869-a83d-16c9075a6431";
-      const recordingId = "d6793aeb-382c-4c93-a971-ffddbe63d579";
+      const recoveryIds = ["d6793aeb-382c-4c93-a971-ffddbe63d579", "6674a6d9-3f4f-4da1-9642-20d55280da83", "1c31d8b8-8914-4fa3-8adc-876c717de426", "d2d8ac9f-9314-4fc7-990e-1a8552220035", "3b39a52c-10f0-425b-85ae-9e3412d827a1", "6d9035bf-b658-4117-90d1-dcb29d14049b"];
+      const recordingId = body.recordingId ?? recoveryIds[0];
+      if (!recoveryIds.includes(recordingId)) return reply({ error: "Unapproved recovery sample" }, 403);
+      const auditId = recordingId === recoveryIds[0] ? "03a1ca11-7ba1-4869-a83d-16c9075a6431" : recordingId;
+      const sample = await db.from("phone_recordings").select("storage_path").eq("id", recordingId).eq("tenant_id", body.tenantId).single();
+      if (sample.error || sample.data?.storage_path !== `${body.tenantId}/simwood/recordings/pcm/${recordingId}.wav`)
+        return reply({ error: "Verified private PCM derivative required" }, 409);
       const reserved = await db.from("phone_operations_audit").insert({
         id: auditId, tenant_id: body.tenantId, actor_user_id: actor,
         actor_label: "OpenFolk launch maintenance", action: "pcm_recovery_requested",
@@ -219,7 +230,54 @@ Deno.serve(async (req) => {
       }
       return r.status === 204 ? {} : await r.json();
     };
+    if (body.action === "promote_launch_candidate") {
+      if (!service || scheduled)
+        return reply({ error: "Explicit OpenFolk service maintenance required for launch publication." }, 403);
+      try {
+        const result = await launchPromotion(db, api, settings.data, workspace.data, actor, body.expectedHash);
+        return reply(result, result.state === "applied" ? 200 : 409);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "";
+        // Provider PATCH may succeed before its response/audit fails. Never
+        // route this branch into the generic 'no live assistant changed' text.
+        // Only our fixed, secret-free guard messages can reach the operator.
+        return reply({
+          error: /^(Launch |Latest launch |Every launch |Live Emma |Private launch |OpenFolk launch )/.test(message)
+            ? message
+            : "Launch publication needs review. Inspect the saved publication state before another action.",
+          providerState: "review_required",
+          automaticRetrySent: false,
+        }, 409);
+      }
+    }
     const assistant = await api("assistant/" + settings.data.assistant_id);
+    if (body.action === "inspect_suite" && service && !scheduled) {
+      const suite = await api("eval/simulation/suite/" + settings.data.suite_id);
+      const simulation = await api("eval/simulation/" + suite.simulationIds[0]);
+      const personality = await api("eval/simulation/personality/" + simulation.personalityId);
+      return reply({ suiteId: suite.id, personality: inspectTestPersonality(personality) });
+    }
+    if (body.action === "enable_auto_review" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001" || workspace.data.assistant_id !== "4eb2bee8-ac25-47c9-b962-409ed250ceb6")
+        return reply({ error: "Unapproved automatic-review workspace" }, 403);
+      const live = await api("assistant/" + workspace.data.assistant_id);
+      const snapshotHash = await evidenceHash(live);
+      const existing = await db.from("receptionist_review_settings").select("enabled,version").eq("tenant_id", body.tenantId).maybeSingle();
+      if (existing.error) throw Error("Review settings unavailable");
+      if (existing.data?.enabled) return reply({ enabled: true, alreadyEnabled: true });
+      const rules = `${DH_APPROVED_REVIEW_POLICY}\nProduction configuration fingerprint at activation: ${snapshotHash}. Historical call-time configuration may differ. Use the approved policy above to assess defects, not assume the deployed configuration is correct.`;
+      const audit = await db.from("phone_operations_audit").insert({ tenant_id: body.tenantId, actor_user_id: actor, actor_label: "OpenFolk launch maintenance", action: "automatic_review_enable_requested", resource_type: "receptionist_review_settings", resource_ref: body.tenantId, after_state: { productionAssistantId: live.id, configurationHash: snapshotHash, automaticProviderChanges: false, maxPaidAttemptsPerDay: 100, maxReviewsPerRun: 2 }, reason: "User requested continuous call/feedback review. Uses existing approved OpenFolk AI processor and verified alert routes, no autonomous provider edits." }).select("id").single();
+      if (audit.error) throw Error("Review activation audit unavailable");
+      const enabled = await db.from("receptionist_review_settings").upsert({ tenant_id: body.tenantId, enabled: true, approved_rules: rules, version: (existing.data?.version ?? 0) + 1, updated_by: actor, updated_at: new Date().toISOString() });
+      if (enabled.error) throw Error("Review activation needs reconciliation");
+      await db.from("phone_operations_audit").update({ action: "automatic_review_enabled" }).eq("id", audit.data.id);
+      return reply({ enabled: true, automaticProviderChanges: false, maxReviewsPerRun: 2, maxPaidAttemptsPerDay: 100 });
+    }
+    if (body.action === "run_auto_review" && service && !scheduled) {
+      if (body.tenantId !== "00000000-0000-0000-0000-000000000001") return reply({ error: "Unapproved review workspace" }, 403);
+      const response = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/receptionist-review-collector`, { method: "POST", headers: { "content-type": "application/json", "x-schedule-secret": Deno.env.get("WORKER_SECRET")! }, body: "{}", signal: AbortSignal.timeout(120000) });
+      return reply(await response.json(), response.status);
+    }
     if (["physical_start", "physical_inspect"].includes(body.action) && service && !scheduled) {
       if (body.tenantId !== "00000000-0000-0000-0000-000000000001") return reply({ error: "Unapproved physical test tenant" }, 403);
       return reply(body.action === "physical_start"
@@ -247,6 +305,7 @@ Deno.serve(async (req) => {
         "repair_candidate_closing",
         "consolidate_candidate",
         "candidate_consistency",
+        "streamline_candidate",
       ].includes(body.action) &&
       service &&
       !scheduled
@@ -255,7 +314,7 @@ Deno.serve(async (req) => {
         return reply({ error: "Candidate changed; inspect before updating" }, 409);
       const consistency = body.action === "candidate_consistency" ? launchConsistencyPatch(assistant) : null;
       const model = consistency?.model ?? (
-        body.action === "consolidate_candidate"
+        body.action === "streamline_candidate" ? clearLaunchModel(assistant) : body.action === "consolidate_candidate"
           ? launchConsolidatedModel(assistant)
           : body.action === "repair_candidate_closing"
           ? launchClosingModel(assistant)
@@ -274,7 +333,9 @@ Deno.serve(async (req) => {
           before_state: { model: assistant.model, firstMessage: assistant.firstMessage },
           after_state: { model, firstMessage: consistency?.firstMessage ?? assistant.firstMessage },
           reason:
-            body.action === "candidate_consistency"
+            body.action === "streamline_candidate"
+              ? "Replace accumulated conflicting historical prompt patches with one ordered approved contract and computed office status; preserve voice, tools, all destinations and live assistant."
+              : body.action === "candidate_consistency"
               ? "Remove conflicting legacy handoff/lookup/safety-repeat rules; apply verified approved England/Wales holiday closure calendar. Candidate only, no telephone or voice changes."
               : body.action === "consolidate_candidate"
               ? "Consolidate duplicate handover instructions; evidence-led availability and consent. Preserve safety, routes, voice, shared tools and live assistant."
@@ -362,6 +423,20 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(20);
       if (history.error) throw Error("Test history unavailable.");
+      // Only reviewed, fixed physical test records may reach this operator view.
+      // Never expose whole audit rows or infer delivery from a spoken message.
+      const physical = await db.from("phone_operations_audit")
+        .select("id,tenant_id,resource_type,action,after_state")
+        .eq("tenant_id", body.tenantId)
+        .in("id", PHYSICAL_EVIDENCE_IDS);
+      if (physical.error) throw Error("Testing physical evidence unavailable.");
+      const allowance = await db.from("receptionist_test_launch_allowances")
+        .select("starts_at,ends_at,max_runs,used_run_ids,assistant_id")
+        .eq("tenant_id", body.tenantId).maybeSingle();
+      const grant = allowance.error ? null : allowance.data;
+      const now = Date.now();
+      const activeAllowance = grant && grant.assistant_id === settings.data.assistant_id &&
+        now >= Date.parse(grant.starts_at) && now < Date.parse(grant.ends_at);
       const suite = await api("eval/simulation/suite/" + settings.data.suite_id);
       return reply({
         settings: {
@@ -374,9 +449,18 @@ Deno.serve(async (req) => {
         checks,
         suite: { name: suite.name, scenarioCount: list(suite.simulationIds).length },
         runs: history.data,
+        physicalChecks: physicalEvidence(physical.data ?? [], body.tenantId),
+        budget: { normalRunsPerRolling24Hours: 8, launchAllowance: activeAllowance ? {
+          maximumExtraRuns: grant.max_runs,
+          remainingExtraRuns: Math.max(0, grant.max_runs - list(grant.used_run_ids).length),
+          expiresAt: grant.ends_at,
+          serviceOnly: true,
+        } : null },
       });
     }
     if (body.action === "run") {
+      if (body.useLaunchAllowance === true && (!service || scheduled))
+        return reply({ error: "The bounded launch allowance is available only to explicit OpenFolk service maintenance." }, 403);
       if (body.expectedHash !== hash)
         return reply({ error: "Emma changed. Reload the checks before running." }, 409);
       if (checks.some((c) => ["transfer_count", "voice"].includes(c.key) && c.state === "failed"))
@@ -390,20 +474,25 @@ Deno.serve(async (req) => {
         throw Error("Suite must have 1–12 reviewed scenarios.");
       if (suite.slackWebhookUrl)
         throw Error("Remove the suite webhook; OpenFolk manages notification destinations.");
-      for (const id of ids) {
-        const sim = await api("eval/simulation/" + id);
-        if (!UUID.test(sim.scenarioId)) throw Error("Scenario unavailable");
-        const scenario = await api("eval/simulation/scenario/" + sim.scenarioId);
-        assertSafeScenario(scenario, tools, assistant);
-      }
-      const reserved = await db.rpc("receptionist_test_reserve", {
+      const harness = await captureTestHarness(api, settings.data.suite_id, {
+        suite, onScenario: (scenario) => assertSafeScenario(scenario, tools, assistant),
+      });
+      harnessSnapshot = harness;
+      const reserved = await db.rpc(body.useLaunchAllowance === true ? "receptionist_test_reserve_launch" : "receptionist_test_reserve", {
         p_tenant: body.tenantId,
         p_actor: actor,
         p_hash: hash,
       });
       if (reserved.error)
-        throw Error("Another test is active, or the test usage safeguard was reached.");
+        throw Error(body.useLaunchAllowance === true
+          ? "Another test is active, the two-minute cooldown applies, or the dated two-run launch allowance is unavailable. No provider run was sent."
+          : "Another test is active, or the test usage safeguard was reached.");
       reservation = reserved.data;
+      // Persist preflight evidence BEFORE submitting a paid provider run.
+      // Historical runs are never retroactively assigned this snapshot.
+      const evidenceSaved = await db.from("receptionist_test_runs")
+        .update({ report: { harness, checks } }).eq("id", reservation);
+      if (evidenceSaved.error) throw Error("Testing setup evidence could not be saved; no provider run sent.");
       // The request is sent once. Ambiguous provider outcomes remain locked for reconciliation.
       submitted = true;
       const run = await api("eval/simulation/run", "POST", {
@@ -422,6 +511,7 @@ Deno.serve(async (req) => {
           provider_id: run.id,
           state: "running",
           report: {
+            harness,
             checks,
             limitations:
               "Synthetic voice test. All configured action tools are intercepted. Does not prove real phone, voicemail or email delivery.",
@@ -502,9 +592,20 @@ Deno.serve(async (req) => {
           return item;
         }),
       ),
-      state = runState(run, items);
+      simulationState = runState(run, items);
+    let currentHarness = null;
+    if (row.data.report?.harness) {
+      try { currentHarness = await captureTestHarness(api, row.data.suite_id); }
+      catch { /* Missing provider setup is not evidence that it stayed unchanged. */ }
+    }
+    const harnessCheck = compareTestHarness(row.data.report?.harness, currentHarness, row.data.report?.harnessCheck);
+    const state = simulationState === "passed" && row.data.report?.harness && harnessCheck.state !== "unchanged"
+      ? "failed" : simulationState;
     const report = {
       items,
+      simulationState,
+      harness: row.data.report?.harness ?? null,
+      harnessCheck,
       configurationChanged: row.data.assistant_hash !== hash,
       checks,
       limitations:
@@ -560,7 +661,7 @@ Deno.serve(async (req) => {
         .from("receptionist_test_runs")
         .update({
           state: submitted ? "uncertain" : "failed",
-          report: { error: "Test start needs review; no automatic retry sent." },
+          report: { harness: harnessSnapshot, error: "Test start needs review; no automatic retry sent." },
         })
         .eq("id", reservation);
     const msg = e instanceof Error ? e.message : "Testing unavailable";

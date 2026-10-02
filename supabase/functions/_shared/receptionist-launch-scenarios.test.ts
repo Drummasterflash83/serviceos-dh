@@ -36,7 +36,17 @@ test("test clock replaces only Liquid date inputs and does not mutate assistant"
   assert.match(overrides.firstMessage, /2026-10-01T19:00:00Z/);
   assert.match(overrides.model.messages[0].content, /Keep consent/);
   assert.equal(JSON.stringify(assistant), before);
+  assert.equal(overrides.maxDurationSeconds, 180);
   assert.throws(() => clockOverrides(assistant, "caller-supplied"));
+});
+test("180-second adversarial completion window uses a new suite revision, not weaker success criteria", () => {
+  const source = readFileSync(new URL("./receptionist-launch-scenarios.ts", import.meta.url), "utf8");
+  assert.match(source, /fixed-clock-routing-v9-/);
+  assert.doesNotMatch(source, /fixed-clock-routing-v8-/);
+  for (const scenario of launchScenarioPayloads(tools, assistant)) {
+    assert.equal(scenario.evaluations.length, 2);
+    assert.ok(scenario.evaluations.every(e => e.required && e.value === true));
+  }
 });
 test("all reviewed routes intercept transfer and emergency handoff", () => {
   for (const s of launchScenarios) {
@@ -75,7 +85,7 @@ test("twelve bounded scenarios preserve ordinary routes and add explicit launch 
   );
   for (const payload of payloads) {
     assert.doesNotThrow(() => assertSafeScenario(payload, tools, assistant));
-    assert.equal(payload.targetOverrides.maxDurationSeconds, 120);
+    assert.equal(payload.targetOverrides.maxDurationSeconds, 180);
     assert.equal(payload.toolMocks.length, tools.length);
     assert.ok(payload.toolMocks.every((mock) => mock.enabled));
     assert.ok(payload.toolMocks.every((mock) => mock.result.includes("No real person was called")));
