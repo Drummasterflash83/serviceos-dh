@@ -63,6 +63,62 @@
 .of-test-not_tested {
   color: #706480;
 }
+.of-test-delivery-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.of-test-delivery-heading > div {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+.of-tests .of-test-inbox-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #ddd4e9;
+  border-radius: 10px;
+  background: #faf8fc;
+  color: #423454;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.of-test-inbox-link:focus-visible {
+  outline: 2px solid #664d8b;
+  outline-offset: 3px;
+}
+.of-test-delivery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 14px;
+}
+.of-test-delivery-item {
+  border: 1px solid #e9e3ef;
+  border-radius: 12px;
+  padding: 18px;
+  min-width: 0;
+}
+.of-test-awaiting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #706480;
+  font-size: 0.78rem;
+}
+.of-test-delivery-item h4 {
+  margin: 12px 0 6px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.of-test-delivery-item p {
+  font-size: 0.85rem;
+  margin: 0;
+}
 .of-test-run {
   border: 1px solid #e4deec;
   border-radius: 14px;
@@ -209,6 +265,9 @@
     padding: 16px;
   }
   .of-test-evidence-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .of-test-delivery-grid {
     grid-template-columns: minmax(0, 1fr);
   }
   .of-test-recording {

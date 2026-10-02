@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { getSupabaseClient } from "@/lib/supabase";
 import { CheckCircle2, AlertCircle, Circle, Play, RefreshCw } from "lucide-react";
 import { testEvidence, testNextAction } from "@/lib/receptionist-test-evidence";
@@ -53,6 +54,32 @@ const label = (s: string) =>
     queued: "Waiting to run",
     canceled: "Cancelled",
   })[s] ?? s;
+
+// This report has no mailbox-sync or per-recipient receipt evidence yet.
+// Never promote an aggregate simulation/delivery verdict into these four proofs.
+// The named emergency mailbox and recipients are specific to the verified DH setup.
+const dhVoicemailChecks = [
+  {
+    key: "connection",
+    title: "Birchills message connection",
+    detail: "Confirm a supported voicemail message feed and a successful mailbox sync. Ordinary call recordings are a separate source.",
+  },
+  {
+    key: "emergency_message",
+    title: "603 · Message saved and playable",
+    detail: "Find the labelled test message in the emergency mailbox and play its saved recording. Hearing the greeting does not prove a message was saved.",
+  },
+  {
+    key: "rob_receipt",
+    title: "Rob · Notification received",
+    detail: "Confirm the same test message reached Rob, with a receipt reference and time. An enabled notification setting is not a receipt.",
+  },
+  {
+    key: "tony_receipt",
+    title: "Tony · Notification received",
+    detail: "Confirm the same test message reached Tony separately. Rob’s receipt does not prove Tony received his copy.",
+  },
+] as const;
 export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
   const [data, setData] = useState<Status | null>(null),
     [error, setError] = useState(""),
@@ -128,6 +155,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
   const blocked = data?.checks.some(
     (c) => ["transfer_count", "voice"].includes(c.key) && c.state === "failed",
   );
+  const showDhVoicemailChecks = tenantId === "00000000-0000-0000-0000-000000000001";
   return (
     <section className="of-tests" aria-label="Automated voice tests">
       <header className="of-test-card of-test-intro">
@@ -180,7 +208,7 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
               updated {date(data.assistant.updatedAt)}
             </p>
             <div className="of-test-checks">
-              {data.checks.map((c) => (
+              {data.checks.filter((c) => !showDhVoicemailChecks || c.key !== "delivery").map((c) => (
                 <div key={c.key} className={`of-test-check of-test-${c.state}`}>
                   {c.state === "passed" ? (
                     <CheckCircle2 size={20} />
@@ -198,6 +226,34 @@ export function ReceptionistTesting({ tenantId }: { tenantId: string }) {
               ))}
             </div>
           </div>
+          {showDhVoicemailChecks && (
+            <section className="of-test-card" aria-labelledby="voicemail-launch-evidence">
+              <div className="of-test-delivery-heading">
+                <div>
+                  <h3 id="voicemail-launch-evidence">Voicemail · what still needs proof</h3>
+                  <p>These four outcomes are not yet evidenced in this testing report. Passing voice checks does not confirm mailbox or email delivery.</p>
+                </div>
+                <Link
+                  className="of-test-inbox-link"
+                  to="/openfolk/$tenantId"
+                  params={{ tenantId }}
+                  search={{ module: "receptionist", view: "voicemails", tools: false }}
+                >
+                  Open voicemail inbox <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+              <div className="of-test-delivery-grid">
+                {dhVoicemailChecks.map((check) => (
+                  <div className="of-test-delivery-item" key={check.key}>
+                    <span className="of-test-awaiting"><Circle size={15} aria-hidden="true" /> Awaiting evidence</span>
+                    <h4>{check.title}</h4>
+                    <p>{check.detail}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="of-test-note">Next: complete the Birchills message connection, then verify one controlled 603 message and both recipients. Office mailbox 601 and personal mailboxes 109/105 remain separate.</p>
+            </section>
+          )}
           {!!data.physicalChecks?.length && (
             <div className="of-test-card">
               <h3>Real phone checks</h3>
