@@ -25,6 +25,7 @@ import { invokeFunction } from "../_shared/phone_pipeline.ts";
 import { DH_APPROVED_REVIEW_POLICY } from "../_shared/receptionist-launch-review-policy.ts";
 import { clearLaunchModel } from "../_shared/receptionist-launch-clear-contract.ts";
 import { launchPromotion } from "../_shared/receptionist-launch-promotion.ts";
+import { inspectLaunchGraph } from "../_shared/receptionist-launch-inspection.ts";
 import { PHYSICAL_EVIDENCE_IDS, physicalEvidence } from "../_shared/receptionist-physical-evidence.ts";
 import { captureTestHarness, compareTestHarness, inspectTestPersonality } from "../_shared/receptionist-test-harness.ts";
 import { getSimwoodCredentials, basicAuthHeader } from "../_shared/simwood.ts";
@@ -230,6 +231,17 @@ Deno.serve(async (req) => {
       }
       return r.status === 204 ? {} : await r.json();
     };
+    if (body.action === "inspect_launch_graph") {
+      if (!service || scheduled)
+        return reply({ error: "Explicit OpenFolk service inspection required." }, 403);
+      try {
+        return reply(await inspectLaunchGraph(db, api, settings.data, workspace.data, actor));
+      } catch {
+        // Never return raw provider errors: these may contain request details.
+        return reply({ error: "Launch graph inspection unavailable. Check the authorised operator, fixed DH bindings and provider availability.",
+          readOnly: true, providerChanged: false, savedBaselineChanged: false, callsPlaced: false }, 409);
+      }
+    }
     if (body.action === "promote_launch_candidate") {
       if (!service || scheduled)
         return reply({ error: "Explicit OpenFolk service maintenance required for launch publication." }, 403);
