@@ -1,0 +1,162 @@
+{
+  "company": "Drummond Heating",
+  "title": "Your next chapter.",
+  "objective": "A clearer, more profitable operation — with the right work reaching the right person, at the right time.",
+  "nextStep": "Heidi: share the Perplexity systems-audit findings in Review & feedback. Together we’ll confirm what is already working, agree the first business outcome and price the smallest useful delivery package.",
+  "commercialNote": "Your programme is priced around defined business outcomes. Start with an agreed result and add further outcomes as the business needs them. Scope, measures, investment and completion criteria are agreed for each package before work begins. The shared OpenFolk foundation supports future additions without rebuilding from scratch.",
+  "outcomes": [
+    {
+      "id": "discovery",
+      "title": "A clear, agreed improvement plan",
+      "outcome": "Know what to improve first, why it matters and how we will measure success.",
+      "scope": "Review the Perplexity systems audit and New Dawn objectives. Map current systems, owners, workflows and costs. Agree what to keep, improve, replace or retire. Produce a prioritised outcome programme.",
+      "measure": "An agreed baseline, owner and success measure for each selected outcome.",
+      "baseline": "To establish from Heidi’s audit and current operating evidence.",
+      "target": "An approved first outcome package with clear scope, investment and completion criteria.",
+      "dependencies": "Perplexity audit findings; current costs; leadership confirmation of New Dawn priorities.",
+      "acceptance": "Heidi and OpenFolk review and agree the first package and the evidence used to measure it.",
+      "status": "Scoping",
+      "optional": false,
+      "setup": null,
+      "monthly": null,
+      "timing": "Agree after audit review"
+    },
+    {
+      "id": "command-centre",
+      "title": "Every priority has an owner",
+      "outcome": "Give the team a reliable view of what needs attention and who should act next.",
+      "scope": "Connect the agreed communication sources and job data. Develop customer and job cards, ownership and role-relevant priorities for a controlled staff pilot.",
+      "measure": "Unowned actions, time spent chasing updates and completeness of priority job records.",
+      "baseline": "Not yet measured. Pilot evidence will establish the starting point.",
+      "target": "To agree after the source and workflow review.",
+      "dependencies": "Approved source access, identity matching, job references, nominated pilot users and release of eligible data.",
+      "acceptance": "Pilot users can trace a priority to its source, identify its owner and complete the agreed workflow. Success thresholds must be set before delivery.",
+      "status": "Proposed",
+      "optional": false,
+      "setup": null,
+      "monthly": null,
+      "timing": "Scope after discovery"
+    },
+    {
+      "id": "quotations",
+      "title": "Faster, more consistent quotations",
+      "outcome": "Reduce avoidable quotation delays and make follow-up visible.",
+      "scope": "Map the quotation journey, define the 48-hour objective, assign ownership and identify reminders, exceptions and follow-up improvements.",
+      "measure": "Quotation turnaround, overdue quotations and follow-up coverage. Conversion is measured separately.",
+      "baseline": "To establish from current quotation records.",
+      "target": "Validate the proposed 48-hour goal, business-hours rules and exclusions with Heidi.",
+      "dependencies": "Quotation timestamps and statuses; Commusoft workflow access; agreement on ownership and exceptions.",
+      "acceptance": "Agreed quotation stages, owners and timing rules are implemented and measured over an agreed observation period.",
+      "status": "Proposed",
+      "optional": false,
+      "setup": null,
+      "monthly": null,
+      "timing": "Sequence after first outcome"
+    },
+    {
+      "id": "growth",
+      "title": "Growth that fits your capacity",
+      "outcome": "Focus marketing and follow-up on the work Drummonds wants and can deliver profitably.",
+      "scope": "Refine contacts, segmentation, campaigns and lead handovers. Link proposed campaigns to service priorities and available capacity.",
+      "measure": "Qualified enquiries, follow-up coverage and campaign contribution where attribution is supported.",
+      "baseline": "To establish from existing campaigns, contact data and capacity.",
+      "target": "To agree for the selected campaign and audience.",
+      "dependencies": "Contact quality and consent, sender setup, capacity information and agreed service priorities.",
+      "acceptance": "A scoped campaign and lead handover are tested, approved and reviewed against agreed measures.",
+      "status": "Proposed",
+      "optional": true,
+      "setup": null,
+      "monthly": null,
+      "timing": "When core workflows are ready"
+    },
+    {
+      "id": "emma",
+      "title": "A dependable first response",
+      "outcome": "Help callers reach the right answer or person, with a clear fallback when needed.",
+      "scope": "Review Emma’s knowledge, call flows and routing. Agree tests and escalation rules before any wider rollout.",
+      "measure": "Correct routing, unresolved enquiries and successful handovers across an agreed test set.",
+      "baseline": "To establish from existing Vapi configuration and call evaluations.",
+      "target": "To agree after testing the current experience.",
+      "dependencies": "Vapi access, approved knowledge, telephony routing and named escalation owners.",
+      "acceptance": "The agreed call tests pass, failures have a safe fallback and an owner approves the rollout scope.",
+      "status": "Proposed",
+      "optional": true,
+      "setup": null,
+      "monthly": null,
+      "timing": "After call-flow review"
+    },
+    {
+      "id": "improvement",
+      "title": "Keep improving the business",
+      "outcome": "Make improvement a continuing discipline with visible evidence of value.",
+      "scope": "Review delivered outcomes, monitor agreed workflows, prioritise the next opportunities and maintain the implemented services.",
+      "measure": "Movement against each agreed baseline, operating effort and reliability of supported workflows.",
+      "baseline": "Established at the start of each outcome package.",
+      "target": "Set jointly for each review period.",
+      "dependencies": "Delivered outcome packages, access to measurement data and agreed support boundaries.",
+      "acceptance": "A regular review records measured results, issues, decisions and the next improvement priorities.",
+      "status": "Proposed",
+      "optional": true,
+      "setup": null,
+      "monthly": null,
+      "timing": "Agree a review cadence"
+    }
+  ],
+  "systems": [
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "purpose": "Understand the existing spaces, tasks, workflows and operating knowledge.",
+      "owner": "Heidi",
+      "status": "Awaiting review",
+      "checkedAt": "",
+      "nextAction": "Share the systems-audit output; confirm which items remain current."
+    },
+    {
+      "id": "commusoft",
+      "name": "Commusoft",
+      "purpose": "Job and customer records, quotation workflow and operating context.",
+      "owner": "Drummonds — owner to confirm",
+      "status": "Awaiting review",
+      "checkedAt": "",
+      "nextAction": "Confirm export coverage, quotation stages and authoritative job references."
+    },
+    {
+      "id": "workspace",
+      "name": "Google Workspace",
+      "purpose": "Relevant business email and documents within agreed access boundaries.",
+      "owner": "Drummonds — owner to confirm",
+      "status": "Awaiting review",
+      "checkedAt": "",
+      "nextAction": "Verify the intended mailboxes, permission scope and processing status."
+    },
+    {
+      "id": "telephony",
+      "name": "Telephone & Emma",
+      "purpose": "Incoming calls, handovers and AI receptionist evaluation.",
+      "owner": "Drummonds — owner to confirm",
+      "status": "Awaiting review",
+      "checkedAt": "",
+      "nextAction": "Review routing, Vapi configuration, test results and fallback ownership."
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "purpose": "Team communication and internal handovers.",
+      "owner": "Drummonds — owner to confirm",
+      "status": "Awaiting review",
+      "checkedAt": "",
+      "nextAction": "Confirm workspace, channels, access and current use."
+    },
+    {
+      "id": "openfolk-os",
+      "name": "OpenFolk OS",
+      "purpose": "The developing operating workspace for priorities, customers, jobs and improvement.",
+      "owner": "OpenFolk",
+      "status": "In testing",
+      "checkedAt": "22 September 2026 — local pilot completion record",
+      "nextAction": "Review controlled pilot results. Client launch does not activate operational processing."
+    }
+  ],
+  "links": []
+}

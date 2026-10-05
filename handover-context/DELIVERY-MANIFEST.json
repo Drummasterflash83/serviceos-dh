@@ -1,0 +1,50 @@
+{
+  "frontend_candidate_sha": "0a9b39d02ef6aa3d0c314ffcbeee40c897f00b13",
+  "slack_candidate_sha": "2f11a9b73791d07699b655fcfe896b4a487bcb66",
+  "files": {
+    "PACKAGING-HANDOFF.txt": {
+      "bytes": 6966,
+      "sha256": "9bb493b7941a20654ca104830c4bab863a48bd0cd2bf5fd997d75fd22bebe846"
+    },
+    "PACKAGING-MANIFEST.json": {
+      "bytes": 1320,
+      "sha256": "af6092512a3c5fb145b0f21d2b395d78e4599f0ef15ae999cbd1116a66d49146"
+    },
+    "TEST-READ-CONTRACT.txt": {
+      "bytes": 3444,
+      "sha256": "a9cf30b9f5d5e85dc5b7ef8b6da905ad4e79baea9ea09daf5fa7b54f3710e8ab"
+    },
+    "preflight.json": {
+      "bytes": 453,
+      "sha256": "4227d0ac43fedad3c6f38a20b649f6d56da02819f9c720d8b59066b506ceadcc"
+    },
+    "full-build.json": {
+      "bytes": 33919,
+      "sha256": "cbfbce934ebcdee2b9fd94bc9118081a3dbaf3166f03e63ba0e5ea5346cd62c2"
+    },
+    "vercel-build.json": {
+      "bytes": 36895,
+      "sha256": "fbe168e0eb4c8ed5db200e75ba343c33933146bef403ae9e5a919f2f1bedb941"
+    },
+    "native-node-smoke.json": {
+      "bytes": 651,
+      "sha256": "d0217fc018f0fda651e57e38b7760aeeb34d68c8efe4c57fc2fe676e25d5debd"
+    },
+    "fixture-exclusion.json": {
+      "bytes": 183,
+      "sha256": "1af723ba11e3716d342e03e928565ebdd812887cea914c96e4838c11b022bcd4"
+    },
+    "frontend-source-0a9b39d.tar.gz": {
+      "bytes": 3242440,
+      "sha256": "4d7e4995537e61560bfa4ab36e14dca848799d63b39c1b4f3b27716f1f629f4d"
+    },
+    "learn-launch-status-source.tar.gz": {
+      "bytes": 5672,
+      "sha256": "d289e27a7a529e31d32c9ea461f81fe7cd4ae625b99eea18025b41e458573584"
+    },
+    "slack-source-delta.patch": {
+      "bytes": 12997,
+      "sha256": "476f36862daf4fb840e5ee9e671f11f096b201a8f9342c1648dce75a9f7f9f67"
+    }
+  }
+}

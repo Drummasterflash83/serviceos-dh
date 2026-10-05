@@ -1,0 +1,2 @@
+function OutOfScope(_props:any){return <div className="cp-card"><h2>Existing workspace journey</h2><p>This local review covers LEARN. Existing Workspace, whole-team onboarding and AI Receptionist remain in the live application; their source is unchanged.</p><a className="cp-secondary" href="/client?section=learn">Return to LEARN review</a></div>;}
+export const WorkspaceHome=OutOfScope,ClientInvestment=OutOfScope,ClientDeliverySummary=OutOfScope,ClientNotifications=OutOfScope,ReceptionistWorkspace=OutOfScope;

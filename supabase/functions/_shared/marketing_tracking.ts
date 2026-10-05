@@ -1,0 +1,155 @@
+// Marketing email tracking — pure helpers shared by the send adapter (which
+// SIGNS + injects, write-free) and the public marketing-track endpoint (which
+// VERIFIES + records).
+//
+// TOKEN CONTRACT (v2, versioned):
+//   open  token = HMAC(secret, "v2:<deliveryId>:open")
+//   click token = HMAC(secret, "v2:<deliveryId>:click:<canonicalDestination>")
+// The click destination is CRYPTOGRAPHICALLY BOUND: changing any byte of the
+// destination (or the delivery id, or the event kind, or the version) changes
+// the signed string and invalidates the token. A recipient holding one click
+// token therefore cannot substitute another destination, and cannot reuse it
+// for another delivery or as an open token. There is no unsigned redirect path.
+
+const TOKEN_VERSION = "v2";
+export const MAX_TRACK_URL_LEN = 2048;
+
+// A tracking secret weak enough to guess is the same as no secret: it would let
+// anyone mint a token and drive the public endpoint. Both sides of the contract
+// apply the SAME bar — the adapter refuses to SIGN with an unusable secret and
+// the endpoint refuses to VERIFY with one — so a misconfigured deployment fails
+// closed (no signing, no recording, neutral responses) instead of silently
+// pretending tracking works. The secret is never logged or echoed anywhere.
+export const MIN_TRACKING_SECRET_LEN = 32;
+
+export function isUsableTrackingSecret(secret: string | null | undefined): boolean {
+  return typeof secret === "string" && secret.trim().length >= MIN_TRACKING_SECRET_LEN;
+}
+
+function base64url(bytes: Uint8Array): string {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// constant-time string compare (length is not secret here; the per-char work
+// does not early-exit on the first mismatch)
+export function timingSafeEqualStr(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// A safe click destination: absolute HTTPS only, no credentials, no control
+// chars, bounded length, and NEVER a marketing-track URL (no self-wrapping).
+// Returns the CANONICAL serialisation (what the token binds) or null.
+export function canonicalDestination(u: string | null | undefined): string | null {
+  if (typeof u !== "string" || u.length === 0 || u.length > MAX_TRACK_URL_LEN) return null;
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001F\u007F]/.test(u)) return null; // control chars (escaped source notation)
+  let parsed: URL;
+  try {
+    parsed = new URL(u);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "https:") return null; // HTTPS only (no local-dev exception on staging/prod)
+  if (parsed.username || parsed.password) return null; // no credentials-in-URL
+  if (/\/functions\/v1\/marketing-track/i.test(parsed.pathname)) return null; // no self-wrapping
+  const canonical = parsed.toString();
+  return canonical.length > MAX_TRACK_URL_LEN ? null : canonical;
+}
+
+async function hmac(secret: string, message: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  return base64url(new Uint8Array(sig));
+}
+
+function openMessage(deliveryId: string): string {
+  return `${TOKEN_VERSION}:${deliveryId}:open`;
+}
+function clickMessage(deliveryId: string, canonical: string): string {
+  return `${TOKEN_VERSION}:${deliveryId}:click:${canonical}`;
+}
+
+export function openToken(secret: string, deliveryId: string): Promise<string> {
+  return hmac(secret, openMessage(deliveryId));
+}
+// destination MUST already be canonical (canonicalDestination output)
+export function clickToken(secret: string, deliveryId: string, canonical: string): Promise<string> {
+  return hmac(secret, clickMessage(deliveryId, canonical));
+}
+
+export async function verifyOpenToken(
+  secret: string,
+  deliveryId: string,
+  token: string,
+): Promise<boolean> {
+  if (!token) return false;
+  return timingSafeEqualStr(await openToken(secret, deliveryId), token);
+}
+
+// Verifies the click token binds this delivery AND this exact destination.
+// `rawDestination` is the request-supplied `u`; it is canonicalised (rejecting
+// unsafe URLs) and the canonical form must match the signed one.
+export async function verifyClickToken(
+  secret: string,
+  deliveryId: string,
+  rawDestination: string | null,
+  token: string,
+): Promise<{ ok: boolean; canonical: string | null }> {
+  const canonical = canonicalDestination(rawDestination);
+  if (!token || !canonical) return { ok: false, canonical };
+  const ok = timingSafeEqualStr(await clickToken(secret, deliveryId, canonical), token);
+  return { ok, canonical: ok ? canonical : null };
+}
+
+// Rewrite absolute https links to route through the click tracker with a token
+// that BINDS the destination, and append a hidden open-pixel. Async because
+// each distinct destination is signed. Anchors without a safe https href
+// (mailto:, #, http:, already-tracked) are left untouched.
+export async function injectTrackingHtml(
+  html: string,
+  args: { openUrl: string; clickBase: string; deliveryId: string; secret: string },
+): Promise<string> {
+  const { clickBase, deliveryId, secret } = args;
+  // collect distinct safe destinations first, sign each once
+  const hrefRe = /href\s*=\s*"(https:\/\/[^"]+)"/gi;
+  const dests = new Map<string, string>(); // rawHref -> canonical
+  for (const m of html.matchAll(hrefRe)) {
+    const raw = m[1];
+    if (!dests.has(raw)) {
+      const canonical = canonicalDestination(raw);
+      if (canonical) dests.set(raw, canonical);
+    }
+  }
+  const tokenFor = new Map<string, string>(); // rawHref -> click url
+  for (const [raw, canonical] of dests) {
+    const tok = await clickToken(secret, deliveryId, canonical);
+    tokenFor.set(
+      raw,
+      `${clickBase}?d=${encodeURIComponent(deliveryId)}&k=click&t=${encodeURIComponent(tok)}` +
+        `&u=${encodeURIComponent(canonical)}`,
+    );
+  }
+  const rewritten = html.replace(hrefRe, (whole, raw: string) => {
+    const click = tokenFor.get(raw);
+    return click ? `href="${click}"` : whole;
+  });
+  const pixel =
+    `<img src="${args.openUrl}" alt="" width="1" height="1" ` +
+    `style="display:none;max-width:0;max-height:0;overflow:hidden" />`;
+  if (/<\/body>/i.test(rewritten)) {
+    return rewritten.replace(/<\/body>/i, `${pixel}</body>`);
+  }
+  return rewritten + pixel;
+}

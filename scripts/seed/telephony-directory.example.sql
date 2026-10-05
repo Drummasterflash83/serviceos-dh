@@ -1,0 +1,46 @@
+-- ServiceOS — Tenant telephony directory config TEMPLATE (Phone Intelligence V1).
+--
+-- This is the CONFIGURATION MECHANISM for mapping a provider endpoint/extension to a
+-- ServiceOS person. It is tenant CONFIGURATION, not platform logic — no company's
+-- mappings live in shared code. Copy this file per tenant, fill in CONFIRMED mappings
+-- only, and apply. Idempotent per (tenant, extension) active-mapping unique index.
+--
+-- HOW TO FIND THE ANCHORS (redacted): run the backfill in dry-run to see which calls
+-- resolve to which endpoints, and inspect distinct endpoint URIs:
+--   select distinct raw_payload->>'srcEndpoint' from phone_calls where ...;
+-- Then confirm with the operator / provider (e.g. Birchills/Sipcentric) portal WHICH
+-- person owns each endpoint. DO NOT GUESS — an unmapped endpoint correctly yields
+-- "Unknown team member".
+--
+-- Fields:
+--   endpoint_ref (metadata) : the provider endpoint URI this device maps to (opaque)
+--   extension               : the human extension, if known (may be null)
+--   person_node_id          : graph_nodes person id (the canonical person)
+--   role                    : e.g. 'Finance', 'Engineer', 'Reception'
+--   is_shared_device        : true for a shared handset (keeps identity "probable")
+--   confidence / source     : 1.0 / 'configured' for an operator-confirmed mapping
+--   effective_from/to       : time-bound a mapping (person changed desk, left, etc.)
+--
+-- ROLLBACK:  delete from telephony_directory
+--            where tenant_id = (select id from tenants where slug = '<slug>')
+--              and source = 'configured' and metadata->>'seed' = 'telephony_v1';
+
+-- EXAMPLE (commented — fill with CONFIRMED values before running):
+-- with t as (select id from tenants where slug = 'drummonds')
+-- insert into telephony_directory
+--   (tenant_id, extension, e164_number, person_node_id, role, is_shared_device,
+--    active, confidence, source, effective_from, metadata)
+-- select t.id, m.extension, m.e164, m.person_node_id, m.role, m.shared,
+--        true, 1.0, 'configured', now(),
+--        jsonb_build_object('seed', 'telephony_v1', 'endpoint_ref', m.endpoint_ref)
+-- from t, (values
+--   -- extension, e164, person_node_id (graph_nodes person),          role,       shared, endpoint_ref
+--   ('103', null, '<liz-person-uuid>'::uuid,                          'Finance',  false,  'https://pbx.sipcentric.com/api/v1/customers/<c>/endpoints/<id>'),
+--   ('100', null, '<reception-person-uuid>'::uuid,                    'Reception', true,  'https://pbx.sipcentric.com/api/v1/customers/<c>/endpoints/<id>')
+-- ) as m(extension, e164, person_node_id, role, shared, endpoint_ref)
+-- on conflict (tenant_id, extension) where active and not is_shared_device
+--   do update set person_node_id = excluded.person_node_id, role = excluded.role,
+--                 confidence = excluded.confidence, metadata = excluded.metadata,
+--                 updated_at = now();
+
+select 'telephony directory template — fill CONFIRMED mappings before running' as note;

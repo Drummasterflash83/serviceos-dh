@@ -1,0 +1,124 @@
+import { useQuery } from "@tanstack/react-query";
+import { Headphones, ArrowRight, Layers, Receipt, MessageSquare } from "lucide-react";
+import { getSupabaseClient } from "@/lib/supabase";
+import { type ClientSection } from "@/lib/client-workspace-nav";
+import { emmaHealthCards, mainNumberStatus } from "@/lib/emma-health";
+import { useReceptionistCalls } from "@/lib/use-receptionist-calls";
+import { EmmaIssueSummary } from "@/components/receptionist/EmmaIssueSummary";
+import type { HealthIssue } from "@/lib/use-emma-health";
+
+export function WorkspaceHome({
+  tenant,
+  userId,
+  company,
+  open,
+  openFeedback,
+}: {
+  tenant: string;
+  userId: string;
+  company: string;
+  open: (section: ClientSection) => void;
+  openFeedback: (issue?: HealthIssue) => void;
+}) {
+  const receptionist = useQuery({
+    queryKey: ["workspace-receptionist-summary", userId, tenant],
+    queryFn: async () => {
+      const { data, error } = await getSupabaseClient()
+        .from("receptionist_workspaces")
+        .select("name,launch_stage")
+        .eq("tenant_id", tenant)
+        .maybeSingle();
+      if (error) throw new Error("Receptionist details are temporarily unavailable.");
+      return data;
+    },
+    staleTime: 30_000,
+  });
+  const callEvidence = useReceptionistCalls(userId, tenant, !!receptionist.data);
+  const latestCalls = callEvidence.data?.pages[0];
+  const status = emmaHealthCards(latestCalls?.calls ?? [], {
+    connected: latestCalls?.connection === "connected" && !callEvidence.isError,
+    loading: callEvidence.isPending,
+    error: callEvidence.isError,
+    launchStage: receptionist.data?.launch_stage,
+  })[0]!;
+  return (
+    <div className="cp-work-home">
+      <EmmaIssueSummary tenant={tenant} onOpen={openFeedback} />
+      <section className="cp-emma-entry" aria-label="AI Receptionist">
+        <div className="cp-emma-orb" aria-hidden="true">
+          <Headphones size={42} />
+        </div>
+        <div className="cp-emma-copy">
+          <p className="of-eyebrow">YOUR AI RECEPTIONIST</p>
+          <h2>{receptionist.data?.name || "Your receptionist"}</h2>
+          <p>Every call in view. The next step clear.</p>
+          {receptionist.data && (
+            <div className={`cp-emma-status cp-emma-status-${status.tone}`}>
+              <span>HOW EMMA IS DOING</span>
+              <strong>{status.headline}</strong>
+              <small>{status.summary}</small>
+              {latestCalls?.connection === "connected" && (
+                <small>
+                  Call data connected to OpenFolk · Latest {latestCalls.calls.length} calls
+                </small>
+              )}
+            </div>
+          )}
+          {receptionist.isPending ? (
+            <small role="status">Loading receptionist details…</small>
+          ) : receptionist.isError ? (
+            <div role="alert">
+              <small>Details unavailable — not a phone-line health assessment.</small>
+              <button onClick={() => void receptionist.refetch()}>Retry details</button>
+            </div>
+          ) : receptionist.data ? (
+            <>
+              <span className="cp-recorded-stage">
+                {mainNumberStatus(receptionist.data.launch_stage)}
+              </span>
+            </>
+          ) : (
+            <small>No receptionist workspace has been assigned yet.</small>
+          )}
+        </div>
+        <button className="cp-open-emma" onClick={() => open("receptionist")}>
+          Open AI Receptionist <ArrowRight size={18} />
+        </button>
+      </section>
+      <div className="cp-home-intro">
+        <h2>Your workspace, at a glance.</h2>
+        <p>The essentials for {company}. Choose what you need.</p>
+      </div>
+      <div className="cp-home-cards">
+        <button className="cp-home-card" onClick={() => open("modules")}>
+          <Layers size={24} />
+          <h3>Your modules</h3>
+          <p>What each module does, its progress and the result it will deliver.</p>
+          <span>
+            View modules <ArrowRight size={16} />
+          </span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("invoices")}>
+          <Receipt size={24} />
+          <h3>Invoices</h3>
+          <p>See what you’ve paid, what it delivered and download your invoices.</p>
+          <span>
+            View invoices <ArrowRight size={16} />
+          </span>
+        </button>
+        <button className="cp-home-card" onClick={() => open("notes")}>
+          <MessageSquare size={24} />
+          <h3>Review & feedback</h3>
+          <p>Share feedback, ask a question or flag something that needs attention.</p>
+          <span>
+            Leave feedback <ArrowRight size={16} />
+          </span>
+        </button>
+      </div>
+      <p className="cp-home-disclosure">
+        Receptionist call evidence lives in its dashboard. A recorded launch stage is not a live
+        uptime guarantee.
+      </p>
+    </div>
+  );
+}

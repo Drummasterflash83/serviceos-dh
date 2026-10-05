@@ -1,0 +1,141 @@
+{
+  "base": "13b554368cda86dfb0a4014d4187b548a8b9de02",
+  "copied": [
+    {
+      "path": "src/styles.css",
+      "sha256": "d8c57c005792fc81b06e1ad39c44ddbed7b89aff45f1af1aebf36bf2b01fb2c2",
+      "review_sha256": "d8c57c005792fc81b06e1ad39c44ddbed7b89aff45f1af1aebf36bf2b01fb2c2",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/client-portal/ClientPortal.tsx",
+      "sha256": "0abea22454f20b6196559e0c5ffe1d80d3b994dafe74d07d2e033a0e8037042f",
+      "review_sha256": "9107b0fa941d363a2c86f9818e5cc9e790494ee52ce4f4e221be01642ab4ba36",
+      "unchanged": false
+    },
+    {
+      "path": "src/components/ui/dialog.tsx",
+      "sha256": "e3a6de153fb15597ea95be9c4549211a297c060267787915599e3d680d476bd9",
+      "review_sha256": "e3a6de153fb15597ea95be9c4549211a297c060267787915599e3d680d476bd9",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "sha256": "d1f1e0d62cb8d8d1e04c26e14de842d8a151f75812d81b046c65b5d1fe8e4b27",
+      "review_sha256": "d1f1e0d62cb8d8d1e04c26e14de842d8a151f75812d81b046c65b5d1fe8e4b27",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/client-portal.ts",
+      "sha256": "c0d2fea4177395a69db6f3e57e3dc434892f6975bd36d599514b321615e03457",
+      "review_sha256": "c0d2fea4177395a69db6f3e57e3dc434892f6975bd36d599514b321615e03457",
+      "unchanged": true
+    },
+    {
+      "path": "src/styles/client-workspace.css",
+      "sha256": "eb119ac5eea61c2a89f4f5f1797b0474efe042f1a84acf8ec241543af7c56af9",
+      "review_sha256": "eb119ac5eea61c2a89f4f5f1797b0474efe042f1a84acf8ec241543af7c56af9",
+      "unchanged": true
+    },
+    {
+      "path": "src/styles/client-investment.css",
+      "sha256": "a77f79781f1e9bccd331443c7f2dfc80a02d202d9ad2911bcf14c7fb7a4d655d",
+      "review_sha256": "a77f79781f1e9bccd331443c7f2dfc80a02d202d9ad2911bcf14c7fb7a4d655d",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/client-workspace-nav.ts",
+      "sha256": "bb93ab13af0b8a21c3430d06bc832c7f53b18850bac6b98fd0165ab84efdf473",
+      "review_sha256": "36db27253951464b24ffeacfdf84590088a3a14a09e74b165f3c386b837d84bc",
+      "unchanged": false
+    },
+    {
+      "path": "src/lib/use-pull-to-refresh.ts",
+      "sha256": "05856447464eb75a49988930d93a606907a7f2ed6a77bea7f210aa10b24be514",
+      "review_sha256": "05856447464eb75a49988930d93a606907a7f2ed6a77bea7f210aa10b24be514",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/receptionist/ReceptionistNavigation.tsx",
+      "sha256": "c10a19f89f8f507504fd0fa4a0d22abb36255a4139bad1b4e91ab1860729855b",
+      "review_sha256": "c10a19f89f8f507504fd0fa4a0d22abb36255a4139bad1b4e91ab1860729855b",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/OpenFolkAdminLink.tsx",
+      "sha256": "7ac78ef624f8d30ac949d990a939e957c30b8cd0c7e21a930c3f1a8ace76713a",
+      "review_sha256": "7ac78ef624f8d30ac949d990a939e957c30b8cd0c7e21a930c3f1a8ace76713a",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/client-brand.ts",
+      "sha256": "bbd0db414cad451f098c0074e426c3902101c8cdd33aca774583aec8dfa41488",
+      "review_sha256": "bbd0db414cad451f098c0074e426c3902101c8cdd33aca774583aec8dfa41488",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/ClientHeaderBrand.tsx",
+      "sha256": "d8b83284913abbfa3b7758abc75ef1b0654d3f7f7f36ef8eb8c98c34f1743e76",
+      "review_sha256": "d8b83284913abbfa3b7758abc75ef1b0654d3f7f7f36ef8eb8c98c34f1743e76",
+      "unchanged": true
+    },
+    {
+      "path": "src/styles/workspace-navigation.css",
+      "sha256": "e3cd527f889d64fecf08fd9a02c8d1755078e24a8ddc0e8c1306799194444cb5",
+      "review_sha256": "e3cd527f889d64fecf08fd9a02c8d1755078e24a8ddc0e8c1306799194444cb5",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/app/OperatorShell.tsx",
+      "sha256": "10b09779f8a04d57a486506a7ac9932d1b0ae954ef17e8994d0de43ba5c5f0ef",
+      "review_sha256": "10b09779f8a04d57a486506a7ac9932d1b0ae954ef17e8994d0de43ba5c5f0ef",
+      "unchanged": true
+    },
+    {
+      "path": "src/components/BuildBadge.tsx",
+      "sha256": "7c99a72b0a0cfc935c8011a261bc94253684a477e5f3a8d78ee1154aae7776e8",
+      "review_sha256": "7c99a72b0a0cfc935c8011a261bc94253684a477e5f3a8d78ee1154aae7776e8",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/openfolk-workspace-nav.ts",
+      "sha256": "bda73a57ce76806b956291f59cff2c88c9cc0942f37ae4ac49cc7070fda89eb9",
+      "review_sha256": "bda73a57ce76806b956291f59cff2c88c9cc0942f37ae4ac49cc7070fda89eb9",
+      "unchanged": true
+    },
+    {
+      "path": "src/lib/operator-workspace.ts",
+      "sha256": "994abbb124afb30f63b7beabced8a4fa8ac509afc09e33ca3f08f4d612401f44",
+      "review_sha256": "994abbb124afb30f63b7beabced8a4fa8ac509afc09e33ca3f08f4d612401f44",
+      "unchanged": true
+    },
+    {
+      "path": "src/styles/operator-workspace.css",
+      "sha256": "68eaea9074beeed69a315b19d25a9a2b9078c4ff2452cee10a5f14f6d37f6faa",
+      "review_sha256": "68eaea9074beeed69a315b19d25a9a2b9078c4ff2452cee10a5f14f6d37f6faa",
+      "unchanged": true
+    }
+  ],
+  "excluded_modules": [
+    "components/client-portal/ClientDeliverySummary.tsx",
+    "components/client-portal/ClientInvestment.tsx",
+    "components/client-portal/ClientNotifications.tsx",
+    "components/client-portal/WorkspaceHome.tsx",
+    "components/receptionist/ReceptionistWorkspace.tsx",
+    "lib/auth.tsx",
+    "lib/supabase.ts"
+  ],
+  "preview_changes": [
+    "ClientPortal: LEARN nav + preview content prop",
+    "client-workspace-nav: preview LEARN section",
+    "ClientPortal receptionist query: preview-only TypeScript row annotation"
+  ],
+  "countAdapterSource": {
+    "candidate_sha": "f19cb3934cf81ea43e2c509c6de01518b2f8b8a8",
+    "path": "src/lib/learn-status.ts",
+    "sha256": "a3b891b29d1eb4b3b7c162316dd130c4302607e15f3386dff93393c3e5616a0f",
+    "copied_excerpt": "export interface LearnStatusSource through learnStatusState; transport/auth imports excluded",
+    "destination": "source/lib/learn-status-contract.ts",
+    "deployment": "unverified; existing platform grant required; source-only adaptation"
+  }
+}

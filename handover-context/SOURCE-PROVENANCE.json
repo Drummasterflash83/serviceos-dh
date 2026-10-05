@@ -1,0 +1,11 @@
+{
+  "project": "OpenFolk whole existing build",
+  "frontendCandidate": "0a9b39d02ef6aa3d0c314ffcbeee40c897f00b13",
+  "slackBase": "2f11a9b73791d07699b655fcfe896b4a487bcb66",
+  "slackCandidate": "d174a27cdf5ca034bd6d0e4490a9817070bb0b79",
+  "restoredAt": "2026-10-05T22:40:34.162532+00:00",
+  "originalGitCommitMetadataPresent": false,
+  "method": "Verified frontend source archive plus git apply --check and application of both consecutive Slack deltas; new local Git snapshot records the reconstructed tree. No original candidate SHA is claimed for the snapshot commit.",
+  "cloudRuntimeInherited": false,
+  "deployed": false
+}

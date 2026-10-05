@@ -1,0 +1,79 @@
+.cp-investment {
+  max-width: 1120px;
+  margin: auto;
+}
+.cp-investment h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+  margin: 12px 0;
+}
+.cp-investment .cp-metrics {
+  margin: 28px 0;
+}
+.cp-investment-note {
+  font-size: 13px;
+  color: #657286;
+  line-height: 1.6;
+}
+.cp-invoice-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0;
+}
+.cp-invoice {
+  border: 1px solid #e3e7ed;
+  border-radius: 22px;
+  padding: 26px;
+  background: linear-gradient(145deg, #fff, #fafbfdf0);
+  box-shadow: 0 8px 30px -20px #203f7026;
+}
+.cp-invoice-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cp-invoice h3 {
+  font-size: 21px;
+  letter-spacing: -0.035em;
+  margin: 12px 0 4px;
+}
+.cp-invoice-top > strong {
+  font-size: 24px;
+  color: #203f70;
+}
+.cp-invoice p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #526074;
+}
+.cp-invoice h4 {
+  font-size: 15px;
+  margin: 22px 0 8px;
+}
+.cp-invoice small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #68758a;
+}
+.cp-invoice button {
+  margin-top: 20px;
+}
+.cp-delivery-summary {
+  border-top: 1px solid #e3e7ed;
+  margin-top: 46px;
+  padding-top: 36px;
+}
+@media (max-width: 680px) {
+  .cp-invoice-list {
+    grid-template-columns: 1fr;
+  }
+  .cp-invoice {
+    padding: 20px;
+  }
+  .cp-invoice-top > strong {
+    font-size: 21px;
+  }
+}

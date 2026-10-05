@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {linkedRecordingIds} from './linked-recordings.ts';
+const call={tenant_id:'synthetic-A',provider_call_id:'leg-in',linked_id:'family'},r={tenant_id:'synthetic-A',id:'recording-1',provider_call_id:'leg-out',linked_id:'family'};
+test('multi-leg family preserves associations and counts audio once per recording ID',()=>{assert.deepEqual(linkedRecordingIds('synthetic-A',call,[r,r,{...r,provider_call_id:'leg-in'},{...r,id:'recording-2'},{...r,id:'unrelated',linked_id:'other'}]),['recording-1','recording-2']);});
+test('null linkage never associates unrelated recordings and foreign tenant fails closed',()=>{assert.deepEqual(linkedRecordingIds('synthetic-A',{...call,provider_call_id:null,linked_id:null},[r]),[]);assert.throws(()=>linkedRecordingIds('synthetic-A',call,[{...r,tenant_id:'synthetic-B'}]));assert.throws(()=>linkedRecordingIds('synthetic-B',call,[]));});

@@ -1,0 +1,11 @@
+import './source/styles.css';
+const deny=()=>{throw Error('Local UX review blocks backend and provider network');};
+window.fetch=async()=>{throw Error('Local UX review makes no API requests');};
+window.XMLHttpRequest=class{constructor(){deny();}} as any;
+window.WebSocket=class{constructor(){deny();}} as any;
+window.EventSource=class{constructor(){deny();}} as any;
+window.Worker=class{constructor(){deny();}} as any;
+navigator.sendBeacon=()=>false;
+if(navigator.serviceWorker)navigator.serviceWorker.register=async()=>{throw Error('Local review denies service workers');};
+document.addEventListener('click',event=>{const anchor=(event.target as Element)?.closest('a');if(anchor?.getAttribute('href')?.startsWith('mailto:')){event.preventDefault();window.dispatchEvent(new CustomEvent('preview-message',{detail:'Contact actions stay in your existing workspace. This local review sends no messages.'}));}},true);
+void import('./main');

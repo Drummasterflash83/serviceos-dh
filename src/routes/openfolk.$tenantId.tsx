@@ -1,0 +1,381 @@
+/**
+ * OpenFolk Control Plane — tenant workspace (/openfolk/$tenantId). PLATFORM-OPERATOR ONLY.
+ *
+ * Loads the workspace + readiness + audit from the gated openfolk-control-plane function
+ * and renders the real OpenfolkWorkspace. Writes (discover / manual inventory / assign
+ * ownership) require an admin grant server-side; a viewer's write returns 403 (surfaced
+ * inline). Never in tenant navigation.
+ */
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ShieldAlert } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { OperatorShell } from "@/components/app/OperatorShell";
+import { OperatorModules } from "@/components/app/OperatorModules";
+import { findOperatorTenant, operatorModule, type OperatorModule } from "@/lib/operator-workspace";
+import { receptionistView, type ReceptionistView } from "@/lib/client-workspace-nav";
+import type { WorkspaceActions } from "@/components/app/OpenfolkWorkspace";
+import {
+  resolveSection,
+  sectionSearchValue,
+  type WorkspaceSection,
+} from "@/lib/openfolk-workspace-nav";
+import {
+  archiveEndpoint,
+  listTenantDirectory,
+  assignOwnership,
+  createManualEndpoint,
+  discoverEmail,
+  discoverTelephony,
+  endOwnership,
+  getAudit,
+  getDelegatedSubmission,
+  getReadiness,
+  getWorkspace,
+  issueDelegatedTask,
+  listDelegatedTasks,
+  restoreEndpoint,
+  reviewIdentity,
+  revokeDelegatedTask,
+  updateManualEndpoint,
+  validateEndpoint,
+  type AuditEntry,
+  type SourceReadiness,
+  type Workspace,
+} from "@/lib/openfolk";
+import type { DelegatedActions } from "@/components/app/OpenfolkConnections";
+
+const OpenfolkWorkspace = lazy(() =>
+  import("@/components/app/OpenfolkWorkspace").then((module) => ({
+    default: module.OpenfolkWorkspace,
+  })),
+);
+
+// The active workspace section + selected endpoint are durable URL state, so a mutation
+// refetch, a reload, or Back/Forward all keep the operator where they were. An absent or
+// invalid `?section=` fails safely to Overview.
+type WorkspaceSearch = {
+  section?: WorkspaceSection;
+  endpoint?: string;
+  person?: string;
+  module?: OperatorModule;
+  view?: ReceptionistView;
+  tools?: boolean;
+};
+
+export const Route = createFileRoute("/openfolk/$tenantId")({
+  validateSearch: (search: Record<string, unknown>): WorkspaceSearch => ({
+    section: sectionSearchValue(search.section),
+    endpoint: typeof search.endpoint === "string" && search.endpoint ? search.endpoint : undefined,
+    person: typeof search.person === "string" && search.person ? search.person : undefined,
+    module: operatorModule(search.module),
+    view: receptionistView(search.view),
+    tools: search.tools === true || search.tools === "true" || typeof search.section === "string",
+  }),
+  component: WorkspacePage,
+});
+
+function WorkspacePage() {
+  const { tenantId: key } = Route.useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const directory = useQuery({
+    queryKey: ["operator-directory", user?.id],
+    queryFn: async () => {
+      const result = await listTenantDirectory();
+      if (!result.ok)
+        throw Error("Client directory unavailable. Check your OpenFolk operator access.");
+      return result.data.tenants;
+    },
+  });
+  const tenant = findOperatorTenant(directory.data ?? [], key);
+  useEffect(() => {
+    if (tenant?.slug && key !== tenant.slug)
+      void navigate({
+        to: "/openfolk/$tenantId",
+        params: { tenantId: tenant.slug },
+        search,
+        replace: true,
+      });
+  }, [key, tenant?.slug, navigate, search]);
+  if (!tenant)
+    return (
+      <OperatorShell>
+        <div className="op-card">
+          <h1>
+            {directory.isPending ? "Opening client workspace…" : "Client workspace unavailable"}
+          </h1>
+          <p>
+            {directory.error?.message ??
+              (directory.isPending ? "" : "Choose a client from your directory.")}
+          </p>
+          {directory.isError && (
+            <button className="op-button" onClick={() => void directory.refetch()}>
+              Retry
+            </button>
+          )}
+        </div>
+      </OperatorShell>
+    );
+  return (
+    <TenantWorkspace
+      key={tenant.tenant_id}
+      tenantId={tenant.tenant_id}
+      tenantName={tenant.display_name ?? tenant.slug ?? "Client workspace"}
+    />
+  );
+}
+
+function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantName: string }) {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [readiness, setReadiness] = useState<SourceReadiness | null>(null);
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<string>("");
+
+  const section = resolveSection(search.section);
+  const setSection = useCallback(
+    (s: WorkspaceSection) =>
+      navigate({
+        // Push a history entry so Back/Forward move between sections. Drop the endpoint
+        // selection when leaving Ownership so it doesn't leak into other sections.
+        search: (prev) => ({
+          ...prev,
+          tools: true,
+          section: sectionSearchValue(s),
+          endpoint: s === "ownership" ? prev.endpoint : undefined,
+          person: s === "people" ? prev.person : undefined,
+        }),
+      }),
+    [navigate],
+  );
+  const setEndpoint = useCallback(
+    (endpointId: string | null) =>
+      navigate({
+        // Selecting the endpoint you're editing isn't a navigation event — replace, don't push.
+        search: (prev) => ({ ...prev, endpoint: endpointId ?? undefined }),
+        replace: true,
+      }),
+    [navigate],
+  );
+  const setPerson = useCallback(
+    (memberId: string | null) =>
+      navigate({
+        // Opening a person's hub IS a navigation event (Back returns to the list).
+        search: (prev) => ({ ...prev, person: memberId ?? undefined }),
+      }),
+    [navigate],
+  );
+
+  // fetchAll refreshes data IN PLACE. It never toggles `loading`, so the workspace is
+  // not unmounted on a mutation refetch — the durable section/endpoint, expanded role
+  // form, and scroll position all survive. Only the first load gates the render.
+  const fetchAll = useCallback(async () => {
+    const [w, r, a] = await Promise.all([
+      getWorkspace(tenantId),
+      getReadiness(tenantId),
+      getAudit(tenantId),
+    ]);
+    if (w.ok) {
+      setWorkspace(w.data);
+      setError(null);
+    } else {
+      setError(w.error);
+    }
+    if (r.ok) setReadiness(r.data);
+    if (a.ok) setAudit(a.data.entries);
+    setLastRefresh(new Date().toISOString());
+  }, [tenantId]);
+
+  useEffect(() => {
+    // Released modules do not depend on legacy discovery, readiness or audit data.
+    if (!search.tools) return;
+    let active = true;
+    setLoading(true);
+    void fetchAll().finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchAll, search.tools]);
+
+  const guard = async (fn: () => Promise<{ ok: boolean; error?: { message: string } }>) => {
+    if (busy) return false;
+    setBusy(true);
+    setActionError(null);
+    const res = await fn();
+    if (!res.ok) setActionError(res.error?.message ?? "Action failed");
+    else await fetchAll(); // in-place refresh — no unmount, section/endpoint preserved
+    setBusy(false);
+    return res.ok;
+  };
+
+  // Delegated setup-request operator actions → the gated Control Plane. Raw tokens are
+  // generated server-side and returned once by `issue`; the client never stores the hash.
+  const delegatedActions: DelegatedActions = {
+    list: async () => {
+      const r = await listDelegatedTasks(tenantId);
+      return r.ok ? r.data.tasks : [];
+    },
+    issue: async (input) => {
+      const r = await issueDelegatedTask({ tenant_id: tenantId, ...input });
+      return r.ok ? r.data : { error: r.error.message };
+    },
+    revoke: async (taskId, reasonText) => {
+      const r = await revokeDelegatedTask({
+        tenant_id: tenantId,
+        task_id: taskId,
+        reason: reasonText,
+      });
+      return r.ok && r.data.revoked;
+    },
+    getSubmission: async (taskId) => {
+      const r = await getDelegatedSubmission({ tenant_id: tenantId, task_id: taskId });
+      return r.ok ? (r.data.task.submission ?? null) : null;
+    },
+  };
+
+  const actions: WorkspaceActions = {
+    onDiscoverTelephony: (reason) => void guard(() => discoverTelephony(tenantId, reason)),
+    onDiscoverEmail: (reason) => void guard(() => discoverEmail(tenantId, reason)),
+    onAssign: (endpoint_id, owner_member_id, assignment_role, reason) =>
+      guard(() =>
+        assignOwnership({
+          tenant_id: tenantId,
+          endpoint_id,
+          owner_kind: "person",
+          owner_member_id,
+          assignment_role,
+          confidence: 0.95,
+          reason,
+        }),
+      ),
+    onArchiveEndpoint: (endpoint_id, reason) =>
+      void guard(() => archiveEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
+    onReviewIdentity: (input) =>
+      void guard(() => reviewIdentity({ tenant_id: tenantId, ...input })),
+    onEndOwnership: (input) => void guard(() => endOwnership({ tenant_id: tenantId, ...input })),
+    onRestoreEndpoint: (endpoint_id, reason) =>
+      void guard(() => restoreEndpoint({ tenant_id: tenantId, endpoint_id, reason })),
+    onValidateEndpoint: async (input) => {
+      const res = await validateEndpoint({ tenant_id: tenantId, ...input });
+      return res.ok ? res.data : null;
+    },
+    onCreateEndpoint: async (input) =>
+      guard(() => createManualEndpoint({ tenant_id: tenantId, ...input })),
+    onUpdateEndpoint: async (input) => {
+      if (busy) return { ok: false, error: "busy" };
+      setBusy(true);
+      setActionError(null);
+      const res = await updateManualEndpoint({ tenant_id: tenantId, ...input });
+      if (!res.ok) {
+        setActionError(res.error?.message ?? "Update failed");
+        setBusy(false);
+        return { ok: false, error: res.error?.message };
+      }
+      await fetchAll();
+      setBusy(false);
+      return { ok: true, outcome: res.data.outcome };
+    },
+  };
+
+  const setModule = (module: OperatorModule) => void navigate({ search: { module, tools: false } });
+  // The authorised directory already identified this client. Every module enforces
+  // its own server/RLS access; legacy tool requests must not gate this shell.
+  if (!search.tools)
+    return (
+      <OperatorShell
+        company={tenantName}
+        tenantId={tenantId}
+        module={operatorModule(search.module)}
+        onSection={setSection}
+        onModule={setModule}
+      >
+        <OperatorModules
+          tenantId={tenantId}
+          company={tenantName}
+          module={operatorModule(search.module)}
+          onModule={setModule}
+          view={receptionistView(search.view)}
+          onView={(view) =>
+            void navigate({ search: { module: "receptionist", view, tools: false } })
+          }
+        />
+      </OperatorShell>
+    );
+
+  // Future tools keep their original independently authorised loading/access gate.
+  if (loading)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-alt/30">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    );
+  if (error || !workspace)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-alt/30 p-6">
+        <div className="max-w-md rounded-xl border border-hairline bg-white p-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-display">
+            <ShieldAlert className="h-4 w-4 text-destructive" />
+            {error && (error.code === "forbidden" || error.code.startsWith("http_403"))
+              ? "Platform authority required"
+              : "Could not load"}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Restricted to authorised OpenFolk operators (server-enforced).
+          </p>
+          <Link to="/openfolk" className="mt-3 inline-flex items-center gap-1 text-xs text-accent">
+            <ChevronLeft className="h-3.5 w-3.5" /> All tenants
+          </Link>
+        </div>
+      </div>
+    );
+
+  return (
+    <OperatorShell
+      company={tenantName}
+      tenantId={tenantId}
+      module={operatorModule(search.module)}
+      section={search.tools ? section : undefined}
+      onSection={setSection}
+      onModule={setModule}
+    >
+      {actionError && (
+        <div
+          role="alert"
+          className="mb-3 rounded-xl border border-destructive/30 bg-white p-3 text-xs text-muted-foreground"
+        >
+          <span className="font-semibold text-display">Action failed — </span>
+          {actionError}
+        </div>
+      )}
+      <Suspense fallback={<p role="status">Opening future tools…</p>}>
+        <OpenfolkWorkspace
+          tenantName={tenantName}
+          workspace={workspace}
+          readiness={readiness}
+          audit={audit}
+          writeCapable={true}
+          busy={busy}
+          lastRefresh={lastRefresh}
+          actions={actions}
+          section={section}
+          onSectionChange={setSection}
+          selectedEndpoint={search.endpoint ?? null}
+          onSelectEndpoint={setEndpoint}
+          selectedPerson={search.person ?? null}
+          onSelectPerson={setPerson}
+          delegatedActions={delegatedActions}
+        />
+      </Suspense>
+    </OperatorShell>
+  );
+}

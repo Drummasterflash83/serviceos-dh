@@ -1,0 +1,180 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  configurationChecks,
+  assertSafeScenario,
+  itemReport,
+  runState,
+  safeRecording,
+  recordingCallMatches,
+} from "./receptionist-testing.ts";
+const tool = {
+  type: "transferCall",
+  function: { name: "transfer" },
+  destinations: [{ number: "+441794341600", extension: "601" }],
+};
+test("rejects duplicate transfer configuration and does not trust an extension to bypass the main line", () => {
+  const checks = configurationChecks({ voice: {}, transcriber: {} }, [tool, tool], "+441794341600");
+  assert.equal(checks.find((c) => c.key === "transfer_count")?.state, "failed");
+  assert.equal(checks.find((c) => c.key === "main_loop")?.state, "failed");
+  assert.equal(checks.find((c) => c.key === "delivery")?.state, "not_tested");
+});
+test("requires criteria, interceptions and no webhook or model overrides", () => {
+  const s = {
+    evaluations: [{}],
+    toolMocks: [{ toolName: "transfer", enabled: true, result: "intercepted" }],
+  };
+  assert.doesNotThrow(() => assertSafeScenario(s, [tool]));
+  assert.throws(() => assertSafeScenario({ ...s, evaluations: [] }, [tool]));
+  assert.throws(() => assertSafeScenario({ ...s, toolMocks: [] }, [tool]));
+  assert.throws(() => assertSafeScenario({ ...s, hooks: [{}] }, [tool]));
+  assert.throws(() => assertSafeScenario({ ...s, targetOverrides: { model: {} } }, [tool]));
+  assert.throws(() =>
+    assertSafeScenario({ ...s, toolMocks: [{ toolName: "transfer", enabled: false }] }, [tool]),
+  );
+});
+test("all evidence must pass; missing and partial results never turn green", () => {
+  const item = itemReport({
+    id: "x",
+    status: "passed",
+    results: { passed: true, evaluations: [{}] },
+  });
+  assert.equal(runState({ status: "ended", itemCounts: { total: 1 } }, [item]), "passed");
+  assert.equal(runState({ status: "ended", itemCounts: { total: 2 } }, [item]), "failed");
+  assert.equal(runState({ status: "ended" }, []), "failed");
+  assert.equal(
+    runState({ status: "ended" }, [itemReport({ status: "passed", results: { passed: true } })]),
+    "failed",
+  );
+  assert.equal(runState({ status: "ended" }, [itemReport({ status: "canceled" })]), "cancelled");
+  assert.equal(runState({ status: "queued" }, []), "running");
+});
+test("recording URLs reject arbitrary and non-HTTPS locations", () => {
+  assert.equal(
+    safeRecording("https://storage.vapi.ai/test.wav"),
+    "https://storage.vapi.ai/test.wav",
+  );
+  for (const u of [
+    "http://storage.vapi.ai/a",
+    "https://vapi.ai.attacker.com/a",
+    "javascript:alert(1)",
+    "https://u:p@storage.vapi.ai/a",
+    "https://attacker.r2.cloudflarestorage.com/a",
+  ])
+    assert.equal(safeRecording(u), null);
+  assert.equal(
+    safeRecording(
+      "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+    ),
+    "https://hipaa-recordings.94bdb67bb98da30b06bdd917725c037d.r2.cloudflarestorage.com/test.wav",
+  );
+});
+test("tool evidence keeps distinct invocations, not transcript repetitions or unrelated arguments", () => {
+  const item = itemReport({
+    metadata: {
+      call: {
+        transcript: "intercepted\nintercepted",
+        messages: [
+          {
+            role: "assistant",
+            tool_calls: [
+              {
+                id: "one",
+                function: {
+                  name: "transfer",
+                  arguments: '{"destination":"+441794378095","secret":"omit"}',
+                },
+              },
+            ],
+          },
+          { role: "tool", content: "intercepted" },
+          {
+            role: "assistant",
+            toolCalls: [{ id: "two", function: { name: "transfer", arguments: "invalid" } }],
+          },
+        ],
+      },
+    },
+  });
+  assert.deepEqual(item.toolEvents, [
+    { id: "one", name: "transfer", destination: "+441794378095" },
+    { id: "two", name: "transfer", destination: null },
+  ]);
+  assert.deepEqual(itemReport({}).toolEvents, []);
+});
+test("repeated ordinary transfers override an AI judge pass; funding is not a wording failure", () => {
+  const event = (id: string) => ({
+    id,
+    function: {
+      name: "Route-Call-to-Drummond-Team-20260929",
+      arguments: '{"destination":"+441794840043"}',
+    },
+  });
+  const report = (ids: string[]) =>
+    itemReport({
+      status: "passed",
+      results: { passed: true, evaluations: [{}] },
+      metadata: { call: { messages: [{ tool_calls: ids.map(event) }] } },
+    });
+  assert.equal(report(["one", "two"]).passed, false);
+  assert.equal(report(["one", "two"]).outcome, "repeated_transfer");
+  assert.equal(report(["one", "one"]).passed, true);
+  assert.equal(
+    itemReport({ failureReason: "Your Wallet Balance is -0.07" }).outcome,
+    "blocked_funding",
+  );
+  assert.notEqual(
+    itemReport({ callId: "a", failureReason: "wallet balance" }).outcome,
+    "blocked_funding",
+  );
+});
+test("repeated handover wording cannot be hidden by a provider pass", () => {
+  const report = (transcript: string) =>
+    itemReport({
+      status: "passed",
+      results: { passed: true, evaluations: [{}] },
+      metadata: { call: { transcript } },
+    });
+  const duplicate = report(
+    "AI: I'll put you through to the sales mailbox. I'll put you through to the sales voicemail now.",
+  );
+  assert.equal(duplicate.passed, false);
+  assert.equal(duplicate.outcome, "repeated_announcement");
+  assert.equal(
+    report("AI: I can connect you directly to Mary now. I'll try Mary for you.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
+    report("AI: I can put you through to Mary now. I will connect you to Mary.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
+    report("AI: I can connect you to Mary, I'll try Mary for you now.").outcome,
+    "repeated_announcement",
+  );
+  assert.equal(
+    report("AI: I'll try Rob now.\nUser: No answer.\nAI: I'll try Tony now.").passed,
+    true,
+  );
+  assert.equal(report("User: I'll transfer you. I'll transfer you.\nAI: Goodbye.").passed, true);
+  assert.equal(
+    report("assistant: I'll try Rob now.\nuser: No answer.\nassistant: I'll try Tony now.").passed,
+    true,
+  );
+  assert.equal(
+    report("AI: I can connect you if you'd like.\nUser: Yes please.\nAI: I'll try Mary now.")
+      .passed,
+    true,
+  );
+});
+test("recording retrieval binds transient simulation calls to the verified run and organisation", () => {
+  const id = "00000000-0000-0000-0000-000000000001",
+    org = "00000000-0000-0000-0000-000000000002";
+  const run = { orgId: org, target: { assistantId: "candidate" } },
+    call = { id, orgId: org, assistantId: "transient-tester" };
+  assert.equal(recordingCallMatches(run, call, id, "candidate", true), true);
+  assert.equal(recordingCallMatches(run, call, id, "candidate", false), false);
+  assert.equal(recordingCallMatches(run, { ...call, id: org }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, { ...call, orgId: id }, id, "candidate", true), false);
+  assert.equal(recordingCallMatches(run, call, id, "other", true), false);
+});

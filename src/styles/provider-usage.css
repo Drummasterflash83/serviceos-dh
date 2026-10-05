@@ -1,0 +1,57 @@
+.api-usage {
+  margin-top: 24px;
+}
+.api-usage label {
+  display: inline-block;
+  margin: 12px 12px 12px 0;
+  font-weight: 600;
+}
+.api-usage select {
+  color: #242337;
+  background: #fff;
+  border: 1px solid #bab0c8;
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-width: 100%;
+}
+.api-usage h2 {
+  margin-top: 24px;
+}
+.api-table-scroll {
+  overflow-x: auto;
+  margin: 18px 0;
+}
+.api-usage table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.api-usage caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 12px;
+}
+.api-usage th,
+.api-usage td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #ded8e5;
+  vertical-align: top;
+}
+.api-usage small {
+  display: block;
+  margin-top: 5px;
+  color: #625570;
+}
+.api-usage select:focus-visible,
+.api-usage button:focus-visible {
+  outline: 3px solid #cc8625;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .api-usage th,
+  .api-usage td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+}

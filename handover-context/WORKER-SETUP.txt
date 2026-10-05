@@ -1,0 +1,24 @@
+OPENFOLK MAIN SOURCE — LOCAL WORKER SNAPSHOT
+
+This is the existing OpenFolk project as a whole, restored from the owner-authorised
+LEARN source export at 0a9b39d, then the checked 2f11a9b Slack delta and the checked
+d174a27 Slack request-port delta. SOURCE-PROVENANCE.json records upstream versions.
+The new local Git snapshot is not an original upstream candidate commit.
+
+71 local frontend/Slack checks passed after npm ci from package-lock.json.
+npm run build passed on 5 October 2026. The source has not been deployed or pushed.
+No live customer data, cloud credentials, database migrations, Slack connection or
+production RLS tests were used. The default live Slack transport remains disabled.
+
+Drumbot's configured independent command runs the 65 dependency-free frontend
+brand/navigation/operator and Slack checks in each isolated checkout. This bounded
+check is not a full application build or all acceptance criteria. The additional
+performance tests and production build need the locked dependencies, which are
+not inherited by Git worktrees. Arrange npm ci locally before checks that need them.
+Do not hide a missing dependency or substitute old source to make tests pass.
+
+Preserve AGENTS.md, existing approved dependencies and source guards. Integrate
+reviewed returned changes deliberately; task completion does not merge or deploy.
+Use project-relative paths in handovers. Supply task-specific context, current
+local snapshot commit, acceptance criteria and setup with each delegated job.
+If a needed source is cloud-only, request it through Drumbot's handover protocol.

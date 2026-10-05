@@ -1,0 +1,10 @@
+import {defineConfig} from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwind from '@tailwindcss/vite';
+import path from 'node:path';
+const root=import.meta.dirname;
+const omitted=['WorkspaceHome','ClientInvestment','ClientDeliverySummary','ClientNotifications','ReceptionistWorkspace'];
+export default defineConfig({root,envDir:false,envPrefix:'PREVIEW_UNUSED_',plugins:[{name:'synthetic-only',enforce:'pre',resolveId(id,importer){
+  if(id==='@/lib/supabase'||id==='./supabase')return path.join(root,'supabase.ts');
+  if(omitted.some(n=>id.endsWith('/'+n)))return path.join(root,'other-views.tsx');
+}},react(),tailwind()],resolve:{alias:[{find:'@/lib/api',replacement:path.join(root,'launch-api-fixture.ts')},{find:'@/lib/learn-launch',replacement:path.resolve(root,'../../src/lib/learn-launch.ts')},{find:'@/styles/learn-launch.css',replacement:path.resolve(root,'../../src/styles/learn-launch.css')},{find:'@/lib/auth',replacement:path.join(root,'auth.tsx')},{find:'@/lib/supabase',replacement:path.join(root,'supabase.ts')},{find:'@/components/receptionist/ReceptionistWorkspace',replacement:path.join(root,'other-views.tsx')},{find:'@',replacement:path.join(root,'source')}],dedupe:['react','react-dom']},build:{outDir:'dist',emptyOutDir:true,sourcemap:false},server:{host:'127.0.0.1',port:47871,strictPort:true,hmr:false},preview:{host:'127.0.0.1',port:47871,strictPort:true}});

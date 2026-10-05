@@ -1,0 +1,331 @@
+# ServiceOS — Supabase project config.
+#
+# Only per-function JWT settings are declared here; every other setting uses the
+# CLI defaults. Functions not listed keep the default (verify_jwt = true), so the
+# existing phone/simwood functions are unaffected.
+
+# Gmail OAuth start — authenticated (owner/admin/ops). Keep JWT verification ON.
+[functions.gmail-oauth-start]
+verify_jwt = true
+
+# Gmail OAuth callback — Google redirects the browser here with NO Supabase JWT,
+# so gateway JWT verification MUST be off. Trust comes from the HMAC-signed
+# `state` verified inside the function (see _shared/gmail_oauth.ts).
+[functions.gmail-oauth-callback]
+verify_jwt = false
+
+# Provider (telephony) OAuth callback — the provider redirects the browser here with
+# NO Supabase JWT, so gateway JWT verification MUST be off. Trust comes from the
+# one-time, expiring, tenant/user-bound `state` consumed inside the function
+# (see _shared/telephony/oauth.ts). No secret is ever returned to the browser.
+[functions.provider-oauth-callback]
+verify_jwt = false
+
+# Scheduled phone sync — invoked by cron with NO Supabase JWT, so gateway JWT
+# verification MUST be off. Trust comes from the `x-schedule-secret` header
+# checked inside the function against PHONE_SCHEDULE_SECRET.
+[functions.user-ownership]
+# Auths itself: a tenant-user JWT (requireTenantUser) OR the OpenFolk service secret.
+verify_jwt = false
+
+[functions.work-transition]
+# Auths itself via requireTenantUser; enforces work authority from authority_grants.
+verify_jwt = false
+
+[functions.work-projection]
+# Auths itself via requireTenantUser; read-only Command Centre projection.
+verify_jwt = false
+
+[functions.view-as]
+# Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
+verify_jwt = false
+
+[functions.customer-health-shadow]
+# Auths itself via requireTenantUser; requires an active tenant.superadmin grant.
+verify_jwt = false
+
+[functions.openfolk-control-plane]
+# Auths itself via requirePlatformOperator; requires OpenFolk role + active
+# platform.controlplane grant (view to read, admin to write). NOT tenant-accessible.
+verify_jwt = false
+
+[functions.ownership-projection]
+# Tenant-facing DERIVED ownership only (requireTenantUser). Never exposes raw Control
+# Plane tables — the Command Centre consumes this instead of querying them.
+verify_jwt = false
+
+[functions.marketing-access]
+# Tenant-facing Marketing access + config (requireTenantUser). Resolves the caller's
+# marketing permissions (role defaults + per-user grants), materialises tenant
+# defaults idempotently, and returns tenant marketing config. No external side effects.
+verify_jwt = false
+
+[functions.marketing-contacts]
+# Tenant-facing Contacts projection + governed contact writes (requireTenantUser +
+# the canonical marketing permission resolver). Thin shell over service-role-only
+# SQL RPCs (list/detail/classify/create); per-action permission checks; no
+# external side effects.
+verify_jwt = false
+
+[functions.marketing-admin]
+# Owner/admin Marketing administration (settings, lifecycle stages, access grants,
+# audit history). requireTenantUser owner/admin + the canonical resolver inside the
+# service-role RPCs. No external side effects.
+verify_jwt = false
+
+[functions.marketing-segments]
+# Versioned dynamic segments (validated filter AST, immutable versions, server-side
+# evaluation). requireTenantUser + canonical resolver; service-role RPCs only.
+verify_jwt = false
+
+[functions.marketing-senders]
+# Marketing sender configuration + governed test sends (Phase 4). requireTenantUser +
+# canonical resolver (senders.manage / campaigns.test); sends go ONLY through the
+# Automation Engine (this function never calls Gmail's send API).
+verify_jwt = false
+
+[functions.marketing-campaigns]
+# Marketing Broadcasts API (Phase 5). requireTenantUser + canonical resolver
+# (campaigns.draft / campaigns.test / campaigns.launch double gate); every send
+# goes ONLY through the Automation Engine (this function never calls Gmail).
+verify_jwt = false
+
+[functions.marketing-unsubscribe]
+# PUBLIC one-click/visible-link unsubscribe (Phase 5). Deliberately
+# unauthenticated: opaque digest-verified tokens, generic non-enumerating
+# responses, idempotent. Shares NO tenant-user auth code.
+verify_jwt = false
+
+[functions.marketing-track]
+# PUBLIC open/click tracking (Activation). Deliberately unauthenticated:
+# HMAC-signed pixel/redirect over the delivery id, generic non-enumerating
+# responses (a gif / a neutral redirect regardless of validity). Records via
+# service-role RPC only; reveals no tenant data.
+verify_jwt = false
+
+[functions.marketing-broadcast-scheduled-sync]
+# Scheduled broadcast heartbeat (Phase 5): discovers due campaigns + drives the
+# bounded dispatch worker. Secret-gated via MARKETING_BROADCAST_SECRET; never
+# sends email itself.
+verify_jwt = false
+
+[functions.marketing-sequences]
+# Marketing Sequences API (Phase 6). requireTenantUser + canonical resolver
+# (campaigns.draft / campaigns.launch double gate); every step executes ONLY
+# through the Automation Engine (this function never calls Gmail).
+verify_jwt = false
+
+[functions.marketing-sequence-scheduled-sync]
+# Sequence heartbeat (Phase 6): discovers due enrolment steps + drives the
+# bounded advance worker. Secret-gated via MARKETING_SEQUENCE_SECRET; never
+# sends email itself.
+verify_jwt = false
+
+[functions.marketing-templates]
+# Marketing Templates API (Phase 7). requireTenantUser + canonical resolver
+# (view / campaigns.draft double gate); one safe content model — every write
+# passes the canonical validator; preview renders SAMPLE data only.
+verify_jwt = false
+
+[functions.marketing-reporting]
+# Marketing Reporting & Objectives API (Phase 7). Composes the canonical
+# per-type report authorities; objective linking under the owner/admin +
+# campaigns.launch ceiling. Read-mostly; never sends anything.
+verify_jwt = false
+
+[functions.marketing-ai-drafts]
+# Marketing AI Drafting API (Phase 7). Generation creates immutable PROPOSALS
+# through the governed ai.generate_marketing_draft capability (Automation
+# Engine); acceptance writes drafts only. Provider credential goes straight
+# to the tenant Vault broker.
+verify_jwt = false
+
+[functions.marketing-ads]
+# Marketing Ads management/read API (Phase 8). requireTenantUser + canonical
+# resolver (view / owner-admin+ads.manage double gate). Ads captures and
+# attributes leads; it does not create or edit advertisements. The webhook
+# signing secret goes straight to the tenant Vault broker and is shown once.
+verify_jwt = false
+
+[functions.marketing-ad-webhook]
+# PUBLIC provider-neutral SIGNED lead-capture webhook (Phase 8). No Supabase
+# JWT: authentication is the per-source HMAC-SHA256 over timestamp + raw body
+# (secret in the tenant Vault broker), an opaque non-enumerable route key and
+# a freshness window. Every auth failure is one generic 401 with zero writes.
+verify_jwt = false
+
+[functions.marketing-provider-connections]
+# Marketing provider-connection seams (Phase 9). requireTenantUser + canonical
+# resolver (view / owner-admin+ads.manage double gate). Zero adapters exist:
+# connect lands truthfully in error/no_adapter, sync refuses for every
+# non-connected account, credentials go straight to the tenant Vault broker.
+verify_jwt = false
+
+[functions.phone-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Gmail sync — same model as phone-scheduled-sync, gated by
+# EMAIL_SCHEDULE_SECRET (cron has no Supabase JWT).
+[functions.email-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Workspace DWD email sync — gated by EMAIL_WORKSPACE_SCHEDULE_SECRET
+# (cron has no Supabase JWT).
+[functions.email-workspace-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Workspace DWD historical backfill — gated by
+# EMAIL_WORKSPACE_BACKFILL_SECRET (cron has no Supabase JWT).
+[functions.email-workspace-backfill-scheduled-sync]
+verify_jwt = false
+
+# Scheduled phone-processing backlog drainer — invoked by cron with NO Supabase
+# JWT, gated by the `x-schedule-secret` header checked against PHONE_PROCESSING_SECRET.
+[functions.phone-processing-scheduled-sync]
+verify_jwt = false
+
+# Scheduled canonical-signal build — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against SIGNAL_SYNC_SECRET. Refreshes the
+# `interactions` timeline automatically so users never have to press "Build".
+[functions.interactions-scheduled-sync]
+verify_jwt = false
+
+# Live call webhook — the VoIP provider posts here with NO Supabase JWT. Gateway JWT
+# verification MUST be off; trust comes from the `x-simwood-webhook-secret` header
+# checked inside the function against SIMWOOD_WEBHOOK_SECRET.
+[functions.simwood-call-webhook]
+verify_jwt = false
+
+# Scheduled Identity Resolution Engine — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against IDENTITY_SYNC_SECRET.
+[functions.identity-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Business Graph projection — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against GRAPH_SYNC_SECRET. Projects the
+# system-of-record tables into graph_nodes/graph_edges automatically.
+[functions.business-graph-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Customer Card projection — invoked by cron with NO Supabase JWT, gated
+# by the `x-schedule-secret` header checked against CARD_SYNC_SECRET. Projects the
+# graph into customer_cards.context. Runs after the graph; the graph never waits.
+[functions.customer-card-scheduled-sync]
+verify_jwt = false
+
+# Scheduled Recommendation Engine — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against RECOMMENDATION_SYNC_SECRET. Applies
+# deterministic rules to customer-card projections. Runs after customer-card sync.
+[functions.recommendation-scheduled-sync]
+verify_jwt = false
+
+# ── Internal worker functions (verify_jwt = false) ──────────────────────────
+# These are invoked SERVER-TO-SERVER with the SERVICE-ROLE key as the bearer:
+#   • the schedulers above fan out to them,
+#   • phone-process-pipeline chains the phone workers,
+#   • simwood-sync-recordings / identity-resolve fire background triggers.
+# With verify_jwt = true the platform GATEWAY must itself accept the service-role
+# bearer as a JWT before the function runs — which fails on projects using the
+# newer non-JWT secret-key format and then surfaces INSIDE the function as the
+# misleading "Invalid or expired session" (authz code `invalid_auth`). Turning the
+# gateway check off makes _shared/authz.ts the SOLE gatekeeper: it still fully
+# validates BOTH real user JWTs (manual override buttons) AND the internal path
+# (token === SUPABASE_SERVICE_ROLE_KEY + x-internal-tenant-id, tenant-bound). No
+# security is lost — the gateway JWT check was defense-in-depth only and is
+# incompatible with internal service-role invocation. Same model the schedulers
+# above already use.
+
+# Phone pipeline workers (chained by phone-process-pipeline / phone-process-pending).
+[functions.phone-process-pending]
+verify_jwt = false
+[functions.phone-process-pipeline]
+verify_jwt = false
+[functions.simwood-download-recording]
+verify_jwt = false
+[functions.phone-transcribe-recording]
+verify_jwt = false
+[functions.phone-analyse-transcript]
+verify_jwt = false
+[functions.simwood-sync-calls]
+verify_jwt = false
+[functions.simwood-sync-recordings]
+verify_jwt = false
+
+# Core engines (invoked by their scheduler + manual override buttons + triggers).
+[functions.interactions-sync]
+verify_jwt = false
+[functions.identity-resolve]
+verify_jwt = false
+[functions.business-graph-sync]
+verify_jwt = false
+[functions.customer-card-sync]
+verify_jwt = false
+[functions.recommendation-sync]
+verify_jwt = false
+
+# Email workers (invoked by the email schedulers via _shared/email_pipeline.ts).
+[functions.gmail-sync-messages]
+verify_jwt = false
+[functions.gmail-workspace-sync-messages]
+verify_jwt = false
+[functions.gmail-workspace-backfill-messages]
+verify_jwt = false
+
+# Generic async queue worker — invoked by cron with NO Supabase JWT, gated by the
+# `x-schedule-secret` header checked against WORKER_SECRET. Claims + dispatches
+# queued platform_jobs. Not tenant-bound (cross-tenant infrastructure).
+[functions.platform-worker]
+verify_jwt = false
+
+# Scheduled intelligence-ingestion scan — invoked by cron with NO Supabase JWT, gated by
+# the `x-schedule-secret` header checked against INTELLIGENCE_INGEST_SECRET. Selects
+# enriched-but-uningested interactions and enqueues intelligence.ingest_interaction jobs.
+[functions.intelligence-ingestion-scheduled-sync]
+verify_jwt = false
+
+# Human approval endpoint — the frontend/service calls it with a user JWT (or the
+# service-role key for the internal path); tenant + role are bound INSIDE via
+# requireTenantUser, so gateway JWT verification is OFF (mirrors gmail-oauth-callback).
+[functions.intelligence-review-action]
+verify_jwt = false
+
+[functions.receptionist-calls]
+verify_jwt = false
+
+[functions.receptionist-practice]
+verify_jwt = false
+
+[functions.client-notifications]
+verify_jwt = false
+
+[functions.operator-notifications]
+verify_jwt = false
+
+# Authenticated OpenFolk-only review; identity and authority checked in the handler.
+[functions.receptionist-task-review]
+verify_jwt = false
+
+[functions.receptionist-rehearsal]
+verify_jwt = false
+
+[functions.receptionist-testing]
+verify_jwt = false
+
+# Operator-only capture evidence; JWT/service authentication is enforced inside.
+[functions.phone-capture-coverage]
+verify_jwt = false
+
+# Private existing scheduler credential; no browser invocation.
+[functions.receptionist-review-collector]
+verify_jwt = false
+
+# Uses the existing platform scheduler secret, never a browser session.
+[functions.receptionist-test-collector]
+verify_jwt = false
+
+[functions.receptionist-release]
+verify_jwt = false
+
+# Handler verifies user identity and mailbox RLS before private playback.
+[functions.receptionist-voicemail-recording]
+verify_jwt = false

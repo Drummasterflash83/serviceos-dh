@@ -1,0 +1,11 @@
+begin;
+create function pg_temp.assert_true(b boolean, message text) returns void language plpgsql as $$begin if b is distinct from true then raise exception 'FAIL: %',message; end if; end$$;
+select pg_temp.assert_true(not has_function_privilege('authenticated','public.notification_require_actor(uuid)','execute'),'normal sessions cannot claim service-role maintenance');
+select pg_temp.assert_true(not has_table_privilege('authenticated','public.receptionist_test_runs','insert'),'clients cannot create runs directly');
+select pg_temp.assert_true(not has_table_privilege('authenticated','public.receptionist_test_candidates','select'),'candidate snapshots stay private');
+select pg_temp.assert_true(not has_function_privilege('authenticated','public.receptionist_test_reserve(uuid,uuid,text)','execute'),'run reservation is service-only');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',true);
+select pg_temp.assert_true((select count(*)=0 from public.receptionist_test_runs),'unprivileged sessions cannot see run evidence');
+select pg_temp.assert_true((select count(*)=0 from public.receptionist_test_settings),'unprivileged sessions cannot see testing settings');
+rollback;

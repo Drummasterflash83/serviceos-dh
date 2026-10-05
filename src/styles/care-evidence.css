@@ -1,0 +1,75 @@
+.care-evidence {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid #ded7e8;
+  border-radius: 16px;
+  background: #faf8fc;
+}
+.care-evidence h4 {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+.care-evidence-meta {
+  display: flex;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  color: #655b71;
+  font-size: 13px;
+}
+.care-evidence .rw-recording {
+  padding: 18px;
+  margin: 18px 0;
+  border-radius: 14px;
+  color: #302b43;
+  background: #f0eaf7;
+}
+.care-evidence .rw-recording-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.care-evidence .rw-recording h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.care-evidence .rw-recording audio {
+  display: block;
+  width: 100%;
+  margin: 16px 0;
+}
+.care-evidence .rw-footnote,
+.care-evidence > small {
+  display: block;
+  color: #655b71;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.care-evidence-transcript {
+  margin: 18px 0;
+}
+.care-evidence-transcript summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+}
+.care-evidence-transcript p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 380px;
+  overflow: auto;
+  padding-right: 8px;
+}
+@media (max-width: 640px) {
+  .care-evidence {
+    padding: 14px;
+  }
+  .care-evidence .rw-recording {
+    padding: 14px;
+  }
+  .care-evidence .rw-recording-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
