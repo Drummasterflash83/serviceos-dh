@@ -255,6 +255,26 @@ Browser checks covered unconfirmed →
 confirmed 80/100 draft → disputed/unassessed, with both reviews retained and the
 same source timestamp. No real measurement, review or pay change was made.
 
+## Voicemail discovery and renewed preservation check
+
+A read-only comparison at **18:11:35 UTC** on 9 October (completed 18:11:59)
+found 18,441 emails, 4,324 calls, 2,882 recordings/transcripts and 22,777
+interactions. All IDs from the 16:09 baseline remained present across the eleven
+inventoried tables; recording pointers and previously inventoried storage-object
+size/update metadata were unchanged. All 2,882 recording pointers matched storage
+objects larger than 44 bytes. Transcripts: 2,876 completed and six failed.
+Voicemail and canonical job rows remained zero. This checks preservation since
+the baseline, not complete provider coverage, playable audio or backup recovery.
+
+A bounded read-only Sipcentric voicemail discovery helper and CLI now inspect the
+documented endpoint catalogue and optionally the structure of explicitly linked
+voicemail resources. They never infer message coverage from a successful endpoint
+list. Ten synthetic transport tests and strict/application TypeScript checks pass.
+Existing local verification credentials were reused for the preservation check;
+provider credentials were not present in the checked local environment files, so
+no live voicemail discovery ran. No voicemail ingestion or deployment is claimed.
+See [the source contract, diagnostic and remaining capture work](../operations/LEARN-VOICEMAIL-DISCOVERY.md).
+
 ## Next work and release gates
 
 Work-transition now resolves confirmed, effective cover and self/team/company
