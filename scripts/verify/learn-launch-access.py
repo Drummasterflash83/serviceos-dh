@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCKER = shutil.which('docker') or '/usr/local/bin/docker'
+NODE = shutil.which('node') or '/usr/local/bin/node'
 IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.141'
 TARGET = 'serviceos-launch-access-' + uuid.uuid4().hex[:8]
 
@@ -31,7 +32,9 @@ def query(container, sql):
                   'postgres', '-Atc', sql).stdout.decode().splitlines()
 
 
-def apply(sql, label):
+def apply(sql, label, as_deployer=False):
+    if as_deployer:
+        sql = b'set role postgres;\n' + sql
     result = subprocess.run([DOCKER, 'exec', '-i', TARGET, 'psql', '-U',
                              'supabase_admin', '-d', 'roster_verify', '-v',
                              'ON_ERROR_STOP=1', '-f', '-'],
@@ -39,10 +42,26 @@ def apply(sql, label):
     if result.returncode:
         # Do not print schema bodies or arbitrary source data on failure.
         messages = result.stderr.decode().splitlines()
-        print(label + ': FAILED')
-        print('\n'.join(line for line in messages if 'ERROR:' in line or 'ASSERT' in line)[-1000:])
+        print(label + ': FAILED (exit ' + str(result.returncode) + ')')
+        print('\n'.join(line for line in messages if any(k in line.upper() for k in ['ERROR', 'FATAL', 'ASSERT', 'HINT:']))[-1000:])
         raise RuntimeError(label + ' failed')
     print(label + ': PASS')
+
+
+def metadata_report():
+    # Run the actual catalog SQL and assessor against this disposable database.
+    # No hand-authored fixture substitutes for PostgreSQL's privilege answers.
+    query_sql = subprocess.run([NODE, '--input-type=module', '-e',
+        "import {CATALOG_QUERY} from './scripts/verify/learn-test-readiness.mjs'; process.stdout.write(CATALOG_QUERY);"],
+        cwd=ROOT, capture_output=True, check=True).stdout
+    result = docker('exec', '-i', TARGET, 'psql', '-U', 'supabase_admin', '-d',
+                    'roster_verify', '-At', '-v', 'ON_ERROR_STOP=1', input=query_sql)
+    assessed = subprocess.run([NODE, '--input-type=module', '-e',
+        "import {assessTestCatalog} from './scripts/verify/learn-test-readiness.mjs';"
+        "let s='';for await(const c of process.stdin)s+=c;"
+        "process.stdout.write(JSON.stringify(assessTestCatalog(JSON.parse(s),[]).launchMetadata));"],
+        cwd=ROOT, input=result.stdout, capture_output=True, check=True)
+    return json.loads(assessed.stdout)
 
 
 try:
@@ -82,12 +101,48 @@ try:
     sql.append("insert into of_test_deploy.migrations values ('"+ledger['source_sha256']+"','openfolk_test_learn_bootstrap_v5','saatxzwxvdvqevbnskxy',now());")
     sql.append("create table public.test_policy_before as select * from pg_policies where schemaname='public';")
     apply('\n'.join(sql).encode(),'Actual TEST column/policy privilege projection')
+    # Hosted metadata queries confirmed all nine tables are owned by postgres,
+    # which is NOSUPERUSER, CREATEROLE, BYPASSRLS. Do not silently rely on the
+    # disposable image's superuser for release ownership changes.
+    deployer = ["alter role postgres nologin nosuperuser createrole bypassrls;",
+        "grant usage,create on schema public to postgres with grant option;",
+        "grant usage on schema auth to postgres with grant option;",
+        "grant execute on function auth.uid() to postgres with grant option;",
+        "grant usage on schema of_test_deploy to postgres;",
+        "grant select on of_test_deploy.migrations to postgres;"]
+    deployer += ['alter table public.' + ident(name) + ' owner to postgres;' for name in needed]
+    apply('\n'.join(deployer).encode(), 'Hosted non-superuser deployment privilege model')
+    before = metadata_report()
+    assert before['state'] == 'blocked' and 'missing_reader_role' in before['roleIssues']
+    assert all('missing_view' in view['issues'] for view in before['views'])
+    print('Catalog audit recognizes absent release: PASS')
+    rehearsal = subprocess.run([NODE, '--input-type=module', '-e',
+        "import {rehearsalSql} from './scripts/verify/learn-test-launch-rehearsal.mjs'; process.stdout.write(rehearsalSql());"],
+        cwd=ROOT, capture_output=True, check=True).stdout
+    apply(rehearsal, 'Exact hosted rehearsal SQL executes and rolls back', as_deployer=True)
+    assert metadata_report() == before, 'Rollback must restore the pre-rehearsal privilege catalog'
     proposal=(ROOT/'supabase/release/learn-test/001_launch_metadata_views.sql').read_text()
     # Refuse unscoped application, then ensure its transaction created nothing.
     denied=subprocess.run([DOCKER,'exec','-i',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-v','ON_ERROR_STOP=1','-f','-'],input=proposal.encode(),capture_output=True)
     assert denied.returncode!=0 and b'Explicit existing TEST target required' in denied.stderr
     print('Unscoped release refused: PASS')
-    apply(("set serviceos.release_target='saatxzwxvdvqevbnskxy';\n"+proposal).encode(),'Proposed metadata views')
+    apply(("set serviceos.release_target='saatxzwxvdvqevbnskxy';\n"+proposal).encode(),'Proposed metadata views', as_deployer=True)
     apply((ROOT/'scripts/verify/learn-launch-access.assert.sql').read_bytes(),'Owner/admin, tenant, viewer, redaction and preservation assertions')
+    after = metadata_report()
+    if after['roleIssues']:
+        print(docker('exec', TARGET, 'psql', '-U', 'supabase_admin', '-d', 'roster_verify', '-Atc',
+            "select jsonb_build_object('member',m.rolname,'grantor',g.rolname,'admin',a.admin_option,'inherit',a.inherit_option,'set',a.set_option) from pg_auth_members a join pg_roles r on r.oid=a.roleid join pg_roles m on m.oid=a.member join pg_roles g on g.oid=a.grantor where r.rolname='learn_launch_metadata_reader'").stdout.decode())
+    assert after['state'] == 'needs_semantic_and_user_verification', after
+    print('Actual catalog recognizes restricted view contract without declaring release: PASS')
+    apply(b'grant select(transcript_text) on phone_transcripts to learn_launch_metadata_reader;', 'Synthetic excess privilege')
+    drift = metadata_report()
+    assert drift['state'] == 'blocked'
+    assert 'reader_extra_columns_or_unknown' in next(s for s in drift['sources'] if s['source'] == 'phone_transcripts')['issues']
+    apply(b'revoke select(transcript_text) on phone_transcripts from learn_launch_metadata_reader;', 'Restore synthetic privilege')
+    apply(b'grant learn_launch_metadata_reader to authenticated;', 'Synthetic role membership')
+    assert 'reader_memberships_need_review' in metadata_report()['roleIssues']
+    apply(b'revoke learn_launch_metadata_reader from authenticated;', 'Restore synthetic membership')
+    assert metadata_report()['state'] == 'needs_semantic_and_user_verification'
+    print('Catalog audit detects private-column and role-membership drift: PASS')
 finally:
     subprocess.run([DOCKER,'rm','-f',TARGET],capture_output=True)

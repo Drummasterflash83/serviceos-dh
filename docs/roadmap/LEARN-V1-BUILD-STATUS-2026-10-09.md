@@ -335,8 +335,21 @@ columns, and none of the canonical card/work/roster foundations. Its custom ledg
 retains the 4 October `openfolk_test_learn_bootstrap_v5` deployment; the source is
 not in this checkout. Allkin still has only the production Vercel project. These
 are concrete release gaps, not missing credentials or an empty TEST database.
-The new TEST-only metadata preflight and four focused tests pass. See
+The refreshed 19:16 audit also confirms the proposed metadata reader/views are
+absent. The preflight now distinguishes direct reads from the restricted view
+contract and detects column-grant, ownership and membership drift. See
 [verified inventory, evidence and dependency work](../operations/LEARN-TEST-READINESS.md).
+
+At 19:24 UTC the restricted launch SQL passed a **hosted TEST rollback rehearsal**.
+No persistent views/grants or data changes remain; the before/after audited
+catalog and ledger fingerprints match. The first hosted attempt exposed a
+non-superuser ownership-transfer problem, now reproduced and fixed locally.
+The SQL configures grants before ownership transfer and removes the deployer's
+temporary SET permission. An ADMIN-only PostgreSQL creator entry remains locally,
+with no SET/INHERIT capability or ordinary-user membership. Fifteen audit/rehearsal
+tests and the isolated PostgreSQL privilege assertions pass. Real JWT/PostgREST
+acceptance and a persistent, ledger-recorded release are still required. See
+[proposal, rehearsal evidence and release boundaries](../operations/LEARN-TEST-LAUNCH-ACCESS.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

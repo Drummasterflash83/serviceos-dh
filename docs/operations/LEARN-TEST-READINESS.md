@@ -17,8 +17,8 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest TEST catalog/function audit is **2026-10-09 19:01:25 UTC**. Its
-[retained readiness report](evidence/learn-test-readiness-2026-10-09.json) identifies
+The latest retained TEST catalog/function audit is **2026-10-09 19:16:20 UTC**. Its
+[version 2 readiness report](evidence/learn-test-readiness-2026-10-09-v2.json) identifies
 the missing prerequisites. The earlier [catalog snapshot](evidence/learn-test-schema-2026-10-09.json)
 at 18:57:35 UTC retains table/column definitions, policy expressions and function
 signatures; these are schema metadata, not tenant data or credentials.
@@ -37,6 +37,9 @@ signatures; these are schema metadata, not tenant data or credentials.
   read authority. The nine inspected LEARN scorecard/review/work/Slack setup RPCs
   are absent or not executable by authenticated users.
 - No Edge Functions are deployed in TEST, including `learn-launch-status`.
+- The restricted launch reader role and all eight proposed metadata views are
+  absent. The separate `launchMetadata` assessment correctly reports this as
+  blocked; it does not recommend broad source-table grants to bypass the gap.
 - TEST uses `of_test_deploy.migrations`; no standard Supabase migration ledger
   appeared in the catalog. Its one retained entry is
   `openfolk_test_learn_bootstrap_v5`, applied **2026-10-04 20:12:22 UTC**. The
@@ -75,6 +78,10 @@ Vercel metadata was checked through the saved CLI using the documented
 
 Four tests cover the real catalog snapshot, column-grant recognition, fixed TEST
 request scope, no API-key requests, identity changes and incomplete/error results.
+Seven additional catalog tests cover the restricted view/role contract and unsafe
+privilege changes. The isolated PostgreSQL verifier exercises the actual catalog
+query before/after installing the views, granting an extra transcript column and
+granting application-role membership; both unsafe changes are detected.
 Exit zero means the inspection completed; the report remains
 `not_release_verified`. Even full catalog presence cannot prove policy semantics,
 ordinary-user access, tenant isolation or connector acceptance.
@@ -82,9 +89,13 @@ ordinary-user access, tenant isolation or connector acceptance.
 ## Concrete release work now required
 
 A [restricted launch metadata proposal](LEARN-TEST-LAUNCH-ACCESS.md) now implements
-the minimum read surface locally and passes handler and isolated SQL privilege
-tests. It preserves raw source data and existing ingestion policies. It has not
-been applied to TEST; full schema and real JWT/API verification remain required.
+the minimum read surface and passes handler and isolated SQL privilege tests.
+A hosted TEST rehearsal at **19:24:52–19:24:54 UTC** executed the corrected SQL and
+rolled back, with matching audited catalog/ledger fingerprints. An earlier hosted
+failure exposed deployment-role ownership requirements that the initial superuser
+test had missed; the verifier now uses matching non-superuser capabilities.
+No persistent release has occurred. Real JWT/API verification, a release receipt
+and the wider product foundations remain required.
 
 1. Reconcile the deployed bootstrap and custom ledger. Recover its exact source if
    available; otherwise document the deployed definitions from read-only catalog

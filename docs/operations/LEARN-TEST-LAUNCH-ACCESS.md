@@ -1,6 +1,7 @@
 # Proposed TEST launch metadata access
 
-Status: implemented and tested locally; **not applied to hosted TEST or production**.
+Status: implemented locally and **rehearsed with rollback on hosted TEST**;
+no persistent TEST release or production change has been applied.
 This addresses the launch-status read gap recorded in
 [the TEST readiness audit](LEARN-TEST-READINESS.md). It does not supply missing
 card/roster/work tables, deploy functions, enable connectors or change stored data.
@@ -18,6 +19,12 @@ that role. The role receives only required source-column privileges. Source RLS
 resolves the current authenticated user's profile and permits only that tenant's
 owner/admin. Existing source grants, rows and ingestion policies are preserved.
 The reader's temporary public-schema CREATE privilege is revoked before commit.
+Hosted `postgres` is CREATEROLE/BYPASSRLS but not a superuser. It receives temporary
+SET permission for view ownership transfer, with INHERIT disabled. View grants are
+configured before ownership transfer; temporary SET permission is then revoked.
+PostgreSQL 17's automatic ADMIN-only grant to the role creator remains, with both
+INHERIT and SET false. This is accepted only for the existing `postgres` source
+owner, granted by `supabase_admin`; application-role memberships remain forbidden.
 
 Authenticated users receive SELECT on the views, with these projections:
 
@@ -64,7 +71,9 @@ cached Supabase Postgres 17 container, without reading any existing database.
 It reconstructs the recorded TEST columns, grants and policies for nine tables;
 it does **not** restore all constraints, triggers or other functions.
 
-SQL assertions cover tenant isolation, owner/admin access, viewer/anonymous denial,
+The deployment portion now runs as a non-superuser `postgres` role, matching the
+verified hosted capabilities and source-table ownership. SQL assertions cover
+tenant isolation, owner/admin access, viewer/anonymous denial,
 role revocation, no role membership, blocked source reads/writes, payload/error
 redaction, original JSON preservation and unchanged prior policy definitions.
 The SQL refuses an unscoped release before any lasting change.
@@ -74,6 +83,43 @@ strict TypeScript check against installed Supabase JS 2.110 types and a minimal
 Deno declaration. This is not a Deno check against the pinned 2.45.4 remote module.
 
 ## Remaining release work
+
+### Hosted rehearsal evidence
+
+At **2026-10-09 19:24:52–19:24:54 UTC**, the exact reviewed SQL was executed on
+`saatxzwxvdvqevbnskxy` in a transaction ending in ROLLBACK. The API acknowledged
+the final marker confirming the new role and views were absent after rollback.
+The post-rehearsal catalog/ledger fingerprint matched the pre-rehearsal fingerprint.
+See the [retained result](evidence/learn-test-launch-rehearsal-2026-10-09.json).
+
+The first hosted attempt at 19:19 returned HTTP 400 and left the audited catalog
+unchanged ([initial result](evidence/learn-test-launch-rehearsal-initial-2026-10-09.json)).
+Read-only inspection established PostgreSQL 17.11 and a non-superuser `postgres`
+executor owning all nine source tables. Reproducing those privileges locally
+exposed the missing SET permission and ownership/grant ordering, now corrected.
+The cached local image also lost its connection for the direct CURRENT_USER role
+specifier; the final SQL uses a quoted identifier through PostgreSQL `format('%I',…)`.
+
+`scripts/verify/learn-test-launch-rehearsal.mjs` pins the reviewed source SHA-256,
+checks TEST identity/organisation/health and the exact bootstrap ledger, sets
+bounded lock/statement timeouts, and replaces COMMIT with ROLLBACK. It performs
+one DDL request and a separate post-state audit; errors are never automatically
+retried. It uses Supabase's documented [SQL query endpoint](https://supabase.com/docs/reference/api/v1-run-a-query)
+for this transactional rehearsal, not its read-only endpoint. No customer-row
+mutation, persistent permission change, provider call or API-key retrieval occurs.
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
+  node scripts/verify/learn-test-launch-rehearsal.mjs --rehearse --existing-cli-login
+```
+
+Four rehearsal tests cover fixed SQL/checksum, target/organisation rejection,
+single-request behavior, error redaction and changed/unavailable post-state.
+The isolated verifier executes this same rollback SQL before its persistence and
+access assertions. Hosted DDL compatibility is now demonstrated; ordinary-user
+JWT/PostgREST behavior and an actual release are still unverified.
+
+### Before persistent release
 
 Before application, compare fresh TEST definitions and the custom ledger with the
 recorded evidence, rehearse the full schema, retain the candidate checksum, and
@@ -87,10 +133,13 @@ through PostgREST and the Edge endpoint. Verify view-owner privileges and profil
 RLS in that environment. No hosted compatibility or full product acceptance is
 claimed from the local privilege projection.
 
-The current readiness script assesses direct base-table contracts, not these
-views. Its blocked base-table result must not be treated as a request to grant
-broad source access. Add a separate view/role/options audit before releasing this
-mode; retain the original contract checks for the default reader.
+The readiness script now reports both the original direct-read contracts and a
+separate `launchMetadata` assessment. It checks exact columns, view options/owner,
+column-level grants, reader role capabilities/memberships and source RLS/policies.
+Seven focused catalog tests and actual PostgreSQL privilege-drift tests cover
+private transcript grants, application membership and malformed/unsafe evidence.
+Even a conforming catalog remains `needs_semantic_and_user_verification`.
+The original blocked base-table result is not a request for broad source grants.
 
 If a TEST rehearsal fails, disable the candidate endpoint or revoke SELECT on
 these new views and retain the evidence. Returning to `existing` mode is only

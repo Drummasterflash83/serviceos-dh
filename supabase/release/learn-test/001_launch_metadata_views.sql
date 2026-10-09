@@ -16,6 +16,11 @@ do $$ begin
   raise exception 'Existing TEST RLS precondition differs'; end if;
 end $$;
 create role learn_launch_metadata_reader nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+-- Hosted postgres is CREATEROLE but not a superuser. It needs SET permission
+-- for ownership transfer. This temporary deployer membership is removed below.
+do $$ begin
+ execute format('grant learn_launch_metadata_reader to %I with inherit false, set true',current_user);
+end $$;
 grant usage on schema public,auth to learn_launch_metadata_reader;
 grant execute on function auth.uid() to learn_launch_metadata_reader;
 grant select(id,tenant_id,role) on public.profiles to learn_launch_metadata_reader;
@@ -29,74 +34,82 @@ create policy learn_launch_metadata_select on public.email_messages for select t
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_email_messages with(security_barrier=true,security_invoker=false) as
  select id,tenant_id,created_at,jsonb_build_object('label_ids',to_jsonb(array(select label from unnest(array['INBOX','SENT','DRAFT']) label where raw_payload @> jsonb_build_object('label_ids',jsonb_build_array(label))))) as raw_payload from public.email_messages;
-alter view public.learn_launch_email_messages owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_email_messages from public,anon,authenticated,service_role;
 grant select on public.learn_launch_email_messages to authenticated;
+alter view public.learn_launch_email_messages owner to learn_launch_metadata_reader;
 
 grant select(id,tenant_id,created_at,provider_call_id,linked_id,direction,started_at,duration_seconds) on public.phone_calls to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.phone_calls for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_phone_calls with(security_barrier=true,security_invoker=false) as
  select id,tenant_id,created_at,provider_call_id,linked_id,direction,started_at,duration_seconds from public.phone_calls;
-alter view public.learn_launch_phone_calls owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_phone_calls from public,anon,authenticated,service_role;
 grant select on public.learn_launch_phone_calls to authenticated;
+alter view public.learn_launch_phone_calls owner to learn_launch_metadata_reader;
 
 grant select(id,tenant_id,created_at,provider_call_id,linked_id) on public.phone_recordings to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.phone_recordings for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_phone_recordings with(security_barrier=true,security_invoker=false) as
  select id,tenant_id,created_at,provider_call_id,linked_id from public.phone_recordings;
-alter view public.learn_launch_phone_recordings owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_phone_recordings from public,anon,authenticated,service_role;
 grant select on public.learn_launch_phone_recordings to authenticated;
+alter view public.learn_launch_phone_recordings owner to learn_launch_metadata_reader;
 
 grant select(id,tenant_id,status) on public.phone_transcripts to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.phone_transcripts for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_phone_transcripts with(security_barrier=true,security_invoker=false) as
  select id,tenant_id,status from public.phone_transcripts;
-alter view public.learn_launch_phone_transcripts owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_phone_transcripts from public,anon,authenticated,service_role;
 grant select on public.learn_launch_phone_transcripts to authenticated;
+alter view public.learn_launch_phone_transcripts owner to learn_launch_metadata_reader;
 
 grant select(tenant_id,status) on public.email_accounts to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.email_accounts for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_email_accounts with(security_barrier=true,security_invoker=false) as
  select tenant_id,status from public.email_accounts;
-alter view public.learn_launch_email_accounts owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_email_accounts from public,anon,authenticated,service_role;
 grant select on public.learn_launch_email_accounts to authenticated;
+alter view public.learn_launch_email_accounts owner to learn_launch_metadata_reader;
 
 grant select(id,tenant_id,sync_enabled,status) on public.google_workspace_mailboxes to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.google_workspace_mailboxes for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_google_workspace_mailboxes with(security_barrier=true,security_invoker=false) as
  select id,tenant_id,sync_enabled,status from public.google_workspace_mailboxes;
-alter view public.learn_launch_google_workspace_mailboxes owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_google_workspace_mailboxes from public,anon,authenticated,service_role;
 grant select on public.learn_launch_google_workspace_mailboxes to authenticated;
+alter view public.learn_launch_google_workspace_mailboxes owner to learn_launch_metadata_reader;
 
 grant select(tenant_id,status,sync_type,started_at,completed_at,records_processed,error_message) on public.email_sync_runs to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.email_sync_runs for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_email_sync_runs with(security_barrier=true,security_invoker=false) as
  select tenant_id,status,sync_type,started_at,completed_at,records_processed,case when error_message is null then null when error_message='' then '' else '[redacted]' end as error_message from public.email_sync_runs;
-alter view public.learn_launch_email_sync_runs owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_email_sync_runs from public,anon,authenticated,service_role;
 grant select on public.learn_launch_email_sync_runs to authenticated;
+alter view public.learn_launch_email_sync_runs owner to learn_launch_metadata_reader;
 
 grant select(tenant_id,status,sync_type,started_at,completed_at,records_processed,error_message) on public.phone_sync_runs to learn_launch_metadata_reader;
 create policy learn_launch_metadata_select on public.phone_sync_runs for select to learn_launch_metadata_reader
  using(tenant_id in (select p.tenant_id from public.profiles p where p.id=(select auth.uid()) and p.role in ('owner','admin')));
 create view public.learn_launch_phone_sync_runs with(security_barrier=true,security_invoker=false) as
  select tenant_id,status,sync_type,started_at,completed_at,records_processed,case when error_message is null then null when error_message='' then '' else '[redacted]' end as error_message from public.phone_sync_runs;
-alter view public.learn_launch_phone_sync_runs owner to learn_launch_metadata_reader;
 revoke all on public.learn_launch_phone_sync_runs from public,anon,authenticated,service_role;
 grant select on public.learn_launch_phone_sync_runs to authenticated;
+alter view public.learn_launch_phone_sync_runs owner to learn_launch_metadata_reader;
 
 revoke create on schema public from learn_launch_metadata_reader;
--- No membership in this role is granted. The signed-in user's auth.uid() still
+do $$ begin
+ execute format('revoke learn_launch_metadata_reader from %I',current_user);
+ if exists(select 1 from pg_auth_members a join pg_roles r on r.oid=a.roleid
+   where r.rolname='learn_launch_metadata_reader' and
+    (a.member<>(select oid from pg_roles where rolname=current_user) or a.inherit_option or a.set_option or not a.admin_option)) then
+  raise exception 'Unexpected executable reader membership remains'; end if;
+end $$;
+-- PostgreSQL's automatic ADMIN-only creator grant may remain, with neither
+-- INHERIT nor SET. No application membership is granted. auth.uid() still
 -- drives the base-table RLS evaluated through the view owner.
 commit;

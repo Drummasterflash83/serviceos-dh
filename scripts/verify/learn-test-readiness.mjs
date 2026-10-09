@@ -6,6 +6,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { LAUNCH_METADATA_QUERY, assessLaunchMetadata } from './learn-launch-metadata-catalog.mjs';
 export const TEST_PROJECT = 'saatxzwxvdvqevbnskxy';
 export const TEST_ORGANIZATION = 'efqvhoxukklewruplpdp';
 
@@ -42,6 +43,7 @@ export const TEST_LEDGER_QUERY = `select source_sha256,migration_name,project_re
 
 export const CATALOG_QUERY = `select jsonb_build_object(
  'observedAt',clock_timestamp(),
+ 'launchMetadata',(${LAUNCH_METADATA_QUERY}),
  'tables',(select coalesce(jsonb_agg(jsonb_build_object(
    'schema',n.nspname,'name',c.relname,'rls',c.relrowsecurity,'forceRls',c.relforcerowsecurity,
    'columns',(select jsonb_agg(jsonb_build_object('name',a.attname,'type',pg_catalog.format_type(a.atttypid,a.atttypmod),'notNull',a.attnotnull,
@@ -91,13 +93,14 @@ export function assessTestCatalog(inventory, functions) {
     ? 'needs_signature_and_authority_verification' : 'missing_or_not_executable' }));
   const publicTables = inventory.tables.filter(t => t.schema === 'public');
   return {
-    version: 'learn-test-readiness/1', projectRef: TEST_PROJECT, observedAt: inventory.observedAt,
+    version: 'learn-test-readiness/2', projectRef: TEST_PROJECT, observedAt: inventory.observedAt,
     state: 'not_release_verified', publicTableCount: publicTables.length,
     rlsTableCount: publicTables.filter(t => t.rls).length,
     noPolicyTables: publicTables.filter(t => !t.policies.length).map(t => t.name),
     migrationLedgers: inventory.tables.filter(t => t.schema !== 'public').map(t => `${t.schema}.${t.name}`),
     edgeFunctions: functions.map(f => ({ name: f.slug, status: f.status, verifyJwt: f.verify_jwt ?? null })),
     launchFunctionPresent: functions.some(f => f.slug === 'learn-launch-status'), slices, rpcs,
+    launchMetadata: assessLaunchMetadata(inventory.launchMetadata, READ_CONTRACT.launch),
     limitations: [
       'Catalog presence, grants and policy names do not prove ordinary-user access or tenant isolation.',
       'Policy roles/expressions, column types, function signatures, transitive dependencies and current migration ledgers need review.',
@@ -149,7 +152,7 @@ export async function readTestCatalog({ allowProjectRef, token, fetcher = fetch 
   return { inventory, functions, report };
 }
 
-function savedCliToken() {
+export function savedCliToken() {
   for (const account of ['supabase', 'access-token']) {
     try {
       const token = execFileSync('/usr/bin/security', ['find-generic-password', '-s', 'Supabase CLI', '-a', account, '-w'],

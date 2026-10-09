@@ -73,6 +73,8 @@ do $$ begin
  assert (select rows from source_before)=(select jsonb_agg(to_jsonb(e)) from email_messages e), 'Original source payloads must be unchanged';
  assert not exists(select * from test_policy_before except select * from pg_policies where schemaname='public'), 'Existing policies must remain identical';
  assert not has_schema_privilege('learn_launch_metadata_reader','public','CREATE');
+ assert not pg_has_role('postgres','learn_launch_metadata_reader','SET'), 'Temporary deployer SET must be revoked';
+ assert not pg_has_role('postgres','learn_launch_metadata_reader','USAGE'), 'Deployer must not inherit reader privileges';
  assert (select not rolcanlogin and not rolbypassrls and not rolsuper and not rolinherit from pg_roles where rolname='learn_launch_metadata_reader');
  assert (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname like 'learn_launch_%' and c.relkind='v' and c.reloptions @> array['security_barrier=true','security_invoker=false'])=8;
 end $$;
