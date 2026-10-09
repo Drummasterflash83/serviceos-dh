@@ -275,6 +275,17 @@ provider credentials were not present in the checked local environment files, so
 no live voicemail discovery ran. No voicemail ingestion or deployment is claimed.
 See [the source contract, diagnostic and remaining capture work](../operations/LEARN-VOICEMAIL-DISCOVERY.md).
 
+## Forward membership evidence for work attribution
+
+An additive local migration now retains member identity/team/confirmation/effective
+state through changes, including recovered roster leave/rejoin operations. It starts
+coverage at actual observation time and has no automatic historical baseline. A
+bounded owner/admin reader reconciles the immutable chain with current state; a
+TypeScript resolver splits work ownership intervals at historical membership
+boundaries and keeps unknown or ambiguous identities unresolved. No new measurement
+or score is created, and the module still needs wiring into card/source-adapter flows.
+See [membership evidence and its limits](../operations/LEARN-MEMBERSHIP-HISTORY.md).
+
 ## Next work and release gates
 
 Work-transition now resolves confirmed, effective cover and self/team/company

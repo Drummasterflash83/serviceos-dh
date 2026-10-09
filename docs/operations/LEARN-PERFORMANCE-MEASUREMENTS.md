@@ -151,3 +151,8 @@ Browser review used only synthetic records:
 inferred evidence withheld the score, confirmation produced an 80/100 draft
 simulation, and a later dispute withheld it again while retaining both reviews.
 No actual employee measurement, review, pay decision or live deployment occurred.
+
+Forward member identity/team capture and a work-interval attribution module are now
+implemented locally. They do not reconstruct missing old membership or yet feed the
+measurement append path. See [membership history](LEARN-MEMBERSHIP-HISTORY.md) for
+the observed-time semantics, verification and remaining source-adapter dependencies.
