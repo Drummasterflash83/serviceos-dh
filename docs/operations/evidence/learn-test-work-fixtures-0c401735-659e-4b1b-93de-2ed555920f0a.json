@@ -1,0 +1,104 @@
+{
+  "version": "learn-test-work-fixtures/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "0c401735-659e-4b1b-93de-2ed555920f0a",
+  "retention": "Retain marked synthetic companies, staff, rules, measurements, reviews and reviewer identities; ban synthetic Auth logins and revoke their profile roles.",
+  "tenants": [
+    {
+      "label": "A",
+      "id": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "team": "1b76bf68-2904-4739-b22f-81521f0207a3",
+      "member": "0ad26fb9-e3b3-4ba3-9d35-8de5919af868",
+      "preview": "daa0fdfe-3fb8-4c90-a6ba-ab3074bd7607",
+      "publications": [
+        "f44f75b8-5443-46fb-b947-99efb74caafa",
+        "756da05b-df07-4cab-adba-9484eaa9eab5"
+      ],
+      "recipient": "0a46551f-77d7-4d79-8c5e-5e9912574319"
+    },
+    {
+      "label": "B",
+      "id": "7561aed5-d2b1-45e0-8893-91d4441414b1",
+      "team": "60696ee8-a993-433c-bb28-c18002718976",
+      "member": "2cfb1987-359c-4a30-819e-8b94c300c521",
+      "preview": "d496de3f-df09-4923-9ebb-db4354d38d27",
+      "publications": [
+        "4f46dbb0-38d3-451e-b661-c89708a45fda",
+        "7ede22f9-3d43-4ddd-9a97-a6fb580ac214"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "8bce467c-2a6e-4a6e-81d3-eb325f213792",
+      "tenant": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "role": "owner",
+      "email": "learn-work-0c401735-659e-4b1b-93de-2ed555920f0a-0@example.invalid"
+    },
+    {
+      "id": "70f230ce-b50d-48a5-8150-d85621397050",
+      "tenant": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "role": "admin",
+      "email": "learn-work-0c401735-659e-4b1b-93de-2ed555920f0a-1@example.invalid"
+    },
+    {
+      "id": "11d41a8e-5f9b-4577-b71b-7fe95714d25f",
+      "tenant": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "role": "viewer",
+      "email": "learn-work-0c401735-659e-4b1b-93de-2ed555920f0a-2@example.invalid"
+    },
+    {
+      "id": "908e63b9-c2df-4573-8fdb-94e568abfb92",
+      "tenant": "7561aed5-d2b1-45e0-8893-91d4441414b1",
+      "role": "owner",
+      "email": "learn-work-0c401735-659e-4b1b-93de-2ed555920f0a-3@example.invalid"
+    }
+  ],
+  "policies": {
+    "A": "fcbac619-5fe1-46ef-8c17-a03c902a15c4"
+  },
+  "objects": [
+    "8fe89d87-ec66-4ff6-99e5-da1087c574c5",
+    "166ddcf4-191f-473e-86ca-094ed734a8d5"
+  ],
+  "collections": [
+    "a418b823-85b6-4395-a4ea-ad4b6ddad1b2",
+    "9ed04f0e-afa6-4e65-9e18-ff5c66503baa",
+    "372c8cf2-0004-4a12-a94a-33babd72ac82",
+    "57ea2639-2319-4e26-934d-d4b721718cd3",
+    "9b270056-c981-4937-82ee-e997ac701e14"
+  ],
+  "review": "ccbcbdc7-a340-4197-ac73-252e17994ac8",
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_work_handoffs_collect",
+    "expectedRevision": null
+  },
+  "period": {
+    "start": "2026-10-09T21:01:27.816Z",
+    "end": "2026-10-09T21:01:28.594Z"
+  },
+  "retainedSummary": [
+    {
+      "tenant_id": "7561aed5-d2b1-45e0-8893-91d4441414b1",
+      "members": 1,
+      "measurements": 0,
+      "reviews": 0,
+      "retained_profiles": 1,
+      "work_items": 0,
+      "captured_events": 0,
+      "calculation_receipts": 0
+    },
+    {
+      "tenant_id": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "members": 2,
+      "measurements": 4,
+      "reviews": 1,
+      "retained_profiles": 3,
+      "work_items": 2,
+      "captured_events": 5,
+      "calculation_receipts": 4
+    }
+  ],
+  "accessRevoked": true
+}

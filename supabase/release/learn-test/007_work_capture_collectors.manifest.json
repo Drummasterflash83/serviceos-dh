@@ -1,0 +1,72 @@
+{
+  "version": "learn-work-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_work_capture_collectors_v1",
+  "sha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+  "tables": [
+    "learn_work_measurement_runs"
+  ],
+  "sequences": [
+    "learn_work_capture_sequence"
+  ],
+  "functions": [
+    "learn_work_history_immutable",
+    "learn_work_snapshot",
+    "learn_capture_work_change",
+    "learn_work_capture_baseline",
+    "learn_work_history_read",
+    "learn_work_handoffs_collect",
+    "learn_handoff_owner",
+    "learn_work_residence_collect"
+  ],
+  "sources": [
+    {
+      "path": "supabase/migrations/20261029180000_learn_work_transition_history.sql",
+      "sha256": "60fa23defd764b107b4f75c2c57335e92d7835035966ac526c1047812e7f695b",
+      "selectedSha256": "aaf76e9e2a588ccf3ad46fc82f70b0091d275791a6688de1b27cc0823e6f915b",
+      "selection": "history columns, immutable-row guard and grants only; governed transition writer deferred with action registries/authority"
+    },
+    {
+      "path": "supabase/migrations/20261029190000_learn_work_source_capture.sql",
+      "sha256": "7fad2334d4ecf1bca5f4dcdbca6349a0879355aacc896d01cfd85dcc900e2243",
+      "selectedSha256": "7fad2334d4ecf1bca5f4dcdbca6349a0879355aacc896d01cfd85dcc900e2243",
+      "selection": "whole file"
+    },
+    {
+      "path": "supabase/migrations/20261029230000_learn_work_handoff_measurements.sql",
+      "sha256": "95a8dfa1afaaef4c81ef504498ad9905fcf2b1f47c854d06dd76bcc075d9e5fc",
+      "selectedSha256": "1822b91284b9c3a9e4fe3a188fbacc48ed706d53ff959393967c940df8cc8f5f",
+      "selection": "receipt table and collector; retain installed append implementation and use latest owner resolver from residence migration"
+    },
+    {
+      "path": "supabase/migrations/20261030010000_learn_work_residence_measurements.sql",
+      "sha256": "a3fc08c70b854dcade484eb8f9ab4b6656e78f7032e5b50cff3c6ed71edc36f4",
+      "selectedSha256": "a3fc08c70b854dcade484eb8f9ab4b6656e78f7032e5b50cff3c6ed71edc36f4",
+      "selection": "whole file"
+    },
+    {
+      "path": "supabase/migrations/20261030060000_learn_work_collection_release_guards.sql",
+      "sha256": "513e1070acd01fc80b9e5e8ae1d3835eedb612427c94518008c6927f85e47313",
+      "selectedSha256": "513e1070acd01fc80b9e5e8ae1d3835eedb612427c94518008c6927f85e47313",
+      "selection": "whole file"
+    }
+  ],
+  "affectedTables": [
+    "intelligence_objects",
+    "object_state_history",
+    "learn_work_measurement_runs"
+  ],
+  "modifiedFunctions": [
+    "learn_performance_append"
+  ],
+  "existingChanges": [
+    "Paired snapshots/capture fields, indexes and immutability/truncation guards on object_state_history.",
+    "Forward capture trigger on intelligence_objects, without baseline or row updates.",
+    "One added evidence table in the retained performance append allowlist; conflict and historical group validation remain unchanged."
+  ],
+  "deferred": [
+    "Governed work-transition writer, action registry/state seeds, scoped authority and Edge endpoint.",
+    "Staff/team collection permissions, source reconciliation and approved calendars/exclusions."
+  ],
+  "acceptanceNote": "Work captures, calculations, measurements and reviewer/actor identities are retained; use marked TEST fixtures and revoke synthetic access."
+}

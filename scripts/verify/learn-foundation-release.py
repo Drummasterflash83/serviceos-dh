@@ -187,6 +187,43 @@ try:
             assert any(b'Review changed; reload' in r.stderr for r in raced),'Competing review must report a revision conflict'
             assert run("select count(*)=2 from learn_performance_reviews where measurement_id=verify.id(542)").stdout.strip()==b't'
             print('Concurrent review retains exactly one next revision: PASS',flush=True)
+            if '--work' in sys.argv:
+                bundle_w=json.loads(node("import {checkedWork} from './scripts/verify/learn-work-bundle.mjs';process.stdout.write(JSON.stringify(checkedWork()));"))
+                work_sql="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(bundle_w['manifest']['sha256'])+';'+bundle_w['sql']
+                before_w=json.loads(run(catalog_sql).stdout)
+                original_append=run("select pg_get_functiondef('public.learn_performance_append(uuid,jsonb,text)'::regprocedure)").stdout
+                apply("insert into object_state_history(id,tenant_id,object_id,to_state,reason) values(verify.id(691),verify.id(1),verify.id(181),'ready','Retained legacy history');create table verify.old_work_history as select to_jsonb(h) payload from object_state_history h;",'Retained legacy history before capture')
+                apply("alter table of_test_deploy.migrations add constraint work_receipt_failure check(migration_name<>'learn_work_capture_collectors_v1');",'Injected work receipt failure')
+                failed=run(work_sql,False)
+                assert failed.returncode and b'work_receipt_failure' in failed.stderr,failed.stderr.decode()[-800:]
+                rolled=json.loads(run(catalog_sql).stdout)
+                assert rolled['tables']==before_w['tables']
+                assert run("select pg_get_functiondef('public.learn_performance_append(uuid,jsonb,text)'::regprocedure)").stdout==original_append
+                apply('alter table of_test_deploy.migrations drop constraint work_receipt_failure;','Atomic work rollback restores writer and all prior table definitions')
+                apply(work_sql,'Forward capture and collectors as non-superuser')
+                after_w=json.loads(run(catalog_sql).stdout)
+                affected=bundle_w['manifest']['affectedTables']
+                assert [t for t in after_w['tables'] if t['name'] not in affected]==[t for t in before_w['tables'] if t['name'] not in affected]
+                assert after_w['helpers']==before_w['helpers'] and after_w['foundationGuard']==before_w['foundationGuard']
+                changed_append=run("select pg_get_functiondef('public.learn_performance_append(uuid,jsonb,text)'::regprocedure)").stdout
+                assert changed_append==original_append.replace(b"'jobs','team_members')",b"'jobs','team_members','learn_work_measurement_runs')")
+                fn_query=node("import {WORK_FUNCTION_QUERY} from './scripts/verify/learn-work-catalog.mjs';process.stdout.write(WORK_FUNCTION_QUERY);")
+                seq_query=node("import {WORK_SEQUENCE_QUERY} from './scripts/verify/learn-work-catalog.mjs';process.stdout.write(WORK_SEQUENCE_QUERY);")
+                if '--write-work-expected' in sys.argv:
+                    expected={'sourceSha256':bundle_w['manifest']['sha256'],'tables':[t for t in after_w['tables'] if t['name'] in affected],'functions':json.loads(run(fn_query).stdout),'sequences':json.loads(run(seq_query).stdout)}
+                    (ROOT/'supabase/release/learn-test/007_work_capture_collectors.expected.json').write_text(json.dumps(expected,indent=2)+'\n')
+                apply((ROOT/'scripts/verify/learn-work-release.assert.sql').read_text(),'Forward capture, preserved legacy source, collectors and partial coverage assertions')
+                def collection_race(n):
+                    return run("set request.jwt.claim.sub='f0000000-0000-0000-0000-000000000711';set role authenticated;select learn_work_handoffs_collect(verify.id(701),verify.id(732),policy_id,1,start_at,end_at,verify.id("+str(n)+"),'Concurrent synthetic collection') from verify.work_period;",False)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                    raced=list(pool.map(collection_race,[771,772]))
+                assert sum(r.returncode==0 for r in raced)==1,'Exactly one competing collection must succeed'
+                assert any(b'already exists for this cell' in r.stderr for r in raced),'Competing collection must conflict'
+                assert run("select count(*)=1 from measurements where id in (verify.id(771),verify.id(772))").stdout.strip()==b't'
+                assert run("select count(*)=1 from learn_work_measurement_runs where id in (verify.id(771),verify.id(772))").stdout.strip()==b't'
+                print('Concurrent work collection retains one matching observation and receipt: PASS',flush=True)
+
+
 
 
 

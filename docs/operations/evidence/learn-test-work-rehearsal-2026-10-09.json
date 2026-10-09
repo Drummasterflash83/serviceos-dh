@@ -1,0 +1,18 @@
+{
+  "version": "learn-test-work-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T20:58:12.975448+00:00",
+  "observedAfter": "2026-10-09T20:58:15.637313+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "f762afa8beb1cf110406b6318b2668758373e95c2fd8dc92e3d71cb3119647ec",
+  "afterCatalogSha256": "f762afa8beb1cf110406b6318b2668758373e95c2fd8dc92e3d71cb3119647ec",
+  "limitations": [
+    "TEST rollback rehearsal only. No installation, source rows, membership baselines or provider operations.",
+    "Catalog and isolated SQL tests do not replace real signed-in user acceptance."
+  ]
+}

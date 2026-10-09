@@ -21,7 +21,9 @@ implicit defaults. Restrictive tenant policies override legacy cross-company
 OpenFolk reads. The existing same-tenant reference guard is attached to the new
 tenant tables, including config, metric, measurement and reviewer references.
 The existing 62 public tables, helper definitions, source privileges and rules
-functions are preserved. TEST now has 78 public tables and seven deployment receipts.
+functions are preserved. That milestone had 78 public tables and seven receipts; the later
+[work capture/collector release](LEARN-TEST-WORK-CAPTURE.md) brings TEST to 79 tables
+and eight receipts.
 
 Source SHA-256: `8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8`.
 
@@ -121,8 +123,8 @@ schema and must not be reused unchanged after this release.
 
 ## Remaining work
 
-Work-transition authority, observed work history and handoff/residence collection
-are not installed in TEST. Complete work registries/transition rules and endpoint
+Observed work history and handoff/residence collection were subsequently installed
+in release 007. Work-transition authority remains unreleased. Complete work registries/transition rules and endpoint
 identity checks must precede those writers. Source-adapter reconciliation, staff/team
 collection permissions, approved calendars/exclusions, team aggregation, saved
 assessments and reviewed reward decisions remain incomplete. This release does not

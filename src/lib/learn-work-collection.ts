@@ -87,7 +87,7 @@ export async function collectWorkEvidence(
   });
   if (error)
     throw Error(
-      error.code === "40001"
+      ["PT409", "40001"].includes(error.code ?? "")
         ? "An observation or request already exists. Refresh and review it before retrying."
         : error.code === "54000"
           ? "This collection exceeds the supported evidence limit. No partial observation was saved."

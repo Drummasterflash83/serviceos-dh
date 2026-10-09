@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-work-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T21:01:06.488134+00:00",
+  "observedAfter": "2026-10-09T21:01:09.008889+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "f762afa8beb1cf110406b6318b2668758373e95c2fd8dc92e3d71cb3119647ec",
+  "afterCatalogSha256": "876b519684721b206adc4df3fd25c399cd7210041b90c5baf98cada5708d5d28",
+  "limitations": [
+    "TEST work capture/collection schema only; no production, providers, imports, historical baselines or source communication rows changed.",
+    "Catalog compatibility does not prove real JWT access or full LEARN acceptance.",
+    "Unknown outcomes require inspection; no automatic retry or rollback occurs."
+  ]
+}

@@ -1,7 +1,9 @@
 # Elapsed owned item-minutes
 
-Implemented locally and verified with synthetic data. No live source, migration,
-baseline, connector or employee score was changed.
+Installed in TEST release 007 at 21:01 UTC on 9 October 2026, with successful
+signed-in acceptance through the actual collection/card readers. Production,
+communications and recordings were untouched; no baseline or historical backfill
+ran. See [TEST capture release and evidence](LEARN-TEST-WORK-CAPTURE.md).
 
 ## Meaning and card flow
 

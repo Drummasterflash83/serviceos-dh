@@ -95,7 +95,7 @@ test("retries keep the same identity and report conflicts or limits without succ
   await collectWorkHandoffs(db, input);
   assert.equal((await collectWorkHandoffs(db, input)).reused, true);
   assert.deepEqual(seen, [id(4), id(4)]);
-  for (const code of ["40001", "54000", "42501"])
+  for (const code of ["PT409", "40001", "54000", "42501"])
     await assert.rejects(() =>
       collectWorkHandoffs({ rpc: async () => ({ data: null, error: { code } }) }, input),
     );

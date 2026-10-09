@@ -85,10 +85,12 @@ them; do not split the population and call a partial result complete.
 
 The additive migration is `20261029230000_learn_work_handoff_measurements.sql`.
 It requires the existing performance/review, work-capture and member-history
-migrations. Nothing has been deployed or baselined live; historical emails, calls,
-recordings and connections are untouched.
+migrations. TEST release 007 installed the collector and forward capture at
+21:01 UTC, with successful real signed-in acceptance through the card reader. No
+production deployment or historical baseline ran; emails, calls, recordings and
+connections are untouched. See [TEST capture release](LEARN-TEST-WORK-CAPTURE.md).
 
-Prospective policy publication and a separate [elapsed ownership observation](LEARN-WORK-RESIDENCE-MEASUREMENTS.md) are now implemented locally.
+Prospective policy publication and the separate [elapsed ownership observation](LEARN-WORK-RESIDENCE-MEASUREMENTS.md) are also installed in TEST.
 Remaining work includes numerical correction,
 historical team-policy observations, team aggregation, desk/business-time and
 response adapters, calendars/exclusions, work complexity and quality measures,

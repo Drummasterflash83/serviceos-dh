@@ -1,0 +1,49 @@
+{
+  "version": "learn-test-work-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+  "observedAt": "2026-10-09T21:01:34.422Z",
+  "runId": "0c401735-659e-4b1b-93de-2ed555920f0a",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established",
+    "Actual timeline/card readers and collection adapter: forward source writes, one real handoff despite aliases, elapsed intervals including closed/waiting, retained proofs and HTTP 409 retries",
+    "Concurrent collection saves one observation/receipt, review is separate, viewers and other companies cannot read the bounded history or collect/read performance proofs",
+    "Unresolved identity withholds value, source/proof deletion is refused, preview and same-JWT revoked role cannot collect"
+  ],
+  "failure": null,
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_work_handoffs_collect",
+    "expectedRevision": null
+  },
+  "testAccessRevoked": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "7561aed5-d2b1-45e0-8893-91d4441414b1",
+      "members": 1,
+      "measurements": 0,
+      "reviews": 0,
+      "retained_profiles": 1,
+      "work_items": 0,
+      "captured_events": 0,
+      "calculation_receipts": 0
+    },
+    {
+      "tenant_id": "8cf28e98-6b6f-42b8-a529-16aeeb318fc3",
+      "members": 2,
+      "measurements": 4,
+      "reviews": 1,
+      "retained_profiles": 3,
+      "work_items": 2,
+      "captured_events": 5,
+      "calculation_receipts": 4
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-work-fixtures-0c401735-659e-4b1b-93de-2ed555920f0a.json",
+  "limitations": [
+    "Marked synthetic records and reviewer identities remain in TEST; synthetic logins are banned and profile roles revoked. No retention guards are disabled.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}

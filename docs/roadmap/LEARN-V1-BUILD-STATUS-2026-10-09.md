@@ -354,10 +354,10 @@ the existing launch redaction/revocation checks. Every marked fixture was remove
 and its absence verified. Thirty-seven focused tests and the isolated SQL exercise
 pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIONS.md).
 
-Raw interaction reads and four of ten inspected LEARN RPC dependencies remain
+Raw interaction reads and one of ten inspected LEARN RPC dependencies remain
 unavailable. The scorecard draft reader/save, publication/period reader and membership
 reader are installed in TEST, now joined by performance review in release 006.
-Work-history/collection and Slack setup releases remain outstanding. Allkin's last verified Vercel inventory has only the production project,
+Release 007 adds work-history and collection; Slack setup remains outstanding. Allkin's last verified Vercel inventory has only the production project,
 so TEST frontend deployment is still outstanding. No real customer data, production
 state, provider traffic or stored audio was changed by these TEST releases.
 
@@ -387,6 +387,19 @@ and retained source timestamps. Marked synthetic records and author identities
 remain; test Auth logins were banned and roles revoked. Thirty-one focused tests,
 isolated SQL including concurrent reviewers, both TypeScript checks and the preview
 build passed. See [measurement release evidence](../operations/LEARN-TEST-MEASUREMENTS.md).
+
+At 21:01 UTC, TEST release 007 installed forward work capture and handoff/residence
+collectors, bringing the environment to 79 tables and eight receipts. Existing
+legacy history stays intact and unbaselined. New source changes retain immutable
+snapshots; calculations retain evidence and cannot be duplicated by concurrent
+requests. The performance writer gains only the receipt evidence type, preserving
+its newer group-history and conflict behavior. Signed-in acceptance passed through
+the real timeline/card readers for alias-safe handoffs, independent elapsed-time
+sums, review, incomplete identity, tenant/role/View-As checks and retained source/proof
+records. Twenty-five focused tests, isolated SQL/concurrency, main/preview type checks
+and preview build passed. Synthetic evidence/actor identities remain, with Auth users
+banned and roles revoked. Governed work actions/authority/endpoint are still unreleased.
+See [capture release evidence](../operations/LEARN-TEST-WORK-CAPTURE.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

@@ -1,7 +1,10 @@
 # Work ownership and transition evidence
 
-Local implementation checkpoint, 9 October 2026. No live work records, historical
-communications, hosted schema or deployed endpoints were changed.
+Current status, 9 October 2026: forward capture and its reader are installed in
+TEST release 007 and passed signed-in acceptance at 21:01 UTC. The governed work
+transition writer and Edge endpoint described below remain local/unreleased. No
+production records, communications or recordings were changed; no baseline ran.
+See [TEST capture release](LEARN-TEST-WORK-CAPTURE.md).
 
 ## Why this is needed
 

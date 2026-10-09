@@ -1,0 +1,729 @@
+{
+  "sourceSha256": "d70e2cab5866488310f0907c203fb11796dc175ad3223640d3a2ecd437f64ff5",
+  "tables": [
+    {
+      "rls": true,
+      "name": "intelligence_objects",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "responsible_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "accountable_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "waiting_on_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "severity",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "ambiguity",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "risk",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "reversibility",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "domain_state",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "deadline",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "blocking",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "source_interactions",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "source_entities",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_from",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "policy_applied",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "attributes",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "intelligence_objects_pkey",
+          "definition": "CREATE UNIQUE INDEX intelligence_objects_pkey ON public.intelligence_objects USING btree (id)"
+        },
+        {
+          "name": "io_deadline",
+          "definition": "CREATE INDEX io_deadline ON public.intelligence_objects USING btree (tenant_id, status, deadline)"
+        },
+        {
+          "name": "io_entities",
+          "definition": "CREATE INDEX io_entities ON public.intelligence_objects USING gin (source_entities)"
+        },
+        {
+          "name": "io_lookup",
+          "definition": "CREATE INDEX io_lookup ON public.intelligence_objects USING btree (tenant_id, domain, object_type, status)"
+        },
+        {
+          "name": "io_srcint",
+          "definition": "CREATE INDEX io_srcint ON public.intelligence_objects USING gin (source_interactions)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "io_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "io_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER io_set_updated_at BEFORE UPDATE ON public.intelligence_objects FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_capture_work_change",
+          "function": "learn_capture_work_change",
+          "definition": "CREATE TRIGGER learn_capture_work_change AFTER INSERT OR UPDATE ON public.intelligence_objects FOR EACH ROW EXECUTE FUNCTION learn_capture_work_change()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.intelligence_objects FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "intelligence_objects_ambiguity_check",
+          "definition": "CHECK (((ambiguity IS NULL) OR ((ambiguity >= (0)::numeric) AND (ambiguity <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_confidence_check",
+          "definition": "CHECK (((confidence IS NULL) OR ((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))))"
+        },
+        {
+          "kind": "p",
+          "name": "intelligence_objects_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_reversibility_check",
+          "definition": "CHECK (((reversibility IS NULL) OR ((reversibility >= (0)::numeric) AND (reversibility <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_risk_check",
+          "definition": "CHECK (((risk IS NULL) OR ((risk >= (0)::numeric) AND (risk <= (1)::numeric))))"
+        },
+        {
+          "kind": "f",
+          "name": "intelligence_objects_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "learn_work_measurement_runs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "request",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": "'serviceos.work.handoffs@1'::text",
+          "notNull": true
+        },
+        {
+          "name": "metric_key",
+          "type": "text",
+          "default": "'work.recorded_handoffs'::text",
+          "notNull": true
+        },
+        {
+          "name": "explanation",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "proof",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_work_measurement_runs_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_work_measurement_runs_pkey ON public.learn_work_measurement_runs USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_work_measurement_runs_read",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) AND (COALESCE(current_user_role(), ''::text) = ANY (ARRAY['owner'::text, 'admin'::text])))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_work_measurement_runs_immutable",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_work_measurement_runs_immutable BEFORE DELETE OR UPDATE ON public.learn_work_measurement_runs FOR EACH ROW EXECUTE FUNCTION learn_member_history_immutable()"
+        },
+        {
+          "name": "learn_work_measurement_runs_no_truncate",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_work_measurement_runs_no_truncate BEFORE TRUNCATE ON public.learn_work_measurement_runs FOR EACH STATEMENT EXECUTE FUNCTION learn_member_history_immutable()"
+        },
+        {
+          "name": "learn_work_receipt_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_work_receipt_reference_guard BEFORE INSERT OR UPDATE ON public.learn_work_measurement_runs FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_work_measurement_actor_fkey",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_work_measurement_runs_member_id_fkey",
+          "definition": "FOREIGN KEY (member_id) REFERENCES team_members(id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_work_measurement_runs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "learn_work_measurement_runs_proof_check",
+          "definition": "CHECK ((octet_length((proof)::text) <= 1048576))"
+        },
+        {
+          "kind": "f",
+          "name": "learn_work_measurement_runs_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "object_state_history",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "from_state",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "work_before",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "work_after",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "transition_verb",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "capture_kind",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "capture_sequence",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "object_state_history_pkey",
+          "definition": "CREATE UNIQUE INDEX object_state_history_pkey ON public.object_state_history USING btree (id)"
+        },
+        {
+          "name": "osh_capture_read",
+          "definition": "CREATE INDEX osh_capture_read ON public.object_state_history USING btree (tenant_id, object_id, occurred_at, capture_sequence) WHERE (capture_kind IS NOT NULL)"
+        },
+        {
+          "name": "osh_capture_sequence",
+          "definition": "CREATE UNIQUE INDEX osh_capture_sequence ON public.object_state_history USING btree (capture_sequence) WHERE (capture_sequence IS NOT NULL)"
+        },
+        {
+          "name": "osh_object",
+          "definition": "CREATE INDEX osh_object ON public.object_state_history USING btree (object_id, occurred_at)"
+        },
+        {
+          "name": "osh_work_snapshot_lookup",
+          "definition": "CREATE INDEX osh_work_snapshot_lookup ON public.object_state_history USING btree (tenant_id, object_id, occurred_at, id) WHERE (work_before IS NOT NULL)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "osh_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.object_state_history FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_work_history_immutable",
+          "function": "learn_work_history_immutable",
+          "definition": "CREATE TRIGGER learn_work_history_immutable BEFORE DELETE OR UPDATE ON public.object_state_history FOR EACH ROW EXECUTE FUNCTION learn_work_history_immutable()"
+        },
+        {
+          "name": "learn_work_history_no_truncate",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_work_history_no_truncate BEFORE TRUNCATE ON public.object_state_history FOR EACH STATEMENT EXECUTE FUNCTION learn_member_history_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "object_state_history_capture_kind_check",
+          "definition": "CHECK ((capture_kind = ANY (ARRAY['insert'::text, 'update'::text, 'baseline'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "object_state_history_object_id_fkey",
+          "definition": "FOREIGN KEY (object_id) REFERENCES intelligence_objects(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "object_state_history_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "object_state_history_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "c",
+          "name": "osh_capture_shape",
+          "definition": "CHECK ((((capture_kind IS NULL) AND (capture_sequence IS NULL)) OR ((capture_kind IS NOT NULL) AND (capture_sequence IS NOT NULL) AND (capture_sequence > 0) AND (work_before IS NOT NULL) AND (work_after IS NOT NULL))))"
+        },
+        {
+          "kind": "c",
+          "name": "osh_work_snapshot_pair",
+          "definition": "CHECK ((((work_before IS NULL) AND (work_after IS NULL) AND (transition_verb IS NULL)) OR ((work_before IS NOT NULL) AND (work_after IS NOT NULL) AND (jsonb_typeof(work_before) = 'object'::text) AND (jsonb_typeof(work_after) = 'object'::text) AND (work_before ?& ARRAY['status'::text, 'version'::text, 'responsible_ref'::text, 'accountable_ref'::text, 'waiting_on_ref'::text, 'attributes'::text]) AND (work_after ?& ARRAY['status'::text, 'version'::text, 'responsible_ref'::text, 'accountable_ref'::text, 'waiting_on_ref'::text, 'attributes'::text]) AND (transition_verb IS NOT NULL))))"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_capture_work_change",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_capture_work_change()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare b jsonb; a jsonb;\nbegin\n  a:=learn_work_snapshot(new);\n  if tg_op='UPDATE' then\n    if new.id is distinct from old.id or new.tenant_id is distinct from old.tenant_id then\n      raise exception 'Work identity and tenant are immutable' using errcode='23514';\n    end if;\n    b:=learn_work_snapshot(old);\n    if a=b then return new; end if;\n  else b:=a;\n  end if;\n  insert into object_state_history(tenant_id,object_id,from_state,to_state,actor,reason,\n    occurred_at,work_before,work_after,transition_verb,capture_kind,capture_sequence)\n  values(new.tenant_id,new.id,b->>'status',a->>'status',\n    '{\"kind\":\"system\",\"ref\":\"database_work_capture\"}',\n    'Database-observed work change; actor attribution is separate transition evidence',\n    clock_timestamp(),b,a,'observed_'||lower(tg_op),lower(tg_op),nextval('learn_work_capture_sequence'));\n  return new;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_handoff_owner",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_roster jsonb, p_ref jsonb, p_at timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_handoff_owner(p_tenant uuid, p_roster jsonb, p_ref jsonb, p_at timestamp with time zone)\n RETURNS text\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare m jsonb; e jsonb; state jsonb; found_owner text; n int:=0; ref_id uuid;\nbegin\n if p_ref is null or p_ref='null'::jsonb or coalesce(p_ref->>'kind','') not in ('member','user','team','org_unit') then return null; end if;\n begin ref_id:=(p_ref->>'ref')::uuid; exception when invalid_text_representation then return null; end;\n if ref_id is null then return null; end if;\n if p_ref->>'kind' in ('team','org_unit') then\n   if exists(select 1 from org_units where tenant_id=p_tenant and id=ref_id) then return 'team:'||ref_id::text; end if;\n   return null;\n end if;\n for m in select value from jsonb_array_elements(p_roster->'members') loop\n   if p_ref->>'kind'='member' and m->>'memberId'<>ref_id::text then continue; end if;\n   if m->>'coverageStart' is null then return null; end if;\n   if (m->>'coverageStart')::timestamptz>p_at then\n     if m->>'firstKind'='insert' then continue; else return null; end if;\n   end if;\n   select value into e from jsonb_array_elements(m->'events') where (value->>'observedAt')::timestamptz<=p_at\n     order by (value->>'sequence')::bigint desc limit 1;\n   if e is null then return null; end if;\n   state:=e->'after';\n   if p_ref->>'kind'='user' and state->>'profileId' is distinct from ref_id::text then continue; end if;\n   if (state->>'effectiveFrom')::timestamptz>p_at or\n     (state->>'effectiveTo' is not null and (state->>'effectiveTo')::timestamptz<=p_at) then continue; end if;\n   n:=n+1;\n   -- An unconfirmed duplicate must not be ignored in favour of a confirmed row.\n   if state->>'confirmedAt' is null or (state->>'confirmedAt')::timestamptz>p_at then return null; end if;\n   found_owner:='member:'||(m->>'memberId');\n end loop;\n if n=1 then return found_owner; end if;\n return null;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_work_capture_baseline",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_object uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_capture_baseline(p_tenant uuid, p_object uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare o intelligence_objects%rowtype; snapshot jsonb; result uuid;\nbegin\n  select * into o from intelligence_objects where tenant_id=p_tenant and id=p_object for update;\n  if not found then raise exception 'Work item not found in tenant' using errcode='P0002'; end if;\n  select id into result from object_state_history where tenant_id=p_tenant and object_id=p_object\n    and capture_kind is not null order by capture_sequence limit 1;\n  if found then return result; end if;\n  snapshot:=learn_work_snapshot(o);\n  insert into object_state_history(tenant_id,object_id,from_state,to_state,actor,reason,\n    occurred_at,work_before,work_after,transition_verb,capture_kind,capture_sequence)\n  values(p_tenant,p_object,o.status,o.status,'{\"kind\":\"system\",\"ref\":\"database_work_baseline\"}',\n    'Current state baseline; prior ownership duration is unknown',clock_timestamp(),snapshot,snapshot,\n    'observed_baseline','baseline',nextval('learn_work_capture_sequence')) returning id into result;\n  return result;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_work_handoffs_collect",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_handoffs_collect(p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare actor uuid:=auth.uid(); descriptor jsonb; prior learn_work_measurement_runs%rowtype;\n roster jsonb; history jsonb; o intelligence_objects%rowtype; first_capture object_state_history%rowtype;\n policy jsonb; rule jsonb; ev jsonb; before_owner text; after_owner text; at timestamptz;\n observed timestamptz:=statement_timestamp(); source_through timestamptz:=statement_timestamp();\n eligible int:=0; covered int:=0; transfers int:=0; total_events int:=0; object_complete boolean;\n proof jsonb; items jsonb:='[]'; credited jsonb:='[]'; issues jsonb:='[]'; payload jsonb; ack jsonb;\n count_objects int; result_value int;\nbegin\n -- Lock the actor's real profile, so revocation cannot race a long calculation.\n if actor is null or p_tenant is distinct from current_tenant_id() then\n   raise exception 'Owner/admin access required' using errcode='42501'; end if;\n perform 1 from profiles where id=actor and tenant_id=p_tenant and role in ('owner','admin') for share;\n if not found then raise exception 'Owner/admin access required' using errcode='42501'; end if;\n if exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null\n   and (expires_at is null or expires_at>clock_timestamp())) then\n   raise exception 'View-As cannot collect performance observations' using errcode='42501'; end if;\n if p_member is null or p_policy is null or p_request is null or p_revision is null or p_revision<1\n   or p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)\n   or p_start>=p_end or p_end>observed or p_end-p_start>interval '366 days'\n   or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then\n   raise exception 'A member, policy, completed period and reason are required' using errcode='22023'; end if;\n descriptor:=jsonb_build_object('memberId',p_member,'policyId',p_policy,'policyVersion',p_revision,\n   'start',p_start,'end',p_end,'reason',btrim(p_reason),'actorId',actor);\n perform pg_advisory_xact_lock(hashtextextended('learn-work-collect:'||p_request::text,0));\n select * into prior from learn_work_measurement_runs where id=p_request;\n if found then\n   if prior.tenant_id<>p_tenant or prior.request is distinct from descriptor then\n     raise exception 'Collection request identity changed' using errcode='PT409'; end if;\n   if not exists(select 1 from measurements where id=p_request and tenant_id=p_tenant) then\n     raise exception 'Collection receipt is incomplete' using errcode='55000'; end if;\n   return jsonb_build_object('measurementId',p_request,'reused',true);\n end if;\n perform 1 from team_members where id=p_member and tenant_id=p_tenant;\n if not found then raise exception 'Member not found in tenant' using errcode='22023'; end if;\n select e.value into policy from operating_profile_entries e join config_versions c on c.id=e.version_id and c.tenant_id=e.tenant_id\n where e.tenant_id=p_tenant and e.namespace='learn_scorecards' and e.scope_kind='tenant'\n   and e.key like 'definition.%' and e.value->>'id'=p_policy::text and e.value->>'version'=p_revision::text\n   and c.artifact_kind='learn_scorecard' and c.version=p_revision and c.status in ('draft','published');\n if policy is null or policy->>'subjectKind'<>'member' or policy->>'groupId' is not null then\n   raise exception 'Choose a company-wide member policy for recorded handoffs' using errcode='22023'; end if;\n select value into rule from jsonb_array_elements(policy->'metrics') where value->>'key'='work.recorded_handoffs';\n if rule is null or rule->>'unit'<>'handoffs' or not coalesce((rule->'sourceSystems') ? 'serviceos.work.handoffs@1',false) then\n   raise exception 'Policy does not define the recorded handoff measure' using errcode='22023'; end if;\n -- Serialize one observation per exact cell. Refreshes must use a separately\n -- reviewed correction workflow, not create two competing independent counts.\n perform pg_advisory_xact_lock(hashtextextended('learn-handoff-cell:'||p_tenant::text||p_member::text||p_policy::text||p_revision::text||extract(epoch from p_start)::text||':'||extract(epoch from p_end)::text,0));\n if exists(select 1 from measurements where tenant_id=p_tenant and subject_kind='member' and subject_id=p_member\n   and policy_id=p_policy and policy_revision=p_revision and metric_key='work.recorded_handoffs'\n   and window_start=p_start and window_end=p_end) then\n   raise exception 'An observation already exists for this cell; review or correct it' using errcode='PT409'; end if;\n roster:=learn_member_history_read(p_tenant,p_start,p_end);\n select count(*) into count_objects from intelligence_objects where tenant_id=p_tenant;\n if count_objects>2000 then raise exception 'Work population exceeds bounded collection; no partial score saved' using errcode='54000'; end if;\n for o in select * from intelligence_objects where tenant_id=p_tenant order by id loop\n   select * into first_capture from object_state_history where tenant_id=p_tenant and object_id=o.id and capture_kind is not null\n     order by capture_sequence limit 1;\n   -- A proven database insertion after the period cannot contain period handoffs.\n   if first_capture.capture_kind='insert' and first_capture.occurred_at>=p_end then continue; end if;\n   eligible:=eligible+1;\n   history:=learn_work_history_read(p_tenant,o.id,p_start,p_end);\n   total_events:=total_events+(history->>'count')::int;\n   if total_events>5000 then raise exception 'Work events exceed bounded collection' using errcode='54000'; end if;\n   object_complete:=history->>'coverageStart' is not null and (\n     (history->>'coverageStart')::timestamptz<=p_start or first_capture.capture_kind='insert');\n   if history->>'sourceThrough' is not null then source_through:=least(source_through,(history->>'sourceThrough')::timestamptz); end if;\n   for ev in select value from jsonb_array_elements(history->'events') loop\n     at:=(ev->>'occurredAt')::timestamptz;\n     if ev->>'kind'<>'update' or at<p_start or at>=p_end\n       or ev#>'{before,responsible_ref}'='null'::jsonb or ev#>'{after,responsible_ref}'='null'::jsonb\n       or ev#>'{before,responsible_ref}'=ev#>'{after,responsible_ref}' then continue; end if;\n     before_owner:=learn_handoff_owner(p_tenant,roster,ev#>'{before,responsible_ref}',at);\n     if before_owner is null then object_complete:=false; continue; end if;\n     if before_owner<>'member:'||p_member::text then continue; end if;\n     after_owner:=learn_handoff_owner(p_tenant,roster,ev#>'{after,responsible_ref}',at);\n     if after_owner is null then object_complete:=false; continue; end if;\n     if before_owner=after_owner then continue; end if; -- user/member aliases are not a transfer.\n     transfers:=transfers+1;\n     credited:=credited||jsonb_build_array(jsonb_build_object('objectId',o.id,'eventId',ev->>'id',\n       'occurredAt',at,'from',before_owner,'to',after_owner));\n   end loop;\n   if object_complete then covered:=covered+1; else issues:=issues||jsonb_build_array(o.id); end if;\n   items:=items||jsonb_build_array(jsonb_build_object('objectId',o.id,'complete',object_complete,\n     'coverageStart',history->'coverageStart','sourceThrough',history->'sourceThrough',\n     'eventIds',(select coalesce(jsonb_agg(v->'id'),'[]') from jsonb_array_elements(history->'events') v)));\n end loop;\n -- Even zero must be supported: unknown history never becomes zero handoffs.\n result_value:=case when covered=eligible then transfers else null end;\n proof:=jsonb_build_object('contract','work-handoffs@1','population','all retained intelligence objects',\n   'value',result_value,'knownHandoffs',transfers,'eligibleItems',eligible,'coveredItems',covered,\n   'incompleteObjectIds',issues,'items',items,'credited',credited,'membership',roster);\n if octet_length(proof::text)>1048576 then raise exception 'Calculation evidence exceeds retention limit' using errcode='54000'; end if;\n if exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null\n   and (expires_at is null or expires_at>clock_timestamp())) then\n   raise exception 'View-As cannot collect performance observations' using errcode='42501'; end if;\n insert into learn_work_measurement_runs(id,tenant_id,member_id,actor_id,request,observed_at,explanation,proof)\n values(p_request,p_tenant,p_member,actor,descriptor,observed,\n   'Recorded outgoing ownership transfers. Not speed, quality or hours worked. '\n   ||covered||' of '||eligible||' retained work items have complete history/identity coverage. '\n   ||case when result_value is null then 'Value withheld because coverage is incomplete.' else 'Confirmed review is still required.' end,proof);\n payload:=jsonb_build_object('id',p_request,'tenantId',p_tenant,'subject',jsonb_build_object('kind','member','id',p_member),\n   'metricKey','work.recorded_handoffs','policyId',p_policy,'policyVersion',p_revision,\n   'period',jsonb_build_object('start',p_start,'end',p_end),'value',result_value,'unit','handoffs',\n   'sampleCount',covered,'coveredCount',covered,'eligibleCount',eligible,'observedAt',observed,\n   'sourceThrough',case when covered=eligible then source_through end,'sourceSystem','serviceos.work.handoffs@1',\n   'review','inferred','evidence',jsonb_build_array(jsonb_build_object('table','learn_work_measurement_runs','id',p_request)),\n   'exclusions','[]'::jsonb);\n ack:=learn_performance_append(p_tenant,payload,btrim(p_reason));\n return ack;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_work_history_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_history_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n  if old.work_before is not null or (tg_op='UPDATE' and new.work_before is not null) then\n    raise exception 'Structured work history is append-only';\n  end if;\n  return case when tg_op='DELETE' then old else new end;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_work_history_read",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_object uuid, p_start timestamp with time zone, p_end timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_history_read(p_tenant uuid, p_object uuid, p_start timestamp with time zone, p_end timestamp with time zone)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  o intelligence_objects%rowtype; head object_state_history%rowtype;\n  coverage_start timestamptz; predecessor bigint; event_count int; events jsonb;\n  observed timestamptz:=statement_timestamp(); result jsonb;\nbegin\n  if auth.uid() is null or p_tenant is distinct from current_tenant_id()\n    or coalesce(current_user_role(),'') not in ('owner','admin') then\n    raise exception 'Owner/admin access in this tenant required' using errcode='42501';\n  end if;\n  if p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)\n    or p_start>=p_end or p_end>observed or p_end-p_start>interval '366 days' then\n    raise exception 'Choose a completed period of at most 366 days' using errcode='22023';\n  end if;\n  if not exists(select 1 from pg_trigger where tgrelid='public.intelligence_objects'::regclass\n    and tgname='learn_capture_work_change' and tgenabled in ('O','A')) then\n    raise exception 'Work capture is unavailable' using errcode='55000';\n  end if;\n  select * into o from intelligence_objects where id=p_object and tenant_id=p_tenant;\n  if not found then raise exception 'Work item unavailable in tenant' using errcode='P0002'; end if;\n  select * into head from object_state_history where tenant_id=p_tenant and object_id=p_object\n    and capture_kind is not null order by capture_sequence desc limit 1;\n  if found and (head.work_after is distinct from learn_work_snapshot(o) or head.occurred_at>observed) then\n    raise exception 'Current work state does not reconcile with captured history' using errcode='55000';\n  end if;\n  if exists(select 1 from (\n    select occurred_at,work_before,\n      lag(occurred_at) over(order by capture_sequence) prior_at,\n      lag(work_after) over(order by capture_sequence) prior_state\n    from object_state_history where tenant_id=p_tenant and object_id=p_object and capture_kind is not null\n  ) h where occurred_at<prior_at or (prior_state is not null and work_before is distinct from prior_state)) then\n    raise exception 'Work capture contains an unexplained history gap' using errcode='55000';\n  end if;\n  select min(occurred_at) into coverage_start from object_state_history\n    where tenant_id=p_tenant and object_id=p_object and capture_kind is not null;\n  select capture_sequence into predecessor from object_state_history\n    where tenant_id=p_tenant and object_id=p_object and capture_kind is not null and occurred_at<p_start\n    order by capture_sequence desc limit 1;\n  select count(*) into event_count from object_state_history where tenant_id=p_tenant and object_id=p_object\n    and capture_kind is not null and (capture_sequence=predecessor or occurred_at between p_start and p_end);\n  if event_count>1000 then raise exception 'Work history exceeds this bounded review window' using errcode='54000'; end if;\n  select coalesce(jsonb_agg(jsonb_build_object(\n    'id',id,'tenantId',tenant_id,'objectId',object_id,'sequence',capture_sequence::text,\n    'kind',capture_kind,'occurredAt',occurred_at,'before',work_before,'after',work_after\n  ) order by capture_sequence),'[]') into events from object_state_history\n    where tenant_id=p_tenant and object_id=p_object and capture_kind is not null\n    and (capture_sequence=predecessor or occurred_at between p_start and p_end);\n  result:=jsonb_build_object('tenantId',p_tenant,'objectId',p_object,\n    'period',jsonb_build_object('start',p_start,'end',p_end),'observedAt',observed,\n    'sourceThrough',case when coverage_start is not null then observed end,\n    'coverageStart',coverage_start,'count',event_count,'events',events,\n    'contract','work-capture@1');\n  if octet_length(result::text)>2097152 then raise exception 'Work history exceeds review payload limit' using errcode='54000'; end if;\n  return result;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_work_residence_collect",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_residence_collect(p_tenant uuid, p_member uuid, p_policy uuid, p_revision integer, p_start timestamp with time zone, p_end timestamp with time zone, p_request uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare actor uuid:=auth.uid(); descriptor jsonb; prior learn_work_measurement_runs%rowtype;\n roster jsonb; history jsonb; o intelligence_objects%rowtype; first_capture object_state_history%rowtype;\n policy jsonb; rule jsonb; ev jsonb; next_ev jsonb; owner text;\n interval_start timestamptz; interval_end timestamptz; segment_start timestamptz; segment_end timestamptz;\n boundaries timestamptz[]; points timestamptz[]; i int; j int; segment_count int:=0;\n observed timestamptz:=statement_timestamp(); source_through timestamptz:=statement_timestamp();\n eligible int:=0; covered int:=0; item_minutes numeric:=0; total_events int:=0; object_complete boolean;\n proof jsonb; items jsonb:='[]'; credited jsonb:='[]'; issues jsonb:='[]'; payload jsonb; ack jsonb;\n count_objects int; result_value numeric;\nbegin\n -- Lock the actor's real profile, so revocation cannot race a long calculation.\n if actor is null or p_tenant is distinct from current_tenant_id() then\n   raise exception 'Owner/admin access required' using errcode='42501'; end if;\n perform 1 from profiles where id=actor and tenant_id=p_tenant and role in ('owner','admin') for share;\n if not found then raise exception 'Owner/admin access required' using errcode='42501'; end if;\n if exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null\n   and (expires_at is null or expires_at>clock_timestamp())) then\n   raise exception 'View-As cannot collect performance observations' using errcode='42501'; end if;\n if p_member is null or p_policy is null or p_request is null or p_revision is null or p_revision<1\n   or p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)\n   or p_start>=p_end or p_end>observed or p_end-p_start>interval '366 days'\n   or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then\n   raise exception 'A member, policy, completed period and reason are required' using errcode='22023'; end if;\n descriptor:=jsonb_build_object('memberId',p_member,'policyId',p_policy,'policyVersion',p_revision,\n   'start',p_start,'end',p_end,'reason',btrim(p_reason),'actorId',actor,'algorithm','work-residence@1');\n perform pg_advisory_xact_lock(hashtextextended('learn-work-collect:'||p_request::text,0));\n select * into prior from learn_work_measurement_runs where id=p_request;\n if found then\n   if prior.tenant_id<>p_tenant or prior.request is distinct from descriptor then\n     raise exception 'Collection request identity changed' using errcode='PT409'; end if;\n   if not exists(select 1 from measurements where id=p_request and tenant_id=p_tenant) then\n     raise exception 'Collection receipt is incomplete' using errcode='55000'; end if;\n   return jsonb_build_object('measurementId',p_request,'reused',true);\n end if;\n perform 1 from team_members where id=p_member and tenant_id=p_tenant;\n if not found then raise exception 'Member not found in tenant' using errcode='22023'; end if;\n select e.value into policy from operating_profile_entries e join config_versions c on c.id=e.version_id and c.tenant_id=e.tenant_id\n where e.tenant_id=p_tenant and e.namespace='learn_scorecards' and e.scope_kind='tenant'\n   and e.key like 'definition.%' and e.value->>'id'=p_policy::text and e.value->>'version'=p_revision::text\n   and c.artifact_kind='learn_scorecard' and c.version=p_revision and c.status in ('draft','published');\n if policy is null or policy->>'subjectKind' is distinct from 'member' or policy->>'groupId' is not null then\n   raise exception 'Choose a company-wide member policy for owned item minutes' using errcode='22023'; end if;\n select value into rule from jsonb_array_elements(policy->'metrics') where value->>'key'='work.owned_item_minutes';\n if rule is null or rule->>'unit' is distinct from 'item_minutes' or not coalesce((rule->'sourceSystems') ? 'serviceos.work.residence@1',false) then\n   raise exception 'Policy does not define the owned item-minute measure' using errcode='22023'; end if;\n -- Serialize one observation per exact cell. Refreshes must use a separately\n -- reviewed correction workflow, not create two competing independent counts.\n perform pg_advisory_xact_lock(hashtextextended('learn-residence-cell:'||p_tenant::text||p_member::text||p_policy::text||p_revision::text||extract(epoch from p_start)::text||':'||extract(epoch from p_end)::text,0));\n if exists(select 1 from measurements where tenant_id=p_tenant and subject_kind='member' and subject_id=p_member\n   and policy_id=p_policy and policy_revision=p_revision and metric_key='work.owned_item_minutes'\n   and window_start=p_start and window_end=p_end) then\n   raise exception 'An observation already exists for this cell; review or correct it' using errcode='PT409'; end if;\n roster:=learn_member_history_read(p_tenant,p_start,p_end);\n -- Ownership can change meaning without a work write: split at roster capture,\n -- effective-from/to and confirmation boundaries before resolving identity.\n select coalesce(array_agg(distinct boundary order by boundary),'{}'::timestamptz[]) into boundaries from (\n   select (m->>'coverageStart')::timestamptz boundary from jsonb_array_elements(roster->'members') m\n   union all select (e->>'observedAt')::timestamptz from jsonb_array_elements(roster->'members') m\n     cross join lateral jsonb_array_elements(m->'events') e\n   union all select (e#>>'{after,effectiveFrom}')::timestamptz from jsonb_array_elements(roster->'members') m\n     cross join lateral jsonb_array_elements(m->'events') e\n   union all select (e#>>'{after,effectiveTo}')::timestamptz from jsonb_array_elements(roster->'members') m\n     cross join lateral jsonb_array_elements(m->'events') e\n   union all select (e#>>'{after,confirmedAt}')::timestamptz from jsonb_array_elements(roster->'members') m\n     cross join lateral jsonb_array_elements(m->'events') e\n ) b where boundary>p_start and boundary<p_end;\n select count(*) into count_objects from intelligence_objects where tenant_id=p_tenant;\n if count_objects>2000 then raise exception 'Work population exceeds bounded collection; no partial score saved' using errcode='54000'; end if;\n for o in select * from intelligence_objects where tenant_id=p_tenant order by id loop\n   select * into first_capture from object_state_history where tenant_id=p_tenant and object_id=o.id and capture_kind is not null\n     order by capture_sequence limit 1;\n   -- A proven database insertion after the period cannot contain period ownership.\n   if first_capture.capture_kind='insert' and first_capture.occurred_at>=p_end then continue; end if;\n   eligible:=eligible+1;\n   history:=learn_work_history_read(p_tenant,o.id,p_start,p_end);\n   total_events:=total_events+(history->>'count')::int;\n   if total_events>5000 then raise exception 'Work events exceed bounded collection' using errcode='54000'; end if;\n   object_complete:=history->>'coverageStart' is not null and (\n     (history->>'coverageStart')::timestamptz<=p_start or first_capture.capture_kind='insert');\n   if history->>'sourceThrough' is not null then source_through:=least(source_through,(history->>'sourceThrough')::timestamptz); end if;\n   for i in 0..jsonb_array_length(history->'events')-1 loop\n     ev:=history->'events'->i;\n     next_ev:=history->'events'->(i+1);\n     interval_start:=greatest(p_start,(ev->>'occurredAt')::timestamptz);\n     interval_end:=least(p_end,coalesce((next_ev->>'occurredAt')::timestamptz,p_end));\n     if interval_end<=interval_start then continue; end if;\n     points:=array[interval_start]||array(select b from unnest(boundaries) b\n       where b>interval_start and b<interval_end order by b)||array[interval_end];\n     for j in 1..cardinality(points)-1 loop\n       segment_count:=segment_count+1;\n       if segment_count>10000 then raise exception 'Attribution segments exceed bounded collection' using errcode='54000'; end if;\n       segment_start:=points[j]; segment_end:=points[j+1];\n       if ev#>'{after,responsible_ref}' is null or ev#>'{after,responsible_ref}'='null'::jsonb then continue; end if;\n       owner:=learn_handoff_owner(p_tenant,roster,ev#>'{after,responsible_ref}',segment_start);\n       if owner is null then object_complete:=false; continue; end if;\n       if owner<>'member:'||p_member::text then continue; end if;\n       item_minutes:=item_minutes+extract(epoch from segment_end-segment_start)/60;\n       credited:=credited||jsonb_build_array(jsonb_build_object('objectId',o.id,\n         'start',segment_start,'end',segment_end,'itemMinutes',extract(epoch from segment_end-segment_start)/60,\n         'owner',owner,'responsible',ev#>'{after,responsible_ref}','status',ev#>'{after,status}',\n         'waitingOn',ev#>'{after,waiting_on_ref}',\n         'workEventIds',case when next_ev is null then jsonb_build_array(ev->>'id') else jsonb_build_array(ev->>'id',next_ev->>'id') end));\n     end loop;\n   end loop;\n   if object_complete then covered:=covered+1; else issues:=issues||jsonb_build_array(o.id); end if;\n   items:=items||jsonb_build_array(jsonb_build_object('objectId',o.id,'complete',object_complete,\n     'coverageStart',history->'coverageStart','sourceThrough',history->'sourceThrough',\n     'eventIds',(select coalesce(jsonb_agg(v->'id'),'[]') from jsonb_array_elements(history->'events') v)));\n end loop;\n -- Even zero must be supported: unknown history never becomes zero residence.\n result_value:=case when covered=eligible then item_minutes else null end;\n proof:=jsonb_build_object('contract','work-residence@1','population','all retained intelligence objects',\n   'value',result_value,'knownItemMinutes',item_minutes,'eligibleItems',eligible,'coveredItems',covered,\n   'incompleteObjectIds',issues,'items',items,'credited',credited,'membership',roster);\n if octet_length(proof::text)>1048576 then raise exception 'Calculation evidence exceeds retention limit' using errcode='54000'; end if;\n if exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null\n   and (expires_at is null or expires_at>clock_timestamp())) then\n   raise exception 'View-As cannot collect performance observations' using errcode='42501'; end if;\n insert into learn_work_measurement_runs(id,tenant_id,member_id,actor_id,request,observed_at,explanation,proof,source_system,metric_key)\n values(p_request,p_tenant,p_member,actor,descriptor,observed,\n   'Elapsed owned item-minutes across all recorded states, including waiting and closed states. Concurrent items add separately; this is not working hours, speed or productivity. No business calendar or delay exclusion applied. '\n   ||covered||' of '||eligible||' retained work items have complete history/identity coverage. '\n   ||case when result_value is null then 'Value withheld because coverage is incomplete.' else 'Confirmed review is still required.' end,proof,'serviceos.work.residence@1','work.owned_item_minutes');\n payload:=jsonb_build_object('id',p_request,'tenantId',p_tenant,'subject',jsonb_build_object('kind','member','id',p_member),\n   'metricKey','work.owned_item_minutes','policyId',p_policy,'policyVersion',p_revision,\n   'period',jsonb_build_object('start',p_start,'end',p_end),'value',result_value,'unit','item_minutes',\n   'sampleCount',covered,'coveredCount',covered,'eligibleCount',eligible,'observedAt',observed,\n   'sourceThrough',case when covered=eligible then source_through end,'sourceSystem','serviceos.work.residence@1',\n   'review','inferred','evidence',jsonb_build_array(jsonb_build_object('table','learn_work_measurement_runs','id',p_request)),\n   'exclusions','[]'::jsonb);\n ack:=learn_performance_append(p_tenant,payload,btrim(p_reason));\n return ack;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_work_snapshot",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p intelligence_objects",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_snapshot(p intelligence_objects)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select jsonb_build_object('status',p.status,'version',p.version,\n    'responsible_ref',p.responsible_ref,'accountable_ref',p.accountable_ref,\n    'waiting_on_ref',p.waiting_on_ref,'attributes',p.attributes);\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "sequences": [
+    {
+      "max": "9223372036854775807",
+      "min": "1",
+      "name": "learn_work_capture_sequence",
+      "type": "bigint",
+      "cache": "1",
+      "cycle": false,
+      "owner": "postgres",
+      "start": "1",
+      "increment": "1",
+      "anonAccess": false,
+      "serviceAccess": false,
+      "authenticatedAccess": false
+    }
+  ]
+}
