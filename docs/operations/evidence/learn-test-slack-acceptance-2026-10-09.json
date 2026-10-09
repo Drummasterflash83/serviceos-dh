@@ -1,0 +1,29 @@
+{
+  "version": "learn-test-slack-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+  "observedAt": "2026-10-09T22:08:49.340Z",
+  "runId": "9ba68417-eb59-4aa2-848d-3e5d30755303",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Real owner setup, idempotent retry, HTTP 409, viewer and foreign-owner denial",
+    "Actual service RPC atomically stores a source page/version/interaction and checkpoint; browser writer denied, stale cursor refused, foreign reads isolated"
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 1,
+    "versions": 1,
+    "approvals": 1,
+    "interactions": 1,
+    "active_jobs": 0,
+    "active_connections": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-slack-9ba68417-eb59-4aa2-848d-3e5d30755303.json",
+  "limitations": [
+    "No real Slack token, Vault secret, provider fetch or production change. Synthetic provider metadata explicitly has no credential.",
+    "Source publication was supplied directly to the real service RPC; worker/queue deployment, real provider permission and complete ingestion remain pending.",
+    "Synthetic actors and evidence retained; queue cancelled, connections disabled, logins banned/passwords rotated and owner roles revoked. Tenant-level source read policy is unchanged; this is not proof of immediate invalidation of all old JWT reads."
+  ]
+}

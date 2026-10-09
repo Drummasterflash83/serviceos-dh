@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-slack-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T22:06:41.811057+00:00",
+  "observedAfter": "2026-10-09T22:06:45.428634+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "fdcb8f7f76e0c66419b6c80df092731878491a58f43c7947a9012d987ab264db",
+  "afterCatalogSha256": "6a8df4f8879aa16608846491447409a18040900f359a1f07d9e05d135b3ab4fc",
+  "limitations": [
+    "TEST Slack storage/setup only; no production, providers, imports, historical baselines or source communication rows changed.",
+    "Catalog compatibility does not prove real JWT access or full LEARN acceptance.",
+    "Unknown outcomes require inspection; no automatic retry or rollback occurs."
+  ]
+}

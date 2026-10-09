@@ -129,3 +129,9 @@ test("connection metadata read is tenant scoped and never selects credential ref
   rows.splice(0);
   assert.deepEqual(await loadSlackConnections(db, id(2)), []);
 });
+
+test("both legacy and HTTP conflict responses require a reload, not an uncertain retry", async () => {
+  for (const code of ["40001", "PT409"]) {
+    await assert.rejects(startSlackImport({rpc: async () => ({data:null,error:{code}})} as any, request), /Reload setup/);
+  }
+});

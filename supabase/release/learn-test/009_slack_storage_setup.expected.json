@@ -1,0 +1,1017 @@
+{
+  "sourceSha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+  "tables": [
+    {
+      "rls": true,
+      "name": "connector_accounts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_connector_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "account_key",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "settings",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "sync_cursor",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "last_successful_sync_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_failed_sync_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "connector_accounts_pkey",
+          "definition": "CREATE UNIQUE INDEX connector_accounts_pkey ON public.connector_accounts USING btree (id)"
+        },
+        {
+          "name": "connector_accounts_tenant_connector_id_account_key_key",
+          "definition": "CREATE UNIQUE INDEX connector_accounts_tenant_connector_id_account_key_key ON public.connector_accounts USING btree (tenant_connector_id, account_key)"
+        },
+        {
+          "name": "connector_accounts_tenant_connector_idx",
+          "definition": "CREATE INDEX connector_accounts_tenant_connector_idx ON public.connector_accounts USING btree (tenant_connector_id)"
+        },
+        {
+          "name": "connector_accounts_tenant_id_idx",
+          "definition": "CREATE INDEX connector_accounts_tenant_id_idx ON public.connector_accounts USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "connector_accounts_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "connector_accounts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER connector_accounts_set_updated_at BEFORE UPDATE ON public.connector_accounts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_connector_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_connector_reference_guard BEFORE INSERT OR UPDATE ON public.connector_accounts FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_connector_retain",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain BEFORE DELETE ON public.connector_accounts FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "learn_connector_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain_truncate BEFORE TRUNCATE ON public.connector_accounts FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "connector_accounts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "connector_accounts_tenant_connector_id_account_key_key",
+          "definition": "UNIQUE (tenant_connector_id, account_key)"
+        },
+        {
+          "kind": "f",
+          "name": "connector_accounts_tenant_connector_id_fkey",
+          "definition": "FOREIGN KEY (tenant_connector_id) REFERENCES tenant_connectors(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "learn_connector_tenant_fk",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "provider_connection_events",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "event",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "detail",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "provider_connection_events_pkey",
+          "definition": "CREATE UNIQUE INDEX provider_connection_events_pkey ON public.provider_connection_events USING btree (id)"
+        },
+        {
+          "name": "provider_connection_events_tenant_idx",
+          "definition": "CREATE INDEX provider_connection_events_tenant_idx ON public.provider_connection_events USING btree (tenant_id, provider, created_at DESC)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "provider_connection_events_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_provider_events_retain",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_provider_events_retain BEFORE DELETE OR UPDATE ON public.provider_connection_events FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "learn_provider_events_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_provider_events_retain_truncate BEFORE TRUNCATE ON public.provider_connection_events FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_provider_event_tenant_fk",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "p",
+          "name": "provider_connection_events_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "provider_connections",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'not_configured'::text",
+          "notNull": true
+        },
+        {
+          "name": "auth_mode",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "account_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "non_secret_config",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "configured_fields",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "secret_refs",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_test",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "updated_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "revoked_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "provider_connections_pkey",
+          "definition": "CREATE UNIQUE INDEX provider_connections_pkey ON public.provider_connections USING btree (id)"
+        },
+        {
+          "name": "provider_connections_tenant_provider_uk",
+          "definition": "CREATE UNIQUE INDEX provider_connections_tenant_provider_uk ON public.provider_connections USING btree (tenant_id, provider)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "provider_connections_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_connector_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_connector_reference_guard BEFORE INSERT OR UPDATE ON public.provider_connections FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_connector_retain",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain BEFORE DELETE ON public.provider_connections FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "learn_connector_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain_truncate BEFORE TRUNCATE ON public.provider_connections FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "provider_connections_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER provider_connections_set_updated_at BEFORE UPDATE ON public.provider_connections FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_connector_tenant_fk",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "p",
+          "name": "provider_connections_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "slack_history_imports",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "approved_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "approved_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "definition",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "previous_state",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "slack_history_imports_pkey",
+          "definition": "CREATE UNIQUE INDEX slack_history_imports_pkey ON public.slack_history_imports USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "slack_import_read",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_slack_import_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_slack_import_reference_guard BEFORE INSERT OR UPDATE ON public.slack_history_imports FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_slack_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_slack_retain_truncate BEFORE TRUNCATE ON public.slack_history_imports FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "slack_import_immutable",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER slack_import_immutable BEFORE DELETE OR UPDATE ON public.slack_history_imports FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "slack_history_imports_account_id_fkey",
+          "definition": "FOREIGN KEY (account_id) REFERENCES connector_accounts(id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_history_imports_approved_by_fkey",
+          "definition": "FOREIGN KEY (approved_by) REFERENCES profiles(id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_history_imports_job_id_fkey",
+          "definition": "FOREIGN KEY (job_id) REFERENCES platform_jobs(id)"
+        },
+        {
+          "kind": "p",
+          "name": "slack_history_imports_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_history_imports_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "slack_message_versions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "message_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_version",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider_payload",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "slack_message_versions_pkey",
+          "definition": "CREATE UNIQUE INDEX slack_message_versions_pkey ON public.slack_message_versions USING btree (id)"
+        },
+        {
+          "name": "slack_message_versions_tenant_id_message_id_source_version_key",
+          "definition": "CREATE UNIQUE INDEX slack_message_versions_tenant_id_message_id_source_version_key ON public.slack_message_versions USING btree (tenant_id, message_id, source_version)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "slack_versions_read",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_slack_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_slack_retain_truncate BEFORE TRUNCATE ON public.slack_message_versions FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "slack_versions_immutable",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER slack_versions_immutable BEFORE DELETE OR UPDATE ON public.slack_message_versions FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "slack_message_versions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_message_versions_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_message_versions_tenant_id_message_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, message_id) REFERENCES slack_messages(tenant_id, id)"
+        },
+        {
+          "kind": "u",
+          "name": "slack_message_versions_tenant_id_message_id_source_version_key",
+          "definition": "UNIQUE (tenant_id, message_id, source_version)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "slack_messages",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_external_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "team_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "channel_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider_timestamp",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "thread_timestamp",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "message_text",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider_payload",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_version",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_updated_at",
+          "type": "numeric",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "slack_messages_pkey",
+          "definition": "CREATE UNIQUE INDEX slack_messages_pkey ON public.slack_messages USING btree (id)"
+        },
+        {
+          "name": "slack_messages_tenant_id_id_key",
+          "definition": "CREATE UNIQUE INDEX slack_messages_tenant_id_id_key ON public.slack_messages USING btree (tenant_id, id)"
+        },
+        {
+          "name": "slack_messages_tenant_id_source_external_id_key",
+          "definition": "CREATE UNIQUE INDEX slack_messages_tenant_id_source_external_id_key ON public.slack_messages USING btree (tenant_id, source_external_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "slack_messages_read",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_slack_retain_message",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_slack_retain_message BEFORE DELETE ON public.slack_messages FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "learn_slack_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_slack_retain_truncate BEFORE TRUNCATE ON public.slack_messages FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "slack_messages_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "slack_messages_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "u",
+          "name": "slack_messages_tenant_id_id_key",
+          "definition": "UNIQUE (tenant_id, id)"
+        },
+        {
+          "kind": "u",
+          "name": "slack_messages_tenant_id_source_external_id_key",
+          "definition": "UNIQUE (tenant_id, source_external_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "tenant_connectors",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connector_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'disabled'::text",
+          "notNull": true
+        },
+        {
+          "name": "health_status",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "settings",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "last_successful_sync_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_failed_sync_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "tenant_connectors_pkey",
+          "definition": "CREATE UNIQUE INDEX tenant_connectors_pkey ON public.tenant_connectors USING btree (id)"
+        },
+        {
+          "name": "tenant_connectors_tenant_id_connector_id_key",
+          "definition": "CREATE UNIQUE INDEX tenant_connectors_tenant_id_connector_id_key ON public.tenant_connectors USING btree (tenant_id, connector_id)"
+        },
+        {
+          "name": "tenant_connectors_tenant_id_idx",
+          "definition": "CREATE INDEX tenant_connectors_tenant_id_idx ON public.tenant_connectors USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "tenant_connectors_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_connector_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_connector_reference_guard BEFORE INSERT OR UPDATE ON public.tenant_connectors FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_connector_retain",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain BEFORE DELETE ON public.tenant_connectors FOR EACH ROW EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "learn_connector_retain_truncate",
+          "function": "slack_version_immutable",
+          "definition": "CREATE TRIGGER learn_connector_retain_truncate BEFORE TRUNCATE ON public.tenant_connectors FOR EACH STATEMENT EXECUTE FUNCTION slack_version_immutable()"
+        },
+        {
+          "name": "tenant_connectors_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER tenant_connectors_set_updated_at BEFORE UPDATE ON public.tenant_connectors FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_connector_tenant_fk",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "p",
+          "name": "tenant_connectors_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "tenant_connectors_tenant_id_connector_id_key",
+          "definition": "UNIQUE (tenant_id, connector_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_slack_start_import",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant_id uuid, p_request_id uuid, p_connection_id uuid, p_expected_revision text, p_channel_id text, p_start timestamp with time zone, p_end timestamp with time zone, p_max_pages integer, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_slack_start_import(p_tenant_id uuid, p_request_id uuid, p_connection_id uuid, p_expected_revision text, p_channel_id text, p_start timestamp with time zone, p_end timestamp with time zone, p_max_pages integer, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n c public.provider_connections%rowtype;\n tc public.tenant_connectors%rowtype;\n a public.connector_accounts%rowtype;\n prior public.slack_history_imports%rowtype;\n definition jsonb;\n scope jsonb;\n checkpoint jsonb;\n previous_state jsonb;\n aid uuid;\n jid uuid:=gen_random_uuid();\nbegin\n if current_setting('transaction_isolation')<>'read committed' then\n  raise exception 'Slack approval requires a fresh read-committed snapshot' using errcode='22023';\n end if;\n -- Same order as governed work. Authority mutations take the matching tenant\n -- mutex; privileged truncation takes the global exclusive lock.\n perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));\n perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant_id::text,0));\n if auth.uid() is null or p_tenant_id is distinct from public.current_tenant_id()\n  or coalesce(public.current_user_role(),'') not in ('owner','admin')\n  or exists(select 1 from public.view_as_context where actor_user_id=auth.uid()\n   and ended_at is null and (expires_at is null or expires_at>now())) then\n  raise exception 'Company owner/admin access required outside preview' using errcode='42501';\n end if;\n if p_request_id is null or p_connection_id is null or p_expected_revision is null\n  or coalesce(p_channel_id,'') !~ '^C[A-Z0-9]+$' or length(p_channel_id)>100\n  or p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)\n  or p_start>=p_end or p_end-p_start>interval '24 hours' or p_end>clock_timestamp()\n  or p_start<to_timestamp(0) or p_max_pages is null or p_max_pages not between 1 and 10\n  or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then\n  raise exception 'Choose a past window up to 24 hours, a public channel and a reason' using errcode='22023';\n end if;\n definition:=jsonb_build_object('connectionId',p_connection_id,'connectionRevision',p_expected_revision,\n  'channelId',p_channel_id,'start',p_start,'end',p_end,'maxPages',p_max_pages,'reason',btrim(p_reason));\n -- Serialise retries before looking up an existing request. A lost response must\n -- never produce a second approval or job, even if no job is still active.\n perform pg_advisory_xact_lock(hashtextextended('learn-slack-request:'||p_request_id::text,0));\n select * into prior from public.slack_history_imports where id=p_request_id;\n if found then\n  if prior.tenant_id<>p_tenant_id or prior.definition<>definition then\n   raise exception 'Import request identity has changed' using errcode='PT409';\n  end if;\n  return jsonb_build_object('requestId',prior.id,'accountId',prior.account_id,'jobId',prior.job_id,'reused',true);\n end if;\n -- Shared tenant connector before channel/account follows the same order for\n -- all setup requests. Publication takes row locks separately and stays atomic.\n perform pg_advisory_xact_lock(hashtextextended('learn-slack-setup:'||p_tenant_id::text,0));\n select * into c from public.provider_connections where id=p_connection_id and tenant_id=p_tenant_id for share;\n if not found or c.provider<>'slack' or c.status<>'configured' or c.revoked_at is not null\n  or c.updated_at is distinct from p_expected_revision::timestamptz\n  or coalesce(c.non_secret_config->>'team_id','') !~ '^T[A-Z0-9]+$'\n  or not ('bot_token'=any(c.configured_fields)) or c.secret_refs->>'bot_token' is null then\n  raise exception 'Slack connection unavailable or changed; reload setup' using errcode='PT409';\n end if;\n select * into tc from public.tenant_connectors where tenant_id=p_tenant_id and connector_id='slack';\n if not found then\n  insert into public.tenant_connectors(tenant_id,connector_id,provider,category,status,enabled)\n   values(p_tenant_id,'slack','slack','communications','active',true) returning * into tc;\n elsif not tc.enabled or tc.status<>'active' then\n  raise exception 'Slack connector is disabled; restore it before importing' using errcode='55000';\n end if;\n select * into a from public.connector_accounts where tenant_connector_id=tc.id and tenant_id=p_tenant_id\n  and account_key=(c.non_secret_config->>'team_id')||':'||p_channel_id for update;\n if found then\n  if a.status<>'active' or exists(select 1 from public.platform_jobs where tenant_id=p_tenant_id\n   and job_type='slack.history_sync' and payload->>'connector_account_id'=a.id::text\n   and status in ('queued','running','retrying')) then\n   raise exception 'A channel import is active or the account is disabled' using errcode='55000';\n  end if;\n  if a.settings ? 'slack_history' and a.sync_cursor->'complete' is distinct from 'true'::jsonb then\n   raise exception 'Previous window is incomplete; retain its checkpoint for review' using errcode='55000';\n  end if;\n  previous_state:=jsonb_build_object('settings',a.settings->'slack_history','checkpoint',a.sync_cursor);\n  aid:=a.id;\n else\n  insert into public.connector_accounts(tenant_id,tenant_connector_id,account_key,display_name,status)\n   values(p_tenant_id,tc.id,(c.non_secret_config->>'team_id')||':'||p_channel_id,p_channel_id,'active') returning id into aid;\n end if;\n scope:=jsonb_build_object('approved',true,'connectionId',c.id,'teamId',c.non_secret_config->>'team_id',\n  'channelId',p_channel_id,'oldest',to_char(extract(epoch from p_start),'FM999999999999.000000'),\n  'latest',to_char(extract(epoch from p_end),'FM999999999999.000000'),\n  'consentReference','learn-slack-import:'||p_request_id::text,'expiresAt',clock_timestamp()+interval '24 hours','maxPages',p_max_pages);\n checkpoint:='{}'::jsonb; -- Worker creates the exact canonical scope key.\n select * into tc from public.tenant_connectors where id=tc.id and tenant_id=p_tenant_id for update;\n if not found or not tc.enabled or tc.status<>'active' then raise exception 'Slack connector changed' using errcode='55000'; end if;\n update public.connector_accounts set settings=settings||jsonb_build_object('slack_history',scope),sync_cursor=checkpoint where id=aid;\n insert into public.platform_jobs(id,tenant_id,connector_id,job_type,job_key,status,max_attempts,available_at,payload,created_by)\n  values(jid,p_tenant_id,'slack','slack.history_sync','slack.history:'||aid::text,'queued',5,clock_timestamp(),\n   jsonb_build_object('connector_account_id',aid),auth.uid());\n insert into public.slack_history_imports(id,tenant_id,account_id,job_id,approved_by,definition,previous_state)\n  values(p_request_id,p_tenant_id,aid,jid,auth.uid(),definition,previous_state);\n return jsonb_build_object('requestId',p_request_id,'accountId',aid,'jobId',jid,'reused',false);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "slack_history_commit_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_account_id uuid, p_expected jsonb, p_next jsonb, p_records jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.slack_history_commit_page(p_tenant_id uuid, p_job_id uuid, p_account_id uuid, p_expected jsonb, p_next jsonb, p_records jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n a public.connector_accounts%rowtype;\n cfg jsonb;\n c public.tenant_connectors%rowtype;\n r jsonb;\n sid uuid;\n scope_identity jsonb;\n version_hash text;\n provider_updated numeric;\n current_version text;\n seen text[]:=array[]::text[];\nbegin\n if p_tenant_id is null or p_job_id is null or p_account_id is null then raise exception 'history_identity_required'; end if;\n if auth.role() is distinct from 'service_role' then raise exception 'history_service_role_required'; end if;\n if jsonb_typeof(p_expected) is distinct from 'object' or jsonb_typeof(p_next) is distinct from 'object'\n  or not (p_expected ?& array['scopeKey','cursor','pages','complete'])\n  or not (p_next ?& array['scopeKey','cursor','pages','complete'])\n  or jsonb_typeof(p_expected->'pages') is distinct from 'number'\n  or jsonb_typeof(p_next->'pages') is distinct from 'number'\n  or jsonb_typeof(p_expected->'complete') is distinct from 'boolean'\n  or jsonb_typeof(p_next->'complete') is distinct from 'boolean'\n  or (p_expected->>'pages') !~ '^[0-9]+$' or (p_next->>'pages') !~ '^[0-9]+$'\n  or jsonb_typeof(p_expected->'scopeKey') is distinct from 'string'\n  or jsonb_typeof(p_next->'scopeKey') is distinct from 'string'\n  or jsonb_typeof(p_expected->'cursor') not in ('null','string')\n  or jsonb_typeof(p_next->'cursor') not in ('null','string')\n  or (select count(*) from jsonb_object_keys(p_expected))<>4\n  or (select count(*) from jsonb_object_keys(p_next))<>4\n  or (p_expected->>'pages')::integer<0\n then raise exception 'history_checkpoint_invalid'; end if;\n -- Lock authoritative job and account; concurrent checkpoint or revocation is\n -- serialised. The worker's own lifecycle owns completion/retry/dead-letter.\n perform 1 from public.platform_jobs where id=p_job_id and tenant_id=p_tenant_id\n  and status='running' and job_type='slack.history_sync'\n  and payload->>'connector_account_id'=p_account_id::text for update;\n if not found then raise exception 'history_job_unavailable'; end if;\n select * into a from public.connector_accounts where id=p_account_id and tenant_id=p_tenant_id for update;\n if not found or a.status<>'active' then raise exception 'history_account_unavailable'; end if;\n select * into c from public.tenant_connectors where id=a.tenant_connector_id and tenant_id=p_tenant_id for update;\n if not found or c.connector_id<>'slack' or not c.enabled or c.status<>'active' then raise exception 'history_connector_unavailable'; end if;\n cfg=a.settings->'slack_history';\n if cfg is null or cfg->'approved' is distinct from 'true'::jsonb\n  or jsonb_typeof(cfg->'maxPages') is distinct from 'number'\n  or length(btrim(cfg->>'consentReference')) not between 1 and 2000\n  or coalesce(cfg->>'maxPages','') !~ '^[1-9]$|^10$' or coalesce(cfg->>'consentReference','')=''\n  or coalesce(cfg->>'teamId','') !~ '^T[A-Z0-9]+$'\n  or coalesce(cfg->>'channelId','') !~ '^C[A-Z0-9]+$'\n  or coalesce(cfg->>'oldest','') !~ '^\\d{1,12}\\.\\d{1,6}$'\n  or coalesce(cfg->>'latest','') !~ '^\\d{1,12}\\.\\d{1,6}$'\n  or (cfg->>'oldest')::numeric>(cfg->>'latest')::numeric\n  or (cfg->>'latest')::numeric-(cfg->>'oldest')::numeric>86400\n  or cfg->>'expiresAt' is null or (cfg->>'expiresAt')::timestamptz<=clock_timestamp()\n then raise exception 'history_scope_unavailable'; end if;\n -- Recheck the credential connection inside the same transaction as publication.\n -- A revoke after the HTTP response must not publish against a disabled connection.\n perform 1 from public.provider_connections where id=(cfg->>'connectionId')::uuid\n  and tenant_id=p_tenant_id and provider='slack' and status='configured'\n  and revoked_at is null and non_secret_config->>'team_id'=cfg->>'teamId' for share;\n if not found then raise exception 'history_connection_unavailable'; end if;\n scope_identity=jsonb_build_array(p_tenant_id::text,cfg->>'teamId',cfg->>'channelId',cfg->>'oldest',cfg->>'latest',cfg->>'consentReference');\n if (p_expected->>'scopeKey')::jsonb is distinct from scope_identity\n  or p_next->>'scopeKey' is distinct from p_expected->>'scopeKey'\n  or (p_next->>'pages')::integer<>(p_expected->>'pages')::integer+1\n  or (p_next->>'pages')::integer>least(10,(cfg->>'maxPages')::integer)\n  or (p_expected->>'complete')::boolean\n  or p_next->>'complete' not in ('true','false')\n  or (p_next->>'complete')::boolean and p_next->>'cursor' is not null\n  or not (p_next->>'complete')::boolean and coalesce(p_next->>'cursor','')=''\n  or length(coalesce(p_next->>'cursor',''))>1024\n  or p_next->>'cursor' is not null and p_next->>'cursor'=p_expected->>'cursor'\n  or length(coalesce(p_expected->>'cursor',''))>1024\n then raise exception 'history_checkpoint_invalid'; end if;\n if a.sync_cursor is distinct from p_expected then\n  if a.sync_cursor<>'{}'::jsonb or p_expected->>'cursor' is not null\n   or (p_expected->>'pages')::integer<>0 then raise exception 'history_checkpoint_conflict'; end if;\n end if;\n if jsonb_typeof(p_records) is distinct from 'array' or jsonb_array_length(p_records)>15 then raise exception 'history_page_invalid'; end if;\n for r in select value from jsonb_array_elements(p_records) loop\n  if r->>'tenant_id' is distinct from p_tenant_id::text\n   or r->>'channel_id' is distinct from cfg->>'channelId'\n   or r->>'source_external_id' is distinct from concat(cfg->>'teamId',':',cfg->>'channelId',':',r->>'provider_timestamp')\n   or coalesce(r->>'provider_timestamp','') !~ '^\\d{1,12}\\.\\d{1,6}$'\n   or (r->>'provider_timestamp')::numeric<(cfg->>'oldest')::numeric\n   or (r->>'provider_timestamp')::numeric>(cfg->>'latest')::numeric\n   or r->>'provider_timestamp'=any(seen)\n   or r->>'thread_timestamp' is not null and r->>'thread_timestamp' !~ '^\\d{1,12}\\.\\d{1,6}$'\n   or jsonb_typeof(r->'provider_payload') is distinct from 'object'\n   or octet_length((r->'provider_payload')::text)>262144\n   or r->'provider_payload'->>'ts' is distinct from r->>'provider_timestamp'\n   or r->'provider_payload'->>'text' is distinct from r->>'text'\n   or r->'provider_payload'->'edited' is not null and (coalesce(r->'provider_payload'->'edited'->>'ts','') !~ '^\\d{1,12}\\.\\d{1,6}$')\n   or r->'provider_payload'->>'thread_ts' is distinct from r->>'thread_timestamp'\n   or jsonb_typeof(r->'text') is distinct from 'string' or length(r->>'text')>40000\n  then raise exception 'history_record_invalid'; end if;\n  seen=array_append(seen,r->>'provider_timestamp');\n  version_hash=encode(sha256(convert_to((r->'provider_payload')::text,'UTF8')),'hex');\n  provider_updated=coalesce(r->'provider_payload'->'edited'->>'ts',r->>'provider_timestamp')::numeric;\n  if provider_updated<(r->>'provider_timestamp')::numeric then raise exception 'history_edit_timestamp_invalid'; end if;\n  sid=md5(p_tenant_id::text||':'||(r->>'source_external_id'))::uuid;\n  insert into public.slack_messages(id,tenant_id,source_external_id,team_id,channel_id,provider_timestamp,thread_timestamp,message_text,provider_payload,source_version,source_updated_at)\n   values(sid,p_tenant_id,r->>'source_external_id',cfg->>'teamId',cfg->>'channelId',r->>'provider_timestamp',r->>'thread_timestamp',r->>'text',r->'provider_payload',version_hash,provider_updated)\n   on conflict(tenant_id,source_external_id) do update set message_text=excluded.message_text,thread_timestamp=excluded.thread_timestamp,provider_payload=excluded.provider_payload,source_version=excluded.source_version,source_updated_at=excluded.source_updated_at,updated_at=now()\n   where slack_messages.source_updated_at<=excluded.source_updated_at and slack_messages.source_version is distinct from excluded.source_version;\n  insert into public.slack_message_versions(tenant_id,message_id,source_version,provider_payload)\n   values(p_tenant_id,sid,version_hash,r->'provider_payload') on conflict do nothing;\n  select source_version into current_version from public.slack_messages where id=sid and tenant_id=p_tenant_id;\n  if current_version<>version_hash then continue; end if; -- Older replay is retained, not made current.\n  -- Reuse the single existing interaction/observation engine. No AI execution,\n  -- event fan-out or consequential follow-on jobs are introduced by this page.\n  insert into public.interactions(tenant_id,source_connector_id,source_type,source_table,source_id,source_external_id,interaction_type,direction,occurred_at,body_preview,metadata)\n   values(p_tenant_id,'slack','chat','slack_messages',sid,r->>'source_external_id','slack_message','unknown',to_timestamp((r->>'provider_timestamp')::numeric),left(r->>'text',2000),jsonb_build_object('channel_id',cfg->>'channelId','coverage','bounded_history_page','threads','unverified','source_version',version_hash))\n   on conflict(tenant_id,source_table,source_id) do update set body_preview=excluded.body_preview,metadata=interactions.metadata||excluded.metadata,\n    processing_status=case when interactions.metadata->>'source_version' is distinct from excluded.metadata->>'source_version' then 'pending' else interactions.processing_status end\n   where interactions.metadata->>'source_version' is distinct from excluded.metadata->>'source_version';\n end loop;\n update public.connector_accounts set sync_cursor=p_next where id=p_account_id and tenant_id=p_tenant_id;\n return true;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "slack_version_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.slack_version_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin raise exception 'Slack source versions are immutable' using errcode='55000'; end $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ]
+}

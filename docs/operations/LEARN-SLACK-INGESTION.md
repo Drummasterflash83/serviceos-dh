@@ -6,8 +6,10 @@ The registered `slack.history_sync` worker now has a real server transport. It
 uses the existing `provider_secret_read` broker for the tenant's `slack/bot_token`
 secret. It does not accept a token or URL from the job, use environment-wide
 credentials, or fall back to either notification bot. No live Slack connection
-was found in the Drummonds registries checked on 9 October. This implementation
-has not been deployed or exercised with a live Slack credential.
+was found in the Drummonds registries checked on 9 October. The transport has not
+been deployed or exercised with a live Slack credential. Its storage and approval
+dependencies are now installed and verified in TEST; see
+[release 009 and actual signed-in acceptance](LEARN-TEST-SLACK.md).
 
 This is one approved internal public channel, one window of at most 24 hours,
 and an explicit budget of 1–10 pages. Each job imports at most one page of 15

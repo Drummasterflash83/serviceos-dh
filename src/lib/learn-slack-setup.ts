@@ -119,7 +119,7 @@ export async function startSlackImport(
   });
   if (error)
     throw Error(
-      error.code === "40001"
+      ["40001", "PT409"].includes(error.code ?? "")
         ? "Connection or request changed. Reload setup before continuing."
         : error.code === "55000"
           ? "This channel has an active or incomplete import, or its connector is disabled. Review the existing import before starting another."

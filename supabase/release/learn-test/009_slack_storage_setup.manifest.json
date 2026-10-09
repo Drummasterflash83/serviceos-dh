@@ -1,0 +1,58 @@
+{
+  "version": "learn-slack-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_storage_setup_v1",
+  "sha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+  "tables": [
+    "tenant_connectors",
+    "connector_accounts",
+    "provider_connections",
+    "provider_connection_events",
+    "slack_messages",
+    "slack_message_versions",
+    "slack_history_imports"
+  ],
+  "functions": [
+    "slack_version_immutable",
+    "slack_history_commit_page",
+    "learn_slack_start_import"
+  ],
+  "sources": [
+    {
+      "path": "supabase/migrations/20260708120000_platform_connector_config.sql",
+      "sha256": "8040064a3cfed1a7ae8bd7166ae9a0465d60623ad66e3c0b509c48fe3c0462c4",
+      "selectedSha256": "e7c4ee544ec14c7efb79b78ac5b5f30300e1b7d9a8a90b75b9155e9f45e51e95",
+      "selection": "connector/account definitions, indexes, triggers and RLS only; exclude the Drummonds Simwood seed"
+    },
+    {
+      "path": "supabase/migrations/20260811120000_provider_connections.sql",
+      "sha256": "3e0f0b5d900f0f6687dad926e266f0903fc364ba96b850639e71ba9542bb2b9d",
+      "selectedSha256": "3e0f0b5d900f0f6687dad926e266f0903fc364ba96b850639e71ba9542bb2b9d",
+      "selection": "non-secret provider metadata and audit table; no Vault broker"
+    },
+    {
+      "path": "supabase/migrations/20261029130000_learn_slack_history.sql",
+      "sha256": "8e2517ca0f01b5ef660b5e431bae7988704f3c08fb6bfadd6a2e3cd837b26656",
+      "selectedSha256": "3310b780c4bc33f923736696a1ba5ba190d8f5d7e8949a606d91b0326f82a091",
+      "selection": "retained Slack messages/versions and scoped atomic publication"
+    },
+    {
+      "path": "supabase/migrations/20261029140000_learn_slack_import_setup.sql",
+      "sha256": "f598f6a99da6a886cb6df70cd790fbeafa75cbad69799088e81dc0b11342acde",
+      "selectedSha256": "7c30e93f5f9791a9171c5e8e47c02e6bdc73e55cd873ea9f92fc40b261d33ec9",
+      "selection": "owner/admin approval and atomic durable enqueue"
+    },
+    {
+      "path": "supabase/migrations/20261030090000_learn_slack_import_integrity.sql",
+      "sha256": "0e56a4308dcd350493da2b59d92ae3d2f4edb80e4936f9bde06f887d16829dee",
+      "selectedSha256": "3b2c53d9b1c99fadcb64aa0ca6c89b8e2b4b3b8a4699c8fd1fe454f5380b91c8",
+      "selection": "source/approval retention, HTTP conflicts, serialized approval and restricted definer publication"
+    }
+  ],
+  "existingChanges": [],
+  "deferred": [
+    "Provider Vault broker/credential setup and worker/queue deployment.",
+    "Actual Slack authorization and source acceptance; threads, continuous ingestion and large historical imports."
+  ],
+  "acceptanceNote": "Storage/setup prerequisite only. No production, tenant seeds, credentials, approvals, queue jobs or provider traffic created by installation."
+}

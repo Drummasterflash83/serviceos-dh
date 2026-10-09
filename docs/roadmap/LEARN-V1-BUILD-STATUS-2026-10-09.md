@@ -357,7 +357,8 @@ pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIO
 Raw interaction reads and one of ten inspected LEARN RPC dependencies remain
 unavailable. The scorecard draft reader/save, publication/period reader and membership
 reader are installed in TEST, now joined by performance review in release 006.
-Release 007 adds work-history and collection; Slack setup remains outstanding. Allkin's last verified Vercel inventory has only the production project,
+Release 007 adds work-history and collection; release 009 below adds Slack setup/storage.
+Allkin's last verified Vercel inventory has only the production project,
 so TEST frontend deployment is still outstanding. No real customer data, production
 state, provider traffic or stored audio was changed by these TEST releases.
 
@@ -481,3 +482,15 @@ Browser testing fixed date-only assessment inputs and a roughly 70ms server-cloc
 lead that had made valid source status appear unavailable. No expiry extension or
 provider operation was introduced. Main/preview builds and type checks passed.
 See [actual browser acceptance and remaining scope](../operations/LEARN-TEST-BROWSER.md).
+
+## Slack storage/setup milestone — 22:05–22:08 UTC
+
+Release 009 passed hosted rollback rehearsal, installed with exact catalog and
+source preservation, and passed actual signed-in synthetic acceptance. TEST now
+has 87 public tables and ten receipts. Owner approval, idempotent retry, HTTP 409,
+service-only atomic source/version/interaction publication, stale-cursor denial
+and tenant isolation are verified. Evidence remains, with synthetic jobs cancelled,
+connections disabled and logins/approval access revoked. This does not connect a
+Slack workspace: broker/worker deployment, real credentials/permission, threads,
+continuous ingestion and large historical imports remain. See
+[Slack release evidence and limits](../operations/LEARN-TEST-SLACK.md).

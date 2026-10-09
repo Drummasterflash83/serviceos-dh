@@ -116,3 +116,5 @@ def verify_authority_races(run, docker, target, database):
     print('Membership, phantom identity, team, grant, timezone, profile move and cross-tenant preview mutations join the authority lock: PASS',flush=True)
     refused(run('begin isolation level repeatable read;set role service_role;'+action(878),False),'fresh read-committed snapshot')
     print('A stale repeatable-read snapshot cannot establish action authority: PASS',flush=True)
+
+    return {"Held":Held,"race_after":race_after,"refused":refused}

@@ -1,0 +1,18 @@
+{
+  "version": "learn-test-slack-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "d4b762ace7c9ccecba29890649e40d7e1501aa5f6e1c2b711970fb55368d305e",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T22:05:10.110931+00:00",
+  "observedAfter": "2026-10-09T22:05:14.83819+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "fdcb8f7f76e0c66419b6c80df092731878491a58f43c7947a9012d987ab264db",
+  "afterCatalogSha256": "fdcb8f7f76e0c66419b6c80df092731878491a58f43c7947a9012d987ab264db",
+  "limitations": [
+    "TEST rollback rehearsal only. No installation, source rows, approvals, credentials or provider operations.",
+    "Catalog and isolated SQL tests do not replace real signed-in user acceptance."
+  ]
+}

@@ -268,7 +268,54 @@ try:
                     print('Concurrent action retains exactly one new capture and one attributed transition: PASS',flush=True)
                     import runpy
                     concurrency=runpy.run_path(str(ROOT/'scripts/verify/learn-actions-concurrency.py'))
-                    concurrency['verify_authority_races'](run,DOCKER,TARGET,DB)
+                    race_tools=concurrency['verify_authority_races'](run,DOCKER,TARGET,DB)
+                    if '--slack' in sys.argv:
+                        bundle_s=json.loads(node("import {checkedSlack} from './scripts/verify/learn-slack-bundle.mjs';process.stdout.write(JSON.stringify(checkedSlack()));"))
+                        slack_sql="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(bundle_s['manifest']['sha256'])+';'+bundle_s['sql']
+                        before_s=json.loads(run(catalog_sql).stdout)
+                        apply("alter table of_test_deploy.migrations add constraint slack_receipt_failure check(migration_name<>'learn_slack_storage_setup_v1');",'Injected Slack receipt failure')
+                        failed=run(slack_sql,False)
+                        assert failed.returncode and b'slack_receipt_failure' in failed.stderr,failed.stderr.decode()[-1000:]
+                        rolled_s=json.loads(run(catalog_sql).stdout)
+                        assert {k:v for k,v in rolled_s.items() if k!='observedAt'}=={k:v for k,v in before_s.items() if k!='observedAt'},'Slack failure changed existing catalog'
+                        apply('alter table of_test_deploy.migrations drop constraint slack_receipt_failure;','Atomic Slack rollback preserves prior catalog')
+                        rehearsal=node("import {slackRehearsalSql} from './scripts/verify/learn-test-slack-rehearsal.mjs';process.stdout.write(slackRehearsalSql());")
+                        apply('set role postgres;'+rehearsal,'Exact hosted Slack rehearsal executes and rolls back')
+                        assert json.loads(run(catalog_sql).stdout)['tables']==before_s['tables']
+                        apply(slack_sql,'Slack dependencies, retained sources and import setup as non-superuser')
+                        after_s=json.loads(run(catalog_sql).stdout)
+                        assert [t for t in after_s['tables'] if t['name'] not in bundle_s['manifest']['tables']]==before_s['tables'],'Slack changed existing source/queue tables'
+                        assert after_s['helpers']==before_s['helpers'] and after_s['foundationGuard']==before_s['foundationGuard']
+                        assert run('select count(*) from slack_history_imports').stdout.strip()==b'0'
+                        assert run('select count(*) from tenant_connectors').stdout.strip()==b'0','Environment seed leaked into release'
+                        slack_query=node("import {SLACK_FUNCTION_QUERY} from './scripts/verify/learn-slack-catalog.mjs';process.stdout.write(SLACK_FUNCTION_QUERY);")
+                        expected={'sourceSha256':bundle_s['manifest']['sha256'],'tables':[t for t in after_s['tables'] if t['name'] in bundle_s['manifest']['tables']],'functions':json.loads(run(slack_query).stdout)}
+                        expected_path=ROOT/'supabase/release/learn-test/009_slack_storage_setup.expected.json'
+                        if '--write-slack-expected' in sys.argv:
+                            expected_path.write_text(json.dumps(expected,indent=2)+'\n')
+                        else:
+                            assert expected==json.loads(expected_path.read_text()),'Slack definitions differ from reviewed projection'
+                        apply((ROOT/'scripts/verify/learn-slack-release.assert.sql').read_text(),'Real-schema Slack approval, atomic page publication, retention and tenant/role checks')
+                        duplicate=run(slack_sql,False)
+                        assert duplicate.returncode and b'Slack storage release already exists' in duplicate.stderr
+                        print('Duplicate Slack installation refused: PASS',flush=True)
+                        Held=race_tools['Held'];race_after=race_tools['race_after'];refused=race_tools['refused']
+                        run("update profiles set role='owner' where id=verify.id(911)")
+                        def slack_approve(request,channel):
+                            return "set request.jwt.claim.sub='f0000000-0000-0000-0000-000000000911';select learn_slack_start_import(verify.id(901),verify.id("+str(request)+"),verify.id(921),updated_at::text,'"+channel+"','2026-01-01','2026-01-02',2,'Synthetic concurrent approval') from provider_connections where id=verify.id(921);"
+                        with Held("reset role;update profiles set role='viewer' where id=verify.id(911);") as held:
+                            refused(race_after(held,slack_approve(941,'CREVOKE'),'authenticated'),'Company owner/admin access required')
+                        assert run("select count(*)=0 from slack_history_imports where id=verify.id(941)").stdout.strip()==b't'
+                        run("update profiles set role='owner' where id=verify.id(911)")
+                        with Held('set role authenticated;'+slack_approve(942,'CFIRST')) as held:
+                            refused(run("update profiles set role='viewer' where id=verify.id(911);",False),'Work or authority is changing')
+                            held.commit()
+                        run("update profiles set role='viewer' where id=verify.id(911)")
+                        refused(run('set role authenticated;'+slack_approve(943,'CAFTER'),False),'Company owner/admin access required')
+                        refused(run('begin isolation level repeatable read;set role authenticated;'+slack_approve(944,'CSTALE'),False),'fresh read-committed snapshot')
+                        print('Slack approval/revocation in both controlled orderings and stale-snapshot refusal: PASS',flush=True)
+
+
 
 
 
