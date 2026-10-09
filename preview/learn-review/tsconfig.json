@@ -14,9 +14,15 @@
     "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {
-      "@/lib/learn-assessment-period": ["../../src/lib/learn-assessment-period.ts"],
-      "@/lib/learn-scorecard-publication": ["../../src/lib/learn-scorecard-publication.ts"],
-      "@/lib/learn-work-collection": ["../../src/lib/learn-work-collection.ts"],
+      "@/lib/learn-assessment-period": [
+        "../../src/lib/learn-assessment-period.ts"
+      ],
+      "@/lib/learn-scorecard-publication": [
+        "../../src/lib/learn-scorecard-publication.ts"
+      ],
+      "@/lib/learn-work-collection": [
+        "../../src/lib/learn-work-collection.ts"
+      ],
       "@/lib/auth": [
         "auth.tsx"
       ],
@@ -64,6 +70,9 @@
       ],
       "@/lib/openfolk": [
         "../../src/lib/openfolk.ts"
+      ],
+      "@/lib/learn-slack-threads": [
+        "../../src/lib/learn-slack-threads.ts"
       ]
     },
     "allowImportingTsExtensions": true,

@@ -381,6 +381,11 @@ try:
                                 duplicate=run('set role postgres;'+thread_sql,False)
                                 assert duplicate.returncode and b'Slack thread release already exists' in duplicate.stderr
                                 apply((ROOT/'scripts/verify/learn-slack-thread-storage.assert.sql').read_text(),'Thread consent, source association, atomic checkpoint, replay and preservation')
+                                if '--slack-operator' in sys.argv:
+                                    operator_before=json.loads(run(catalog_sql).stdout)
+                                    apply('set role postgres;'+(ROOT/'supabase/migrations/20261030140000_learn_slack_operator_reads.sql').read_text(),'Company-scoped Slack operator reads')
+                                    assert json.loads(run(catalog_sql).stdout)['tables']==operator_before['tables'],'Operator reads changed existing tables or privileges'
+                                    apply((ROOT/'scripts/verify/learn-slack-operator-reads.assert.sql').read_text(),'Observed thread paging, queue status, disabled connection retention and company isolation')
 
 
 

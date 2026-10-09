@@ -291,3 +291,39 @@ were supplied to the real service RPC; the deployed worker exercised refusal and
 saved-page recovery. Live provider permission and reply behavior, operator thread
 discovery/import controls, continuous history, workspace pacing and recovery UI
 remain required. No production change or schedule was made.
+
+## Thread operator controls — local UI and read models
+
+The Slack dialog now separates channel messages and thread replies. The thread
+view browses retained channels, including disabled ones, and pages through observed
+parents. It shows each thread's latest approved window, captured-page count,
+queue status and safe error reference. A page limit is never presented as a known
+message total; window completion applies only to that observed thread and window.
+
+Owners/admins can select up to twenty displayed threads and approve a shared time
+window and per-thread page limit. Each selected thread uses the existing release-011
+approval RPC with its own immutable request ID, reviewed source version and
+connection revision. The form freezes after submission, reports partial confirmation,
+stops at an uncertain response, and retries only unconfirmed requests with the same
+IDs. Closing/reloading the panel does not retain its in-memory request review;
+operators are told to inspect the latest status before preparing another request.
+This is not a durable browser outbox or a full queue recovery interface.
+
+The draft `20261030140000_learn_slack_operator_reads.sql` adds two company-scoped,
+read-only RPCs. It does not broaden raw queue/table grants or return credential
+references, provider payloads or arbitrary error prose. Parent discovery prefers
+stored root evidence and deduplicates replies; it describes observed current
+sources, not every thread or every prior import revision.
+
+Local SQL checks passed for paging, deduplication, status projection, disabled
+connections, foreign-company refusal and unchanged existing tables/privileges and
+email evidence. Eleven setup/thread client tests, both application/preview
+TypeScript checks and the preview build passed. Browser verification used synthetic
+fixtures: three selected requests, a simulated lost second response recovered by
+same-ID retry, queued status after refresh, disabled import controls with visible
+evidence, and explicit unavailable state on read failure.
+
+This UI/read-model increment has not been released to hosted TEST or production.
+TEST remains release 011/runtime v4. Its next step is a reviewed reader release and
+actual authenticated UI acceptance. Live provider access, continuous ingestion,
+workspace pacing and full recovery controls remain separate requirements.

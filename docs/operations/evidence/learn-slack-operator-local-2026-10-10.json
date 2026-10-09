@@ -1,0 +1,32 @@
+{
+  "version": "learn-slack-operator-local/1",
+  "observedAt": "2026-10-09T23:19:58.583910+00:00",
+  "state": "local_verified_not_deployed",
+  "clientTests": 11,
+  "sql": "Disposable offline PostgreSQL: existing release-011 projection, company-scoped read RPCs, deduplicated keyset pages, queue progress, disabled connection evidence and unchanged existing table permissions/source email fixture.",
+  "browserChecks": [
+    "Dedicated channel and thread views",
+    "Three selected thread requests confirmed and queued status visible after refresh",
+    "Lost second response shows one of three confirmed; same-ID retry reaches three of three",
+    "Disabled connection keeps evidence visible and disables approval controls",
+    "Failed read is explicitly unavailable, not an empty result"
+  ],
+  "screenshots": [
+    "learn-slack-operator-controls-2026-10-10.jpg",
+    "learn-slack-operator-retry-2026-10-10.jpg"
+  ],
+  "logSha256": {
+    "sql": "b6e453c3ffef1c5db0c15ef6dfde51813c40eaa2b2fc1faa796451c768b123a4",
+    "client": "5067dfeee88a93a551e67de663b03c54dd658ae703acefd7851ac82d0709f423",
+    "appTypes": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "previewTypes": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "previewBuild": "1717827c87cacaed429dbb7e3f7b40f65f981505382daa139f0434d37e3eee8c"
+  },
+  "limitations": [
+    "Synthetic browser fixtures do not establish hosted Auth/RPC UI access or provider ingestion.",
+    "Reader migration is not deployed; hosted TEST remains release 011/runtime v4.",
+    "Pending batch review is in memory; closing/reloading requires checking retained latest status before preparing another request.",
+    "The thread list reflects observed current sources and latest imports, not every historical thread or every prior approval revision.",
+    "Automatic discovery, continuous coverage, workspace pacing and complete recovery controls remain required."
+  ]
+}

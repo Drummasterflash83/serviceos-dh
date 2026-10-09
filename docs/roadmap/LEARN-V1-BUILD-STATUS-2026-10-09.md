@@ -575,3 +575,17 @@ Next ingestion work remains operator thread discovery/import controls, actual
 Slack access, continuous/multi-window backfill, workspace pacing and recovery UI.
 This completes the thread release milestone, not full Slack ingestion or LEARN V1.
 See [current TEST verification](../operations/LEARN-SLACK-INGESTION.md#current-test-state--thread-release-011-10-october).
+
+## Slack thread operator controls — local, 10 October
+
+Added retained-channel browsing, observed-thread paging, latest import progress,
+and multi-thread approval through the existing thread approval contract. Same-ID
+retries preserve partially confirmed batches while the review remains open. Channel
+history and thread replies have separate views. Disabled connections keep evidence
+visible, and unavailable reads do not appear as empty or complete coverage.
+
+The two draft read RPCs passed isolated company/queue-permission/pagination and
+preservation checks. Eleven client tests, application/preview typechecks, the preview
+build and synthetic browser scenarios passed. No hosted schema, real source import,
+provider request or production change occurred. TEST remains release 011/runtime
+v4; reader release and actual signed-in UI acceptance are next.

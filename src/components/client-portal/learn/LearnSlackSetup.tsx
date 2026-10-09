@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { LearnSlackThreads } from "./LearnSlackThreads";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   loadSlackConnections,
@@ -13,6 +14,7 @@ const local = (ms: number) => {
   return new Date(ms - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 };
 export function LearnSlackSetup({ tenantId, canEdit }: { tenantId: string; canEdit: boolean }) {
+  const [view, setView] = useState<"channel" | "threads">("channel");
   const [connections, setConnections] = useState<SlackConnectionOption[] | null>(null),
     [loading, setLoading] = useState(true),
     [notice, setNotice] = useState("");
@@ -97,114 +99,152 @@ export function LearnSlackSetup({ tenantId, canEdit }: { tenantId: string; canEd
   }
   return (
     <div className="space-y-4">
-      <p>
-        Use an existing company Slack connection to import one public channel for a chosen period.
-        Existing emails, calls and stored messages remain in place.
-      </p>
-      {loading ? (
-        <p role="status">Reading Slack connections…</p>
-      ) : connections?.length === 0 ? (
-        <p>
-          No configured company Slack connection is available. A company Slack bot connection must
-          be configured before importing. This form does not create credentials. Notification
-          connections alone do not establish history access.
-        </p>
-      ) : (
-        connections && (
-          <p>
-            Workspace: <strong>{connections[0].name}</strong>
-          </p>
-        )
-      )}
-      {!submitted && (
-        <button className="cp-secondary" onClick={() => void load()} disabled={loading}>
-          Reload connections
-        </button>
-      )}
-      {!!connections?.length && (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void submit();
-          }}
-          className="space-y-4"
+      <div role="group" aria-label="Slack import type" className="flex gap-2">
+        <button
+          type="button"
+          id="slack-channel-tab"
+          aria-pressed={view === "channel"}
+          aria-controls="slack-channel-panel"
+          className={view === "channel" ? "cp-primary" : "cp-secondary"}
+          onClick={() => setView("channel")}
         >
-          <fieldset disabled={!canEdit || busy || submitted} className="space-y-3">
-            <label className="block">
-              Public channel link or ID
-              <input
-                className="block w-full rounded border p-2"
-                value={channel}
-                onChange={(e) => setChannel(e.target.value)}
-                placeholder="https://app.slack.com/client/T…/C…"
-                required
-              />
-            </label>
+          Channel messages
+        </button>
+        <button
+          type="button"
+          id="slack-threads-tab"
+          aria-pressed={view === "threads"}
+          aria-controls="slack-threads-panel"
+          className={view === "threads" ? "cp-primary" : "cp-secondary"}
+          onClick={() => setView("threads")}
+        >
+          Thread replies
+        </button>
+      </div>
+      <div
+        id="slack-channel-panel"
+        role="region"
+        aria-labelledby="slack-channel-tab"
+        hidden={view !== "channel"}
+        className="space-y-4"
+      >
+        <p>
+          Use an existing company Slack connection to import one public channel for a chosen period.
+          Existing emails, calls and stored messages remain in place.
+        </p>
+        {loading ? (
+          <p role="status">Reading Slack connections…</p>
+        ) : connections?.length === 0 ? (
+          <p>
+            No configured company Slack connection is available. A company Slack bot connection must
+            be configured before importing. This form does not create credentials. Notification
+            connections alone do not establish history access.
+          </p>
+        ) : (
+          connections && (
             <p>
-              Start and end use your device’s local time. Choose a past period of up to 24 hours.
+              Workspace: <strong>{connections[0].name}</strong>
             </p>
-            <label className="block">
-              From
-              <input
-                type="datetime-local"
-                className="block w-full rounded border p-2"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-                required
-              />
-            </label>
-            <label className="block">
-              Until
-              <input
-                type="datetime-local"
-                className="block w-full rounded border p-2"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-                required
-              />
-            </label>
-            <label className="block">
-              Page limit
-              <input
-                type="number"
-                min={1}
-                max={10}
-                step={1}
-                className="block w-full rounded border p-2"
-                value={pages}
-                onChange={(e) => setPages(Number(e.target.value))}
-                required
-              />
-            </label>
-            <p>
-              Each page contains up to 15 messages. Reaching the limit leaves the period incomplete.
-              Threads, private or shared channels, and attachment downloads are not included in this
-              import.
-            </p>
-            <label className="block">
-              Reason for this import
-              <textarea
-                className="block w-full rounded border p-2"
-                value={reason}
-                maxLength={1000}
-                onChange={(e) => setReason(e.target.value)}
-                required
-              />
-            </label>
-          </fieldset>
-          <button className="cp-secondary" disabled={!canEdit || busy || queued} type="submit">
-            {queued
-              ? "Request recorded"
-              : busy
-                ? "Queueing…"
-                : submitted
-                  ? "Retry same request"
-                  : "Approve and queue import"}
+          )
+        )}
+        {!submitted && (
+          <button className="cp-secondary" onClick={() => void load()} disabled={loading}>
+            Reload connections
           </button>
-        </form>
-      )}
-      {!canEdit && <p>Only your company’s owner or admin can approve an import.</p>}
-      {notice && <p role="status">{notice}</p>}
+        )}
+        {!!connections?.length && (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submit();
+            }}
+            className="space-y-4"
+          >
+            <fieldset disabled={!canEdit || busy || submitted} className="space-y-3">
+              <label className="block">
+                Public channel link or ID
+                <input
+                  className="block w-full rounded border p-2"
+                  value={channel}
+                  onChange={(e) => setChannel(e.target.value)}
+                  placeholder="https://app.slack.com/client/T…/C…"
+                  required
+                />
+              </label>
+              <p>
+                Start and end use your device’s local time. Choose a past period of up to 24 hours.
+              </p>
+              <label className="block">
+                From
+                <input
+                  type="datetime-local"
+                  className="block w-full rounded border p-2"
+                  value={start}
+                  onChange={(e) => setStart(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="block">
+                Until
+                <input
+                  type="datetime-local"
+                  className="block w-full rounded border p-2"
+                  value={end}
+                  onChange={(e) => setEnd(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="block">
+                Page limit
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="block w-full rounded border p-2"
+                  value={pages}
+                  onChange={(e) => setPages(Number(e.target.value))}
+                  required
+                />
+              </label>
+              <p>
+                Each page contains up to 15 messages. Reaching the limit leaves the period
+                incomplete. Threads, private or shared channels, and attachment downloads are not
+                included in this import.
+              </p>
+              <label className="block">
+                Reason for this import
+                <textarea
+                  className="block w-full rounded border p-2"
+                  value={reason}
+                  maxLength={1000}
+                  onChange={(e) => setReason(e.target.value)}
+                  required
+                />
+              </label>
+            </fieldset>
+            <button className="cp-secondary" disabled={!canEdit || busy || queued} type="submit">
+              {queued
+                ? "Request recorded"
+                : busy
+                  ? "Queueing…"
+                  : submitted
+                    ? "Retry same request"
+                    : "Approve and queue import"}
+            </button>
+          </form>
+        )}
+        {!canEdit && <p>Only your company’s owner or admin can approve an import.</p>}
+        {notice && <p role="status">{notice}</p>}
+      </div>
+      <div
+        id="slack-threads-panel"
+        role="region"
+        aria-labelledby="slack-threads-tab"
+        hidden={view !== "threads"}
+      >
+        <LearnSlackThreads key={tenantId} tenantId={tenantId} canEdit={canEdit} />
+      </div>
     </div>
   );
 }

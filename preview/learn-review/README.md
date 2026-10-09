@@ -14,6 +14,14 @@ Slack setup also uses synthetic connection metadata and in-memory import receipt
 this local preview never creates a database job or contacts Slack. It exercises
 the actual setup form and client request contract only.
 
+10 October thread controls: open Slack imports, then **Thread replies**. Synthetic
+stored channels and observed parents exercise multiple selection, per-thread
+approval receipts and latest-window progress. `&threads=uncertain` simulates a lost
+second approval response; retry reuses its saved request ID and completes the
+remaining batch. `disabled`, `empty`, `no-threads` and `error` exercise retained
+evidence, empty and failed-read states. These fixtures never create database jobs
+or call Slack; refreshing the browser resets them.
+
 A local, static review of the requested LEARN experience, mounted in the actual baseline ClientPortal and OperatorShell. Baseline:13b554368cda86dfb0a4014d4187b548a8b9de02. This supersedes the rejected4a8a05d preview direction; no publication is authorized.
 
 ClientPortal is copied with three preview-only changes: LEARN immediately after AI Receptionist, an injected LEARN content slot, and a type annotation for the synthetic receptionist-workspace query. Its original sidebar/header/mobile menu remain. OperatorShell is byte-identical. Styles and tenant branding come from the existing source; CSS loads in the normal global-before-lazy-shell order.
