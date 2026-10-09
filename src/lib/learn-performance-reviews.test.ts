@@ -102,9 +102,10 @@ test("review writes retain request identity and compare revision/decision receip
       ),
       /verified/,
     );
+  for (const code of ["PT409", "40001"])
   await assert.rejects(
     reviewPerformanceMeasurement(
-      { rpc: async () => ({ data: null, error: { code: "40001" } }) },
+      { rpc: async () => ({ data: null, error: { code } }) },
       request,
     ),
     /Reload/,

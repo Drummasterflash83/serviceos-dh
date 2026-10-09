@@ -158,6 +158,37 @@ try:
             assert duplicate.returncode and b'Conflict repair receipt already exists' in duplicate.stderr
             assertions=assertions.replace('when serialization_failure',"when sqlstate 'PT409'")
         apply(assertions,'Saved-rule authority, prospective publication and retained membership checks')
+        if '--measurements' in sys.argv:
+            assert '--conflicts' in sys.argv,'Measurement release requires conflict repair'
+            bundle_m=json.loads(node("import {checkedMeasurements} from './scripts/verify/learn-measurements-bundle.mjs';process.stdout.write(JSON.stringify(checkedMeasurements()));"))
+            measure_sql="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(bundle_m['manifest']['sha256'])+';'+bundle_m['sql']
+            before_m=json.loads(run(catalog_sql).stdout)
+            apply("alter table of_test_deploy.migrations add constraint measurement_receipt_failure check(migration_name<>'learn_measurements_reviews_v1');",'Injected measurement receipt failure')
+            failed=run(measure_sql,False)
+            assert failed.returncode and b'measurement_receipt_failure' in failed.stderr,failed.stderr.decode()[-800:]
+            rolled=json.loads(run(catalog_sql).stdout)
+            assert rolled['tables']==before_m['tables'] and rolled['helpers']==before_m['helpers']
+            apply('alter table of_test_deploy.migrations drop constraint measurement_receipt_failure;','Atomic measurement rollback preserves existing schema')
+            apply(measure_sql,'Objective/measurement/review release as non-superuser')
+            after_m=json.loads(run(catalog_sql).stdout)
+            assert [t for t in after_m['tables'] if t['name'] not in bundle_m['manifest']['tables']]==before_m['tables']
+            assert after_m['helpers']==before_m['helpers'] and after_m['foundationGuard']==before_m['foundationGuard']
+            fn_query=node("import {MEASUREMENT_FUNCTION_QUERY} from './scripts/verify/learn-measurements-catalog.mjs';process.stdout.write(MEASUREMENT_FUNCTION_QUERY);")
+            if '--write-measurements-expected' in sys.argv:
+                expected={'sourceSha256':bundle_m['manifest']['sha256'],'tables':[t for t in after_m['tables'] if t['name'] in bundle_m['manifest']['tables']],'functions':json.loads(run(fn_query).stdout)}
+                (ROOT/'supabase/release/learn-test/006_measurements_reviews.expected.json').write_text(json.dumps(expected,indent=2)+'\n')
+            apply((ROOT/'scripts/verify/learn-measurements-release.assert.sql').read_text(),'Measurement correction/review, observed group history, tenant boundaries and evidence retention')
+            import concurrent.futures
+            def review_race(n):
+                return run("set request.jwt.claim.sub='f0000000-0000-0000-0000-000000000511';set role authenticated;select learn_performance_review(verify.id(501),verify.id(542),verify.id("+str(n)+"),1,'confirmed','Concurrent synthetic review');",False)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                raced=list(pool.map(review_race,[601,602]))
+            assert sum(r.returncode==0 for r in raced)==1,'Exactly one competing review must succeed'
+            assert any(b'Review changed; reload' in r.stderr for r in raced),'Competing review must report a revision conflict'
+            assert run("select count(*)=2 from learn_performance_reviews where measurement_id=verify.id(542)").stdout.strip()==b't'
+            print('Concurrent review retains exactly one next revision: PASS',flush=True)
+
+
 
 finally:
     subprocess.run([DOCKER,'rm','-f',TARGET],capture_output=True)

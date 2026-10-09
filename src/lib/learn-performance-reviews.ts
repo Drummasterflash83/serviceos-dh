@@ -120,7 +120,7 @@ export async function reviewPerformanceMeasurement(
   });
   if (error)
     throw Error(
-      error.code === "40001"
+      ["PT409", "40001"].includes(error.code ?? "")
         ? "This observation or review changed. Reload the scorecard before reviewing."
         : error.code === "42501"
           ? "Only a company owner or admin outside preview can review evidence."

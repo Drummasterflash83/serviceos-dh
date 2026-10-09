@@ -1,0 +1,42 @@
+{
+  "version": "learn-test-measurements-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8",
+  "observedAt": "2026-10-09T20:49:32.163Z",
+  "runId": "d3fba654-0588-4b1e-803e-c3d1c10817ed",
+  "state": "requires_inspection",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established",
+    "Signed-in card reader and trusted append: exact scope, idempotency, HTTP 409 conflicts, foreign evidence and unobserved team-period denial",
+    "Owner review and replay, stale/reused request conflicts, viewer/foreign-company denial; actual card reader retains original source time"
+  ],
+  "failure": "Card reader lost correction/review chain",
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_performance_review",
+    "expectedRevision": null
+  },
+  "testAccessRevoked": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "1abec437-aa17-4550-8dff-092842819dcc",
+      "members": 1,
+      "measurements": 2,
+      "reviews": 3,
+      "retained_profiles": 3
+    },
+    {
+      "tenant_id": "adae7b1c-795d-4b6f-853f-ef378aba6d46",
+      "members": 1,
+      "measurements": 0,
+      "reviews": 0,
+      "retained_profiles": 1
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-measurements-fixtures-d3fba654-0588-4b1e-803e-c3d1c10817ed.json",
+  "limitations": [
+    "Marked synthetic records and reviewer identities remain in TEST; synthetic logins are banned and profile roles revoked. No retention guards are disabled.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}

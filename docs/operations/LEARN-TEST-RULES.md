@@ -3,7 +3,9 @@
 Status, 9 October 2026: release `004_rules_membership.sql` was installed in TEST
 at **20:27:31 UTC**. Follow-up `005_scorecard_conflict_codes.sql` was installed at
 **20:37:54 UTC**, and real signed-in acceptance passed at **20:38:14 UTC**.
-TEST now has 62 public tables and six deployment receipts. Production, source
+This milestone had 62 public tables and six deployment receipts. The subsequent
+[measurement/review release](LEARN-TEST-MEASUREMENTS.md) brings TEST to 78 tables
+and seven receipts. Production, source
 communications and recordings were untouched. This is a partial LEARN release;
 measurement collection, full frontend acceptance and provider completeness remain open.
 
@@ -151,13 +153,14 @@ TypeScript checks, and the preview production build passed for this repair.
 
 ## Remaining release gates
 
-Other unreleased LEARN adapters still manually raise `40001` for business conflicts:
-Slack import setup, performance append/review, handoff collection and residence
-collection. Before their hosted release, add a follow-up migration and update their
+Release 006 repairs performance append/review conflicts. Other unreleased LEARN
+adapters still manually raise `40001`: Slack import setup, handoff collection and
+residence collection. Before their hosted release, add a follow-up migration and update their
 client/Edge error handling and real HTTP negative tests. Preserve historical migration
 checksums. Earlier operator/notification modules have the same pattern and need
 separate review; this repair does not claim to fix every application RPC.
 
-Objective/measurement/review schemas, work capture and collectors, source adapters,
-full UI acceptance and provider completeness remain outstanding. The overall
+Objective/measurement/review schemas were installed and verified in release 006.
+Work capture and collectors, source adapters, full UI acceptance and provider
+completeness remain outstanding. The overall
 LEARN V1 goal remains active and incomplete.

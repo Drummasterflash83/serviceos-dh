@@ -2,7 +2,7 @@
 
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
 Those initial audits changed no hosted state. The later **TEST-only metadata release
-and subsequent card/work foundation, rules and conflict-repair installation** are recorded below; production remains untouched.
+and subsequent card/work foundation, rules, conflict-repair and measurement installation** are recorded below; production remains untouched.
 The Vercel CLI refreshed its existing local
 session after a direct request using the old saved access token returned HTTP 403.
 
@@ -18,21 +18,22 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest retained TEST catalog is **2026-10-09 20:38:32 UTC**.
-The [repaired rules catalog](evidence/learn-test-rules-repaired-schema-2026-10-09.json)
+The latest retained TEST catalog is **2026-10-09 20:51:22 UTC**.
+The [measurement catalog](evidence/learn-test-measurements-installed-schema-2026-10-09.json)
 includes the catalog-only readiness report. The foundation and earlier launch
 catalogs remain historical snapshots, not the current installed schema.
 
-- 62 public base tables, all with RLS, plus eight restricted launch views.
+- 78 public base tables, all with RLS, plus eight restricted launch views.
   The 33 new foundation tables have authenticated SELECT and service-role DML.
   Existing raw communications grants and ingestion policies remain unchanged.
 - `customer_cards`, `jobs`, `team_members`, `org_units`, `intelligence_objects`
   and `graph_nodes` now exist. Synthetic signed-in access and company isolation
   passed at 20:12:34 UTC. `interactions` still lacks ordinary-user read authority.
-- Five of ten inspected RPCs now exist: scorecard draft save/read, publication,
-  period-rule reading and membership-history reading. Their signed-in synthetic
-  acceptance passed at 20:38:14 UTC. Performance review, work-history reading, handoff collection, residence
-  collection and Slack setup remain absent/unavailable.
+- Six of ten inspected RPCs now exist: scorecard draft save/read, publication,
+  period-rule reading, membership-history reading and performance review. Rules
+  acceptance passed at 20:38 UTC; measurement/review acceptance passed at 20:50 UTC,
+  including the actual card reader. Work-history reading, handoff collection,
+  residence collection and Slack setup remain absent/unavailable.
 - `learn-launch-status` version 1 remains ACTIVE with gateway JWT verification
   and TEST-only metadata mode. Its synthetic redaction, source-denial and authority
   checks passed again after the foundation installation.
@@ -40,16 +41,18 @@ catalogs remain historical snapshots, not the current installed schema.
   execution; anonymous execution remains denied. Their bodies and source-table
   privileges were preserved. This follow-up repaired the access failure found by
   actual JWT testing; the local verifier now reproduces the original denied grants.
-- TEST still uses `of_test_deploy.migrations`, with six retained receipts:
+- TEST still uses `of_test_deploy.migrations`, with seven retained receipts:
   `openfolk_test_learn_bootstrap_v5`, `learn_launch_metadata_views_v1`,
   `learn_card_work_foundations_v1`, `learn_foundation_helper_access_v1`,
-  `learn_rules_membership_v1` and `learn_scorecard_conflict_codes_v1`.
+  `learn_rules_membership_v1`, `learn_scorecard_conflict_codes_v1` and
+  `learn_measurements_reviews_v1`.
   No standard migration ledger appeared. The original bootstrap source was not
   found in earlier targeted recovery; absence from a checkout or standard ledger
   does not imply an empty environment.
 
 See [foundation source provenance](LEARN-TEST-FOUNDATIONS.md) and
-[rules release, conflict repair and real JWT acceptance](LEARN-TEST-RULES.md).
+[rules release and conflict repair](LEARN-TEST-RULES.md), and
+[measurement/review release and real JWT acceptance](LEARN-TEST-MEASUREMENTS.md).
 The catalog script deliberately continues to say `not_release_verified`: it cannot
 prove source completeness, actual customer behavior, source connectors or the full UI.
 

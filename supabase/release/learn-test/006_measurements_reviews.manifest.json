@@ -1,0 +1,91 @@
+{
+  "version": "learn-measurements-bundle/1",
+  "releaseName": "learn_measurements_reviews_v1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8",
+  "tables": [
+    "objective_types",
+    "objective_statuses",
+    "objective_health_statuses",
+    "metric_directions",
+    "objective_link_relations",
+    "contribution_states",
+    "objective_reason_codes",
+    "metric_definitions",
+    "measurements",
+    "objectives",
+    "objective_metrics",
+    "objective_constraints",
+    "objective_links",
+    "objective_health",
+    "objective_verification_states",
+    "learn_performance_reviews"
+  ],
+  "functions": [
+    "objectives_strategic_guard",
+    "objectives_child_guard",
+    "metric_definitions_guard",
+    "objectives_append_only",
+    "learn_metric_scope_guard",
+    "learn_performance_append",
+    "learn_performance_review",
+    "learn_performance_insert_guard",
+    "learn_member_group_covers"
+  ],
+  "tenantTables": [
+    "metric_definitions",
+    "measurements",
+    "objectives",
+    "objective_metrics",
+    "objective_constraints",
+    "objective_links",
+    "objective_health",
+    "learn_performance_reviews"
+  ],
+  "sources": [
+    {
+      "path": "supabase/migrations/20260720120000_objectives.sql",
+      "sha256": "7a5d3b6f5c8149b5f4b1b2edb743c8be038fa1eaa1fd532bfabd01f608003ff4",
+      "selectedSha256": "418765f4361207da34413aa0ffb43275a045f249bd01cfe048c4481c1cabdd7e",
+      "selection": "schema and controlled registries; graph node-type seed deferred with objective projection"
+    },
+    {
+      "path": "supabase/migrations/20260720120100_objectives_hardening.sql",
+      "sha256": "9778b7d9c26b024b60cdec49b8ae995ca587e0946b4c14fd035a21521d863fbf",
+      "selectedSha256": "9778b7d9c26b024b60cdec49b8ae995ca587e0946b4c14fd035a21521d863fbf",
+      "selection": "whole file"
+    },
+    {
+      "path": "supabase/migrations/20261029150000_learn_performance_measurements.sql",
+      "sha256": "1a65cade2ab26cffdc82ea2f17f0f25e82397d624cc15e7b93bb3f9871030a39",
+      "selectedSha256": "b10c5f7e48b462944f1526a63c4fb171cee82f598006b0df912bc0553e467d29",
+      "selection": "whole file inside enclosing release transaction"
+    },
+    {
+      "path": "supabase/migrations/20261029160000_learn_performance_reviews.sql",
+      "sha256": "d177f4426dc7e35189b04569a78c3094b512e642243b96c7500aabca4cb261f1",
+      "selectedSha256": "7d13970abd1e05e6895ef78ff96f292898fdd813c705f5da2b29c98a5b543b34",
+      "selection": "whole file inside enclosing release transaction"
+    },
+    {
+      "path": "supabase/migrations/20261030040000_learn_measurement_conflicts_retention.sql",
+      "sha256": "b06d2d58de4a1a2ede326a83279832b23657cd330cd17d708fd2df660a98327e",
+      "selectedSha256": "b06d2d58de4a1a2ede326a83279832b23657cd330cd17d708fd2df660a98327e",
+      "selection": "whole file"
+    },
+    {
+      "path": "supabase/migrations/20261030050000_learn_measurement_group_history.sql",
+      "sha256": "c8c7d49b891ee1586822dc6f369de956b9ea97624a8210db4f2612c87349d702",
+      "selectedSha256": "c8c7d49b891ee1586822dc6f369de956b9ea97624a8210db4f2612c87349d702",
+      "selection": "whole file"
+    }
+  ],
+  "existingChanges": [
+    "No existing public table/function definitions change; deployment receipt is appended."
+  ],
+  "deferred": [
+    "Work transition/capture and collection adapters.",
+    "Real source adapters, review UI acceptance and full LEARN rollout."
+  ],
+  "acceptanceNote": "Measurements/reviews are retained. Reviewer profiles are referenced by retained review rows; revoke synthetic access rather than deleting that evidence or disabling guards."
+}

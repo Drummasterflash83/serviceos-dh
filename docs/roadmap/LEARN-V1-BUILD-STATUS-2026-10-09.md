@@ -354,10 +354,10 @@ the existing launch redaction/revocation checks. Every marked fixture was remove
 and its absence verified. Thirty-seven focused tests and the isolated SQL exercise
 pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIONS.md).
 
-Raw interaction reads and five of ten inspected LEARN RPC dependencies remain
+Raw interaction reads and four of ten inspected LEARN RPC dependencies remain
 unavailable. The scorecard draft reader/save, publication/period reader and membership
-reader are installed in TEST; measurement/review/work/Slack setup releases remain
-outstanding. Allkin's last verified Vercel inventory has only the production project,
+reader are installed in TEST, now joined by performance review in release 006.
+Work-history/collection and Slack setup releases remain outstanding. Allkin's last verified Vercel inventory has only the production project,
 so TEST frontend deployment is still outstanding. No real customer data, production
 state, provider traffic or stored audio was changed by these TEST releases.
 
@@ -373,6 +373,20 @@ logins were removed; marked test companies and their evidence remain intentional
 Other unreleased business-conflict RPCs must receive equivalent handling before release.
 See [rules release and acceptance](../operations/LEARN-TEST-RULES.md). Full LEARN V1
 remains incomplete; no actual employee score or reward was established.
+
+At 20:49 UTC, TEST release 006 added sixteen objective/measurement/review tables
+and nine functions. Earlier tables/helpers/privileges and all source communications
+were preserved; TEST has 78 public tables and seven receipts. Measurements and
+reviews retain originals/corrections, reject truncation and return HTTP 409 for
+business conflicts. Service writers cannot bypass the validated staff-fact adapter.
+Team periods now require retained observed membership; later transfers preserve
+valid earlier periods, and effective dates alone cannot fabricate coverage.
+Signed-in acceptance passed at 20:50 UTC through the actual card reader, including
+correction chains, separate human review, concurrency, tenant/role/preview denial
+and retained source timestamps. Marked synthetic records and author identities
+remain; test Auth logins were banned and roles revoked. Thirty-one focused tests,
+isolated SQL including concurrent reviewers, both TypeScript checks and the preview
+build passed. See [measurement release evidence](../operations/LEARN-TEST-MEASUREMENTS.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

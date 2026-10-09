@@ -64,7 +64,7 @@ export function reviewPerformanceFixture(args:any){
  const prior=performanceReviews.find(r=>r.id===args.p_request_id);
  if(prior)return {data:{reviewId:prior.id,measurementId:prior.measurement_id,revision:prior.revision,decision:prior.decision,reused:true},error:null};
  const revision=performanceReviews.filter(r=>r.measurement_id===args.p_measurement_id).length;
- if(args.p_expected_revision!==revision)return {data:null,error:{code:"40001"}};
+ if(args.p_expected_revision!==revision)return {data:null,error:{code:"PT409"}};
  const r={id:args.p_request_id,tenant_id,measurement_id:args.p_measurement_id,revision:revision+1,decision:args.p_decision,reviewed_by:id(40),reason:args.p_reason,created_at:new Date().toISOString()};
  performanceReviews.push(r);
  return {data:{reviewId:r.id,measurementId:r.measurement_id,revision:r.revision,decision:r.decision,reused:false},error:null};

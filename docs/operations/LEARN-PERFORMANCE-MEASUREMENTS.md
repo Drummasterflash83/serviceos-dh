@@ -4,7 +4,10 @@
 
 Performance observations extend the existing `metric_definitions` and
 `measurements` tables. The migration does not create observations, score people,
-change pay, or alter historical email/phone records. It is local and not deployed.
+change pay, or alter historical email/phone records. TEST release 006 installed the
+measurement/review prerequisites at 20:49 UTC on 9 October 2026; signed-in acceptance
+passed at 20:50 UTC. Production remains unchanged. See
+[TEST release and retained evidence](LEARN-TEST-MEASUREMENTS.md).
 
 `learn_performance_append(tenant, measurement, reason)` is a service-role-only,
 transactional entry point for trusted source adapters. The measurement uses the
@@ -12,7 +15,7 @@ transactional entry point for trusted source adapters. The measurement uses the
 retry identity: an identical retry returns the same ID; changed content or reason
 under that ID is rejected. Adapter submissions must have `review: "inferred"`.
 Human confirmation uses the separate review RPC described below. Prospective policy
-publication and retained revisions are implemented locally; see
+publication and retained revisions are installed in TEST; see
 [publication scope and release limits](LEARN-SCORECARD-PUBLICATION.md).
 
 Each observation stores an exact tenant, subject, period, policy ID and revision,
@@ -21,22 +24,27 @@ exclusions and change reason. Missing values and unknown coverage remain missing
 The raw request is retained for replay comparison. The server resolves the policy
 through its configuration version and checks the canonical subject and each
 allowed evidence reference against the tenant. Evidence currently supports
-interactions, email messages, phone calls/recordings, jobs, team members and immutable work-calculation receipts.
+interactions, email messages, phone calls/recordings, jobs and team members in TEST.
+The later local work-adapter definition additionally supports immutable calculation
+receipts; that writer must retain the new conflict/group-history follow-ups when released.
 Existence and tenant ownership do not establish that a source proves the proposed
 performance value; adapter calculations and human review remain necessary.
 
-Team-specific observations require a matching team subject, or a confirmed member
-record whose effective dates cover the whole period. The server records the group
-identity rather than trusting caller-supplied group IDs. This checks the current
-canonical membership record; it does not supply the missing immutable history of
-past membership changes. Observations with an uncertain group period are rejected.
+Team-specific observations require a matching team subject, or retained observed
+membership that covers the entire period. The server derives the group identity.
+The new internal `learn_member_group_covers` helper reconciles retained events with
+the current row and checks every segment; effective dates alone do not establish
+historical coverage. Periods before capture or across a team transfer are rejected.
+A later transfer does not prevent correcting an earlier fully observed team period.
 
 Corrections append a new row and name their predecessor. The predecessor must
 have the same metric/policy revision, subject and period, and an earlier observation
 time. It is locked during the correction; a unique index prevents two corrections
 from replacing the same row. Independent observations can coexist and are treated
 as conflicting candidates by the scorer, not resolved using “newest wins.”
-Existing append-only measurement triggers preserve originals and corrections.
+Existing append-only measurement triggers preserve originals and corrections. The
+follow-up also rejects whole-table truncation of measurements, reviews and objective
+health, and denies direct service insertion of staff facts outside the validated RPC.
 
 ## Isolation from company objectives
 
@@ -151,11 +159,13 @@ checks and both preview and production builds passed (47 existing prebuild check
 Browser review used only synthetic records:
 inferred evidence withheld the score, confirmation produced an 80/100 draft
 simulation, and a later dispute withheld it again while retaining both reviews.
-No actual employee measurement, review, pay decision or live deployment occurred.
+No actual employee measurement, review or pay decision occurred. The earlier local
+checks above predate the later TEST release and real signed-in acceptance documented
+in [LEARN-TEST-MEASUREMENTS.md](LEARN-TEST-MEASUREMENTS.md).
 
-Forward member identity/team capture and a work-interval attribution module are now
-implemented locally. They do not reconstruct missing old membership or yet feed the
-measurement append path. See [membership history](LEARN-MEMBERSHIP-HISTORY.md) for
+Forward member identity/team capture is installed in TEST and now supplies the
+measurement append path's group-period proof. The work-interval attribution module
+remains local. Neither reconstructs missing old membership. See [membership history](LEARN-MEMBERSHIP-HISTORY.md) for
 the observed-time semantics, verification and remaining source-adapter dependencies.
 
 See [the connected recorded-handoff adapter](LEARN-WORK-HANDOFF-MEASUREMENTS.md) for its exact population, limits and verification.

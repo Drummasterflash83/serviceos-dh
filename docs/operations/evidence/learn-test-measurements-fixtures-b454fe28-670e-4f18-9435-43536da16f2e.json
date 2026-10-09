@@ -1,0 +1,92 @@
+{
+  "version": "learn-test-measurements-fixtures/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "b454fe28-670e-4f18-9435-43536da16f2e",
+  "retention": "Retain marked synthetic companies, staff, rules, measurements, reviews and reviewer identities; ban synthetic Auth logins and revoke their profile roles.",
+  "tenants": [
+    {
+      "label": "A",
+      "id": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "team": "b3dfe1dc-30bb-42ee-aa65-845bf0071cc6",
+      "member": "8dc41003-e7b3-4a8d-bc50-267ef80a57dd",
+      "preview": "56ae3a90-d654-450b-9194-3cdf2d0c0230",
+      "publications": [
+        "e0e08b3c-262c-4349-a1d8-d3d3a3b7a94f",
+        "4d605ee2-43e3-4044-9168-273f99228f7a"
+      ]
+    },
+    {
+      "label": "B",
+      "id": "0a29d8b5-2b0a-4682-a8d1-b0d0f852718e",
+      "team": "a67e0aa7-3d9c-43ea-b895-e4ae9ba2b84a",
+      "member": "7b968de0-cf44-4eb3-b7fa-587bd5bbee1c",
+      "preview": "71f7fd93-a49a-4d64-aff5-f20e4c7d1cb9",
+      "publications": [
+        "8eb7b57f-48cc-42f8-88ad-2739963ebab4",
+        "663af33a-7e7f-4006-a397-a296d6fdb23c"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "fae1e3ec-61d8-4272-91dd-7e529551b26e",
+      "tenant": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "role": "owner",
+      "email": "learn-measurements-b454fe28-670e-4f18-9435-43536da16f2e-0@example.invalid"
+    },
+    {
+      "id": "e27bc831-a395-4b0f-8837-4533a37edf03",
+      "tenant": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "role": "admin",
+      "email": "learn-measurements-b454fe28-670e-4f18-9435-43536da16f2e-1@example.invalid"
+    },
+    {
+      "id": "31d2baea-e110-44ac-94ba-a4cd4783f0b9",
+      "tenant": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "role": "viewer",
+      "email": "learn-measurements-b454fe28-670e-4f18-9435-43536da16f2e-2@example.invalid"
+    },
+    {
+      "id": "537b3c34-bf82-4e43-8ebd-7581d7523032",
+      "tenant": "0a29d8b5-2b0a-4682-a8d1-b0d0f852718e",
+      "role": "owner",
+      "email": "learn-measurements-b454fe28-670e-4f18-9435-43536da16f2e-3@example.invalid"
+    }
+  ],
+  "policies": {
+    "A": "8812a096-22d4-47e9-803e-17f26cf3bdd6"
+  },
+  "measurements": [
+    "552158bd-2c9d-4746-8305-a96014751b5c",
+    "fbda3d18-69b3-4ef4-b6c9-dd1ba962dd8d"
+  ],
+  "reviews": [
+    "c92815e8-a937-4c1b-9444-47301f35e987",
+    "25f0381a-f37b-4cce-b0fb-c78fdd745642",
+    "72af86bf-fde7-48a8-a030-793d61d1e9cf",
+    "a61ac905-823a-4cb6-ab5a-33ea4e5e8b8d"
+  ],
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_performance_review",
+    "expectedRevision": null
+  },
+  "transferTeam": "a1045198-f35d-4acf-8247-184680e4dedb",
+  "retainedSummary": [
+    {
+      "tenant_id": "0a29d8b5-2b0a-4682-a8d1-b0d0f852718e",
+      "members": 1,
+      "measurements": 0,
+      "reviews": 0,
+      "retained_profiles": 1
+    },
+    {
+      "tenant_id": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "members": 1,
+      "measurements": 2,
+      "reviews": 3,
+      "retained_profiles": 3
+    }
+  ],
+  "accessRevoked": true
+}

@@ -1,0 +1,18 @@
+{
+  "version": "learn-test-measurements-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T20:45:31.302223+00:00",
+  "observedAfter": "2026-10-09T20:45:33.074435+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "a036bbabb239c1b6c46f990a3fdeece9c8f2f9634dd6beaf84792424b5e4d6cb",
+  "afterCatalogSha256": "a036bbabb239c1b6c46f990a3fdeece9c8f2f9634dd6beaf84792424b5e4d6cb",
+  "limitations": [
+    "TEST rollback rehearsal only. No installation, source rows, membership baselines or provider operations.",
+    "Catalog and isolated SQL tests do not replace real signed-in user acceptance."
+  ]
+}

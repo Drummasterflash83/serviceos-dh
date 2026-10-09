@@ -1,0 +1,44 @@
+{
+  "version": "learn-test-measurements-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "8a1b32fd0a1896946a7a6f79dd3598eabfec237ca418a4fab6d3b7ee155a15e8",
+  "observedAt": "2026-10-09T20:50:25.377Z",
+  "runId": "b454fe28-670e-4f18-9435-43536da16f2e",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established",
+    "Signed-in card reader and trusted append: exact scope, idempotency, HTTP 409 conflicts, foreign evidence and unobserved team-period denial",
+    "Owner review and replay, stale/reused request conflicts, viewer/foreign-company denial; actual card reader retains original source time",
+    "Earlier team remains attributable after later transfer, corrections are retained, corrected facts cannot receive stale reviews, concurrent reviews produce one next revision",
+    "Service insert bypass, privileged rewrite/delete, View-As writes and same-JWT revoked-role access denied"
+  ],
+  "failure": null,
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_performance_review",
+    "expectedRevision": null
+  },
+  "testAccessRevoked": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "0a29d8b5-2b0a-4682-a8d1-b0d0f852718e",
+      "members": 1,
+      "measurements": 0,
+      "reviews": 0,
+      "retained_profiles": 1
+    },
+    {
+      "tenant_id": "f8a86d86-1680-4996-8f3f-2ed2eafaf8ba",
+      "members": 1,
+      "measurements": 2,
+      "reviews": 3,
+      "retained_profiles": 3
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-measurements-fixtures-b454fe28-670e-4f18-9435-43536da16f2e.json",
+  "limitations": [
+    "Marked synthetic records and reviewer identities remain in TEST; synthetic logins are banned and profile roles revoked. No retention guards are disabled.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}
