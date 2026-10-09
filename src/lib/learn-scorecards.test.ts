@@ -20,6 +20,7 @@ function policy(): ScorecardPolicy {
     name: "Service team",
     version: 1,
     status: "published",
+    publication: {id: id(99), effectiveFrom: "2026-01-01T00:00:00Z", effectiveUntil: null},
     subjectKind: "member",
     scaleMax: 100,
     metrics: [

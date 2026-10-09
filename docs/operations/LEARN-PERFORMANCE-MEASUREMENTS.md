@@ -11,8 +11,9 @@ transactional entry point for trusted source adapters. The measurement uses the
 `PerformanceMeasurement` contract in `src/lib/learn-scorecards.ts`. Its ID is the
 retry identity: an identical retry returns the same ID; changed content or reason
 under that ID is rejected. Adapter submissions must have `review: "inferred"`.
-Human confirmation uses the separate review RPC described below. Policy publication
-is not implemented yet.
+Human confirmation uses the separate review RPC described below. Prospective policy
+publication and retained revisions are implemented locally; see
+[publication scope and release limits](LEARN-SCORECARD-PUBLICATION.md).
 
 Each observation stores an exact tenant, subject, period, policy ID and revision,
 metric, unit, value, samples, covered/eligible counts, source watermark, evidence,
@@ -101,8 +102,8 @@ immutable source captures, and recording metadata is not audio playback.
 
 The recorded-work-handoff adapter now calls the append RPC transactionally and is connected to the card collection flow. Communications/job outcome adapters remain incomplete. The remaining end-to-end
 work includes verified source event and assignment histories, calculation adapters,
-numerical correction workflow, versioned policy publication, agreed calendars and
-exclusions, team aggregation and saved assessment runs.
+numerical correction workflow, saved assessment runs under published rules, agreed calendars and
+exclusions and team aggregation.
 No real person's score or reward is established by these tests.
 
 The local work-transition path now captures immutable before/after ownership,

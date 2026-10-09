@@ -231,7 +231,8 @@ company objectives, and the objective worker/scanner explicitly read tenant scop
 Adapter writes remain inferred; no real measurements or scores have been created.
 Owner/admin RLS and a count-checked reader are implemented. The reader is now
 connected to cards with a separate append-only human review ledger. Source
-adapters, numerical correction workflows and policy publication remain required.
+adapters, numerical correction workflows and saved assessment runs remain required.
+Prospective publication is now implemented locally as described below.
 See [the storage contract and rollout order](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md).
 
 Validation: 17 reader/scorer tests, the full objective-evaluation verification
@@ -297,6 +298,22 @@ observations. Existing human review and draft scoring consume the result. This i
 local/synthetic verification, not a deployed source or a real employee rating.
 See [calculation scope, tests and remaining work](../operations/LEARN-WORK-HANDOFF-MEASUREMENTS.md).
 
+## Retained scorecard publication
+
+Owners/admins can now publish an unchanged saved revision with a reason and review
+attestation. Publications retain exact definitions and server-assigned effective
+dates; saving a later draft leaves published rules in force. The dated reader rejects
+periods spanning a rule change and cannot apply newly published criteria to earlier
+periods. Cards offer separate draft simulation and published-rule review modes.
+Missing, inferred or disputed evidence still withholds scores. No pay changes occur.
+
+The offline database clone passed revision retention, exact retry, stale draft,
+period boundary, tenant/role/View-As authority and source-preservation checks. Pure
+publication/scoring tests, TypeScript, production and preview builds passed. Browser
+checks covered dirty-draft publication blocking, publication receipt, rejection of
+retrospective application and an eligible historical publication without evidence.
+This remains local and undeployed. See [publication details and limits](../operations/LEARN-SCORECARD-PUBLICATION.md).
+
 ## Next work and release gates
 
 Work-transition now resolves confirmed, effective cover and self/team/company
@@ -351,9 +368,9 @@ See [provenance, verification limits and remaining historical modules](../operat
    and verify the now-connected measurement/review card flow with real user RLS. Database scope isolation and the
    updated objective worker are implemented locally; deployment and real source
    acceptance remain pending. The pure scoring contract is already implemented.
-7. Extend the new review ledger with numerical correction workflows and policy
-   publication with retained versions,
-   effective dates, membership as of the scoring period, approved business calendars,
+7. Extend the review ledger with numerical correction workflows and retained
+   assessment runs under the now-versioned publication contract. Complete
+   membership as of the scoring period, approved business calendars,
    exclusions and job-mix treatment. Agree criteria before rating actual people.
 8. Add manager-reviewed reward simulations against agreed rules after the evidence
    and scorecard stages pass acceptance. No automatic payroll change is implemented.

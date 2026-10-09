@@ -1,3 +1,4 @@
+import { LearnScorecardPublication } from "./LearnScorecardPublication";
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadScorecardDraft, saveScorecardDraft } from "@/lib/learn-scorecard-settings";
@@ -72,11 +73,13 @@ export function LearnScorecardSettings({
     [expected, setExpected] = useState(0),
     [message, setMessage] = useState("Reading scoring rules…"),
     [reason, setReason] = useState("");
+  const [savedPolicy, setSavedPolicy] = useState<ScorecardPolicy | null>(null);
   const [busy, setBusy] = useState(false),
     [reload, setReload] = useState(0);
   useEffect(() => {
     let active = true;
     setPolicy(null);
+    setSavedPolicy(null);
     setMessage("Reading scoring rules…");
     void (async () => {
       try {
@@ -95,6 +98,7 @@ export function LearnScorecardSettings({
             metrics: [],
           },
         );
+        setSavedPolicy(saved);
         setExpected(saved?.version ?? 0);
         setReason("");
         setMessage(
@@ -126,6 +130,7 @@ export function LearnScorecardSettings({
     try {
       const saved = await saveScorecardDraft(getSupabaseClient(), policy, expected, reason);
       setPolicy(saved);
+      setSavedPolicy(saved);
       setExpected(saved.version);
       setReason("");
       setMessage(
@@ -339,6 +344,13 @@ export function LearnScorecardSettings({
             {busy ? "Saving…" : "Save new draft revision"}
           </button>
         </fieldset>
+      )}
+      {canEdit && savedPolicy && (
+        <LearnScorecardPublication
+          key={`${savedPolicy.id}:${savedPolicy.version}`}
+          policy={savedPolicy}
+          unchanged={JSON.stringify(policy) === JSON.stringify(savedPolicy)}
+        />
       )}
       {!canEdit && <p>Only a company owner or administrator can change these rules.</p>}
     </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { loadPublishedScorecard } from "@/lib/learn-scorecard-publication";
 import { loadScorecardDraft } from "@/lib/learn-scorecard-settings";
 import {
   loadPerformanceMeasurements,
@@ -51,6 +52,7 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
       new Date(Date.parse(today) - 7 * 86400000).toISOString().slice(0, 10),
     ),
     [until, setUntil] = useState(today);
+  const [ruleMode, setRuleMode] = useState<"draft" | "published">("draft");
   const [query, setQuery] = useState({ from, until, revision: 0 });
   const [loaded, setLoaded] = useState<{
     policy: ScorecardPolicy;
@@ -76,11 +78,16 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
           Date.parse(period.start) >= Date.parse(period.end)
         )
           throw Error("Choose a completed period with the end after the start.");
-        const policy = await loadScorecardDraft(getSupabaseClient(), tenantId, kind, groupId);
+        const policy =
+          ruleMode === "published"
+            ? await loadPublishedScorecard(getSupabaseClient(), tenantId, kind, groupId, period)
+            : await loadScorecardDraft(getSupabaseClient(), tenantId, kind, groupId);
         if (!policy) {
           if (active)
             setMessage(
-              "No scoring rules are saved for this card’s scope. Configure the measures and scale in scoring settings first.",
+              ruleMode === "published"
+                ? "No published rules cover this period. Earlier dates cannot inherit newly published rules. You can review a draft simulation instead."
+                : "No scoring rules are saved for this card’s scope. Configure the measures and scale in scoring settings first.",
             );
           return;
         }
@@ -106,7 +113,7 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
     return () => {
       active = false;
     };
-  }, [tenantId, kind, id, groupId, query]);
+  }, [tenantId, kind, id, groupId, query, ruleMode]);
   const current = from === query.from && until === query.until ? loaded : null;
   const refresh = () => setQuery({ from, until, revision: query.revision + 1 });
   return (
@@ -115,6 +122,16 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
         Review the measurements behind this card. A draft simulation does not activate a score or
         change pay.
       </p>
+      <label>
+        Rules to review
+        <select
+          value={ruleMode}
+          onChange={(e) => setRuleMode(e.target.value as "draft" | "published")}
+        >
+          <option value="draft">Draft simulation</option>
+          <option value="published">Published rules for these dates</option>
+        </select>
+      </label>
       <form
         className="lp-period"
         onSubmit={(e) => {

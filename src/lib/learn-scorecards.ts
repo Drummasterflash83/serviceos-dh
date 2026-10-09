@@ -28,6 +28,7 @@ export interface ScorecardPolicy {
   version: number;
   name: string;
   status: "draft" | "published";
+  publication?: { id: string; effectiveFrom: string; effectiveUntil: string | null };
   subjectKind: ScoreSubject["kind"];
   groupId?: string | null;
   scaleMax: number;
@@ -119,6 +120,18 @@ export function validateScorecardPolicy(policy: ScorecardPolicy): string[] {
     !subjectKinds.includes(policy.subjectKind)
   )
     errors.push("Invalid policy scope");
+  if (
+    policy.status === "published" &&
+    (!policy.publication ||
+      !uuid(policy.publication.id) ||
+      !Number.isFinite(stamp(policy.publication.effectiveFrom)) ||
+      !(
+        policy.publication.effectiveUntil === null ||
+        (Number.isFinite(stamp(policy.publication.effectiveUntil)) &&
+          stamp(policy.publication.effectiveUntil) > stamp(policy.publication.effectiveFrom))
+      ))
+  )
+    errors.push("Published rules require their verified effective interval");
   if (!finite(policy.scaleMax) || policy.scaleMax <= 0 || policy.scaleMax > 10000)
     errors.push("Choose a scale greater than zero and at most 10,000");
   if (!Array.isArray(policy.metrics) || !policy.metrics.length || policy.metrics.length > 50)
@@ -191,6 +204,13 @@ export function evaluateScorecard(
     )
   )
     throw new Error("Measurement scope does not match policy, subject, version and period");
+  if (
+    policy.status === "published" &&
+    (stamp(period.start) < stamp(policy.publication!.effectiveFrom) ||
+      (policy.publication!.effectiveUntil !== null &&
+        stamp(period.end) > stamp(policy.publication!.effectiveUntil)))
+  )
+    throw new Error("Assessment period falls outside the published rule interval");
   const byId = new Map<string, PerformanceMeasurement>();
   for (const m of measurements) {
     const prior = byId.get(m.id);

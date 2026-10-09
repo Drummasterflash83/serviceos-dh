@@ -32,6 +32,28 @@ export function collectHandoffFixture(args:any){
  proof:{contract:"work-handoffs@1",value:incomplete?null:2,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
  return {data:{measurementId:args.p_request,reused:false},error:null};
 }
+const publications:any[]=[];
+function publicationFixtureRows(){
+ const policy=new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+ return new URLSearchParams(location.search).get("publication")==="historical" ? [{id:id(50),tenant_id,
+ policy_id:policy.id,revision:1,effective_from:new Date(Date.parse(performanceEnd)-30*86400000).toISOString(),
+ scope:"member:all",policy:{...policy,status:"published"}}] : publications;
+}
+export function publishScorecardFixture(args:any){
+ const prior=publications.find(r=>r.id===args.p_request);
+ if(prior)return {data:{publicationId:prior.id,policyId:prior.policy_id,revision:prior.revision,effectiveFrom:prior.effective_from,reused:true},error:null};
+ const policy=drafts[0]?.value??(new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy);
+ if(policy.id!==args.p_policy||policy.version!==args.p_revision)return {data:null,error:{code:"40001"}};
+ const at=new Date().toISOString();
+ publications.push({id:args.p_request,tenant_id,policy_id:policy.id,revision:policy.version,effective_from:at,
+ scope:policy.subjectKind+":"+(policy.groupId??"all"),policy:{...policy,status:"published"}});
+ return {data:{publicationId:args.p_request,policyId:policy.id,revision:policy.version,effectiveFrom:at,reused:false},error:null};
+}
+export function publishedPeriodFixture(args:any){
+ const rows=publicationFixtureRows().filter(r=>r.scope===args.p_kind+":"+(args.p_group??"all")&&Date.parse(r.effective_from)<=Date.parse(args.p_start));
+ const row=rows.at(-1);if(!row)return {data:null,error:null};
+ return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
+}
 const performanceReviews:any[]=[];
 export function reviewPerformanceFixture(args:any){
  const prior=performanceReviews.find(r=>r.id===args.p_request_id);
@@ -69,6 +91,7 @@ function records(): Record<string, any[]> {
   return {
     provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
     operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy}] : [],
+    learn_scorecard_publications: publicationFixtureRows(),
     learn_work_measurement_runs: handoffRuns,
     measurements: new URLSearchParams(location.search).has("handoffs") ? handoffRows : new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
     learn_performance_reviews: performanceReviews,
