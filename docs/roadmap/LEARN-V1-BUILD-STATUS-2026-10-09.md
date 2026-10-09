@@ -103,6 +103,27 @@ remain unknown instead of becoming zero.
 
 ### Product changes
 
+- Slack history now has an executable additive migration,
+  `20261029130000_learn_slack_history.sql`, superseding the older preview proposal.
+  It stores original provider message JSON and immutable observed revisions,
+  updates the existing interaction projection, and advances the account checkpoint
+  in the same transaction. Replays do not duplicate versions or reset processing;
+  an older provider edit cannot replace the current message. Existing interaction
+  review metadata and canonical links survive source updates. Invalid pages roll
+  back in full. This migration has **not** been applied to TEST or production.
+- The reader retains author IDs, blocks and other provider message fields in its
+  bounded raw payload. Malformed timestamps and oversized records are rejected.
+  This remains bounded public-channel history, not thread, attachment, deletion,
+  private-channel or complete-workspace ingestion.
+
+Read-only live checks on 9 October returned no Drummonds Slack rows in
+`provider_connections`, `tenant_connectors` (filtered to Slack), or
+`customer_slack_connections`. No Slack secret was read or created. The actual
+worker still requires a credential-owning transport implementation and approved
+channel configuration before it can ingest. A notification token would not alone
+establish history permissions. The existing secret broker can support a future
+tenant-scoped binding; its existence does not prove a stored Slack credential.
+
 - Customer, job and team card browsing over the existing canonical tables, with
   tenant filtering, pagination and company-defined team groups.
 - Bounded evidence drill-down joining existing interactions, graph links and
@@ -153,6 +174,15 @@ live migration has been performed by this branch.
   filtering and an office-specific 0–50 scoring draft save/reload were checked.
   No browser console errors were observed during that settings flow.
 - `git diff --check` passed.
+- Slack storage validation uses `python3 scripts/verify/learn-slack-sql.py`: an
+  isolated PostgreSQL 15 container, no network/host mounts, synthetic records, and
+  the real existing interactions-table migration. It checks atomic page/checkpoint
+  writes, stale checkpoint rejection, replay, immutable revisions, older edits,
+  rollback, revocation, claimed-job/expiry/channel guards, tenant RLS and grants.
+  The container is removed afterward. Other fixture tables model existing column
+  contracts; full deployed-schema and concurrent-worker acceptance remain pending.
+  All 26 Slack reader/binding/worker tests passed, including raw-payload retention
+  and oversized/malformed-record rejection.
 - Preservation/transcript-status increment: 23 focused tests passed, covering
   pagination and foreign/duplicate rows, missing IDs hidden by rising totals,
   changed storage pointers/objects, failed reads, bounded WAV header inspection

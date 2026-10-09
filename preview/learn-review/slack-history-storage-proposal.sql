@@ -1,3 +1,7 @@
+-- SUPERSEDED: executable migration and isolated SQL tests now live in
+-- supabase/migrations/20261029130000_learn_slack_history.sql and
+-- scripts/verify/learn-slack-sql.py. Retained for historical handover provenance.
+-- Do not apply this older proposal: it lacks retained source revisions.
 -- SOURCE PROPOSAL ONLY. Not an executable release migration; owner acceptance,
 -- TEST schema compatibility and exact approval required. No GRANT or RLS policy
 -- changes. Runtime EXECUTE/table privileges require verification, not assumption.

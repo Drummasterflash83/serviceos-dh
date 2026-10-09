@@ -1,0 +1,77 @@
+grant select,insert,update on platform_jobs,tenant_connectors,connector_accounts,interactions to service_role;
+grant select on interactions to authenticated;
+insert into tenants values('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000099');
+insert into tenant_connectors values('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000001','slack',true,'active');
+insert into connector_accounts values('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','active',jsonb_build_object('slack_history',jsonb_build_object('approved',true,'teamId','T123','channelId','C123','oldest','100.1','latest','200.1','consentReference','fixture','maxPages',10,'expiresAt',now()+interval '1 hour')),'{}');
+insert into platform_jobs values('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','slack.history_sync','running','{"connector_account_id":"00000000-0000-4000-8000-000000000003"}');
+set role service_role;
+do $$
+declare
+ t uuid:='00000000-0000-4000-8000-000000000001';
+ a uuid:='00000000-0000-4000-8000-000000000003';
+ j uuid:='00000000-0000-4000-8000-000000000004';
+ expected jsonb:=jsonb_build_object('scopeKey',jsonb_build_array(t::text,'T123','C123','100.1','200.1','fixture')::text,'cursor',null,'pages',0,'complete',false);
+ next_page jsonb;
+ records jsonb:='[{"tenant_id":"00000000-0000-4000-8000-000000000001","channel_id":"C123","source_external_id":"T123:C123:123.1","provider_timestamp":"123.1","thread_timestamp":null,"text":"Original","provider_payload":{"ts":"123.1","text":"Original","user":"U123"}}]';
+ original jsonb:=records;
+ bad jsonb;
+ failures integer:=0;
+begin
+ next_page:=expected||'{"pages":1,"cursor":"page-2"}';
+ perform slack_history_commit_page(t,j,a,expected,next_page,records);
+ if (select count(*) from slack_messages)<>1 or (select count(*) from slack_message_versions)<>1 or (select count(*) from interactions)<>1 then raise exception 'Missing source, version or interaction';end if;
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ if failures<>1 then raise exception 'Stale checkpoint accepted';end if;
+ update interactions set processing_status='analysed',metadata=metadata||'{"reviewed":true}',related_person_id='00000000-0000-4000-8000-000000000088';
+ expected:=next_page;next_page:=expected||'{"pages":2,"cursor":"page-3"}';
+ perform slack_history_commit_page(t,j,a,expected,next_page,records);
+ if (select count(*) from slack_message_versions)<>1 or (select processing_status from interactions)<>'analysed' then raise exception 'Replay duplicated or reprocessed content';end if;
+ records:=jsonb_set(jsonb_set(records,'{0,text}','"Edited"'),'{0,provider_payload}','{"ts":"123.1","text":"Edited","user":"U123","edited":{"ts":"150.1"}}');
+ expected:=next_page;next_page:=expected||'{"pages":3,"cursor":"page-4"}';
+ perform slack_history_commit_page(t,j,a,expected,next_page,records);
+ if (select count(*) from slack_message_versions)<>2 or (select message_text from slack_messages)<>'Edited' or (select processing_status from interactions)<>'pending' then raise exception 'Edit not retained and projected';end if;
+ if (select metadata->>'reviewed' from interactions)<>'true' or (select related_person_id from interactions) is null then raise exception 'Existing review/link lost';end if;
+ expected:=next_page;next_page:=expected||'{"pages":4,"cursor":"page-5"}';
+ perform slack_history_commit_page(t,j,a,expected,next_page,original);
+ if (select message_text from slack_messages)<>'Edited' or (select body_preview from interactions)<>'Edited' or (select count(*) from slack_message_versions)<>2 then raise exception 'Older replay regressed current source';end if;
+ expected:=next_page;next_page:=expected||'{"pages":5,"cursor":null,"complete":true}';
+ -- Invalid second record rolls back the valid first record AND checkpoint.
+ bad:=jsonb_set(jsonb_set(records,'{0,source_external_id}','"T123:C123:124.1"'),'{0,provider_timestamp}','"124.1"');
+ bad:=jsonb_set(bad,'{0,provider_payload,ts}','"124.1"');
+ bad:=bad||jsonb_set(records,'{0,tenant_id}','"00000000-0000-4000-8000-000000000099"');
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,bad);exception when others then failures:=failures+1;end;
+ if failures<>2 or (select count(*) from slack_messages)<>1 or (select sync_cursor from connector_accounts where id=a)<>expected then raise exception 'Invalid page partially committed';end if;
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records||records);exception when others then failures:=failures+1;end;
+ begin perform slack_history_commit_page(t,j,a,expected,jsonb_set(next_page,'{pages}','4.5'),records);exception when others then failures:=failures+1;end;
+ begin perform slack_history_commit_page('00000000-0000-4000-8000-000000000099',j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ update tenant_connectors set enabled=false;
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ update tenant_connectors set enabled=true;
+ if failures<>6 then raise exception 'Duplicate, fractional, tenant or revocation guard failed';end if;
+ update platform_jobs set status='queued';
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ update platform_jobs set status='running';
+ update connector_accounts set settings=jsonb_set(settings,'{slack_history,expiresAt}',to_jsonb((now()-interval '1 minute')::text));
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ update connector_accounts set settings=jsonb_set(settings,'{slack_history,expiresAt}',to_jsonb((now()+interval '1 hour')::text));
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,jsonb_set(records,'{0,channel_id}','"C999"'));exception when others then failures:=failures+1;end;
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,jsonb_set(records,'{0,provider_payload,text}','"Different payload"'));exception when others then failures:=failures+1;end;
+ if failures<>10 then raise exception 'Claim, expiry, channel or source-integrity guard failed';end if;
+ perform slack_history_commit_page(t,j,a,expected,next_page,'[]');
+ begin perform slack_history_commit_page(t,j,a,next_page,next_page||'{"pages":6}','[]');exception when others then failures:=failures+1;end;
+ if failures<>11 then raise exception 'Completed checkpoint accepted more writes';end if;
+end $$;
+reset role;
+-- The immutable trigger also protects against accidental privileged mutations.
+do $$ declare denied boolean:=false;begin
+ begin update slack_message_versions set provider_payload='{}';exception when sqlstate '55000' then denied:=true;end;
+ if not denied then raise exception 'Source version mutation allowed';end if;
+ if has_table_privilege('service_role','slack_message_versions','delete') or has_function_privilege('authenticated','slack_history_commit_page(uuid,uuid,uuid,jsonb,jsonb,jsonb)','execute') then raise exception 'Unexpected write grant';end if;
+end $$;
+set role authenticated;
+select set_config('test.tenant','00000000-0000-4000-8000-000000000001',false);
+do $$ begin if (select count(*) from slack_messages)<>1 or (select count(*) from slack_message_versions)<>2 then raise exception 'Authorised source read failed';end if;end $$;
+select set_config('test.tenant','00000000-0000-4000-8000-000000000099',false);
+do $$ begin if exists(select from slack_messages) or exists(select from slack_message_versions) or exists(select from interactions) then raise exception 'Cross-tenant source leak';end if;end $$;
+reset role;
+select 'PASS: atomic pages, CAS, replay, revisions, old replay, rollback, revocation, tenant RLS and grants' as result;
