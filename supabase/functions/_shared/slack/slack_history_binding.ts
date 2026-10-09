@@ -9,10 +9,11 @@ const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}(-[0-9a-f]
 import type {BindHistoryRequest} from './slack_history_request.ts';
 export type {BindHistoryRequest,HistoryRequestBinding,HistoryRequestIdentity} from './slack_history_request.ts';
 export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>number){
- if(!uuid(ctx.tenantId)||!uuid(ctx.jobId)||ctx.signal?.aborted)return null;
+ if(!uuid(ctx.tenantId)||!uuid(ctx.jobId)||ctx.signal?.aborted||!ctx.claim?.claimedBy||!Number.isSafeInteger(ctx.claim.attemptCount)||ctx.claim.attemptCount<1)return null;
  const db=ctx.supabaseAdmin;
- const job=await db.from('platform_jobs').select('id,tenant_id,job_type,status,payload').eq('tenant_id',ctx.tenantId).eq('id',ctx.jobId).maybeSingle();
+ const job=await db.from('platform_jobs').select('id,tenant_id,job_type,status,payload,claimed_by,attempt_count,lease_expires_at').eq('tenant_id',ctx.tenantId).eq('id',ctx.jobId).maybeSingle();
  if(job.error||!job.data||job.data.id!==ctx.jobId||job.data.tenant_id!==ctx.tenantId||job.data.job_type!=='slack.history_sync'||job.data.status!=='running'||!uuid(job.data.payload?.connector_account_id))return null;
+ if(job.data.claimed_by!==ctx.claim.claimedBy||job.data.attempt_count!==ctx.claim.attemptCount||!Number.isFinite(Date.parse(job.data.lease_expires_at))||Date.parse(job.data.lease_expires_at)<=clock())return null;
  const accountId=job.data.payload.connector_account_id;
  const account=await db.from('connector_accounts').select('id,tenant_id,tenant_connector_id,status,settings,sync_cursor').eq('tenant_id',ctx.tenantId).eq('id',accountId).maybeSingle();
  if(account.error||!account.data||account.data.tenant_id!==ctx.tenantId||account.data.id!==accountId||account.data.status!=='active'||!uuid(account.data.tenant_connector_id))return null;

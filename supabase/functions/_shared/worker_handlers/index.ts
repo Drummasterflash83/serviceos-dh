@@ -57,6 +57,8 @@ export interface WorkerHandlerContext {
   payload: Record<string, unknown>;
   /** Cooperative cancellation, where a handler chooses to honour it. */
   signal?: AbortSignal;
+  /** Queue ownership fence. Required by Slack's durable page writer. */
+  claim?: { claimedBy: string; attemptCount: number };
 }
 
 /** Structured error contract the worker uses to decide retry vs dead-letter. */

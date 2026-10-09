@@ -1,0 +1,55 @@
+{
+  "version": "learn-slack-worker-local/1",
+  "observedAt": "2026-10-09T22:24:32.939290+00:00",
+  "state": "locally_verified_not_deployed",
+  "targetProjectRef": "saatxzwxvdvqevbnskxy",
+  "sourceFiles": [
+    {
+      "path": "supabase/migrations/20261030100000_learn_slack_worker.sql",
+      "sha256": "1a06eb01b97cfc314c02abb260a9f398601d1d0ecb08bffa7f4123910a9a2fa1"
+    },
+    {
+      "path": "supabase/migrations/20261030110000_learn_slack_credential_binding.sql",
+      "sha256": "727937cc01f04a38e854f5aea48455829e8f7cf31716b69da2674989feb3195c"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_worker.ts",
+      "sha256": "1bb4e3124f79a53a21444fe23e8b262129f455ee88b0a0faa3ecd00f21c69584"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_worker_http.ts",
+      "sha256": "b6fc96e8b58ad704a49c97564f1b6a3e7c225d7223152beca466e539ccefa854"
+    },
+    {
+      "path": "supabase/functions/learn-slack-worker/index.ts",
+      "sha256": "a38fe8a3ccb1a27b06b77b66732332b95c56c0b140067eed857b8bdce1b023ab"
+    },
+    {
+      "path": "scripts/verify/learn-slack-worker.assert.sql",
+      "sha256": "2ad62445b6591e498e292ce8430cd5bdbe01769b2b0e3173993a95d3190bc1a7"
+    },
+    {
+      "path": "scripts/verify/learn-slack-credential.assert.sql",
+      "sha256": "d05c48b5a68e896ea3b421b5b689950275e72c638663abd7c9c43689c4b8962b"
+    }
+  ],
+  "verification": {
+    "nodeTests": 44,
+    "nodeFailures": 0,
+    "isolatedPostgres": "17.6.1.141",
+    "realVaultSyntheticChecks": "passed",
+    "twoSessionClaimAndReplacementChecks": "passed",
+    "injectedContinuationRollback": "passed",
+    "existingTableDefinitionsAndPrivilegesUnchanged": true,
+    "existingSyntheticEmailUnchanged": true,
+    "mainFrontendTypecheck": "passed",
+    "previewFrontendTypecheck": "passed"
+  },
+  "limitations": [
+    "No new hosted schema release or Edge deployment. TEST remains release 009.",
+    "No live Slack credential, provider call, schedule or production change.",
+    "Finite attempt budget may leave a retained dead letter requiring review.",
+    "Threads, continuous/multi-window history and workspace-wide pacing remain incomplete.",
+    "Frontend typechecks do not typecheck Deno Edge entrypoints. Runtime contracts are exercised by Node tests; hosted Edge acceptance remains required."
+  ]
+}

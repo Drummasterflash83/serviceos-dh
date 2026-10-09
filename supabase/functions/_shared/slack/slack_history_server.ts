@@ -22,8 +22,8 @@ const fields = [
   "maxPages",
 ] as const;
 
-/** Actual server transport. Only this closure sees a token from the existing
- * tenant/provider secret broker. It never accepts URLs, methods or credentials
+/** Actual server transport. Only this closure sees the exact existing Vault
+ * credential bound to this approved job. It never accepts URLs, methods or credentials
  * from a job payload and never falls back to notification credentials. */
 export function createSlackHistoryServerPorts(
   ctx: WorkerHandlerContext,
@@ -94,10 +94,14 @@ export function createSlackHistoryServerPorts(
         );
       };
       if (!(await authorised())) return null;
-      const secret = await db.rpc("provider_secret_read", {
-        p_tenant: ctx.tenantId,
-        p_provider: "slack",
-        p_field: "bot_token",
+      const secret = await db.rpc("learn_slack_read_credential", {
+        p_tenant_id: ctx.tenantId,
+        p_job_id: ctx.jobId,
+        p_claimed_by: ctx.claim!.claimedBy,
+        p_attempt_count: ctx.claim!.attemptCount,
+        p_connection_id: initial.id,
+        p_revision: initial.revision,
+        p_secret_id: initial.secretRef,
       });
       if (
         secret.error ||

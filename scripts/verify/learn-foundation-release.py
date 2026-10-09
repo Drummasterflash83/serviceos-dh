@@ -314,6 +314,29 @@ try:
                         refused(run('set role authenticated;'+slack_approve(943,'CAFTER'),False),'Company owner/admin access required')
                         refused(run('begin isolation level repeatable read;set role authenticated;'+slack_approve(944,'CSTALE'),False),'fresh read-committed snapshot')
                         print('Slack approval/revocation in both controlled orderings and stale-snapshot refusal: PASS',flush=True)
+                        if '--slack-worker' in sys.argv:
+                            prereqs=json.loads((ROOT/'docs/operations/evidence/learn-test-worker-prerequisites-2026-10-09.json').read_text())
+                            claim=next(f for f in prereqs['functions'] if f['name']=='platform_jobs_claim')
+                            apply('set role postgres;'+claim['definition']+";revoke all on function platform_jobs_claim(text,integer,integer,text[]) from public,anon,authenticated;grant execute on function platform_jobs_claim(text,integer,integer,text[]) to service_role;grant select,insert,update on platform_jobs to service_role;",'Recorded queue claim and service privileges')
+                            worker_before=json.loads(run(catalog_sql).stdout)
+                            apply('set role postgres;'+(ROOT/'supabase/migrations/20261030100000_learn_slack_worker.sql').read_text(),'Slack fenced execution migration as non-superuser')
+                            worker_after=json.loads(run(catalog_sql).stdout)
+                            assert worker_after['tables']==worker_before['tables'],'Worker changed existing table definitions or privileges'
+                            apply((ROOT/'scripts/verify/learn-slack-worker.assert.sql').read_text(),'Slack lease recovery, page replay, atomic continuation, bounded retries and isolation')
+                            apply("insert into platform_jobs(id,tenant_id,connector_id,job_type,job_key,status,max_attempts,payload) select verify.id(980),tenant_id,'slack','slack.history_sync','slack.history:'||account_id::text,'queued',5,jsonb_build_object('connector_account_id',account_id) from verify.worker_page;",'Synthetic concurrent Slack claim fixture')
+                            with Held("select id from learn_slack_claim_jobs(verify.id(981),1);") as held:
+                                assert run("set role service_role;select count(*)=0 from learn_slack_claim_jobs(verify.id(982),1)").stdout.strip().endswith(b't')
+                                held.commit()
+                            run("update platform_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id=verify.id(980)")
+                            with Held("select id from learn_slack_claim_jobs(verify.id(982),1);") as held:
+                                refused(race_after(held,"select learn_slack_finish_job(verify.id(901),verify.id(980),'learn-slack:'||verify.id(981),1,'{\"success\":true}');"),'slack_queue_not_owned')
+                            print('Concurrent claim skips locked jobs; stale worker blocked behind replacement claim is refused: PASS',flush=True)
+                            apply('create extension supabase_vault cascade;','Real Vault extension in disposable database')
+                            apply('set role postgres;'+(ROOT/'supabase/migrations/20261030110000_learn_slack_credential_binding.sql').read_text(),'Job-bound existing credential resolver')
+                            apply((ROOT/'scripts/verify/learn-slack-credential.assert.sql').read_text(),'Real Vault reference, tenant, revision, lease and browser access checks')
+
+
+
 
 
 

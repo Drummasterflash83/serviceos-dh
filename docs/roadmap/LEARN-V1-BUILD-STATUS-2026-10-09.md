@@ -494,3 +494,21 @@ connections disabled and logins/approval access revoked. This does not connect a
 Slack workspace: broker/worker deployment, real credentials/permission, threads,
 continuous ingestion and large historical imports remain. See
 [Slack release evidence and limits](../operations/LEARN-TEST-SLACK.md).
+
+
+## Slack durable execution and credential binding — locally verified
+
+Added a Slack-only worker on the existing queue, unexpired claim checks before
+credential use and source publication, durable per-page receipts, atomic delayed
+continuation and retained finite retries/dead letters. Controlled database races
+prove a replaced worker cannot complete and concurrent claimers skip locked jobs.
+An injected continuation failure rolls job completion back without losing the page.
+The existing generic claim function reserves Slack while preserving other types.
+
+The new credential resolver reuses an existing Vault secret only when its reference,
+tenant-qualified name, connection revision, approval and owned job agree. Actual
+Vault encryption tests use synthetic values in a disposable offline PostgreSQL
+instance. An infrastructure-only Edge entrypoint is prepared; no schedule or live
+provider connection was created. TEST remains at release 009, 87 tables and ten
+receipts. Release packaging, hosted rehearsal, deployment and signed-in/Edge
+acceptance remain pending. See [worker behavior and verification limits](../operations/LEARN-SLACK-INGESTION.md).

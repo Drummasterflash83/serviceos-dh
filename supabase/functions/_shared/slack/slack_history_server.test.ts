@@ -24,6 +24,9 @@ function fixture() {
       id: id(2),
       tenant_id: id(1),
       status: "running",
+      claimed_by: "learn-slack:test",
+      attempt_count: 1,
+      lease_expires_at: "2026-10-09T12:03:00Z",
       job_type: "slack.history_sync",
       payload: { connector_account_id: id(3) },
     },
@@ -97,7 +100,7 @@ function fixture() {
     },
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
-      if (name === "provider_secret_read") return { data: token, error: null };
+      if (name === "learn_slack_read_credential") return { data: token, error: null };
       if (name === "slack_history_commit_page") {
         rows.connector_accounts.sync_cursor = args.p_next;
         return { data: true, error: null };
@@ -108,6 +111,7 @@ function fixture() {
   const ctx: any = {
     tenantId: id(1),
     jobId: id(2),
+    claim: { claimedBy: "learn-slack:test", attemptCount: 1 },
     payload: { connectionId: "untrusted", token: "untrusted", channel: "C999" },
     supabaseAdmin: db,
   };
@@ -155,10 +159,14 @@ test("actual server transport scopes secret lookup, validates workspace/channel 
   assert.equal(r.result?.stopReason, "run_page_limit");
   assert.equal(r.continuation?.availableAt, "2026-10-09T12:01:00.000Z");
   assert.deepEqual(r.continuation?.payload, { connector_account_id: id(3) });
-  assert.deepEqual(f.rpc.find((r) => r.name === "provider_secret_read")?.args, {
-    p_tenant: id(1),
-    p_provider: "slack",
-    p_field: "bot_token",
+  assert.deepEqual(f.rpc.find((r) => r.name === "learn_slack_read_credential")?.args, {
+    p_tenant_id: id(1),
+    p_job_id: id(2),
+    p_claimed_by: "learn-slack:test",
+    p_attempt_count: 1,
+    p_connection_id: id(5),
+    p_revision: "2026-10-09T11:00:00Z",
+    p_secret_id: id(6),
   });
   assert.ok(
     f.reads.every((r) =>
@@ -227,6 +235,8 @@ test("revocation or credential revision change during provider response prevents
   for (const mutate of [
     (f: any) => (f.rows.connector_accounts.settings.slack_history.approved = false),
     (f: any) => (f.rows.provider_connections.updated_at = "2026-10-09T12:00:00Z"),
+    (f: any) => (f.rows.platform_jobs.claimed_by = "replacement"),
+    (f: any) => (f.rows.platform_jobs.lease_expires_at = "2026-10-09T12:00:00Z"),
   ]) {
     const f = fixture();
     f.state.override = (method) => {
