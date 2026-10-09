@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-foundation-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "b25d2a71703ed248c6d6541d7e445b6703df49fa67cee83c51eebbc570d2040f",
+  "observedBefore": "2026-10-09T20:00:36.012725+00:00",
+  "observedAfter": "2026-10-09T20:00:37.75583+00:00",
+  "state": "rehearsed_and_rolled_back",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "9ee0e3a93c0c2e9e184e90bd385b22b0aa6d6136b1cb5a4fddc8e268fa96257c",
+  "afterCatalogSha256": "9ee0e3a93c0c2e9e184e90bd385b22b0aa6d6136b1cb5a4fddc8e268fa96257c",
+  "limitations": [
+    "All new foundation objects and the receipt were rolled back; this is not a persistent release.",
+    "No customer rows, recorded audio, provider operations, real JWT acceptance or UI behavior were tested.",
+    "Before/after comparison covers the recorded definitions, metadata-view privileges and migration receipts; it is not a backup.",
+    "An unverified result requires inspection; the write request is never retried automatically."
+  ]
+}

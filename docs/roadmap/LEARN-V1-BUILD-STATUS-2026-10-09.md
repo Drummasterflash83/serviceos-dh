@@ -350,6 +350,15 @@ tests, isolated SQL privilege/receipt-rollback assertions and hosted synthetic
 acceptance pass for this slice. See
 [release evidence and remaining boundaries](../operations/LEARN-TEST-LAUNCH-ACCESS.md).
 
+The next TEST card/work foundation is prepared from nine retained migration
+sources: 33 new tables for cards, relationships, staff/teams, work, ownership,
+sites/jobs and import provenance. Isolated database tests and a hosted rollback-only
+rehearsal passed at 20:03 UTC. Existing definitions and launch privileges remained
+unchanged; no foundation table or receipt was left installed. Same-tenant reference
+guards and restrictive read policies close the legacy cross-company paths.
+Persistent installation, real user acceptance and later LEARN dependencies remain
+outstanding. See [foundation scope and evidence](../operations/LEARN-TEST-FOUNDATIONS.md).
+
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.
 Confirmed viewer-role staff can act within the same item scope. Synthetic database

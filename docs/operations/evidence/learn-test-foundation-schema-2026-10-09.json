@@ -1,0 +1,4081 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "readiness": {
+    "version": "learn-test-readiness/2",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-09T19:59:50.703043+00:00",
+    "state": "not_release_verified",
+    "publicTableCount": 26,
+    "rlsTableCount": 26,
+    "noPolicyTables": [
+      "audit_logs",
+      "config_versions",
+      "email_ai_insights",
+      "email_attachments",
+      "email_oauth_tokens",
+      "email_threads",
+      "google_workspace_connections",
+      "interactions",
+      "phone_accounts",
+      "phone_ai_insights",
+      "phone_endpoints",
+      "platform_jobs",
+      "system_health_checks",
+      "system_health_components",
+      "tenants"
+    ],
+    "migrationLedgers": [
+      "of_test_deploy.migrations"
+    ],
+    "edgeFunctions": [
+      {
+        "name": "learn-launch-status",
+        "status": "ACTIVE",
+        "verifyJwt": true
+      }
+    ],
+    "launchFunctionPresent": true,
+    "slices": {
+      "launch": [
+        {
+          "table": "email_messages",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "created_at",
+            "raw_payload"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "phone_calls",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "created_at",
+            "provider_call_id",
+            "linked_id",
+            "direction",
+            "started_at",
+            "duration_seconds"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "phone_recordings",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "created_at",
+            "provider_call_id",
+            "linked_id"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "phone_transcripts",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "status"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "email_accounts",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "tenant_id",
+            "status"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "email_account_protocol_select_v2",
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "google_workspace_mailboxes",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "sync_enabled",
+            "status"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "email_sync_runs",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "tenant_id",
+            "status",
+            "sync_type",
+            "started_at",
+            "completed_at",
+            "records_processed",
+            "error_message"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "email_run_protocol_select_v2",
+            "learn_launch_metadata_select"
+          ]
+        },
+        {
+          "table": "phone_sync_runs",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "tenant_id",
+            "status",
+            "sync_type",
+            "started_at",
+            "completed_at",
+            "records_processed",
+            "error_message"
+          ],
+          "rls": true,
+          "selectPolicyNames": [
+            "learn_launch_metadata_select"
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "table": "customer_cards",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "title",
+            "summary",
+            "person_id",
+            "company_id",
+            "owner_id",
+            "updated_at"
+          ]
+        },
+        {
+          "table": "jobs",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "title",
+            "job_number",
+            "status",
+            "source_system",
+            "verified",
+            "updated_at"
+          ]
+        },
+        {
+          "table": "team_members",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "display_name",
+            "formal_role",
+            "org_unit_id",
+            "profile_id",
+            "confirmed_at",
+            "effective_to",
+            "updated_at"
+          ]
+        },
+        {
+          "table": "org_units",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "name"
+          ]
+        },
+        {
+          "table": "interactions",
+          "state": "blocked",
+          "missingColumns": [],
+          "unreadableColumns": [
+            "id",
+            "tenant_id",
+            "source_connector_id",
+            "source_type",
+            "source_table",
+            "source_id",
+            "occurred_at",
+            "subject",
+            "summary",
+            "body_preview",
+            "status",
+            "related_person_id",
+            "related_company_id",
+            "related_job_id"
+          ],
+          "rls": true,
+          "selectPolicyNames": []
+        },
+        {
+          "table": "intelligence_objects",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "object_type",
+            "subject",
+            "status",
+            "deadline",
+            "responsible_ref",
+            "accountable_ref",
+            "waiting_on_ref",
+            "confidence",
+            "source_interactions",
+            "source_entities",
+            "attributes",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        {
+          "table": "graph_nodes",
+          "state": "missing_table",
+          "missingColumns": [
+            "id",
+            "tenant_id",
+            "source_table",
+            "source_id"
+          ]
+        }
+      ]
+    },
+    "rpcs": [
+      {
+        "name": "learn_scorecard_save_draft",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_scorecard_publish",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_scorecard_policy_for_period",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_performance_review",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_work_history_read",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_member_history_read",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_work_handoffs_collect",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_work_residence_collect",
+        "state": "missing_or_not_executable"
+      },
+      {
+        "name": "learn_slack_start_import",
+        "state": "missing_or_not_executable"
+      }
+    ],
+    "launchMetadata": {
+      "mode": "test_metadata_views",
+      "state": "needs_semantic_and_user_verification",
+      "roleIssues": [],
+      "unexpectedRelations": [],
+      "sources": [
+        {
+          "source": "profiles",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "email_messages",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "phone_calls",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "phone_recordings",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "phone_transcripts",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "email_accounts",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "google_workspace_mailboxes",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "email_sync_runs",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        },
+        {
+          "source": "phone_sync_runs",
+          "state": "needs_policy_semantics_verification",
+          "issues": []
+        }
+      ],
+      "views": [
+        {
+          "view": "learn_launch_email_messages",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_phone_calls",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_phone_recordings",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_phone_transcripts",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_email_accounts",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_google_workspace_mailboxes",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_email_sync_runs",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        },
+        {
+          "view": "learn_launch_phone_sync_runs",
+          "state": "needs_projection_and_user_verification",
+          "issues": []
+        }
+      ],
+      "limitations": [
+        "Catalog checks do not prove projection redaction, policy semantics, HTTP/JWT access or deployment configuration."
+      ]
+    },
+    "limitations": [
+      "Catalog presence, grants and policy names do not prove ordinary-user access or tenant isolation.",
+      "Policy roles/expressions, column types, function signatures, transitive dependencies and current migration ledgers need review.",
+      "No customer rows, source completeness, backups, restore, OAuth consent or provider traffic are tested.",
+      "Optional voicemail reads and the rest of the full application are outside this minimum read contract.",
+      "This audit cannot authorize deployment or changes to grants/policies; no schema changes are performed."
+    ],
+    "customMigrationEntries": [
+      {
+        "source_sha256": "821515d9b8034b74826e1a81837c64d1b02804402da223715404d84b307a34d6",
+        "migration_name": "openfolk_test_learn_bootstrap_v5",
+        "project_ref": "saatxzwxvdvqevbnskxy",
+        "applied_at": "2026-10-04 20:12:22.960138+00"
+      },
+      {
+        "source_sha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+        "migration_name": "learn_launch_metadata_views_v1",
+        "project_ref": "saatxzwxvdvqevbnskxy",
+        "applied_at": "2026-10-09 19:32:31.633963+00"
+      }
+    ]
+  },
+  "readinessCatalogSha256": "ddcd48268501077b4c2386d0f375ba3a33acb6a71b303af7d1e02e1508aef62b",
+  "tables": [
+    {
+      "rls": true,
+      "name": "audit_logs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "actor",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "resource_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resource_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "detail",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "audit_logs_action_idx",
+          "definition": "CREATE INDEX audit_logs_action_idx ON public.audit_logs USING btree (action)"
+        },
+        {
+          "name": "audit_logs_created_at_idx",
+          "definition": "CREATE INDEX audit_logs_created_at_idx ON public.audit_logs USING btree (created_at)"
+        },
+        {
+          "name": "audit_logs_pkey",
+          "definition": "CREATE UNIQUE INDEX audit_logs_pkey ON public.audit_logs USING btree (id)"
+        },
+        {
+          "name": "audit_logs_tenant_id_idx",
+          "definition": "CREATE INDEX audit_logs_tenant_id_idx ON public.audit_logs USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "audit_logs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "config_versions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "artifact_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "artifact_key",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'draft'::text",
+          "notNull": true
+        },
+        {
+          "name": "supersedes",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "author",
+          "type": "text",
+          "default": "'system'::text",
+          "notNull": true
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "payload_hash",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "config_versions_lookup",
+          "definition": "CREATE INDEX config_versions_lookup ON public.config_versions USING btree (tenant_id, artifact_kind, artifact_key)"
+        },
+        {
+          "name": "config_versions_pkey",
+          "definition": "CREATE UNIQUE INDEX config_versions_pkey ON public.config_versions USING btree (id)"
+        },
+        {
+          "name": "config_versions_published_uk",
+          "definition": "CREATE UNIQUE INDEX config_versions_published_uk ON public.config_versions USING btree (artifact_kind, artifact_key) WHERE (status = 'published'::text)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "config_versions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "config_versions_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'simulation'::text, 'review'::text, 'published'::text, 'archived'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "config_versions_supersedes_fkey",
+          "definition": "FOREIGN KEY (supersedes) REFERENCES config_versions(id)"
+        },
+        {
+          "kind": "f",
+          "name": "config_versions_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_accounts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "backfill_status",
+          "type": "text",
+          "default": "'idle'::text",
+          "notNull": true
+        },
+        {
+          "name": "backfill_started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_page_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_total_fetched",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "backfill_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "history_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "auth_state",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "auth_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "auth_state_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_success_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_attempt_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_sync_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_accounts_pkey",
+          "definition": "CREATE UNIQUE INDEX email_accounts_pkey ON public.email_accounts USING btree (id)"
+        },
+        {
+          "name": "email_accounts_tenant_id_idx",
+          "definition": "CREATE INDEX email_accounts_tenant_id_idx ON public.email_accounts USING btree (tenant_id)"
+        },
+        {
+          "name": "email_accounts_tenant_id_provider_email_address_key",
+          "definition": "CREATE UNIQUE INDEX email_accounts_tenant_id_provider_email_address_key ON public.email_accounts USING btree (tenant_id, provider, email_address)"
+        },
+        {
+          "name": "email_accounts_tenant_id_uk",
+          "definition": "CREATE UNIQUE INDEX email_accounts_tenant_id_uk ON public.email_accounts USING btree (tenant_id, id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_account_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_account_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_accounts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_accounts_set_updated_at BEFORE UPDATE ON public.email_accounts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "email_ingestion_account_guard_v2",
+          "function": "email_ingestion_account_guard_v2",
+          "definition": "CREATE TRIGGER email_ingestion_account_guard_v2 BEFORE INSERT OR UPDATE ON public.email_accounts FOR EACH ROW EXECUTE FUNCTION email_ingestion_account_guard_v2()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_accounts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_accounts_tenant_id_provider_email_address_key",
+          "definition": "UNIQUE (tenant_id, provider, email_address)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ai_insights",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "message_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "thread_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "intent",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "urgency",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "action_required",
+          "type": "boolean",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "suggested_owner",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(5,4)",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_ai_insights_message_idx",
+          "definition": "CREATE INDEX email_ai_insights_message_idx ON public.email_ai_insights USING btree (tenant_id, message_id)"
+        },
+        {
+          "name": "email_ai_insights_pkey",
+          "definition": "CREATE UNIQUE INDEX email_ai_insights_pkey ON public.email_ai_insights USING btree (id)"
+        },
+        {
+          "name": "email_ai_insights_tenant_id_idx",
+          "definition": "CREATE INDEX email_ai_insights_tenant_id_idx ON public.email_ai_insights USING btree (tenant_id)"
+        },
+        {
+          "name": "email_ai_insights_thread_idx",
+          "definition": "CREATE INDEX email_ai_insights_thread_idx ON public.email_ai_insights USING btree (tenant_id, thread_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "email_ai_insights_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_ai_insights_set_updated_at BEFORE UPDATE ON public.email_ai_insights FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "email_ai_insights_message_id_fkey",
+          "definition": "FOREIGN KEY (message_id) REFERENCES email_messages(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "email_ai_insights_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "email_ai_insights_thread_id_fkey",
+          "definition": "FOREIGN KEY (thread_id) REFERENCES email_threads(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_attachments",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "message_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "filename",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_attachments_message_idx",
+          "definition": "CREATE INDEX email_attachments_message_idx ON public.email_attachments USING btree (message_id)"
+        },
+        {
+          "name": "email_attachments_pkey",
+          "definition": "CREATE UNIQUE INDEX email_attachments_pkey ON public.email_attachments USING btree (id)"
+        },
+        {
+          "name": "email_attachments_tenant_id_idx",
+          "definition": "CREATE INDEX email_attachments_tenant_id_idx ON public.email_attachments USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "email_attachments_message_id_fkey",
+          "definition": "FOREIGN KEY (message_id) REFERENCES email_messages(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "email_attachments_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_checkpoints",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "default": "2",
+          "notNull": true
+        },
+        {
+          "name": "generation",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "owner_attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "continuation",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "block_code",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_ingestion_checkpoints_pkey",
+          "definition": "CREATE UNIQUE INDEX email_ingestion_checkpoints_pkey ON public.email_ingestion_checkpoints USING btree (tenant_id, email_account_id, stream)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_checkpoint_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_checkpoint_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_checkpoint_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check",
+          "definition": "CHECK (((state = 'claimed'::text) = (owner_attempt_id IS NOT NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check1",
+          "definition": "CHECK (((state = 'blocked'::text) = (block_code IS NOT NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check2",
+          "definition": "CHECK (((stream <> 'historical'::text) OR (continuation IS NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_continuation_check",
+          "definition": "CHECK (((continuation IS NULL) OR (jsonb_typeof(continuation) = 'object'::text)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_contract_version_check",
+          "definition": "CHECK ((contract_version = 2))"
+        },
+        {
+          "kind": "p",
+          "name": "email_ingestion_checkpoints_pkey",
+          "definition": "PRIMARY KEY (tenant_id, email_account_id, stream)"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_revision_check",
+          "definition": "CHECK ((revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_state_check",
+          "definition": "CHECK ((state = ANY (ARRAY['ready'::text, 'claimed'::text, 'blocked'::text, 'completed'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_stream_check",
+          "definition": "CHECK ((stream = ANY (ARRAY['recent'::text, 'historical'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_checkpoints_tenant_id_email_account_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id) REFERENCES email_accounts(tenant_id, id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_checkpoints_tenant_id_owner_attempt_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, owner_attempt_id) REFERENCES email_sync_runs(tenant_id, id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_transitions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "transition_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "default": "2",
+          "notNull": true
+        },
+        {
+          "name": "operation",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "expected_generation",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expected_revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expected_owner_attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "request_document",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "request_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "accepted_result",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "checkpoint_stream",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "result_generation",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "result_revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_ingestion_attempt_v2",
+          "definition": "CREATE INDEX email_ingestion_attempt_v2 ON public.email_ingestion_transitions USING btree (attempt_id)"
+        },
+        {
+          "name": "email_ingestion_input_token_v2",
+          "definition": "CREATE INDEX email_ingestion_input_token_v2 ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, result_generation, (((request_document -> 'payload'::text) ->> 'label'::text)), md5(COALESCE(((request_document -> 'payload'::text) ->> 'expected_input_page_token'::text), ((request_document -> 'payload'::text) ->> 'expected_page_token'::text)))) WHERE (operation = 'checkpoint'::text)"
+        },
+        {
+          "name": "email_ingestion_output_token_v2",
+          "definition": "CREATE INDEX email_ingestion_output_token_v2 ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, result_generation, (((request_document -> 'payload'::text) ->> 'label'::text)), md5(((request_document -> 'payload'::text) ->> 'returned_next_page_token'::text))) WHERE (operation = 'checkpoint'::text)"
+        },
+        {
+          "name": "email_ingestion_transitions_pkey",
+          "definition": "CREATE UNIQUE INDEX email_ingestion_transitions_pkey ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, transition_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_receipt_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_receipt_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_accepted_result_check",
+          "definition": "CHECK ((jsonb_typeof(accepted_result) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_check",
+          "definition": "CHECK ((((checkpoint_stream IS NULL) AND (operation = 'finish_attempt'::text) AND (result_generation IS NULL) AND (result_revision IS NULL)) OR ((checkpoint_stream IS NOT NULL) AND (checkpoint_stream = stream) AND (result_generation IS NOT NULL) AND (result_revision IS NOT NULL))))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_check1",
+          "definition": "CHECK (((checkpoint_stream IS NOT NULL) OR (accepted_result @> '{\"revision\": null, \"generation\": null, \"attempt_status\": \"failed\", \"checkpoint_state\": null, \"owner_attempt_id\": null, \"coverage_complete\": false, \"checkpoint_present\": false}'::jsonb)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_contract_version_check",
+          "definition": "CHECK ((contract_version = 2))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_expected_revision_check",
+          "definition": "CHECK ((expected_revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_operation_check",
+          "definition": "CHECK ((operation = ANY (ARRAY['claim'::text, 'initialize_traversal'::text, 'checkpoint'::text, 'release'::text, 'block'::text, 'takeover'::text, 'restart'::text, 'finish_attempt'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "email_ingestion_transitions_pkey",
+          "definition": "PRIMARY KEY (tenant_id, email_account_id, stream, transition_id)"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_request_document_check",
+          "definition": "CHECK ((jsonb_typeof(request_document) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_result_revision_check",
+          "definition": "CHECK ((result_revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_stream_check",
+          "definition": "CHECK ((stream = ANY (ARRAY['recent'::text, 'historical'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_attempt_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, attempt_id) REFERENCES email_sync_runs(tenant_id, id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_email_account_id_che_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id, checkpoint_stream) REFERENCES email_ingestion_checkpoints(tenant_id, email_account_id, stream) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_email_account_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id) REFERENCES email_accounts(tenant_id, id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_messages",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_message_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "cc_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "snippet",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_html",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_messages_from_idx",
+          "definition": "CREATE INDEX email_messages_from_idx ON public.email_messages USING btree (tenant_id, from_email)"
+        },
+        {
+          "name": "email_messages_pkey",
+          "definition": "CREATE UNIQUE INDEX email_messages_pkey ON public.email_messages USING btree (id)"
+        },
+        {
+          "name": "email_messages_received_idx",
+          "definition": "CREATE INDEX email_messages_received_idx ON public.email_messages USING btree (tenant_id, received_at DESC)"
+        },
+        {
+          "name": "email_messages_tenant_id_idx",
+          "definition": "CREATE INDEX email_messages_tenant_id_idx ON public.email_messages USING btree (tenant_id)"
+        },
+        {
+          "name": "email_messages_tenant_id_provider_provider_message_id_key",
+          "definition": "CREATE UNIQUE INDEX email_messages_tenant_id_provider_provider_message_id_key ON public.email_messages USING btree (tenant_id, provider, provider_message_id)"
+        },
+        {
+          "name": "email_messages_thread_idx",
+          "definition": "CREATE INDEX email_messages_thread_idx ON public.email_messages USING btree (tenant_id, provider_thread_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_messages_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_messages_set_updated_at BEFORE UPDATE ON public.email_messages FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_messages_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_messages_tenant_id_provider_provider_message_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_message_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_oauth_tokens",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "access_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "refresh_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "token_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_oauth_tokens_email_account_id_key",
+          "definition": "CREATE UNIQUE INDEX email_oauth_tokens_email_account_id_key ON public.email_oauth_tokens USING btree (email_account_id)"
+        },
+        {
+          "name": "email_oauth_tokens_pkey",
+          "definition": "CREATE UNIQUE INDEX email_oauth_tokens_pkey ON public.email_oauth_tokens USING btree (id)"
+        },
+        {
+          "name": "email_oauth_tokens_tenant_id_idx",
+          "definition": "CREATE INDEX email_oauth_tokens_tenant_id_idx ON public.email_oauth_tokens USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "email_oauth_tokens_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_oauth_tokens_set_updated_at BEFORE UPDATE ON public.email_oauth_tokens FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "email_oauth_tokens_email_account_id_fkey",
+          "definition": "FOREIGN KEY (email_account_id) REFERENCES email_accounts(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "u",
+          "name": "email_oauth_tokens_email_account_id_key",
+          "definition": "UNIQUE (email_account_id)"
+        },
+        {
+          "kind": "p",
+          "name": "email_oauth_tokens_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_sync_runs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'running'::text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_sync_runs_pkey",
+          "definition": "CREATE UNIQUE INDEX email_sync_runs_pkey ON public.email_sync_runs USING btree (id)"
+        },
+        {
+          "name": "email_sync_runs_tenant_id_id_v2",
+          "definition": "CREATE UNIQUE INDEX email_sync_runs_tenant_id_id_v2 ON public.email_sync_runs USING btree (tenant_id, id)"
+        },
+        {
+          "name": "email_sync_runs_tenant_id_idx",
+          "definition": "CREATE INDEX email_sync_runs_tenant_id_idx ON public.email_sync_runs USING btree (tenant_id)"
+        },
+        {
+          "name": "email_sync_runs_type_status_idx",
+          "definition": "CREATE INDEX email_sync_runs_type_status_idx ON public.email_sync_runs USING btree (tenant_id, sync_type, status)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_run_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_run_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_ingestion_run_guard_v2",
+          "function": "email_ingestion_run_guard_v2",
+          "definition": "CREATE TRIGGER email_ingestion_run_guard_v2 BEFORE INSERT OR DELETE OR UPDATE ON public.email_sync_runs FOR EACH ROW EXECUTE FUNCTION email_ingestion_run_guard_v2()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_sync_runs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_threads",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "participants",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "last_message_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_threads_feed_idx",
+          "definition": "CREATE INDEX email_threads_feed_idx ON public.email_threads USING btree (tenant_id, last_message_at DESC)"
+        },
+        {
+          "name": "email_threads_pkey",
+          "definition": "CREATE UNIQUE INDEX email_threads_pkey ON public.email_threads USING btree (id)"
+        },
+        {
+          "name": "email_threads_tenant_id_idx",
+          "definition": "CREATE INDEX email_threads_tenant_id_idx ON public.email_threads USING btree (tenant_id)"
+        },
+        {
+          "name": "email_threads_tenant_id_provider_provider_thread_id_key",
+          "definition": "CREATE UNIQUE INDEX email_threads_tenant_id_provider_provider_thread_id_key ON public.email_threads USING btree (tenant_id, provider, provider_thread_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "email_threads_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_threads_set_updated_at BEFORE UPDATE ON public.email_threads FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_threads_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_threads_tenant_id_provider_provider_thread_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_thread_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_connections",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "customer_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "service_account_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'planned'::text",
+          "notNull": true
+        },
+        {
+          "name": "delegated_scopes",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "impersonation_subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "service_account_client_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "authorised_scopes",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "last_verified_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "google_workspace_connections_pkey",
+          "definition": "CREATE UNIQUE INDEX google_workspace_connections_pkey ON public.google_workspace_connections USING btree (id)"
+        },
+        {
+          "name": "google_workspace_connections_tenant_id_domain_key",
+          "definition": "CREATE UNIQUE INDEX google_workspace_connections_tenant_id_domain_key ON public.google_workspace_connections USING btree (tenant_id, domain)"
+        },
+        {
+          "name": "google_workspace_connections_tenant_id_idx",
+          "definition": "CREATE INDEX google_workspace_connections_tenant_id_idx ON public.google_workspace_connections USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "google_workspace_connections_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER google_workspace_connections_set_updated_at BEFORE UPDATE ON public.google_workspace_connections FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "google_workspace_connections_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "google_workspace_connections_tenant_id_domain_key",
+          "definition": "UNIQUE (tenant_id, domain)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_mailboxes",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "mailbox_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sync_enabled",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "google_workspace_mailboxes_connection_id_email_address_key",
+          "definition": "CREATE UNIQUE INDEX google_workspace_mailboxes_connection_id_email_address_key ON public.google_workspace_mailboxes USING btree (connection_id, email_address)"
+        },
+        {
+          "name": "google_workspace_mailboxes_connection_idx",
+          "definition": "CREATE INDEX google_workspace_mailboxes_connection_idx ON public.google_workspace_mailboxes USING btree (connection_id)"
+        },
+        {
+          "name": "google_workspace_mailboxes_pkey",
+          "definition": "CREATE UNIQUE INDEX google_workspace_mailboxes_pkey ON public.google_workspace_mailboxes USING btree (id)"
+        },
+        {
+          "name": "google_workspace_mailboxes_tenant_id_idx",
+          "definition": "CREATE INDEX google_workspace_mailboxes_tenant_id_idx ON public.google_workspace_mailboxes USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "google_workspace_mailboxes_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER google_workspace_mailboxes_set_updated_at BEFORE UPDATE ON public.google_workspace_mailboxes FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "u",
+          "name": "google_workspace_mailboxes_connection_id_email_address_key",
+          "definition": "UNIQUE (connection_id, email_address)"
+        },
+        {
+          "kind": "f",
+          "name": "google_workspace_mailboxes_connection_id_fkey",
+          "definition": "FOREIGN KEY (connection_id) REFERENCES google_workspace_connections(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "google_workspace_mailboxes_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "interactions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_connector_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_table",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_external_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "interaction_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_preview",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_address",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_addresses",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "cc_addresses",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "phone_from",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "phone_to",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "processing_status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "related_person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "related_company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "related_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "related_job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "related_task_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "interactions_pkey",
+          "definition": "CREATE UNIQUE INDEX interactions_pkey ON public.interactions USING btree (id)"
+        },
+        {
+          "name": "interactions_tenant_company_idx",
+          "definition": "CREATE INDEX interactions_tenant_company_idx ON public.interactions USING btree (tenant_id, related_company_id)"
+        },
+        {
+          "name": "interactions_tenant_connector_occurred_idx",
+          "definition": "CREATE INDEX interactions_tenant_connector_occurred_idx ON public.interactions USING btree (tenant_id, source_connector_id, occurred_at DESC)"
+        },
+        {
+          "name": "interactions_tenant_id_source_table_source_id_key",
+          "definition": "CREATE UNIQUE INDEX interactions_tenant_id_source_table_source_id_key ON public.interactions USING btree (tenant_id, source_table, source_id)"
+        },
+        {
+          "name": "interactions_tenant_occurred_idx",
+          "definition": "CREATE INDEX interactions_tenant_occurred_idx ON public.interactions USING btree (tenant_id, occurred_at DESC)"
+        },
+        {
+          "name": "interactions_tenant_person_idx",
+          "definition": "CREATE INDEX interactions_tenant_person_idx ON public.interactions USING btree (tenant_id, related_person_id)"
+        },
+        {
+          "name": "interactions_tenant_processing_idx",
+          "definition": "CREATE INDEX interactions_tenant_processing_idx ON public.interactions USING btree (tenant_id, processing_status)"
+        },
+        {
+          "name": "interactions_tenant_type_occurred_idx",
+          "definition": "CREATE INDEX interactions_tenant_type_occurred_idx ON public.interactions USING btree (tenant_id, interaction_type, occurred_at DESC)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "interactions_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER interactions_set_updated_at BEFORE UPDATE ON public.interactions FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "interactions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "interactions_tenant_id_source_table_source_id_key",
+          "definition": "UNIQUE (tenant_id, source_table, source_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_accounts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_customer_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_accounts_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_accounts_pkey ON public.phone_accounts USING btree (id)"
+        },
+        {
+          "name": "phone_accounts_tenant_id_idx",
+          "definition": "CREATE INDEX phone_accounts_tenant_id_idx ON public.phone_accounts USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_accounts_tenant_id_provider_provider_customer_id_key",
+          "definition": "CREATE UNIQUE INDEX phone_accounts_tenant_id_provider_provider_customer_id_key ON public.phone_accounts USING btree (tenant_id, provider, provider_customer_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "phone_accounts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_accounts_set_updated_at BEFORE UPDATE ON public.phone_accounts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "phone_accounts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "phone_accounts_tenant_id_provider_provider_customer_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_customer_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_ai_insights",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "call_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "recording_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "intent",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "urgency",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "action_required",
+          "type": "boolean",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "suggested_owner",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(5,4)",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "transcript_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_ai_insights_call_id_idx",
+          "definition": "CREATE INDEX phone_ai_insights_call_id_idx ON public.phone_ai_insights USING btree (call_id)"
+        },
+        {
+          "name": "phone_ai_insights_one_per_recording",
+          "definition": "CREATE UNIQUE INDEX phone_ai_insights_one_per_recording ON public.phone_ai_insights USING btree (tenant_id, recording_id) WHERE (recording_id IS NOT NULL)"
+        },
+        {
+          "name": "phone_ai_insights_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_ai_insights_pkey ON public.phone_ai_insights USING btree (id)"
+        },
+        {
+          "name": "phone_ai_insights_recording_id_idx",
+          "definition": "CREATE INDEX phone_ai_insights_recording_id_idx ON public.phone_ai_insights USING btree (recording_id)"
+        },
+        {
+          "name": "phone_ai_insights_recording_idx",
+          "definition": "CREATE INDEX phone_ai_insights_recording_idx ON public.phone_ai_insights USING btree (tenant_id, recording_id)"
+        },
+        {
+          "name": "phone_ai_insights_tenant_id_idx",
+          "definition": "CREATE INDEX phone_ai_insights_tenant_id_idx ON public.phone_ai_insights USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_ai_insights_transcript_idx",
+          "definition": "CREATE INDEX phone_ai_insights_transcript_idx ON public.phone_ai_insights USING btree (tenant_id, transcript_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "phone_ai_insights_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_ai_insights_set_updated_at BEFORE UPDATE ON public.phone_ai_insights FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "phone_ai_insights_call_id_fkey",
+          "definition": "FOREIGN KEY (call_id) REFERENCES phone_calls(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "phone_ai_insights_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "phone_ai_insights_recording_id_fkey",
+          "definition": "FOREIGN KEY (recording_id) REFERENCES phone_recordings(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_calls",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "cost",
+          "type": "numeric(12,4)",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_calls_feed_idx",
+          "definition": "CREATE INDEX phone_calls_feed_idx ON public.phone_calls USING btree (tenant_id, started_at DESC)"
+        },
+        {
+          "name": "phone_calls_from_number_idx",
+          "definition": "CREATE INDEX phone_calls_from_number_idx ON public.phone_calls USING btree (tenant_id, from_number)"
+        },
+        {
+          "name": "phone_calls_linked_id_idx",
+          "definition": "CREATE INDEX phone_calls_linked_id_idx ON public.phone_calls USING btree (tenant_id, linked_id)"
+        },
+        {
+          "name": "phone_calls_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_calls_pkey ON public.phone_calls USING btree (id)"
+        },
+        {
+          "name": "phone_calls_started_at_idx",
+          "definition": "CREATE INDEX phone_calls_started_at_idx ON public.phone_calls USING btree (tenant_id, started_at)"
+        },
+        {
+          "name": "phone_calls_tenant_id_idx",
+          "definition": "CREATE INDEX phone_calls_tenant_id_idx ON public.phone_calls USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_calls_tenant_id_provider_provider_call_id_key",
+          "definition": "CREATE UNIQUE INDEX phone_calls_tenant_id_provider_provider_call_id_key ON public.phone_calls USING btree (tenant_id, provider, provider_call_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_calls_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_calls_set_updated_at BEFORE UPDATE ON public.phone_calls FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "phone_calls_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "phone_calls_tenant_id_provider_provider_call_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_call_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_endpoints",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_endpoint_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "endpoint_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "extension",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "e164_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_endpoints_account_id_idx",
+          "definition": "CREATE INDEX phone_endpoints_account_id_idx ON public.phone_endpoints USING btree (account_id)"
+        },
+        {
+          "name": "phone_endpoints_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_endpoints_pkey ON public.phone_endpoints USING btree (id)"
+        },
+        {
+          "name": "phone_endpoints_tenant_id_idx",
+          "definition": "CREATE INDEX phone_endpoints_tenant_id_idx ON public.phone_endpoints USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_endpoints_tenant_id_provider_provider_endpoint_id_key",
+          "definition": "CREATE UNIQUE INDEX phone_endpoints_tenant_id_provider_provider_endpoint_id_key ON public.phone_endpoints USING btree (tenant_id, provider, provider_endpoint_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "phone_endpoints_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_endpoints_set_updated_at BEFORE UPDATE ON public.phone_endpoints FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "phone_endpoints_account_id_fkey",
+          "definition": "FOREIGN KEY (account_id) REFERENCES phone_accounts(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "phone_endpoints_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "phone_endpoints_tenant_id_provider_provider_endpoint_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_endpoint_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_recordings",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_recording_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "recording_uri",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "file_size",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_recordings_feed_idx",
+          "definition": "CREATE INDEX phone_recordings_feed_idx ON public.phone_recordings USING btree (tenant_id, started_at DESC)"
+        },
+        {
+          "name": "phone_recordings_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_recordings_pkey ON public.phone_recordings USING btree (id)"
+        },
+        {
+          "name": "phone_recordings_provider_call_id_idx",
+          "definition": "CREATE INDEX phone_recordings_provider_call_id_idx ON public.phone_recordings USING btree (tenant_id, provider_call_id)"
+        },
+        {
+          "name": "phone_recordings_tenant_id_idx",
+          "definition": "CREATE INDEX phone_recordings_tenant_id_idx ON public.phone_recordings USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_recordings_tenant_id_provider_provider_recording_id_key",
+          "definition": "CREATE UNIQUE INDEX phone_recordings_tenant_id_provider_provider_recording_id_key ON public.phone_recordings USING btree (tenant_id, provider, provider_recording_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_recordings_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_recordings_set_updated_at BEFORE UPDATE ON public.phone_recordings FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "phone_recordings_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "phone_recordings_tenant_id_provider_provider_recording_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_recording_id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_sync_runs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'running'::text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_sync_runs_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_sync_runs_pkey ON public.phone_sync_runs USING btree (id)"
+        },
+        {
+          "name": "phone_sync_runs_started_at_idx",
+          "definition": "CREATE INDEX phone_sync_runs_started_at_idx ON public.phone_sync_runs USING btree (started_at)"
+        },
+        {
+          "name": "phone_sync_runs_tenant_id_idx",
+          "definition": "CREATE INDEX phone_sync_runs_tenant_id_idx ON public.phone_sync_runs USING btree (tenant_id)"
+        },
+        {
+          "name": "phone_sync_runs_type_status_idx",
+          "definition": "CREATE INDEX phone_sync_runs_type_status_idx ON public.phone_sync_runs USING btree (tenant_id, sync_type, status)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "phone_sync_runs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_transcripts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "recording_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "transcript_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "language",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "phone_transcripts_one_completed_per_recording",
+          "definition": "CREATE UNIQUE INDEX phone_transcripts_one_completed_per_recording ON public.phone_transcripts USING btree (tenant_id, recording_id) WHERE ((status = 'completed'::text) AND (recording_id IS NOT NULL))"
+        },
+        {
+          "name": "phone_transcripts_pkey",
+          "definition": "CREATE UNIQUE INDEX phone_transcripts_pkey ON public.phone_transcripts USING btree (id)"
+        },
+        {
+          "name": "phone_transcripts_recording_id_idx",
+          "definition": "CREATE INDEX phone_transcripts_recording_id_idx ON public.phone_transcripts USING btree (recording_id)"
+        },
+        {
+          "name": "phone_transcripts_recording_idx",
+          "definition": "CREATE INDEX phone_transcripts_recording_idx ON public.phone_transcripts USING btree (tenant_id, recording_id)"
+        },
+        {
+          "name": "phone_transcripts_tenant_id_idx",
+          "definition": "CREATE INDEX phone_transcripts_tenant_id_idx ON public.phone_transcripts USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_transcripts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER phone_transcripts_set_updated_at BEFORE UPDATE ON public.phone_transcripts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "phone_transcripts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "phone_transcripts_recording_id_fkey",
+          "definition": "FOREIGN KEY (recording_id) REFERENCES phone_recordings(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "platform_jobs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connector_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "module_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "job_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "job_key",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'queued'::text",
+          "notNull": true
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "default": "100",
+          "notNull": true
+        },
+        {
+          "name": "progress_current",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "progress_total",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_count",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "attempt_count",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "max_attempts",
+          "type": "integer",
+          "default": "3",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "failed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "next_run_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "result",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "available_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "claimed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "claimed_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "lease_expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_attempt_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "dead_lettered_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "error_code",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "parent_job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "platform_jobs_active_job_key_uk",
+          "definition": "CREATE UNIQUE INDEX platform_jobs_active_job_key_uk ON public.platform_jobs USING btree (tenant_id, job_key) WHERE ((job_key IS NOT NULL) AND (status = ANY (ARRAY['queued'::text, 'running'::text, 'retrying'::text])))"
+        },
+        {
+          "name": "platform_jobs_claim_idx",
+          "definition": "CREATE INDEX platform_jobs_claim_idx ON public.platform_jobs USING btree (available_at, priority, created_at) WHERE (status = ANY (ARRAY['queued'::text, 'retrying'::text]))"
+        },
+        {
+          "name": "platform_jobs_lease_idx",
+          "definition": "CREATE INDEX platform_jobs_lease_idx ON public.platform_jobs USING btree (lease_expires_at) WHERE (status = 'running'::text)"
+        },
+        {
+          "name": "platform_jobs_parent_idx",
+          "definition": "CREATE INDEX platform_jobs_parent_idx ON public.platform_jobs USING btree (tenant_id, parent_job_id) WHERE (parent_job_id IS NOT NULL)"
+        },
+        {
+          "name": "platform_jobs_pkey",
+          "definition": "CREATE UNIQUE INDEX platform_jobs_pkey ON public.platform_jobs USING btree (id)"
+        },
+        {
+          "name": "platform_jobs_tenant_connector_idx",
+          "definition": "CREATE INDEX platform_jobs_tenant_connector_idx ON public.platform_jobs USING btree (tenant_id, connector_id, created_at DESC)"
+        },
+        {
+          "name": "platform_jobs_tenant_next_run_idx",
+          "definition": "CREATE INDEX platform_jobs_tenant_next_run_idx ON public.platform_jobs USING btree (tenant_id, next_run_at)"
+        },
+        {
+          "name": "platform_jobs_tenant_status_idx",
+          "definition": "CREATE INDEX platform_jobs_tenant_status_idx ON public.platform_jobs USING btree (tenant_id, status, created_at DESC)"
+        },
+        {
+          "name": "platform_jobs_tenant_type_idx",
+          "definition": "CREATE INDEX platform_jobs_tenant_type_idx ON public.platform_jobs USING btree (tenant_id, job_type, created_at DESC)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "platform_jobs_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER platform_jobs_set_updated_at BEFORE UPDATE ON public.platform_jobs FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "platform_jobs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "profiles",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "default": "'viewer'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "profiles_pkey",
+          "definition": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+        },
+        {
+          "name": "profiles_role_idx",
+          "definition": "CREATE INDEX profiles_role_idx ON public.profiles USING btree (role)"
+        },
+        {
+          "name": "profiles_tenant_id_idx",
+          "definition": "CREATE INDEX profiles_tenant_id_idx ON public.profiles USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_profile",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(id = ( SELECT auth.uid() AS uid))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "profiles_select_own",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(( SELECT auth.uid() AS uid) = id)",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "profiles_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER profiles_set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "profiles_id_fkey",
+          "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "profiles_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "profiles_role_check",
+          "definition": "CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'ops'::text, 'viewer'::text, 'openfolk'::text])))"
+        }
+      ],
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "system_health_checks",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "component",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "last_success_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_failure_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "failure_count",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "shc_tenant",
+          "definition": "CREATE INDEX shc_tenant ON public.system_health_checks USING btree (tenant_id, component)"
+        },
+        {
+          "name": "system_health_checks_pkey",
+          "definition": "CREATE UNIQUE INDEX system_health_checks_pkey ON public.system_health_checks USING btree (id)"
+        },
+        {
+          "name": "system_health_checks_tenant_id_component_key",
+          "definition": "CREATE UNIQUE INDEX system_health_checks_tenant_id_component_key ON public.system_health_checks USING btree (tenant_id, component)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "system_health_checks_component_fkey",
+          "definition": "FOREIGN KEY (component) REFERENCES system_health_components(component)"
+        },
+        {
+          "kind": "p",
+          "name": "system_health_checks_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "system_health_checks_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['healthy'::text, 'degraded'::text, 'failed'::text, 'unknown'::text])))"
+        },
+        {
+          "kind": "u",
+          "name": "system_health_checks_tenant_id_component_key",
+          "definition": "UNIQUE (tenant_id, component)"
+        },
+        {
+          "kind": "f",
+          "name": "system_health_checks_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "system_health_components",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "component",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "default": "100",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "system_health_components_pkey",
+          "definition": "CREATE UNIQUE INDEX system_health_components_pkey ON public.system_health_components USING btree (component)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "system_health_components_pkey",
+          "definition": "PRIMARY KEY (component)"
+        }
+      ],
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "tenants",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "industry",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "tenants_pkey",
+          "definition": "CREATE UNIQUE INDEX tenants_pkey ON public.tenants USING btree (id)"
+        },
+        {
+          "name": "tenants_slug_key",
+          "definition": "CREATE UNIQUE INDEX tenants_slug_key ON public.tenants USING btree (slug)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "tenants_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER tenants_set_updated_at BEFORE UPDATE ON public.tenants FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "tenants_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "tenants_slug_key",
+          "definition": "UNIQUE (slug)"
+        },
+        {
+          "kind": "c",
+          "name": "tenants_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'suspended'::text, 'archived'::text])))"
+        }
+      ],
+      "authenticatedSelect": false
+    }
+  ],
+  "helpers": [
+    {
+      "name": "current_tenant_id",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_tenant_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select tenant_id from public.profiles where id = auth.uid()\n$function$\n"
+    },
+    {
+      "name": "current_user_role",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_user_role()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select role from public.profiles where id = auth.uid()\n$function$\n"
+    },
+    {
+      "name": "is_openfolk",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_openfolk()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select coalesce((select role = 'openfolk' from public.profiles where id = auth.uid()), false);\n$function$\n"
+    },
+    {
+      "name": "set_updated_at",
+      "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n"
+    }
+  ],
+  "version": "learn-foundation-catalog/1",
+  "observedAt": "2026-10-09T19:59:51.48628+00:00",
+  "serverVersion": "17.11"
+}
