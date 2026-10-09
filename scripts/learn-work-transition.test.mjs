@@ -263,3 +263,23 @@ test("temporary cover cannot claim permanent ownership without assignment author
   assert.equal(r.calls.filter((c) => c.rpc === "work_transition_apply").length, 0);
   assert.equal(r.calls.find((c) => c.rpc === "learn_work_authority").args.p_claim, true);
 });
+
+test('configured conditions cannot be bypassed by starting or accepting work',async()=>{
+  const guarded=[{from_state:'ready',to_state:'in_progress',guard:{approval:true}}];
+  assert.equal(decide('start',{actor:{...actor,isAssignee:true},legalTransitions:guarded}).code,'illegal_transition');
+  const proposed={...work,status:'proposed',responsible_ref:null};
+  const claim={...actor,canClaimUnassigned:true};
+  for(const guards of [[],[{from_state:'proposed',to_state:'ready',guard:{approval:true}}]])
+    assert.equal(decide('accept',{object:proposed,actor:claim,legalTransitions:guards}).code,'illegal_transition');
+  const r=await call({tables:{state_transitions:{data:guarded}}});
+  assert.equal(r.status,409);
+  assert.equal(r.calls.some(c=>c.rpc==='work_transition_apply'),false);
+  assert.ok(r.calls.some(c=>c.table==='state_transitions'&&c.method==='select'&&c.args[0].includes('guard')));
+});
+test('waiting, blocking, completion and correction require nonblank supporting records',()=>{
+  const object={...work,status:'in_progress'},owner={...actor,isAssignee:true,canConfirmOwnership:true};
+  for(const verb of ['wait','block','complete']) for(const evidence of [undefined,null,'','  '])
+    assert.equal(decide(verb,{object,actor:owner,evidence}).code,'evidence_required');
+  for(const verb of ['dismiss','correct_owner','correct_objective'])
+    assert.equal(decide(verb,{object,actor:owner,reason:'  ',targetMemberRef:mid,targetObjectiveId:oid}).code,'bad_request');
+});

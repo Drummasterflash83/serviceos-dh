@@ -1,7 +1,8 @@
 # Work authority from the roster
 
-Local implementation, 9 October 2026. No live permissions, work records or
-communications were changed.
+Local implementation, 9 October 2026. The [TEST action bundle](LEARN-TEST-ACTIONS.md)
+passed isolated validation and hosted rollback rehearsal, but remains uninstalled.
+No live permissions, work records or communications were changed.
 
 ## Applied rules
 

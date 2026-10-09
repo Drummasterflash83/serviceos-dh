@@ -1,0 +1,18 @@
+{
+  "version": "learn-test-actions-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0ec08e5aa0f17132c03a95bcbbcb3225cc7b03dd181362a8dd7b1c2688aed68e",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T21:14:53.36562+00:00",
+  "observedAfter": "2026-10-09T21:14:55.533206+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "5fc8c698da78a5df714cb929217e3f53822b9ba6d02f4c50220793e7a6d6f561",
+  "afterCatalogSha256": "5fc8c698da78a5df714cb929217e3f53822b9ba6d02f4c50220793e7a6d6f561",
+  "limitations": [
+    "TEST rollback rehearsal only. No installation, source rows, membership baselines or provider operations.",
+    "Catalog and isolated SQL tests do not replace real signed-in user acceptance."
+  ]
+}

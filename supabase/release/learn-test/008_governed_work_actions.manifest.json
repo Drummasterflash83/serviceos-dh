@@ -1,0 +1,72 @@
+{
+  "version": "learn-actions-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_governed_work_actions_v1",
+  "sha256": "0ec08e5aa0f17132c03a95bcbbcb3225cc7b03dd181362a8dd7b1c2688aed68e",
+  "tables": [
+    "object_classes"
+  ],
+  "functions": [
+    "learn_work_cover_day",
+    "learn_work_authority",
+    "work_transition_apply"
+  ],
+  "affectedTables": [
+    "domain_object_types",
+    "intelligence_objects",
+    "object_classes"
+  ],
+  "registryTables": [
+    "object_classes",
+    "domain_object_types",
+    "state_definitions",
+    "state_transitions",
+    "authority_permissions"
+  ],
+  "sources": [
+    {
+      "path": "supabase/migrations/20260717120000_action_loop.sql",
+      "sha256": "d1f3a5bb4c15405e0eecb0939b20e9a9cc4410f14e524895e5cee7a8d007f22e",
+      "selectedSha256": "9005fe57f2db676e42b2890412664ec358d5cbd6e500412aec2b640488dbdcf7",
+      "selection": "object-class registry, nullable taxonomy columns/FKs/index and registry read policy only; no links, automation or learning pointer"
+    },
+    {
+      "path": "supabase/migrations/20260717120100_seed_action_loop.sql",
+      "sha256": "bdb1ae61e569de8ed0ae88a0520eb0d1eff7314035c9e1dbc5fee58286890f54",
+      "selectedSha256": "26dcc2d2eda93721048e42dd31f42e4c6ba36a70eef4737b5bf96678bcc2c791",
+      "selection": "two Action type registrations and reference states/edges; no tenant enablement, policy, SLA or config seed"
+    },
+    {
+      "path": "supabase/migrations/20260819120000_view_as_and_superadmin.sql",
+      "sha256": "36a7a07fa4eba872180e643f09dcaa972dad70ee4c3bfacd52490ccfbc225814",
+      "selectedSha256": "cb61a2293b79c769696d78f99c11803386e254ef611e2ff4c1b5c969cbf810fe",
+      "selection": "superadmin vocabulary and additive lifecycle edges only; no grants/View-As replacement"
+    },
+    {
+      "path": "supabase/migrations/20261029210000_learn_work_scoped_authority.sql",
+      "sha256": "903f04817334ecbd88736ebba939e11aa7dc4d4e60561c77bec380829fd8290f",
+      "selectedSha256": "903f04817334ecbd88736ebba939e11aa7dc4d4e60561c77bec380829fd8290f",
+      "selection": "current scoped authority and transactional writer"
+    },
+    {
+      "path": "supabase/migrations/20261030070000_learn_work_action_validation.sql",
+      "sha256": "b09ca1b9dc00d8b2b5f2db50d065b8d032de862c26e177cebad1f0b59b6d0514",
+      "selectedSha256": "b09ca1b9dc00d8b2b5f2db50d065b8d032de862c26e177cebad1f0b59b6d0514",
+      "selection": "repeat verb/evidence/guard constraints in persistence and hardened search paths"
+    },
+    {
+      "path": "docs/operations/evidence/learn-test-action-registries-before-2026-10-09.json",
+      "sha256": "7fafcbb3c84eeb1cadf4733089a596067387e0cc8f2b7759593ef50f53076530",
+      "selection": "exact pre-existing permission vocabulary; require empty action type/state/transition registries"
+    }
+  ],
+  "existingChanges": [
+    "Nullable action taxonomy fields and controlled registry references; no work row updates.",
+    "Two reference Action types, 16 states, 30 unguarded edges and one permission vocabulary entry; no staff grant."
+  ],
+  "deferred": [
+    "Edge endpoint deployment and real signed-in action acceptance.",
+    "Roster mutation concurrency adoption, full scoped work collection/UI and existing raw-history visibility."
+  ],
+  "acceptanceNote": "Source capture and attributed transition history commit together. Retain synthetic actors, work and evidence; revoke access afterward."
+}

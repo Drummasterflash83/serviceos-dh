@@ -1,0 +1,91 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T21:07:49.389Z",
+  "registries": {
+    "types": [],
+    "states": [],
+    "permissions": [
+      {
+        "category": "agent",
+        "permission": "agent.activate",
+        "description": "Activate / deactivate an agent"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.approve_action",
+        "description": "Approve a proposed agent action"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.assign",
+        "description": "Assign agents to users / teams / roles"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.configure",
+        "description": "Configure agent behaviour"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.correct",
+        "description": "Correct agent output / provide context"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.create",
+        "description": "Create an agent"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.interact",
+        "description": "Interact with an assigned agent"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.pause",
+        "description": "Pause an agent"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.retire",
+        "description": "Retire an agent"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.set_access",
+        "description": "Change tools / data access"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.set_autonomy",
+        "description": "Change autonomy level"
+      },
+      {
+        "category": "agent",
+        "permission": "agent.view",
+        "description": "View assigned agents"
+      },
+      {
+        "category": "strategy",
+        "permission": "objective.publish",
+        "description": "Publish / activate objectives"
+      },
+      {
+        "category": "strategy",
+        "permission": "ownership.confirm",
+        "description": "Confirm roles / ownership"
+      },
+      {
+        "category": "work",
+        "permission": "work.approve",
+        "description": "Approve work / actions within authority"
+      },
+      {
+        "category": "work",
+        "permission": "work.assign",
+        "description": "Assign work to others"
+      }
+    ],
+    "transitions": []
+  }
+}

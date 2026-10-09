@@ -132,7 +132,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // ── legal status moves for this object's (domain, object_type) ─────────────
   const { data: legalTransitions, error: transitionsError } = await admin
     .from("state_transitions")
-    .select("from_state, to_state")
+    .select("from_state, to_state, guard")
     .eq("domain", object.domain)
     .eq("object_type", object.object_type);
   if (transitionsError)
@@ -170,7 +170,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     object,
     verb,
     actor,
-    legalTransitions: (legalTransitions ?? []) as { from_state: string; to_state: string }[],
+    legalTransitions: (legalTransitions ?? []) as { from_state: string; to_state: string; guard?: unknown }[],
     reason: (body.reason as string | null) ?? null,
     evidence: body.evidence,
     targetMemberRef: (body.target_member_ref as string | null) ?? null,

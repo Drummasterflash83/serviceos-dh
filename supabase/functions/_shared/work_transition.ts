@@ -59,7 +59,7 @@ export interface TransitionInput {
   object: Row; // the intelligence_objects row (status, domain, object_type, attributes, *_ref)
   verb: WorkVerb;
   actor: ActorAuthority;
-  legalTransitions: { from_state: string; to_state: string }[]; // state_transitions for (domain, object_type)
+  legalTransitions: { from_state: string; to_state: string; guard?: unknown }[]; // state_transitions for (domain, object_type)
   reason?: string | null; // required for dismiss / corrections
   evidence?: unknown; // completion evidence, blocker note, waiting_on, etc.
   targetMemberRef?: string | null; // assign / correct_owner target (team_members.id or role ref)
@@ -102,8 +102,13 @@ const STATUS_VERB_TARGET: Partial<Record<WorkVerb, { to: string; requiresAssigne
   dismiss: { to: "cancelled" },
 };
 
-function legal(from: string, to: string, set: { from_state: string; to_state: string }[]): boolean {
-  return set.some((t) => t.from_state === from && t.to_state === to);
+function legal(from: string, to: string, set: TransitionInput["legalTransitions"]): boolean {
+  // A configured condition is not permission until an evaluator supports it.
+  return set.some((t) => t.from_state === from && t.to_state === to && t.guard == null);
+}
+
+function hasEvidence(value: unknown): boolean {
+  return value != null && (typeof value !== "string" || value.trim().length > 0);
 }
 
 const fail = (code: string, message: string): TransitionDecision => ({ ok: false, code, message });
@@ -127,7 +132,9 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     const patch: Row = { responsible_ref: { kind: "user", ref: actor.userRef } };
     let to = current,
       changed = false;
-    if (current === "proposed" && legal("proposed", "ready", input.legalTransitions)) {
+    if (current === "proposed") {
+      if (!legal("proposed", "ready", input.legalTransitions))
+        return fail("illegal_transition", "Accepting proposed work requires an unguarded move to ready");
       to = "ready";
       changed = true;
     }
@@ -170,7 +177,7 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     }
     if (!input.targetMemberRef)
       return fail("bad_request", "correct_owner requires a target member");
-    if (!input.reason)
+    if (!input.reason?.trim())
       return fail(
         "bad_request",
         "correct_owner requires a reason (the original inference is preserved)",
@@ -209,7 +216,7 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     }
     if (!input.targetObjectiveId)
       return fail("bad_request", "correct_objective requires a target objective");
-    if (!input.reason)
+    if (!input.reason?.trim())
       return fail("bad_request", "correct_objective requires a reason (the original is preserved)");
     return {
       ok: true,
@@ -244,22 +251,24 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     );
   }
 
-  if (verb === "dismiss" && !input.reason) {
+  if (verb === "dismiss" && !input.reason?.trim()) {
     return fail("bad_request", "dismiss requires a reason (source evidence is never erased)");
   }
   if (verb === "complete") {
     const doneWhen = (object.attributes?.done_when as string | undefined)?.trim();
-    const hasEvidence = input.evidence != null && input.evidence !== "";
     if (!doneWhen && !(input.approvedException && (actor.canApprove || actor.isSuperadmin))) {
       return fail(
         "done_when_required",
         "Completion requires a done_when definition, or an approved exception by a work.approve authority",
       );
     }
-    if (doneWhen && !hasEvidence) {
+    if (doneWhen && !hasEvidence(input.evidence)) {
       return fail("evidence_required", "Completion requires evidence satisfying done_when");
     }
   }
+
+  if ((verb === "wait" || verb === "block") && !hasEvidence(input.evidence))
+    return fail("evidence_required", `${verb} requires a waiting or blocker note`);
 
   if (current === target.to) {
     return fail("noop", `Work item is already ${target.to}`);
@@ -269,11 +278,11 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
   }
 
   const patch: Row = {};
-  if (verb === "block" && input.evidence)
+  if (verb === "block" && hasEvidence(input.evidence))
     patch.attributes = { ...(object.attributes ?? {}), blocker: input.evidence };
-  if (verb === "wait" && input.evidence)
+  if (verb === "wait" && hasEvidence(input.evidence))
     patch.waiting_on_ref = { kind: "note", ref: String(input.evidence) };
-  if (verb === "complete" && input.evidence) {
+  if (verb === "complete" && hasEvidence(input.evidence)) {
     patch.attributes = { ...(object.attributes ?? {}), completion_evidence: input.evidence };
   }
 

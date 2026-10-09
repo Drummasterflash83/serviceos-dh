@@ -222,6 +222,52 @@ try:
                 assert run("select count(*)=1 from measurements where id in (verify.id(771),verify.id(772))").stdout.strip()==b't'
                 assert run("select count(*)=1 from learn_work_measurement_runs where id in (verify.id(771),verify.id(772))").stdout.strip()==b't'
                 print('Concurrent work collection retains one matching observation and receipt: PASS',flush=True)
+                if '--actions' in sys.argv:
+                    bundle_a=json.loads(node("import {checkedActions} from './scripts/verify/learn-actions-bundle.mjs';process.stdout.write(JSON.stringify(checkedActions()));"))
+                    actions_sql="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(bundle_a['manifest']['sha256'])+';'+bundle_a['sql']
+                    before_a=json.loads(run(catalog_sql).stdout)
+                    registry_query=node("import {ACTIONS_REGISTRY_QUERY} from './scripts/verify/learn-actions-catalog.mjs';process.stdout.write(ACTIONS_REGISTRY_QUERY);")
+                    registry_before=json.loads(run(registry_query).stdout)
+                    apply("create table verify.pre_action_work as select to_jsonb(w) payload from intelligence_objects w;create table verify.pre_action_history as select to_jsonb(h) payload from object_state_history h;",'Retain pre-action work and history snapshots')
+                    apply("alter table of_test_deploy.migrations add constraint action_receipt_failure check(migration_name<>'learn_governed_work_actions_v1');",'Injected action receipt failure')
+                    failed=run(actions_sql,False)
+                    assert failed.returncode and b'action_receipt_failure' in failed.stderr,failed.stderr.decode()[-800:]
+                    rolled_a=json.loads(run(catalog_sql).stdout)
+                    assert rolled_a['tables']==before_a['tables'] and rolled_a['helpers']==before_a['helpers'] and rolled_a['foundationGuard']==before_a['foundationGuard']
+                    assert json.loads(run(registry_query).stdout)==registry_before
+                    apply('alter table of_test_deploy.migrations drop constraint action_receipt_failure;','Atomic action rollback preserves catalog and vocabularies')
+                    action_rehearsal=node("import {actionsRehearsalSql} from './scripts/verify/learn-test-actions-rehearsal.mjs';process.stdout.write(actionsRehearsalSql());")
+                    apply('set role postgres;'+action_rehearsal,'Exact action rehearsal rolls back schema and registries')
+                    assert json.loads(run(catalog_sql).stdout)['tables']==before_a['tables']
+                    assert json.loads(run(registry_query).stdout)==registry_before
+                    apply(actions_sql,'Governed action registry and writer as non-superuser')
+                    after_a=json.loads(run(catalog_sql).stdout)
+                    affected=bundle_a['manifest']['affectedTables']
+                    assert [t for t in after_a['tables'] if t['name'] not in affected]==[t for t in before_a['tables'] if t['name'] not in affected]
+                    assert after_a['helpers']==before_a['helpers'] and after_a['foundationGuard']==before_a['foundationGuard']
+                    action_query=node("import {ACTIONS_FUNCTION_QUERY} from './scripts/verify/learn-actions-catalog.mjs';process.stdout.write(ACTIONS_FUNCTION_QUERY);")
+                    classes_query=node("import {ACTIONS_CLASSES_QUERY} from './scripts/verify/learn-actions-catalog.mjs';process.stdout.write(ACTIONS_CLASSES_QUERY);")
+                    expected={'sourceSha256':bundle_a['manifest']['sha256'],'tables':[t for t in after_a['tables'] if t['name'] in affected],'functions':json.loads(run(action_query).stdout),'registries':json.loads(run(registry_query).stdout),'classes':json.loads(run(classes_query).stdout)}
+                    expected_path=ROOT/'supabase/release/learn-test/008_governed_work_actions.expected.json'
+                    if '--write-actions-expected' in sys.argv:
+                        expected_path.write_text(json.dumps(expected,indent=2)+'\n')
+                    else:
+                        assert expected==json.loads(expected_path.read_text()),'Installed action schema differs from reviewed projection'
+                    apply((ROOT/'scripts/verify/learn-actions-release.assert.sql').read_text(),'Action authority, evidence, guarded conditions and atomic capture assertions')
+                    duplicate=run(actions_sql,False)
+                    assert duplicate.returncode and b'Action release already exists' in duplicate.stderr
+                    print('Duplicate action installation refused: PASS',flush=True)
+                    def action_race(n):
+                        return run("set role service_role;select work_transition_apply(verify.id(801),verify.id(843),1,'in_progress','{}',jsonb_build_object('verb','start','reason','Concurrent synthetic action','actor',jsonb_build_object('user_id',verify.id(811))),null);",False)
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                        raced=list(pool.map(action_race,[1,2]))
+                    assert sum(r.returncode==0 for r in raced)==1,'Exactly one competing action must succeed'
+                    assert any(b'Work version changed' in r.stderr for r in raced),'Competing action must report a revision conflict'
+                    assert run("select count(*)=2 from object_state_history where object_id=verify.id(843) and capture_kind is not null").stdout.strip()==b't'
+                    assert run("select count(*)=1 from object_state_history where object_id=verify.id(843) and capture_kind is null").stdout.strip()==b't'
+                    print('Concurrent action retains exactly one new capture and one attributed transition: PASS',flush=True)
+
+
 
 
 

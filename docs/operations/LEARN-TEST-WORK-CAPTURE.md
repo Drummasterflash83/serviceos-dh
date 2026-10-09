@@ -129,7 +129,9 @@ schemas and cannot be reused unchanged after release 007.
 ## Remaining work
 
 Governed work transitions, the action/state registry seeds, scoped work authority
-and the Edge endpoint remain unreleased in TEST. This release observes service
+and the Edge endpoint remain unreleased in TEST.
+[Release 008 preparation](LEARN-TEST-ACTIONS.md) passed isolated checks and a hosted
+rollback rehearsal at 21:14 UTC; it is not installed. This release observes service
 writes; it does not grant end users a new route to edit work. Source reconciliation,
 communications/job adapters, staff/team visibility, calendars and approved exclusions,
 team aggregation, numerical correction workflows, saved assessments and reviewed

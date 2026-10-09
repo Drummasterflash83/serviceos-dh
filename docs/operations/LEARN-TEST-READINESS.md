@@ -2,7 +2,7 @@
 
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
 Those initial audits changed no hosted state. The later **TEST-only metadata release
-and subsequent card/work foundation, rules, conflict-repair and measurement installation** are recorded below; production remains untouched.
+and subsequent card/work foundation, rules, conflict-repair, measurement and work-capture installations** are recorded below; production remains untouched.
 The Vercel CLI refreshed its existing local
 session after a direct request using the old saved access token returned HTTP 403.
 
@@ -54,6 +54,10 @@ See [foundation source provenance](LEARN-TEST-FOUNDATIONS.md) and
 [rules release and conflict repair](LEARN-TEST-RULES.md), and
 [measurement/review release](LEARN-TEST-MEASUREMENTS.md), and
 [work capture/collection signed-in acceptance](LEARN-TEST-WORK-CAPTURE.md).
+The [governed action bundle](LEARN-TEST-ACTIONS.md) passed a TEST rollback rehearsal
+at 21:14 UTC with unchanged catalogs and registries. It is not installed; the
+eight-receipt ledger above is still current.
+
 The catalog script deliberately continues to say `not_release_verified`: it cannot
 prove source completeness, actual customer behavior, source connectors or the full UI.
 
