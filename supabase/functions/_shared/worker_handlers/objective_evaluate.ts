@@ -166,9 +166,10 @@ export async function handleObjectiveEvaluate(
     const { data: mRows, error: mErr } = await db
       .from("measurements")
       .select(
-        "id, metric_id, value, unit, currency, measured_at, source, confidence, freshness, milestone_reached",
+        "id, metric_id, value, unit, currency, measured_at, source, confidence, freshness, milestone_reached, subject_kind, subject_id",
       )
       .eq("tenant_id", tenantId)
+      .eq("subject_kind", "tenant")
       .in("metric_id", metricIds)
       .order("measured_at", { ascending: false })
       .limit(MEASUREMENT_SCAN_LIMIT);

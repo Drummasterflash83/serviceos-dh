@@ -102,6 +102,45 @@ const input = normalizeEvaluationInput({
 check("primary metric key resolved from metric id", input.primaryMetricKey === "response_time");
 check("selected evidence pins the one latest measurement", input.selected.length === 1);
 check("objective version id carried for the hash", input.objectiveVersionId === OBJ_VERSION);
+const scopedRows: LoadedMeasurementRow[] = ["member", "team", "job", "customer", "unexpected"].map(
+  (kind, i) => ({
+    ...measRow(`scoped-${i}`, 1, "2026-08-16T00:00:00Z"),
+    subject_kind: kind,
+    subject_id: `subject-${i}`,
+  }),
+);
+scopedRows.push({
+  ...measRow("malformed-tenant", 1, NOW),
+  subject_kind: "tenant",
+  subject_id: "person",
+});
+const isolated = normalizeEvaluationInput({
+  objective,
+  objectiveMetrics,
+  metricDefs,
+  constraints,
+  dependencies: [],
+  measurements: [
+    ...scopedRows,
+    { ...measRow("tenant-measurement", 4.5, NOW), subject_kind: "tenant", subject_id: null },
+  ],
+});
+check(
+  "personal/team/job/customer and malformed scopes never drive a company objective",
+  isolated.measurements.length === 1 && isolated.selected[0]?.id === "tenant-measurement",
+);
+const scopedOnly = normalizeEvaluationInput({
+  objective,
+  objectiveMetrics,
+  metricDefs,
+  constraints,
+  dependencies: [],
+  measurements: scopedRows,
+});
+check(
+  "only personal performance evidence leaves company health unknown",
+  scopedOnly.selected.length === 0 && evaluateNormalized(scopedOnly, NOW).status === "unknown",
+);
 
 const health = evaluateNormalized(input, NOW);
 check(
@@ -304,7 +343,10 @@ check(
     shouldEnqueueParent(changeDetr, null) === false,
 );
 
-check("evaluator version constant is stable", OBJECTIVE_EVALUATOR_VERSION === "obj-health@1");
+check(
+  "evaluator version includes subject scope isolation",
+  OBJECTIVE_EVALUATOR_VERSION === "obj-health@2",
+);
 
 // ── Contribution integrity boundary (v1: confirmation impossible) ───────────
 console.log("Contribution integrity (v1 — no first-class Outcomes layer):");

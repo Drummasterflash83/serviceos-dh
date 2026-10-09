@@ -119,6 +119,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .from("measurements")
         .select("measured_at")
         .eq("tenant_id", tenantId)
+        .eq("subject_kind", "tenant")
         .in("metric_id", metricIds)
         .order("measured_at", { ascending: false })
         .limit(1),

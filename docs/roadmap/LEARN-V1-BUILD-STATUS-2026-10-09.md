@@ -222,6 +222,23 @@ live migration has been performed by this branch.
   The rebuilt synthetic preview displayed all four transcript status counts with
   no browser errors. This browser check makes no live user-RLS claim.
 
+## Subject-scoped performance storage increment
+
+The existing measurement model now has a local additive migration and trusted
+adapter append RPC for exact subject/period/policy revisions, evidence, coverage
+and correction history. Performance metric definitions cannot be linked to
+company objectives, and the objective worker/scanner explicitly read tenant scope.
+Adapter writes remain inferred; no real measurements or scores have been created.
+Owner/admin RLS and a count-checked reader are implemented. The reader is not yet
+connected to the card UI; source adapters and review/publication remain required.
+See [the storage contract and rollout order](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md).
+
+Validation: 17 reader/scorer tests, the full objective-evaluation verification
+suite and application TypeScript check passed. Isolated SQL checks use the real
+objectives/hardening migrations plus synthetic dependencies. They cover replay,
+corrections, evidence/tenant ownership, objective isolation, role reads and retained
+legacy behavior. No live database or deployment was changed.
+
 ## Next work and release gates
 
 1. Keep comparing the private source/storage baseline; investigate failed audio,
@@ -238,10 +255,10 @@ live migration has been performed by this branch.
 5. Connect Commusoft jobs/visits/assignments and confirm the actual vehicle-data
    provider and field definitions. The canonical jobs and voicemail tables were empty
    at the recorded observation; no performance figures should be inferred from that.
-6. Persist subject/period-scoped scoring measurements through the existing
-   measurements/objectives model. Ensure individual metrics cannot be selected as
-   company-wide measurements by the existing objective worker. The pure scoring
-   contract is implemented; the production measurement adapter is not yet wired.
+6. Wire verified source adapters into the new subject/period-scoped append RPC,
+   and connect the measurement reader to cards. Database scope isolation and the
+   updated objective worker are implemented locally; deployment and real source
+   acceptance remain pending. The pure scoring contract is already implemented.
 7. Add evidence correction/review and policy publication with retained versions,
    effective dates, membership as of the scoring period, approved business calendars,
    exclusions and job-mix treatment. Agree criteria before rating actual people.

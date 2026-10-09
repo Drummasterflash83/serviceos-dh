@@ -1,0 +1,21 @@
+-- Isolated fixture only. Real objectives schema/hardening are loaded afterward.
+create role anon;
+create role authenticated;
+create role service_role bypassrls;
+create schema auth;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.actor',true),'')::uuid $$;
+create function current_tenant_id() returns uuid language sql stable as $$ select nullif(current_setting('test.tenant',true),'')::uuid $$;
+create function current_user_role() returns text language sql stable as $$ select nullif(current_setting('test.role',true),'') $$;
+create function is_openfolk() returns boolean language sql stable as $$ select false $$;
+create table tenants(id uuid primary key);
+create table config_versions(id uuid primary key,tenant_id uuid,artifact_kind text,artifact_key text,version int,status text,supersedes uuid,author text,note text);
+create table operating_profile_entries(id uuid primary key default gen_random_uuid(),tenant_id uuid,namespace text,scope_kind text,scope_ref text,key text,value jsonb,version_id uuid);
+create table domain_entity_types(domain text,node_type text,label text,is_high_integrity boolean,primary key(domain,node_type));
+create table team_members(id uuid primary key,tenant_id uuid,org_unit_id uuid,confirmed_at timestamptz,effective_from timestamptz,effective_to timestamptz);
+create table org_units(id uuid primary key,tenant_id uuid);
+create table jobs(id uuid primary key,tenant_id uuid);
+create table customer_cards(id uuid primary key,tenant_id uuid);
+create table interactions(id uuid primary key,tenant_id uuid);
+create table email_messages(id uuid primary key,tenant_id uuid);
+create table phone_calls(id uuid primary key,tenant_id uuid);
+create table phone_recordings(id uuid primary key,tenant_id uuid);

@@ -28,7 +28,7 @@ import type {
 
 /** Bump when the health/normalisation contract changes — part of the input hash,
  *  so a re-evaluation under a new evaluator appends a NEW snapshot. */
-export const OBJECTIVE_EVALUATOR_VERSION = "obj-health@1";
+export const OBJECTIVE_EVALUATOR_VERSION = "obj-health@2";
 
 /** The controlled set of events this worker may emit. The impure handler emits
  *  ONLY from this set; the conformance gate enforces it (no ad-hoc event names).
@@ -95,6 +95,9 @@ export interface LoadedConstraint {
 }
 
 export interface LoadedMeasurementRow {
+  /** Undefined only for legacy in-memory fixtures; DB readers select both. */
+  subject_kind?: string;
+  subject_id?: string | null;
   id: string;
   metric_id: string;
   value: number | null;
@@ -205,7 +208,12 @@ export function normalizeEvaluationInput(params: {
   for (const m of objectiveMetrics) scopeIds.add(m.metric_id);
   for (const c of constraints) if (c.metric_id) scopeIds.add(c.metric_id);
 
-  const inScope = measurements.filter((m) => scopeIds.has(m.metric_id));
+  const inScope = measurements.filter(
+    (m) =>
+      scopeIds.has(m.metric_id) &&
+      (m.subject_kind === undefined || m.subject_kind === "tenant") &&
+      m.subject_id == null,
+  );
   const measurementInputs: MeasurementInput[] = inScope.map((m) => ({
     id: m.id,
     metricKey: keyOf.get(m.metric_id) ?? m.metric_id,
