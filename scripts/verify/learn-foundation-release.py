@@ -24,7 +24,7 @@ DB='foundation_verify'
 def docker(*args, **kwargs):
     return subprocess.run([DOCKER,*args],capture_output=True,check=True,**kwargs)
 def run(sql, check=True):
-    r=subprocess.run([DOCKER,'exec','-i',TARGET,'psql','-h','127.0.0.1','-U','supabase_admin','-d',DB,'-At','-v','ON_ERROR_STOP=1','-f','-'],input=sql.encode(),capture_output=True)
+    r=subprocess.run([DOCKER,'exec','-i','-e','PGOPTIONS=-c search_path=public,pg_catalog',TARGET,'psql','-h','127.0.0.1','-U','supabase_admin','-d',DB,'-At','-v','ON_ERROR_STOP=1','-f','-'],input=sql.encode(),capture_output=True)
     if check and r.returncode:
         print('\n'.join(x for x in r.stderr.decode().splitlines() if any(k in x.upper() for k in ['ERROR','FATAL','HINT:','CONTEXT:']))[-1600:])
         raise RuntimeError('Synthetic foundation SQL failed')
@@ -136,7 +136,28 @@ try:
         apply('set role postgres;'+rehearsal,'Exact rules rehearsal executes and rolls back')
         assert json.loads(run(catalog_sql).stdout)['tables']==rule_before['tables']
         apply(rules_sql,'Rules, publication and membership release as non-superuser')
-        apply((ROOT/'scripts/verify/learn-rules-release.assert.sql').read_text(),'Saved-rule authority, prospective publication and retained membership checks')
+        if '--write-rules-expected' in sys.argv:
+            observed=json.loads(run(catalog_sql).stdout)
+            fn_query=node("import {RULES_FUNCTION_QUERY} from './scripts/verify/learn-rules-catalog.mjs';process.stdout.write(RULES_FUNCTION_QUERY);")
+            affected=rules['manifest']['tables']+['config_versions','operating_profile_entries','team_members']
+            expected={'sourceSha256':rules['manifest']['sha256'],'tables':[t for t in observed['tables'] if t['name'] in affected],'functions':json.loads(run(fn_query).stdout)}
+            (ROOT/'supabase/release/learn-test/004_rules_membership.expected.json').write_text(json.dumps(expected,indent=2)+'\n')
+        assertions=(ROOT/'scripts/verify/learn-rules-release.assert.sql').read_text()
+        if '--conflicts' in sys.argv:
+            fn_query=node("import {RULES_FUNCTION_QUERY} from './scripts/verify/learn-rules-catalog.mjs';process.stdout.write(RULES_FUNCTION_QUERY);")
+            before_fix=json.loads(run(fn_query).stdout)
+            repair=node("import {conflictSql} from './scripts/verify/learn-test-scorecard-conflicts.mjs';process.stdout.write(conflictSql());")
+            rollback=node("import {conflictSql} from './scripts/verify/learn-test-scorecard-conflicts.mjs';process.stdout.write(conflictSql({rehearse:true}));")
+            apply('set role postgres;'+rollback,'Conflict repair rehearsal rolls back')
+            assert json.loads(run(fn_query).stdout)==before_fix
+            apply('set role postgres;'+repair,'Conflict repair preserves privileges and changes only four error codes')
+            expected=json.loads(json.dumps(before_fix))
+            for f in expected:f['definition']=f['definition'].replace("errcode='40001'","errcode='PT409'")
+            assert json.loads(run(fn_query).stdout)==expected
+            duplicate=run('set role postgres;'+repair,False)
+            assert duplicate.returncode and b'Conflict repair receipt already exists' in duplicate.stderr
+            assertions=assertions.replace('when serialization_failure',"when sqlstate 'PT409'")
+        apply(assertions,'Saved-rule authority, prospective publication and retained membership checks')
 
 finally:
     subprocess.run([DOCKER,'rm','-f',TARGET],capture_output=True)

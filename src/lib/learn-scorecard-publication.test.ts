@@ -89,9 +89,10 @@ test("publication submits a saved identity and reason; definition and backdating
       }),
     /receipt/,
   );
+  for (const code of ["PT409", "40001"])
   await assert.rejects(
     () =>
-      publishScorecard(db(null, { code: "40001" }), {
+      publishScorecard(db(null, { code }), {
         policy: draft,
         requestId: id(5),
         reason: "Reason",

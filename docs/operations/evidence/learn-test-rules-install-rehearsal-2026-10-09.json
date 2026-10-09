@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-rules-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "observedBefore": "2026-10-09T20:26:50.590739+00:00",
+  "observedAfter": "2026-10-09T20:26:52.398707+00:00",
+  "state": "rehearsed_and_rolled_back",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "e6c31a92c7831700f060c925d94cde25d36d9252553e50a7deb825b025f186ca",
+  "afterCatalogSha256": "e6c31a92c7831700f060c925d94cde25d36d9252553e50a7deb825b025f186ca",
+  "limitations": [
+    "All new rules objects and the receipt were rolled back; this is not a persistent release.",
+    "No customer rows, recorded audio, provider operations, real JWT acceptance or UI behavior were tested.",
+    "Before/after comparison covers the recorded definitions, metadata-view privileges and migration receipts; it is not a backup.",
+    "An unverified result requires inspection; the write request is never retried automatically."
+  ]
+}

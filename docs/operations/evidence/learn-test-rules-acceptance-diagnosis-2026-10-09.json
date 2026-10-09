@@ -1,0 +1,40 @@
+{
+  "version": "learn-test-rules-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "observedAt": "2026-10-09T20:33:41.337Z",
+  "runId": "90909f1d-1c6e-4933-82e9-9ccd60077e47",
+  "state": "requires_inspection",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established"
+  ],
+  "failure": "The operation was aborted due to timeout",
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_scorecard_save_draft",
+    "expectedRevision": 0
+  },
+  "testLoginsRemoved": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "79b7c72d-81f2-4d12-a9b9-78fa19b20d89",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    },
+    {
+      "tenant_id": "d829d123-0734-49df-945c-1723f99e50da",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-rules-fixtures-90909f1d-1c6e-4933-82e9-9ccd60077e47.json",
+  "limitations": [
+    "Marked synthetic companies, teams, rule revisions/publications and member history are deliberately retained in TEST; test logins and profiles are removed.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}

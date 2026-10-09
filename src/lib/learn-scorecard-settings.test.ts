@@ -56,9 +56,10 @@ test("draft save sends an expected revision and reason, and never grants client-
   assert.equal(args.p_reason, "Reviewed weight");
   assert.equal(args.p_definition.status, undefined);
   assert.equal(args.p_definition.tenantId, undefined);
+  for (const code of ["PT409", "40001"])
   await assert.rejects(
     saveScorecardDraft(
-      { ...client, rpc: async () => ({ data: null, error: { code: "40001" } }) },
+      { ...client, rpc: async () => ({ data: null, error: { code } }) },
       policy,
       1,
       "reason",

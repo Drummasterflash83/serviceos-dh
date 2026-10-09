@@ -1,0 +1,1069 @@
+{
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "tables": [
+    {
+      "rls": true,
+      "name": "config_versions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "artifact_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "artifact_key",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'draft'::text",
+          "notNull": true
+        },
+        {
+          "name": "supersedes",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "author",
+          "type": "text",
+          "default": "'system'::text",
+          "notNull": true
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "payload_hash",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "config_versions_lookup",
+          "definition": "CREATE INDEX config_versions_lookup ON public.config_versions USING btree (tenant_id, artifact_kind, artifact_key)"
+        },
+        {
+          "name": "config_versions_pkey",
+          "definition": "CREATE UNIQUE INDEX config_versions_pkey ON public.config_versions USING btree (id)"
+        },
+        {
+          "name": "config_versions_published_uk",
+          "definition": "CREATE UNIQUE INDEX config_versions_published_uk ON public.config_versions USING btree (artifact_kind, artifact_key) WHERE (status = 'published'::text)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_scorecard_revision_immutable",
+          "function": "learn_scorecard_revision_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_revision_immutable BEFORE DELETE OR UPDATE ON public.config_versions FOR EACH ROW EXECUTE FUNCTION learn_scorecard_revision_immutable()"
+        },
+        {
+          "name": "learn_scorecard_revisions_no_truncate",
+          "function": "learn_scorecard_revision_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_revisions_no_truncate BEFORE TRUNCATE ON public.config_versions FOR EACH STATEMENT EXECUTE FUNCTION learn_scorecard_revision_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "config_versions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "config_versions_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'simulation'::text, 'review'::text, 'published'::text, 'archived'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "config_versions_supersedes_fkey",
+          "definition": "FOREIGN KEY (supersedes) REFERENCES config_versions(id)"
+        },
+        {
+          "kind": "f",
+          "name": "config_versions_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_member_history",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "sequence",
+          "type": "bigint",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        },
+        {
+          "name": "before_state",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "after_state",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_member_history_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_member_history_pkey ON public.learn_member_history USING btree (id)"
+        },
+        {
+          "name": "learn_member_history_read_idx",
+          "definition": "CREATE INDEX learn_member_history_read_idx ON public.learn_member_history USING btree (tenant_id, member_id, sequence)"
+        },
+        {
+          "name": "learn_member_history_sequence_key",
+          "definition": "CREATE UNIQUE INDEX learn_member_history_sequence_key ON public.learn_member_history USING btree (sequence)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_member_history_immutable",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_member_history_immutable BEFORE DELETE OR UPDATE ON public.learn_member_history FOR EACH ROW EXECUTE FUNCTION learn_member_history_immutable()"
+        },
+        {
+          "name": "learn_member_history_no_truncate",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_member_history_no_truncate BEFORE TRUNCATE ON public.learn_member_history FOR EACH STATEMENT EXECUTE FUNCTION learn_member_history_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "learn_member_history_after_state_check",
+          "definition": "CHECK ((jsonb_typeof(after_state) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_member_history_before_state_check",
+          "definition": "CHECK ((jsonb_typeof(before_state) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_member_history_check",
+          "definition": "CHECK (((kind = 'update'::text) OR (before_state = after_state)))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_member_history_kind_check",
+          "definition": "CHECK ((kind = ANY (ARRAY['insert'::text, 'update'::text, 'baseline'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "learn_member_history_member_id_fkey",
+          "definition": "FOREIGN KEY (member_id) REFERENCES team_members(id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_member_history_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_member_history_sequence_key",
+          "definition": "UNIQUE (sequence)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_member_history_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_scorecard_publications",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "policy_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "published_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "policy",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_scorecard_publications_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_scorecard_publications_pkey ON public.learn_scorecard_publications USING btree (id)"
+        },
+        {
+          "name": "learn_scorecard_publications_tenant_id_policy_id_revision_key",
+          "definition": "CREATE UNIQUE INDEX learn_scorecard_publications_tenant_id_policy_id_revision_key ON public.learn_scorecard_publications USING btree (tenant_id, policy_id, revision)"
+        },
+        {
+          "name": "learn_scorecard_publications_tenant_id_scope_effective_from_key",
+          "definition": "CREATE UNIQUE INDEX learn_scorecard_publications_tenant_id_scope_effective_from_key ON public.learn_scorecard_publications USING btree (tenant_id, scope, effective_from)"
+        },
+        {
+          "name": "learn_scorecard_publications_version_id_key",
+          "definition": "CREATE UNIQUE INDEX learn_scorecard_publications_version_id_key ON public.learn_scorecard_publications USING btree (version_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_scorecard_publications_read",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) AND (COALESCE(current_user_role(), ''::text) = ANY (ARRAY['owner'::text, 'admin'::text])))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_scorecard_publications_immutable",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_publications_immutable BEFORE DELETE OR UPDATE ON public.learn_scorecard_publications FOR EACH ROW EXECUTE FUNCTION learn_member_history_immutable()"
+        },
+        {
+          "name": "learn_scorecard_publications_no_truncate",
+          "function": "learn_member_history_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_publications_no_truncate BEFORE TRUNCATE ON public.learn_scorecard_publications FOR EACH STATEMENT EXECUTE FUNCTION learn_member_history_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_scorecard_publications_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "learn_scorecard_publications_policy_check",
+          "definition": "CHECK ((jsonb_typeof(policy) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_scorecard_publications_reason_check",
+          "definition": "CHECK (((length(btrim(reason)) >= 1) AND (length(btrim(reason)) <= 1000)))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_scorecard_publications_revision_check",
+          "definition": "CHECK ((revision > 0))"
+        },
+        {
+          "kind": "f",
+          "name": "learn_scorecard_publications_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_scorecard_publications_tenant_id_policy_id_revision_key",
+          "definition": "UNIQUE (tenant_id, policy_id, revision)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_scorecard_publications_tenant_id_scope_effective_from_key",
+          "definition": "UNIQUE (tenant_id, scope, effective_from)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_scorecard_publications_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES config_versions(id)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_scorecard_publications_version_id_key",
+          "definition": "UNIQUE (version_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "operating_profile_entries",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "scope_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "namespace",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "value",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_scorecard_revision_identity",
+          "definition": "CREATE UNIQUE INDEX learn_scorecard_revision_identity ON public.operating_profile_entries USING btree (tenant_id, ((value ->> 'id'::text)), ((value ->> 'version'::text))) WHERE ((namespace = 'learn_scorecards'::text) AND (scope_kind = 'tenant'::text) AND (key ~~ 'definition.%'::text))"
+        },
+        {
+          "name": "ope_lookup",
+          "definition": "CREATE INDEX ope_lookup ON public.operating_profile_entries USING btree (tenant_id, namespace, key)"
+        },
+        {
+          "name": "ope_natural_uk",
+          "definition": "CREATE UNIQUE INDEX ope_natural_uk ON public.operating_profile_entries USING btree (COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), scope_kind, COALESCE(scope_ref, ''::text), COALESCE(domain, ''::text), namespace, key)"
+        },
+        {
+          "name": "ope_scope",
+          "definition": "CREATE INDEX ope_scope ON public.operating_profile_entries USING btree (scope_kind, scope_ref, domain)"
+        },
+        {
+          "name": "operating_profile_entries_pkey",
+          "definition": "CREATE UNIQUE INDEX operating_profile_entries_pkey ON public.operating_profile_entries USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()))",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "ope_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.operating_profile_entries FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_scorecard_entries_no_truncate",
+          "function": "learn_scorecard_revision_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_entries_no_truncate BEFORE TRUNCATE ON public.operating_profile_entries FOR EACH STATEMENT EXECUTE FUNCTION learn_scorecard_revision_immutable()"
+        },
+        {
+          "name": "learn_scorecard_revision_immutable",
+          "function": "learn_scorecard_revision_immutable",
+          "definition": "CREATE TRIGGER learn_scorecard_revision_immutable BEFORE DELETE OR UPDATE ON public.operating_profile_entries FOR EACH ROW EXECUTE FUNCTION learn_scorecard_revision_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "operating_profile_entries_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "operating_profile_entries_scope_kind_check",
+          "definition": "CHECK ((scope_kind = ANY (ARRAY['platform'::text, 'industry'::text, 'domain'::text, 'tenant'::text, 'department'::text, 'team'::text, 'user'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "operating_profile_entries_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "operating_profile_entries_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES config_versions(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "team_members",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "profile_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "org_unit_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "formal_role",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "observed_role",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "observed_status",
+          "type": "text",
+          "default": "'proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "authority_level",
+          "type": "text",
+          "default": "'individual'::text",
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'openfolk_proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "effective_to",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "team_members_pkey",
+          "definition": "CREATE UNIQUE INDEX team_members_pkey ON public.team_members USING btree (id)"
+        },
+        {
+          "name": "team_members_profile",
+          "definition": "CREATE INDEX team_members_profile ON public.team_members USING btree (tenant_id, profile_id)"
+        },
+        {
+          "name": "team_members_tenant",
+          "definition": "CREATE INDEX team_members_tenant ON public.team_members USING btree (tenant_id, effective_to)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "team_members_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_capture_member_change",
+          "function": "learn_capture_member_change",
+          "definition": "CREATE TRIGGER learn_capture_member_change AFTER INSERT OR UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION learn_capture_member_change()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "learn_member_no_delete",
+          "function": "learn_capture_member_change",
+          "definition": "CREATE TRIGGER learn_member_no_delete BEFORE DELETE ON public.team_members FOR EACH ROW EXECUTE FUNCTION learn_capture_member_change()"
+        },
+        {
+          "name": "learn_member_no_truncate",
+          "function": "learn_capture_member_change",
+          "definition": "CREATE TRIGGER learn_member_no_truncate BEFORE TRUNCATE ON public.team_members FOR EACH STATEMENT EXECUTE FUNCTION learn_capture_member_change()"
+        },
+        {
+          "name": "team_members_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER team_members_set_updated_at BEFORE UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "team_members_authority_level_check",
+          "definition": "CHECK ((authority_level = ANY (ARRAY['individual'::text, 'lead'::text, 'manager'::text, 'director'::text, 'owner'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "team_members_confidence_check",
+          "definition": "CHECK (((confidence IS NULL) OR ((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "team_members_observed_status_check",
+          "definition": "CHECK ((observed_status = ANY (ARRAY['proposed'::text, 'inferred'::text, 'confirmed'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "team_members_org_unit_id_fkey",
+          "definition": "FOREIGN KEY (org_unit_id) REFERENCES org_units(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "team_members_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "team_members_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "view_as_context",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "subject_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "subject_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "mode",
+          "type": "text",
+          "default": "'view'::text",
+          "notNull": true
+        },
+        {
+          "name": "read_only",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": "(now() + '00:30:00'::interval)",
+          "notNull": true
+        },
+        {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "view_as_actor",
+          "definition": "CREATE INDEX view_as_actor ON public.view_as_context USING btree (tenant_id, actor_user_id, expires_at, ended_at)"
+        },
+        {
+          "name": "view_as_context_pkey",
+          "definition": "CREATE UNIQUE INDEX view_as_context_pkey ON public.view_as_context USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_view_as_actor_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) AND (actor_user_id = auth.uid()))",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "view_as_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(((actor_user_id = auth.uid()) AND (tenant_id = current_tenant_id())) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "view_as_context_mode_check",
+          "definition": "CHECK ((mode = ANY (ARRAY['view'::text, 'supervised_test'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "view_as_context_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "view_as_context_subject_kind_check",
+          "definition": "CHECK ((subject_kind = ANY (ARRAY['user'::text, 'role'::text, 'team'::text, 'permission_profile'::text, 'unassigned'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "view_as_context_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_capture_member_change",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_capture_member_change()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare b jsonb; a jsonb;\nbegin\n if tg_op='DELETE' or tg_op='TRUNCATE' then\n   raise exception 'End memberships instead of removing their identity history' using errcode='55000';\n end if;\n a:=learn_member_snapshot(new);\n if tg_op='UPDATE' then\n   if old.id is distinct from new.id or old.tenant_id is distinct from new.tenant_id then\n     raise exception 'Member identity and tenant are immutable' using errcode='23514';\n   end if;\n   b:=learn_member_snapshot(old);\n   if a=b then return new; end if;\n else b:=a;\n end if;\n insert into learn_member_history(tenant_id,member_id,kind,before_state,after_state)\n values(new.tenant_id,new.id,lower(tg_op),b,a);\n return new;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_member_capture_baseline",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_member uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_member_capture_baseline(p_tenant uuid, p_member uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare m team_members%rowtype; result uuid; s jsonb;\nbegin\n select * into m from team_members where tenant_id=p_tenant and id=p_member for update;\n if not found then raise exception 'Member not found in tenant' using errcode='P0002'; end if;\n select id into result from learn_member_history where tenant_id=p_tenant and member_id=p_member\n order by sequence limit 1;\n if found then return result; end if;\n s:=learn_member_snapshot(m);\n insert into learn_member_history(tenant_id,member_id,kind,before_state,after_state)\n values(p_tenant,p_member,'baseline',s,s) returning id into result;\n return result;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_member_history_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_member_history_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin raise exception 'Membership evidence is append-only' using errcode='55000'; end $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_member_history_read",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_start timestamp with time zone, p_end timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_member_history_read(p_tenant uuid, p_start timestamp with time zone, p_end timestamp with time zone)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare m team_members%rowtype; head learn_member_history%rowtype; first_event learn_member_history%rowtype;\n predecessor bigint; n int; total_events int:=0; total_members int; events jsonb; members jsonb:='[]';\n observed timestamptz:=statement_timestamp(); result jsonb;\nbegin\n if auth.uid() is null or p_tenant is distinct from current_tenant_id()\n   or coalesce(current_user_role(),'') not in ('owner','admin') then\n   raise exception 'Owner/admin access in this tenant required' using errcode='42501';\n end if;\n if p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)\n   or p_start>=p_end or p_end>observed or p_end-p_start>interval '366 days' then\n   raise exception 'Choose a completed period of at most 366 days' using errcode='22023';\n end if;\n if (select count(*) from pg_trigger where tgrelid='public.team_members'::regclass\n   and tgname in ('learn_capture_member_change','learn_member_no_delete','learn_member_no_truncate')\n   and tgenabled in ('O','A'))<>3 then\n   raise exception 'Membership capture is unavailable' using errcode='55000';\n end if;\n select count(*) into total_members from team_members where tenant_id=p_tenant;\n if total_members>500 then raise exception 'Roster exceeds bounded history review' using errcode='54000'; end if;\n for m in select * from team_members where tenant_id=p_tenant order by id loop\n   select * into head from learn_member_history where tenant_id=p_tenant and member_id=m.id order by sequence desc limit 1;\n   if found and (head.after_state is distinct from learn_member_snapshot(m) or head.observed_at>observed) then\n     raise exception 'Current membership does not reconcile with captured history' using errcode='55000';\n   end if;\n   if exists(select 1 from (\n     select observed_at,before_state,\n       lag(observed_at) over(order by sequence) prior_at,\n       lag(after_state) over(order by sequence) prior_state\n     from learn_member_history where tenant_id=p_tenant and member_id=m.id\n   ) h where observed_at<prior_at or (prior_state is not null and before_state is distinct from prior_state)) then\n     raise exception 'Membership capture contains an unexplained history gap' using errcode='55000';\n   end if;\n   select * into first_event from learn_member_history where tenant_id=p_tenant and member_id=m.id order by sequence limit 1;\n   select sequence into predecessor from learn_member_history where tenant_id=p_tenant and member_id=m.id\n     and observed_at<p_start order by sequence desc limit 1;\n   select count(*) into n from learn_member_history where tenant_id=p_tenant and member_id=m.id\n     and (sequence=predecessor or observed_at between p_start and p_end);\n   total_events:=total_events+n;\n   if n>1000 or total_events>5000 then raise exception 'Membership history exceeds bounded review' using errcode='54000'; end if;\n   select coalesce(jsonb_agg(jsonb_build_object('id',id,'sequence',sequence::text,'kind',kind,\n     'observedAt',observed_at,'before',before_state,'after',after_state) order by sequence),'[]') into events\n     from learn_member_history where tenant_id=p_tenant and member_id=m.id\n     and (sequence=predecessor or observed_at between p_start and p_end);\n   members:=members||jsonb_build_array(jsonb_build_object('memberId',m.id,\n     'coverageStart',first_event.observed_at,'firstKind',first_event.kind,\n     'sourceThrough',case when first_event.id is not null then observed end,'count',n,'events',events));\n end loop;\n result:=jsonb_build_object('contract','member-capture@1','tenantId',p_tenant,\n   'period',jsonb_build_object('start',p_start,'end',p_end),'observedAt',observed,\n   'count',total_members,'members',members);\n if octet_length(result::text)>2097152 then raise exception 'Membership history exceeds payload limit' using errcode='54000'; end if;\n return result;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_member_snapshot",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p team_members",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_member_snapshot(p team_members)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n select jsonb_build_object('profileId',p.profile_id,'teamId',p.org_unit_id,\n   'confirmedAt',p.confirmed_at,'effectiveFrom',p.effective_from,'effectiveTo',p.effective_to);\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_scorecard_policy_for_period",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_kind text, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_policy_for_period(p_tenant uuid, p_kind text, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare publication learn_scorecard_publications%rowtype; next_at timestamptz; scope_key text;\nbegin\n if auth.uid() is null or p_tenant is distinct from current_tenant_id()\n   or coalesce(current_user_role(),'') not in ('owner','admin') then\n   raise exception 'Owner/admin access required' using errcode='42501'; end if;\n if p_kind is null or p_kind not in ('member','team','job','customer') or p_start is null or p_end is null\n   or not isfinite(p_start) or not isfinite(p_end) or p_start>=p_end or p_end-p_start>interval '366 days' then\n   raise exception 'Invalid policy period' using errcode='22023'; end if;\n scope_key:=p_kind||':'||coalesce(p_group::text,'all');\n select * into publication from learn_scorecard_publications where tenant_id=p_tenant and scope=scope_key\n   and effective_from<=p_start order by effective_from desc limit 1;\n if not found then return null; end if;\n select min(effective_from) into next_at from learn_scorecard_publications\n   where tenant_id=p_tenant and scope=scope_key and effective_from>publication.effective_from;\n if next_at is not null and next_at<p_end then\n   raise exception 'This period crosses a rule change; review separate periods' using errcode='22023'; end if;\n return publication.policy||jsonb_build_object('publication',jsonb_build_object('id',publication.id,\n   'effectiveFrom',publication.effective_from,'effectiveUntil',next_at));\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_scorecard_publish",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_policy uuid, p_revision integer, p_request uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_publish(p_tenant uuid, p_policy uuid, p_revision integer, p_request uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare actor uuid:=auth.uid(); e operating_profile_entries%rowtype; c config_versions%rowtype;\n prior learn_scorecard_publications%rowtype; latest int; effective timestamptz; snapshot jsonb;\n v_kind text; v_group uuid; m jsonb; v_keys text[]:='{}'; v_weight numeric:=0;\nbegin\n if actor is null or p_tenant is distinct from current_tenant_id() then\n   raise exception 'Owner/admin access required' using errcode='42501'; end if;\n perform 1 from profiles where id=actor and tenant_id=p_tenant and role in ('owner','admin') for share;\n if not found or exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null\n   and (expires_at is null or expires_at>clock_timestamp())) then\n   raise exception 'Owner/admin access outside View-As required' using errcode='42501'; end if;\n if p_policy is null or p_request is null or p_revision is null or p_revision<1\n   or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then\n   raise exception 'Saved revision and publication reason required' using errcode='22023'; end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-scorecard-publish:'||p_request::text,0));\n select * into prior from learn_scorecard_publications where id=p_request;\n if found then\n   if prior.tenant_id<>p_tenant or prior.policy_id<>p_policy or prior.revision<>p_revision\n     or prior.published_by<>actor or prior.reason<>btrim(p_reason) then\n     raise exception 'Publication request identity changed' using errcode='40001'; end if;\n   return jsonb_build_object('publicationId',prior.id,'policyId',prior.policy_id,'revision',prior.revision,\n     'effectiveFrom',prior.effective_from,'reused',true);\n end if;\n select * into e from operating_profile_entries where tenant_id=p_tenant and namespace='learn_scorecards'\n   and scope_kind='tenant' and key like 'definition.%' and value->>'id'=p_policy::text and value->>'version'=p_revision::text;\n if not found then raise exception 'Saved scorecard revision not found' using errcode='22023'; end if;\n -- Same lock as draft saving: publishing a stale editor cannot outrun a new draft.\n perform pg_advisory_xact_lock(hashtextextended(p_tenant::text||':learn_scorecards:'||e.scope_ref,0));\n select * into c from config_versions where id=e.version_id and tenant_id=p_tenant and artifact_kind='learn_scorecard';\n if not found or c.version is distinct from p_revision or c.status is distinct from 'draft'\n   or e.value->>'status' is distinct from 'draft'\n   or e.value->>'tenantId' is distinct from p_tenant::text then\n   raise exception 'Saved draft and configuration revision differ' using errcode='22023'; end if;\n v_kind:=e.value->>'subjectKind';\n  if v_kind is null or v_kind not in ('member','team','job','customer')\n     or jsonb_typeof(e.value->'name') is distinct from 'string'\n     or length(trim(e.value->>'name')) not between 1 and 200\n     or jsonb_typeof(e.value->'scaleMax') is distinct from 'number'\n     or (e.value->>'scaleMax')::numeric <= 0 or (e.value->>'scaleMax')::numeric > 10000\n     or jsonb_typeof(e.value->'metrics') is distinct from 'array' then\n    raise exception 'Invalid scorecard definition' using errcode='22023';\n  end if;\n  if jsonb_array_length(e.value->'metrics') not between 1 and 50 then\n    raise exception 'Choose between 1 and 50 measures' using errcode='22023';\n  end if;\n  v_group := nullif(e.value->>'groupId','')::uuid;\n  if v_group is not null and (v_kind not in ('member','team') or not exists\n    (select 1 from org_units where tenant_id=p_tenant and id=v_group)) then\n    raise exception 'Unknown company team group' using errcode='22023';\n  end if;\n  for m in select value from jsonb_array_elements(e.value->'metrics') loop\n    if jsonb_typeof(m) is distinct from 'object'\n       or coalesce(m->>'key','') !~ '^[a-z][a-z0-9_.-]+$' or length(m->>'key') > 200\n       or (m->>'key')=any(v_keys)\n       or jsonb_typeof(m->'label') is distinct from 'string' or length(trim(m->>'label')) not between 1 and 200\n       or jsonb_typeof(m->'unit') is distinct from 'string' or length(trim(m->>'unit')) not between 1 and 200\n       or jsonb_typeof(m->'weight') is distinct from 'number'\n       or jsonb_typeof(m->'zeroAt') is distinct from 'number'\n       or jsonb_typeof(m->'fullAt') is distinct from 'number'\n       or jsonb_typeof(m->'minSamples') is distinct from 'number'\n       or jsonb_typeof(m->'minCoverage') is distinct from 'number'\n       or jsonb_typeof(m->'maxAgeHours') is distinct from 'number'\n       or jsonb_typeof(m->'sourceSystems') is distinct from 'array' then\n      raise exception 'Invalid scoring measure' using errcode='22023';\n    end if;\n    if (m->>'weight')::numeric not between 0 and 10000\n       or (m->>'zeroAt')::numeric = (m->>'fullAt')::numeric\n       or (m->>'minSamples')::numeric < 1 or mod((m->>'minSamples')::numeric,1) <> 0\n       or (m->>'minCoverage')::numeric <= 0 or (m->>'minCoverage')::numeric > 1\n       or (m->>'maxAgeHours')::numeric <= 0\n       or jsonb_array_length(m->'sourceSystems') not between 1 and 20\n       or exists(select 1 from jsonb_array_elements(m->'sourceSystems') s where jsonb_typeof(s) <> 'string' or length(trim(s #>> '{}')) not between 1 and 200) then\n      raise exception 'Invalid scoring targets, evidence requirements or weights' using errcode='22023';\n    end if;\n    v_keys := array_append(v_keys,m->>'key');\n    v_weight := v_weight + (m->>'weight')::numeric;\n  end loop;\n  if v_weight <= 0 then raise exception 'At least one measure needs positive weight' using errcode='22023'; end if;\n\n if e.scope_ref is distinct from v_kind||':'||coalesce(v_group::text,'all') then\n   raise exception 'Saved rule scope is inconsistent' using errcode='22023'; end if;\n select max(v.version) into latest from operating_profile_entries x join config_versions v on v.id=x.version_id and v.tenant_id=x.tenant_id\n   where x.tenant_id=p_tenant and x.namespace='learn_scorecards' and x.scope_kind='tenant'\n   and x.scope_ref=e.scope_ref and x.key like 'definition.%' and v.artifact_kind='learn_scorecard';\n if latest is distinct from p_revision or exists(select 1 from learn_scorecard_publications where version_id=e.version_id) then\n   raise exception 'Rules changed or this revision is already published; reload' using errcode='40001'; end if;\n effective:=clock_timestamp();\n if exists(select 1 from learn_scorecard_publications where tenant_id=p_tenant and scope=e.scope_ref and effective_from>=effective) then\n   raise exception 'Publication clock must advance' using errcode='40001'; end if;\n snapshot:=e.value||jsonb_build_object('status','published');\n insert into learn_scorecard_publications(id,tenant_id,version_id,policy_id,revision,scope,published_by,effective_from,reason,policy)\n values(p_request,p_tenant,e.version_id,p_policy,p_revision,e.scope_ref,actor,effective,btrim(p_reason),snapshot);\n return jsonb_build_object('publicationId',p_request,'policyId',p_policy,'revision',p_revision,'effectiveFrom',effective,'reused',false);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_scorecard_read_draft",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_kind text, p_group uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_read_draft(p_tenant uuid, p_kind text, p_group uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare selected_value jsonb; selected_revision int; selected_status text; scope_key text;\nbegin\n if auth.uid() is null or p_tenant is distinct from current_tenant_id()\n   or coalesce(current_user_role(),'') not in ('owner','admin') then\n   raise exception 'Owner/admin access required' using errcode='42501';end if;\n if p_kind is null or p_kind not in ('member','team','job','customer')\n   or (p_group is not null and (p_kind not in ('member','team') or not exists(select 1 from org_units where id=p_group and tenant_id=p_tenant))) then\n   raise exception 'Invalid scorecard scope' using errcode='22023';end if;\n scope_key:=p_kind||':'||coalesce(p_group::text,'all');\n select e.value,c.version,c.status into selected_value,selected_revision,selected_status\n from operating_profile_entries e join config_versions c on c.id=e.version_id and c.tenant_id=e.tenant_id\n where e.tenant_id=p_tenant and e.scope_kind='tenant' and e.scope_ref=scope_key\n  and e.namespace='learn_scorecards' and e.key like 'definition.%' and c.artifact_kind='learn_scorecard'\n order by c.version desc,e.id limit 1;\n if not found then return null;end if;\n if selected_status is distinct from 'draft' or selected_value->>'status' is distinct from 'draft'\n  or selected_value->>'tenantId' is distinct from p_tenant::text\n  or selected_value->>'subjectKind' is distinct from p_kind\n  or nullif(selected_value->>'groupId','') is distinct from p_group::text\n  or selected_value->>'version' is distinct from selected_revision::text then\n  raise exception 'Saved scorecard revision is inconsistent' using errcode='22023';end if;\n return selected_value;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_scorecard_revision_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_revision_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nbegin\n if tg_op='TRUNCATE' then\n   if exists(select 1 from config_versions where artifact_kind='learn_scorecard') then\n     raise exception 'Retain scorecard revisions; append a new draft' using errcode='55000'; end if;\n   return null;\n end if;\n if (tg_table_name='config_versions' and (to_jsonb(old)->>'artifact_kind'='learn_scorecard'\n      or (tg_op='UPDATE' and to_jsonb(new)->>'artifact_kind'='learn_scorecard')))\n   or (tg_table_name='operating_profile_entries' and (to_jsonb(old)->>'namespace'='learn_scorecards'\n      or (tg_op='UPDATE' and to_jsonb(new)->>'namespace'='learn_scorecards'))) then\n   raise exception 'Scorecard revisions are immutable; append a new draft' using errcode='55000';\n end if;\n return case when tg_op='DELETE' then old else new end;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_scorecard_save_draft",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant_id uuid, p_expected_version integer, p_definition jsonb, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_save_draft(p_tenant_id uuid, p_expected_version integer, p_definition jsonb, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  v_kind text := p_definition->>'subjectKind';\n  v_group uuid;\n  v_scope text;\n  v_previous jsonb;\n  v_previous_version uuid;\n  v_revision integer;\n  v_policy uuid;\n  v_version uuid := gen_random_uuid();\n  v_payload jsonb;\n  m jsonb;\n  v_keys text[] := '{}';\n  v_weight numeric := 0;\nbegin\n  if auth.uid() is null or p_tenant_id is distinct from current_tenant_id()\n     or coalesce(current_user_role(),'') not in ('owner','admin')\n     or exists(select 1 from public.view_as_context where actor_user_id=auth.uid()\n       and ended_at is null and (expires_at is null or expires_at>now())) then\n    raise exception 'Only this company owner or admin may save scoring rules' using errcode='42501';\n  end if;\n  if p_expected_version is null or p_expected_version < 0 or nullif(trim(p_reason),'') is null\n     or length(p_reason) > 1000 or jsonb_typeof(p_definition) is distinct from 'object' then\n    raise exception 'Invalid draft request' using errcode='22023';\n  end if;\n  if v_kind is null or v_kind not in ('member','team','job','customer')\n     or jsonb_typeof(p_definition->'name') is distinct from 'string'\n     or length(trim(p_definition->>'name')) not between 1 and 200\n     or jsonb_typeof(p_definition->'scaleMax') is distinct from 'number'\n     or (p_definition->>'scaleMax')::numeric <= 0 or (p_definition->>'scaleMax')::numeric > 10000\n     or jsonb_typeof(p_definition->'metrics') is distinct from 'array' then\n    raise exception 'Invalid scorecard definition' using errcode='22023';\n  end if;\n  if jsonb_array_length(p_definition->'metrics') not between 1 and 50 then\n    raise exception 'Choose between 1 and 50 measures' using errcode='22023';\n  end if;\n  v_group := nullif(p_definition->>'groupId','')::uuid;\n  if v_group is not null and (v_kind not in ('member','team') or not exists\n    (select 1 from org_units where tenant_id=p_tenant_id and id=v_group)) then\n    raise exception 'Unknown company team group' using errcode='22023';\n  end if;\n  for m in select value from jsonb_array_elements(p_definition->'metrics') loop\n    if jsonb_typeof(m) is distinct from 'object'\n       or coalesce(m->>'key','') !~ '^[a-z][a-z0-9_.-]+$' or length(m->>'key') > 200\n       or (m->>'key')=any(v_keys)\n       or jsonb_typeof(m->'label') is distinct from 'string' or length(trim(m->>'label')) not between 1 and 200\n       or jsonb_typeof(m->'unit') is distinct from 'string' or length(trim(m->>'unit')) not between 1 and 200\n       or jsonb_typeof(m->'weight') is distinct from 'number'\n       or jsonb_typeof(m->'zeroAt') is distinct from 'number'\n       or jsonb_typeof(m->'fullAt') is distinct from 'number'\n       or jsonb_typeof(m->'minSamples') is distinct from 'number'\n       or jsonb_typeof(m->'minCoverage') is distinct from 'number'\n       or jsonb_typeof(m->'maxAgeHours') is distinct from 'number'\n       or jsonb_typeof(m->'sourceSystems') is distinct from 'array' then\n      raise exception 'Invalid scoring measure' using errcode='22023';\n    end if;\n    if (m->>'weight')::numeric not between 0 and 10000\n       or (m->>'zeroAt')::numeric = (m->>'fullAt')::numeric\n       or (m->>'minSamples')::numeric < 1 or mod((m->>'minSamples')::numeric,1) <> 0\n       or (m->>'minCoverage')::numeric <= 0 or (m->>'minCoverage')::numeric > 1\n       or (m->>'maxAgeHours')::numeric <= 0\n       or jsonb_array_length(m->'sourceSystems') not between 1 and 20\n       or exists(select 1 from jsonb_array_elements(m->'sourceSystems') s where jsonb_typeof(s) <> 'string' or length(trim(s #>> '{}')) not between 1 and 200) then\n      raise exception 'Invalid scoring targets, evidence requirements or weights' using errcode='22023';\n    end if;\n    v_keys := array_append(v_keys,m->>'key');\n    v_weight := v_weight + (m->>'weight')::numeric;\n  end loop;\n  if v_weight <= 0 then raise exception 'At least one measure needs positive weight' using errcode='22023'; end if;\n  v_scope := v_kind || ':' || coalesce(v_group::text,'all');\n  perform pg_advisory_xact_lock(hashtextextended(p_tenant_id::text || ':learn_scorecards:' || v_scope,0));\n  select e.value,e.version_id into v_previous,v_previous_version\n    from operating_profile_entries e join config_versions c on c.id=e.version_id and c.tenant_id=e.tenant_id\n    where e.tenant_id=p_tenant_id and e.scope_kind='tenant' and e.scope_ref=v_scope\n      and e.namespace='learn_scorecards' and e.key like 'definition.%'\n    order by c.version desc limit 1;\n  v_revision := coalesce((v_previous->>'version')::integer,0);\n  if p_expected_version <> v_revision then\n    raise exception 'Scoring rules changed; reload before saving' using errcode='40001';\n  end if;\n  v_policy := coalesce((v_previous->>'id')::uuid,gen_random_uuid());\n  v_payload := jsonb_build_object('tenantId',p_tenant_id,'id',v_policy,'version',v_revision+1,\n    'name',trim(p_definition->>'name'),'status','draft','subjectKind',v_kind,'groupId',v_group,\n    'scaleMax',p_definition->'scaleMax','metrics',p_definition->'metrics');\n  insert into config_versions(id,tenant_id,artifact_kind,artifact_key,version,status,supersedes,author,note)\n    values(v_version,p_tenant_id,'learn_scorecard',p_tenant_id::text||':'||v_scope,v_revision+1,'draft',v_previous_version,auth.uid()::text,trim(p_reason));\n  insert into operating_profile_entries(tenant_id,scope_kind,scope_ref,namespace,key,value,version_id)\n    values(p_tenant_id,'tenant',v_scope,'learn_scorecards','definition.'||v_version::text,v_payload,v_version);\n  return v_payload;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ]
+}

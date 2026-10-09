@@ -1,0 +1,35 @@
+{
+  "version": "learn-test-rules-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "observedAt": "2026-10-09T20:31:49.319Z",
+  "runId": "34ad397e-aae5-4d75-a7b7-a168410e7bf1",
+  "state": "requires_inspection",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established"
+  ],
+  "failure": "The operation was aborted due to timeout",
+  "testLoginsRemoved": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "1e61dbb4-d0fe-4b46-8628-b479eff71b18",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    },
+    {
+      "tenant_id": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-rules-fixtures-34ad397e-aae5-4d75-a7b7-a168410e7bf1.json",
+  "limitations": [
+    "Marked synthetic companies, teams, rule revisions/publications and member history are deliberately retained in TEST; test logins and profiles are removed.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}

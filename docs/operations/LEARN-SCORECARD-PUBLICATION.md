@@ -42,13 +42,15 @@ Do not infer publication by checking `config_versions.status` alone.
 
 Dependencies include the draft-save and membership-history migrations. The TEST
 release bundle now includes both, the View-As context prerequisite and the
-revision-ordered draft reader; it passed a rollback-only hosted rehearsal but is
-not installed. See [TEST rules release](LEARN-TEST-RULES.md). Before any
+revision-ordered draft reader. Release 004 is installed in TEST, followed by the
+005 business-conflict repair; signed-in synthetic acceptance passed at 20:38 UTC. See [TEST rules release](LEARN-TEST-RULES.md). Before any
 deployment, verify target migration history and inspect existing scorecard entries
 for duplicate tenant/policy/revision identities: the new unique index deliberately
 fails on duplicates instead of discarding or silently selecting existing rows.
 Verify other consumers tolerate retained draft rows and the additive publication
-ledger. No hosted migration, source backfill or baseline capture has run here.
+ledger. These hosted TEST releases did not backfill sources, establish staff baselines or
+change production. Release 005 returns HTTP 409 for business conflicts; migration
+`20261030030000_learn_scorecard_conflict_codes.sql` carries that change forward.
 
 ## Verification and limits
 

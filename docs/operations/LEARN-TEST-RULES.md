@@ -1,9 +1,11 @@
 # TEST scorecard rules and forward membership release
 
-Status, 9 October 2026: release `004_rules_membership.sql` is prepared and passed
-an isolated database exercise plus a hosted rollback-only rehearsal. **It is not
-installed persistently.** TEST remains at the verified foundation/helper releases
-with 59 public tables. Production, source communications and recordings were untouched.
+Status, 9 October 2026: release `004_rules_membership.sql` was installed in TEST
+at **20:27:31 UTC**. Follow-up `005_scorecard_conflict_codes.sql` was installed at
+**20:37:54 UTC**, and real signed-in acceptance passed at **20:38:14 UTC**.
+TEST now has 62 public tables and six deployment receipts. Production, source
+communications and recordings were untouched. This is a partial LEARN release;
+measurement collection, full frontend acceptance and provider completeness remain open.
 
 ## Scope and retained sources
 
@@ -81,19 +83,80 @@ and sends one bounded rollback-only request without retrying an uncertain outcom
 - Sources: `supabase/release/learn-test/004_rules_membership.manifest.json`
 - Runner: `scripts/verify/learn-test-rules-rehearsal.mjs`
 
-## Permanent installation and acceptance still required
+## Installed release and real signed-in acceptance
 
-Install with a fresh matching rehearsal and verify the intended trigger/permission
-changes separately from preserved source objects. The new retained records change
-the acceptance lifecycle: the previous foundation fixture runner intentionally
-requires the old exact schema and deletes temporary staff rows. It must not be
-reused unchanged after membership retention is enabled.
+The installation used a fresh hosted rollback rehearsal at 20:26:50–20:26:52 UTC.
+The first install response acknowledged the receipt and preservation of existing
+source definitions, but the exact-schema comparison failed: the isolated verifier
+had deparsed a policy helper as `uid()` while hosted TEST returned `auth.uid()`.
+The verifier now uses the same explicit `public,pg_catalog` search path. Regenerated
+expected output matched the installed schema, and the 20:31:03 read-only recheck
+issued no installation write. The original failed comparison remains in evidence.
 
-Use a marked retained synthetic TEST company for real JWT publication and membership
-acceptance, or transactionally roll back synthetic SQL. Do not disable retention
-triggers to erase test evidence. Retained synthetic records must be explicitly
-identified in the run manifest/report, and test logins can be revoked separately.
-No real staff baselines should be inferred or populated as part of deployment.
+Actual JWT requests then exposed a functional error missed by SQL-only tests:
+manual business conflicts used SQLSTATE `40001`, which can trigger PostgREST
+serialization retries. Two marked runs timed out specifically on the stale-editor
+negative case. Read-only activity checks found no lingering scorecard request.
+The immutable release 004 and its checksum remain unchanged. Follow-up 005 changes
+only four explicit conflict errors in draft saving and publication to `PT409`.
+Clients understand both codes during migration; TEST acceptance requires HTTP 409.
+Supabase documents the retry problem and recommends a custom HTTP conflict code:
+[RPC serialization retry guidance](https://supabase.com/docs/guides/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions-77326b).
+The behavior matched that guidance; no claim is made about TEST's PostgREST version
+or CPU usage. Genuine database serialization failures are not rewritten.
+
+The narrow repair checks exact prior function definitions, requires a fresh matching
+rollback rehearsal, appends its own atomic receipt and verifies that all other
+catalog objects/privileges remain unchanged. Unknown write outcomes are inspected,
+never retried automatically. The 20:37:37–20:37:38 rehearsal rolled back unchanged.
+Its isolated database check also verifies exact function bodies/privileges, duplicate
+installation refusal and the full rules/membership assertions using `PT409`.
+
+Four real synthetic Auth users across two TEST companies then verified:
+
+- Owner/admin save/read, configurable 50-to-100 scales, prompt stale-edit HTTP 409,
+  invalid group/scale rejection and denied viewer/foreign-company access.
+- Publication idempotency, changed-request HTTP 409, unchanged published rules when
+  a newer draft exists, dated boundaries and rejection of periods crossing revisions.
+- Forward membership insert/end events; renaming adds no event; earlier effective
+  dates do not invent historical observed coverage.
+- Privileged rewrite/delete protection, restricted history reads, denied View-As
+  writes and immediate role-revocation enforcement with an existing JWT.
+
+All four final-run logins/profiles were removed and absence verified. The earlier
+failed runs' eight logins/profiles were also removed. Retention guards were never
+disabled. Six explicitly marked synthetic TEST companies remain across three runs:
+the two early runs retained one draft per company; the passing run retained three
+drafts, two publications, two memberships and three membership events. These are
+synthetic test evidence, not Drummonds data or employee assessments. Each report
+links a permanent fixture manifest with IDs and counts, without passwords or keys.
+
+- [Initial installation comparison](evidence/learn-test-rules-install-first-check-2026-10-09.json)
+- [Read-only installation recheck](evidence/learn-test-rules-install-recheck-2026-10-09.json)
+- [Repair rehearsal](evidence/learn-test-scorecard-conflicts-rehearsal-2026-10-09.json)
+- [Repair installation](evidence/learn-test-scorecard-conflicts-installed-2026-10-09.json)
+- [Signed-in acceptance](evidence/learn-test-rules-acceptance-2026-10-09.json)
+- [Current repaired catalog](evidence/learn-test-rules-repaired-schema-2026-10-09.json)
+
+Run `python3 scripts/verify/learn-foundation-release.py --rules --conflicts` for the
+isolated repaired-schema check. The retained synthetic acceptance runner is
+`scripts/verify/learn-test-rules-acceptance.mjs --retained-synthetic-test --existing-cli-login`,
+with `LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy`. It creates retained TEST
+evidence intentionally. Do not run the old foundation fixture cleanup after release
+004: that runner expects the old schema and deletes staff rows. Do not disable
+retention triggers to reuse it. No real staff baseline has been populated.
+
+Twenty focused client/release/acceptance-runner tests, both main and preview
+TypeScript checks, and the preview production build passed for this repair.
+
+## Remaining release gates
+
+Other unreleased LEARN adapters still manually raise `40001` for business conflicts:
+Slack import setup, performance append/review, handoff collection and residence
+collection. Before their hosted release, add a follow-up migration and update their
+client/Edge error handling and real HTTP negative tests. Preserve historical migration
+checksums. Earlier operator/notification modules have the same pattern and need
+separate review; this repair does not claim to fix every application RPC.
 
 Objective/measurement/review schemas, work capture and collectors, source adapters,
 full UI acceptance and provider completeness remain outstanding. The overall

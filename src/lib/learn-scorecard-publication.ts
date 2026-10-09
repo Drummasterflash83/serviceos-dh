@@ -36,7 +36,7 @@ export async function publishScorecard(
   });
   if (error)
     throw Error(
-      error.code === "40001"
+      ["PT409", "40001"].includes(error.code ?? "")
         ? "Rules changed or this revision was already published. Reload before publishing."
         : "Rules could not be published. Check access and retry the same request.",
     );

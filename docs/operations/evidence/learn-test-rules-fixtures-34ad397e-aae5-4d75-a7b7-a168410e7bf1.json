@@ -1,0 +1,76 @@
+{
+  "version": "learn-test-rules-fixtures/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "34ad397e-aae5-4d75-a7b7-a168410e7bf1",
+  "retention": "Retain marked synthetic companies, teams, memberships, rule revisions and publications; remove test logins/profiles only.",
+  "tenants": [
+    {
+      "label": "A",
+      "id": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "team": "c1aed9a0-6e4b-45e3-b61e-0eea032a63a0",
+      "member": "de8ab63e-31c3-4591-9bf0-385b75d7f7c2",
+      "preview": "e6a7a414-25a0-4bea-add4-5de27a706ff7",
+      "publications": [
+        "334526f1-bc8f-4644-a0b4-55bb175f5a1e",
+        "a01bc119-4a61-4dea-b3a7-a6aff75a4077"
+      ]
+    },
+    {
+      "label": "B",
+      "id": "1e61dbb4-d0fe-4b46-8628-b479eff71b18",
+      "team": "dd59c061-c94f-4c68-a463-dd03d4402b08",
+      "member": "284746c0-5c6d-40c8-a212-1405000f818b",
+      "preview": "f6cec944-0597-4e45-9ea3-63c0150557b3",
+      "publications": [
+        "68f28f95-089d-4399-ba05-9cc3f5ec0725",
+        "1dc7b933-18fe-497c-9d48-6ae2b617600c"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "96128d9c-a39e-4b3a-9e20-3e30d3b74a71",
+      "tenant": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "role": "owner",
+      "email": "learn-rules-34ad397e-aae5-4d75-a7b7-a168410e7bf1-0@example.invalid"
+    },
+    {
+      "id": "d6228377-0092-4d8d-983e-498c32e189bb",
+      "tenant": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "role": "admin",
+      "email": "learn-rules-34ad397e-aae5-4d75-a7b7-a168410e7bf1-1@example.invalid"
+    },
+    {
+      "id": "5a5278d2-b151-4990-a9ba-8975ebb08f4a",
+      "tenant": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "role": "viewer",
+      "email": "learn-rules-34ad397e-aae5-4d75-a7b7-a168410e7bf1-2@example.invalid"
+    },
+    {
+      "id": "645cce1c-5650-43e3-adbb-e7e1ac97f18e",
+      "tenant": "1e61dbb4-d0fe-4b46-8628-b479eff71b18",
+      "role": "owner",
+      "email": "learn-rules-34ad397e-aae5-4d75-a7b7-a168410e7bf1-3@example.invalid"
+    }
+  ],
+  "policies": {
+    "A": "f7a0716b-ebe6-42a7-8f40-6a49aca296d6",
+    "B": "b3b01fc0-ebe2-499e-829f-0be9dae52a1c"
+  },
+  "retainedSummary": [
+    {
+      "tenant_id": "1e61dbb4-d0fe-4b46-8628-b479eff71b18",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    },
+    {
+      "tenant_id": "6cea37fb-810c-46a7-a38b-500d4c03af5f",
+      "members": 0,
+      "member_events": 0,
+      "revisions": 1,
+      "publications": 0
+    }
+  ]
+}

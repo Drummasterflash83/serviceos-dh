@@ -1,0 +1,17 @@
+{
+  "version": "learn-test-scorecard-conflicts/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "554a7020f1ae8370f730016d10cfdd9a40b5fe08250974165de67f25802d3479",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T20:37:52.938627+00:00",
+  "observedAfter": "2026-10-09T20:37:54.608851+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": false,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "3e3f16865980a5bed055f1df66a6facff65b6cf3532f7196605dcaf4be268417",
+  "afterCatalogSha256": "e31162f5bca0c0731ee60d926fa495424f5f6affc5aa0848f8968fd53335bfc2"
+}

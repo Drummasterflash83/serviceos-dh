@@ -1,0 +1,45 @@
+{
+  "version": "learn-test-rules-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "conflictSourceSha256": "554a7020f1ae8370f730016d10cfdd9a40b5fe08250974165de67f25802d3479",
+  "observedAt": "2026-10-09T20:38:14.557Z",
+  "runId": "ac98cdbc-3a8d-41f5-bb70-a47a6d598a28",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Marked retained TEST companies and four synthetic Auth logins established",
+    "Revision reader, configurable scale, stale editor, invalid scope and role/company denial through real JWTs",
+    "Owner/admin publication, idempotency, 50-to-100 revision changes and prospective period boundaries",
+    "Forward membership capture, original effective dates do not fabricate coverage, rename does not add events, restricted history reader",
+    "Retained rules/history resist privileged rewrites; preview and same-JWT role revocation deny authority"
+  ],
+  "failure": null,
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_scorecard_read_draft",
+    "expectedRevision": null
+  },
+  "testLoginsRemoved": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "08042e9e-8626-4601-842c-a0a81971114c",
+      "members": 1,
+      "member_events": 1,
+      "revisions": 1,
+      "publications": 0
+    },
+    {
+      "tenant_id": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "members": 1,
+      "member_events": 2,
+      "revisions": 2,
+      "publications": 2
+    }
+  ],
+  "fixtureManifest": "docs/operations/evidence/learn-test-rules-fixtures-ac98cdbc-3a8d-41f5-bb70-a47a6d598a28.json",
+  "limitations": [
+    "Marked synthetic companies, teams, rule revisions/publications and member history are deliberately retained in TEST; test logins and profiles are removed.",
+    "No production, actual employee scores, source communications, audio, provider activity, payroll or full UI acceptance is established."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "learn_scorecard_conflict_codes_v1",
+  "sha256": "554a7020f1ae8370f730016d10cfdd9a40b5fe08250974165de67f25802d3479",
+  "migration": "supabase/migrations/20261030030000_learn_scorecard_conflict_codes.sql",
+  "migrationSha256": "555a1b25e156c757ddf9b649e83d23bc1d1d6b21c5a47040f9401bedc31254ec",
+  "priorSourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "functions": [
+    "learn_scorecard_publish",
+    "learn_scorecard_save_draft"
+  ]
+}

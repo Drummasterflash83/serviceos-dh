@@ -354,20 +354,25 @@ the existing launch redaction/revocation checks. Every marked fixture was remove
 and its absence verified. Thirty-seven focused tests and the isolated SQL exercise
 pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIONS.md).
 
-Raw interaction reads and the previously inspected nine LEARN scorecard/review/work/Slack setup RPCs
-remain unavailable; the new draft-reader RPC adds a tenth requirement. Configuration/objective/control-plane and later LEARN
-releases remain necessary. Allkin's last verified Vercel inventory has only the
-production project, so TEST frontend deployment is still outstanding. No real
-customer data, production state, provider traffic or stored audio was changed by
-these TEST releases. Full LEARN V1 is not yet released.
+Raw interaction reads and five of ten inspected LEARN RPC dependencies remain
+unavailable. The scorecard draft reader/save, publication/period reader and membership
+reader are installed in TEST; measurement/review/work/Slack setup releases remain
+outstanding. Allkin's last verified Vercel inventory has only the production project,
+so TEST frontend deployment is still outstanding. No real customer data, production
+state, provider traffic or stored audio was changed by these TEST releases.
 
-The scorecard-rule/publication and forward membership bundle is prepared from
-five retained sources and passed isolated SQL plus hosted rollback rehearsal at
-20:21 UTC. It is not installed. Draft reads now resolve the highest revision through
-a dedicated RPC instead of transaction timestamps; the client and preview adapter
-are updated and type-check/build verification passed. Permanent installation needs
-retained synthetic acceptance fixtures because history and publications deliberately
-cannot be deleted. See [rules release and remaining acceptance](../operations/LEARN-TEST-RULES.md).
+Release 004 installed rules/publication and forward membership capture at 20:27 UTC.
+A read-only recheck resolved an expected-schema qualification mismatch without another
+install. Real JWT stale-editor testing then found manual SQLSTATE 40001 caused request
+timeouts. Follow-up 005 changes only the two scorecard writers' business conflicts to
+HTTP 409; isolated SQL and hosted rollback rehearsal passed, and installation at
+20:37 UTC preserved all other catalog definitions/privileges. Signed-in acceptance
+passed at 20:38 UTC for 50/100-point settings, publication boundaries/idempotency,
+tenant/role/preview restrictions and immutable forward membership evidence. Synthetic
+logins were removed; marked test companies and their evidence remain intentionally.
+Other unreleased business-conflict RPCs must receive equivalent handling before release.
+See [rules release and acceptance](../operations/LEARN-TEST-RULES.md). Full LEARN V1
+remains incomplete; no actual employee score or reward was established.
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

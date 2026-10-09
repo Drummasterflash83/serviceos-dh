@@ -48,7 +48,7 @@ export function publishScorecardFixture(args:any){
  const prior=publications.find(r=>r.id===args.p_request);
  if(prior)return {data:{publicationId:prior.id,policyId:prior.policy_id,revision:prior.revision,effectiveFrom:prior.effective_from,reused:true},error:null};
  const policy=drafts[0]?.value??(selectedPolicy());
- if(policy.id!==args.p_policy||policy.version!==args.p_revision)return {data:null,error:{code:"40001"}};
+ if(policy.id!==args.p_policy||policy.version!==args.p_revision)return {data:null,error:{code:"PT409"}};
  const at=new Date().toISOString();
  publications.push({id:args.p_request,tenant_id,policy_id:policy.id,revision:policy.version,effective_from:at,
  scope:policy.subjectKind+":"+(policy.groupId??"all"),policy:{...policy,status:"published"}});
@@ -74,7 +74,7 @@ export async function saveDraftFixture(args: any) {
   const scope = `${args.p_definition.subjectKind}:${args.p_definition.groupId ?? "all"}`;
   const previous = drafts.find((d) => d.scope_ref === scope);
   if (args.p_expected_version !== (previous?.value.version ?? 0))
-    return { data: null, error: { code: "40001" } };
+    return { data: null, error: { code: "PT409" } };
   const value = {
     ...args.p_definition,
     tenantId: tenant_id,

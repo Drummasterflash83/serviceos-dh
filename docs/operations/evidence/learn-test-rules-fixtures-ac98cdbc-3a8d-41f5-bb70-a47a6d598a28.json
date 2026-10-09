@@ -1,0 +1,83 @@
+{
+  "version": "learn-test-rules-fixtures/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "ac98cdbc-3a8d-41f5-bb70-a47a6d598a28",
+  "retention": "Retain marked synthetic companies, teams, memberships, rule revisions and publications; remove test logins/profiles only.",
+  "tenants": [
+    {
+      "label": "A",
+      "id": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "team": "bf41ee52-5d15-4535-82f6-bbbf3d9e70bf",
+      "member": "e95b8e30-083b-419d-a1a5-c06ca11f393e",
+      "preview": "c5e30610-1b99-4b89-b270-7702e97ef44a",
+      "publications": [
+        "d1371108-005c-41e8-869b-01a9d185244b",
+        "3cd2ca68-1750-4b79-9fda-fa223ee15116"
+      ],
+      "firstPublishedAt": "2026-10-09T20:38:10.056575+00:00",
+      "secondPublishedAt": "2026-10-09T20:38:10.667081+00:00"
+    },
+    {
+      "label": "B",
+      "id": "08042e9e-8626-4601-842c-a0a81971114c",
+      "team": "465158c1-77af-4a67-9425-9460021fe5ad",
+      "member": "6081932e-57ef-48b8-8e6f-4da68dc07faf",
+      "preview": "3ec9ea56-fb01-4f52-aa3b-635b07fdbef6",
+      "publications": [
+        "25952628-5c04-46a8-9bd9-a0c098b96f51",
+        "e97dd633-0bd2-43fb-b2b1-d81a899a6647"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "f432083c-95d1-428e-a884-7586c408f44b",
+      "tenant": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "role": "owner",
+      "email": "learn-rules-ac98cdbc-3a8d-41f5-bb70-a47a6d598a28-0@example.invalid"
+    },
+    {
+      "id": "c7ba7669-4955-4689-8f94-330a5da64583",
+      "tenant": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "role": "admin",
+      "email": "learn-rules-ac98cdbc-3a8d-41f5-bb70-a47a6d598a28-1@example.invalid"
+    },
+    {
+      "id": "f7165a27-96e2-41f3-b42d-00508b2e1371",
+      "tenant": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "role": "viewer",
+      "email": "learn-rules-ac98cdbc-3a8d-41f5-bb70-a47a6d598a28-2@example.invalid"
+    },
+    {
+      "id": "e9fca727-8c54-478d-81a3-c767b355c54e",
+      "tenant": "08042e9e-8626-4601-842c-a0a81971114c",
+      "role": "owner",
+      "email": "learn-rules-ac98cdbc-3a8d-41f5-bb70-a47a6d598a28-3@example.invalid"
+    }
+  ],
+  "policies": {
+    "A": "44ef995c-a672-48c8-8c6f-94157886f19a",
+    "B": "49aa7f42-dda5-4c7d-89fd-641cfae6dfe5"
+  },
+  "lastOperation": {
+    "kind": "rpc",
+    "name": "learn_scorecard_read_draft",
+    "expectedRevision": null
+  },
+  "retainedSummary": [
+    {
+      "tenant_id": "08042e9e-8626-4601-842c-a0a81971114c",
+      "members": 1,
+      "member_events": 1,
+      "revisions": 1,
+      "publications": 0
+    },
+    {
+      "tenant_id": "d33b7e1a-7c01-4327-971a-579affb8d886",
+      "members": 1,
+      "member_events": 2,
+      "revisions": 2,
+      "publications": 2
+    }
+  ]
+}

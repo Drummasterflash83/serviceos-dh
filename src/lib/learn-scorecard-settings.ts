@@ -63,7 +63,7 @@ export async function saveScorecardDraft(
   });
   if (error)
     throw new Error(
-      error.code === "40001"
+      ["PT409", "40001"].includes(error.code ?? "")
         ? "Someone changed these rules. Reload before saving your changes."
         : "Draft could not be saved. The scoring-settings service may need deploying, or your access may have changed.",
     );

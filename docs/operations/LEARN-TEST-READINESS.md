@@ -2,7 +2,7 @@
 
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
 Those initial audits changed no hosted state. The later **TEST-only metadata release
-and subsequent card/work foundation installation** are recorded below; production remains untouched.
+and subsequent card/work foundation, rules and conflict-repair installation** are recorded below; production remains untouched.
 The Vercel CLI refreshed its existing local
 session after a direct request using the old saved access token returned HTTP 403.
 
@@ -18,21 +18,21 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest retained TEST foundation catalog is **2026-10-09 20:11:24 UTC**.
-The [installed schema observation](evidence/learn-test-foundation-installed-schema-2026-10-09.json)
-includes the catalog-only readiness report. The earlier
-[launch report](evidence/learn-test-readiness-after-release-2026-10-09.json) and
-[original catalog](evidence/learn-test-schema-2026-10-09.json) remain historical
-snapshots, not current descriptions of the installed foundations.
+The latest retained TEST catalog is **2026-10-09 20:38:32 UTC**.
+The [repaired rules catalog](evidence/learn-test-rules-repaired-schema-2026-10-09.json)
+includes the catalog-only readiness report. The foundation and earlier launch
+catalogs remain historical snapshots, not the current installed schema.
 
-- 59 public base tables, all with RLS, plus eight restricted launch views.
+- 62 public base tables, all with RLS, plus eight restricted launch views.
   The 33 new foundation tables have authenticated SELECT and service-role DML.
   Existing raw communications grants and ingestion policies remain unchanged.
 - `customer_cards`, `jobs`, `team_members`, `org_units`, `intelligence_objects`
   and `graph_nodes` now exist. Synthetic signed-in access and company isolation
   passed at 20:12:34 UTC. `interactions` still lacks ordinary-user read authority.
-- The nine inspected LEARN scorecard/review/work/Slack setup RPCs remain absent or
-  unavailable. Foundation installation does not complete their dependency chain.
+- Five of ten inspected RPCs now exist: scorecard draft save/read, publication,
+  period-rule reading and membership-history reading. Their signed-in synthetic
+  acceptance passed at 20:38:14 UTC. Performance review, work-history reading, handoff collection, residence
+  collection and Slack setup remain absent/unavailable.
 - `learn-launch-status` version 1 remains ACTIVE with gateway JWT verification
   and TEST-only metadata mode. Its synthetic redaction, source-denial and authority
   checks passed again after the foundation installation.
@@ -40,14 +40,16 @@ snapshots, not current descriptions of the installed foundations.
   execution; anonymous execution remains denied. Their bodies and source-table
   privileges were preserved. This follow-up repaired the access failure found by
   actual JWT testing; the local verifier now reproduces the original denied grants.
-- TEST still uses `of_test_deploy.migrations`, with four retained receipts:
+- TEST still uses `of_test_deploy.migrations`, with six retained receipts:
   `openfolk_test_learn_bootstrap_v5`, `learn_launch_metadata_views_v1`,
-  `learn_card_work_foundations_v1` and `learn_foundation_helper_access_v1`.
+  `learn_card_work_foundations_v1`, `learn_foundation_helper_access_v1`,
+  `learn_rules_membership_v1` and `learn_scorecard_conflict_codes_v1`.
   No standard migration ledger appeared. The original bootstrap source was not
   found in earlier targeted recovery; absence from a checkout or standard ledger
   does not imply an empty environment.
 
-See [foundation source provenance, release checks and real JWT acceptance](LEARN-TEST-FOUNDATIONS.md).
+See [foundation source provenance](LEARN-TEST-FOUNDATIONS.md) and
+[rules release, conflict repair and real JWT acceptance](LEARN-TEST-RULES.md).
 The catalog script deliberately continues to say `not_release_verified`: it cannot
 prove source completeness, actual customer behavior, source connectors or the full UI.
 

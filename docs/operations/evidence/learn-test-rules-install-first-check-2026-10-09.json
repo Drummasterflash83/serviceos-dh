@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-rules-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T20:27:29.955447+00:00",
+  "observedAfter": "2026-10-09T20:27:31.46489+00:00",
+  "state": "release_requires_inspection",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": false,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "e6c31a92c7831700f060c925d94cde25d36d9252553e50a7deb825b025f186ca",
+  "afterCatalogSha256": "20f4188b285c699451362c378bde6bb8eac9778d94ba7a602cb0c3c26bc12aca",
+  "limitations": [
+    "TEST rules/publication and forward capture only; no production, providers, imports, historical baselines or source communication rows changed.",
+    "Catalog compatibility does not prove real JWT access or full LEARN acceptance.",
+    "Unknown outcomes require inspection; no automatic retry or rollback occurs."
+  ]
+}
