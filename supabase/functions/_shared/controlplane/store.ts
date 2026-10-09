@@ -1,3 +1,4 @@
+import { loadRoster } from "./roster.ts";
 // ServiceOS — OpenFolk Control Plane: impure store (service-role reads + resolver bridge).
 //
 // Loads the effective-dated Control Plane data and runs the pure ownership resolver;
@@ -798,18 +799,14 @@ export async function loadDiscoveryHistory(
 
 export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: string) {
   const [
-    { data: members },
+    { members, responsibilities, authorityGrants: authority },
     { data: identities },
     { data: endpoints },
     { data: ownership },
     summary,
     dataQuality,
   ] = await Promise.all([
-    admin
-      .from("team_members")
-      .select("id, display_name, formal_role, org_unit_id, effective_to")
-      .eq("tenant_id", tenantId)
-      .order("display_name"),
+    loadRoster(admin, tenantId),
     admin
       .from("member_integration_identities")
       .select(
@@ -850,6 +847,8 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     endpoints: endpoints ?? [],
     ownership: ownership ?? [],
     ownershipHistory: ownershipHistory ?? [],
+    responsibilities: responsibilities ?? [],
+    authorityGrants: authority ?? [],
     dataQuality,
     connections: conn.connections,
     phoneEvidence: conn.phoneEvidence,

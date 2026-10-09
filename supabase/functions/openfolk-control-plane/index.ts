@@ -452,6 +452,87 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (error) return fail("write_failed", error.message, 400);
         return json({ ok: true, data: { id: data } });
       }
+      case "roster.member_upsert": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const { data, error } = await rpc("cp_roster_upsert_member", {
+          p_tenant: tenantId,
+          p_member_id: body.member_id ?? null,
+          p_display_name: body.display_name ?? null,
+          p_org_unit: body.org_unit_id ?? null,
+          p_formal_role: body.formal_role ?? null,
+          p_formal_role_status: body.formal_role_status ?? null,
+          p_target_role: body.target_role ?? null,
+          p_authority_level: body.authority_level ?? null,
+          p_effective_from: body.effective_from ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
+      case "roster.member_lifecycle": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.member_id) return fail("bad_request", "member_id required", 400);
+        const { data, error } = await rpc("cp_member_lifecycle", {
+          p_tenant: tenantId,
+          p_member_id: String(body.member_id),
+          p_op: String(body.op ?? ""),
+          p_effective: body.effective ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
+      case "roster.responsibility_upsert": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const { data, error } = await rpc("cp_upsert_responsibility", {
+          p_tenant: tenantId,
+          p_assignment_id: body.assignment_id ?? null,
+          p_member: body.member_id ?? null,
+          p_kind: body.kind ?? null,
+          p_target_ref: body.target_ref ?? null,
+          p_label: body.label ?? null,
+          p_raci: body.raci_role ?? null,
+          p_is_shared: body.is_shared ?? null,
+          p_weekday_mask: body.weekday_mask ?? null,
+          p_cover_for: body.cover_for ?? null,
+          p_confirmed: body.confirmed ?? null,
+          p_effective_from: body.effective_from ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
+      case "roster.responsibility_end": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.assignment_id) return fail("bad_request", "assignment_id required", 400);
+        const { data, error } = await rpc("cp_end_responsibility", {
+          p_tenant: tenantId,
+          p_assignment_id: String(body.assignment_id),
+          p_effective_to: body.effective_to ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
+      case "roster.authority_grant": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        const { data, error } = await rpc("cp_grant_authority", {
+          p_tenant: tenantId,
+          p_member: body.member_id,
+          p_permission: body.permission,
+          p_scope: body.scope ?? "self",
+          p_scope_ref: body.scope_ref ?? null,
+          p_confirmed: body.confirmed ?? null,
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
+      case "roster.authority_end": {
+        if (!tenantId) return fail("bad_request", "tenant_id required", 400);
+        if (!body.grant_id) return fail("bad_request", "grant_id required", 400);
+        const { data, error } = await rpc("cp_end_authority", {
+          p_tenant: tenantId,
+          p_grant_id: String(body.grant_id),
+        });
+        if (error) return fail("write_failed", error.message, 400);
+        return json({ ok: true, data: { id: data } });
+      }
       case "identity.upsert": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const { data, error } = await rpc("cp_upsert_identity", {

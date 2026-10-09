@@ -58,9 +58,16 @@
       ],
       "@/lib/learn-work-history": [
         "../../src/lib/learn-work-history.ts"
+      ],
+      "@/lib/openfolk": [
+        "../../src/lib/openfolk.ts"
       ]
     },
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": [
+      "vite/client",
+      "node"
+    ]
   },
   "include": [
     "*.ts",

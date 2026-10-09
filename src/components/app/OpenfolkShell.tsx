@@ -62,6 +62,7 @@ const SECTION_TITLE: Partial<Record<WorkspaceSection, string>> = {
   overview: "Command Centre",
   learning: "Learning",
   connections: "Connections",
+  roster: "Directory",
   people: "Directory",
   review: "Directory",
   ownership: "Directory",

@@ -257,6 +257,13 @@ same source timestamp. No real measurement, review or pay change was made.
 
 ## Next work and release gates
 
+The earlier Directory → Roster workflow is recovered locally: people/lifecycle,
+shared responsibilities, weekday cover and scoped authority, including operator
+routes and audited RPCs. Added review controls, complete-read checks, tenant/team
+validation, safe rejoin dates and serialized responsibility replacement. Synthetic
+database and Edge tests pass. Historical membership coverage and team/cover runtime
+authority still need connecting. See [roster recovery and release limits](../operations/LEARN-ROSTER-RECOVERY.md).
+
 Work transitions now preserve actual before/after ownership and status snapshots
 in the existing history ledger, using one locked transaction and the revision the
 user's card displayed. A further local migration captures background writes too,

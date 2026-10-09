@@ -18,6 +18,7 @@ export const WORKSPACE_SECTIONS = [
   "learning",
   "company",
   "connections",
+  "roster",
   "people",
   "review",
   "communications",
@@ -78,7 +79,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "overview", label: "Command Centre", section: "overview" },
       { key: "learning", label: "Learning", section: "learning" },
       { key: "connections", label: "Connections", section: "connections" },
-      { key: "directory", label: "Directory", section: "people" },
+      { key: "directory", label: "Directory", section: "roster" },
       { key: "communications", label: "Communications", section: "communications" },
     ],
   },
@@ -100,7 +101,8 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 // Sections fronted by the "Directory" nav item (sub-navigated in the content area).
-export const DIRECTORY_SECTIONS: WorkspaceSection[] = ["people", "review", "ownership"];
+// Roster (team configuration) leads; People remains the evidence-centred hub view.
+export const DIRECTORY_SECTIONS: WorkspaceSection[] = ["roster", "people", "review", "ownership"];
 // Sections kept OUT of primary navigation until they hold something useful. Routes still
 // resolve (direct links / a future Labs area), they just aren't advertised in the sidebar.
 export const HIDDEN_SECTIONS: WorkspaceSection[] = ["agents", "automations"];

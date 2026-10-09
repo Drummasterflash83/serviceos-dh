@@ -38,6 +38,12 @@ import {
   restoreEndpoint,
   reviewIdentity,
   revokeDelegatedTask,
+  rosterEndAuthority,
+  rosterEndResponsibility,
+  rosterGrantAuthority,
+  rosterMemberLifecycle,
+  rosterUpsertMember,
+  rosterUpsertResponsibility,
   updateManualEndpoint,
   validateEndpoint,
   type AuditEntry,
@@ -271,6 +277,19 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
     },
     onCreateEndpoint: async (input) =>
       guard(() => createManualEndpoint({ tenant_id: tenantId, ...input })),
+    // Office roster — every write is reason-required and change-logged server-side.
+    roster: {
+      memberUpsert: (input) => guard(() => rosterUpsertMember({ tenant_id: tenantId, ...input })),
+      memberLifecycle: (input) =>
+        guard(() => rosterMemberLifecycle({ tenant_id: tenantId, ...input })),
+      responsibilityUpsert: (input) =>
+        guard(() => rosterUpsertResponsibility({ tenant_id: tenantId, ...input })),
+      responsibilityEnd: (input) =>
+        guard(() => rosterEndResponsibility({ tenant_id: tenantId, ...input })),
+      authorityGrant: (input) =>
+        guard(() => rosterGrantAuthority({ tenant_id: tenantId, ...input })),
+      authorityEnd: (input) => guard(() => rosterEndAuthority({ tenant_id: tenantId, ...input })),
+    },
     onUpdateEndpoint: async (input) => {
       if (busy) return { ok: false, error: "busy" };
       setBusy(true);

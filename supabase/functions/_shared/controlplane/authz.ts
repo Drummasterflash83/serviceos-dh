@@ -163,24 +163,30 @@ export async function requirePlatformOperator(
     return err("invalid_auth", "Could not verify session", 401);
   }
 
-  const { data: profile } = await admin
+  const { data: profile, error: profileError } = await admin
     .from("profiles")
     .select("role")
     .eq("id", userId)
     .maybeSingle();
-  const { data: grants } = await admin
+  const { data: grants, error: grantsError } = await admin
     .from("platform_authority_grants")
     .select("permission, effective_from, effective_to")
     .eq("profile_id", userId);
 
   // Active View-As context for the real actor?
   let viewAsActive = false;
-  const { data: va } = await admin
+  const { data: va, error: viewAsError } = await admin
     .from("view_as_context")
     .select("id, expires_at")
     .eq("actor_user_id", userId)
     .is("ended_at", null)
     .maybeSingle();
+  if (profileError || grantsError || viewAsError) {
+    return err("authority_unavailable", "Operator authority could not be verified", 503);
+  }
+  if (va?.expires_at && !Number.isFinite(Date.parse(va.expires_at as string))) {
+    return err("authority_unavailable", "View-As expiry could not be verified", 503);
+  }
   if (va && (!va.expires_at || Date.parse(va.expires_at as string) > now)) viewAsActive = true;
 
   const decision = decidePlatformAccess({

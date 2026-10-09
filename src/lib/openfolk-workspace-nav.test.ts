@@ -70,8 +70,8 @@ test("legacy section URLs re-home to their new section (no broken bookmarks)", (
   assert.equal(sectionSearchValue("email"), "communications");
 });
 
-test("directory sections (people/review/ownership) are canonical + front the Directory nav item", () => {
-  for (const s of ["people", "review", "ownership"] as const) {
+test("directory sections (roster/people/review/ownership) are canonical + front the Directory nav item", () => {
+  for (const s of ["roster", "people", "review", "ownership"] as const) {
     assert.equal(resolveSection(s), s); // deep link preserved
     assert.equal(activeNavKey(s), "directory"); // sidebar highlights Directory
   }

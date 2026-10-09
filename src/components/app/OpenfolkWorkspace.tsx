@@ -45,6 +45,7 @@ import { LearningSection } from "@/components/app/LearningSection";
 import { IdentityResolutionSection } from "@/components/app/IdentityResolutionSection";
 import { PersonIntelligenceHub } from "@/components/app/PersonIntelligenceHub";
 import { TeamMemberPreview } from "@/components/app/TeamMemberPreview";
+import { OpenfolkRoster, type RosterActions } from "@/components/app/OpenfolkRoster";
 import type {
   AuditEntry,
   CpEndpoint,
@@ -234,6 +235,8 @@ export interface WorkspaceActions {
     reason: string;
   }) => Promise<{ ok: boolean; outcome?: string; error?: string }>;
   onRestoreEndpoint?: (endpointId: string, reason: string) => void;
+  // Office roster (Directory → Roster) — change-logged writes via the cp_roster_* RPCs.
+  roster?: RosterActions;
 }
 
 export function OpenfolkWorkspace({
@@ -450,6 +453,7 @@ export function OpenfolkWorkspace({
         <nav className="mb-3 flex flex-wrap gap-1">
           {(
             [
+              ["roster", "Roster"],
               ["people", "People"],
               ["review", "Identity review"],
               ["ownership", "Ownership"],
@@ -490,6 +494,35 @@ export function OpenfolkWorkspace({
 
         {/* ── Identity Resolution V1 (governed review, read-only mode) ── */}
         {section === "identity" && <IdentityResolutionSection tenantId={summary.tenant_id} />}
+
+        {/* ── Roster (editable team configuration) ─────────────────── */}
+        {section === "roster" &&
+          (() => {
+            // Operator preview launched from the roster reuses the same read-only surface.
+            const previewMember = previewFor ? members.find((m) => m.id === previewFor) : null;
+            if (previewMember) {
+              return (
+                <TeamMemberPreview
+                  actor={previewMember}
+                  workspace={workspace}
+                  onExit={() => setPreviewFor(null)}
+                />
+              );
+            }
+            return (
+              <OpenfolkRoster
+                workspace={workspace}
+                writeCapable={writeCapable}
+                busy={busy}
+                actions={actions.roster ?? {}}
+                onPreview={(id) => setPreviewFor(id)}
+                onOpenHub={(id) => {
+                  selectPerson(id);
+                  setSection("people");
+                }}
+              />
+            );
+          })()}
 
         {/* ── People / Person Intelligence Hub ─────────────────────── */}
         {section === "people" &&

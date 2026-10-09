@@ -61,8 +61,46 @@ export interface CpMember {
   id: string;
   display_name: string;
   formal_role: string | null;
+  formal_role_status?: "proposed" | "confirmed";
+  target_role?: string | null;
+  observed_role?: string | null;
+  observed_status?: "proposed" | "inferred" | "confirmed";
+  authority_level?: "individual" | "lead" | "manager" | "director" | "owner";
+  profile_id?: string | null;
   org_unit_id: string | null;
+  effective_from?: string;
   effective_to: string | null;
+}
+export interface CpResponsibility {
+  id: string;
+  member_id: string;
+  kind:
+    | "responsibility_area"
+    | "objective"
+    | "workflow"
+    | "escalation"
+    | "team"
+    | "customer_segment"
+    | "cover";
+  target_ref: string | null;
+  label: string;
+  raci_role: string;
+  is_shared: boolean;
+  weekday_mask: number | null;
+  cover_for: string | null;
+  confirmed: boolean;
+  effective_from: string;
+  effective_to: string | null;
+  version: number;
+}
+export interface CpAuthorityGrant {
+  id: string;
+  member_id: string;
+  permission: string;
+  scope: "self" | "team" | "company";
+  scope_ref: string | null;
+  confirmed: boolean;
+  effective_from: string;
 }
 export interface CpEndpoint {
   id: string;
@@ -304,6 +342,8 @@ export interface Workspace {
   endpoints: CpEndpoint[];
   ownership: CpOwnership[];
   ownershipHistory?: CpOwnership[];
+  responsibilities?: CpResponsibility[];
+  authorityGrants?: CpAuthorityGrant[];
   dataQuality: DataQualityItem[];
   connections?: Connections;
   phoneEvidence?: PhoneEvidenceItem[];
@@ -610,6 +650,59 @@ export const upsertMember = (p: {
   formal_role?: string;
   reason: string;
 }) => invoke<{ id: string }>({ action: "member.upsert", ...p });
+
+// ── Office roster (migration 20260913120000): lifecycle, responsibilities, authority ──
+export const rosterUpsertMember = (p: {
+  tenant_id: string;
+  member_id?: string;
+  display_name?: string;
+  org_unit_id?: string;
+  formal_role?: string;
+  formal_role_status?: "proposed" | "confirmed";
+  target_role?: string;
+  authority_level?: CpMember["authority_level"];
+  effective_from?: string;
+  reason: string;
+}) => invoke<{ id: string }>({ action: "roster.member_upsert", ...p });
+export const rosterMemberLifecycle = (p: {
+  tenant_id: string;
+  member_id: string;
+  op: "end" | "reactivate";
+  effective?: string;
+  reason: string;
+}) => invoke<{ id: string }>({ action: "roster.member_lifecycle", ...p });
+export const rosterUpsertResponsibility = (p: {
+  tenant_id: string;
+  assignment_id?: string;
+  member_id?: string;
+  kind?: CpResponsibility["kind"];
+  target_ref?: string;
+  label?: string;
+  raci_role?: string;
+  is_shared?: boolean;
+  weekday_mask?: number;
+  cover_for?: string;
+  confirmed?: boolean;
+  effective_from?: string;
+  reason: string;
+}) => invoke<{ id: string }>({ action: "roster.responsibility_upsert", ...p });
+export const rosterEndResponsibility = (p: {
+  tenant_id: string;
+  assignment_id: string;
+  effective_to?: string;
+  reason: string;
+}) => invoke<{ id: string }>({ action: "roster.responsibility_end", ...p });
+export const rosterGrantAuthority = (p: {
+  tenant_id: string;
+  member_id: string;
+  permission: string;
+  scope?: "self" | "team" | "company";
+  scope_ref?: string;
+  confirmed?: boolean;
+  reason: string;
+}) => invoke<{ id: string }>({ action: "roster.authority_grant", ...p });
+export const rosterEndAuthority = (p: { tenant_id: string; grant_id: string; reason: string }) =>
+  invoke<{ id: string }>({ action: "roster.authority_end", ...p });
 
 // ── Connections: discovery history + delegated setup tasks (operator) ──
 export const getDiscoveryHistory = (

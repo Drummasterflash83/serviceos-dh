@@ -54,3 +54,10 @@ work** under a finding. `&history=partial` (default), `complete`, `empty` and
 capture responses. Partial coverage reports missing time rather than attributing
 it to an employee. Source records expose fixture history IDs. No database,
 baseline, history write or scoring measurement is created by this preview.
+
+`/roster-review` mounts the recovered operator roster component with one synthetic
+person, proposed responsibility and proposed team permission. Its actions update
+in-memory fixtures only; reloading resets them. Use it to review reason requirements,
+proposal confirmation and forms. Person-hub/Command Centre navigation is described
+in the fixture rather than loading live data; those routes remain wired in the real
+operator application. This preview does not establish database/audit persistence.
