@@ -3,8 +3,11 @@
 create role anon;
 create role authenticated;
 create role service_role bypassrls;
+create schema auth;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.actor',true),'')::uuid $$;
 create table tenants(id uuid primary key);
 create table profiles(id uuid primary key,tenant_id uuid,role text);
+create function current_user_role() returns text language sql stable as $$ select role from profiles where id=auth.uid() $$;
 create table team_members(id uuid primary key,tenant_id uuid,effective_from timestamptz,effective_to timestamptz,confirmed_at timestamptz);
 create table view_as_context(actor_user_id uuid,ended_at timestamptz,expires_at timestamptz);
 create table objectives(id uuid primary key,tenant_id uuid);

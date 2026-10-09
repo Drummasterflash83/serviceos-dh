@@ -56,6 +56,7 @@ must be addressed before the final operational release.
 
 ```sh
 node --test scripts/learn-work-transition.test.mjs
+node --test src/lib/learn-work-history.test.ts
 node scripts/work-projection.test.mjs
 python3 scripts/verify/learn-work-history-sql.py
 npx tsc --noEmit
@@ -82,20 +83,75 @@ The historical `scripts/work-transition.test.mjs` still describes the pre-recove
 split-write path and is not evidence for this implementation. Use the new tests
 above; actual local-stack HTTP and ordinary-user acceptance remain to be added.
 
+## Forward capture and card review
+
+Migration `20261029190000_learn_work_source_capture.sql` adds a database trigger
+to capture the same snapshot fields on **every** intelligence-object insert and
+relevant update, including background writers that bypass the transition RPC or
+do not increment the version. Each capture has a monotonic sequence, database
+time and before/after state. It rolls back with the source write. Subject-only
+changes do not invent ownership events. The original attributed transition row
+remains separate; calculations consume only canonical capture rows, so a governed
+transition is not counted twice. The capture actor is explicitly the system, not
+a guessed employee.
+
+An explicit service-only baseline RPC records an existing item's current state
+once under a row lock. Coverage begins at that instant, never at `created_at`.
+The migration does not run this baseline over existing items or reconstruct old
+assignments. Existing history is retained, including rows without snapshots.
+
+The owner/admin reader returns a single database snapshot of the requested
+completed period, one preceding state and the capture watermark. It rejects a
+disabled capture trigger, a current-state mismatch, chronological regression or
+an unexplained break anywhere in the captured snapshot chain. Its period is at
+most 366 days, with at most 1,000 returned events and a 2 MiB payload. Over-budget
+results fail rather than truncate. These checks do not prove that a privileged
+database administrator has never temporarily disabled capture; operational
+controls and monitoring remain part of deployment acceptance.
+
+Cards now offer **Ownership & time on this work** beneath each finding. The
+reader validates scope, counts, timestamps, event sequence and snapshot continuity
+before calculating elapsed intervals and owner changes. Times before the first
+capture remain explicitly unknown. Handoffs count a recorded change between two
+non-null owner references within the half-open period; initial assignment is not
+a handoff. Current directory labels are optional, tenant-checked display aids;
+ambiguous profiles and legacy email references do not become staff identities.
+
+The table shows responsible/accountable/waiting-on references, raw state, elapsed
+minutes and source history IDs. Elapsed calculations use millisecond precision;
+sequence order preserves same-time events. Waiting, blocked and terminal states
+remain visible raw intervals. Business calendars and approved exclusions have
+not been applied, and this panel creates no performance measurements or scores.
+
+Ten focused reader tests cover clipping, partial/missing coverage, timestamp ties,
+half-open periods, malformed/disconnected evidence, directory ambiguity and
+fractional-minute rounding. The expanded SQL suite covers background writes,
+baseline idempotency, capture rollback, owner/tenant access, disabled capture,
+state gaps and both response limits. Its actual SQL JSON response is fed into the
+TypeScript timeline calculator, in addition to the synthetic unit fixtures.
+Browser fixtures are synthetic and do not establish ordinary-user production RLS.
+Application and preview type checks/builds pass, along with the 47 build
+prerequisites. Browser checks confirm partial coverage (8,064 known / 2,016 unknown
+minutes), complete coverage (10,080 / 0), source-reference disclosure and an
+unavailable read that withholds durations. No browser console errors were observed;
+existing build bundle warnings remain.
+
 ## Remaining work and release order
 
-This is collection infrastructure, not a desk-time score. Other writers can still
-change intelligence objects outside this RPC and may have legacy history without
-snapshots. A future adapter must establish complete source coverage, detect gaps,
-use historical identity/team membership and refuse to reconstruct missing periods
-from today's ownership. Waiting/blocked states are not automatically approved
-performance exclusions. Calendars, exclusions, handoff semantics and review remain
-explicit scoring inputs.
+This is collection and factual review infrastructure, not a desk-time score. The
+new trigger covers forward writes once deployed; periods before capture remain
+unknown. A scoring adapter still needs historical identity/team membership,
+complete eligible populations, approved calendars/exclusions and policy revision
+selection. It must not infer historical performance from today's ownership or
+treat a waiting/blocked state as an automatically approved exclusion.
 
 Reconcile target migration history, restore scoped authority/cover dependencies,
-and verify this additive migration on the correct test target. Release the work
+and verify both additive migrations on the correct test target. Release the work
 projection, transition endpoint and client together: the new client requires a
 projected revision and the new endpoint requires the snapshot transaction. Verify
 ordinary user permissions and the full UI/HTTP journey before any live release.
-Then connect validated work intervals to the subject/period measurement and human
-review flow. Do not infer historical employee performance from this migration.
+Plan a bounded service-run baseline for pre-existing items if needed, explicitly
+recording when new coverage begins. Then connect validated work intervals to the
+subject/period measurement and human review flow, including the currently missing
+work-history evidence allowlist. No live migration, baseline or deployment has
+been performed by this increment.

@@ -40,3 +40,11 @@
 .lp-evidence dd { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 8px; }
 .lp-evidence dt { color: #59695e; text-transform: capitalize; }
 .lp-panel small { overflow-wrap: anywhere; }
+.lw-panel { padding: 12px; }
+.lw-table-wrap { max-width: 100%; overflow-x: auto; margin: 12px 0; }
+.lw-table-wrap table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 12px; text-align: left; }
+.lw-table-wrap caption { text-align: left; margin-bottom: 8px; font-weight: 600; }
+.lw-table-wrap th, .lw-table-wrap td { padding: 10px 8px; vertical-align: top; border-bottom: 1px solid #e2e8e4; }
+.lw-table-wrap small { display: block; margin-top: 6px; }
+.lw-table-wrap code { display: block; font-size: 10px; overflow-wrap: anywhere; }
+.lw-result { margin-top: 16px; }

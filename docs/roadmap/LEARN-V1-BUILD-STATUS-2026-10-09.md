@@ -259,9 +259,14 @@ same source timestamp. No real measurement, review or pay change was made.
 
 Work transitions now preserve actual before/after ownership and status snapshots
 in the existing history ledger, using one locked transaction and the revision the
-user's card displayed. Synthetic failure and concurrency checks pass; missing old
-snapshots remain unknown. Team/cover authority recovery and a coverage-aware
-desk-time adapter remain required. See [work history and release order](../operations/LEARN-WORK-HISTORY.md).
+user's card displayed. A further local migration captures background writes too,
+with a coherent, bounded owner/admin reader. Cards now show elapsed ownership
+intervals, handoffs, source IDs and explicit missing time. Synthetic failure,
+concurrency, gap and limit checks pass; an actual SQL response is accepted by the
+TypeScript reader. Old snapshots remain unknown and no live baseline has run.
+Team/cover authority recovery and a scoring adapter with historical membership,
+eligible population, calendars and exclusions remain required. See
+[work history and release order](../operations/LEARN-WORK-HISTORY.md).
 
 The governed Commusoft customer/site/job importer and later multi-phone/exact-site
 fixes have now been recovered from the older local build. Pure tests, mocked Edge

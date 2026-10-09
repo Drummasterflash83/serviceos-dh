@@ -55,6 +55,9 @@
       ],
       "@/lib/learn-performance-evidence": [
         "../../src/lib/learn-performance-evidence.ts"
+      ],
+      "@/lib/learn-work-history": [
+        "../../src/lib/learn-work-history.ts"
       ]
     },
     "allowImportingTsExtensions": true

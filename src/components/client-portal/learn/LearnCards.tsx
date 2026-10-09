@@ -3,6 +3,7 @@ import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "luci
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LearnPerformanceCard } from "./LearnPerformanceCard";
+import { LearnWorkHistory } from "./LearnWorkHistory";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
 import {
   readLearnCards,
@@ -391,6 +392,7 @@ function CardDetail({
                     </dd>
                   </div>
                 </dl>
+                <LearnWorkHistory tenantId={tenantId} objectId={f.id} canReview={canReview} />
                 <div className="lc-evidence-links">
                   {f.evidenceIds.map((ref, i) => (
                     <a key={ref} href={`#learn-evidence-${ref}`}>

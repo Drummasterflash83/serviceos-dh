@@ -47,3 +47,10 @@ Performance review fixture: append `&performance=1`, choose Team, open Example
 coordinator and expand Performance evidence & score preview. Synthetic observations
 and an in-memory review ledger support confirm/dispute/reload checks. A browser
 reload resets the ledger. These controls never submit a real review or measurement.
+
+Work-history fixture: open a customer card and expand **Ownership & time on this
+work** under a finding. `&history=partial` (default), `complete`, `empty` and
+`error` exercise the actual interval reader and card panel against synthetic
+capture responses. Partial coverage reports missing time rather than attributing
+it to an employee. Source records expose fixture history IDs. No database,
+baseline, history write or scoring measurement is created by this preview.
