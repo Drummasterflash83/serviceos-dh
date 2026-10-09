@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
+import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
 import {
   readLearnCards,
@@ -223,7 +224,14 @@ function CardWorkspace({ tenantId, canEdit }: { tenantId: string; canEdit: boole
       >
         <DialogContent className="lc-dialog" overlayClassName="lc-overlay">
           {selected && (
-            <CardDetail key={`${kind}:${selected}`} tenantId={tenantId} kind={kind} id={selected} />
+            <CardDetail
+              key={`${kind}:${selected}:${group}`}
+              tenantId={tenantId}
+              kind={kind}
+              id={selected}
+              groupId={kind === "member" ? group || null : null}
+              canReview={canEdit}
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -261,7 +269,19 @@ function CardWorkspace({ tenantId, canEdit }: { tenantId: string; canEdit: boole
   );
 }
 
-function CardDetail({ tenantId, kind, id }: { tenantId: string; kind: LearnCardKind; id: string }) {
+function CardDetail({
+  tenantId,
+  kind,
+  id,
+  groupId,
+  canReview,
+}: {
+  tenantId: string;
+  kind: LearnCardKind;
+  id: string;
+  groupId: string | null;
+  canReview: boolean;
+}) {
   const [data, setData] = useState<LearnCardDetail | null>(null),
     [failed, setFailed] = useState(false),
     [revision, setRevision] = useState(0);
@@ -323,6 +343,13 @@ function CardDetail({ tenantId, kind, id }: { tenantId: string; kind: LearnCardK
               </ul>
             </aside>
           )}
+          <LearnPerformanceCard
+            tenantId={tenantId}
+            kind={kind}
+            id={id}
+            groupId={groupId}
+            canReview={canReview}
+          />
           <h3>Findings, commitments & blockers</h3>
           {!data.findings.length && (
             <p>

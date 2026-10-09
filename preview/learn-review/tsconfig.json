@@ -46,6 +46,15 @@
       ],
       "@/lib/learn-slack-setup": [
         "../../src/lib/learn-slack-setup.ts"
+      ],
+      "@/lib/learn-performance-measurements": [
+        "../../src/lib/learn-performance-measurements.ts"
+      ],
+      "@/lib/learn-performance-reviews": [
+        "../../src/lib/learn-performance-reviews.ts"
+      ],
+      "@/lib/learn-performance-evidence": [
+        "../../src/lib/learn-performance-evidence.ts"
       ]
     },
     "allowImportingTsExtensions": true

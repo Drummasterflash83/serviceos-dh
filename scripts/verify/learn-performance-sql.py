@@ -32,6 +32,9 @@ try:
         'supabase/migrations/20260720120100_objectives_hardening.sql',
         'supabase/migrations/20261029150000_learn_performance_measurements.sql',
         'scripts/verify/learn-performance.assert.sql',
+        'scripts/verify/learn-performance-review.fixture.sql',
+        'supabase/migrations/20261029160000_learn_performance_reviews.sql',
+        'scripts/verify/learn-performance-review.assert.sql',
     ]
     sql = '\n'.join((root / path).read_text() for path in paths)
     result = subprocess.run([docker, 'exec', '-i', name, 'psql', '-h',

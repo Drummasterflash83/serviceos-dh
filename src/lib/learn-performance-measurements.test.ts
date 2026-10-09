@@ -52,7 +52,12 @@ const row = {
   supersedes: null,
   group_ids: [],
 };
-function db(data: any[], count: number | null = data.length, error: any = null) {
+function db(
+  data: any[],
+  count: number | null = data.length,
+  error: any = null,
+  reviews: any[] = [],
+) {
   const filters: any[] = [];
   let selection: any;
   const q: any = {
@@ -70,6 +75,18 @@ function db(data: any[], count: number | null = data.length, error: any = null) 
   };
   return {
     from: (table: string) => {
+      if (table === "learn_performance_reviews") {
+        const r: any = {
+          select: () => r,
+          eq: () => r,
+          in: () => r,
+          order: () => r,
+          limit: () => r,
+          then: (resolve: any) =>
+            Promise.resolve({ data: reviews, count: reviews.length, error: null }).then(resolve),
+        };
+        return r;
+      }
       assert.equal(table, "measurements");
       return q;
     },
@@ -154,11 +171,70 @@ test("correction history stays linked and only a reviewed leaf can support a dra
     measured_at: "2026-01-04T00:00:00Z",
     supersedes: row.id,
   };
-  const result = await loadPerformanceMeasurements(db([row, corrected]), policy, subject, period);
+  const result = await loadPerformanceMeasurements(
+    db([row, corrected], 2, null, [
+      {
+        id: id(50),
+        tenant_id: id(1),
+        measurement_id: id(5),
+        revision: 1,
+        decision: "confirmed",
+        reviewed_by: id(60),
+        reason: "Checked source calculation",
+        created_at: "2026-01-05T00:00:00Z",
+      },
+    ]),
+    policy,
+    subject,
+    period,
+  );
   assert.equal(result.length, 2);
   assert.equal(result[1].supersedes, row.id);
   const score = evaluateScorecard(policy, subject, period, result, Date.parse("2026-01-05"));
   assert.equal(score.score, null);
   assert.equal(score.previewScore, 37.5);
   assert.equal(score.metrics[0].measurementId, id(5));
+});
+
+test("human review never refreshes source evidence and a later dispute withholds the preview", async () => {
+  const reviews = [
+    {
+      id: id(50),
+      tenant_id: id(1),
+      measurement_id: row.id,
+      revision: 1,
+      decision: "confirmed",
+      reviewed_by: id(60),
+      reason: "Reviewed old source",
+      created_at: "2026-02-01T00:00:00Z",
+    },
+  ];
+  const records = await loadPerformanceMeasurements(
+    db([row], 1, null, reviews),
+    policy,
+    subject,
+    period,
+  );
+  assert.equal(records[0].observedAt, row.measured_at);
+  assert.equal(records[0].sourceThrough, row.source_through);
+  const stale = evaluateScorecard(policy, subject, period, records, Date.parse("2026-02-01"));
+  assert.equal(stale.previewScore, null);
+  assert.ok(stale.metrics[0].reasons.includes("Measurement freshness is not established"));
+  const disputed = await loadPerformanceMeasurements(
+    db([row], 1, null, [
+      ...reviews,
+      { ...reviews[0], id: id(51), revision: 2, decision: "disputed" },
+    ]),
+    policy,
+    subject,
+    period,
+  );
+  assert.equal(disputed[0].review, "disputed");
+  const unsigned = await loadPerformanceMeasurements(
+    db([{ ...row, review_state: "confirmed" }]),
+    policy,
+    subject,
+    period,
+  );
+  assert.equal(unsigned[0].review, "inferred");
 });

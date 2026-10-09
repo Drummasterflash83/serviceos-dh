@@ -42,3 +42,8 @@ Backend acceptance and independent Assurance remain separate from this local bui
 `LearnReview` accepts optional `learn-status/1` stored-row evidence and an explicit tenant. Both shell callers currently pass no observation, so default counts stay Unknown. No live reader or permission has been added. See [SOURCE-CONTRACT-MAP.md](SOURCE-CONTRACT-MAP.md) for existing interfaces, exact gaps and the smallest hosted prerequisites. The pure existing validator is retained with source provenance; current/empty/partial counts never imply successful sync, source coverage or provider readiness.
 
 Synthetic adapter checks: `node --test preview/learn-review/learn-count-view.test.ts`. Preview-only TypeScript allows explicit `.ts` imports for this Node test; no repository build or dependency settings changed.
+
+Performance review fixture: append `&performance=1`, choose Team, open Example
+coordinator and expand Performance evidence & score preview. Synthetic observations
+and an in-memory review ledger support confirm/dispute/reload checks. A browser
+reload resets the ledger. These controls never submit a real review or measurement.

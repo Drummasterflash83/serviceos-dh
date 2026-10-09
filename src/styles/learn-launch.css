@@ -20,3 +20,23 @@
 /* Keep card evidence above the mobile workspace navigation. */
 .lc-overlay{z-index:90}.lc-dialog{z-index:91}
 .ls-entry{margin:22px 0;padding:20px;border:1px solid #e9e3ef;border-radius:14px;background:#f5f0f8}.ls-entry h3{font-size:16px;margin-bottom:8px}.ls-entry p,.ls-settings p{font-size:13px;line-height:1.6}.ls-entry p{margin-bottom:12px}.ls-settings fieldset{border:0;padding:0;margin:18px 0}.ls-settings legend{font-size:16px;font-weight:600;margin-bottom:14px}.ls-settings label{display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.4}.ls-settings input,.ls-settings textarea{border:1px solid #cbbada;border-radius:7px;padding:10px;background:#fff;color:#382d47;width:100%;min-width:0}.ls-settings textarea{min-height:75px;margin-bottom:12px}.ls-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}.ls-add{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.ls-add button{font-size:11px}.ls-rule{padding:16px;border:1px solid #e9e3ef;border-radius:12px;margin:16px 0}.ls-rule h4{margin:0}.ls-settings button{padding:8px 12px;border:1px solid #cbbada;border-radius:8px}.ls-settings button:disabled{opacity:.5}.ls-settings [role=status]{padding:10px 14px;background:#f5f0f8;border-radius:8px}.ls-settings fieldset:disabled{opacity:.7}@media(max-width:600px){.ls-fields{grid-template-columns:1fr}}
+
+.lp-panel { margin: 18px 0; border: 1px solid #d8dfda; border-radius: 12px; padding: 16px; }
+.lp-panel summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+.lp-content { padding-top: 12px; }
+.lp-period { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 16px 0; }
+.lp-period label, .lp-review > label { display: grid; gap: 5px; }
+.lp-period input, .lp-review textarea { border: 1px solid #cbd5cf; border-radius: 6px; padding: 8px; background: white; max-width: 100%; }
+.lp-review textarea { min-height: 80px; width: 100%; }
+.lp-score { font-size: 1.1rem; }
+.lp-metric { border-top: 1px solid #d8dfda; padding: 16px 0; }
+.lp-metric h4 { font-weight: 650; }
+.lp-observation { padding: 12px; margin-top: 10px; border: 1px solid #e3e7e4; border-radius: 8px; }
+.lp-review { padding-top: 16px; display: grid; gap: 10px; }
+.lp-review .lp-check { display: flex; align-items: start; gap: 8px; }
+.lp-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.lp-evidence { padding: 8px 0; }
+.lp-evidence details { margin: 8px 0; font-size: .9rem; }
+.lp-evidence dd { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 8px; }
+.lp-evidence dt { color: #59695e; text-transform: capitalize; }
+.lp-panel small { overflow-wrap: anywhere; }

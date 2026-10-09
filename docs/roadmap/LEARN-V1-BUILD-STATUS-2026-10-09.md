@@ -229,8 +229,9 @@ adapter append RPC for exact subject/period/policy revisions, evidence, coverage
 and correction history. Performance metric definitions cannot be linked to
 company objectives, and the objective worker/scanner explicitly read tenant scope.
 Adapter writes remain inferred; no real measurements or scores have been created.
-Owner/admin RLS and a count-checked reader are implemented. The reader is not yet
-connected to the card UI; source adapters and review/publication remain required.
+Owner/admin RLS and a count-checked reader are implemented. The reader is now
+connected to cards with a separate append-only human review ledger. Source
+adapters, numerical correction workflows and policy publication remain required.
 See [the storage contract and rollout order](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md).
 
 Validation: 17 reader/scorer tests, the full objective-evaluation verification
@@ -238,6 +239,21 @@ suite and application TypeScript check passed. Isolated SQL checks use the real
 objectives/hardening migrations plus synthetic dependencies. They cover replay,
 corrections, evidence/tenant ownership, objective isolation, role reads and retained
 legacy behavior. No live database or deployment was changed.
+
+## Performance review and card integration increment
+
+Owners/admins can select a completed period, inspect observations and source
+excerpts, and confirm or dispute a current observation with a reason. Reviews
+retain actor/revision/history, reject stale or corrected observations, and never
+refresh the underlying source timestamp or coverage. Cards show draft simulations
+only under draft rules; disputes and insufficient evidence withhold the result.
+All implementation and browser review remain local/synthetic.
+
+Twenty-one focused tests and the expanded SQL suite passed. Application/preview
+TypeScript checks and both builds passed, including 47 existing prebuild checks.
+Browser checks covered unconfirmed →
+confirmed 80/100 draft → disputed/unassessed, with both reviews retained and the
+same source timestamp. No real measurement, review or pay change was made.
 
 ## Next work and release gates
 
@@ -255,11 +271,12 @@ legacy behavior. No live database or deployment was changed.
 5. Connect Commusoft jobs/visits/assignments and confirm the actual vehicle-data
    provider and field definitions. The canonical jobs and voicemail tables were empty
    at the recorded observation; no performance figures should be inferred from that.
-6. Wire verified source adapters into the new subject/period-scoped append RPC,
-   and connect the measurement reader to cards. Database scope isolation and the
+6. Wire verified source adapters into the new subject/period-scoped append RPC
+   and verify the now-connected measurement/review card flow with real user RLS. Database scope isolation and the
    updated objective worker are implemented locally; deployment and real source
    acceptance remain pending. The pure scoring contract is already implemented.
-7. Add evidence correction/review and policy publication with retained versions,
+7. Extend the new review ledger with numerical correction workflows and policy
+   publication with retained versions,
    effective dates, membership as of the scoring period, approved business calendars,
    exclusions and job-mix treatment. Agree criteria before rating actual people.
 8. Add manager-reviewed reward simulations against agreed rules after the evidence

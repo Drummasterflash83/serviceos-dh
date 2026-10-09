@@ -8,6 +8,21 @@ const row = (n: number, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 const drafts: any[] = [];
+const performanceEnd = new Date().toISOString().slice(0,10)+"T00:00:00.000Z";
+const performanceObserved = new Date(Date.now()-60000).toISOString();
+const performancePolicy = {tenantId:tenant_id,id:id(30),version:1,status:"draft",name:"Synthetic service response",subjectKind:"member",groupId:null,scaleMax:100,
+ metrics:[{key:"response.within_target",label:"Responses within the agreed time",unit:"percent",weight:1,zeroAt:0,fullAt:100,minSamples:5,minCoverage:1,maxAgeHours:72,sourceSystems:["communications"]}]};
+const performanceReviews:any[]=[];
+export function reviewPerformanceFixture(args:any){
+ const prior=performanceReviews.find(r=>r.id===args.p_request_id);
+ if(prior)return {data:{reviewId:prior.id,measurementId:prior.measurement_id,revision:prior.revision,decision:prior.decision,reused:true},error:null};
+ const revision=performanceReviews.filter(r=>r.measurement_id===args.p_measurement_id).length;
+ if(args.p_expected_revision!==revision)return {data:null,error:{code:"40001"}};
+ const r={id:args.p_request_id,tenant_id,measurement_id:args.p_measurement_id,revision:revision+1,decision:args.p_decision,reviewed_by:id(40),reason:args.p_reason,created_at:new Date().toISOString()};
+ performanceReviews.push(r);
+ return {data:{reviewId:r.id,measurementId:r.measurement_id,revision:r.revision,decision:r.decision,reused:false},error:null};
+}
+
 export async function saveDraftFixture(args: any) {
   const scope = `${args.p_definition.subjectKind}:${args.p_definition.groupId ?? "all"}`;
   const previous = drafts.find((d) => d.scope_ref === scope);
@@ -33,7 +48,9 @@ function records(): Record<string, any[]> {
   const time = new Date(Date.now() - 3600000).toISOString();
   return {
     provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
-    operating_profile_entries: drafts,
+    operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:performancePolicy}] : [],
+    measurements: new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
+    learn_performance_reviews: performanceReviews,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [
       row(3, {
@@ -127,6 +144,7 @@ export function cardFixture(table: string) {
     }
     return [...out, s.slice(start)];
   }
+  let exactCount: number | undefined;
   const q: any = {
     select: () => q,
     eq: (key: string, value: unknown) => {
@@ -159,6 +177,7 @@ export function cardFixture(table: string) {
     },
     order: () => q,
     limit: (n: number) => {
+      exactCount = data.length;
       data = data.slice(0, n);
       return q;
     },
@@ -170,7 +189,7 @@ export function cardFixture(table: string) {
       Promise.resolve(
         scenario === "error"
           ? { data: null, error: { message: "Synthetic denied read" } }
-          : { data, error: null },
+          : { data, count: exactCount ?? data.length, error: null },
       ).then(resolve),
   };
   return q;

@@ -10,6 +10,10 @@ import {
   type ScorePeriod,
   type ScoreSubject,
 } from "./learn-scorecards.ts";
+import { loadPerformanceReviews, type PerformanceReview } from "./learn-performance-reviews.ts";
+export type ReviewedPerformanceMeasurement = PerformanceMeasurement & {
+  reviews: PerformanceReview[];
+};
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
 const stamp = (v: unknown) => (typeof v === "string" ? Date.parse(v) : NaN);
@@ -32,7 +36,7 @@ export async function loadPerformanceMeasurements(
   policy: ScorecardPolicy,
   subject: ScoreSubject,
   period: ScorePeriod,
-): Promise<PerformanceMeasurement[]> {
+): Promise<ReviewedPerformanceMeasurement[]> {
   if (
     validateScorecardPolicy(policy).length ||
     !uuid(subject?.id) ||
@@ -58,7 +62,7 @@ export async function loadPerformanceMeasurements(
   if (error || !Array.isArray(data) || !integer(count) || count > 500 || data.length !== count)
     throw Error("Complete measurement history could not be read. No score has been calculated.");
   const ids = new Set<string>();
-  return data.map((r: any) => {
+  const measurements: PerformanceMeasurement[] = data.map((r: any) => {
     if (
       !r ||
       !uuid(r.id) ||
@@ -129,5 +133,16 @@ export async function loadPerformanceMeasurements(
       exclusions: r.exclusions,
       ...(r.supersedes ? { supersedes: r.supersedes } : {}),
     };
+  });
+  const histories = await loadPerformanceReviews(
+    db,
+    policy.tenantId,
+    measurements.map((m) => m.id),
+  );
+  return measurements.map((m) => {
+    const reviews = histories.get(m.id) ?? [];
+    // Human decisions are separate facts. They never change observedAt, sourceThrough,
+    // values, counts or the source correction chain. No ledger = no confirmation.
+    return { ...m, review: reviews.at(-1)?.decision ?? "inferred", reviews };
   });
 }
