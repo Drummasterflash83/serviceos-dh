@@ -18,12 +18,12 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest retained TEST catalog is **2026-10-09 21:02:46 UTC**.
-The [work capture catalog](evidence/learn-test-work-installed-schema-2026-10-09.json)
+The latest retained TEST catalog is **2026-10-09 21:29:46 UTC**.
+The [governed action catalog](evidence/learn-test-actions-installed-schema-2026-10-09.json)
 includes the catalog-only readiness report. The foundation and earlier launch
 catalogs remain historical snapshots, not the current installed schema.
 
-- 79 public base tables, all with RLS, plus eight restricted launch views.
+- 80 public base tables, all with RLS, plus eight restricted launch views.
   The 33 new foundation tables have authenticated SELECT and service-role DML.
   Existing raw communications grants and ingestion policies remain unchanged.
 - `customer_cards`, `jobs`, `team_members`, `org_units`, `intelligence_objects`
@@ -41,11 +41,12 @@ catalogs remain historical snapshots, not the current installed schema.
   execution; anonymous execution remains denied. Their bodies and source-table
   privileges were preserved. This follow-up repaired the access failure found by
   actual JWT testing; the local verifier now reproduces the original denied grants.
-- TEST still uses `of_test_deploy.migrations`, with eight retained receipts:
+- TEST still uses `of_test_deploy.migrations`, with nine retained receipts:
   `openfolk_test_learn_bootstrap_v5`, `learn_launch_metadata_views_v1`,
   `learn_card_work_foundations_v1`, `learn_foundation_helper_access_v1`,
   `learn_rules_membership_v1`, `learn_scorecard_conflict_codes_v1` and
-  `learn_measurements_reviews_v1` and `learn_work_capture_collectors_v1`.
+  `learn_measurements_reviews_v1`, `learn_work_capture_collectors_v1` and
+  `learn_governed_work_actions_v1`.
   No standard migration ledger appeared. The original bootstrap source was not
   found in earlier targeted recovery; absence from a checkout or standard ledger
   does not imply an empty environment.
@@ -54,9 +55,11 @@ See [foundation source provenance](LEARN-TEST-FOUNDATIONS.md) and
 [rules release and conflict repair](LEARN-TEST-RULES.md), and
 [measurement/review release](LEARN-TEST-MEASUREMENTS.md), and
 [work capture/collection signed-in acceptance](LEARN-TEST-WORK-CAPTURE.md).
-The [governed action bundle](LEARN-TEST-ACTIONS.md) passed a TEST rollback rehearsal
-at 21:14 UTC with unchanged catalogs and registries. It is not installed; the
-eight-receipt ledger above is still current.
+The [governed action bundle](LEARN-TEST-ACTIONS.md) was installed at 21:23 UTC.
+Its `work-transition` endpoint version 1 is ACTIVE with gateway JWT verification.
+Real signed-in acceptance passed at 21:29 UTC, including staff actions, scoped
+assignment/cover, revocation and actual handoff collection into a card. No full
+browser or real-customer rollout is implied.
 
 The catalog script deliberately continues to say `not_release_verified`: it cannot
 prove source completeness, actual customer behavior, source connectors or the full UI.

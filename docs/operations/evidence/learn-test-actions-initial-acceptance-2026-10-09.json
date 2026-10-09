@@ -1,0 +1,47 @@
+{
+  "version": "learn-test-actions-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8",
+  "observedAt": "2026-10-09T21:26:49.900Z",
+  "runId": "a5f2dfdc-9121-4e2a-9c93-75326419f9c3",
+  "state": "requires_inspection",
+  "checks": [
+    "Six synthetic Auth sessions, two marked companies and scoped roster/cover fixtures established"
+  ],
+  "failure": "Service credential impersonated an actor (HTTP 401, internal_auth_mismatch)",
+  "lastOperation": {
+    "label": "foreign",
+    "index": 4,
+    "version": 1,
+    "verb": "start"
+  },
+  "testAccessRevoked": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "1cf98e0e-18fe-4f27-964b-2a9da3abe922",
+      "profiles": 1,
+      "members": 1,
+      "work_items": 0,
+      "captures": 0,
+      "annotations": 0,
+      "measurements": 0,
+      "receipts": 0
+    },
+    {
+      "tenant_id": "6bd99780-402d-4e79-8c8d-edb67083e8b4",
+      "profiles": 5,
+      "members": 4,
+      "work_items": 5,
+      "captures": 5,
+      "annotations": 0,
+      "measurements": 0,
+      "receipts": 0
+    }
+  ],
+  "fixtureManifest": "/private/tmp/serviceos-learn-actions-fixtures-a5f2dfdc-9121-4e2a-9c93-75326419f9c3.json",
+  "limitations": [
+    "Synthetic actors and evidence remain in TEST; their memberships/grants/cover end, logins are banned, passwords rotated and roles downgraded.",
+    "No production, provider, real employee/pay assessment, or full browser acceptance is established."
+  ]
+}

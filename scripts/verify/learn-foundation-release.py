@@ -266,6 +266,10 @@ try:
                     assert run("select count(*)=2 from object_state_history where object_id=verify.id(843) and capture_kind is not null").stdout.strip()==b't'
                     assert run("select count(*)=1 from object_state_history where object_id=verify.id(843) and capture_kind is null").stdout.strip()==b't'
                     print('Concurrent action retains exactly one new capture and one attributed transition: PASS',flush=True)
+                    import runpy
+                    concurrency=runpy.run_path(str(ROOT/'scripts/verify/learn-actions-concurrency.py'))
+                    concurrency['verify_authority_races'](run,DOCKER,TARGET,DB)
+
 
 
 

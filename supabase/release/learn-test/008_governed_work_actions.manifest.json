@@ -2,19 +2,31 @@
   "version": "learn-actions-bundle/1",
   "projectRef": "saatxzwxvdvqevbnskxy",
   "releaseName": "learn_governed_work_actions_v1",
-  "sha256": "0ec08e5aa0f17132c03a95bcbbcb3225cc7b03dd181362a8dd7b1c2688aed68e",
+  "sha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8",
   "tables": [
     "object_classes"
   ],
   "functions": [
     "learn_work_cover_day",
     "learn_work_authority",
-    "work_transition_apply"
+    "work_transition_apply",
+    "learn_work_authority_input_lock",
+    "learn_work_registry_input_lock"
   ],
   "affectedTables": [
     "domain_object_types",
     "intelligence_objects",
-    "object_classes"
+    "object_classes",
+    "tenants",
+    "profiles",
+    "team_members",
+    "org_units",
+    "responsibility_assignments",
+    "authority_grants",
+    "view_as_context",
+    "state_definitions",
+    "state_transitions",
+    "authority_permissions"
   ],
   "registryTables": [
     "object_classes",
@@ -55,6 +67,12 @@
       "selection": "repeat verb/evidence/guard constraints in persistence and hardened search paths"
     },
     {
+      "path": "supabase/migrations/20261030080000_learn_work_authority_serialization.sql",
+      "sha256": "d572c486a87818f319660177c633b2ed8f8af748bcb87e8dedc737814e3bf9f6",
+      "selectedSha256": "d572c486a87818f319660177c633b2ed8f8af748bcb87e8dedc737814e3bf9f6",
+      "selection": "serialize ordinary authority/preview and registry mutations with work actions; reject stale transaction snapshots"
+    },
+    {
       "path": "docs/operations/evidence/learn-test-action-registries-before-2026-10-09.json",
       "sha256": "7fafcbb3c84eeb1cadf4733089a596067387e0cc8f2b7759593ef50f53076530",
       "selection": "exact pre-existing permission vocabulary; require empty action type/state/transition registries"
@@ -62,11 +80,12 @@
   ],
   "existingChanges": [
     "Nullable action taxonomy fields and controlled registry references; no work row updates.",
-    "Two reference Action types, 16 states, 30 unguarded edges and one permission vocabulary entry; no staff grant."
+    "Two reference Action types, 16 states, 30 unguarded edges and one permission vocabulary entry; no staff grant.",
+    "Authority input row/truncate guards on seven existing tables and registry statement guards on five; ordinary concurrent changes conflict or serialize."
   ],
   "deferred": [
     "Edge endpoint deployment and real signed-in action acceptance.",
-    "Roster mutation concurrency adoption, full scoped work collection/UI and existing raw-history visibility."
+    "Full scoped work collection/UI and existing raw-history visibility."
   ],
   "acceptanceNote": "Source capture and attributed transition history commit together. Retain synthetic actors, work and evidence; revoke access afterward."
 }

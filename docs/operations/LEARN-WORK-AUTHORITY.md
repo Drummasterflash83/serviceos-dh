@@ -1,7 +1,7 @@
 # Work authority from the roster
 
 Local implementation, 9 October 2026. The [TEST action bundle](LEARN-TEST-ACTIONS.md)
-passed isolated validation and hosted rollback rehearsal, but remains uninstalled.
+is installed and passed real signed-in HTTP acceptance at 21:29 UTC.
 No live permissions, work records or communications were changed.
 
 ## Applied rules
@@ -52,10 +52,11 @@ Completion exceptions recheck approval authority; objective-link approval uses
 the final superadmin decision rather than a stale request field.
 
 These writers share the roster's tenant transaction lock, so recovered roster
-revocations and replacements serialize with work saves. Existing privileged/direct
-writers outside these paths do not automatically acquire that lock. Their adoption
-or exclusion remains a deployment acceptance item; the tests do not prove that
-every conceivable background mutation is serialized.
+revocations and replacements serialize with work saves. The installed input guards now bring ordinary
+authorized direct mutations into the same lock. A competing change waits on an
+existing row lock or returns PT409 for an explicit refresh/retry. Registry changes
+serialize through a global shared/exclusive lock; unrelated companies can still
+act concurrently. These guarantees exclude deliberately disabled database guards.
 
 ## Verification
 
@@ -87,11 +88,14 @@ The production build and its 47 prerequisite tests pass with existing bundle war
 
 ## Release dependencies and remaining work
 
+The installed bundle includes this source plus `20261030070000` validation and
+`20261030080000` authority-input serialization.
+
 Migration `20261029210000_learn_work_scoped_authority.sql` depends on the recovered
 roster, authority vocabulary, work snapshot/capture migrations and canonical tenant
-profile/team tables. Reconcile the target's migration history before applying it
-on the verified test target; deploy the endpoint afterward. Test real staff,
-operator and viewer sessions and the full Command Centre UI/HTTP flow.
+profile/team tables. The TEST release reconciled those dependencies and retained the prior ledger.
+Real owner, operator and viewer-staff HTTP flows passed with synthetic evidence;
+full Command Centre browser acceptance remains outstanding.
 
 Work collection visibility and UI affordances still need to consume the same scope
 rules; do not claim the entire cover/team experience is complete from endpoint tests.

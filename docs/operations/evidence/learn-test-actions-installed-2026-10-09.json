@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-actions-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T21:23:16.22323+00:00",
+  "observedAfter": "2026-10-09T21:23:19.776739+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "5fc8c698da78a5df714cb929217e3f53822b9ba6d02f4c50220793e7a6d6f561",
+  "afterCatalogSha256": "73404f8f6bd464f21e4a6bb623178aa3ac27736ed87d37903eaeb4b25705afaf",
+  "limitations": [
+    "TEST governed actions and authority input guards only; no production, providers, imports, historical baselines or source communication rows changed.",
+    "Catalog compatibility does not prove real JWT access or full LEARN acceptance.",
+    "Unknown outcomes require inspection; no automatic retry or rollback occurs."
+  ]
+}

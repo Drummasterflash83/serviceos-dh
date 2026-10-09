@@ -150,6 +150,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (authorityError) {
     if (authorityError.code === "42501")
       return fail("forbidden", "Your current identity or session cannot act on this work", 403);
+    if (authorityError.code === "22023" || authorityError.code === "22P02")
+      return fail("invalid_target", "Choose an active, confirmed member of this company", 400);
     return fail("authority_unavailable", "Could not verify authority for this work item", 503);
   }
   let authority: ReturnType<typeof readWorkAuthority>;

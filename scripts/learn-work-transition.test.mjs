@@ -283,3 +283,6 @@ test('waiting, blocking, completion and correction require nonblank supporting r
   for(const verb of ['dismiss','correct_owner','correct_objective'])
     assert.equal(decide(verb,{object,actor:owner,reason:'  ',targetMemberRef:mid,targetObjectiveId:oid}).code,'bad_request');
 });
+test('an invalid or foreign assignment target is a request error rather than an unavailable service',async()=>{
+ for(const code of ['22023','22P02']){const r=await call({authorityResult:{error:{code}}});assert.equal(r.status,400);assert.equal(r.body.error.code,'invalid_target');assert.equal(r.calls.some(c=>c.rpc==='work_transition_apply'),false);}
+});

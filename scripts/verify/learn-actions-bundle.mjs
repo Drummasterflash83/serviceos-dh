@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 const root=new URL('../../',import.meta.url),hash=s=>createHash('sha256').update(s).digest('hex');
 export const ACTIONS_RELEASE_NAME='learn_governed_work_actions_v1';
-export const ACTIONS_FUNCTIONS=['learn_work_cover_day','learn_work_authority','work_transition_apply'];
+export const ACTIONS_FUNCTIONS=['learn_work_cover_day','learn_work_authority','work_transition_apply','learn_work_authority_input_lock','learn_work_registry_input_lock'];
 export function buildActions(){
  const sources=[],parts=[];
  function source(name,select,selection){const path='supabase/migrations/'+name,original=readFileSync(new URL(path,root),'utf8'),selected=select(original);if(!selected)throw Error('Empty action selection');sources.push({path,sha256:hash(original),selectedSha256:hash(selected),selection});parts.push(`-- SOURCE ${name}\n-- Original SHA-256 ${hash(original)}\n${selected}`);}
@@ -14,6 +14,7 @@ export function buildActions(){
  source('20260819120000_view_as_and_superadmin.sql',s=>between(s,'insert into authority_permissions (','-- ── 2. Secure server-resolved')+s.slice(s.indexOf('insert into state_transitions (')),'superadmin vocabulary and additive lifecycle edges only; no grants/View-As replacement');
  source('20261029210000_learn_work_scoped_authority.sql',s=>s,'current scoped authority and transactional writer');
  source('20261030070000_learn_work_action_validation.sql',s=>s,'repeat verb/evidence/guard constraints in persistence and hardened search paths');
+ source('20261030080000_learn_work_authority_serialization.sql',s=>s,'serialize ordinary authority/preview and registry mutations with work actions; reject stale transaction snapshots');
  const beforePath='docs/operations/evidence/learn-test-action-registries-before-2026-10-09.json';
  const beforeSource=readFileSync(new URL(beforePath,root),'utf8'),before=JSON.parse(beforeSource);
  if(before.projectRef!=='saatxzwxvdvqevbnskxy'||['types','states','transitions'].some(k=>before.registries[k].length))throw Error('Unexpected action registry baseline');
@@ -43,9 +44,9 @@ insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,a
 notify pgrst,'reload schema';
 commit;
 `;
- return {sql,manifest:{version:'learn-actions-bundle/1',projectRef:'saatxzwxvdvqevbnskxy',releaseName:ACTIONS_RELEASE_NAME,sha256:hash(sql),tables:['object_classes'],functions:ACTIONS_FUNCTIONS,affectedTables:['domain_object_types','intelligence_objects','object_classes'],registryTables:['object_classes','domain_object_types','state_definitions','state_transitions','authority_permissions'],sources,
- existingChanges:['Nullable action taxonomy fields and controlled registry references; no work row updates.','Two reference Action types, 16 states, 30 unguarded edges and one permission vocabulary entry; no staff grant.'],
- deferred:['Edge endpoint deployment and real signed-in action acceptance.','Roster mutation concurrency adoption, full scoped work collection/UI and existing raw-history visibility.'],
+ return {sql,manifest:{version:'learn-actions-bundle/1',projectRef:'saatxzwxvdvqevbnskxy',releaseName:ACTIONS_RELEASE_NAME,sha256:hash(sql),tables:['object_classes'],functions:ACTIONS_FUNCTIONS,affectedTables:['domain_object_types','intelligence_objects','object_classes','tenants','profiles','team_members','org_units','responsibility_assignments','authority_grants','view_as_context','state_definitions','state_transitions','authority_permissions'],registryTables:['object_classes','domain_object_types','state_definitions','state_transitions','authority_permissions'],sources,
+ existingChanges:['Nullable action taxonomy fields and controlled registry references; no work row updates.','Two reference Action types, 16 states, 30 unguarded edges and one permission vocabulary entry; no staff grant.','Authority input row/truncate guards on seven existing tables and registry statement guards on five; ordinary concurrent changes conflict or serialize.'],
+ deferred:['Edge endpoint deployment and real signed-in action acceptance.','Full scoped work collection/UI and existing raw-history visibility.'],
  acceptanceNote:'Source capture and attributed transition history commit together. Retain synthetic actors, work and evidence; revoke access afterward.'}};
 }
 export function checkedActions(){const b=buildActions();if(readFileSync(new URL('supabase/release/learn-test/008_governed_work_actions.sql',root),'utf8')!==b.sql||readFileSync(new URL('supabase/release/learn-test/008_governed_work_actions.manifest.json',root),'utf8')!==JSON.stringify(b.manifest,null,2)+'\n')throw Error('Action bundle differs from retained sources');return b;}

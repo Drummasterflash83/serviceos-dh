@@ -45,5 +45,5 @@ test('unknown rehearsal and changed post-state require inspection without replay
 test('reviewed bundle omits original tenant activation, automation and historical baseline',()=>{
  const b=checkedActions();assert.equal(b.manifest.sha256,SOURCE_SHA256);
  assert.doesNotMatch(b.sql,/insert into tenant_domain_packs|create table if not exists automation_|insert into config_versions|update intelligence_objects set object_class/i);
- assert.equal(b.manifest.tables.length,1);assert.equal(b.manifest.functions.length,3);
+ assert.equal(b.manifest.tables.length,1);assert.equal(b.manifest.functions.length,5);
 });

@@ -7,7 +7,7 @@ import {installedWork} from './learn-test-work-release.mjs';
 import {workFingerprint} from './learn-test-work-rehearsal.mjs';
 import {digest} from './learn-test-foundation-release.mjs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-export const SOURCE_SHA256='0ec08e5aa0f17132c03a95bcbbcb3225cc7b03dd181362a8dd7b1c2688aed68e';
+export const SOURCE_SHA256='4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8';
 export const MARKER='learn-test-actions-rehearsal/1';
 export const actionsFingerprint=c=>digest({prior:workFingerprint(c),functions:c.actionFunctions,registries:c.actionRegistries,classes:c.actionClasses});
 export function assertActionsPrerequisites(c){

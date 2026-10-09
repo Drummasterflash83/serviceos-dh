@@ -1,0 +1,26 @@
+{
+  "version": "learn-test-actions-deploy/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T21:24:28.190Z",
+  "state": "deployed_needs_user_acceptance",
+  "writeAttempted": true,
+  "cliExitStatus": 0,
+  "sourceBundleSha256": "7acddf3c2a97eab83b50ef89b176012c8afcce4668b275bf6b4f737d9abf3fb3",
+  "files": [
+    "work-transition/index.ts",
+    "_shared/authz.ts",
+    "_shared/audit.ts",
+    "_shared/work_transition.ts",
+    "_shared/work_authority.ts"
+  ],
+  "endpoint": {
+    "name": "work-transition",
+    "version": 1,
+    "status": "ACTIVE",
+    "verifyJwt": true
+  },
+  "limitations": [
+    "Only the work-transition TEST endpoint was submitted; no prune, secrets, production or provider operations.",
+    "Deployment metadata is not signed-in HTTP acceptance; uncertain deployment is not retried automatically."
+  ]
+}

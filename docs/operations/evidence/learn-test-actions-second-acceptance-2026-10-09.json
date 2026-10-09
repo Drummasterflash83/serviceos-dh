@@ -1,0 +1,49 @@
+{
+  "version": "learn-test-actions-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "4f27681d0f6786b04374cb409fdea61babff40452f263ce8e3c9d43966f215f8",
+  "observedAt": "2026-10-09T21:28:03.899Z",
+  "runId": "03f60458-72a7-4dc5-9648-1cbb7546c415",
+  "state": "requires_inspection",
+  "checks": [
+    "Six synthetic Auth sessions, two marked companies and scoped roster/cover fixtures established",
+    "Real HTTP authentication, staff self-service, evidence requirements and stale revisions enforced",
+    "Scoped assignment, actual handoff, temporary cover attribution, revocation and concurrent action conflict verified through HTTP"
+  ],
+  "failure": "Preview session changed work (HTTP 409, read_only_view_active)",
+  "lastOperation": {
+    "label": "foreign",
+    "index": 4,
+    "version": 1,
+    "verb": "start"
+  },
+  "testAccessRevoked": true,
+  "cleanupErrors": [],
+  "retainedSummary": [
+    {
+      "tenant_id": "1f733956-7189-4877-961f-c753e3fad832",
+      "profiles": 1,
+      "members": 1,
+      "work_items": 0,
+      "captures": 0,
+      "annotations": 0,
+      "measurements": 0,
+      "receipts": 0
+    },
+    {
+      "tenant_id": "e7c7c7b5-0ad2-49a5-8ac4-d7200d9f5e8c",
+      "profiles": 5,
+      "members": 4,
+      "work_items": 5,
+      "captures": 14,
+      "annotations": 9,
+      "measurements": 0,
+      "receipts": 0
+    }
+  ],
+  "fixtureManifest": "/private/tmp/serviceos-learn-actions-fixtures-03f60458-72a7-4dc5-9648-1cbb7546c415.json",
+  "limitations": [
+    "Synthetic actors and evidence remain in TEST; their memberships/grants/cover end, logins are banned, passwords rotated and roles downgraded.",
+    "No production, provider, real employee/pay assessment, or full browser acceptance is established."
+  ]
+}
