@@ -404,6 +404,21 @@ try:
                                     duplicate=run('set role postgres;'+operator_sql,False)
                                     assert duplicate.returncode and b'Slack operator release already exists' in duplicate.stderr
                                     apply((ROOT/'scripts/verify/learn-slack-operator-reads.assert.sql').read_text(),'Observed thread paging, queue status, disabled connection retention and company isolation')
+                                    if '--slack-pacing' in sys.argv:
+                                        pacing_before=json.loads(run(catalog_sql).stdout)
+                                        pacing_functions_before=json.loads(run(thread_function_query).stdout)
+                                        pacing_sql=(ROOT/'supabase/migrations/20261030150000_learn_slack_workspace_pacing.sql').read_text()
+                                        failed=run('set role postgres;'+pacing_sql.replace('\ncommit;','\ndo $$begin raise exception \'Injected pacing release failure\';end $$;\ncommit;'),False)
+                                        assert failed.returncode and b'Injected pacing release failure' in failed.stderr
+                                        assert json.loads(run(catalog_sql).stdout)['tables']==pacing_before['tables']
+                                        assert json.loads(run(thread_function_query).stdout)==pacing_functions_before
+                                        apply('set role postgres;'+pacing_sql,'Workspace-wide Slack admission and shared retry cooldown')
+                                        assert [t for t in json.loads(run(catalog_sql).stdout)['tables'] if t['name']!='slack_workspace_pacing']==pacing_before['tables'],'Pacing changed existing table definitions or privileges'
+                                        apply((ROOT/'scripts/verify/learn-slack-pacing.assert.sql').read_text(),'Shared history/thread/company budget, attempts, replay, crash recovery and retained sources')
+                                        pacing_races={}
+                                        exec((ROOT/'scripts/verify/learn-slack-pacing-concurrency.py').read_text(),pacing_races)
+                                        pacing_races['verify_pacing_races'](run,Held,refused)
+
 
 
 

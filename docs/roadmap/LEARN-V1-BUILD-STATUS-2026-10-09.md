@@ -610,3 +610,18 @@ hosted RPC checks and multi-thread/uncertain-response UI behaviour passed the ea
 synthetic preview. Live Slack access, continuous capture, pacing/recovery and the
 rest of LEARN V1 are still outstanding. See the
 [release 012 evidence and limits](../operations/LEARN-SLACK-INGESTION.md#current-test-state--operator-reader-release-012-10-october).
+
+## Slack workspace pacing — local, 10 October
+
+Implemented shared admission and recorded rate-limit cooldown across channels,
+threads and connections referring to the same Slack workspace. Waiting jobs retain
+retry attempts; other workspaces can proceed. Crash recovery for an already
+published page bypasses provider pacing, while expired unpublished work waits for
+the reservation to clear. Settlement and gate release are atomic and idempotent.
+
+The isolated SQL release chain passed rollback, permission/preservation checks,
+shared cooldown, saved-page recovery and controlled concurrent admission tests.
+No hosted release or provider operation occurred; TEST remains release 012/runtime
+v4. Exact release packaging and hosted concurrency acceptance remain before this
+can support ongoing ingestion. See
+[implementation and verification limits](../operations/LEARN-SLACK-INGESTION.md#shared-workspace-pacing--local-implementation-10-october).

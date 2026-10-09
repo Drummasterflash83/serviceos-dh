@@ -1,0 +1,46 @@
+{
+  "version": "learn-slack-workspace-pacing-local/1",
+  "observedAt": "2026-10-09T23:38:17.480107+00:00",
+  "state": "passed_isolated_database_verification",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030150000_learn_slack_workspace_pacing.sql",
+      "sha256": "5f5ae2fbd3d0b44d785aab41ac18ae1d6ff8efdd50cd967d79bef02b30edbf74"
+    },
+    {
+      "path": "scripts/verify/learn-slack-pacing.assert.sql",
+      "sha256": "ce65ee42e674cf8cd8520e2b4489fe65caaf88f550b81d886cb97b9b2e8a8b18"
+    },
+    {
+      "path": "scripts/verify/learn-slack-pacing-concurrency.py",
+      "sha256": "fccff9078e1cd8985658fbd39807d770ae9ba958f34e50af6d4120d8af2cc1a7"
+    },
+    {
+      "path": "scripts/verify/learn-foundation-release.py",
+      "sha256": "3ba4e24e826cbc1facf64f6d38210af91b48988966dad82d749ce225e6e2d8d6"
+    }
+  ],
+  "command": "python3 scripts/verify/learn-foundation-release.py --rules --conflicts --measurements --work --actions --slack --slack-worker --slack-threads --slack-operator --slack-pacing",
+  "database": "Fresh disposable PostgreSQL container using --network none; existing local databases untouched",
+  "checks": [
+    "Injected pre-commit failure rolled back pacing table, grants and all changed functions.",
+    "Existing public table definitions and privileges unchanged.",
+    "One shared workspace admission across channel history, thread replies and different companies/connections; another workspace can run.",
+    "Waiting jobs retain attempt/error counts and stay queued.",
+    "History and thread Retry-After outcomes update shared cooldown; exact settlement replay does not extend it.",
+    "Saved-page settlement bypasses provider pacing and exhausted provider attempts without releasing a newer reservation.",
+    "Pacing update failure rolls back job settlement.",
+    "Concurrent first gate insert cannot admit two jobs; another workspace progresses while the first transaction is held.",
+    "Rolled-back claims consume no budget; expired unpublished jobs wait through the reservation before a new fenced claim.",
+    "Stale finish and repeatable-read claim refused.",
+    "Existing synthetic email, Slack message, source-version and interaction rows byte-equivalent as JSON before/after.",
+    "Anonymous/authenticated roles have no pacing-table access; service cannot delete/truncate it."
+  ],
+  "limitations": [
+    "Local migration only; no hosted release, provider request, credentials, schedules or production change. TEST remains release 012/runtime v4.",
+    "Conservative single history-worker job per workspace with 60-second spacing after settlement; shared across apps until verified app identity/rate tier exists. This does not govern unrelated Slack integrations.",
+    "Finite 100-candidate scan and five-job maximum claim batch; polling/scheduling remains separate.",
+    "Durable cooldown begins when the worker records its failure; a process lost before recording a provider response cannot preserve an unseen Retry-After header.",
+    "Continuous/multi-window ingestion, live provider access, operator recovery and broader LEARN V1 remain incomplete."
+  ]
+}

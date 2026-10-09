@@ -382,3 +382,50 @@ Live Slack permission, provider reply behavior, continuous/multi-window ingestio
 workspace-wide pacing, durable operator retry/recovery, voicemail reconciliation,
 and the remaining LEARN V1 scope still require implementation/acceptance. The
 frontend remains local for this milestone; no Vercel or production deployment was made.
+
+## Shared workspace pacing — local implementation, 10 October
+
+The draft `20261030150000_learn_slack_workspace_pacing.sql` closes a gap between
+per-job delay and workspace-wide limits. Channel history and thread jobs now share
+one infrastructure-only gate for a stored Slack team ID, including when different
+connections or ServiceOS companies refer to that workspace. An unrelated workspace
+can proceed. Until the actual Slack app identity and rate tier are verified, the
+gate conservatively combines apps too. It governs this history worker, not unrelated
+Slack integrations.
+
+Slack documents limits per method/workspace/app and requires respecting
+`Retry-After` across tokens belonging to the same app/workspace:
+[official rate-limit contract](https://docs.slack.dev/apis/web-api/rate-limits/).
+Our conservative policy admits one bounded history-worker job per workspace at a
+time, then waits at least sixty seconds after settlement. An abandoned reservation
+lasts through its 180-second job lease plus sixty seconds. A recorded rate-limit
+failure can extend the shared cooldown; it applies to both history and replies.
+An unrecorded response lost with a crashed process cannot supply a durable header.
+
+Waiting for the workspace does not consume attempts or increment errors. Claims
+scan at most one hundred eligible candidates and lock only the candidate currently
+being examined; a prefetched locking cursor would unnecessarily lock unrelated
+workspaces. A transaction-scoped advisory lock serializes the first gate insert,
+while competing claims skip a busy gate. Paced jobs are reconsidered within a minute
+of an active reservation unless a longer recorded provider cooldown applies. A
+claim rollback consumes no slot. This is admission control, not a polling schedule.
+
+A retained published page needs no further provider request. It can be reclaimed
+for settlement while the workspace is cooling down, including after exhausting its
+provider-attempt budget. Its completion cannot release another job's newer gate.
+Queue settlement, shared cooldown and release of the reservation commit atomically;
+an exact completion retry returns the saved receipt without moving the cooldown.
+The existing source writer, credential checks and publication fences are unchanged.
+
+The full disposable SQL chain passed, including an injected migration failure,
+shared channel/thread/company limits, cooldown replay, exhausted-budget saved-page
+recovery, an injected gate-update failure and controlled two-session admission
+races. The same tests verified unchanged existing table definitions/privileges and
+unchanged synthetic email, message, version and interaction records. See
+[local pacing evidence](evidence/learn-slack-pacing-local-2026-10-10.json).
+
+This migration is **not hosted yet**. TEST remains release 012/runtime v4. Next steps
+are exact release packaging, hosted rollback rehearsal and actual concurrent RPC
+acceptance. No Edge source change is required for the database admission policy.
+Live Slack permission, continuous/multi-window capture, durable operator recovery
+and the rest of LEARN V1 are still outstanding.
