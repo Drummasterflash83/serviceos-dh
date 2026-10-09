@@ -1,0 +1,9 @@
+{
+  "version": "learn-test-pacing-before/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T23:39:04.780841+00:00",
+  "catalogReference": "learn-test-operator-installed-schema-2026-10-10.json",
+  "catalogSha256": "063d8831802750f8443f0b3a2259f1b88e19b0c90b9f63a8f6dcf369ea2b6097",
+  "tables": 88,
+  "receipts": 13
+}

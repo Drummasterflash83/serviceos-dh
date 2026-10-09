@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-pacing-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5",
+  "state": "installed_needs_user_verification",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T23:43:46.784427+00:00",
+  "observedAfter": "2026-10-09T23:44:04.564862+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "18317f12dc6ba0a9dc6e7afcebc532258a1333ffad75c5264ed1322bb30ed44f",
+  "afterCatalogSha256": "6cbf69d9ca36222e1eea82d61d9cebe37dadfeb13d5cdb3dc1bddba5bd6ee3b9",
+  "limitations": [
+    "TEST shared workspace gate and three queue functions only. No credentials, source rows, schedules, provider requests or production changes.",
+    "Hosted concurrency/worker acceptance is still required. An uncertain write is never automatically retried."
+  ]
+}

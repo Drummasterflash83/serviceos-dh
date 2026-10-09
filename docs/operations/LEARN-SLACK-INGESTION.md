@@ -429,3 +429,61 @@ are exact release packaging, hosted rollback rehearsal and actual concurrent RPC
 acceptance. No Edge source change is required for the database admission policy.
 Live Slack permission, continuous/multi-window capture, durable operator recovery
 and the rest of LEARN V1 are still outstanding.
+
+## Current TEST state — workspace pacing release 013, 10 October
+
+Release 013 `learn_slack_workspace_pacing_v1` is installed with checksum
+`7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5`.
+This supersedes the local-only pacing status above. TEST has 89 public tables and
+fourteen receipts. Existing source/table definitions and privileges, operator
+readers, approval/source-publication contracts and endpoint source hashes match
+the prior catalog. The existing Slack worker remains runtime v4; it needed no
+redeployment or credential change.
+
+The exact release holds the queue table lock and refuses installation if any Slack
+job is queued, running or retrying. This prevents unpaced in-flight work crossing
+the changeover. The isolated release chain verified that refusal, injected receipt
+failure rollback, exact rollback rehearsal, duplicate-install refusal and the
+prior controlled pacing/concurrency cases. Fourteen focused release/worker Node
+tests passed. Hosted rehearsal rolled back unchanged, one installation was
+acknowledged, and readback matched the expected table and three changed functions.
+
+Actual signed-in owner approvals created synthetic work in three companies with
+two random Slack workspace IDs. Concurrent independent service RPCs admitted only
+one job from the shared workspace, while the unrelated workspace progressed. The
+waiting jobs retained zero attempts/errors. Anonymous and signed-in users could
+neither claim work nor read the infrastructure gate. One synthetic root was
+published through the real fenced page RPC and retained with its version and
+interaction, then approved for a thread import by its signed-in company owner.
+
+Channel completion held the new thread behind the shared cooldown; a thread
+rate-limit outcome delayed channels in both companies. The existing deployed
+worker returned idle during the cooldown. After advancing only a synthetic gate
+and its selected job deadline, that same worker claimed one job, refused its
+nonexistent Vault binding before any Slack request, and released the reservation
+with the normal spacing. An old exact completion replay did not move the newer
+gate; replacing a claim caused the old worker's completion to return HTTP 409.
+
+All test sources and approvals remain. The three synthetic logins were banned,
+passwords rotated and owner roles revoked; their active jobs, connections and
+reservations are zero. Some fixture deadlines were explicitly advanced, so this
+is hosted protocol verification rather than timed live-provider acceptance.
+Controlled overlapping transactions were separately checked in isolated SQL;
+the hosted concurrency check used independently dispatched HTTP requests.
+
+Evidence:
+
+- [Fresh baseline comparison](evidence/learn-test-pacing-before-2026-10-10.json)
+- [Hosted rollback rehearsal](evidence/learn-test-pacing-rehearsal-2026-10-10.json)
+- [Installation and catalog preservation](evidence/learn-test-pacing-release-2026-10-10.json)
+- [Actual RPC/worker acceptance and cleanup](evidence/learn-test-pacing-acceptance-2026-10-10.json)
+- [Compact installed-schema verification](evidence/learn-test-pacing-installed-2026-10-10.json)
+- [Combined verification](evidence/learn-test-pacing-confirmation-2026-10-10.json)
+
+The compact readback references the retained release-012 catalog and exact release-013
+projection instead of duplicating the full catalog. Current UI/fixture launch guards
+recognize release 013. Historical release-011/012 acceptance commands retain their
+original schema requirements. No production write, real Slack fetch, new credential,
+frontend deployment or schedule occurred. Continuous/multi-window capture, actual
+provider access, durable operator recovery, voicemail and the wider LEARN V1 scope
+remain outstanding.

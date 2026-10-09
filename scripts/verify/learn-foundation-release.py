@@ -407,13 +407,32 @@ try:
                                     if '--slack-pacing' in sys.argv:
                                         pacing_before=json.loads(run(catalog_sql).stdout)
                                         pacing_functions_before=json.loads(run(thread_function_query).stdout)
-                                        pacing_sql=(ROOT/'supabase/migrations/20261030150000_learn_slack_workspace_pacing.sql').read_text()
-                                        failed=run('set role postgres;'+pacing_sql.replace('\ncommit;','\ndo $$begin raise exception \'Injected pacing release failure\';end $$;\ncommit;'),False)
+                                        pacing_sql=node("import {pacingReleaseSql} from './scripts/verify/learn-test-pacing-release.mjs';process.stdout.write(pacingReleaseSql());")
+                                        injected=pacing_sql.replace('insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)',"do $$begin raise exception 'Injected pacing release failure';end $$;\ninsert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)")
+                                        failed=run('set role postgres;'+injected,False)
                                         assert failed.returncode and b'Injected pacing release failure' in failed.stderr
                                         assert json.loads(run(catalog_sql).stdout)['tables']==pacing_before['tables']
                                         assert json.loads(run(thread_function_query).stdout)==pacing_functions_before
+                                        pacing_rehearsal=node("import {pacingRehearsalSql} from './scripts/verify/learn-test-pacing-release.mjs';process.stdout.write(pacingRehearsalSql());")
+                                        apply('set role postgres;'+pacing_rehearsal,'Exact pacing release rollback rehearsal')
+                                        assert json.loads(run(thread_function_query).stdout)==pacing_functions_before
+                                        assert json.loads(run(catalog_sql).stdout)['tables']==pacing_before['tables']
+                                        # Install refuses even synthetic active jobs under its queue lock.
+                                        run("insert into platform_jobs(id,tenant_id,job_type,status) values(verify.id(1300),verify.id(901),'slack.history_sync','queued')")
+                                        blocked=run('set role postgres;'+pacing_sql,False)
+                                        assert blocked.returncode and b'Slack queue must be quiescent' in blocked.stderr
+                                        run("update platform_jobs set status='cancelled' where id=verify.id(1300)")
                                         apply('set role postgres;'+pacing_sql,'Workspace-wide Slack admission and shared retry cooldown')
-                                        assert [t for t in json.loads(run(catalog_sql).stdout)['tables'] if t['name']!='slack_workspace_pacing']==pacing_before['tables'],'Pacing changed existing table definitions or privileges'
+                                        pacing_after=json.loads(run(catalog_sql).stdout)
+                                        assert [t for t in pacing_after['tables'] if t['name']!='slack_workspace_pacing']==pacing_before['tables'],'Pacing changed existing table definitions or privileges'
+                                        pacing_query=node("import {PACING_FUNCTION_QUERY} from './scripts/verify/learn-slack-pacing-catalog.mjs';process.stdout.write(PACING_FUNCTION_QUERY);")
+                                        pacing_sha=node("import {checkedPacing} from './scripts/verify/learn-slack-pacing-bundle.mjs';process.stdout.write(checkedPacing().manifest.sha256);")
+                                        pacing_expected={'sourceSha256':pacing_sha,'tables':[t for t in pacing_after['tables'] if t['name']=='slack_workspace_pacing'],'functions':json.loads(run(pacing_query).stdout)}
+                                        pacing_expected_path=ROOT/'supabase/release/learn-test/013_slack_pacing.expected.json'
+                                        if '--write-pacing-expected' in sys.argv:pacing_expected_path.write_text(json.dumps(pacing_expected,indent=2)+'\n')
+                                        else:assert pacing_expected==json.loads(pacing_expected_path.read_text()),'Pacing definitions differ'
+                                        duplicate=run('set role postgres;'+pacing_sql,False)
+                                        assert duplicate.returncode and b'Slack pacing release already exists' in duplicate.stderr
                                         apply((ROOT/'scripts/verify/learn-slack-pacing.assert.sql').read_text(),'Shared history/thread/company budget, attempts, replay, crash recovery and retained sources')
                                         pacing_races={}
                                         exec((ROOT/'scripts/verify/learn-slack-pacing-concurrency.py').read_text(),pacing_races)

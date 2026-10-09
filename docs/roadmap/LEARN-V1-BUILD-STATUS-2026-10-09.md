@@ -625,3 +625,25 @@ No hosted release or provider operation occurred; TEST remains release 012/runti
 v4. Exact release packaging and hosted concurrency acceptance remain before this
 can support ongoing ingestion. See
 [implementation and verification limits](../operations/LEARN-SLACK-INGESTION.md#shared-workspace-pacing--local-implementation-10-october).
+
+## Shared Slack pacing released and verified in TEST — 10 October
+
+Release 013 is installed: 89 public tables, fourteen receipts, existing source
+catalogs and endpoint hashes preserved, Slack worker still runtime v4. Its exact
+bundle passed isolated rollback/concurrency checks and refuses installation while
+Slack work is active. Fourteen focused release/worker tests and hosted rehearsal,
+installation and schema readback passed.
+
+Actual concurrent RPCs kept jobs sharing a workspace serialized while another
+workspace progressed, without consuming waiting jobs' attempts. Retained root
+publication and owner thread approval passed; thread cooldown delayed channels
+across companies. The existing worker respected the gate and safely refused a
+missing credential. Exact replay and stale-claim HTTP 409 checks passed.
+Synthetic records remain; all fixture logins/approval roles were revoked and
+active jobs, connections and reservations are zero. Timing advancement was limited
+to synthetic fixtures; no live provider acceptance is claimed.
+
+No production change, real provider fetch, credential change or schedule was made.
+Continuous/multi-window ingestion, provider access and recovery controls remain
+before complete Slack capture, alongside the other LEARN V1 requirements. See
+[release 013 evidence and limitations](../operations/LEARN-SLACK-INGESTION.md#current-test-state--workspace-pacing-release-013-10-october).

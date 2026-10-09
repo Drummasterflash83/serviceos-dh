@@ -1,0 +1,34 @@
+{
+  "version": "learn-test-pacing-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5",
+  "observedAt": "2026-10-09T23:45:20.368Z",
+  "runId": "c6701446-cbc7-4b46-97c0-31a999636982",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Concurrent actual service RPCs admitted one shared-workspace job and a different workspace; other companies/channels retained zero attempts; anonymous and signed-in users cannot claim or read gates",
+    "Real retained source publication and owner thread approval; channel completion delays new thread; thread Retry-After delays other channels/companies; deployed worker returns idle during cooldown",
+    "Existing deployed worker v4 obeys database pacing and releases it after missing-credential refusal; old exact replay does not extend a later gate; a replaced claim returns HTTP 409"
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 1,
+    "versions": 1,
+    "interactions": 1,
+    "history_approvals": 4,
+    "thread_approvals": 1,
+    "active_jobs": 0,
+    "active_connections": 0,
+    "active_reservations": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-pacing-c6701446-cbc7-4b46-97c0-31a999636982.json",
+  "limitations": [
+    "Only random synthetic TEST workspaces/companies; no real Slack credential or provider fetch, no production change.",
+    "Some fixture deadlines were explicitly advanced to verify the next transition without waiting; this is not timed live-provider acceptance.",
+    "Concurrent requests were independent HTTP RPC transactions; controlled overlap/order was separately verified in the isolated SQL tests.",
+    "Existing Edge v4 exercised idle gating and missing-credential refusal, not live Slack ingestion. Sources and approvals retained; logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+    "Automatic scheduling, continuous/multi-window ingestion and full LEARN V1 remain incomplete."
+  ]
+}

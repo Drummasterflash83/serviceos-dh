@@ -1,0 +1,29 @@
+{
+  "version": "learn-slack-pacing-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_workspace_pacing_v1",
+  "sha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030150000_learn_slack_workspace_pacing.sql",
+      "sha256": "5f5ae2fbd3d0b44d785aab41ac18ae1d6ff8efdd50cd967d79bef02b30edbf74"
+    }
+  ],
+  "tables": [
+    "slack_workspace_pacing"
+  ],
+  "newFunctions": [],
+  "changedFunctions": [
+    "learn_slack_claim_jobs",
+    "learn_slack_finish_job",
+    "learn_slack_finish_thread_job"
+  ],
+  "unchanged": [
+    "Existing table definitions, privileges, sources, credentials and schedules.",
+    "Existing source writers, credentials, reader functions, approval contracts and unrelated queue completion."
+  ],
+  "deferred": [
+    "Hosted concurrency, cooldown and deployed-worker compatibility acceptance.",
+    "Live Slack access, continuous coverage and operator recovery."
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "version": "learn-test-pacing-confirmation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5",
+  "observedAt": "2026-10-09T23:46:39.478327+00:00",
+  "state": "verified_test_pacing_release",
+  "tables": 89,
+  "migrationReceipts": 14,
+  "catalogSha256": "6cbf69d9ca36222e1eea82d61d9cebe37dadfeb13d5cdb3dc1bddba5bd6ee3b9",
+  "endpoints": [
+    {
+      "slug": "learn-launch-status",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "854d6165869638b1c3c97c8e02f14e14b2719f770c2045ee68bf85c03f8257af"
+    },
+    {
+      "slug": "work-transition",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "2bc2ec603c7d6825b7dc0289e62618c563c391623e9bcc012d1b381411332506"
+    },
+    {
+      "slug": "learn-slack-worker",
+      "version": 4,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "7b1cdf0793bf7f97eb6cb1884f1ccc37f916a61153cbe30e36ed64913e7fa6ae"
+    }
+  ],
+  "checks": {
+    "isolatedExactBundle": "receipt failure rollback, active-queue refusal, exact rehearsal, duplicate refusal, expected projection and controlled pacing/concurrency assertions passed",
+    "focusedNodeTests": {
+      "passed": 14,
+      "failed": 0
+    },
+    "hostedRehearsal": "acknowledged and rolled back unchanged",
+    "hostedInstall": "acknowledged and existing catalog preserved",
+    "hostedSchemaReadback": "exact projection with existing source catalogs and endpoint hashes unchanged",
+    "hostedAuthRpcEdgeAcceptance": "passed_retained_synthetic_acceptance",
+    "fixtureAccessShutdown": true
+  },
+  "retained": {
+    "messages": 1,
+    "versions": 1,
+    "interactions": 1,
+    "history_approvals": 4,
+    "thread_approvals": 1,
+    "active_jobs": 0,
+    "active_connections": 0,
+    "active_reservations": 0
+  },
+  "acceptanceRun": "c6701446-cbc7-4b46-97c0-31a999636982",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030150000_learn_slack_workspace_pacing.sql",
+      "sha256": "5f5ae2fbd3d0b44d785aab41ac18ae1d6ff8efdd50cd967d79bef02b30edbf74"
+    },
+    {
+      "path": "supabase/release/learn-test/013_slack_pacing.sql",
+      "sha256": "7191b47ec926094b2118d957cddccf6ebec6c62e10e2d04670db327d23c223a5"
+    },
+    {
+      "path": "supabase/release/learn-test/013_slack_pacing.expected.json",
+      "sha256": "5a6b1ad2bc1f8f3de070aab12dc1f54eba82ff51c3979314d41774659e1dce5c"
+    },
+    {
+      "path": "scripts/verify/learn-test-pacing-acceptance.mjs",
+      "sha256": "f13cf6484dae5d6b6a7c10d2bb2ecd6473a0f5ccf4fdd8f0d1a962688fda0542"
+    }
+  ],
+  "limitations": [
+    "Only random synthetic TEST workspaces/companies; no real Slack credential or provider fetch, no production change.",
+    "Some fixture deadlines were explicitly advanced to verify the next transition without waiting; this is not timed live-provider acceptance.",
+    "Concurrent requests were independent HTTP RPC transactions; controlled overlap/order was separately verified in the isolated SQL tests.",
+    "Existing Edge v4 exercised idle gating and missing-credential refusal, not live Slack ingestion. Sources and approvals retained; logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+    "Automatic scheduling, continuous/multi-window ingestion and full LEARN V1 remain incomplete.",
+    "No browser or frontend change in this release.",
+    "Retiring login and approval authority does not establish immediate invalidation of every old tenant-level source-read JWT."
+  ]
+}
