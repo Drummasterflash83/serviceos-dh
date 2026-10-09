@@ -6,6 +6,11 @@ import { readFileSync,writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { savedCliToken,readTestCatalog,TEST_PROJECT } from './learn-test-readiness.mjs';
 import { SOURCE_SHA256,RELEASE_NAME } from './learn-test-launch-rehearsal.mjs';
+import { readFoundationCatalog } from './learn-foundation-catalog.mjs';
+import { SOURCE_SHA256 as FOUNDATION_SOURCE_SHA256 } from './learn-test-foundation-rehearsal.mjs';
+import { HELPER_SOURCE_SHA256,HELPER_RELEASE_NAME } from './learn-foundation-helper-contract.mjs';
+import { installedFoundation } from './learn-test-foundation-release.mjs';
+import { addFoundationFixtures,exerciseFoundation,foundationCleanupSql,foundationAbsenceSql } from './learn-foundation-acceptance.mjs';
 import { AUTH_CONTRACT_QUERY } from './learn-test-auth-contract.mjs';
 const ORIGIN=`https://${TEST_PROJECT}.supabase.co`;
 const check=(ok,label)=>{if(!ok)throw Error(label);};
@@ -55,17 +60,26 @@ function cleanupRowsSql(plan){
   }
   return sql+'commit;';
 }
-export async function acceptLaunch({allowProjectRef,token,fetcher=fetch}){
+export async function readAcceptanceResponse(response){
+  const chunks=[];let size=0;
+  for await(const chunk of response.body??[]){size+=chunk.byteLength;check(size<=2097152,'Response size exceeded');chunks.push(chunk);}
+  const raw=Buffer.concat(chunks).toString('utf8');let data=null;try{data=raw?JSON.parse(raw):null;}catch{}
+  return {status:response.status,ok:response.ok,data};
+}
+export async function acceptLaunch({allowProjectRef,token,fetcher=fetch,includeFoundation=false}){
   const pre=await readTestCatalog({allowProjectRef,token,fetcher});
   check(pre.report.launchMetadata.state==='needs_semantic_and_user_verification','Installed TEST metadata contract required');
   check(pre.report.customMigrationEntries.some(e=>e.migration_name===RELEASE_NAME&&e.source_sha256===SOURCE_SHA256),'Installed TEST release receipt differs');
   check(pre.functions.some(f=>f.slug==='learn-launch-status'&&f.status==='ACTIVE'&&f.verify_jwt===true),'JWT-protected TEST function required');
+  if(includeFoundation){
+    const foundation=await readFoundationCatalog({allowProjectRef,token,fetcher,includeBase:true});
+    check(installedFoundation(foundation), 'Exact installed TEST foundation required');
+    check(foundation.readiness.customMigrationEntries.some(e=>e.migration_name===HELPER_RELEASE_NAME&&e.source_sha256===HELPER_SOURCE_SHA256)
+      &&['current_tenant_id','is_openfolk'].every(n=>foundation.base.inventory.functions.some(f=>f.name===n&&f.authenticatedExecute&&!f.anonExecute)), 'Verified foundation helper access required');
+  }
   async function request(url,{method='GET',headers={},body}={}){
     const response=await fetcher(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(30000)});
-    const chunks=[];let size=0;
-    for await(const chunk of response.body){size+=chunk.byteLength;check(size<=2097152,'Response size exceeded');chunks.push(chunk);}
-    const raw=Buffer.concat(chunks).toString('utf8');let data=null;try{data=raw?JSON.parse(raw):null;}catch{}
-    return {status:response.status,ok:response.ok,data};
+    return readAcceptanceResponse(response);
   }
   const managementHeaders={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
   async function sql(query,readOnly=false){
@@ -85,7 +99,7 @@ export async function acceptLaunch({allowProjectRef,token,fetcher=fetch}){
   const anon=keyFor('anon'),service=keyFor('service_role');
   const userHeaders=jwt=>({apikey:anon,'Content-Type':'application/json',...(jwt?{Authorization:`Bearer ${jwt}`}:{})});
   const adminHeaders={apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'};
-  const plan=fixturePlan(),manifest=`/private/tmp/serviceos-learn-launch-fixtures-${plan.runId}.json`;
+  const plan=includeFoundation?addFoundationFixtures(fixturePlan()):fixturePlan(),manifest=`/private/tmp/serviceos-learn-launch-fixtures-${plan.runId}.json`;
   writeFileSync(manifest,JSON.stringify(plan,null,2),{mode:0o600});
   const checks=[],cleanupErrors=[],sessions=new Map(),uncertainUsers=new Set();let failure=null;
   const pass=label=>checks.push(label);
@@ -104,6 +118,7 @@ export async function acceptLaunch({allowProjectRef,token,fetcher=fetch}){
       sessions.set(u.id,login.data.access_token);
     }
     await sql(seedSql(plan));pass('Synthetic fixture users signed in through Auth');
+    if(includeFoundation)await exerciseFoundation({plan,request,origin:ORIGIN,userHeaders,adminHeaders,sessions,sql,pass});
     const [a,b]=plan.tenants,owner=sessions.get(plan.users[0].id);
     for(const u of plan.users.filter(u=>['owner','admin'].includes(u.role))){
       const r=await endpoint(sessions.get(u.id),u.tenant),t=plan.tenants.find(t=>t.id===u.tenant);
@@ -142,6 +157,10 @@ export async function acceptLaunch({allowProjectRef,token,fetcher=fetch}){
     pass('Role revocation takes effect for the same existing JWT in Edge and PostgREST');
   }catch(error){failure=error.message;}
   finally{
+    if(includeFoundation){
+      try{await sql(foundationCleanupSql(plan));const remaining=await sql(foundationAbsenceSql(plan),true);check(remaining?.[0]?.remaining===0,'Foundation fixtures remain');}
+      catch{cleanupErrors.push('Synthetic foundation cleanup requires inspection');}
+    }
     try{await sql(cleanupRowsSql(plan));}catch{cleanupErrors.push('Synthetic source cleanup requires inspection');}
     for(const u of plan.users){
       try{
@@ -170,15 +189,16 @@ export async function acceptLaunch({allowProjectRef,token,fetcher=fetch}){
     }catch{cleanupErrors.push('Synthetic cleanup absence not verified');}
   }
   return {version:'learn-test-launch-acceptance/1',projectRef:TEST_PROJECT,sourceSha256:SOURCE_SHA256,
-    observedAt:new Date().toISOString(),runId:plan.runId,state:!failure&&!cleanupErrors.length?'passed_synthetic_acceptance':'requires_inspection',
+    observedAt:new Date().toISOString(),runId:plan.runId,includesFoundation:includeFoundation,...(includeFoundation?{foundationSourceSha256:FOUNDATION_SOURCE_SHA256,helperSourceSha256:HELPER_SOURCE_SHA256}:{}),state:!failure&&!cleanupErrors.length?'passed_synthetic_acceptance':'requires_inspection',
     checks,failure,cleanupVerified:cleanupErrors.length===0,cleanupErrors,fixtureManifest:manifest,
     limitations:['Synthetic TEST identities and metadata only; no customer records, provider traffic, audio playback or frontend were verified.',
       'Existing keys were reused in memory; no email was sent and no new project key was created.']};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   try{
-    check(process.argv.slice(2).join(' ')==='--synthetic-test --existing-cli-login'&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit synthetic TEST acceptance required');
-    const report=await acceptLaunch({allowProjectRef:TEST_PROJECT,token:savedCliToken()});
+    const args=process.argv.slice(2).join(' '),includeFoundation=args==='--synthetic-test --existing-cli-login --include-foundations';
+    check((args==='--synthetic-test --existing-cli-login'||includeFoundation)&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit synthetic TEST acceptance required');
+    const report=await acceptLaunch({allowProjectRef:TEST_PROJECT,token:savedCliToken(),includeFoundation});
     console.log(JSON.stringify(report,null,2));if(report.state!=='passed_synthetic_acceptance')process.exitCode=1;
   }catch(error){console.error(error.message);process.exitCode=1;}
 }

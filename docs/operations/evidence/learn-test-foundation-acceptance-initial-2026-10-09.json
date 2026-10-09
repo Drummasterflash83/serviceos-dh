@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-launch-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+  "observedAt": "2026-10-09T20:08:08.800Z",
+  "runId": "f9446cd0-8030-4243-a1f5-91060dbf90e0",
+  "includesFoundation": true,
+  "state": "requires_inspection",
+  "checks": [
+    "Synthetic fixture users signed in through Auth",
+    "Service-role PostgREST creates linked synthetic customer, staff, job and work records"
+  ],
+  "failure": "Foundation tenant read failed: companies/owner",
+  "cleanupVerified": true,
+  "cleanupErrors": [],
+  "fixtureManifest": "/private/tmp/serviceos-learn-launch-fixtures-f9446cd0-8030-4243-a1f5-91060dbf90e0.json",
+  "limitations": [
+    "Synthetic TEST identities and metadata only; no customer records, provider traffic, audio playback or frontend were verified.",
+    "Existing keys were reused in memory; no email was sent and no new project key was created."
+  ]
+}

@@ -2,7 +2,7 @@
 
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
 Those initial audits changed no hosted state. The later **TEST-only metadata release
-and signed-in synthetic acceptance** are recorded below; production remains untouched.
+and subsequent card/work foundation installation** are recorded below; production remains untouched.
 The Vercel CLI refreshed its existing local
 session after a direct request using the old saved access token returned HTTP 403.
 
@@ -18,41 +18,38 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest retained TEST catalog/function audit is **2026-10-09 19:39:30 UTC**. Its
-[post-release report](evidence/learn-test-readiness-after-release-2026-10-09.json) identifies
-the missing prerequisites. The earlier [catalog snapshot](evidence/learn-test-schema-2026-10-09.json)
-at 18:57:35 UTC retains table/column definitions, policy expressions and function
-signatures; these are schema metadata, not tenant data or credentials.
+The latest retained TEST foundation catalog is **2026-10-09 20:11:24 UTC**.
+The [installed schema observation](evidence/learn-test-foundation-installed-schema-2026-10-09.json)
+includes the catalog-only readiness report. The earlier
+[launch report](evidence/learn-test-readiness-after-release-2026-10-09.json) and
+[original catalog](evidence/learn-test-schema-2026-10-09.json) remain historical
+snapshots, not current descriptions of the installed foundations.
 
-- 26 public tables; all have RLS enabled. Fifteen have no policies. Eight additional
-  launch metadata views are installed; views are counted separately from tables.
-- Of those public tables, only `profiles` has a table-level SELECT grant for
-  `authenticated`. The audit also checks column-level SELECT privileges; none
-  satisfy the direct eight-table launch status contract. This is intentional:
-  authenticated launch reads now use the restricted views instead.
-- Existing email account/checkpoint/receipt/run policies target
-  `email_ingestion_protocol_owner`. They do not establish access for a normal
-  signed-in application user. Preserve these policies and their service workflow.
-- All required launch-status columns exist. The restricted view contract passes
-  catalog checks, and the separate synthetic user acceptance has passed. A catalog
-  audit alone still does not declare JWT/API acceptance.
+- 59 public base tables, all with RLS, plus eight restricted launch views.
+  The 33 new foundation tables have authenticated SELECT and service-role DML.
+  Existing raw communications grants and ingestion policies remain unchanged.
 - `customer_cards`, `jobs`, `team_members`, `org_units`, `intelligence_objects`
-  and `graph_nodes` are absent. `interactions` exists but lacks the required user
-  read authority. The nine inspected LEARN scorecard/review/work/Slack setup RPCs
-  are absent or not executable by authenticated users.
-- `learn-launch-status` version 1 is ACTIVE, with gateway JWT verification enabled
-  and TEST-only metadata mode. No other Edge Function is deployed by this release.
-- The restricted reader role and eight views are installed. The audit records
-  `needs_semantic_and_user_verification`; the linked acceptance report supplies the
-  runtime evidence without turning this catalog-only script into a release gate.
-- TEST uses `of_test_deploy.migrations`; no standard Supabase migration ledger
-  appeared in the catalog. It retains the original
-  `openfolk_test_learn_bootstrap_v5`, applied **2026-10-04 20:12:22 UTC**, and the
-  new `learn_launch_metadata_views_v1`, applied **2026-10-09 19:32:31 UTC**. The
-  source checksums are preserved in the report. The original bootstrap source is absent from this
-  checkout, and targeted searches of the older ServiceOS checkout, recovered
-  OpenFolk source, Codex worktrees and task temporary files did not locate it.
-  Absence from the checkout or standard ledger is not evidence of an empty TEST.
+  and `graph_nodes` now exist. Synthetic signed-in access and company isolation
+  passed at 20:12:34 UTC. `interactions` still lacks ordinary-user read authority.
+- The nine inspected LEARN scorecard/review/work/Slack setup RPCs remain absent or
+  unavailable. Foundation installation does not complete their dependency chain.
+- `learn-launch-status` version 1 remains ACTIVE with gateway JWT verification
+  and TEST-only metadata mode. Its synthetic redaction, source-denial and authority
+  checks passed again after the foundation installation.
+- `current_tenant_id()` and `is_openfolk()` now explicitly allow authenticated
+  execution; anonymous execution remains denied. Their bodies and source-table
+  privileges were preserved. This follow-up repaired the access failure found by
+  actual JWT testing; the local verifier now reproduces the original denied grants.
+- TEST still uses `of_test_deploy.migrations`, with four retained receipts:
+  `openfolk_test_learn_bootstrap_v5`, `learn_launch_metadata_views_v1`,
+  `learn_card_work_foundations_v1` and `learn_foundation_helper_access_v1`.
+  No standard migration ledger appeared. The original bootstrap source was not
+  found in earlier targeted recovery; absence from a checkout or standard ledger
+  does not imply an empty environment.
+
+See [foundation source provenance, release checks and real JWT acceptance](LEARN-TEST-FOUNDATIONS.md).
+The catalog script deliberately continues to say `not_release_verified`: it cannot
+prove source completeness, actual customer behavior, source connectors or the full UI.
 
 Vercel's current Allkin project list has one entry:
 `serviceos-dh` / `prj_XEuCp5gnEireW5WynUgkRp9QNiXa`; pagination reports no next page.

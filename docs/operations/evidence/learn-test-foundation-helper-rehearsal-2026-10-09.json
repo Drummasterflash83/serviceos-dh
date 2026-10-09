@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-foundation-helper-access/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "16f222842b2d4d39387150edb696ffea7991daef36ffdb88c248216cf42b0647",
+  "writeAttempted": true,
+  "observedAfter": "2026-10-09T20:10:36.77022+00:00",
+  "state": "rehearsed_and_rolled_back",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "preserved": true,
+  "afterCatalogSha256": "68a5962f03e66dcab7f91ebd89a58de1744efcabf78b3ee66c87687530327c2a"
+}

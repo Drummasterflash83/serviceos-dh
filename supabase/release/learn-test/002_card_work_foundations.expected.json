@@ -1,0 +1,4788 @@
+{
+  "sourceSha256": "be6f2e94a8691469b82b45dce0c3c2011a68731fc8ae339e4a1ff11dfc3d5233",
+  "tables": [
+    {
+      "rls": true,
+      "name": "authority_grants",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "permission",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "default": "'self'::text",
+          "notNull": true
+        },
+        {
+          "name": "scope_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'openfolk_proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "confirmed",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "effective_to",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "authority_grants_pkey",
+          "definition": "CREATE UNIQUE INDEX authority_grants_pkey ON public.authority_grants USING btree (id)"
+        },
+        {
+          "name": "authority_grants_uk",
+          "definition": "CREATE UNIQUE INDEX authority_grants_uk ON public.authority_grants USING btree (tenant_id, member_id, permission, scope, COALESCE(scope_ref, ''::text))"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "authority_grants_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.authority_grants FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "authority_grants_member_id_fkey",
+          "definition": "FOREIGN KEY (member_id) REFERENCES team_members(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "authority_grants_permission_fkey",
+          "definition": "FOREIGN KEY (permission) REFERENCES authority_permissions(permission)"
+        },
+        {
+          "kind": "p",
+          "name": "authority_grants_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "authority_grants_scope_check",
+          "definition": "CHECK ((scope = ANY (ARRAY['self'::text, 'team'::text, 'company'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "authority_grants_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "authority_permissions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "permission",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "authority_permissions_pkey",
+          "definition": "CREATE UNIQUE INDEX authority_permissions_pkey ON public.authority_permissions USING btree (permission)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "authority_permissions_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "authority_permissions_pkey",
+          "definition": "PRIMARY KEY (permission)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "companies",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "address_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "postcode",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "created_source",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "companies_pkey",
+          "definition": "CREATE UNIQUE INDEX companies_pkey ON public.companies USING btree (id)"
+        },
+        {
+          "name": "companies_tenant_domain_idx",
+          "definition": "CREATE INDEX companies_tenant_domain_idx ON public.companies USING btree (tenant_id, domain)"
+        },
+        {
+          "name": "companies_tenant_idx",
+          "definition": "CREATE INDEX companies_tenant_idx ON public.companies USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "companies_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "companies_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER companies_set_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "companies_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "corrections",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "before",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "after",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "correction_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope_hint",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "actor",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "review_level",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "proposed_version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "corrections_lookup",
+          "definition": "CREATE INDEX corrections_lookup ON public.corrections USING btree (tenant_id, correction_kind, created_at)"
+        },
+        {
+          "name": "corrections_pkey",
+          "definition": "CREATE UNIQUE INDEX corrections_pkey ON public.corrections USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "corr_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.corrections FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "corrections_correction_kind_check",
+          "definition": "CHECK ((correction_kind = ANY (ARRAY['engine_mistake'::text, 'tenant_preference'::text, 'industry_preference'::text, 'new_pattern'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "corrections_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "corrections_proposed_version_id_fkey",
+          "definition": "FOREIGN KEY (proposed_version_id) REFERENCES config_versions(id)"
+        },
+        {
+          "kind": "f",
+          "name": "corrections_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "customer_cards",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'grey'::text",
+          "notNull": true
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "default": "'medium'::text",
+          "notNull": true
+        },
+        {
+          "name": "owner_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "latest_activity_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "recommended_action",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "context",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "assigned_team_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "watchers",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "followers",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "helper_suggestions",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "priority_score",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "priority_inputs",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "locked_fields",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "customer_cards_pkey",
+          "definition": "CREATE UNIQUE INDEX customer_cards_pkey ON public.customer_cards USING btree (id)"
+        },
+        {
+          "name": "customer_cards_tenant_activity_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_activity_idx ON public.customer_cards USING btree (tenant_id, latest_activity_at DESC)"
+        },
+        {
+          "name": "customer_cards_tenant_company_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_company_idx ON public.customer_cards USING btree (tenant_id, company_id)"
+        },
+        {
+          "name": "customer_cards_tenant_person_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_person_idx ON public.customer_cards USING btree (tenant_id, person_id)"
+        },
+        {
+          "name": "customer_cards_tenant_priority_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_priority_idx ON public.customer_cards USING btree (tenant_id, priority)"
+        },
+        {
+          "name": "customer_cards_tenant_score_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_score_idx ON public.customer_cards USING btree (tenant_id, priority_score DESC)"
+        },
+        {
+          "name": "customer_cards_tenant_status_idx",
+          "definition": "CREATE INDEX customer_cards_tenant_status_idx ON public.customer_cards USING btree (tenant_id, status)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "customer_cards_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "customer_cards_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER customer_cards_set_updated_at BEFORE UPDATE ON public.customer_cards FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.customer_cards FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "customer_cards_company_id_fkey",
+          "definition": "FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "f",
+          "name": "customer_cards_person_id_fkey",
+          "definition": "FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "customer_cards_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "data_imports",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "profile_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "entity_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "original_filename",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "file_checksum",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "file_size",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'uploaded'::text",
+          "notNull": true
+        },
+        {
+          "name": "row_count",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "valid_rows",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "invalid_rows",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "created_records",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "updated_records",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "skipped_records",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "duplicate_records",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "conflict_records",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "preview",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "failure",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "import_version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "uploaded_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "data_imports_checksum_idx",
+          "definition": "CREATE INDEX data_imports_checksum_idx ON public.data_imports USING btree (tenant_id, file_checksum)"
+        },
+        {
+          "name": "data_imports_pkey",
+          "definition": "CREATE UNIQUE INDEX data_imports_pkey ON public.data_imports USING btree (id)"
+        },
+        {
+          "name": "data_imports_tenant_idx",
+          "definition": "CREATE INDEX data_imports_tenant_idx ON public.data_imports USING btree (tenant_id, created_at DESC)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "data_imports_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "data_imports_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER data_imports_set_updated_at BEFORE UPDATE ON public.data_imports FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.data_imports FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "data_imports_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "data_imports_profile_id_fkey",
+          "definition": "FOREIGN KEY (profile_id) REFERENCES import_profiles(id) ON DELETE SET NULL"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "decision_log",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_snapshot",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "effective_profile_hash",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "policy_version_ids",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "matched_rules",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "outputs",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "input_hash",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "evaluated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "decision_log_object",
+          "definition": "CREATE INDEX decision_log_object ON public.decision_log USING btree (tenant_id, object_id, evaluated_at)"
+        },
+        {
+          "name": "decision_log_pkey",
+          "definition": "CREATE UNIQUE INDEX decision_log_pkey ON public.decision_log USING btree (id)"
+        },
+        {
+          "name": "decision_log_window",
+          "definition": "CREATE INDEX decision_log_window ON public.decision_log USING btree (tenant_id, evaluated_at)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "dl_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.decision_log FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "decision_log_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "decision_log_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "domain_entity_types",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "node_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "properties_schema",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "is_high_integrity",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "domain_entity_types_pkey",
+          "definition": "CREATE UNIQUE INDEX domain_entity_types_pkey ON public.domain_entity_types USING btree (domain, node_type)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "domain_entity_types_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "domain_entity_types_pkey",
+          "definition": "PRIMARY KEY (domain, node_type)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "domain_object_types",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "attributes_schema",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "domain_object_types_pkey",
+          "definition": "CREATE UNIQUE INDEX domain_object_types_pkey ON public.domain_object_types USING btree (domain, object_type)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "dot_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "domain_object_types_pkey",
+          "definition": "PRIMARY KEY (domain, object_type)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "effective_profiles",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "resolved",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "input_hash",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "computed_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "effective_profiles_pkey",
+          "definition": "CREATE UNIQUE INDEX effective_profiles_pkey ON public.effective_profiles USING btree (tenant_id, domain)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "effprof_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.effective_profiles FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "effective_profiles_pkey",
+          "definition": "PRIMARY KEY (tenant_id, domain)"
+        },
+        {
+          "kind": "f",
+          "name": "effective_profiles_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "graph_edges",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "edge_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "from_node_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "to_node_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "properties",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "graph_edges_pkey",
+          "definition": "CREATE UNIQUE INDEX graph_edges_pkey ON public.graph_edges USING btree (id)"
+        },
+        {
+          "name": "graph_edges_tenant_created_idx",
+          "definition": "CREATE INDEX graph_edges_tenant_created_idx ON public.graph_edges USING btree (tenant_id, created_at DESC)"
+        },
+        {
+          "name": "graph_edges_tenant_from_idx",
+          "definition": "CREATE INDEX graph_edges_tenant_from_idx ON public.graph_edges USING btree (tenant_id, from_node_id)"
+        },
+        {
+          "name": "graph_edges_tenant_to_idx",
+          "definition": "CREATE INDEX graph_edges_tenant_to_idx ON public.graph_edges USING btree (tenant_id, to_node_id)"
+        },
+        {
+          "name": "graph_edges_tenant_type_idx",
+          "definition": "CREATE INDEX graph_edges_tenant_type_idx ON public.graph_edges USING btree (tenant_id, edge_type)"
+        },
+        {
+          "name": "graph_edges_uk",
+          "definition": "CREATE UNIQUE INDEX graph_edges_uk ON public.graph_edges USING btree (tenant_id, edge_type, from_node_id, to_node_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "graph_edges_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "graph_edges_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER graph_edges_set_updated_at BEFORE UPDATE ON public.graph_edges FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.graph_edges FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "graph_edges_from_node_id_fkey",
+          "definition": "FOREIGN KEY (from_node_id) REFERENCES graph_nodes(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "graph_edges_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "graph_edges_to_node_id_fkey",
+          "definition": "FOREIGN KEY (to_node_id) REFERENCES graph_nodes(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "graph_events",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "event_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "node_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "edge_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source_event_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "graph_events_pkey",
+          "definition": "CREATE UNIQUE INDEX graph_events_pkey ON public.graph_events USING btree (id)"
+        },
+        {
+          "name": "graph_events_tenant_edge_idx",
+          "definition": "CREATE INDEX graph_events_tenant_edge_idx ON public.graph_events USING btree (tenant_id, edge_id)"
+        },
+        {
+          "name": "graph_events_tenant_node_idx",
+          "definition": "CREATE INDEX graph_events_tenant_node_idx ON public.graph_events USING btree (tenant_id, node_id)"
+        },
+        {
+          "name": "graph_events_tenant_type_created_idx",
+          "definition": "CREATE INDEX graph_events_tenant_type_created_idx ON public.graph_events USING btree (tenant_id, event_type, created_at DESC)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "graph_events_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.graph_events FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "graph_events_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "graph_nodes",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "node_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_table",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "external_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "properties",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "graph_nodes_pkey",
+          "definition": "CREATE UNIQUE INDEX graph_nodes_pkey ON public.graph_nodes USING btree (id)"
+        },
+        {
+          "name": "graph_nodes_source_uk",
+          "definition": "CREATE UNIQUE INDEX graph_nodes_source_uk ON public.graph_nodes USING btree (tenant_id, node_type, source_table, source_id) WHERE (source_id IS NOT NULL)"
+        },
+        {
+          "name": "graph_nodes_tenant_created_idx",
+          "definition": "CREATE INDEX graph_nodes_tenant_created_idx ON public.graph_nodes USING btree (tenant_id, created_at DESC)"
+        },
+        {
+          "name": "graph_nodes_tenant_source_idx",
+          "definition": "CREATE INDEX graph_nodes_tenant_source_idx ON public.graph_nodes USING btree (tenant_id, source_table, source_id)"
+        },
+        {
+          "name": "graph_nodes_tenant_type_idx",
+          "definition": "CREATE INDEX graph_nodes_tenant_type_idx ON public.graph_nodes USING btree (tenant_id, node_type)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "graph_nodes_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "graph_nodes_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER graph_nodes_set_updated_at BEFORE UPDATE ON public.graph_nodes FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.graph_nodes FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "graph_nodes_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "import_profiles",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "definition",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "import_profiles_pkey",
+          "definition": "CREATE UNIQUE INDEX import_profiles_pkey ON public.import_profiles USING btree (id)"
+        },
+        {
+          "name": "import_profiles_tenant_idx",
+          "definition": "CREATE INDEX import_profiles_tenant_idx ON public.import_profiles USING btree (tenant_id, source_system, entity_type) WHERE active"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "import_profiles_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()))",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "import_profiles_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER import_profiles_set_updated_at BEFORE UPDATE ON public.import_profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.import_profiles FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "import_profiles_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "import_row_provenance",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "import_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_table",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source_row_number",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "imported_fields",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "match_strategy",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "conflicts",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "import_row_provenance_entity_idx",
+          "definition": "CREATE INDEX import_row_provenance_entity_idx ON public.import_row_provenance USING btree (tenant_id, entity_table, entity_id)"
+        },
+        {
+          "name": "import_row_provenance_import_idx",
+          "definition": "CREATE INDEX import_row_provenance_import_idx ON public.import_row_provenance USING btree (tenant_id, import_id)"
+        },
+        {
+          "name": "import_row_provenance_pkey",
+          "definition": "CREATE UNIQUE INDEX import_row_provenance_pkey ON public.import_row_provenance USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "import_row_provenance_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.import_row_provenance FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "import_row_provenance_import_id_fkey",
+          "definition": "FOREIGN KEY (import_id) REFERENCES data_imports(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "import_row_provenance_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "intelligence_objects",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "responsible_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "accountable_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "waiting_on_ref",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "severity",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "ambiguity",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "risk",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "reversibility",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "domain_state",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "deadline",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "blocking",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "source_interactions",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "source_entities",
+          "type": "uuid[]",
+          "default": "'{}'::uuid[]",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_from",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "policy_applied",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "attributes",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "intelligence_objects_pkey",
+          "definition": "CREATE UNIQUE INDEX intelligence_objects_pkey ON public.intelligence_objects USING btree (id)"
+        },
+        {
+          "name": "io_deadline",
+          "definition": "CREATE INDEX io_deadline ON public.intelligence_objects USING btree (tenant_id, status, deadline)"
+        },
+        {
+          "name": "io_entities",
+          "definition": "CREATE INDEX io_entities ON public.intelligence_objects USING gin (source_entities)"
+        },
+        {
+          "name": "io_lookup",
+          "definition": "CREATE INDEX io_lookup ON public.intelligence_objects USING btree (tenant_id, domain, object_type, status)"
+        },
+        {
+          "name": "io_srcint",
+          "definition": "CREATE INDEX io_srcint ON public.intelligence_objects USING gin (source_interactions)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "io_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "io_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER io_set_updated_at BEFORE UPDATE ON public.intelligence_objects FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.intelligence_objects FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "intelligence_objects_ambiguity_check",
+          "definition": "CHECK (((ambiguity IS NULL) OR ((ambiguity >= (0)::numeric) AND (ambiguity <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_confidence_check",
+          "definition": "CHECK (((confidence IS NULL) OR ((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))))"
+        },
+        {
+          "kind": "p",
+          "name": "intelligence_objects_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_reversibility_check",
+          "definition": "CHECK (((reversibility IS NULL) OR ((reversibility >= (0)::numeric) AND (reversibility <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "intelligence_objects_risk_check",
+          "definition": "CHECK (((risk IS NULL) OR ((risk >= (0)::numeric) AND (risk <= (1)::numeric))))"
+        },
+        {
+          "kind": "f",
+          "name": "intelligence_objects_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "interaction_match_suggestions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "interaction_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "target_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "target_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "match_level",
+          "type": "text",
+          "default": "'possible'::text",
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(5,4)",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "explanation",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "recommended_action",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ims_tenant_interaction_idx",
+          "definition": "CREATE INDEX ims_tenant_interaction_idx ON public.interaction_match_suggestions USING btree (tenant_id, interaction_id)"
+        },
+        {
+          "name": "ims_tenant_level_idx",
+          "definition": "CREATE INDEX ims_tenant_level_idx ON public.interaction_match_suggestions USING btree (tenant_id, match_level)"
+        },
+        {
+          "name": "ims_tenant_status_idx",
+          "definition": "CREATE INDEX ims_tenant_status_idx ON public.interaction_match_suggestions USING btree (tenant_id, status)"
+        },
+        {
+          "name": "interaction_match_suggestions_pkey",
+          "definition": "CREATE UNIQUE INDEX interaction_match_suggestions_pkey ON public.interaction_match_suggestions USING btree (id)"
+        },
+        {
+          "name": "interaction_match_suggestions_tenant_id_interaction_id_targ_key",
+          "definition": "CREATE UNIQUE INDEX interaction_match_suggestions_tenant_id_interaction_id_targ_key ON public.interaction_match_suggestions USING btree (tenant_id, interaction_id, target_type, target_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "ims_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "ims_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER ims_set_updated_at BEFORE UPDATE ON public.interaction_match_suggestions FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.interaction_match_suggestions FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "interaction_match_suggestions_interaction_id_fkey",
+          "definition": "FOREIGN KEY (interaction_id) REFERENCES interactions(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "interaction_match_suggestions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "interaction_match_suggestions_tenant_id_interaction_id_targ_key",
+          "definition": "UNIQUE (tenant_id, interaction_id, target_type, target_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "job_number_aliases",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "alias",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "normalized",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'import'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "job_number_aliases_job_idx",
+          "definition": "CREATE INDEX job_number_aliases_job_idx ON public.job_number_aliases USING btree (tenant_id, job_id)"
+        },
+        {
+          "name": "job_number_aliases_norm_uk",
+          "definition": "CREATE UNIQUE INDEX job_number_aliases_norm_uk ON public.job_number_aliases USING btree (tenant_id, normalized)"
+        },
+        {
+          "name": "job_number_aliases_pkey",
+          "definition": "CREATE UNIQUE INDEX job_number_aliases_pkey ON public.job_number_aliases USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "job_number_aliases_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.job_number_aliases FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "job_number_aliases_job_id_fkey",
+          "definition": "FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "job_number_aliases_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "jobs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "job_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "customer_person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "customer_company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "site_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "engineer_person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "job_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "invoice_status",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "quote_status",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "value_pennies",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_date",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "booked_date",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "completed_date",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_source",
+          "type": "text",
+          "default": "'native'::text",
+          "notNull": true
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "jobs_number_uk",
+          "definition": "CREATE UNIQUE INDEX jobs_number_uk ON public.jobs USING btree (tenant_id, source_system, job_number) WHERE (job_number IS NOT NULL)"
+        },
+        {
+          "name": "jobs_pkey",
+          "definition": "CREATE UNIQUE INDEX jobs_pkey ON public.jobs USING btree (id)"
+        },
+        {
+          "name": "jobs_source_uk",
+          "definition": "CREATE UNIQUE INDEX jobs_source_uk ON public.jobs USING btree (tenant_id, source_system, external_id) WHERE (external_id IS NOT NULL)"
+        },
+        {
+          "name": "jobs_tenant_customer_idx",
+          "definition": "CREATE INDEX jobs_tenant_customer_idx ON public.jobs USING btree (tenant_id, customer_person_id)"
+        },
+        {
+          "name": "jobs_tenant_idx",
+          "definition": "CREATE INDEX jobs_tenant_idx ON public.jobs USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "jobs_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "jobs_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER jobs_set_updated_at BEFORE UPDATE ON public.jobs FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.jobs FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "jobs_customer_company_id_fkey",
+          "definition": "FOREIGN KEY (customer_company_id) REFERENCES companies(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "f",
+          "name": "jobs_customer_person_id_fkey",
+          "definition": "FOREIGN KEY (customer_person_id) REFERENCES people(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "f",
+          "name": "jobs_engineer_person_id_fkey",
+          "definition": "FOREIGN KEY (engineer_person_id) REFERENCES people(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "jobs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "jobs_site_id_fkey",
+          "definition": "FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "object_state_history",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "from_state",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "object_state_history_pkey",
+          "definition": "CREATE UNIQUE INDEX object_state_history_pkey ON public.object_state_history USING btree (id)"
+        },
+        {
+          "name": "osh_object",
+          "definition": "CREATE INDEX osh_object ON public.object_state_history USING btree (object_id, occurred_at)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "osh_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.object_state_history FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "object_state_history_object_id_fkey",
+          "definition": "FOREIGN KEY (object_id) REFERENCES intelligence_objects(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "object_state_history_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "object_state_history_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "operating_profile_entries",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "scope_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "namespace",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "value",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ope_lookup",
+          "definition": "CREATE INDEX ope_lookup ON public.operating_profile_entries USING btree (tenant_id, namespace, key)"
+        },
+        {
+          "name": "ope_natural_uk",
+          "definition": "CREATE UNIQUE INDEX ope_natural_uk ON public.operating_profile_entries USING btree (COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), scope_kind, COALESCE(scope_ref, ''::text), COALESCE(domain, ''::text), namespace, key)"
+        },
+        {
+          "name": "ope_scope",
+          "definition": "CREATE INDEX ope_scope ON public.operating_profile_entries USING btree (scope_kind, scope_ref, domain)"
+        },
+        {
+          "name": "operating_profile_entries_pkey",
+          "definition": "CREATE UNIQUE INDEX operating_profile_entries_pkey ON public.operating_profile_entries USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()))",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "ope_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.operating_profile_entries FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "operating_profile_entries_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "operating_profile_entries_scope_kind_check",
+          "definition": "CHECK ((scope_kind = ANY (ARRAY['platform'::text, 'industry'::text, 'domain'::text, 'tenant'::text, 'department'::text, 'team'::text, 'user'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "operating_profile_entries_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "operating_profile_entries_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES config_versions(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "org_unit_members",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "org_unit_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "role_in_unit",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "org_unit_members_pkey",
+          "definition": "CREATE UNIQUE INDEX org_unit_members_pkey ON public.org_unit_members USING btree (org_unit_id, user_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "org_unit_members_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(EXISTS ( SELECT 1\n   FROM org_units u\n  WHERE ((u.id = org_unit_members.org_unit_id) AND ((u.tenant_id = current_tenant_id()) OR is_openfolk()))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.org_unit_members FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "org_unit_members_org_unit_id_fkey",
+          "definition": "FOREIGN KEY (org_unit_id) REFERENCES org_units(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "org_unit_members_pkey",
+          "definition": "PRIMARY KEY (org_unit_id, user_id)"
+        },
+        {
+          "kind": "f",
+          "name": "org_unit_members_user_id_fkey",
+          "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "org_units",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "parent_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "org_units_pkey",
+          "definition": "CREATE UNIQUE INDEX org_units_pkey ON public.org_units USING btree (id)"
+        },
+        {
+          "name": "org_units_tenant",
+          "definition": "CREATE INDEX org_units_tenant ON public.org_units USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "org_units_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.org_units FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "org_units_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER org_units_set_updated_at BEFORE UPDATE ON public.org_units FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "org_units_parent_id_fkey",
+          "definition": "FOREIGN KEY (parent_id) REFERENCES org_units(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "org_units_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "org_units_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "ownership_assignments",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "raci_role",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "party_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "party_ref",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "assigned_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "oa_object",
+          "definition": "CREATE INDEX oa_object ON public.ownership_assignments USING btree (object_id)"
+        },
+        {
+          "name": "oa_party",
+          "definition": "CREATE INDEX oa_party ON public.ownership_assignments USING btree (tenant_id, party_kind, party_ref)"
+        },
+        {
+          "name": "ownership_assignments_object_id_raci_role_party_kind_party__key",
+          "definition": "CREATE UNIQUE INDEX ownership_assignments_object_id_raci_role_party_kind_party__key ON public.ownership_assignments USING btree (object_id, raci_role, party_kind, party_ref)"
+        },
+        {
+          "name": "ownership_assignments_pkey",
+          "definition": "CREATE UNIQUE INDEX ownership_assignments_pkey ON public.ownership_assignments USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "oa_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.ownership_assignments FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "ownership_assignments_object_id_fkey",
+          "definition": "FOREIGN KEY (object_id) REFERENCES intelligence_objects(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "u",
+          "name": "ownership_assignments_object_id_raci_role_party_kind_party__key",
+          "definition": "UNIQUE (object_id, raci_role, party_kind, party_ref)"
+        },
+        {
+          "kind": "c",
+          "name": "ownership_assignments_party_kind_check",
+          "definition": "CHECK ((party_kind = ANY (ARRAY['user'::text, 'role'::text, 'department'::text, 'team'::text, 'customer'::text, 'supplier'::text, 'engineer'::text, 'external'::text, 'ai_agent'::text, 'automation'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "ownership_assignments_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "ownership_assignments_raci_role_check",
+          "definition": "CHECK ((raci_role = ANY (ARRAY['responsible'::text, 'accountable'::text, 'consulted'::text, 'informed'::text, 'waiting_on'::text, 'approver'::text, 'observer'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "ownership_assignments_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "people",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "first_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "primary_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "primary_phone",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "address_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "postcode",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "created_source",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "people_pkey",
+          "definition": "CREATE UNIQUE INDEX people_pkey ON public.people USING btree (id)"
+        },
+        {
+          "name": "people_tenant_company_idx",
+          "definition": "CREATE INDEX people_tenant_company_idx ON public.people USING btree (tenant_id, company_id)"
+        },
+        {
+          "name": "people_tenant_email_idx",
+          "definition": "CREATE INDEX people_tenant_email_idx ON public.people USING btree (tenant_id, primary_email)"
+        },
+        {
+          "name": "people_tenant_idx",
+          "definition": "CREATE INDEX people_tenant_idx ON public.people USING btree (tenant_id)"
+        },
+        {
+          "name": "people_tenant_phone_idx",
+          "definition": "CREATE INDEX people_tenant_phone_idx ON public.people USING btree (tenant_id, primary_phone)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "people_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.people FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "people_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER people_set_updated_at BEFORE UPDATE ON public.people FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "people_company_id_fkey",
+          "definition": "FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "people_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "policies",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "scope_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "rules",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "default": "100",
+          "notNull": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "policies_lookup",
+          "definition": "CREATE INDEX policies_lookup ON public.policies USING btree (domain, scope_kind, enabled, priority)"
+        },
+        {
+          "name": "policies_pkey",
+          "definition": "CREATE UNIQUE INDEX policies_pkey ON public.policies USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()))",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "policies_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.policies FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "policies_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "policies_scope_kind_check",
+          "definition": "CHECK ((scope_kind = ANY (ARRAY['platform'::text, 'industry'::text, 'domain'::text, 'tenant'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "policies_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "policies_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES config_versions(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "recommendations",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "detail",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "severity",
+          "type": "text",
+          "default": "'medium'::text",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'open'::text",
+          "notNull": true
+        },
+        {
+          "name": "card_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "interaction_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "recommended_action",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_by",
+          "type": "text",
+          "default": "'system'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "recommendations_open_uk",
+          "definition": "CREATE UNIQUE INDEX recommendations_open_uk ON public.recommendations USING btree (tenant_id, card_id, type) WHERE ((status = 'open'::text) AND (card_id IS NOT NULL))"
+        },
+        {
+          "name": "recommendations_pkey",
+          "definition": "CREATE UNIQUE INDEX recommendations_pkey ON public.recommendations USING btree (id)"
+        },
+        {
+          "name": "recommendations_tenant_card_idx",
+          "definition": "CREATE INDEX recommendations_tenant_card_idx ON public.recommendations USING btree (tenant_id, card_id)"
+        },
+        {
+          "name": "recommendations_tenant_status_idx",
+          "definition": "CREATE INDEX recommendations_tenant_status_idx ON public.recommendations USING btree (tenant_id, status, created_at DESC)"
+        },
+        {
+          "name": "recommendations_tenant_type_idx",
+          "definition": "CREATE INDEX recommendations_tenant_type_idx ON public.recommendations USING btree (tenant_id, type)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "recommendations_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.recommendations FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "recommendations_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER recommendations_set_updated_at BEFORE UPDATE ON public.recommendations FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "recommendations_card_id_fkey",
+          "definition": "FOREIGN KEY (card_id) REFERENCES customer_cards(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "recommendations_interaction_id_fkey",
+          "definition": "FOREIGN KEY (interaction_id) REFERENCES interactions(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "recommendations_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "responsibility_assignments",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "target_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "raci_role",
+          "type": "text",
+          "default": "'responsible'::text",
+          "notNull": true
+        },
+        {
+          "name": "is_shared",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "weekday_mask",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "cover_for",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'openfolk_proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "confirmed",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "effective_to",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "resp_member",
+          "definition": "CREATE INDEX resp_member ON public.responsibility_assignments USING btree (tenant_id, member_id, effective_to)"
+        },
+        {
+          "name": "resp_target",
+          "definition": "CREATE INDEX resp_target ON public.responsibility_assignments USING btree (tenant_id, kind, target_ref)"
+        },
+        {
+          "name": "responsibility_assignments_pkey",
+          "definition": "CREATE UNIQUE INDEX responsibility_assignments_pkey ON public.responsibility_assignments USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "resp_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.responsibility_assignments FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "responsibility_assignments_confidence_check",
+          "definition": "CHECK (((confidence IS NULL) OR ((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))))"
+        },
+        {
+          "kind": "f",
+          "name": "responsibility_assignments_cover_for_fkey",
+          "definition": "FOREIGN KEY (cover_for) REFERENCES team_members(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "c",
+          "name": "responsibility_assignments_kind_check",
+          "definition": "CHECK ((kind = ANY (ARRAY['responsibility_area'::text, 'objective'::text, 'workflow'::text, 'escalation'::text, 'team'::text, 'customer_segment'::text, 'cover'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "responsibility_assignments_member_id_fkey",
+          "definition": "FOREIGN KEY (member_id) REFERENCES team_members(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "responsibility_assignments_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "responsibility_assignments_raci_role_check",
+          "definition": "CHECK ((raci_role = ANY (ARRAY['responsible'::text, 'accountable'::text, 'consulted'::text, 'informed'::text, 'approver'::text, 'observer'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "responsibility_assignments_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "review_tasks",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "route",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "decision_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "claimed_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resolution",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "review_tasks_pkey",
+          "definition": "CREATE UNIQUE INDEX review_tasks_pkey ON public.review_tasks USING btree (id)"
+        },
+        {
+          "name": "review_tasks_queue",
+          "definition": "CREATE INDEX review_tasks_queue ON public.review_tasks USING btree (route, status, created_at)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "review_tasks_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.review_tasks FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "review_tasks_object_id_fkey",
+          "definition": "FOREIGN KEY (object_id) REFERENCES intelligence_objects(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "review_tasks_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "review_tasks_route_check",
+          "definition": "CHECK ((route = ANY (ARRAY['openfolk'::text, 'tenant_senior'::text, 'manual'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "review_tasks_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'claimed'::text, 'resolved'::text, 'dismissed'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "review_tasks_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "sites",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "address_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "postcode",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_source",
+          "type": "text",
+          "default": "'native'::text",
+          "notNull": true
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sites_pkey",
+          "definition": "CREATE UNIQUE INDEX sites_pkey ON public.sites USING btree (id)"
+        },
+        {
+          "name": "sites_source_uk",
+          "definition": "CREATE UNIQUE INDEX sites_source_uk ON public.sites USING btree (tenant_id, source_system, external_id) WHERE (external_id IS NOT NULL)"
+        },
+        {
+          "name": "sites_tenant_idx",
+          "definition": "CREATE INDEX sites_tenant_idx ON public.sites USING btree (tenant_id)"
+        },
+        {
+          "name": "sites_tenant_postcode_idx",
+          "definition": "CREATE INDEX sites_tenant_postcode_idx ON public.sites USING btree (tenant_id, postcode)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "sites_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.sites FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "sites_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER sites_set_updated_at BEFORE UPDATE ON public.sites FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "sites_company_id_fkey",
+          "definition": "FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "f",
+          "name": "sites_person_id_fkey",
+          "definition": "FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "sites_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "state_definitions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "maps_to_universal",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "is_terminal",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "state_definitions_pkey",
+          "definition": "CREATE UNIQUE INDEX state_definitions_pkey ON public.state_definitions USING btree (domain, object_type, state)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "sd_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "state_definitions_pkey",
+          "definition": "PRIMARY KEY (domain, object_type, state)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "state_transitions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "object_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "from_state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "to_state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "guard",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "state_transitions_pkey",
+          "definition": "CREATE UNIQUE INDEX state_transitions_pkey ON public.state_transitions USING btree (domain, object_type, from_state, to_state)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "st_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "state_transitions_pkey",
+          "definition": "PRIMARY KEY (domain, object_type, from_state, to_state)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "team_members",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "profile_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "org_unit_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "formal_role",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "observed_role",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "observed_status",
+          "type": "text",
+          "default": "'proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "authority_level",
+          "type": "text",
+          "default": "'individual'::text",
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'openfolk_proposed'::text",
+          "notNull": true
+        },
+        {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "effective_to",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "team_members_pkey",
+          "definition": "CREATE UNIQUE INDEX team_members_pkey ON public.team_members USING btree (id)"
+        },
+        {
+          "name": "team_members_profile",
+          "definition": "CREATE INDEX team_members_profile ON public.team_members USING btree (tenant_id, profile_id)"
+        },
+        {
+          "name": "team_members_tenant",
+          "definition": "CREATE INDEX team_members_tenant ON public.team_members USING btree (tenant_id, effective_to)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_foundation_tenant_boundary",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE"
+        },
+        {
+          "name": "team_members_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_foundation_reference_guard",
+          "function": "learn_foundation_reference_guard",
+          "definition": "CREATE TRIGGER learn_foundation_reference_guard BEFORE INSERT OR UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION learn_foundation_reference_guard()"
+        },
+        {
+          "name": "team_members_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER team_members_set_updated_at BEFORE UPDATE ON public.team_members FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "team_members_authority_level_check",
+          "definition": "CHECK ((authority_level = ANY (ARRAY['individual'::text, 'lead'::text, 'manager'::text, 'director'::text, 'owner'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "team_members_confidence_check",
+          "definition": "CHECK (((confidence IS NULL) OR ((confidence >= (0)::numeric) AND (confidence <= (1)::numeric))))"
+        },
+        {
+          "kind": "c",
+          "name": "team_members_observed_status_check",
+          "definition": "CHECK ((observed_status = ANY (ARRAY['proposed'::text, 'inferred'::text, 'confirmed'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "team_members_org_unit_id_fkey",
+          "definition": "FOREIGN KEY (org_unit_id) REFERENCES org_units(id) ON DELETE SET NULL"
+        },
+        {
+          "kind": "p",
+          "name": "team_members_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "team_members_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    }
+  ],
+  "guard": {
+    "owner": "postgres",
+    "settings": [
+      "search_path=pg_catalog"
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.learn_foundation_reference_guard()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j jsonb:=to_jsonb(new); tenant uuid; parent_tenant uuid; fk record; rows_found bigint;\nbegin\n if tg_table_name='org_unit_members' then\n  if tg_op='UPDATE' and (old.org_unit_id is distinct from new.org_unit_id or old.user_id is distinct from new.user_id) then\n   raise exception 'Organisation membership identity is immutable' using errcode='23514';end if;\n  select tenant_id into tenant from public.org_units where id=new.org_unit_id;\n  if tenant is null then raise exception 'Organisation unit is missing' using errcode='23503';end if;\n else\n  tenant:=(j->>'tenant_id')::uuid;\n  if tg_op='UPDATE' and ((to_jsonb(old)->>'tenant_id') is distinct from (j->>'tenant_id')\n    or (to_jsonb(old)->>'id') is distinct from (j->>'id')) then\n   raise exception 'Foundation tenant and identity are immutable' using errcode='23514';end if;\n  if tenant is not null and not exists(select 1 from public.tenants where id=tenant) then\n   raise exception 'Tenant is missing' using errcode='23503';end if;\n end if;\n for fk in select sn.nspname as schema_name,pc.relname as table_name,sa.attname as child_column,pa.attname as parent_column\n  from pg_constraint k join pg_class pc on pc.oid=k.confrelid join pg_namespace sn on sn.oid=pc.relnamespace\n  join pg_attribute sa on sa.attrelid=k.conrelid and sa.attnum=k.conkey[1]\n  join pg_attribute pa on pa.attrelid=k.confrelid and pa.attnum=k.confkey[1]\n  where k.conrelid=tg_relid and k.contype='f' and cardinality(k.conkey)=1 and cardinality(k.confkey)=1\n   and exists(select 1 from pg_attribute a where a.attrelid=k.confrelid and a.attname='tenant_id' and not a.attisdropped)\n loop\n  if j->>fk.child_column is null then continue;end if;\n  execute format('select tenant_id from %I.%I where %I=$1::uuid',fk.schema_name,fk.table_name,fk.parent_column)\n   into parent_tenant using j->>fk.child_column;\n  get diagnostics rows_found=row_count;\n  if rows_found<>1 then raise exception 'Referenced foundation record is missing' using errcode='23503';end if;\n  if not (fk.schema_name='public' and fk.table_name in ('config_versions','import_profiles') and parent_tenant is null)\n    and parent_tenant is distinct from tenant then\n   raise exception 'Referenced foundation record belongs to another tenant' using errcode='23514';end if;\n end loop;\n return new;\nend $function$\n",
+    "anonExecute": false,
+    "serviceExecute": true,
+    "securityDefiner": true,
+    "authenticatedExecute": false
+  }
+}

@@ -1,0 +1,2 @@
+export const HELPER_RELEASE_NAME='learn_foundation_helper_access_v1';
+export const HELPER_SOURCE_SHA256='16f222842b2d4d39387150edb696ffea7991daef36ffdb88c248216cf42b0647';

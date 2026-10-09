@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fixturePlan,acceptLaunch } from './learn-test-launch-acceptance.mjs';
+import { fixturePlan,acceptLaunch,readAcceptanceResponse } from './learn-test-launch-acceptance.mjs';
 import { TEST_PROJECT,TEST_ORGANIZATION } from './learn-test-readiness.mjs';
 const token='sbp_'+'a'.repeat(40);
 test('synthetic plan uses fresh isolated IDs, reserved email domains and tenant-bound roles',()=>{
@@ -27,4 +27,9 @@ test('uninstalled TEST cannot read keys or create fixtures',async()=>{
       :calls.length===2?[{inventory:snapshot}]:[]));
   }}),/Installed TEST/);
   assert.ok(calls.every(c=>!c.url.includes('/api-keys')&&!c.url.includes('/auth/')&&!c.url.endsWith('/database/query')));
+});
+
+test('successful empty mutation responses are accepted without iterating a null body',async()=>{
+ assert.deepEqual(await readAcceptanceResponse(new Response(null,{status:204})),{status:204,ok:true,data:null});
+ assert.deepEqual(await readAcceptanceResponse(new Response(JSON.stringify({code:'23514'}),{status:400})),{status:400,ok:false,data:{code:'23514'}});
 });

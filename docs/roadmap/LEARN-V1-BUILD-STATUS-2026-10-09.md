@@ -339,25 +339,27 @@ were verified through Auth/PostgREST/Edge. All synthetic users and fixture recor
 were removed and absence verified. Production remains untouched. See
 [verified inventory, evidence and dependency work](../operations/LEARN-TEST-READINESS.md).
 
-The 19:39 audit still finds only 26 RLS-enabled base tables: canonical customer,
-job, roster, organisation, work and graph foundations remain absent, as do the nine
-inspected LEARN scorecard/review/work/Slack RPCs. The custom ledger now has the
-original 4 October bootstrap plus this metadata release. The bootstrap source is
-still unrecovered; do not overwrite that partial schema with a blanket replay.
-Allkin's last verified Vercel inventory has only the production project, so TEST
-frontend deployment remains outstanding. Twenty-three focused verification-tool
-tests, isolated SQL privilege/receipt-rollback assertions and hosted synthetic
-acceptance pass for this slice. See
-[release evidence and remaining boundaries](../operations/LEARN-TEST-LAUNCH-ACCESS.md).
+TEST now has 59 RLS-enabled public base tables. The 33-table card/work foundation,
+recovered from nine retained migration sources, installed at 20:06 UTC. Its actual
+schema matched the isolated expected schema, with existing source definitions and
+launch privileges preserved. Real JWT acceptance caught denied tenant-helper
+execution; a narrow, rehearsed follow-up grant fixed the two helpers without
+changing their bodies or source table access. The isolated projection now models
+those original denied permissions correctly.
 
-The next TEST card/work foundation is prepared from nine retained migration
-sources: 33 new tables for cards, relationships, staff/teams, work, ownership,
-sites/jobs and import provenance. Isolated database tests and a hosted rollback-only
-rehearsal passed at 20:03 UTC. Existing definitions and launch privileges remained
-unchanged; no foundation table or receipt was left installed. Same-tenant reference
-guards and restrictive read policies close the legacy cross-company paths.
-Persistent installation, real user acceptance and later LEARN dependencies remain
-outstanding. See [foundation scope and evidence](../operations/LEARN-TEST-FOUNDATIONS.md).
+At 20:12 UTC, five synthetic signed-in users across two companies passed linked
+customer/staff/job/work reads, company isolation (including OpenFolk), denied
+client writes and cross-company service references, a valid service update, and
+the existing launch redaction/revocation checks. Every marked fixture was removed
+and its absence verified. Thirty-seven focused tests and the isolated SQL exercise
+pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIONS.md).
+
+Raw interaction reads and the nine LEARN scorecard/review/work/Slack setup RPCs
+remain unavailable. Configuration/objective/control-plane and later LEARN
+releases remain necessary. Allkin's last verified Vercel inventory has only the
+production project, so TEST frontend deployment is still outstanding. No real
+customer data, production state, provider traffic or stored audio was changed by
+these TEST releases. Full LEARN V1 is not yet released.
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

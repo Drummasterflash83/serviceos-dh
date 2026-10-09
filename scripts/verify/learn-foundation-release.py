@@ -8,6 +8,7 @@ views are outside the projection. Hosted rollback rehearsal is still required.
 import hashlib
 import json
 import shutil
+import sys
 import subprocess
 import time
 import uuid
@@ -76,6 +77,8 @@ try:
         sql += ['alter table public.'+ident(t['name'])+' add constraint '+ident(k['name'])+' '+k['definition']+';' for k in t['constraints'] if k['kind']=='f']
     for f in catalog['helpers']:
         sql += [f['definition']+';', 'alter function public.'+ident(f['name'])+'() owner to postgres;']
+    for f in catalog['helpers']:
+        sql.append('revoke all on function public.'+ident(f['name'])+'() from public,anon,authenticated;')
     for t in catalog['tables']:
         if t['rls']:sql.append('alter table public.'+ident(t['name'])+' enable row level security;')
         if t['forceRls']:sql.append('alter table public.'+ident(t['name'])+' force row level security;')
@@ -103,8 +106,15 @@ try:
     assert refused.returncode and b'Explicit TEST target' in refused.stderr
     print('Unscoped release refused: PASS',flush=True)
     apply(release,'Generated 33-table foundation release')
+    if '--write-expected' in sys.argv:
+        observed=json.loads(run(catalog_sql).stdout)
+        expected={'sourceSha256':manifest['sha256'],'tables':[t for t in observed['tables'] if t['name'] in manifest['tables']],'guard':observed['foundationGuard']}
+        (ROOT/'supabase/release/learn-test/002_card_work_foundations.expected.json').write_text(json.dumps(expected,indent=2)+'\n')
     assert snapshot()==before, 'Existing source definitions changed'
     print('Existing table/helper definitions preserved: PASS',flush=True)
+    helper=(ROOT/'supabase/release/learn-test/003_foundation_helper_access.sql').read_text()
+    helper_hash=hashlib.sha256(helper.encode()).hexdigest()
+    apply("set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(helper_hash)+';'+helper,'Explicit helper access follow-up release')
     apply((ROOT/'scripts/verify/learn-foundation-release.assert.sql').read_text(),'Tenant isolation, reference integrity and retained communication assertions')
     tables=','.join(lit(t) for t in manifest['tables'])
     apply("do $$ declare t record;begin for t in select c.oid,c.relname,c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ("+tables+") loop assert t.relrowsecurity;assert has_table_privilege('authenticated',t.oid,'SELECT');assert not has_table_privilege('authenticated',t.oid,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER');assert not has_table_privilege('anon',t.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER');assert has_table_privilege('service_role',t.oid,'SELECT') and has_table_privilege('service_role',t.oid,'INSERT') and has_table_privilege('service_role',t.oid,'UPDATE') and has_table_privilege('service_role',t.oid,'DELETE');end loop;assert (select count(*)=33 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ("+tables+"));end $$;",'All 33 tables enforce explicit privileges and RLS')

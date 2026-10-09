@@ -1,0 +1,30 @@
+{
+  "version": "learn-test-launch-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+  "observedAt": "2026-10-09T20:12:34.406Z",
+  "runId": "9539dc27-9341-4751-a1b9-4660d97efd9a",
+  "includesFoundation": true,
+  "foundationSourceSha256": "be6f2e94a8691469b82b45dce0c3c2011a68731fc8ae339e4a1ff11dfc3d5233",
+  "helperSourceSha256": "16f222842b2d4d39387150edb696ffea7991daef36ffdb88c248216cf42b0647",
+  "state": "passed_synthetic_acceptance",
+  "checks": [
+    "Synthetic fixture users signed in through Auth",
+    "Service-role PostgREST creates linked synthetic customer, staff, job and work records",
+    "Owner/admin/viewer/ops and second-company JWTs see only their own foundation records",
+    "Historical OpenFolk role cannot bypass tenant boundaries through PostgREST",
+    "Client writes and anonymous reads denied; service cross-company writes rejected; valid service update works",
+    "Owner/admin Edge reads: tenant counts, labels, recording links, statuses and unknown voicemail",
+    "Viewer/ops, foreign tenant, machine headers, missing and invalid JWT denied",
+    "PostgREST tenant isolation, payload/error redaction and private-source denial",
+    "Role revocation takes effect for the same existing JWT in Edge and PostgREST"
+  ],
+  "failure": null,
+  "cleanupVerified": true,
+  "cleanupErrors": [],
+  "fixtureManifest": "/private/tmp/serviceos-learn-launch-fixtures-9539dc27-9341-4751-a1b9-4660d97efd9a.json",
+  "limitations": [
+    "Synthetic TEST identities and metadata only; no customer records, provider traffic, audio playback or frontend were verified.",
+    "Existing keys were reused in memory; no email was sent and no new project key was created."
+  ]
+}

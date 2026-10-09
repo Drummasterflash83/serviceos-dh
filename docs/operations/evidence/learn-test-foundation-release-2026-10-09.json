@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-foundation-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "be6f2e94a8691469b82b45dce0c3c2011a68731fc8ae339e4a1ff11dfc3d5233",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T20:06:25.435571+00:00",
+  "observedAfter": "2026-10-09T20:06:26.928923+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "f40666ee06e320262e2b322ebc2b636cbeb6928e726b5ffafe94b8557229e908",
+  "afterCatalogSha256": "68a5962f03e66dcab7f91ebd89a58de1744efcabf78b3ee66c87687530327c2a",
+  "limitations": [
+    "TEST foundations only; no production, provider actions, imports, baselines or customer rows changed.",
+    "Catalog compatibility does not prove real JWT access or full LEARN acceptance.",
+    "Unknown outcomes require inspection; no automatic retry or rollback occurs."
+  ]
+}
