@@ -61,11 +61,11 @@ and retrospective corrections still require their own evidence and rules. Later
 backdated roster edits do not silently rewrite the earlier as-observed result;
 they need a reviewed correction workflow before being used in performance scoring.
 
-This module is not yet connected to the card UI or the performance append RPC.
-Membership and work-history tables are not yet accepted performance evidence by
-that RPC. The next integration must connect the complete source population,
-calendars/exclusions and reviewed policy, then publish an inferred observation
-with retained evidence. No personal measurement, score or pay change has been made.
+The recorded-handoff adapter now consumes the membership capture contract in its
+server-side resolver and saves its calculation proof alongside an inferred observation.
+The card collection flow is connected locally; see [the handoff adapter](LEARN-WORK-HANDOFF-MEASUREMENTS.md).
+Desk-time attribution, calendars/exclusions and reviewed corrections remain incomplete.
+No real employee measurement, score or pay change has been made.
 
 ## Verification and rollout
 

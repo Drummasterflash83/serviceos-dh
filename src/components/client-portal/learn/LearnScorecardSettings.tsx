@@ -9,6 +9,14 @@ import {
 
 const suggestions = [
   {
+    key: "work.recorded_handoffs",
+    label: "Recorded outgoing ownership handoffs (count, not quality)",
+    unit: "handoffs",
+    zeroAt: 0,
+    fullAt: 10,
+    source: "serviceos.work.handoffs@1",
+  },
+  {
     key: "response.within_target",
     label: "Responses within the agreed time",
     unit: "percent",

@@ -286,6 +286,17 @@ boundaries and keeps unknown or ambiguous identities unresolved. No new measurem
 or score is created, and the module still needs wiring into card/source-adapter flows.
 See [membership evidence and its limits](../operations/LEARN-MEMBERSHIP-HISTORY.md).
 
+## First connected work-source observation
+
+The card can now collect recorded outgoing ownership handoffs from captured work
+and as-observed membership history, retaining an immutable calculation receipt and
+saving an inferred measurement through the existing append path. Same-person
+user/member aliases do not create handoffs; missing history withholds the value.
+Retries retain identity and concurrent collection cannot create two same-cell
+observations. Existing human review and draft scoring consume the result. This is
+local/synthetic verification, not a deployed source or a real employee rating.
+See [calculation scope, tests and remaining work](../operations/LEARN-WORK-HANDOFF-MEASUREMENTS.md).
+
 ## Next work and release gates
 
 Work-transition now resolves confirmed, effective cover and self/team/company

@@ -1,6 +1,13 @@
 import type { LearnReadClient } from "./learn-cards.ts";
 import type { EvidenceRef } from "./learn-scorecards.ts";
 const fields: Record<string, string[]> = {
+  learn_work_measurement_runs: [
+    "source_system",
+    "metric_key",
+    "observed_at",
+    "explanation",
+    "proof",
+  ],
   interactions: ["subject", "body_preview", "occurred_at", "source_connector_id"],
   email_messages: ["subject", "snippet", "sent_at", "received_at", "direction"],
   phone_calls: ["provider", "direction", "started_at", "duration_seconds", "outcome"],
@@ -35,13 +42,26 @@ export async function loadPerformanceEvidence(
   return names
     .filter((k) => data[0][k] !== null && data[0][k] !== undefined)
     .map((k) => {
-      const value = data[0][k];
+      let value = data[0][k];
+      if (ref.table === "learn_work_measurement_runs" && k === "proof") {
+        if (
+          !value ||
+          value.contract !== "work-handoffs@1" ||
+          !Array.isArray(value.items) ||
+          !Array.isArray(value.credited)
+        )
+          throw Error("Calculation proof could not be verified");
+        value = JSON.stringify(value, null, 2);
+      }
       if (!["string", "number", "boolean"].includes(typeof value))
         throw Error("Evidence format could not be verified");
       const text = String(value);
       return {
         label: k.replaceAll("_", " "),
-        value: text.length > 4000 ? text.slice(0, 4000) + "… [excerpt shortened]" : text,
+        value:
+          !(ref.table === "learn_work_measurement_runs" && k === "proof") && text.length > 4000
+            ? text.slice(0, 4000) + "… [excerpt shortened]"
+            : text,
       };
     });
 }

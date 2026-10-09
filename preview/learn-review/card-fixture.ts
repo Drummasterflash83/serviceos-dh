@@ -12,6 +12,26 @@ const performanceEnd = new Date().toISOString().slice(0,10)+"T00:00:00.000Z";
 const performanceObserved = new Date(Date.now()-60000).toISOString();
 const performancePolicy = {tenantId:tenant_id,id:id(30),version:1,status:"draft",name:"Synthetic service response",subjectKind:"member",groupId:null,scaleMax:100,
  metrics:[{key:"response.within_target",label:"Responses within the agreed time",unit:"percent",weight:1,zeroAt:0,fullAt:100,minSamples:5,minCoverage:1,maxAgeHours:72,sourceSystems:["communications"]}]};
+const handoffRows:any[]=[];
+const handoffRuns:any[]=[];
+const handoffPolicy={...performancePolicy,name:"Synthetic recorded handoffs",metrics:[{key:"work.recorded_handoffs",
+ label:"Recorded outgoing ownership handoffs",unit:"handoffs",weight:1,zeroAt:0,fullAt:10,minSamples:1,minCoverage:1,
+ maxAgeHours:72,sourceSystems:["serviceos.work.handoffs@1"]}]};
+export function collectHandoffFixture(args:any){
+ const prior=handoffRows.find(r=>r.id===args.p_request);
+ if(prior)return {data:{measurementId:prior.id,reused:true},error:null};
+ const incomplete=new URLSearchParams(location.search).get("handoffs")==="partial";
+ const observed=new Date().toISOString();
+ handoffRows.push({id:args.p_request,tenant_id,subject_kind:"member",subject_id:args.p_member,policy_id:args.p_policy,
+ policy_revision:args.p_revision,metric_key:"work.recorded_handoffs",value:incomplete?null:2,unit:"handoffs",
+ window_start:args.p_start,window_end:args.p_end,measured_at:observed,source:"serviceos.work.handoffs@1",
+ source_through:incomplete?null:args.p_end,sample_count:incomplete?1:3,covered_count:incomplete?1:3,eligible_count:3,
+ review_state:"inferred",evidence:[{table:"learn_work_measurement_runs",id:args.p_request}],exclusions:[],supersedes:null,group_ids:[]});
+ handoffRuns.push({id:args.p_request,tenant_id,source_system:"serviceos.work.handoffs@1",metric_key:"work.recorded_handoffs",
+ observed_at:observed,explanation:incomplete?"Synthetic missing history: value withheld.":"Synthetic capture: 2 outgoing transfers; 3 of 3 retained items covered. Not speed or quality.",
+ proof:{contract:"work-handoffs@1",value:incomplete?null:2,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
+ return {data:{measurementId:args.p_request,reused:false},error:null};
+}
 const performanceReviews:any[]=[];
 export function reviewPerformanceFixture(args:any){
  const prior=performanceReviews.find(r=>r.id===args.p_request_id);
@@ -48,8 +68,9 @@ function records(): Record<string, any[]> {
   const time = new Date(Date.now() - 3600000).toISOString();
   return {
     provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
-    operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:performancePolicy}] : [],
-    measurements: new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
+    operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy}] : [],
+    learn_work_measurement_runs: handoffRuns,
+    measurements: new URLSearchParams(location.search).has("handoffs") ? handoffRows : new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
     learn_performance_reviews: performanceReviews,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [

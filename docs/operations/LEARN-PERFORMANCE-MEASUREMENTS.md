@@ -20,7 +20,7 @@ exclusions and change reason. Missing values and unknown coverage remain missing
 The raw request is retained for replay comparison. The server resolves the policy
 through its configuration version and checks the canonical subject and each
 allowed evidence reference against the tenant. Evidence currently supports
-interactions, email messages, phone calls/recordings, jobs and team members.
+interactions, email messages, phone calls/recordings, jobs, team members and immutable work-calculation receipts.
 Existence and tenant ownership do not establish that a source proves the proposed
 performance value; adapter calculations and human review remain necessary.
 
@@ -99,7 +99,7 @@ attest that they checked the sources, calculation and exclusions. Linked sources
 can be opened as tenant-authorised current excerpts or metadata. These are not
 immutable source captures, and recording metadata is not audio playback.
 
-No communications/job adapter calls the append RPC yet. The remaining end-to-end
+The recorded-work-handoff adapter now calls the append RPC transactionally and is connected to the card collection flow. Communications/job outcome adapters remain incomplete. The remaining end-to-end
 work includes verified source event and assignment histories, calculation adapters,
 numerical correction workflow, versioned policy publication, agreed calendars and
 exclusions, team aggregation and saved assessment runs.
@@ -156,3 +156,5 @@ Forward member identity/team capture and a work-interval attribution module are 
 implemented locally. They do not reconstruct missing old membership or yet feed the
 measurement append path. See [membership history](LEARN-MEMBERSHIP-HISTORY.md) for
 the observed-time semantics, verification and remaining source-adapter dependencies.
+
+See [the connected recorded-handoff adapter](LEARN-WORK-HANDOFF-MEASUREMENTS.md) for its exact population, limits and verification.

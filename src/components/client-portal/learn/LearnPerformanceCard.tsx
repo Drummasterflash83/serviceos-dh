@@ -6,6 +6,11 @@ import {
   type ReviewedPerformanceMeasurement,
 } from "@/lib/learn-performance-measurements";
 import { reviewPerformanceMeasurement, type ReviewRequest } from "@/lib/learn-performance-reviews";
+import {
+  collectWorkHandoffs,
+  canCollectWorkHandoffs,
+  HANDOFF_METRIC,
+} from "@/lib/learn-work-collection";
 import { loadPerformanceEvidence } from "@/lib/learn-performance-evidence";
 import {
   evaluateScorecard,
@@ -161,6 +166,16 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
             <p>
               No stored measurements were returned for this exact subject, period and rule revision.
             </p>
+          )}
+          {kind === "member" && canCollectWorkHandoffs(current.policy) && (
+            <WorkCollection
+              key={`${id}:${current.policy.id}:${current.policy.version}:${query.from}:${query.until}`}
+              policy={current.policy}
+              memberId={id}
+              period={{ start: query.from + "T00:00:00Z", end: query.until + "T00:00:00Z" }}
+              exists={current.rows.some((m) => m.metricKey === HANDOFF_METRIC)}
+              onSaved={refresh}
+            />
           )}
           {current.score.metrics.map((metric) => {
             const observations = current.rows.filter((r) => r.metricKey === metric.key);
@@ -345,7 +360,8 @@ function EvidenceList({ tenantId, refs }: { tenantId: string; refs: EvidenceRef[
     <div className="lp-evidence">
       <p>
         {refs.length} supporting source reference(s). These show current stored excerpts or
-        metadata, not an immutable capture of the original source.
+        metadata. Work calculation receipts retain their original proof; other excerpts show current
+        source data.
       </p>
       {refs.slice(0, limit).map((ref, i) => (
         <Evidence key={`${ref.table}:${ref.id}:${i}`} tenantId={tenantId} reference={ref} />
@@ -400,5 +416,81 @@ function Evidence({ tenantId, reference }: { tenantId: string; reference: Eviden
           <p>Reading source…</p>
         ))}
     </details>
+  );
+}
+
+function WorkCollection({
+  policy,
+  memberId,
+  period,
+  exists,
+  onSaved,
+}: {
+  policy: ScorecardPolicy;
+  memberId: string;
+  period: { start: string; end: string };
+  exists: boolean;
+  onSaved: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const pending = useRef<{ requestId: string; reason: string } | null>(null);
+  if (exists)
+    return (
+      <p>
+        Recorded handoff evidence has been collected for this period. Review the retained
+        calculation below.
+      </p>
+    );
+  return (
+    <form
+      className="lp-review"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (busy || !reason.trim()) return;
+        pending.current ??= { requestId: crypto.randomUUID(), reason: reason.trim() };
+        setBusy(true);
+        setMessage("");
+        try {
+          await collectWorkHandoffs(getSupabaseClient(), {
+            policy,
+            memberId,
+            period,
+            ...pending.current,
+          });
+          onSaved();
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : "Collection failed");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <h4>Collect recorded handoff evidence</h4>
+      <p>
+        Count captured outgoing ownership transfers for this person. This does not measure speed or
+        quality. Missing history withholds the value. The saved observation still needs human
+        review.
+      </p>
+      <label>
+        Collection reason
+        <input
+          value={reason}
+          required
+          maxLength={1000}
+          disabled={busy || !!pending.current}
+          onChange={(e) => setReason(e.target.value)}
+        />
+      </label>
+      <button type="submit" className="cp-secondary" disabled={busy || !reason.trim()}>
+        {busy
+          ? "Collecting…"
+          : pending.current
+            ? "Retry collection request"
+            : "Collect work evidence"}
+      </button>
+      {message && <p role="status">{message}</p>}
+    </form>
   );
 }
