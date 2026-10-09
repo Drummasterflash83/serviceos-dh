@@ -1,0 +1,14 @@
+{
+  "version": "learn-test-operator-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T23:25:11.413523+00:00",
+  "observedAfter": "2026-10-09T23:25:15.68999+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "b0cc3a5aecd376e9ca2a313d0d291b98a868410de0f6cf972e9e750dfe794645",
+  "afterCatalogSha256": "b0cc3a5aecd376e9ca2a313d0d291b98a868410de0f6cf972e9e750dfe794645"
+}

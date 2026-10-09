@@ -327,3 +327,58 @@ This UI/read-model increment has not been released to hosted TEST or production.
 TEST remains release 011/runtime v4. Its next step is a reviewed reader release and
 actual authenticated UI acceptance. Live provider access, continuous ingestion,
 workspace pacing and full recovery controls remain separate requirements.
+
+## Current TEST state — operator reader release 012, 10 October
+
+The two operator readers are now installed in TEST through release 012
+`learn_slack_operator_reads_v1`, checksum
+`e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1`.
+This supersedes the local-only status above. There are still 88 public tables,
+now thirteen migration receipts. All existing table definitions/privileges and
+endpoints match the prior catalog; the Slack worker remains runtime v4.
+No source, credential, schedule or production change is included in the release.
+
+The exact bundle passed a disposable, network-isolated database run, including
+injected receipt failure, rollback rehearsal, duplicate-install refusal, reader
+pagination, company isolation and retained email checks. Eighteen release/client
+Node tests passed. Hosted rollback rehearsal and one installation were acknowledged;
+the final installed definitions and existing catalog match the reviewed projection.
+
+Actual signed-in TEST owner/viewer sessions read the stored channels and one
+root/reply-deduplicated parent with its latest queued successor and checkpoint.
+Foreign-company, anonymous and service-role reads were refused; invalid cursors
+failed closed. Browser users still cannot select the raw queue. Disabling the
+channel left the retained thread and checkpoint readable. The existing real
+Auth/RPC/Edge acceptance also passed under the new schema; it used synthetic
+sources and no real Slack credential or provider fetch.
+
+The actual application, served locally against the hosted TEST backend, was checked
+with a temporary synthetic viewer. It displayed disabled channels, the retained
+thread's cancelled latest import, its approved window, one captured page against a
+three-page budget, and disabled selection/approval controls. An empty channel showed
+“No observed threads” without claiming there are no replies. The browser signed out,
+and its temporary login was banned and password rotated. All fixture sources and
+approvals remain; no fixture jobs or connections remain active.
+
+Browser scope is deliberately precise: this verified actual hosted reads and
+read-only controls. Multi-selection and uncertain-response UI retry were verified
+in the earlier synthetic preview, while actual owner approval/replay was verified
+through hosted RPCs. This was not an end-to-end owner browser import or live Slack
+ingestion. The viewer also saw unavailable launch-summary counts; TEST's existing
+metadata-view launch mode restricts that endpoint to owner/admin. The reader
+release does not change that separate policy.
+
+Evidence:
+
+- [Rollback rehearsal](evidence/learn-test-operator-rehearsal-2026-10-10.json)
+- [Installation and catalog preservation](evidence/learn-test-operator-release-2026-10-10.json)
+- [Authenticated reader and worker acceptance](evidence/learn-test-operator-acceptance-2026-10-10.json)
+- [Installed schema](evidence/learn-test-operator-installed-schema-2026-10-10.json)
+- [Actual browser view](evidence/learn-test-operator-browser-2026-10-10.jpg)
+- [Temporary browser login retired](evidence/learn-test-operator-browser-retired-2026-10-10.json)
+- [Combined verification record](evidence/learn-test-operator-confirmation-2026-10-10.json)
+
+Live Slack permission, provider reply behavior, continuous/multi-window ingestion,
+workspace-wide pacing, durable operator retry/recovery, voicemail reconciliation,
+and the remaining LEARN V1 scope still require implementation/acceptance. The
+frontend remains local for this milestone; no Vercel or production deployment was made.

@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-operator-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1",
+  "state": "installed_needs_user_verification",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T23:25:59.708276+00:00",
+  "observedAfter": "2026-10-09T23:26:03.596108+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "b0cc3a5aecd376e9ca2a313d0d291b98a868410de0f6cf972e9e750dfe794645",
+  "afterCatalogSha256": "063d8831802750f8443f0b3a2259f1b88e19b0c90b9f63a8f6dcf369ea2b6097",
+  "limitations": [
+    "TEST two read-only operator functions only. No credentials, source rows, schedules, provider requests or production changes.",
+    "Hosted authenticated reader/browser acceptance is still required. An uncertain write is never automatically retried."
+  ]
+}

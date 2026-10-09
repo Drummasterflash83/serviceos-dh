@@ -589,3 +589,24 @@ preservation checks. Eleven client tests, application/preview typechecks, the pr
 build and synthetic browser scenarios passed. No hosted schema, real source import,
 provider request or production change occurred. TEST remains release 011/runtime
 v4; reader release and actual signed-in UI acceptance are next.
+
+## Slack operator readers released and browser-checked — 10 October
+
+Release 012 now provides the company-scoped channel/thread readers in hosted TEST.
+Its exact rollback rehearsal, installation and schema readback passed: 88 tables,
+thirteen receipts, existing definitions/privileges and worker runtime v4 preserved.
+The isolated database release checks and eighteen focused Node tests passed.
+
+Real TEST owner/viewer/foreign sessions verified the retained thread/checkpoint,
+latest queue state, company isolation, raw queue denial and disabled-channel reads.
+The actual locally served app against TEST displayed retained evidence and cancelled
+progress with approval controls disabled for a temporary viewer. Empty observed
+coverage stayed distinct from a failure or a claim of full channel coverage.
+The temporary browser login was retired, and all acceptance evidence remains with
+no active fixture jobs/connections. No real Slack fetch or production change occurred.
+
+Actual owner browser submission remains unverified; owner approval/replay passed
+hosted RPC checks and multi-thread/uncertain-response UI behaviour passed the earlier
+synthetic preview. Live Slack access, continuous capture, pacing/recovery and the
+rest of LEARN V1 are still outstanding. See the
+[release 012 evidence and limits](../operations/LEARN-SLACK-INGESTION.md#current-test-state--operator-reader-release-012-10-october).

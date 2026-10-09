@@ -1,0 +1,26 @@
+{
+  "version": "learn-slack-operator-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_operator_reads_v1",
+  "sha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030140000_learn_slack_operator_reads.sql",
+      "sha256": "5771f64d34218713784172aa345255a651641d93d8b161b646d75fc23f8ca5ad"
+    }
+  ],
+  "tables": [],
+  "newFunctions": [
+    "learn_slack_accounts_read",
+    "learn_slack_threads_read"
+  ],
+  "changedFunctions": [],
+  "unchanged": [
+    "Existing table definitions, privileges, sources, credentials and schedules.",
+    "Existing history approval/page/finish contracts and unrelated queue completion."
+  ],
+  "deferred": [
+    "Hosted authenticated reader and browser acceptance.",
+    "Live Slack access, continuous coverage and workspace pacing."
+  ]
+}

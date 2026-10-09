@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-operator-browser/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "6e1cad0e-a74c-456f-84cb-f08de9dc9bb6",
+  "tenant": "c0da1479-8637-40d5-bdba-83f136b64eca",
+  "evidenceRun": "99a7973d-1bca-48c4-885e-8cf2a8cafe48",
+  "account": "dfa6071e-bb74-4d43-b3a9-0f17259ff623",
+  "user": "df816f34-83da-4981-b417-5d7fb1f8d59a",
+  "createdAt": "2026-10-09T23:27:38.517Z",
+  "retired": true,
+  "email": "learn-operator-browser-6e1cad0e-a74c-456f-84cb-f08de9dc9bb6@example.invalid",
+  "retiredAt": "2026-10-09T23:29:13.109Z",
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "approvals": 2,
+    "active_jobs": 0,
+    "active_connections": 0
+  }
+}

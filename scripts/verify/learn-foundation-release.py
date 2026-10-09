@@ -383,8 +383,26 @@ try:
                                 apply((ROOT/'scripts/verify/learn-slack-thread-storage.assert.sql').read_text(),'Thread consent, source association, atomic checkpoint, replay and preservation')
                                 if '--slack-operator' in sys.argv:
                                     operator_before=json.loads(run(catalog_sql).stdout)
-                                    apply('set role postgres;'+(ROOT/'supabase/migrations/20261030140000_learn_slack_operator_reads.sql').read_text(),'Company-scoped Slack operator reads')
+                                    operator_functions_before=json.loads(run(thread_function_query).stdout)
+                                    operator_sql=node("import {operatorReleaseSql} from './scripts/verify/learn-test-operator-release.mjs';process.stdout.write(operatorReleaseSql());")
+                                    injected=operator_sql.replace('insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)',"do $$begin raise exception 'Injected operator receipt failure';end $$;\ninsert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)")
+                                    failed=run('set role postgres;'+injected,False)
+                                    assert failed.returncode and b'Injected operator receipt failure' in failed.stderr
+                                    assert json.loads(run(thread_function_query).stdout)==operator_functions_before
+                                    assert json.loads(run(catalog_sql).stdout)['tables']==operator_before['tables']
+                                    operator_rehearsal=node("import {operatorRehearsalSql} from './scripts/verify/learn-test-operator-release.mjs';process.stdout.write(operatorRehearsalSql());")
+                                    apply('set role postgres;'+operator_rehearsal,'Exact operator release rollback rehearsal')
+                                    assert json.loads(run(thread_function_query).stdout)==operator_functions_before
+                                    apply('set role postgres;'+operator_sql,'Company-scoped Slack operator reads')
                                     assert json.loads(run(catalog_sql).stdout)['tables']==operator_before['tables'],'Operator reads changed existing tables or privileges'
+                                    operator_query=node("import {OPERATOR_FUNCTION_QUERY} from './scripts/verify/learn-slack-operator-catalog.mjs';process.stdout.write(OPERATOR_FUNCTION_QUERY);")
+                                    operator_sha=node("import {checkedOperator} from './scripts/verify/learn-slack-operator-bundle.mjs';process.stdout.write(checkedOperator().manifest.sha256);")
+                                    operator_expected={'sourceSha256':operator_sha,'tables':[],'functions':json.loads(run(operator_query).stdout)}
+                                    operator_expected_path=ROOT/'supabase/release/learn-test/012_slack_operator.expected.json'
+                                    if '--write-operator-expected' in sys.argv:operator_expected_path.write_text(json.dumps(operator_expected,indent=2)+'\n')
+                                    else:assert operator_expected==json.loads(operator_expected_path.read_text()),'Operator definitions differ'
+                                    duplicate=run('set role postgres;'+operator_sql,False)
+                                    assert duplicate.returncode and b'Slack operator release already exists' in duplicate.stderr
                                     apply((ROOT/'scripts/verify/learn-slack-operator-reads.assert.sql').read_text(),'Observed thread paging, queue status, disabled connection retention and company isolation')
 
 

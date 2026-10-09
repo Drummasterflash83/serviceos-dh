@@ -10,8 +10,8 @@ import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';
 import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';
 import {readAcceptanceResponse} from './learn-test-launch-acceptance.mjs';
 const q=s=>`'${String(s).replaceAll("'","''")}'`,check=(ok,s)=>{if(!ok)throw Error(s);},base=`https://${TEST_PROJECT}.supabase.co`;
-export async function acceptThreads({allowProjectRef,token,fetcher=fetch}){
- const pre=await readThreadsCatalog({allowProjectRef,token,fetcher});check(installedThreads(pre),'Exact installed TEST worker release required');
+export async function acceptThreads({allowProjectRef,token,fetcher=fetch,readCatalog=readThreadsCatalog,isInstalled=installedThreads,inspectOperator=null}){
+ const pre=await readCatalog({allowProjectRef,token,fetcher});check(isInstalled(pre),'Exact installed TEST worker release required');
  check(pre.base.functions.every(f=>['learn-launch-status','work-transition','learn-slack-worker'].includes(f.slug))&&pre.base.functions.some(f=>f.slug==='learn-slack-worker'&&f.status==='ACTIVE'&&f.verify_jwt===true),'Verified isolated TEST worker endpoint required');
  async function request(url,headers,method='GET',body){const r=await fetcher(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(30000)});return readAcceptanceResponse(r);}
  const mgmt={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
@@ -108,6 +108,7 @@ export async function acceptThreads({allowProjectRef,token,fetcher=fetch}){
   const finishReplay=await request(`${base}/rest/v1/rpc/learn_slack_finish_thread_job`,admin,'POST',{...tf,p_claimed_by:tjAfter[0].claimed_by,p_attempt_count:tjAfter[0].attempt_count});check(finishReplay.ok&&finishReplay.data.successor_id===plan.threadSuccessor,'Thread completion replay duplicated successor');
   const foreignThreads=await request(`${base}/rest/v1/slack_thread_imports?select=id&tenant_id=eq.${plan.tenants[0]}`,userHeaders(sessions[2]));check(foreignThreads.ok&&foreignThreads.data?.length===0,'Foreign company saw thread approvals');
   checks.push('Actual service thread publication/replay and independent channel cursor; expired-claim HTTP 409; deployed Edge recovers retained reply and creates one delayed successor with qualified coverage');
+  if(inspectOperator)await inspectOperator({plan,sessions,rpc,request,userHeaders,admin,sql,checks});
  }catch(e){failure=e.message;}
  finally{
   try{await sql(`begin;update platform_jobs set status='cancelled',cancelled_at=clock_timestamp() where tenant_id=${q(plan.tenants[0])} and status in ('queued','running','retrying') and payload->>'connector_account_id' in (select id::text from connector_accounts where tenant_id=${q(plan.tenants[0])});update connector_accounts set status='disabled' where tenant_id=${q(plan.tenants[0])};update tenant_connectors set enabled=false,status='disabled' where tenant_id=${q(plan.tenants[0])};update provider_connections set status='revoked',revoked_at=clock_timestamp() where id=${q(plan.connection)} and tenant_id=${q(plan.tenants[0])};commit;`);}catch{cleanupErrors.push('Synthetic queue/connection shutdown requires inspection');}

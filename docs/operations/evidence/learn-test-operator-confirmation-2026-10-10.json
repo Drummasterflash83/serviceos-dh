@@ -1,0 +1,53 @@
+{
+  "version": "learn-test-operator-confirmation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "e37839d9be63ff9ee9db8b0ada2c25c676546cb108a3882c57d1ec58aa8300b1",
+  "observedAt": "2026-10-09T23:30:19.000557+00:00",
+  "state": "verified_test_readers_and_readonly_browser",
+  "publicTables": 88,
+  "migrationReceipts": 13,
+  "endpoints": [
+    {
+      "slug": "learn-launch-status",
+      "version": 2,
+      "verifyJwt": true,
+      "sourceSha256": "854d6165869638b1c3c97c8e02f14e14b2719f770c2045ee68bf85c03f8257af"
+    },
+    {
+      "slug": "work-transition",
+      "version": 2,
+      "verifyJwt": true,
+      "sourceSha256": "2bc2ec603c7d6825b7dc0289e62618c563c391623e9bcc012d1b381411332506"
+    },
+    {
+      "slug": "learn-slack-worker",
+      "version": 4,
+      "verifyJwt": true,
+      "sourceSha256": "7b1cdf0793bf7f97eb6cb1884f1ccc37f916a61153cbe30e36ed64913e7fa6ae"
+    }
+  ],
+  "checks": {
+    "isolatedExactBundle": "passed injected receipt failure, rollback rehearsal, projection, duplicate refusal, reader paging and preservation",
+    "focusedNodeTests": {
+      "passed": 18,
+      "failed": 0
+    },
+    "hostedRehearsal": "acknowledged and rolled back unchanged",
+    "hostedInstall": "acknowledged exact schema and preserved prior catalog",
+    "authenticatedAcceptance": "passed_retained_synthetic_acceptance",
+    "browser": "actual application at 127.0.0.1:47872 against fixed TEST; synthetic viewer saw disabled stored channels, retained deduplicated thread, cancelled latest import, approved window, one of up to three pages and disabled approval controls; empty channel clearly qualified",
+    "browserSignedOut": true,
+    "temporaryBrowserLoginRetired": true,
+    "fixtureJobsAndConnectionsStopped": true
+  },
+  "acceptanceRun": "99a7973d-1bca-48c4-885e-8cf2a8cafe48",
+  "browserRun": "6e1cad0e-a74c-456f-84cb-f08de9dc9bb6",
+  "screenshot": "learn-test-operator-browser-2026-10-10.jpg",
+  "limitations": [
+    "No real Slack credential or provider fetch; service RPC supplied synthetic source pages.",
+    "Actual owner browser submission unverified; hosted owner RPC approval/replay and earlier synthetic multi-selection/uncertain-response preview are separate evidence.",
+    "Existing TEST launch summary metadata views require owner/admin; the browser viewer saw unavailable counts outside the verified Slack reader.",
+    "Frontend served locally only; no Vercel or production deployment.",
+    "Continuous ingestion, workspace pacing, durable operator recovery, voicemail and remaining LEARN V1 work are not complete."
+  ]
+}
