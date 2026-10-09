@@ -1,6 +1,15 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {gmailConsentUrl,isCurrentLaunchRequest,launchSnapshot} from './learn-launch.ts';
 const T='11111111-1111-4111-8111-111111111111',observed='2026-10-05T10:00:00.000Z',valid='2026-10-05T10:01:00.000Z',now=Date.parse('2026-10-05T10:00:30Z');
 const idle={state:'idle',started_at:null,completed_at:null,records_processed:null,error_present:null};
+test('transcript status extension accepts zero and unknown without fabricating old-backend counts',()=>{
+ const raw:any=fixture();assert.equal(launchSnapshot(raw,T,now)?.phone.transcript_status_counts,null);
+ raw.phone.transcript_scope='stored_status_rows';raw.phone.transcript_status_counts={completed:14,failed:2,pending:0,processing:null};
+ assert.deepEqual(launchSnapshot(raw,T,now)?.phone.transcript_status_counts,raw.phone.transcript_status_counts);
+ for(const invalid of [{completed:14,failed:-1,pending:0,processing:0},{completed:14,failed:'2',pending:0,processing:0},{completed:14,failed:0,pending:0},{completed:14,failed:0,pending:0,processing:0,coverage:100},null]){
+  assert.equal(launchSnapshot({...raw,phone:{...raw.phone,transcript_status_counts:invalid}},T,now),null);
+ }
+ raw.phone.transcript_scope='provider_complete';assert.equal(launchSnapshot(raw,T,now),null);
+});
 function fixture(attempt:any=idle){const source={read_status:'ok',record_count:0,latest_record_at:null};return {version:'learn-launch/1',tenant_id:T,observed_at:observed,valid_until:valid,counts:{version:'learn-status/1',tenant_id:T,observed_at:observed,valid_until:valid,phone:source,email:source},recordings:source,voicemails:source,email:{accounts:0,disabled_accounts:0,mailboxes:0,selected_mailboxes:0,removed_mailboxes:0,latest_message_sync_attempt:attempt,last_successful_message_sync_at:null,stored_label_counts:{inbox:0,sent:0,draft:0},label_scope:'stored_current_metadata',draft_lifecycle:'unverified'},phone:{latest_call_sync_attempt:attempt,last_successful_call_sync_at:null,direction_scope:'raw_provider',family_audio_coverage:'unverified',recent_calls:null},slack:{notifications_enabled:null,message_ingestion:'unavailable'}};}
 test('Gmail redirects are restricted to the existing official consent endpoint',()=>{assert.ok(gmailConsentUrl('https://accounts.google.com/o/oauth2/v2/auth?state=synthetic'));for(const v of ['https://example.invalid','https://accounts.google.com.evil.invalid/o/oauth2/v2/auth','javascript:alert(1)','https://user@accounts.google.com/o/oauth2/v2/auth'])assert.equal(gmailConsentUrl(v),null);});
 test('unknown, mismatched and malformed launch snapshots cannot create metrics',()=>{for(const v of [null,{}, {version:'learn-launch/1',tenant_id:'other'}, {version:'learn-launch/2'}])assert.equal(launchSnapshot(v,'11111111-1111-4111-8111-111111111111',Date.now()),null);});

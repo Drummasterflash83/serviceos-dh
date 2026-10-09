@@ -66,6 +66,43 @@ storage integrity, backup retention and restore evidence still need checking.
 
 ## Implemented locally
 
+### Additional preservation evidence
+
+A fixed-cutoff inventory at **2026-10-09 16:09:53 UTC**, completed at 16:10:20,
+recorded 18,407 emails, 4,320 call rows, 2,880 recording rows, 2,880 transcript
+rows, 22,738 interactions and 3,148 customer cards. Jobs and receptionist
+voicemails remained at zero. There were eight team members, 30 email accounts
+and three tenant connector rows. These are observations of stored records,
+not a guarantee of provider coverage or connection health.
+
+Of the transcripts, **2,874 were completed and six failed**. All 2,880 recording
+pointers matched private storage objects larger than 44 bytes. This is stronger
+evidence than pointers alone, but does not establish playable audio: a separate
+read of the first 64 bytes found one failed WAV with zero data bytes and two
+with only 65 data bytes. The other three failures had much larger payloads;
+their legacy error classification does not establish a cause. Three recently
+completed examples had readable headers with the same format tag as the failed
+examples. No retry, retranscription or provider recovery was started.
+
+A follow-up scan at **16:18:14 UTC**, completed at 16:18:44, compared the individual
+IDs and storage metadata with that baseline. No previously recorded IDs were
+missing across the 11 tables, no recording pointers changed, and no inventoried
+storage objects were missing or had changed size/update metadata. Emails rose to
+18,417 and customer cards to 3,149. This comparison does not fingerprint message
+contents or prove preservation before the first baseline.
+
+`scripts/verify/learn-preservation.mjs` writes an ignored private manifest of
+record IDs and hashed storage pointers/metadata; no message or transcript text
+is downloaded. Comparing manifests detects missing old IDs even if new records
+make the total rise. A comparison distinguishes preserved, changed and unverified
+results. It remains a nontransactional inventory, not a backup or restore test.
+`scripts/verify/learn-audio-audit.mjs` reads bounded audio headers and safe failure
+metadata without storing audio or logging provider error prose. Header parsing
+handles binary bytes, buffer offsets and RIFF chunk padding; unseen data chunks
+remain unknown instead of becoming zero.
+
+### Product changes
+
 - Customer, job and team card browsing over the existing canonical tables, with
   tenant filtering, pagination and company-defined team groups.
 - Bounded evidence drill-down joining existing interactions, graph links and
@@ -75,6 +112,10 @@ storage integrity, backup retention and restore evidence still need checking.
   not implement Slack ingestion or claim that it is working.
 - Sync-attempt status from the preserved LEARN work, distinguishing idle, running,
   success, failure and unavailable reads.
+- Read-only transcript status counts on the Birchills source card. Completed,
+  failed, pending and processing are counted independently through user RLS;
+  unavailable counts stay unknown. Older status responses remain compatible
+  without inventing transcript counts. No transcript text is exposed by this read.
 - A deterministic scoring evaluator with configurable scales, relative weights,
   direction-aware scoring anchors, minimum samples, freshness, coverage and source
   requirements. Missing required measures withhold the total; weights do not silently
@@ -112,11 +153,18 @@ live migration has been performed by this branch.
   filtering and an office-specific 0–50 scoring draft save/reload were checked.
   No browser console errors were observed during that settings flow.
 - `git diff --check` passed.
+- Preservation/transcript-status increment: 23 focused tests passed, covering
+  pagination and foreign/duplicate rows, missing IDs hidden by rising totals,
+  changed storage pointers/objects, failed reads, bounded WAV header inspection
+  and transcript-status response validation. Application and preview TypeScript
+  checks passed. Both builds passed; the preview retains existing bundle warnings.
+  The rebuilt synthetic preview displayed all four transcript status counts with
+  no browser errors. This browser check makes no live user-RLS claim.
 
 ## Next work and release gates
 
-1. Preserve a more detailed source/storage baseline; verify actual audio, completed
-   transcripts, backup retention and restore. Reconcile against Birchills/Sipcentric
+1. Keep comparing the private source/storage baseline; investigate failed audio,
+   verify backup retention and restore, and reconcile against Birchills/Sipcentric
    provider inventory before attempting bounded recovery. Do not assume upstream
    recordings remain available indefinitely.
 2. Verify deployed TEST and production schemas/migration history before applying
