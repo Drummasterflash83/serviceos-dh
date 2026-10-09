@@ -31,6 +31,7 @@ import {
   type StrategyHit,
 } from "../_shared/imports/matching.ts";
 import { normalizeJobNumber } from "../_shared/imports/job_number.ts";
+import { classifyRowApplyFailure } from "../_shared/imports/row_failure.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -53,6 +54,27 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUuid = (v: unknown): v is string => typeof v === "string" && UUID_RE.test(v);
+
+// Known import entities: unknown entity strings are rejected, never routed to
+// a default apply path (an unrecognised entity must not fall through to the
+// person importer).
+const KNOWN_ENTITIES = ["contacts", "customers", "sites", "jobs", "staff", "assets"];
+// Entities the GOVERNED engine (sealed contract + durable row ledger + per-row
+// RPCs) supports. A profile opts in with `definition.governed === true`;
+// legacy profiles and their behaviour are untouched.
+const GOVERNED_ENTITIES = ["customers", "sites", "jobs"];
+const GOVERNED_ROW_RPC: Record<string, string> = {
+  customers: "import_customer_row",
+  sites: "import_site_row",
+  jobs: "import_job_row",
+};
+const GOVERNED_MATCH_RPC: Record<string, string> = {
+  customers: "import_match_customer",
+  sites: "import_match_site",
+  jobs: "import_match_job",
+};
+const isGovernedDef = (def: unknown): boolean =>
+  isPlainObject(def) && (def as { governed?: unknown }).governed === true;
 
 // Per-action top-level key allowlists: unknown keys are rejected, never ignored.
 const ACTION_KEYS: Record<string, string[]> = {
@@ -205,7 +227,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     entity: string,
   ): Promise<ProfileRow | null> {
     if (profileId) {
-      const { data } = await db
+      const { data } = await db!
         .from("import_profiles")
         .select(PROFILE_COLS)
         .eq("id", profileId)
@@ -213,7 +235,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .maybeSingle();
       return (data as ProfileRow | null) ?? null;
     }
-    const { data } = await db
+    const { data } = await db!
       .from("import_profiles")
       .select(PROFILE_COLS)
       .or(`tenant_id.is.null,tenant_id.eq.${tenantId}`)
@@ -221,9 +243,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .eq("entity_type", entity)
       .eq("active", true)
       .order("tenant_id", { ascending: false, nullsFirst: false })
-      .limit(1)
-      .maybeSingle();
-    return (data as ProfileRow | null) ?? null;
+      .limit(10);
+    // automatic resolution NEVER picks a governed profile — governed imports
+    // require an explicit profile selection, so seeding a governed profile can
+    // never change what a legacy no-profile-id import resolves to
+    const eligible = ((data ?? []) as ProfileRow[]).filter((p) => !isGovernedDef(p.definition));
+    return eligible[0] ?? null;
   }
   // Back-compat shim for the UNCHANGED non-contacts paths.
   async function loadProfileDef(
@@ -244,6 +269,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return fail("invalid_request", "filename must be a string", 400);
     const source = String(body.source_system ?? "commusoft");
     const entity = String(body.entity_type ?? "customers");
+    if (!KNOWN_ENTITIES.includes(entity))
+      return fail("unknown_entity", `Unknown import entity '${entity}'`, 400);
     const denied = await entityWriteDenied(entity);
     if (denied) return denied;
     if (body.csv_text !== undefined && typeof body.csv_text !== "string")
@@ -415,16 +442,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (choice.kind === "none")
         return fail("no_profile", `No import profile for ${requestedSource}/${entity}`, 400);
       profile = choice.profile;
+    } else if (body.profile_id) {
+      // explicit selection: tenant-checked load (governed or legacy)
+      const { data } = await db
+        .from("import_profiles")
+        .select(PROFILE_COLS)
+        .eq("id", String(body.profile_id))
+        .or(`tenant_id.is.null,tenant_id.eq.${tenantId}`)
+        .maybeSingle();
+      profile = (data as ProfileRow | null) ?? null;
+      if (!profile || !profile.active)
+        return fail("no_profile", `No import profile for ${source}/${entity}`, 400);
+      if (profile.source_system !== source || profile.entity_type !== entity)
+        return fail(
+          "profile_mismatch",
+          "The selected profile does not serve this source/entity",
+          400,
+        );
     } else {
-      // non-contacts importer behaviour preserved
-      profile = await loadProfileRow(
-        body.profile_id ? String(body.profile_id) : null,
-        source,
-        entity,
-      );
+      // sites have NO legacy path and governed profiles require explicit
+      // selection — auto-resolution can never serve a sites import
+      if (entity === "sites")
+        return fail("unsupported_entity", "Site imports require a governed import profile", 400);
+      // non-contacts automatic resolution: legacy behaviour preserved
+      // (governed profiles are excluded — they require explicit selection)
+      profile = await loadProfileRow(null, source, entity);
       if (!profile) return fail("no_profile", `No import profile for ${source}/${entity}`, 400);
     }
     const def = profile.definition;
+    const governed = entity !== "contacts" && isGovernedDef(def);
+    if (governed && !GOVERNED_ENTITIES.includes(entity))
+      return fail("unsupported_entity", `Governed imports do not support '${entity}'`, 400);
+    if (!governed && entity === "sites")
+      // sites have NO legacy apply path — routing them through the person
+      // importer would silently write site rows into people
+      return fail("unsupported_entity", "Site imports require a governed import profile", 400);
 
     let records: string[][];
     try {
@@ -433,8 +485,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return fail("parse_error", `CSV parse failed: ${(e as Error).message}`, 400);
     }
     if (!records.length) return fail("empty_file", "No rows found", 400);
-    if (entity === "contacts" && records.length > 5001)
-      return fail("too_large", "Contact imports are bounded to 5000 rows per file", 400);
+    if ((entity === "contacts" || governed) && records.length > 5001)
+      return fail("too_large", "Governed imports are bounded to 5000 rows per file", 400);
     const headers = records[0];
     const dataRows = records.slice(1);
     const cm = resolveColumnMapping(headers, def);
@@ -444,7 +496,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // actual file headers; no column may serve two canonical fields. The
     // FINAL mapping is sealed below — apply never re-derives it.
     let mappingOverrides: Record<string, number | null> | null = null;
-    if (entity === "contacts" && body.mapping_overrides !== undefined) {
+    if ((entity === "contacts" || governed) && body.mapping_overrides !== undefined) {
       if (!isPlainObject(body.mapping_overrides))
         return fail("invalid_request", "mapping_overrides must be an object", 400);
       const canonicals = new Set(def.columns.map((c) => c.canonical));
@@ -478,6 +530,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       cm.missingRequired = def.columns
         .filter((c) => c.required && !(c.canonical in cm.mapping))
         .map((c) => c.canonical);
+    } else if (body.mapping_overrides !== undefined) {
+      // HONEST contract: overrides on a legacy non-contacts import were
+      // previously accepted and silently discarded — reject them instead
+      return fail(
+        "invalid_request",
+        "mapping_overrides require a contacts or governed import profile",
+        400,
+      );
     }
     const checksum = await sha256Hex(csvText);
 
@@ -488,7 +548,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .select("id,status")
       .eq("tenant_id", tenantId)
       .eq("file_checksum", checksum)
-      .in("status", ["previewed", "importing", "completed", "failed"])
+      .in("status", ["previewed", "importing", "completed", "failed", "needs_review"])
       .limit(1)
       .maybeSingle();
 
@@ -496,7 +556,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       invalid = 0,
       willCreate = 0,
       willUpdate = 0,
-      willConflict = 0;
+      willConflict = 0,
+      willHold = 0;
     const sample: Array<Record<string, unknown>> = [];
     const mapped = dataRows.map((cells, i) => mapRow(cells, def, cm.mapping, i + 2));
     for (const m of mapped) {
@@ -519,6 +580,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
           continue;
         }
         outcome = r.data as never;
+      } else if (governed) {
+        // the SAME validation + resolution decisions the row RPCs apply —
+        // read-only, candidate COUNTS only, ZERO canonical writes
+        const r = await db.rpc(GOVERNED_MATCH_RPC[entity], {
+          p_tenant: tenantId,
+          p_source: source,
+          p_record: m.record,
+        });
+        if (r.error) {
+          invalid++;
+          valid--;
+          continue;
+        }
+        outcome = r.data as never;
       } else {
         outcome = await matchEntity(db, tenantId, entity, m.record);
       }
@@ -529,6 +604,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         valid--;
       } else if (outcome.action === "matched") willUpdate++;
       else if (outcome.action === "probable") willConflict++;
+      else if (outcome.action === "held") willHold++;
       else willCreate++;
       if (sample.length < 8) {
         sample.push({
@@ -548,25 +624,34 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // stored preview. Apply uses ONLY this contract — it never re-resolves a
     // possibly changed live profile. The CSV itself is sealed by file_checksum.
     const definitionSha = await sha256Hex(JSON.stringify(def));
+    const sealedProfile = {
+      id: profile.id,
+      tenant_id: profile.tenant_id,
+      source_system: profile.source_system,
+      entity_type: profile.entity_type,
+      name: profile.name,
+      version: profile.version,
+      definition: def,
+      definition_sha256: definitionSha,
+    };
     const sealed =
       entity === "contacts"
         ? {
-            profile: {
-              id: profile.id,
-              tenant_id: profile.tenant_id,
-              source_system: profile.source_system,
-              entity_type: profile.entity_type,
-              name: profile.name,
-              version: profile.version,
-              definition: def,
-              definition_sha256: definitionSha,
-            },
+            profile: sealedProfile,
             mapping: cm.mapping,
             mapping_overrides: mappingOverrides,
             contact_options: contactOptions,
             provenance_source: String(contactOptions?.source ?? ""),
           }
-        : null;
+        : governed
+          ? {
+              profile: sealedProfile,
+              mapping: cm.mapping,
+              mapping_overrides: mappingOverrides,
+              import_options: { source },
+              provenance_source: source,
+            }
+          : null;
     const preview = {
       headers,
       mapping: cm.mapping,
@@ -578,6 +663,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       will_create: willCreate,
       will_update: willUpdate,
       will_conflict: willConflict,
+      will_hold: willHold,
       duplicate_upload: !!dup,
       sample,
       profile: {
@@ -600,7 +686,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         source_system: entity === "contacts" ? String(contactOptions?.source ?? source) : source,
         // the RESOLVED profile id is persisted even when the client supplied
         // none — apply loads the profile by id (and uses the sealed snapshot)
-        profile_id: entity === "contacts" ? profile.id : (body.profile_id ?? null),
+        profile_id: entity === "contacts" || governed ? profile.id : (body.profile_id ?? null),
         entity_type: entity,
         original_filename: body.filename ?? null,
         file_checksum: checksum,
@@ -616,6 +702,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .select("id")
       .maybeSingle();
 
+    if (governed && imp?.id) {
+      await writeAudit(db, {
+        tenantId,
+        actor: auth.ctx.email ?? actorId ?? "service",
+        action: "import.previewed",
+        resourceType: "data_import",
+        resourceId: imp.id,
+        status: "ok",
+        detail: {
+          entity,
+          source,
+          rows: dataRows.length,
+          valid,
+          invalid,
+          will_create: willCreate,
+          will_update: willUpdate,
+          will_conflict: willConflict,
+          will_hold: willHold,
+          duplicate_upload: !!dup,
+        },
+      });
+    }
     if (entity === "contacts" && imp?.id) {
       await writeAudit(db, {
         tenantId,
@@ -657,18 +765,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
   //    row values, foreign-tenant evidence or unnecessary PII ──────────────────
   if (action === "row_results") {
     if (!isUuid(body.import_id)) return fail("invalid_request", "import_id required", 400);
-    const denied = await entityWriteDenied("contacts");
-    if (denied) return denied;
     const { data: imp } = await db
       .from("data_imports")
-      .select("id,entity_type")
+      .select("id,entity_type,preview")
       .eq("tenant_id", tenantId)
       .eq("id", body.import_id)
       .maybeSingle();
-    if (!imp || imp.entity_type !== "contacts")
-      return fail("not_found", "Contacts import not found", 404);
+    const governedRun =
+      !!imp && isPlainObject(imp.preview?.sealed) && isPlainObject(imp.preview.sealed.import_options);
+    if (!imp || (imp.entity_type !== "contacts" && !governedRun))
+      return fail("not_found", "Governed import not found", 404);
+    const denied = await entityWriteDenied(imp.entity_type);
+    if (denied) return denied;
+    const table = imp.entity_type === "contacts" ? "marketing_import_row_results" : "import_row_results";
+    const outcomeVocab =
+      imp.entity_type === "contacts"
+        ? ["created", "updated", "conflict", "invalid", "failed"]
+        : ["created", "linked", "updated", "conflict", "held", "invalid", "skipped", "failed"];
     let q = db
-      .from("marketing_import_row_results")
+      .from(table)
       .select("row_number,outcome,reason,fields,attempt,created_at")
       .eq("tenant_id", tenantId)
       .eq("import_id", body.import_id)
@@ -678,12 +793,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (
         !Array.isArray(body.outcomes) ||
         body.outcomes.length < 1 ||
-        body.outcomes.length > 5 ||
-        !body.outcomes.every(
-          (o) =>
-            typeof o === "string" &&
-            ["created", "updated", "conflict", "invalid", "failed"].includes(o),
-        )
+        body.outcomes.length > 8 ||
+        !body.outcomes.every((o) => typeof o === "string" && outcomeVocab.includes(o))
       )
         return fail("invalid_request", "invalid outcomes filter", 400);
       q = q.in("outcome", body.outcomes as string[]);
@@ -874,21 +985,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
           p_options: sealedOptions,
         });
         if (r.error) {
-          // RETRYABLE durable outcome through the GOVERNED recorder — when a
-          // concurrent worker completed this row, its TERMINAL outcome is
-          // authoritative and is never overwritten with `failed`
+          // Durable outcome through the GOVERNED recorder — when a concurrent
+          // worker completed this row, its TERMINAL outcome is authoritative and
+          // is never overwritten with `failed`. The reason is CLASSIFIED from the
+          // SQLSTATE (11N): a deterministic defect is never called transient.
+          const cls = classifyRowApplyFailure((r.error as { code?: unknown } | null)?.code);
           const rec = await db.rpc("marketing_import_row_outcome", {
             p_tenant: tenantId,
             p_import: importId,
             p_row_number: rowNumber,
             p_outcome: "failed",
-            p_reason: "transient row apply failure",
+            p_reason: cls.reason,
           });
           if (!rec.error && (rec.data as Record<string, unknown> | null)?.already) {
             run.already++;
           } else {
             run.failed++;
-            if (failures.length < 20) failures.push({ row: rowNumber, reason: "row apply failed" });
+            if (failures.length < 20) failures.push({ row: rowNumber, reason: cls.reason });
           }
           continue;
         }
@@ -956,9 +1069,212 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
 
+    // ── GOVERNED customers/sites/jobs: sealed-contract, durable-outcome,
+    //    retryable state machine mirroring the contacts path, with per-row
+    //    atomic RPCs (import_customer_row / import_site_row / import_job_row) ──
+    const govSealed = (imp.preview?.sealed ?? null) as {
+      profile?: {
+        id?: string;
+        version?: number;
+        definition?: ImportProfileDef;
+        definition_sha256?: string;
+      };
+      mapping?: Record<string, number>;
+      import_options?: Record<string, unknown>;
+      provenance_source?: string;
+    } | null;
+    if (
+      GOVERNED_ENTITIES.includes(imp.entity_type) &&
+      (isGovernedDef(govSealed?.profile?.definition) ||
+        govSealed?.import_options !== undefined || imp.entity_type === "sites")
+    ) {
+      if (!["previewed", "importing", "failed", "needs_review"].includes(imp.status))
+        return fail(
+          "invalid_status",
+          `Import status '${imp.status}' does not allow apply — preview again`,
+          409,
+        );
+      const sealedDef = govSealed?.profile?.definition;
+      const sealedMapping = govSealed?.mapping;
+      if (
+        !govSealed ||
+        !isPlainObject(govSealed.import_options) ||
+        !isGovernedDef(sealedDef) ||
+        !sealedDef ||
+        !sealedMapping ||
+        !govSealed.provenance_source ||
+        !govSealed.profile?.id ||
+        govSealed.profile.id !== imp.profile_id
+      ) {
+        return fail(
+          "invalid_preview",
+          "Import is missing its sealed profile/mapping contract — preview again",
+          409,
+        );
+      }
+      if ((await sha256Hex(JSON.stringify(sealedDef))) !== govSealed.profile.definition_sha256) {
+        return fail(
+          "invalid_preview",
+          "Sealed profile definition failed its integrity check — preview again",
+          409,
+        );
+      }
+      const rowRpc = GOVERNED_ROW_RPC[imp.entity_type];
+      const records = parseCsv(csvText, {
+        skipFirstRow: false,
+        trimLeadingSpace: true,
+      }) as string[][];
+      await db
+        .from("data_imports")
+        .update({ status: "importing", started_at: imp.started_at ?? new Date().toISOString() })
+        .eq("id", importId);
+
+      // durable outcomes already recorded: terminal rows are never re-applied;
+      // failed AND held rows are exactly what a retry processes (a held row
+      // becomes appliable once its customer conflict is resolved)
+      const { data: priorRows } = await db
+        .from("import_row_results")
+        .select("row_number,outcome")
+        .eq("tenant_id", tenantId)
+        .eq("import_id", importId);
+      const terminal = new Map<number, string>();
+      for (const r of priorRows ?? []) {
+        if (!["failed", "held"].includes(r.outcome as string))
+          terminal.set(r.row_number as number, r.outcome as string);
+      }
+
+      const run = {
+        created: 0,
+        linked: 0,
+        updated: 0,
+        conflicts: 0,
+        held: 0,
+        invalid: 0,
+        failed: 0,
+        already: 0,
+      };
+      const failures: Array<{ row: number; reason: string }> = [];
+      for (let i = 1; i < records.length; i++) {
+        const rowNumber = i + 1;
+        if (terminal.has(rowNumber)) {
+          run.already++;
+          continue;
+        }
+        const m = mapRow(records[i], sealedDef, sealedMapping, rowNumber);
+        if (m.errors.length) {
+          const rec = await db.rpc("import_row_outcome", {
+            p_tenant: tenantId,
+            p_import: importId,
+            p_row_number: rowNumber,
+            p_outcome: "invalid",
+            p_reason: "row failed column validation",
+            p_fields: m.errors.map((e) => e.field).slice(0, 20),
+          });
+          if (!rec.error && (rec.data as Record<string, unknown> | null)?.already) run.already++;
+          else run.invalid++;
+          continue;
+        }
+        const r = await db.rpc(rowRpc, {
+          p_tenant: tenantId,
+          p_import: importId,
+          p_actor: actorId,
+          p_row_number: rowNumber,
+          p_record: m.record,
+          p_options: govSealed.import_options,
+        });
+        if (r.error) {
+          // CLASSIFIED from the SQLSTATE (11N) — a deterministic constraint
+          // violation must never be recorded as "transient", which is what hid
+          // the Phase 11M contact-point defect behind 262 apparent retries.
+          const cls = classifyRowApplyFailure((r.error as { code?: unknown } | null)?.code);
+          const rec = await db.rpc("import_row_outcome", {
+            p_tenant: tenantId,
+            p_import: importId,
+            p_row_number: rowNumber,
+            p_outcome: "failed",
+            p_reason: cls.reason,
+          });
+          if (!rec.error && (rec.data as Record<string, unknown> | null)?.already) {
+            run.already++;
+          } else {
+            run.failed++;
+            if (failures.length < 20) failures.push({ row: rowNumber, reason: cls.reason });
+          }
+          continue;
+        }
+        const act = (r.data as Record<string, unknown> | null)?.action;
+        if (act === "created") run.created++;
+        else if (act === "linked") run.linked++;
+        else if (act === "updated") run.updated++;
+        else if (act === "conflict") run.conflicts++;
+        else if (act === "held") run.held++;
+        else if (act === "invalid") run.invalid++;
+        else run.already++; // already_applied (idempotent under concurrency)
+      }
+
+      const fin = await db.rpc("import_run_finalize", {
+        p_tenant: tenantId,
+        p_import: importId,
+      });
+      if (fin.error) return fail("internal", "Import finalisation failed", 500);
+      const totals = fin.data as Record<string, unknown>;
+      const finalStatus = String(totals.status ?? "failed");
+      await writeAudit(db, {
+        tenantId,
+        actor: auth.ctx.email ?? actorId ?? "service",
+        action:
+          finalStatus === "completed"
+            ? "import.applied"
+            : finalStatus === "needs_review"
+              ? "import.needs_review"
+              : "import.failed",
+        resourceType: "data_import",
+        resourceId: importId,
+        status: finalStatus === "failed" ? "error" : "ok",
+        detail: {
+          entity: imp.entity_type,
+          created: totals.created,
+          linked: totals.linked,
+          updated: totals.updated,
+          conflicts: totals.conflicts,
+          held: totals.held,
+          invalid: totals.invalid,
+          failed: totals.failed,
+        },
+      });
+      return json({
+        success: true,
+        import: totals.import,
+        status: finalStatus,
+        // CUMULATIVE durable totals (survive partial retries)
+        created: totals.created,
+        linked: totals.linked,
+        updated: totals.updated,
+        conflicts: totals.conflicts,
+        held: totals.held,
+        invalid: totals.invalid,
+        failed: totals.failed,
+        skipped: totals.skipped,
+        unprocessed: totals.unprocessed,
+        this_run: run,
+        failures,
+      });
+    }
+
     // ── NON-CONTACTS: pre-existing importer behaviour, unchanged ──
+    if (imp.entity_type === "sites")
+      // belt and braces: a sites import can NEVER reach the legacy person path
+      return fail("unsupported_entity", "Site imports require a governed import profile", 400);
+    if (!KNOWN_ENTITIES.includes(imp.entity_type))
+      return fail("unknown_entity", `Unknown import entity '${imp.entity_type}'`, 400);
     const def = await loadProfileDef(imp.profile_id, imp.source_system, imp.entity_type);
     if (!def) return fail("no_profile", "Profile missing", 400);
+    if (isGovernedDef(def))
+      return fail(
+        "invalid_preview",
+        "Governed import is missing its sealed contract — preview again",
+        409,
+      );
     const records = parseCsv(csvText, {
       skipFirstRow: false,
       trimLeadingSpace: true,

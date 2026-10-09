@@ -57,9 +57,12 @@ export function normalizePhone(raw: string): string | null {
   if (!raw) return null;
   const trimmed = String(raw).trim();
   const hasPlus = trimmed.startsWith("+");
-  const d = trimmed.replace(/\D+/g, "");
+  let d = trimmed.replace(/\D+/g, "");
   if (!d) return null;
-  // UK normalization: 07… → +447…, 0… → +44…; keep + prefix if present.
+  // UK normalization: 0044… → +44…, 07… → +447…, 0… → +44…; keep + prefix if present.
+  // The international-access form MUST be handled before the bare leading-0 rule,
+  // otherwise "0044…" would mis-normalize to "+44044…" and never match.
+  if (d.startsWith("0044")) d = "44" + d.slice(4);
   if (hasPlus) return "+" + d;
   if (d.startsWith("0")) return "+44" + d.slice(1);
   if (d.startsWith("44")) return "+" + d;

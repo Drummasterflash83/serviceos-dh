@@ -257,6 +257,13 @@ same source timestamp. No real measurement, review or pay change was made.
 
 ## Next work and release gates
 
+The governed Commusoft customer/site/job importer and later multi-phone/exact-site
+fixes have now been recovered from the older local build. Pure tests, mocked Edge
+rejection tests and historical plus supplemental SQL assertions pass. Explicit
+ledger/helper privileges and protection against damaged previews falling back to
+legacy import were added. This is local recovery, not a live connection or import.
+See [provenance, verification limits and remaining historical modules](../operations/LEARN-COMMUSOFT-RECOVERY.md).
+
 1. Keep comparing the private source/storage baseline; investigate failed audio,
    verify backup retention and restore, and reconcile against Birchills/Sipcentric
    provider inventory before attempting bounded recovery. Do not assume upstream

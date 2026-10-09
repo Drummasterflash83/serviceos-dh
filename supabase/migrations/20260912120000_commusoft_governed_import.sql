@@ -1,0 +1,1941 @@
+-- ===========================================================================
+-- GOVERNED UNIVERSAL IMPORT — customers / sites / jobs (Commusoft-first).
+--
+-- Extends the proven governed-contacts import machinery (20260831120000) to
+-- the operational entities so the Drummonds Commusoft migration can run with
+-- the same guarantees the contacts importer already has:
+--   * sealed preview contract (profile snapshot + SHA-256 + final mapping);
+--   * a DURABLE per-row outcome ledger (import_row_results) whose terminal
+--     outcomes are immutable and whose failed/held rows are retryable with an
+--     attempt counter that must advance;
+--   * per-(import,row) and per-identity advisory locks;
+--   * an authoritative external-identity map (import_entity_links): once a
+--     (source_system, entity_kind, external_id) has a canonical entity, every
+--     rerun resolves to the SAME entity — never a duplicate;
+--   * durable, reviewable conflicts (import_conflicts) with bounded evidence:
+--     ambiguous channels, email/phone disagreement, and ambiguous site
+--     resolution are HELD for review, never auto-merged and never guessed;
+--   * honest finalisation: an import with held/conflicted rows is
+--     'needs_review', never 'completed'.
+--
+-- Identity rules enforced here (the importer's constitution):
+--   * source_system + external id is the authoritative import identity;
+--   * ONE unambiguous existing person supported by a strong channel (email or
+--     canonical-UK phone) may be linked; name-only evidence NEVER merges;
+--   * a channel matching several people, or email and phone pointing at
+--     different people, is a durable conflict with ZERO canonical mutation;
+--   * company-like customers become canonical companies — the importer never
+--     invents a named individual, and never auto-merges companies on name;
+--   * jobs link a person XOR a company customer, and link a site only when
+--     address/postcode evidence resolves to EXACTLY one site of that customer.
+--
+-- MARKETING SAFETY: nothing in this migration writes communication_preferences,
+-- contact_suppressions or marketing permission records. Imported contact
+-- points remain 'unverified' and their eligibility resolves to the safe
+-- 'unknown' state — imports can never make an endpoint sendable.
+-- ===========================================================================
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Canonical normalisers (SQL side). import_normalize_phone_uk mirrors the
+-- TypeScript importer normalizePhone EXACTLY (including the 0044… fix) so
+-- preview (TS) and apply/resolve (SQL) can never disagree about a value.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_normalize_phone_uk(p_value text)
+returns text
+language plpgsql
+immutable
+as $$
+declare
+  v text := trim(coalesce(p_value, ''));
+  v_plus boolean;
+  d text;
+begin
+  if v = '' then return null; end if;
+  v_plus := left(v, 1) = '+';
+  d := regexp_replace(v, '[^0-9]', '', 'g');
+  if d = '' then return null; end if;
+  -- international-access form FIRST: 0044… → 44… (before the leading-0 rule)
+  if d like '0044%' then d := '44' || substr(d, 5); end if;
+  if v_plus then return '+' || d; end if;
+  if d like '0%' then return '+44' || substr(d, 2); end if;
+  if d like '44%' then return '+' || d; end if;
+  return d;  -- unknown format → digits only (still comparable)
+end $$;
+
+create or replace function import_normalize_postcode(p_value text)
+returns text
+language sql
+immutable
+as $$
+  select nullif(upper(regexp_replace(coalesce(p_value, ''), '\s+', '', 'g')), '');
+$$;
+
+-- Address canonical form for DETERMINISTIC site matching: lowercase, strip
+-- punctuation, collapse whitespace. Equality on this form is the only address
+-- evidence the importer accepts — never fuzzy similarity, never a guess.
+create or replace function import_normalize_address(p_value text)
+returns text
+language sql
+immutable
+as $$
+  select nullif(trim(regexp_replace(
+    regexp_replace(lower(coalesce(p_value, '')), '[^a-z0-9 ]+', ' ', 'g'),
+    '\s+', ' ', 'g')), '');
+$$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_entity_links — the authoritative external-identity map. Exactly one
+-- canonical entity per (tenant, source_system, entity_kind, external_id).
+-- Once a link exists, rerunning the same source row resolves to the same
+-- entity for ever. Links are IMMUTABLE (only the FK-driven import_id set-null
+-- may update a row); removing a link is a governed service-role quarantine
+-- action, never a client operation.
+-- ───────────────────────────────────────────────────────────────────────────
+create table import_entity_links (
+  id            uuid primary key default gen_random_uuid(),
+  tenant_id     uuid not null references tenants (id) on delete cascade,
+  source_system text not null,
+  entity_kind   text not null check (entity_kind in ('customer', 'site', 'job')),
+  external_id   text not null,
+  entity_table  text not null check (entity_table in ('people', 'companies', 'sites', 'jobs')),
+  entity_id     uuid not null,
+  link_strategy text not null,   -- created | external_id | email | phone | email+phone
+  confidence    numeric,
+  evidence      jsonb not null default '{}'::jsonb,
+  import_id     uuid,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  unique (tenant_id, source_system, entity_kind, external_id),
+  constraint iel_kind_table_check check (
+    (entity_kind = 'customer' and entity_table in ('people', 'companies'))
+    or (entity_kind = 'site' and entity_table = 'sites')
+    or (entity_kind = 'job'  and entity_table = 'jobs')),
+  constraint iel_import_fk foreign key (tenant_id, import_id)
+    references data_imports (tenant_id, id) on delete set null (import_id)
+);
+create index import_entity_links_entity_idx
+  on import_entity_links (tenant_id, entity_table, entity_id);
+
+create or replace function import_entity_links_guard()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_ok boolean;
+begin
+  if tg_op = 'INSERT' then
+    -- the linked entity must exist and belong to the SAME tenant (the
+    -- entity_table vocabulary is CHECK-bounded, so %I is safe here)
+    execute format(
+      'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',
+      new.entity_table) into v_ok using new.entity_id, new.tenant_id;
+    if not v_ok then
+      raise exception 'import link target %/% does not exist in tenant',
+        new.entity_table, new.entity_id
+        using errcode = 'integrity_constraint_violation';
+    end if;
+    return new;
+  end if;
+  -- UPDATE: links are immutable. The ONLY legal update is the FK-driven
+  -- import_id set-null with every other column identical.
+  if new.id = old.id and new.tenant_id = old.tenant_id
+     and new.source_system = old.source_system
+     and new.entity_kind = old.entity_kind
+     and new.external_id = old.external_id
+     and new.entity_table = old.entity_table
+     and new.entity_id = old.entity_id
+     and new.link_strategy = old.link_strategy
+     and new.confidence is not distinct from old.confidence
+     and new.evidence = old.evidence
+     and new.created_at = old.created_at
+     and new.import_id is null and old.import_id is not null then
+    return new;
+  end if;
+  raise exception 'import entity links are immutable';
+end $$;
+create trigger import_entity_links_guard
+  before insert or update on import_entity_links
+  for each row execute function import_entity_links_guard();
+create trigger import_entity_links_set_updated_at
+  before update on import_entity_links
+  for each row execute function set_updated_at();
+
+alter table import_entity_links enable row level security;
+create policy import_entity_links_select_tenant on import_entity_links
+  for select to authenticated using (tenant_id = current_tenant_id());
+grant select on import_entity_links to authenticated;
+grant select, insert, update, delete on import_entity_links to service_role;
+revoke truncate on import_entity_links from anon, authenticated, service_role;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_conflicts — durable, reviewable import conflicts with bounded
+-- per-identifier evidence. `blocking` conflicts hold the source row (and its
+-- dependants) out of the canonical model; non-blocking conflicts are review
+-- annotations beside an applied row (e.g. a company whose mailbox matches an
+-- interaction-created person, or an ambiguous site link on a created job).
+-- One OPEN conflict per (tenant, source, kind, external id, type).
+-- ───────────────────────────────────────────────────────────────────────────
+create table import_conflicts (
+  id            uuid primary key default gen_random_uuid(),
+  tenant_id     uuid not null references tenants (id) on delete cascade,
+  import_id     uuid,
+  source_system text not null,
+  entity_kind   text not null check (entity_kind in ('customer', 'site', 'job')),
+  external_id   text not null,
+  conflict_type text not null check (conflict_type in
+    ('ambiguous_channel', 'channel_disagreement', 'multiple_candidates',
+     'company_person_overlap', 'site_ambiguous')),
+  blocking      boolean not null default true,
+  identifiers   jsonb not null default '[]'::jsonb,  -- [{channel,label,value,candidate_person_ids,truncated}]
+  candidates    jsonb not null default '[]'::jsonb,  -- bounded [{entity_table, entity_id}]
+  truncated     boolean not null default false,
+  detail        jsonb not null default '{}'::jsonb,
+  status        text not null default 'open' check (status in ('open', 'resolved', 'dismissed')),
+  resolution    jsonb,
+  resolved_by   uuid,
+  resolved_at   timestamptz,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  constraint ic_import_fk foreign key (tenant_id, import_id)
+    references data_imports (tenant_id, id) on delete set null (import_id)
+);
+create unique index import_conflicts_tenant_id_uk on import_conflicts (tenant_id, id);
+create unique index import_conflicts_open_uk on import_conflicts
+  (tenant_id, source_system, entity_kind, external_id, conflict_type)
+  where status = 'open';
+create index import_conflicts_status_idx on import_conflicts (tenant_id, status, entity_kind);
+create trigger import_conflicts_set_updated_at
+  before update on import_conflicts
+  for each row execute function set_updated_at();
+
+alter table import_conflicts enable row level security;
+create policy import_conflicts_select_tenant on import_conflicts
+  for select to authenticated using (tenant_id = current_tenant_id());
+grant select on import_conflicts to authenticated;
+grant select, insert, update, delete on import_conflicts to service_role;
+revoke truncate on import_conflicts from anon, authenticated, service_role;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_row_results — the durable per-row outcome ledger for GOVERNED
+-- non-contacts imports (the generalisation of marketing_import_row_results).
+-- TERMINAL outcomes: created / linked / updated / conflict / invalid / skipped.
+-- RETRYABLE outcomes: failed (transient error) and held (a dependency — the
+-- customer of a site/job — is unresolved or conflicted; resolving it and
+-- re-running the import reprocesses exactly these rows).
+-- Aggregate counts and completion are ALWAYS recomputed from these rows.
+-- ───────────────────────────────────────────────────────────────────────────
+create table import_row_results (
+  id           uuid primary key default gen_random_uuid(),
+  tenant_id    uuid not null references tenants (id) on delete cascade,
+  import_id    uuid not null,
+  row_number   int not null check (row_number > 0),
+  outcome      text not null check (outcome in
+                 ('created', 'linked', 'updated', 'conflict', 'held',
+                  'invalid', 'skipped', 'failed')),
+  reason       text,
+  fields       text[] not null default '{}',
+  entity_table text check (entity_table in ('people', 'companies', 'sites', 'jobs')),
+  entity_id    uuid,
+  conflict_id  uuid,
+  attempt      int not null default 1,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  unique (tenant_id, import_id, row_number),
+  constraint irr_import_fk foreign key (tenant_id, import_id)
+    references data_imports (tenant_id, id) on delete cascade,
+  constraint irr_conflict_fk foreign key (tenant_id, conflict_id)
+    references import_conflicts (tenant_id, id) on delete set null (conflict_id),
+  constraint irr_entity_shape check (
+    (entity_id is null and entity_table is null)
+    or (entity_id is not null and entity_table is not null))
+);
+create index import_row_results_idx on import_row_results (tenant_id, import_id, outcome);
+
+-- Structural transition guard (same honest contract as the marketing ledger):
+--   * identity + lineage immutable on EVERY update;
+--   * failed/held rows may transition only with attempt advancing by exactly 1;
+--   * terminal rows are immutable;
+--   * the only other legal shape is a genuine FK-driven set-null of the
+--     conflict reference with every business column identical.
+create or replace function import_row_results_guard()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_ok boolean;
+begin
+  if tg_op = 'INSERT' then
+    if new.entity_id is not null then
+      execute format(
+        'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',
+        new.entity_table) into v_ok using new.entity_id, new.tenant_id;
+      if not v_ok then
+        raise exception 'row result entity %/% does not exist in tenant',
+          new.entity_table, new.entity_id
+          using errcode = 'integrity_constraint_violation';
+      end if;
+    end if;
+    return new;
+  end if;
+  if new.id is distinct from old.id
+     or new.tenant_id is distinct from old.tenant_id
+     or new.import_id is distinct from old.import_id
+     or new.row_number is distinct from old.row_number
+     or new.created_at is distinct from old.created_at then
+    raise exception 'import row result identity/lineage is immutable (id, tenant, import, row, created_at)';
+  end if;
+  -- genuine FK-driven conflict set-null (legal for every outcome)
+  if new.outcome = old.outcome
+     and new.reason is not distinct from old.reason
+     and new.fields = old.fields
+     and new.attempt = old.attempt
+     and new.entity_table is not distinct from old.entity_table
+     and new.entity_id is not distinct from old.entity_id
+     and new.conflict_id is null and old.conflict_id is not null then
+    return new;
+  end if;
+  if old.outcome in ('failed', 'held') then
+    if new.attempt is distinct from old.attempt + 1 then
+      raise exception 'a failed/held-row retry must increment attempt by exactly one';
+    end if;
+    if new.entity_id is not null then
+      execute format(
+        'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',
+        new.entity_table) into v_ok using new.entity_id, new.tenant_id;
+      if not v_ok then
+        raise exception 'row result entity %/% does not exist in tenant',
+          new.entity_table, new.entity_id
+          using errcode = 'integrity_constraint_violation';
+      end if;
+    end if;
+    return new;
+  end if;
+  raise exception 'terminal import row outcomes are immutable (only failed/held rows may transition)';
+end $$;
+create trigger import_row_results_guard
+  before insert or update on import_row_results
+  for each row execute function import_row_results_guard();
+create trigger import_row_results_set_updated_at
+  before update on import_row_results
+  for each row execute function set_updated_at();
+
+alter table import_row_results enable row level security;  -- deny-all for clients
+grant select, insert, update on import_row_results to service_role;
+revoke delete, truncate on import_row_results from anon, authenticated, service_role;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Prepared-package import profiles (data, not code). `governed: true` routes
+-- these profiles through the sealed governed engine in the data-import Edge
+-- Function; the legacy profiles and their behaviour are untouched. Canonical
+-- names equal the prepared CSV headers, so mapping is exact. Job dates are
+-- typed TEXT deliberately: the prepared package carries full ISO timestamps
+-- and the row RPC casts them to timestamptz without losing time-of-day.
+-- ───────────────────────────────────────────────────────────────────────────
+insert into import_profiles (tenant_id, source_system, entity_type, name, definition)
+values
+(null, 'commusoft', 'customers', 'Commusoft Prepared Customers', jsonb_build_object(
+  'governed', true,
+  'columns', jsonb_build_array(
+    jsonb_build_object('canonical','source_system','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','external_id','aliases',jsonb_build_array('customer account number'),'type','text','required',true),
+    jsonb_build_object('canonical','record_kind','aliases',jsonb_build_array(),'type','text','required',true),
+    jsonb_build_object('canonical','display_name','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','title','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','first_name','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','last_name','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','company_name','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','primary_phone','aliases',jsonb_build_array(),'type','phone'),
+    jsonb_build_object('canonical','secondary_phone','aliases',jsonb_build_array(),'type','phone'),
+    jsonb_build_object('canonical','primary_email','aliases',jsonb_build_array(),'type','email'),
+    jsonb_build_object('canonical','address_text','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','postcode','aliases',jsonb_build_array(),'type','postcode'),
+    jsonb_build_object('canonical','active','aliases',jsonb_build_array(),'type','bool'),
+    jsonb_build_object('canonical','metadata_json','aliases',jsonb_build_array(),'type','text')
+  ))),
+(null, 'commusoft', 'sites', 'Commusoft Prepared Sites', jsonb_build_object(
+  'governed', true,
+  'columns', jsonb_build_array(
+    jsonb_build_object('canonical','source_system','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','external_id','aliases',jsonb_build_array('workaddress account number'),'type','text','required',true),
+    jsonb_build_object('canonical','customer_external_id','aliases',jsonb_build_array(),'type','text','required',true),
+    jsonb_build_object('canonical','label','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','address_text','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','postcode','aliases',jsonb_build_array(),'type','postcode'),
+    jsonb_build_object('canonical','primary_phone','aliases',jsonb_build_array(),'type','phone'),
+    jsonb_build_object('canonical','primary_email','aliases',jsonb_build_array(),'type','email'),
+    jsonb_build_object('canonical','active','aliases',jsonb_build_array(),'type','bool'),
+    jsonb_build_object('canonical','metadata_json','aliases',jsonb_build_array(),'type','text')
+  ))),
+(null, 'commusoft', 'jobs', 'Commusoft Prepared Jobs', jsonb_build_object(
+  'governed', true,
+  'columns', jsonb_build_array(
+    jsonb_build_object('canonical','source_system','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','external_id','aliases',jsonb_build_array(),'type','text','required',true),
+    jsonb_build_object('canonical','job_number','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','customer_external_id','aliases',jsonb_build_array(),'type','text','required',true),
+    jsonb_build_object('canonical','site_external_id','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','site_address_text','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','site_postcode','aliases',jsonb_build_array(),'type','postcode'),
+    jsonb_build_object('canonical','title','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','description','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','status','aliases',jsonb_build_array(),'type','text','required',true),
+    jsonb_build_object('canonical','active','aliases',jsonb_build_array(),'type','bool'),
+    jsonb_build_object('canonical','created_date','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','completed_date','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','value_pennies','aliases',jsonb_build_array(),'type','number'),
+    jsonb_build_object('canonical','quoted_value_pennies','aliases',jsonb_build_array(),'type','number'),
+    jsonb_build_object('canonical','engineer','aliases',jsonb_build_array(),'type','text'),
+    jsonb_build_object('canonical','metadata_json','aliases',jsonb_build_array(),'type','text')
+  )))
+on conflict do nothing;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Shared row validation — PREVIEW and APPLY make the SAME decision. Contract
+-- breaches (unknown keys, wrong jsonb types) raise 22023; honest per-row
+-- invalidity returns {reason, fields}. NULL = the row is valid.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_validate_row_shape(
+  p_record jsonb, p_allowed text[], p_bool_keys text[], p_num_keys text[]
+) returns void
+language plpgsql
+immutable
+as $$
+declare
+  v_key text;
+  v_type text;
+begin
+  if p_record is null or jsonb_typeof(p_record) <> 'object' then
+    raise exception 'record must be an object' using errcode = '22023';
+  end if;
+  for v_key in select jsonb_object_keys(p_record) loop
+    if not (v_key = any (p_allowed)) then
+      raise exception 'unknown record key %', v_key using errcode = '22023';
+    end if;
+    v_type := jsonb_typeof(p_record -> v_key);
+    if v_type = 'null' then
+      continue;
+    elsif v_key = any (p_bool_keys) then
+      if v_type <> 'boolean' then
+        raise exception 'record value % must be a boolean', v_key using errcode = '22023';
+      end if;
+    elsif v_key = any (p_num_keys) then
+      if v_type <> 'number' then
+        raise exception 'record value % must be a number', v_key using errcode = '22023';
+      end if;
+    else
+      if v_type <> 'string' then
+        raise exception 'record value % must be a string', v_key using errcode = '22023';
+      end if;
+      if length(p_record ->> v_key) > 4000 then
+        raise exception 'record value % is too long', v_key using errcode = '22023';
+      end if;
+    end if;
+  end loop;
+end $$;
+
+create or replace function import_validate_customer_row(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_kind text;
+  v_fields text[] := array[]::text[];
+begin
+  if p_tenant is null then
+    raise exception 'tenant required' using errcode = '22023';
+  end if;
+  perform import_validate_row_shape(p_record,
+    array['source_system','external_id','record_kind','display_name','title',
+          'first_name','last_name','company_name','primary_phone',
+          'secondary_phone','primary_email','address_text','postcode',
+          'active','metadata_json'],
+    array['active'], array[]::text[]);
+  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then
+    return jsonb_build_object('reason', 'missing external id',
+                              'fields', array['external_id']);
+  end if;
+  if p_record ->> 'source_system' is not null
+     and p_record ->> 'source_system' <> p_source then
+    return jsonb_build_object('reason', 'row source_system does not match the import source',
+                              'fields', array['source_system']);
+  end if;
+  v_kind := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');
+  if v_kind is null or v_kind not in ('person', 'company_contact') then
+    return jsonb_build_object('reason', 'record_kind must be person or company_contact',
+                              'fields', array['record_kind']);
+  end if;
+  if v_kind = 'company_contact'
+     and nullif(trim(coalesce(p_record ->> 'company_name', '')), '') is null then
+    return jsonb_build_object('reason', 'a company customer requires a company name',
+                              'fields', array['company_name']);
+  end if;
+  if v_kind = 'person'
+     and nullif(trim(coalesce(p_record ->> 'display_name', '')), '') is null
+     and nullif(trim(coalesce(p_record ->> 'first_name', '')), '') is null
+     and nullif(trim(coalesce(p_record ->> 'last_name', '')), '') is null then
+    return jsonb_build_object('reason', 'a person customer requires a name',
+                              'fields', array['display_name']);
+  end if;
+  if p_record ->> 'metadata_json' is not null then
+    begin
+      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then
+        v_fields := array['metadata_json'];
+      end if;
+    exception when others then
+      v_fields := array['metadata_json'];
+    end;
+    if array_length(v_fields, 1) > 0 then
+      return jsonb_build_object('reason', 'metadata_json is not a JSON object',
+                                'fields', v_fields);
+    end if;
+  end if;
+  return null;
+end $$;
+
+create or replace function import_validate_site_row(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+begin
+  if p_tenant is null then
+    raise exception 'tenant required' using errcode = '22023';
+  end if;
+  perform import_validate_row_shape(p_record,
+    array['source_system','external_id','customer_external_id','label',
+          'address_text','postcode','primary_phone','primary_email',
+          'active','metadata_json'],
+    array['active'], array[]::text[]);
+  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then
+    return jsonb_build_object('reason', 'missing external id',
+                              'fields', array['external_id']);
+  end if;
+  if nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '') is null then
+    return jsonb_build_object('reason', 'missing customer external id',
+                              'fields', array['customer_external_id']);
+  end if;
+  if p_record ->> 'source_system' is not null
+     and p_record ->> 'source_system' <> p_source then
+    return jsonb_build_object('reason', 'row source_system does not match the import source',
+                              'fields', array['source_system']);
+  end if;
+  if p_record ->> 'metadata_json' is not null then
+    begin
+      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then
+        return jsonb_build_object('reason', 'metadata_json is not a JSON object',
+                                  'fields', array['metadata_json']);
+      end if;
+    exception when others then
+      return jsonb_build_object('reason', 'metadata_json is not a JSON object',
+                                'fields', array['metadata_json']);
+    end;
+  end if;
+  return null;
+end $$;
+
+create or replace function import_validate_job_row(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_status text;
+  v_d text;
+  v_ts timestamptz;
+  v_key text;
+begin
+  if p_tenant is null then
+    raise exception 'tenant required' using errcode = '22023';
+  end if;
+  perform import_validate_row_shape(p_record,
+    array['source_system','external_id','job_number','customer_external_id',
+          'site_external_id','site_address_text','site_postcode','title',
+          'description','status','active','created_date','completed_date',
+          'value_pennies','quoted_value_pennies','engineer','metadata_json'],
+    array['active'], array['value_pennies','quoted_value_pennies']);
+  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then
+    return jsonb_build_object('reason', 'missing external id',
+                              'fields', array['external_id']);
+  end if;
+  if nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '') is null then
+    return jsonb_build_object('reason', 'missing customer external id',
+                              'fields', array['customer_external_id']);
+  end if;
+  if p_record ->> 'source_system' is not null
+     and p_record ->> 'source_system' <> p_source then
+    return jsonb_build_object('reason', 'row source_system does not match the import source',
+                              'fields', array['source_system']);
+  end if;
+  v_status := nullif(trim(coalesce(p_record ->> 'status', '')), '');
+  if v_status is null or v_status not in ('open', 'completed', 'aborted') then
+    return jsonb_build_object('reason', 'status must be open, completed or aborted',
+                              'fields', array['status']);
+  end if;
+  foreach v_key in array array['created_date', 'completed_date'] loop
+    v_d := nullif(trim(coalesce(p_record ->> v_key, '')), '');
+    if v_d is not null then
+      begin
+        v_ts := v_d::timestamptz;
+      exception when others then
+        return jsonb_build_object('reason', v_key || ' is not a valid timestamp',
+                                  'fields', array[v_key]);
+      end;
+    end if;
+  end loop;
+  foreach v_key in array array['value_pennies', 'quoted_value_pennies'] loop
+    if p_record -> v_key is not null and jsonb_typeof(p_record -> v_key) = 'number' then
+      if (p_record ->> v_key)::numeric <> floor((p_record ->> v_key)::numeric) then
+        return jsonb_build_object('reason', v_key || ' must be integer pennies',
+                                  'fields', array[v_key]);
+      end if;
+    end if;
+  end loop;
+  if p_record ->> 'metadata_json' is not null then
+    begin
+      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then
+        return jsonb_build_object('reason', 'metadata_json is not a JSON object',
+                                  'fields', array['metadata_json']);
+      end if;
+    exception when others then
+      return jsonb_build_object('reason', 'metadata_json is not a JSON object',
+                                'fields', array['metadata_json']);
+    end;
+  end if;
+  return null;
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_resolve_customer — EVIDENCE-CONVERGED customer identity, mirroring
+-- marketing_import_resolve_contact:
+--   * an existing import link is authoritative ('linked');
+--   * person rows resolve each supplied channel INDEPENDENTLY against
+--     people scalars AND contact_points (invalid endpoints are never usable
+--     evidence): >1 candidates on a channel → ambiguous; two channels naming
+--     different people → conflicting; exactly one person → matched; none →
+--     new_person. Name evidence is NEVER queried — a name cannot merge.
+--   * company rows are ALWAYS new_company (companies have no strong shared
+--     identifier — name-matching is forbidden); people matching the company's
+--     channels are returned as bounded overlap evidence for review.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_resolve_customer(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_kind text := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');
+  v_link import_entity_links%rowtype;
+  v_channels text[];
+  v_labels text[];
+  v_vals text[];
+  v_ids uuid[];
+  v_i int;
+  v_evidence jsonb := '[]'::jsonb;
+  v_ambiguous boolean := false;
+  v_matched uuid[] := array[]::uuid[];
+  v_matched_channels text[] := array[]::text[];
+  v_union uuid[] := array[]::uuid[];
+  v_supplied int := 0;
+  v_strategy text;
+  v_confidence numeric;
+begin
+  if p_tenant is null or p_source is null then
+    raise exception 'tenant and source required' using errcode = '22023';
+  end if;
+  if v_ext is null then
+    raise exception 'external id required' using errcode = '22023';
+  end if;
+
+  -- authoritative external-identity map first
+  select * into v_link from import_entity_links l
+   where l.tenant_id = p_tenant and l.source_system = p_source
+     and l.entity_kind = 'customer' and l.external_id = v_ext;
+  if found then
+    return jsonb_build_object('decision', 'linked',
+      'entity_table', v_link.entity_table, 'entity_id', v_link.entity_id,
+      'strategy', 'external_id', 'confidence', 1.0);
+  end if;
+
+  -- channel evidence, each channel resolved independently. People already
+  -- linked to a DIFFERENT external id of the SAME source are NEVER candidates:
+  -- two Commusoft accounts sharing an email/phone (landlord/tenant, spouses)
+  -- are two distinct customers — a shared channel must never merge them.
+  v_channels := array['email', 'phone', 'phone'];
+  v_labels := array['primary_email', 'primary_phone', 'secondary_phone'];
+  v_vals := array[
+    marketing_normalize_endpoint('email', p_record ->> 'primary_email'),
+    import_normalize_phone_uk(p_record ->> 'primary_phone'),
+    import_normalize_phone_uk(p_record ->> 'secondary_phone')];
+  for v_i in 1..3 loop
+    continue when v_vals[v_i] is null;
+    v_supplied := v_supplied + 1;
+    if v_channels[v_i] = 'email' then
+      select array_agg(x.pid order by x.pid) into v_ids from (
+        select pp.id as pid from people pp
+         where pp.tenant_id = p_tenant
+           and marketing_normalize_endpoint('email', pp.primary_email) = v_vals[v_i]
+           and not exists (select 1 from contact_points cpx
+                            where cpx.tenant_id = p_tenant and cpx.person_id = pp.id
+                              and cpx.channel = 'email'
+                              and cpx.normalized_value = v_vals[v_i]
+                              and cpx.verification_state = 'invalid')
+        union
+        select cp.person_id from contact_points cp
+          join people pj on pj.id = cp.person_id and pj.tenant_id = p_tenant
+         where cp.tenant_id = p_tenant and cp.channel = 'email'
+           and cp.normalized_value = v_vals[v_i]
+           and cp.verification_state <> 'invalid') x
+       where not exists (select 1 from import_entity_links il
+                          where il.tenant_id = p_tenant
+                            and il.source_system = p_source
+                            and il.entity_kind = 'customer'
+                            and il.entity_table = 'people'
+                            and il.entity_id = x.pid
+                            and il.external_id <> v_ext);
+    else
+      -- BOTH sides are canonicalised to the +44 form, so 0…/44…/+44…/0044…
+      -- written forms of the same number always converge
+      select array_agg(x.pid order by x.pid) into v_ids from (
+        select pp.id as pid from people pp
+         where pp.tenant_id = p_tenant
+           and import_normalize_phone_uk(pp.primary_phone) = v_vals[v_i]
+           and not exists (select 1 from contact_points cpx
+                            where cpx.tenant_id = p_tenant and cpx.person_id = pp.id
+                              and cpx.channel = 'phone'
+                              and import_normalize_phone_uk(cpx.normalized_value) = v_vals[v_i]
+                              and cpx.verification_state = 'invalid')
+        union
+        select cp.person_id from contact_points cp
+          join people pj on pj.id = cp.person_id and pj.tenant_id = p_tenant
+         where cp.tenant_id = p_tenant and cp.channel = 'phone'
+           and import_normalize_phone_uk(cp.normalized_value) = v_vals[v_i]
+           and cp.verification_state <> 'invalid') x
+       where not exists (select 1 from import_entity_links il
+                          where il.tenant_id = p_tenant
+                            and il.source_system = p_source
+                            and il.entity_kind = 'customer'
+                            and il.entity_table = 'people'
+                            and il.entity_id = x.pid
+                            and il.external_id <> v_ext);
+    end if;
+    v_evidence := v_evidence || jsonb_build_array(jsonb_build_object(
+      'channel', v_channels[v_i], 'label', v_labels[v_i], 'value', v_vals[v_i],
+      'candidate_person_ids', to_jsonb(coalesce(v_ids[1:25], '{}'::uuid[])),
+      'truncated', coalesce(array_length(v_ids, 1), 0) > 25));
+    if coalesce(array_length(v_ids, 1), 0) > 1 then
+      v_ambiguous := true;
+      v_union := v_union || v_ids[1:25];
+    elsif coalesce(array_length(v_ids, 1), 0) = 1 then
+      if not (v_ids[1] = any (v_matched)) then
+        v_matched := array_append(v_matched, v_ids[1]);
+      end if;
+      v_matched_channels := array_append(v_matched_channels, v_labels[v_i]);
+      v_union := v_union || v_ids;
+    end if;
+  end loop;
+  select array_agg(u order by u) into v_union
+    from (select distinct unnest(v_union) as u) s;
+
+  -- company customers: canonical company, channels reported as overlap only
+  if v_kind = 'company_contact' then
+    return jsonb_build_object('decision', 'new_company',
+      'strategy', 'created', 'confidence', 1.0,
+      'evidence', v_evidence,
+      'person_overlap', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),
+      'truncated', coalesce(array_length(v_union, 1), 0) > 25,
+      'supplied_identifiers', v_supplied);
+  end if;
+
+  if v_ambiguous then
+    return jsonb_build_object('decision', 'ambiguous',
+      'evidence', v_evidence,
+      'candidate_union', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),
+      'truncated', coalesce(array_length(v_union, 1), 0) > 25,
+      'supplied_identifiers', v_supplied);
+  end if;
+  if coalesce(array_length(v_matched, 1), 0) > 1 then
+    return jsonb_build_object('decision', 'conflicting',
+      'evidence', v_evidence,
+      'candidate_union', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),
+      'truncated', coalesce(array_length(v_union, 1), 0) > 25,
+      'supplied_identifiers', v_supplied);
+  end if;
+  if coalesce(array_length(v_matched, 1), 0) = 1 then
+    if exists (select 1 from unnest(v_matched_channels) c where c = 'primary_email') then
+      if array_length(v_matched_channels, 1) > 1 then
+        v_strategy := 'email+phone'; v_confidence := 0.97;
+      else
+        v_strategy := 'email'; v_confidence := 0.95;
+      end if;
+    else
+      v_strategy := 'phone'; v_confidence := 0.92;
+    end if;
+    return jsonb_build_object('decision', 'matched',
+      'entity_table', 'people', 'entity_id', v_matched[1],
+      'strategy', v_strategy, 'confidence', v_confidence,
+      'matched_on', to_jsonb(v_matched_channels),
+      'evidence', v_evidence, 'supplied_identifiers', v_supplied);
+  end if;
+  return jsonb_build_object('decision', 'new_person',
+    'strategy', 'created', 'confidence', 1.0,
+    'evidence', v_evidence, 'supplied_identifiers', v_supplied);
+end $$;
+
+-- Read-only preview matchers: the SAME validation + resolution decisions the
+-- apply path uses — action + strategy + candidate COUNT only.
+create or replace function import_match_customer(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_invalid jsonb;
+  v_res jsonb;
+begin
+  v_invalid := import_validate_customer_row(p_tenant, p_source, p_record);
+  if v_invalid is not null then
+    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',
+      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);
+  end if;
+  v_res := import_resolve_customer(p_tenant, p_source, p_record);
+  if v_res ->> 'decision' = 'linked' then
+    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',
+      'confidence', 1.0, 'candidates', 1);
+  elsif v_res ->> 'decision' = 'matched' then
+    return jsonb_build_object('action', 'matched',
+      'strategy', v_res ->> 'strategy',
+      'confidence', (v_res ->> 'confidence')::numeric, 'candidates', 1);
+  elsif v_res ->> 'decision' in ('ambiguous', 'conflicting') then
+    return jsonb_build_object('action', 'probable', 'strategy', v_res ->> 'decision',
+      'confidence', 0.5,
+      'candidates', jsonb_array_length(v_res -> 'candidate_union'));
+  end if;
+  return jsonb_build_object('action', 'new', 'strategy', v_res ->> 'decision',
+    'confidence', 1.0, 'candidates', 0);
+end $$;
+
+create or replace function import_match_site(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_invalid jsonb;
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_cust text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');
+begin
+  v_invalid := import_validate_site_row(p_tenant, p_source, p_record);
+  if v_invalid is not null then
+    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',
+      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);
+  end if;
+  if exists (select 1 from import_entity_links l
+              where l.tenant_id = p_tenant and l.source_system = p_source
+                and l.entity_kind = 'site' and l.external_id = v_ext) then
+    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',
+      'confidence', 1.0, 'candidates', 1);
+  end if;
+  if not exists (select 1 from import_entity_links l
+                  where l.tenant_id = p_tenant and l.source_system = p_source
+                    and l.entity_kind = 'customer' and l.external_id = v_cust) then
+    return jsonb_build_object('action', 'held', 'strategy', 'customer_not_imported',
+      'confidence', 0, 'candidates', 0);
+  end if;
+  return jsonb_build_object('action', 'new', 'strategy', 'created',
+    'confidence', 1.0, 'candidates', 0);
+end $$;
+
+-- Deterministic site resolution for a job: EXACTLY one qualifying site of the
+-- SAME customer, by canonical postcode then canonical address equality —
+-- several qualifiers → ambiguous (review), zero → honestly unlinked.
+create or replace function import_resolve_job_site(
+  p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid,
+  p_postcode text, p_address text
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_pc text := import_normalize_postcode(p_postcode);
+  v_addr text := import_normalize_address(p_address);
+  v_ids uuid[];
+  v_n int;
+begin
+  if p_cust_table is null or p_cust_id is null then
+    return jsonb_build_object('outcome', 'none', 'reason', 'customer_unresolved');
+  end if;
+  select array_agg(s.id order by s.id) into v_ids from sites s
+   where s.tenant_id = p_tenant and s.source_system = p_source
+     and ((p_cust_table = 'people' and s.person_id = p_cust_id)
+       or (p_cust_table = 'companies' and s.company_id = p_cust_id));
+  v_n := coalesce(array_length(v_ids, 1), 0);
+  if v_n = 0 then
+    return jsonb_build_object('outcome', 'none', 'reason', 'customer_has_no_imported_sites');
+  end if;
+  if v_pc is not null then
+    select array_agg(s.id order by s.id) into v_ids from sites s
+     where s.id = any (v_ids)
+       and import_normalize_postcode(s.postcode) = v_pc;
+    v_n := coalesce(array_length(v_ids, 1), 0);
+    if v_n = 0 then
+      return jsonb_build_object('outcome', 'none', 'reason', 'no_site_at_postcode');
+    end if;
+    if v_n = 1 then
+      return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],
+        'strategy', 'postcode_unique');
+    end if;
+    -- several sites share the postcode → the address must decide, exactly
+    select array_agg(s.id order by s.id) into v_ids from sites s
+     where s.id = any (v_ids)
+       and import_normalize_address(s.address_text) is not distinct from v_addr
+       and v_addr is not null;
+    v_n := coalesce(array_length(v_ids, 1), 0);
+    if v_n = 1 then
+      return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],
+        'strategy', 'postcode_and_address');
+    end if;
+    if v_n > 1 then
+      return jsonb_build_object('outcome', 'ambiguous',
+        'candidate_site_ids', to_jsonb(v_ids[1:25]),
+        'truncated', v_n > 25, 'reason', 'several_sites_share_postcode_and_address');
+    end if;
+    return jsonb_build_object('outcome', 'none', 'reason', 'address_does_not_match_any_postcode_site');
+  end if;
+  -- no postcode on the job: canonical address equality must be unique
+  if v_addr is null then
+    return jsonb_build_object('outcome', 'none', 'reason', 'no_address_evidence');
+  end if;
+  select array_agg(s.id order by s.id) into v_ids from sites s
+   where s.id = any (v_ids)
+     and import_normalize_address(s.address_text) = v_addr;
+  v_n := coalesce(array_length(v_ids, 1), 0);
+  if v_n = 1 then
+    return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],
+      'strategy', 'address_unique');
+  end if;
+  if v_n > 1 then
+    return jsonb_build_object('outcome', 'ambiguous',
+      'candidate_site_ids', to_jsonb(v_ids[1:25]),
+      'truncated', v_n > 25, 'reason', 'several_sites_share_address');
+  end if;
+  return jsonb_build_object('outcome', 'none', 'reason', 'no_site_matches_address');
+end $$;
+
+create or replace function import_match_job(
+  p_tenant uuid, p_source text, p_record jsonb
+) returns jsonb
+language plpgsql
+stable
+as $$
+declare
+  v_invalid jsonb;
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_cust text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');
+  v_link import_entity_links%rowtype;
+  v_site jsonb;
+begin
+  v_invalid := import_validate_job_row(p_tenant, p_source, p_record);
+  if v_invalid is not null then
+    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',
+      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);
+  end if;
+  if exists (select 1 from import_entity_links l
+              where l.tenant_id = p_tenant and l.source_system = p_source
+                and l.entity_kind = 'job' and l.external_id = v_ext) then
+    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',
+      'confidence', 1.0, 'candidates', 1);
+  end if;
+  select * into v_link from import_entity_links l
+   where l.tenant_id = p_tenant and l.source_system = p_source
+     and l.entity_kind = 'customer' and l.external_id = v_cust;
+  if not found then
+    return jsonb_build_object('action', 'held', 'strategy', 'customer_not_imported',
+      'confidence', 0, 'candidates', 0);
+  end if;
+  v_site := import_resolve_job_site(p_tenant, p_source,
+    v_link.entity_table, v_link.entity_id,
+    p_record ->> 'site_postcode', p_record ->> 'site_address_text');
+  return jsonb_build_object('action', 'new', 'strategy', 'created',
+    'confidence', 1.0, 'candidates', 0,
+    'site_outcome', v_site ->> 'outcome');
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Shared per-row preamble checks (structural validation used by all three
+-- row RPCs): tenant/import/actor binding, entity type, legal status, sealed
+-- contract equality and row range. Raises on contract breach.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_row_preamble(
+  p_tenant uuid, p_import uuid, p_actor uuid, p_row_number int,
+  p_record jsonb, p_options jsonb, p_entity text
+) returns data_imports
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_actor_tenant uuid;
+  v_actor_role text;
+  v_sealed jsonb;
+begin
+  if p_tenant is null or p_import is null or p_actor is null or p_row_number is null then
+    raise exception 'tenant, import, actor and row number required' using errcode = '22023';
+  end if;
+  if p_record is null or jsonb_typeof(p_record) <> 'object'
+     or p_options is null or jsonb_typeof(p_options) <> 'object' then
+    raise exception 'record and options must be objects' using errcode = '22023';
+  end if;
+  select tenant_id, role into v_actor_tenant, v_actor_role
+    from profiles where id = p_actor;
+  if not found or v_actor_tenant is distinct from p_tenant then
+    raise exception 'actor must be a profile of the target tenant'
+      using errcode = 'integrity_constraint_violation';
+  end if;
+  if coalesce(v_actor_role, '') not in ('owner', 'admin') then
+    raise exception 'actor lacks import authority (owner/admin required)'
+      using errcode = '42501';
+  end if;
+  select * into v_imp from data_imports
+   where id = p_import and tenant_id = p_tenant;
+  if not found then
+    raise exception 'import not found for tenant' using errcode = 'P0002';
+  end if;
+  if v_imp.entity_type <> p_entity then
+    raise exception 'import is not a % import', p_entity using errcode = '22023';
+  end if;
+  if v_imp.status not in ('previewed', 'importing', 'failed', 'needs_review') then
+    raise exception 'import status % does not allow row apply', v_imp.status
+      using errcode = '22023';
+  end if;
+  if p_row_number < 2 or p_row_number > v_imp.row_count + 1 then
+    raise exception 'row number is outside the sealed import' using errcode = '22023';
+  end if;
+  v_sealed := v_imp.preview -> 'sealed';
+  if v_sealed is null or jsonb_typeof(v_sealed) is distinct from 'object'
+     or jsonb_typeof(v_sealed -> 'import_options') is distinct from 'object' then
+    raise exception 'import has no sealed contract — a new preview is required'
+      using errcode = '22023';
+  end if;
+  if p_options is distinct from v_sealed -> 'import_options' then
+    raise exception 'options do not match the sealed import contract'
+      using errcode = '22023';
+  end if;
+  return v_imp;
+end $$;
+
+-- Prior-outcome check under the per-(import,row) advisory lock. Returns the
+-- authoritative short-circuit response, or NULL when the row must process
+-- (setting p_attempt for retries of failed/held rows).
+create or replace function import_row_prior(
+  p_tenant uuid, p_import uuid, p_row_number int, out o_short jsonb, out o_attempt int
+)
+language plpgsql
+as $$
+declare
+  v_prior import_row_results%rowtype;
+  v_prov import_row_provenance%rowtype;
+begin
+  o_attempt := 1;
+  o_short := null;
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_tenant::text || '|import|' || p_import::text || '|' || p_row_number, 42));
+  select * into v_prior from import_row_results r
+   where r.tenant_id = p_tenant and r.import_id = p_import
+     and r.row_number = p_row_number;
+  if found then
+    if v_prior.outcome in ('created', 'linked', 'updated', 'conflict', 'invalid', 'skipped') then
+      o_short := jsonb_build_object('action', 'already_applied',
+                                    'prior_outcome', v_prior.outcome);
+      return;
+    end if;
+    o_attempt := v_prior.attempt + 1;
+  end if;
+  -- defence in depth: provenance for this (import,row) with a missing/stuck
+  -- ledger row is REPAIRED deterministically, mirroring the marketing ledger
+  select pr.* into v_prov from import_row_provenance pr
+   where pr.tenant_id = p_tenant and pr.import_id = p_import
+     and pr.source_row_number = p_row_number
+   order by pr.imported_at limit 1;
+  if found then
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason,
+       entity_table, entity_id, conflict_id, attempt)
+    values (p_tenant, p_import, p_row_number,
+            case v_prov.action
+              when 'created' then 'created'
+              when 'linked' then 'linked'
+              when 'updated' then 'updated'
+              else 'conflict' end,
+            'ledger reconstructed from provenance',
+            case when v_prov.entity_table in ('people', 'companies', 'sites', 'jobs')
+                 then v_prov.entity_table end,
+            case when v_prov.entity_table in ('people', 'companies', 'sites', 'jobs')
+                 then v_prov.entity_id end,
+            case when v_prov.entity_table = 'import_conflicts'
+                 then v_prov.entity_id end,
+            o_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          entity_table = excluded.entity_table, entity_id = excluded.entity_id,
+          conflict_id = excluded.conflict_id, attempt = excluded.attempt;
+    o_short := jsonb_build_object('action', 'already_applied',
+      'prior_outcome', case v_prov.action
+        when 'created' then 'created'
+        when 'linked' then 'linked'
+        when 'updated' then 'updated'
+        else 'conflict' end,
+      'repaired', true);
+  end if;
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_customer_row — atomic per-row CUSTOMER apply.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_customer_row(
+  p_tenant uuid, p_import uuid, p_actor uuid, p_row_number int,
+  p_record jsonb, p_options jsonb
+) returns jsonb
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_source text;
+  v_short jsonb;
+  v_attempt int;
+  v_invalid jsonb;
+  v_res jsonb;
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_kind text := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');
+  v_email text := marketing_normalize_endpoint('email', p_record ->> 'primary_email');
+  v_phone text := import_normalize_phone_uk(p_record ->> 'primary_phone');
+  v_phone2 text := import_normalize_phone_uk(p_record ->> 'secondary_phone');
+  v_lock_keys text[] := array[]::text[];
+  v_lk text;
+  v_display text;
+  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);
+  v_meta jsonb;
+  v_import_meta jsonb;
+  v_conflict_id uuid;
+  v_person uuid;
+  v_company uuid;
+  v_p people%rowtype;
+  v_writable jsonb := '{}'::jsonb;
+  v_field_conflicts text[] := array[]::text[];
+  v_entity_table text;
+  v_entity_id uuid;
+  v_outcome text;
+  v_strategy text;
+  v_confidence numeric;
+begin
+  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,
+                               p_record, p_options, 'customers');
+  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';
+  select o_short, o_attempt into v_short, v_attempt
+    from import_row_prior(p_tenant, p_import, p_row_number);
+  if v_short is not null then return v_short; end if;
+
+  v_invalid := import_validate_customer_row(p_tenant, v_source, p_record);
+  if v_invalid is not null then
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+    values (p_tenant, p_import, p_row_number, 'invalid',
+            v_invalid ->> 'reason',
+            coalesce((select array_agg(e) from jsonb_array_elements_text(
+                        v_invalid -> 'fields') e), '{}'::text[]),
+            v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          fields = excluded.fields, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');
+  end if;
+
+  -- identity locks: SAME key format as the marketing manual-create/import
+  -- paths (customers share the People identity space), deterministic order
+  if v_email is not null then v_lock_keys := array_append(v_lock_keys, 'email|' || v_email); end if;
+  if v_phone is not null then v_lock_keys := array_append(v_lock_keys, 'phone|' || v_phone); end if;
+  if v_phone2 is not null then v_lock_keys := array_append(v_lock_keys, 'phone|' || v_phone2); end if;
+  v_lock_keys := array_append(v_lock_keys, 'ext|' || v_source || '|' || v_ext);
+  for v_lk in select distinct u from unnest(v_lock_keys) t(u) order by u loop
+    perform pg_advisory_xact_lock(hashtextextended(p_tenant::text || '|' || v_lk, 42));
+  end loop;
+
+  v_res := import_resolve_customer(p_tenant, v_source, p_record);
+
+  v_display := nullif(trim(coalesce(p_record ->> 'display_name', '')), '');
+  if v_display is null then
+    v_display := nullif(trim(concat_ws(' ',
+      nullif(trim(coalesce(p_record ->> 'first_name', '')), ''),
+      nullif(trim(coalesce(p_record ->> 'last_name', '')), ''))), '');
+  end if;
+  v_import_meta := jsonb_strip_nulls(jsonb_build_object(
+    'source', v_source,
+    'external_id', v_ext,
+    'record_kind', v_kind,
+    'active', v_active,
+    'title', nullif(trim(coalesce(p_record ->> 'title', '')), ''),
+    'company_name', nullif(trim(coalesce(p_record ->> 'company_name', '')), '')));
+  v_meta := jsonb_build_object('import', v_import_meta);
+  if p_record ->> 'metadata_json' is not null then
+    v_meta := v_meta || jsonb_build_object('source_payload',
+      (p_record ->> 'metadata_json')::jsonb);
+  end if;
+
+  -- ── ambiguous / conflicting channel evidence: ONE durable blocking
+  --    conflict, ZERO canonical mutation ──
+  if v_res ->> 'decision' in ('ambiguous', 'conflicting') then
+    insert into import_conflicts
+      (tenant_id, import_id, source_system, entity_kind, external_id,
+       conflict_type, blocking, identifiers, candidates, truncated, detail)
+    values (p_tenant, p_import, v_source, 'customer', v_ext,
+            case when v_res ->> 'decision' = 'ambiguous'
+                 then 'ambiguous_channel' else 'channel_disagreement' end,
+            true,
+            coalesce(v_res -> 'evidence', '[]'::jsonb),
+            coalesce((select jsonb_agg(jsonb_build_object(
+                        'entity_table', 'people', 'entity_id', c))
+                      from jsonb_array_elements_text(v_res -> 'candidate_union') c),
+                     '[]'::jsonb),
+            coalesce((v_res ->> 'truncated')::boolean, false),
+            jsonb_build_object('row_number', p_row_number))
+    on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)
+      where status = 'open'
+    do update set identifiers = excluded.identifiers,
+                  candidates = excluded.candidates,
+                  truncated = excluded.truncated,
+                  import_id = excluded.import_id
+    returning id into v_conflict_id;
+    insert into import_row_provenance
+      (tenant_id, import_id, entity_table, entity_id, source_system,
+       source_row_number, external_id, imported_fields, match_strategy,
+       confidence, action, conflicts)
+    values (p_tenant, p_import, 'import_conflicts', v_conflict_id, v_source,
+            p_row_number, v_ext,
+            array(select jsonb_object_keys(p_record)),
+            v_res ->> 'decision', 0.5, 'conflict',
+            coalesce(v_res -> 'evidence', '[]'::jsonb));
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, conflict_id, attempt)
+    values (p_tenant, p_import, p_row_number, 'conflict',
+            case when v_res ->> 'decision' = 'ambiguous'
+              then 'a contact channel matches several existing people'
+              else 'email and phone point to different existing people' end,
+            v_conflict_id, v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          conflict_id = excluded.conflict_id, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'conflict', 'conflict_id', v_conflict_id);
+  end if;
+
+  -- ── already linked (idempotent rerun of the same source row) ──
+  if v_res ->> 'decision' = 'linked' then
+    v_entity_table := v_res ->> 'entity_table';
+    v_entity_id := (v_res ->> 'entity_id')::uuid;
+    v_outcome := 'linked';
+    v_strategy := 'external_id';
+    v_confidence := 1.0;
+
+  -- ── exactly ONE existing person on strong channel evidence: link, fill
+  --    blanks only, never overwrite, never touch verified/created_source ──
+  elsif v_res ->> 'decision' = 'matched' then
+    v_person := (v_res ->> 'entity_id')::uuid;
+    select * into v_p from people where id = v_person and tenant_id = p_tenant
+      for update;
+    if not found then
+      raise exception 'matched person vanished — retry' using errcode = '40001';
+    end if;
+    v_writable := '{}'::jsonb;
+    if v_p.display_name is null and v_display is not null then
+      v_writable := v_writable || jsonb_build_object('display_name', v_display); end if;
+    if v_p.first_name is null and nullif(trim(coalesce(p_record ->> 'first_name', '')), '') is not null then
+      v_writable := v_writable || jsonb_build_object('first_name', trim(p_record ->> 'first_name')); end if;
+    if v_p.last_name is null and nullif(trim(coalesce(p_record ->> 'last_name', '')), '') is not null then
+      v_writable := v_writable || jsonb_build_object('last_name', trim(p_record ->> 'last_name')); end if;
+    if v_p.primary_email is null and p_record ->> 'primary_email' is not null then
+      v_writable := v_writable || jsonb_build_object('primary_email', p_record ->> 'primary_email'); end if;
+    if v_p.primary_phone is null and p_record ->> 'primary_phone' is not null then
+      v_writable := v_writable || jsonb_build_object('primary_phone', p_record ->> 'primary_phone'); end if;
+    if v_p.address_text is null and nullif(trim(coalesce(p_record ->> 'address_text', '')), '') is not null then
+      v_writable := v_writable || jsonb_build_object('address_text', trim(p_record ->> 'address_text')); end if;
+    if v_p.postcode is null and p_record ->> 'postcode' is not null then
+      v_writable := v_writable || jsonb_build_object('postcode', p_record ->> 'postcode'); end if;
+    -- differing non-blank values are recorded, never overwritten
+    if v_p.display_name is not null and v_display is not null
+       and v_p.display_name <> v_display then
+      v_field_conflicts := array_append(v_field_conflicts, 'display_name'); end if;
+    if v_p.primary_email is not null and p_record ->> 'primary_email' is not null
+       and marketing_normalize_endpoint('email', v_p.primary_email) is distinct from v_email then
+      v_field_conflicts := array_append(v_field_conflicts, 'primary_email'); end if;
+    if v_p.primary_phone is not null and p_record ->> 'primary_phone' is not null
+       and import_normalize_phone_uk(v_p.primary_phone) is distinct from v_phone then
+      v_field_conflicts := array_append(v_field_conflicts, 'primary_phone'); end if;
+    if v_p.postcode is not null and p_record ->> 'postcode' is not null
+       and import_normalize_postcode(v_p.postcode) is distinct from import_normalize_postcode(p_record ->> 'postcode') then
+      v_field_conflicts := array_append(v_field_conflicts, 'postcode'); end if;
+    update people set
+      display_name = coalesce(v_writable ->> 'display_name', display_name),
+      first_name = coalesce(v_writable ->> 'first_name', first_name),
+      last_name = coalesce(v_writable ->> 'last_name', last_name),
+      primary_email = coalesce(v_writable ->> 'primary_email', primary_email),
+      primary_phone = coalesce(v_writable ->> 'primary_phone', primary_phone),
+      address_text = coalesce(v_writable ->> 'address_text', address_text),
+      postcode = coalesce(v_writable ->> 'postcode', postcode),
+      metadata = coalesce(metadata, '{}'::jsonb) || v_meta
+    where id = v_person;
+    v_entity_table := 'people';
+    v_entity_id := v_person;
+    v_outcome := 'linked';
+    v_strategy := v_res ->> 'strategy';
+    v_confidence := (v_res ->> 'confidence')::numeric;
+
+  -- ── new company customer: canonical company, NEVER a named individual ──
+  elsif v_res ->> 'decision' = 'new_company' then
+    insert into companies (tenant_id, name, phone, address_text, postcode,
+                           verified, created_source, metadata)
+    values (p_tenant, trim(p_record ->> 'company_name'),
+            p_record ->> 'primary_phone',
+            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),
+            p_record ->> 'postcode',
+            false, 'import:' || v_source,
+            v_meta || jsonb_build_object('import',
+              v_import_meta || jsonb_strip_nulls(jsonb_build_object(
+                'primary_email', p_record ->> 'primary_email'))))
+    returning id into v_company;
+    -- channels matching existing interaction-created PEOPLE are review
+    -- evidence beside the applied row — never an automatic association
+    if jsonb_array_length(coalesce(v_res -> 'person_overlap', '[]'::jsonb)) > 0 then
+      insert into import_conflicts
+        (tenant_id, import_id, source_system, entity_kind, external_id,
+         conflict_type, blocking, identifiers, candidates, truncated, detail)
+      values (p_tenant, p_import, v_source, 'customer', v_ext,
+              'company_person_overlap', false,
+              coalesce(v_res -> 'evidence', '[]'::jsonb),
+              coalesce((select jsonb_agg(jsonb_build_object(
+                          'entity_table', 'people', 'entity_id', c))
+                        from jsonb_array_elements_text(v_res -> 'person_overlap') c),
+                       '[]'::jsonb),
+              coalesce((v_res ->> 'truncated')::boolean, false),
+              jsonb_build_object('row_number', p_row_number,
+                                 'company_id', v_company))
+      on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)
+        where status = 'open'
+      do update set identifiers = excluded.identifiers,
+                    candidates = excluded.candidates,
+                    truncated = excluded.truncated,
+                    import_id = excluded.import_id,
+                    detail = excluded.detail
+      returning id into v_conflict_id;
+    end if;
+    v_entity_table := 'companies';
+    v_entity_id := v_company;
+    v_outcome := 'created';
+    v_strategy := 'created';
+    v_confidence := 1.0;
+
+  -- ── new person customer ──
+  else
+    insert into people (tenant_id, display_name, first_name, last_name,
+                        primary_email, primary_phone, address_text, postcode,
+                        verified, created_source, metadata)
+    values (p_tenant, v_display,
+            nullif(trim(coalesce(p_record ->> 'first_name', '')), ''),
+            nullif(trim(coalesce(p_record ->> 'last_name', '')), ''),
+            p_record ->> 'primary_email',
+            p_record ->> 'primary_phone',
+            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),
+            p_record ->> 'postcode',
+            false, 'import:customers:' || v_source, v_meta)
+    returning id into v_person;
+    v_entity_table := 'people';
+    v_entity_id := v_person;
+    v_outcome := 'created';
+    v_strategy := 'created';
+    v_confidence := 1.0;
+  end if;
+
+  -- contact points for PERSON customers: unverified import endpoints. This is
+  -- deliberately the ONLY marketing-adjacent write — no preference, no
+  -- suppression, no permission record: eligibility stays 'unknown'.
+  if v_entity_table = 'people' then
+    insert into contact_points
+      (tenant_id, person_id, channel, value, normalized_value, is_primary,
+       verification_state, source, last_observed_at)
+    select p_tenant, v_entity_id, x.channel, x.value, x.norm,
+           not exists (select 1 from contact_points cpp
+                        where cpp.tenant_id = p_tenant
+                          and cpp.person_id = v_entity_id
+                          and cpp.channel = x.channel and cpp.is_primary),
+           'unverified', 'import', now()
+      from (values
+        ('email', p_record ->> 'primary_email',
+         marketing_normalize_endpoint('email', p_record ->> 'primary_email')),
+        ('phone', p_record ->> 'primary_phone',
+         marketing_normalize_endpoint('phone', p_record ->> 'primary_phone')),
+        ('phone', p_record ->> 'secondary_phone',
+         marketing_normalize_endpoint('phone', p_record ->> 'secondary_phone'))
+      ) as x (channel, value, norm)
+     where x.norm is not null
+    on conflict (tenant_id, person_id, channel, normalized_value) do update
+      set last_observed_at = now();
+  end if;
+
+  -- authoritative external-identity link (idempotent for ever after)
+  if v_res ->> 'decision' <> 'linked' then
+    insert into import_entity_links
+      (tenant_id, source_system, entity_kind, external_id, entity_table,
+       entity_id, link_strategy, confidence, evidence, import_id)
+    values (p_tenant, v_source, 'customer', v_ext, v_entity_table, v_entity_id,
+            case when v_outcome = 'created' then 'created' else v_strategy end,
+            v_confidence,
+            jsonb_build_object('matched_on', coalesce(v_res -> 'matched_on', '[]'::jsonb)),
+            p_import)
+    on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;
+  end if;
+
+  insert into import_row_provenance
+    (tenant_id, import_id, entity_table, entity_id, source_system,
+     source_row_number, external_id, imported_fields, match_strategy,
+     confidence, action, conflicts)
+  values (p_tenant, p_import, v_entity_table, v_entity_id, v_source,
+          p_row_number, v_ext,
+          array(select jsonb_object_keys(p_record)),
+          v_strategy, v_confidence,
+          case when v_outcome = 'created' then 'created' else 'linked' end,
+          coalesce((select jsonb_agg(jsonb_build_object('field', f))
+                    from unnest(v_field_conflicts) f), '[]'::jsonb));
+  insert into import_row_results
+    (tenant_id, import_id, row_number, outcome, reason, fields,
+     entity_table, entity_id, conflict_id, attempt)
+  values (p_tenant, p_import, p_row_number, v_outcome,
+          case when array_length(v_field_conflicts, 1) > 0
+            then 'linked with differing fields recorded (never overwritten)'
+            else null end,
+          coalesce(v_field_conflicts, '{}'::text[]),
+          v_entity_table, v_entity_id, v_conflict_id, v_attempt)
+  on conflict (tenant_id, import_id, row_number) do update
+    set outcome = excluded.outcome, reason = excluded.reason,
+        fields = excluded.fields, entity_table = excluded.entity_table,
+        entity_id = excluded.entity_id, conflict_id = excluded.conflict_id,
+        attempt = excluded.attempt;
+  return jsonb_build_object('action', v_outcome,
+    'entity_table', v_entity_table, 'entity_id', v_entity_id,
+    'strategy', v_strategy, 'field_conflicts', to_jsonb(v_field_conflicts));
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_site_row — atomic per-row SITE apply. Sites REQUIRE their imported
+-- customer: a missing or conflicted customer HOLDS the row (retryable), it is
+-- never guessed and never silently reported as imported.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_site_row(
+  p_tenant uuid, p_import uuid, p_actor uuid, p_row_number int,
+  p_record jsonb, p_options jsonb
+) returns jsonb
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_source text;
+  v_short jsonb;
+  v_attempt int;
+  v_invalid jsonb;
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_cust_ext text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');
+  v_link import_entity_links%rowtype;
+  v_site sites%rowtype;
+  v_site_id uuid;
+  v_outcome text;
+  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);
+  v_meta jsonb;
+  v_hold_reason text;
+begin
+  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,
+                               p_record, p_options, 'sites');
+  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';
+  select o_short, o_attempt into v_short, v_attempt
+    from import_row_prior(p_tenant, p_import, p_row_number);
+  if v_short is not null then return v_short; end if;
+
+  v_invalid := import_validate_site_row(p_tenant, v_source, p_record);
+  if v_invalid is not null then
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+    values (p_tenant, p_import, p_row_number, 'invalid',
+            v_invalid ->> 'reason',
+            coalesce((select array_agg(e) from jsonb_array_elements_text(
+                        v_invalid -> 'fields') e), '{}'::text[]),
+            v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          fields = excluded.fields, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_tenant::text || '|ext|' || v_source || '|site|' || v_ext, 42));
+
+  -- the customer relationship is REQUIRED and never guessed
+  select * into v_link from import_entity_links l
+   where l.tenant_id = p_tenant and l.source_system = v_source
+     and l.entity_kind = 'customer' and l.external_id = v_cust_ext;
+  if not found then
+    if exists (select 1 from import_conflicts c
+                where c.tenant_id = p_tenant and c.source_system = v_source
+                  and c.entity_kind = 'customer' and c.external_id = v_cust_ext
+                  and c.blocking and c.status = 'open') then
+      v_hold_reason := 'customer_conflict_open';
+    else
+      v_hold_reason := 'customer_not_imported';
+    end if;
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+    values (p_tenant, p_import, p_row_number, 'held', v_hold_reason,
+            array['customer_external_id'], v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          fields = excluded.fields, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'held', 'reason', v_hold_reason);
+  end if;
+
+  v_meta := jsonb_build_object('import', jsonb_strip_nulls(jsonb_build_object(
+    'source', v_source, 'external_id', v_ext,
+    'customer_external_id', v_cust_ext, 'active', v_active,
+    'primary_email', p_record ->> 'primary_email',
+    'primary_phone', p_record ->> 'primary_phone')));
+  if p_record ->> 'metadata_json' is not null then
+    v_meta := v_meta || jsonb_build_object('source_payload',
+      (p_record ->> 'metadata_json')::jsonb);
+  end if;
+
+  select * into v_site from sites s
+   where s.tenant_id = p_tenant and s.source_system = v_source
+     and s.external_id = v_ext;
+  if found then
+    update sites set
+      label = coalesce(sites.label, nullif(trim(coalesce(p_record ->> 'label', '')), '')),
+      address_text = coalesce(sites.address_text, nullif(trim(coalesce(p_record ->> 'address_text', '')), '')),
+      postcode = coalesce(sites.postcode, p_record ->> 'postcode'),
+      metadata = coalesce(sites.metadata, '{}'::jsonb) || v_meta
+    where id = v_site.id;
+    v_site_id := v_site.id;
+    v_outcome := 'linked';
+  else
+    insert into sites (tenant_id, source_system, external_id, person_id,
+                       company_id, label, address_text, postcode,
+                       created_source, verified, metadata)
+    values (p_tenant, v_source, v_ext,
+            case when v_link.entity_table = 'people' then v_link.entity_id end,
+            case when v_link.entity_table = 'companies' then v_link.entity_id end,
+            nullif(trim(coalesce(p_record ->> 'label', '')), ''),
+            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),
+            p_record ->> 'postcode',
+            'import:' || v_source, false, v_meta)
+    returning id into v_site_id;
+    v_outcome := 'created';
+  end if;
+
+  insert into import_entity_links
+    (tenant_id, source_system, entity_kind, external_id, entity_table,
+     entity_id, link_strategy, confidence, evidence, import_id)
+  values (p_tenant, v_source, 'site', v_ext, 'sites', v_site_id,
+          case when v_outcome = 'created' then 'created' else 'external_id' end,
+          1.0, jsonb_build_object('customer_external_id', v_cust_ext), p_import)
+  on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;
+
+  insert into import_row_provenance
+    (tenant_id, import_id, entity_table, entity_id, source_system,
+     source_row_number, external_id, imported_fields, match_strategy,
+     confidence, action, conflicts)
+  values (p_tenant, p_import, 'sites', v_site_id, v_source, p_row_number,
+          v_ext, array(select jsonb_object_keys(p_record)),
+          case when v_outcome = 'created' then 'created' else 'external_id' end,
+          1.0,
+          case when v_outcome = 'created' then 'created' else 'linked' end,
+          '[]'::jsonb);
+  insert into import_row_results
+    (tenant_id, import_id, row_number, outcome, entity_table, entity_id, attempt)
+  values (p_tenant, p_import, p_row_number, v_outcome, 'sites', v_site_id, v_attempt)
+  on conflict (tenant_id, import_id, row_number) do update
+    set outcome = excluded.outcome, reason = null, fields = '{}'::text[],
+        entity_table = excluded.entity_table, entity_id = excluded.entity_id,
+        attempt = excluded.attempt;
+  return jsonb_build_object('action', v_outcome, 'entity_table', 'sites',
+                            'entity_id', v_site_id);
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_job_row — atomic per-row JOB apply. Jobs REQUIRE their imported
+-- customer (person XOR company). Sites link ONLY on deterministic evidence:
+-- ambiguity is a durable reviewable conflict beside the created job, absence
+-- is an honestly-unlinked job with the reason recorded.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_job_row(
+  p_tenant uuid, p_import uuid, p_actor uuid, p_row_number int,
+  p_record jsonb, p_options jsonb
+) returns jsonb
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_source text;
+  v_short jsonb;
+  v_attempt int;
+  v_invalid jsonb;
+  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');
+  v_cust_ext text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');
+  v_link import_entity_links%rowtype;
+  v_job jobs%rowtype;
+  v_job_id uuid;
+  v_outcome text;
+  v_status text := trim(coalesce(p_record ->> 'status', ''));
+  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);
+  v_site jsonb;
+  v_site_id uuid;
+  v_conflict_id uuid;
+  v_meta jsonb;
+  v_hold_reason text;
+  v_jn text;
+begin
+  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,
+                               p_record, p_options, 'jobs');
+  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';
+  select o_short, o_attempt into v_short, v_attempt
+    from import_row_prior(p_tenant, p_import, p_row_number);
+  if v_short is not null then return v_short; end if;
+
+  v_invalid := import_validate_job_row(p_tenant, v_source, p_record);
+  if v_invalid is not null then
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+    values (p_tenant, p_import, p_row_number, 'invalid',
+            v_invalid ->> 'reason',
+            coalesce((select array_agg(e) from jsonb_array_elements_text(
+                        v_invalid -> 'fields') e), '{}'::text[]),
+            v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          fields = excluded.fields, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_tenant::text || '|ext|' || v_source || '|job|' || v_ext, 42));
+
+  -- the customer relationship is REQUIRED — an orphan job is held, never
+  -- created against nothing and never cross-tenant
+  select * into v_link from import_entity_links l
+   where l.tenant_id = p_tenant and l.source_system = v_source
+     and l.entity_kind = 'customer' and l.external_id = v_cust_ext;
+  if not found then
+    if exists (select 1 from import_conflicts c
+                where c.tenant_id = p_tenant and c.source_system = v_source
+                  and c.entity_kind = 'customer' and c.external_id = v_cust_ext
+                  and c.blocking and c.status = 'open') then
+      v_hold_reason := 'customer_conflict_open';
+    else
+      v_hold_reason := 'customer_not_imported';
+    end if;
+    insert into import_row_results
+      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+    values (p_tenant, p_import, p_row_number, 'held', v_hold_reason,
+            array['customer_external_id'], v_attempt)
+    on conflict (tenant_id, import_id, row_number) do update
+      set outcome = excluded.outcome, reason = excluded.reason,
+          fields = excluded.fields, attempt = excluded.attempt;
+    return jsonb_build_object('action', 'held', 'reason', v_hold_reason);
+  end if;
+
+  -- deterministic site resolution (never a guess)
+  v_site := import_resolve_job_site(p_tenant, v_source,
+    v_link.entity_table, v_link.entity_id,
+    p_record ->> 'site_postcode', p_record ->> 'site_address_text');
+  if v_site ->> 'outcome' = 'resolved' then
+    v_site_id := (v_site ->> 'site_id')::uuid;
+  elsif v_site ->> 'outcome' = 'ambiguous' then
+    insert into import_conflicts
+      (tenant_id, import_id, source_system, entity_kind, external_id,
+       conflict_type, blocking, identifiers, candidates, truncated, detail)
+    values (p_tenant, p_import, v_source, 'job', v_ext,
+            'site_ambiguous', false,
+            jsonb_build_array(jsonb_build_object(
+              'channel', 'address',
+              'label', 'site_address',
+              'value', import_normalize_address(p_record ->> 'site_address_text'),
+              'postcode', import_normalize_postcode(p_record ->> 'site_postcode'))),
+            coalesce((select jsonb_agg(jsonb_build_object(
+                        'entity_table', 'sites', 'entity_id', c))
+                      from jsonb_array_elements_text(v_site -> 'candidate_site_ids') c),
+                     '[]'::jsonb),
+            coalesce((v_site ->> 'truncated')::boolean, false),
+            jsonb_build_object('row_number', p_row_number,
+                               'reason', v_site ->> 'reason'))
+    on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)
+      where status = 'open'
+    do update set identifiers = excluded.identifiers,
+                  candidates = excluded.candidates,
+                  truncated = excluded.truncated,
+                  import_id = excluded.import_id,
+                  detail = excluded.detail
+    returning id into v_conflict_id;
+  end if;
+
+  v_meta := jsonb_build_object('import', jsonb_strip_nulls(jsonb_build_object(
+    'source', v_source, 'external_id', v_ext,
+    'customer_external_id', v_cust_ext, 'active', v_active,
+    'engineer_name', nullif(trim(coalesce(p_record ->> 'engineer', '')), ''),
+    'quoted_value_pennies', (p_record -> 'quoted_value_pennies'),
+    'site_resolution', jsonb_build_object(
+      'outcome', v_site ->> 'outcome',
+      'strategy', v_site ->> 'strategy',
+      'reason', v_site ->> 'reason'),
+    'site_address_text', nullif(trim(coalesce(p_record ->> 'site_address_text', '')), ''),
+    'site_postcode', p_record ->> 'site_postcode')));
+  if p_record ->> 'metadata_json' is not null then
+    v_meta := v_meta || jsonb_build_object('source_payload',
+      (p_record ->> 'metadata_json')::jsonb);
+  end if;
+
+  select * into v_job from jobs j
+   where j.tenant_id = p_tenant and j.source_system = v_source
+     and j.external_id = v_ext;
+  if found then
+    update jobs set
+      site_id = coalesce(jobs.site_id, v_site_id),
+      metadata = coalesce(jobs.metadata, '{}'::jsonb) || v_meta
+    where id = v_job.id;
+    v_job_id := v_job.id;
+    v_outcome := 'linked';
+  else
+    insert into jobs (tenant_id, source_system, external_id, job_number,
+                      customer_person_id, customer_company_id, site_id,
+                      title, description, status, active,
+                      value_pennies, created_date, completed_date,
+                      created_source, verified, metadata)
+    values (p_tenant, v_source, v_ext,
+            nullif(trim(coalesce(p_record ->> 'job_number', '')), ''),
+            case when v_link.entity_table = 'people' then v_link.entity_id end,
+            case when v_link.entity_table = 'companies' then v_link.entity_id end,
+            v_site_id,
+            nullif(trim(coalesce(p_record ->> 'title', '')), ''),
+            nullif(trim(coalesce(p_record ->> 'description', '')), ''),
+            v_status, v_active,
+            (p_record ->> 'value_pennies')::bigint,
+            (nullif(trim(coalesce(p_record ->> 'created_date', '')), ''))::timestamptz,
+            (nullif(trim(coalesce(p_record ->> 'completed_date', '')), ''))::timestamptz,
+            'import:' || v_source, false, v_meta)
+    returning id into v_job_id;
+    v_outcome := 'created';
+  end if;
+
+  v_jn := regexp_replace(coalesce(p_record ->> 'job_number', ''), '[^0-9]', '', 'g');
+  if v_jn <> '' then
+    insert into job_number_aliases (tenant_id, job_id, alias, normalized, source)
+    values (p_tenant, v_job_id, p_record ->> 'job_number', v_jn, 'import')
+    on conflict (tenant_id, normalized) do nothing;
+  end if;
+
+  insert into import_entity_links
+    (tenant_id, source_system, entity_kind, external_id, entity_table,
+     entity_id, link_strategy, confidence, evidence, import_id)
+  values (p_tenant, v_source, 'job', v_ext, 'jobs', v_job_id,
+          case when v_outcome = 'created' then 'created' else 'external_id' end,
+          1.0, jsonb_build_object('customer_external_id', v_cust_ext), p_import)
+  on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;
+
+  insert into import_row_provenance
+    (tenant_id, import_id, entity_table, entity_id, source_system,
+     source_row_number, external_id, imported_fields, match_strategy,
+     confidence, action, conflicts)
+  values (p_tenant, p_import, 'jobs', v_job_id, v_source, p_row_number, v_ext,
+          array(select jsonb_object_keys(p_record)),
+          case when v_outcome = 'created' then 'created' else 'external_id' end,
+          1.0,
+          case when v_outcome = 'created' then 'created' else 'linked' end,
+          jsonb_build_array(jsonb_build_object('site_resolution', v_site))
+    );
+  insert into import_row_results
+    (tenant_id, import_id, row_number, outcome, reason, fields,
+     entity_table, entity_id, conflict_id, attempt)
+  values (p_tenant, p_import, p_row_number, v_outcome,
+          'site: ' || coalesce(v_site ->> 'strategy', v_site ->> 'reason',
+                               v_site ->> 'outcome'),
+          case when v_site_id is not null then array['site_linked']
+               when v_site ->> 'outcome' = 'ambiguous' then array['site_ambiguous']
+               else array['site_unlinked'] end,
+          'jobs', v_job_id, v_conflict_id, v_attempt)
+  on conflict (tenant_id, import_id, row_number) do update
+    set outcome = excluded.outcome, reason = excluded.reason,
+        fields = excluded.fields, entity_table = excluded.entity_table,
+        entity_id = excluded.entity_id, conflict_id = excluded.conflict_id,
+        attempt = excluded.attempt;
+  return jsonb_build_object('action', v_outcome, 'entity_table', 'jobs',
+    'entity_id', v_job_id, 'site_outcome', v_site ->> 'outcome');
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_row_outcome — the governed recorder for edge-side invalid/failed
+-- outcomes (mapping failures, transient RPC errors). Same per-row lock;
+-- NEVER downgrades a terminal outcome; failed/held retries advance attempt.
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_row_outcome(
+  p_tenant uuid, p_import uuid, p_row_number int,
+  p_outcome text, p_reason text, p_fields text[] default '{}'::text[]
+) returns jsonb
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_prior import_row_results%rowtype;
+  v_attempt int := 1;
+begin
+  if p_tenant is null or p_import is null or p_row_number is null then
+    raise exception 'tenant, import and row number required' using errcode = '22023';
+  end if;
+  if p_outcome not in ('invalid', 'failed') then
+    raise exception 'recorder outcome must be invalid or failed' using errcode = '22023';
+  end if;
+  select * into v_imp from data_imports
+   where id = p_import and tenant_id = p_tenant;
+  if not found then
+    raise exception 'import not found for tenant' using errcode = 'P0002';
+  end if;
+  if p_row_number < 2 or p_row_number > v_imp.row_count + 1 then
+    raise exception 'row number is outside the sealed import' using errcode = '22023';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(
+    p_tenant::text || '|import|' || p_import::text || '|' || p_row_number, 42));
+  select * into v_prior from import_row_results r
+   where r.tenant_id = p_tenant and r.import_id = p_import
+     and r.row_number = p_row_number;
+  if found then
+    if v_prior.outcome not in ('failed', 'held') then
+      return jsonb_build_object('already', true, 'outcome', v_prior.outcome);
+    end if;
+    v_attempt := v_prior.attempt + 1;
+  end if;
+  insert into import_row_results
+    (tenant_id, import_id, row_number, outcome, reason, fields, attempt)
+  values (p_tenant, p_import, p_row_number, p_outcome, p_reason,
+          coalesce(p_fields, '{}'::text[]), v_attempt)
+  on conflict (tenant_id, import_id, row_number) do update
+    set outcome = excluded.outcome, reason = excluded.reason,
+        fields = excluded.fields, attempt = excluded.attempt,
+        entity_table = null, entity_id = null, conflict_id = null;
+  return jsonb_build_object('already', false, 'outcome', p_outcome);
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- import_run_finalize — concurrency-safe finalisation from DURABLE outcomes
+-- under the locked import row. HONEST statuses:
+--   failed rows        → 'failed'      (retry the import)
+--   unprocessed rows   → 'importing'   (resume)
+--   held/conflict rows → 'needs_review' (NEVER 'completed' with unresolved
+--                                        relationships or identity conflicts)
+--   everything terminal→ 'completed'
+-- ───────────────────────────────────────────────────────────────────────────
+create or replace function import_run_finalize(p_tenant uuid, p_import uuid)
+returns jsonb
+language plpgsql
+as $$
+declare
+  v_imp data_imports%rowtype;
+  v_created int; v_linked int; v_updated int; v_conflict int; v_held int;
+  v_invalid int; v_skipped int; v_failed int; v_counted int;
+  v_status text;
+begin
+  if p_tenant is null or p_import is null then
+    raise exception 'tenant and import required' using errcode = '22023';
+  end if;
+  select * into v_imp from data_imports
+   where id = p_import and tenant_id = p_tenant
+   for update;
+  if not found then
+    raise exception 'import not found for tenant' using errcode = 'P0002';
+  end if;
+  select
+    count(*) filter (where outcome = 'created'),
+    count(*) filter (where outcome = 'linked'),
+    count(*) filter (where outcome = 'updated'),
+    count(*) filter (where outcome = 'conflict'),
+    count(*) filter (where outcome = 'held'),
+    count(*) filter (where outcome = 'invalid'),
+    count(*) filter (where outcome = 'skipped'),
+    count(*) filter (where outcome = 'failed'),
+    count(*)
+  into v_created, v_linked, v_updated, v_conflict, v_held, v_invalid,
+       v_skipped, v_failed, v_counted
+  from import_row_results r
+  where r.tenant_id = p_tenant and r.import_id = p_import;
+
+  if v_failed > 0 then
+    v_status := 'failed';
+  elsif v_counted < v_imp.row_count then
+    v_status := 'importing';
+  elsif v_held > 0 or v_conflict > 0 then
+    v_status := 'needs_review';
+  else
+    v_status := 'completed';
+  end if;
+
+  update data_imports set
+    status = v_status,
+    created_records = v_created,
+    updated_records = v_linked + v_updated,
+    conflict_records = v_conflict,
+    skipped_records = v_skipped + v_held,
+    invalid_rows = v_invalid,
+    failure = case when v_status = 'failed'
+                   then v_failed || ' row(s) failed — retry the import'
+                   else null end,
+    completed_at = case when v_status in ('completed', 'needs_review')
+                        then coalesce(completed_at, now()) end
+  where id = p_import
+  returning * into v_imp;
+
+  return jsonb_build_object(
+    'status', v_status,
+    'created', v_created, 'linked', v_linked, 'updated', v_updated,
+    'conflicts', v_conflict, 'held', v_held, 'invalid', v_invalid,
+    'skipped', v_skipped, 'failed', v_failed,
+    'unprocessed', greatest(v_imp.row_count - v_counted, 0),
+    'import', to_jsonb(v_imp));
+end $$;
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- Function privileges: every governed import function is service-role only.
+-- ───────────────────────────────────────────────────────────────────────────
+do $$
+declare
+  fn text;
+begin
+  foreach fn in array array[
+    'import_normalize_phone_uk(text)',
+    'import_normalize_postcode(text)',
+    'import_normalize_address(text)',
+    'import_validate_row_shape(jsonb, text[], text[], text[])',
+    'import_validate_customer_row(uuid, text, jsonb)',
+    'import_validate_site_row(uuid, text, jsonb)',
+    'import_validate_job_row(uuid, text, jsonb)',
+    'import_resolve_customer(uuid, text, jsonb)',
+    'import_match_customer(uuid, text, jsonb)',
+    'import_match_site(uuid, text, jsonb)',
+    'import_resolve_job_site(uuid, text, text, uuid, text, text)',
+    'import_match_job(uuid, text, jsonb)',
+    'import_row_preamble(uuid, uuid, uuid, int, jsonb, jsonb, text)',
+    'import_row_prior(uuid, uuid, int)',
+    'import_customer_row(uuid, uuid, uuid, int, jsonb, jsonb)',
+    'import_site_row(uuid, uuid, uuid, int, jsonb, jsonb)',
+    'import_job_row(uuid, uuid, uuid, int, jsonb, jsonb)',
+    'import_row_outcome(uuid, uuid, int, text, text, text[])',
+    'import_run_finalize(uuid, uuid)'
+  ] loop
+    execute format('revoke all on function %s from public, anon, authenticated', fn);
+    execute format('grant execute on function %s to service_role', fn);
+  end loop;
+end $$;

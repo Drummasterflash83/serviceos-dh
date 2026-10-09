@@ -16,6 +16,7 @@ import {
   JOB_MATCH_PRIORITY,
   writableFields,
 } from "./matching.ts";
+import { classifyRowApplyFailure } from "./row_failure.ts";
 
 let passed = 0;
 const ok = (name: string, fn: () => void) => {
@@ -111,6 +112,10 @@ ok("money → integer pennies; dates parse day-first", () => {
   assert.equal(parseDate("31/01/2026")?.slice(0, 10), "2026-01-31");
   assert.equal(parseDate("2026-08-15")?.slice(0, 10), "2026-08-15");
   assert.equal(normalizePhone("0161 496 0000"), "+441614960000");
+  // every UK written form converges on ONE canonical value
+  assert.equal(normalizePhone("+44 161 496 0000"), "+441614960000");
+  assert.equal(normalizePhone("44 161 496 0000"), "+441614960000");
+  assert.equal(normalizePhone("0044 161 496 0000"), "+441614960000");
 });
 
 ok("decideMatch: external_id wins; ambiguous → probable; none → new", () => {
@@ -147,6 +152,48 @@ ok("writableFields never overwrites verified canonical data", () => {
     false,
   );
   assert.equal(Object.keys(r2.fields).length, 0); // no-op on identical
+});
+
+// ── Phase 11N: a deterministic defect must never be called transient ───────
+ok("classifyRowApplyFailure: a unique violation is DETERMINISTIC, not transient", () => {
+  const c = classifyRowApplyFailure("23505"); // the exact Phase 11M failure
+  assert.equal(c.kind, "deterministic");
+  assert.equal(c.retryable, false);
+  assert.ok(/deterministic/.test(c.reason));
+  assert.ok(!/transient/.test(c.reason));
+  assert.ok(c.reason.includes("23505"));
+});
+
+ok("classifyRowApplyFailure: serialization/deadlock/timeout stay transient", () => {
+  for (const code of ["40001", "40P01", "55P03", "57014", "08006"]) {
+    const c = classifyRowApplyFailure(code);
+    assert.equal(c.kind, "transient", code);
+    assert.equal(c.retryable, true, code);
+  }
+});
+
+ok("classifyRowApplyFailure: other permanent classes are deterministic", () => {
+  for (const code of ["23503", "22P02", "42703", "P0001"]) {
+    const c = classifyRowApplyFailure(code);
+    assert.equal(c.kind, "deterministic", code);
+    assert.equal(c.retryable, false, code);
+  }
+});
+
+ok("classifyRowApplyFailure: an unknown code fails HONEST, never optimistic", () => {
+  for (const bad of [undefined, null, "", "nope", 23505]) {
+    const c = classifyRowApplyFailure(bad);
+    assert.equal(c.kind, "unclassified");
+    assert.equal(c.retryable, false);
+    assert.ok(!/transient/.test(c.reason));
+  }
+});
+
+ok("classifyRowApplyFailure: the reason never carries a driver message", () => {
+  // Only the SQLSTATE may appear — a Postgres message can quote the offending
+  // VALUES, i.e. customer data, and these reasons are written to a durable ledger.
+  const c = classifyRowApplyFailure("23505");
+  assert.ok(!/duplicate key|Key \(|detail/i.test(c.reason));
 });
 
 console.log(`\n${passed} import-engine assertions passed ✓`);
