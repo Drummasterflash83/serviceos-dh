@@ -1,3 +1,4 @@
+import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {historyScopeKey,assertSlackHistoryScope} from './slack_history.ts';
 import type {SlackHistoryScope} from './slack_history.ts';
 import type {WorkerHandlerContext} from '../worker_handlers/index.ts';
@@ -7,7 +8,7 @@ const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}(-[0-9a-f]
  * revalidate its lease. No token is accepted, read or returned by this module. */
 import type {BindHistoryRequest} from './slack_history_request.ts';
 export type {BindHistoryRequest,HistoryRequestBinding,HistoryRequestIdentity} from './slack_history_request.ts';
-async function storedScope(ctx:WorkerHandlerContext,clock:()=>number){
+export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>number){
  if(!uuid(ctx.tenantId)||!uuid(ctx.jobId)||ctx.signal?.aborted)return null;
  const db=ctx.supabaseAdmin;
  const job=await db.from('platform_jobs').select('id,tenant_id,job_type,status,payload').eq('tenant_id',ctx.tenantId).eq('id',ctx.jobId).maybeSingle();
@@ -25,18 +26,18 @@ async function storedScope(ctx:WorkerHandlerContext,clock:()=>number){
  const scopeKey=historyScopeKey(scope,cfg.channelId),saved=account.data.sync_cursor;
  const checkpoint=saved&&Object.keys(saved).length===0?{scopeKey,cursor:null,pages:0,complete:false}:saved;
  if(!checkpoint||checkpoint.scopeKey!==scopeKey||!Number.isSafeInteger(checkpoint.pages)||checkpoint.pages<0||checkpoint.pages>cfg.maxPages||typeof checkpoint.complete!=='boolean'||checkpoint.cursor!==null&&(typeof checkpoint.cursor!=='string'||checkpoint.cursor.length===0||checkpoint.cursor.length>1024)||checkpoint.complete&&checkpoint.cursor!==null)return null;
- return {accountId,scope,channelId:cfg.channelId,checkpoint,maxPages:cfg.maxPages,expiresAt:cfg.expiresAt};
+ return {connectionId:cfg.connectionId,accountId,scope,channelId:cfg.channelId,checkpoint,maxPages:cfg.maxPages,expiresAt:cfg.expiresAt};
 }
 /** Reads authoritative durable job/config only; browser/queued payload is not
- * used as consent. Default runtime request binding remains separately gated. */
+ * used as consent. The transport separately verifies the credential connection. */
 export function createStoredHistoryBinding(bindRequest:BindHistoryRequest,clock:()=>number=Date.now){
  return async(ctx:WorkerHandlerContext):Promise<SlackHistoryBinding|null>=>{
-  try{const stored=await storedScope(ctx,clock);if(!stored)return null;
+  try{const stored=await readStoredHistoryScope(ctx,clock);if(!stored)return null;
    const bound=await bindRequest({tenantId:ctx.tenantId,accountId:stored.accountId,teamId:stored.scope.teamId,channelId:stored.channelId,oldest:stored.scope.oldest,latest:stored.scope.latest,consentReference:stored.scope.consentReference,expiresAt:stored.expiresAt,maxPages:stored.maxPages});
    if(!bound||bound.teamId!==stored.scope.teamId||bound.channelId!==stored.channelId||bound.isPrivate!==false||bound.isShared!==false||bound.isMember!==true)return null;
    return {tenantId:ctx.tenantId,jobId:ctx.jobId!,...stored,request:bound.request,authorised:async()=>{try{
-    const current=await storedScope(ctx,clock);return !!current&&current.accountId===stored.accountId&&current.maxPages===stored.maxPages&&current.expiresAt===stored.expiresAt&&historyScopeKey(current.scope,current.channelId)===historyScopeKey(stored.scope,stored.channelId)&&await bound.authorised();
-   }catch{return false;}}};
-  }catch{return null;}
+    const current=await readStoredHistoryScope(ctx,clock);return !!current&&current.accountId===stored.accountId&&current.maxPages===stored.maxPages&&current.expiresAt===stored.expiresAt&&historyScopeKey(current.scope,current.channelId)===historyScopeKey(stored.scope,stored.channelId)&&await bound.authorised();
+   }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return false;}}};
+  }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return null;}
  };
 }

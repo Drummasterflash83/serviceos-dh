@@ -185,14 +185,15 @@ export async function completeJob(
 export async function failJob(
   client: SupabaseClient,
   job: { id: string; attempt: number; maxAttempts: number },
-  err: { errorCode: string; message: string; retryable: boolean },
+  err: { errorCode: string; message: string; retryable: boolean; retryAfterSeconds?: number },
 ): Promise<"retrying" | "dead_letter"> {
   const safe = (err.message ?? "").slice(0, 500);
   const canRetry = err.retryable && job.attempt < job.maxAttempts;
   const nowIso = new Date().toISOString();
   try {
     if (canRetry) {
-      const delay = BACKOFF_SECONDS[job.attempt] ?? 3600;
+      const minimum=Number.isSafeInteger(err.retryAfterSeconds)&&err.retryAfterSeconds!>=0&&err.retryAfterSeconds!<=31536000?err.retryAfterSeconds!:0;
+      const delay = Math.max(BACKOFF_SECONDS[job.attempt] ?? 3600,minimum);
       const availableAt = new Date(Date.now() + delay * 1000).toISOString();
       await client
         .from("platform_jobs")

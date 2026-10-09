@@ -11,4 +11,5 @@ create table tenants(id uuid primary key);
 create table platform_jobs(id uuid primary key,tenant_id uuid,job_type text,status text,payload jsonb);
 create table tenant_connectors(id uuid primary key,tenant_id uuid,connector_id text,enabled boolean,status text);
 create table connector_accounts(id uuid primary key,tenant_id uuid,tenant_connector_id uuid,status text,settings jsonb,sync_cursor jsonb not null default '{}');
+create table provider_connections(id uuid primary key,tenant_id uuid,provider text,status text,revoked_at timestamptz,non_secret_config jsonb);
 -- interactions schema is loaded from the real existing migration by the runner.

@@ -64,6 +64,8 @@ export interface WorkerHandlerError {
   code: string;
   message: string; // safe: never a secret or customer content
   retryable: boolean;
+  /** Optional provider minimum delay, in addition to queue backoff. */
+  retryAfterSeconds?: number;
   failedStep?: string;
 }
 
@@ -73,6 +75,7 @@ export interface WorkerHandlerError {
  *  bounded (one batch per run), and self-stopping (the handler simply stops
  *  returning it once a run is not full / makes no progress). */
 export interface WorkerHandlerContinuation {
+  availableAt?: string;
   jobType: string;
   jobKey: string;
   payload?: Record<string, unknown>;

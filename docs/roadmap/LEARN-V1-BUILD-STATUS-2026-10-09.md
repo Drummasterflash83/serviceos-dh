@@ -119,10 +119,15 @@ remain unknown instead of becoming zero.
 Read-only live checks on 9 October returned no Drummonds Slack rows in
 `provider_connections`, `tenant_connectors` (filtered to Slack), or
 `customer_slack_connections`. No Slack secret was read or created. The actual
-worker still requires a credential-owning transport implementation and approved
-channel configuration before it can ingest. A notification token would not alone
+worker now has a credential-owning transport implementation, but still requires
+deployment and approved channel configuration before it can ingest. A notification token would not alone
 establish history permissions. The existing secret broker can support a future
 tenant-scoped binding; its existence does not prove a stored Slack credential.
+See [Slack ingestion](../operations/LEARN-SLACK-INGESTION.md) for exact prerequisites
+and remaining gaps. The runtime now validates stored consent and the bot's real
+workspace/channel, reuses the tenant's brokered credential, imports one page per
+job, and requests delayed continuation within its approved budget. HTTP rate
+limits carry a minimum delay into the queue's existing finite retry policy.
 
 - Customer, job and team card browsing over the existing canonical tables, with
   tenant filtering, pagination and company-defined team groups.
@@ -183,6 +188,10 @@ live migration has been performed by this branch.
   contracts; full deployed-schema and concurrent-worker acceptance remain pending.
   All 26 Slack reader/binding/worker tests passed, including raw-payload retention
   and oversized/malformed-record rejection.
+- The following transport increment passed 35 Slack/queue tests, including
+  synthetic HTTP transport through the real binding and worker, plus SQL checks
+  for revocation between provider response and publication. This does not prove
+  live connector operation or deployment.
 - Preservation/transcript-status increment: 23 focused tests passed, covering
   pagination and foreign/duplicate rows, missing IDs hidden by rising totals,
   changed storage pointers/objects, failed reads, bounded WAV header inspection

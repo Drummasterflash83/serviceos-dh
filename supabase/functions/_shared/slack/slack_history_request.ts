@@ -1,3 +1,4 @@
+import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {assertSlackHistoryScope} from './slack_history.ts';
 export type HistoryRequestIdentity={tenantId:string;accountId:string;teamId:string;channelId:string;oldest:string;latest:string;consentReference:string;expiresAt:string;maxPages:number};
 export type HistoryRequestBinding={teamId:string;channelId:string;isPrivate:false;isShared:false;isMember:true;authorised:()=>Promise<boolean>;request:(method:string,body:Record<string,unknown>)=>Promise<any>};
@@ -12,8 +13,8 @@ export interface HistoryServerLease {
  identity:Readonly<HistoryRequestIdentity>;
  authorised:()=>Promise<boolean>;
  inspectChannel:()=>Promise<ChannelAttestation>;
- // Transport must recheck its credential/consent lease at execution and must
- // not retry denied requests. Adapter checks cannot replace that atomic gate.
+ // Transport rechecks its credential/consent lease at execution and does not
+ // retry denied requests inline. Database publication also rechecks authority.
  history:(args:HistoryArguments)=>Promise<unknown>;
 }
 export interface HistoryServerPorts {
@@ -38,7 +39,7 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
     if(!unexpired()||!fields.every(k=>lease.identity[k]===identity[k])||!await lease.authorised())return false;
     const channel=await lease.inspectChannel();
     return fields.slice(0,4).every(k=>channel[k as keyof ChannelAttestation]===identity[k])&&channel.isPrivate===false&&channel.isShared===false&&channel.isMember===true&&unexpired()&&await lease.authorised()&&fields.every(k=>lease.identity[k]===identity[k]);
-   }catch{return false;}};
+   }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return false;}};
    if(!await authorised())return null;
    let requests=0;
    return {teamId:identity.teamId,channelId:identity.channelId,isPrivate:false,isShared:false,isMember:true,authorised,
@@ -54,6 +55,6 @@ export function createHistoryRequestAdapter(ports?:HistoryServerPorts,clock:()=>
      if(!await authorised())throw Error('history_request_authority_changed');
      return page;
     }};
-  }catch{return null;}
+  }catch(error){if(error instanceof SlackHistoryTransportError)throw error;return null;}
  };
 }

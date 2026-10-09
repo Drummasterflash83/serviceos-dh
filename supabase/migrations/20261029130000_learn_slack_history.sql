@@ -103,6 +103,12 @@ begin
   or (cfg->>'latest')::numeric-(cfg->>'oldest')::numeric>86400
   or cfg->>'expiresAt' is null or (cfg->>'expiresAt')::timestamptz<=clock_timestamp()
  then raise exception 'history_scope_unavailable'; end if;
+ -- Recheck the credential connection inside the same transaction as publication.
+ -- A revoke after the HTTP response must not publish against a disabled connection.
+ perform 1 from public.provider_connections where id=(cfg->>'connectionId')::uuid
+  and tenant_id=p_tenant_id and provider='slack' and status='configured'
+  and revoked_at is null and non_secret_config->>'team_id'=cfg->>'teamId' for share;
+ if not found then raise exception 'history_connection_unavailable'; end if;
  scope_identity=jsonb_build_array(p_tenant_id::text,cfg->>'teamId',cfg->>'channelId',cfg->>'oldest',cfg->>'latest',cfg->>'consentReference');
  if (p_expected->>'scopeKey')::jsonb is distinct from scope_identity
   or p_next->>'scopeKey' is distinct from p_expected->>'scopeKey'

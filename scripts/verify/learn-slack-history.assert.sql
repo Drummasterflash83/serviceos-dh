@@ -1,9 +1,12 @@
 grant select,insert,update on platform_jobs,tenant_connectors,connector_accounts,interactions to service_role;
+grant select,update on provider_connections to service_role;
 grant select on interactions to authenticated;
 insert into tenants values('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000099');
+insert into provider_connections values('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000001','slack','configured',null,'{"team_id":"T123"}');
 insert into tenant_connectors values('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000001','slack',true,'active');
 insert into connector_accounts values('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','active',jsonb_build_object('slack_history',jsonb_build_object('approved',true,'teamId','T123','channelId','C123','oldest','100.1','latest','200.1','consentReference','fixture','maxPages',10,'expiresAt',now()+interval '1 hour')),'{}');
 insert into platform_jobs values('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000001','slack.history_sync','running','{"connector_account_id":"00000000-0000-4000-8000-000000000003"}');
+update connector_accounts set settings=jsonb_set(settings,'{slack_history,connectionId}','"00000000-0000-4000-8000-000000000005"');
 set role service_role;
 do $$
 declare
@@ -57,9 +60,13 @@ begin
  begin perform slack_history_commit_page(t,j,a,expected,next_page,jsonb_set(records,'{0,channel_id}','"C999"'));exception when others then failures:=failures+1;end;
  begin perform slack_history_commit_page(t,j,a,expected,next_page,jsonb_set(records,'{0,provider_payload,text}','"Different payload"'));exception when others then failures:=failures+1;end;
  if failures<>10 then raise exception 'Claim, expiry, channel or source-integrity guard failed';end if;
+ update provider_connections set revoked_at=now();
+ begin perform slack_history_commit_page(t,j,a,expected,next_page,records);exception when others then failures:=failures+1;end;
+ update provider_connections set revoked_at=null;
+ if failures<>11 then raise exception 'Revoked credential connection published';end if;
  perform slack_history_commit_page(t,j,a,expected,next_page,'[]');
  begin perform slack_history_commit_page(t,j,a,next_page,next_page||'{"pages":6}','[]');exception when others then failures:=failures+1;end;
- if failures<>11 then raise exception 'Completed checkpoint accepted more writes';end if;
+ if failures<>12 then raise exception 'Completed checkpoint accepted more writes';end if;
 end $$;
 reset role;
 -- The immutable trigger also protects against accidental privileged mutations.

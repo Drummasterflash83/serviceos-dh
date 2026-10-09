@@ -142,6 +142,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               moduleId: r.continuation.moduleId ?? (job.module_id as string | null) ?? null,
               priority: r.continuation.priority ?? 50,
               payload: r.continuation.payload ?? {},
+              availableAt: r.continuation.availableAt,
             });
           } catch (_e) {
             // swallow — the base scheduler will re-prime on its next tick.
@@ -164,6 +165,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           errorCode: r.error?.code ?? "handler_error",
           message: r.error?.message ?? "handler failed",
           retryable: r.error?.retryable ?? true,
+          retryAfterSeconds: r.error?.retryAfterSeconds,
         },
       );
       if (component)
