@@ -329,3 +329,7 @@ verify_jwt = false
 # Handler verifies user identity and mailbox RLS before private playback.
 [functions.receptionist-voicemail-recording]
 verify_jwt = false
+
+# User JWT at the gateway; handler also binds the tenant and rejects machine headers.
+[functions.learn-launch-status]
+verify_jwt = true

@@ -1,0 +1,26 @@
+{
+  "version": "learn-test-launch-function/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "function": {
+    "id": "76b95b44-411c-4844-ad3d-92933e73ee52",
+    "slug": "learn-launch-status",
+    "status": "ACTIVE",
+    "version": 1,
+    "verify_jwt": true,
+    "ezbr_sha256": "854d6165869638b1c3c97c8e02f14e14b2719f770c2045ee68bf85c03f8257af"
+  },
+  "deployedAt": "2026-10-09T19:33:03.850000+00:00",
+  "readMode": "test_metadata_views",
+  "sourceFiles": {
+    "supabase/functions/learn-launch-status/index.ts": "2d3abbe3d9d1097118e9bee36bfecd7244ddfc3a19c0de1001de1bc500522609",
+    "supabase/functions/learn-launch-status/read-mode.ts": "90a9702ed8b125db4ad171d01d5aeca72ef5867957fd0f77746a904081419277",
+    "supabase/functions/learn-launch-status/handler.ts": "9d5d9488750cbc0c3d3439fd627e56d221a3469bfb4705dbb714e1db597991a6",
+    "supabase/functions/learn-launch-status/linked-recordings.ts": "f53499b22c581d0489c1f42186a561b1942e97c49888d86291ebf9c196d39062",
+    "supabase/functions/_shared/authz.ts": "c3262e9bccb039f884fa589f0c2f684a65c20002910ff70563d89d059ec1a85b",
+    "supabase/config.toml": "9fa1d727c05fb9a19ee2e082ad5e7d8ed8e36747677ae2f92bd0b0cf4d017b37"
+  },
+  "limitations": [
+    "Local source hashes record the uploaded candidate; the hosted bundle hash is its separate provider metadata.",
+    "No frontend or other function was deployed."
+  ]
+}

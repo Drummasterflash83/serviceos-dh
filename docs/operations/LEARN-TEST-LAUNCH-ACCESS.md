@@ -1,7 +1,8 @@
-# Proposed TEST launch metadata access
+# TEST launch metadata access and acceptance
 
-Status: implemented locally and **rehearsed with rollback on hosted TEST**;
-no persistent TEST release or production change has been applied.
+Status: **installed on hosted TEST, with signed-in synthetic acceptance passed**.
+Production remains unchanged. This is the launch-status read surface, not full
+LEARN, frontend or provider acceptance.
 This addresses the launch-status read gap recorded in
 [the TEST readiness audit](LEARN-TEST-READINESS.md). It does not supply missing
 card/roster/work tables, deploy functions, enable connectors or change stored data.
@@ -10,7 +11,7 @@ card/roster/work tables, deploy functions, enable connectors or change stored da
 
 `supabase/release/learn-test/001_launch_metadata_views.sql` is deliberately outside
 the automatic migration directory. It requires the explicit TEST target session
-setting and the recorded bootstrap ledger name, project and SHA-256. An existing
+setting, the source checksum, and the recorded bootstrap ledger name, project and SHA-256. An existing
 reader role or disabled source RLS aborts the transaction for inspection.
 
 The additive change creates eight security-barrier views owned by a restricted
@@ -82,11 +83,11 @@ The actual Edge entry point and shared authorization code also pass a local
 strict TypeScript check against installed Supabase JS 2.110 types and a minimal
 Deno declaration. This is not a Deno check against the pinned 2.45.4 remote module.
 
-## Remaining release work
+## Release history and evidence
 
 ### Hosted rehearsal evidence
 
-At **2026-10-09 19:24:52–19:24:54 UTC**, the exact reviewed SQL was executed on
+At **2026-10-09 19:24:52–19:24:54 UTC**, the first reviewed SQL revision was executed on
 `saatxzwxvdvqevbnskxy` in a transaction ending in ROLLBACK. The API acknowledged
 the final marker confirming the new role and views were absent after rollback.
 The post-rehearsal catalog/ledger fingerprint matched the pre-rehearsal fingerprint.
@@ -108,6 +109,9 @@ retried. It uses Supabase's documented [SQL query endpoint](https://supabase.com
 for this transactional rehearsal, not its read-only endpoint. No customer-row
 mutation, persistent permission change, provider call or API-key retrieval occurs.
 
+The rehearsal command applies only to the not-yet-installed state and now refuses
+the installed TEST role/views/receipt:
+
 ```sh
 LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
   node scripts/verify/learn-test-launch-rehearsal.mjs --rehearse --existing-cli-login
@@ -116,22 +120,61 @@ LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
 Four rehearsal tests cover fixed SQL/checksum, target/organisation rejection,
 single-request behavior, error redaction and changed/unavailable post-state.
 The isolated verifier executes this same rollback SQL before its persistence and
-access assertions. Hosted DDL compatibility is now demonstrated; ordinary-user
-JWT/PostgREST behavior and an actual release are still unverified.
+access assertions. Its final receipt-bearing revision was rehearsed again at
+**19:32:08–19:32:09 UTC**, including rollback of the ledger insert
+([final rehearsal](evidence/learn-test-launch-release-rehearsal-2026-10-09.json)).
 
-### Before persistent release
+### Persistent TEST release and signed-in acceptance
 
-Before application, compare fresh TEST definitions and the custom ledger with the
-recorded evidence, rehearse the full schema, retain the candidate checksum, and
-integrate an additive release receipt with the existing custom migration ledger.
-The session setting is an explicit target guard, not independent proof of database
-identity; the release runner must verify the actual project and organisation.
+At **19:32:31 UTC**, `learn-test-launch-release.mjs` installed the views and an
+atomic `of_test_deploy.migrations` receipt, `learn_launch_metadata_views_v1`.
+The source SHA-256 is `5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa`.
+The runner requires matching project/organisation/health and a successful hosted
+rehearsal less than one hour old with the same source and catalog fingerprints.
+It performs one write, then verifies the receipt, view contract and preservation
+of the old table catalog/policies/bootstrap entry. A repeat inspection returned
+`writeAttempted: false`. See [release](evidence/learn-test-launch-release-2026-10-09.json)
+and [repeat inspection](evidence/learn-test-launch-release-recheck-2026-10-09.json).
 
-Deploy and configure the function only after validating the views, then test real
-signed-in owner/admin, viewer, foreign-tenant, expired-token and no-JWT requests
-through PostgREST and the Edge endpoint. Verify view-owner privileges and profile
-RLS in that environment. No hosted compatibility or full product acceptance is
-claimed from the local privilege projection.
+The isolated non-superuser verifier forces a receipt constraint failure and
+proves the entire role/view/policy transaction rolls back. Five release-tool tests
+cover successful installation, duplicate avoidance, stale/mismatched rehearsal,
+unknown outcomes, drift and wrong targets. No blanket migration push was used.
+
+At **19:33:03 UTC**, only `learn-launch-status` was deployed using the saved CLI
+login and the explicit TEST project ref. `LEARN_STATUS_READ_MODE` is
+`test_metadata_views`; JWT verification remains true. The uploaded source-file
+hashes and hosted version/bundle metadata are retained in
+[the function record](evidence/learn-test-launch-function-2026-10-09.json).
+
+At **19:38:12 UTC**, real Auth password sign-ins, PostgREST reads and Edge calls
+passed using five synthetic users and two synthetic tenants. Acceptance covered
+owner/admin counts and recording-family links; viewer/ops, foreign-tenant,
+machine-header, missing-JWT and invalid-JWT denial; raw email and transcript read
+denial; projected labels and redacted sync errors; and role revocation with the
+same still-valid JWT. Unavailable voicemail remained unknown rather than zero.
+See [the initial acceptance record](evidence/learn-test-launch-acceptance-initial-2026-10-09.json).
+The final cleanup safeguards were verified by a second complete acceptance run
+at **19:42:16 UTC**, again passing and removing all fixtures
+([final acceptance](evidence/learn-test-launch-acceptance-2026-10-09.json)).
+
+The acceptance tool checks the recorded schema/trigger contract before fixtures,
+reuses existing TEST project keys only in memory, creates no project key and sends
+no email. It deletes only generated, marked fixtures. Source-row absence is checked
+before tenant recovery markers are removed; uncertain creation/cleanup requires
+inspection. Passwords and JWTs are never persisted. Cleanup verified absence of
+all created users, profiles, tenants, email/call/recording/transcript/sync fixtures.
+Normal authentication audit logs may retain synthetic activity.
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
+  node scripts/verify/learn-test-launch-acceptance.mjs --synthetic-test --existing-cli-login
+```
+
+Twenty-three focused audit/rehearsal/release/acceptance-tool tests pass, alongside
+the isolated SQL verifier and hosted acceptance. This does not verify actual
+customer data, audio playback, provider ingestion, a naturally expired JWT, the
+frontend, or the remaining card/work/roster features.
 
 The readiness script now reports both the original direct-read contracts and a
 separate `launchMetadata` assessment. It checks exact columns, view options/owner,

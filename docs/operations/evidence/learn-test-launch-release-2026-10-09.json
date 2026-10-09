@@ -1,0 +1,21 @@
+{
+  "version": "learn-test-launch-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T19:32:31.006861+00:00",
+  "observedAfter": "2026-10-09T19:32:31.92395+00:00",
+  "state": "installed_needs_user_verification",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "receiptAndViewsMatch": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "98a678180bb0c15d8c7357cc2be489011aa8e3b2894a407d8df23993832b4e1e",
+  "afterCatalogSha256": "e0887776005bc982fc8247a94b1d2bac742dd420ce758d427b7610abf29d2b31",
+  "limitations": [
+    "This installs only TEST metadata access and its receipt; no production, source records, functions or providers are changed.",
+    "Catalog checks do not prove JWT/PostgREST access, redaction semantics or full LEARN acceptance.",
+    "Unknown or mismatched outcomes require inspection; no write retry or automatic rollback is attempted."
+  ]
+}

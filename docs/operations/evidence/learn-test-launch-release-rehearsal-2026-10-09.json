@@ -1,0 +1,19 @@
+{
+  "version": "learn-test-launch-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+  "observedBefore": "2026-10-09T19:32:08.212939+00:00",
+  "observedAfter": "2026-10-09T19:32:09.014968+00:00",
+  "state": "rehearsed_and_rolled_back",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "98a678180bb0c15d8c7357cc2be489011aa8e3b2894a407d8df23993832b4e1e",
+  "afterCatalogSha256": "98a678180bb0c15d8c7357cc2be489011aa8e3b2894a407d8df23993832b4e1e",
+  "limitations": [
+    "No persistent release, real JWT/PostgREST test, function deployment or provider operation occurred.",
+    "Catalog comparison covers the audited schema/privileges/ledger; source record contents are not read or backed up.",
+    "An unverified result requires inspection; the write request is never retried automatically."
+  ]
+}

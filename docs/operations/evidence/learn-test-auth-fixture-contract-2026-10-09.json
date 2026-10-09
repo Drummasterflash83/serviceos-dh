@@ -1,0 +1,684 @@
+{
+  "tables": [
+    {
+      "name": "email_messages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_message_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "cc_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "snippet",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_html",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_messages_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER email_messages_set_updated_at BEFORE UPDATE ON public.email_messages FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "UNIQUE (tenant_id, provider, provider_message_id)"
+      ]
+    },
+    {
+      "name": "email_sync_runs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'running'::text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_ingestion_run_guard_v2",
+          "function": "CREATE OR REPLACE FUNCTION public.email_ingestion_run_guard_v2()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare protected boolean;\nbegin\n  if tg_op='INSERT' then\n    if new.sync_type in ('messages','workspace_messages','workspace_backfill') then\n      if new.status<>'running' or new.completed_at is not null or new.records_processed<>0 or\n        jsonb_typeof(new.metadata->'email_account_id') is distinct from 'string' or\n        not coalesce(new.metadata->>'email_account_id'~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',false) or new.metadata ? 'email_ingestion_v2' then\n        raise exception using errcode='42501',message='invalid_ingestion_attempt';\n      end if;\n    end if;\n    return new;\n  end if;\n  protected:=old.sync_type in ('messages','workspace_messages','workspace_backfill');\n  if tg_op='UPDATE' then protected:=protected or new.sync_type in ('messages','workspace_messages','workspace_backfill'); end if;\n  if not protected then if tg_op='DELETE' then return old; else return new; end if; end if;\n  if tg_op='DELETE' or current_user<>'email_ingestion_protocol_owner' then\n    raise exception using errcode='42501',message='email_attempt_requires_protocol';\n  end if;\n  if row(new.id,new.tenant_id,new.provider,new.sync_type,new.started_at,new.metadata->'email_account_id') is distinct from\n     row(old.id,old.tenant_id,old.provider,old.sync_type,old.started_at,old.metadata->'email_account_id') then\n    raise exception using errcode='42501',message='immutable_ingestion_attempt';\n  end if;\n  return new;\nend $function$\n",
+          "definition": "CREATE TRIGGER email_ingestion_run_guard_v2 BEFORE INSERT OR DELETE OR UPDATE ON public.email_sync_runs FOR EACH ROW EXECUTE FUNCTION email_ingestion_run_guard_v2()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)"
+      ]
+    },
+    {
+      "name": "phone_calls",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_number",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "cost",
+          "type": "numeric(12,4)",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_calls_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER phone_calls_set_updated_at BEFORE UPDATE ON public.phone_calls FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "UNIQUE (tenant_id, provider, provider_call_id)"
+      ]
+    },
+    {
+      "name": "phone_recordings",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_recording_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "recording_uri",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "file_size",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_recordings_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER phone_recordings_set_updated_at BEFORE UPDATE ON public.phone_recordings FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "UNIQUE (tenant_id, provider, provider_recording_id)"
+      ]
+    },
+    {
+      "name": "phone_sync_runs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'simwood'::text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'running'::text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        }
+      ],
+      "triggers": [],
+      "constraints": [
+        "PRIMARY KEY (id)"
+      ]
+    },
+    {
+      "name": "phone_transcripts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "recording_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "transcript_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "language",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "phone_transcripts_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER phone_transcripts_set_updated_at BEFORE UPDATE ON public.phone_transcripts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (recording_id) REFERENCES phone_recordings(id) ON DELETE CASCADE"
+      ]
+    },
+    {
+      "name": "profiles",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "default": "'viewer'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "profiles_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER profiles_set_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE",
+        "PRIMARY KEY (id)",
+        "CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'ops'::text, 'viewer'::text, 'openfolk'::text])))"
+      ]
+    },
+    {
+      "name": "tenants",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "industry",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'active'::text",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "tenants_set_updated_at",
+          "function": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+          "definition": "CREATE TRIGGER tenants_set_updated_at BEFORE UPDATE ON public.tenants FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "UNIQUE (slug)",
+        "CHECK ((status = ANY (ARRAY['active'::text, 'suspended'::text, 'archived'::text])))"
+      ]
+    }
+  ],
+  "authTriggers": [
+    {
+      "function": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nbegin\n  insert into public.profiles (id, email)\n  values (new.id, new.email)\n  on conflict (id) do nothing;\n  return new;\nend;\n$function$\n",
+      "definition": "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()"
+    }
+  ]
+}

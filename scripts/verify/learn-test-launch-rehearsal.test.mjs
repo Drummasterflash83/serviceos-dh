@@ -14,7 +14,7 @@ function mock({org=TEST_ORGANIZATION,writeStatus=201,drift=false,postUnavailable
     if(url.endsWith('/database/query')){
       wrote=true;
       if(writeStatus!==201)return reply({code:'42501',message:'private response '+token},writeStatus);
-      return reply([{rehearsal:'learn-test-launch-rehearsal/1',reader_absent:true,views_absent:true}],201);
+      return reply([{rehearsal:'learn-test-launch-rehearsal/1',reader_absent:true,views_absent:true,receipt_absent:true}],201);
     }
     if(wrote&&postUnavailable)return reply({message:'private failure'},503);
     if(url.endsWith('/'+TEST_PROJECT))return reply({id:TEST_PROJECT,organization_id:org,status:'ACTIVE_HEALTHY'});

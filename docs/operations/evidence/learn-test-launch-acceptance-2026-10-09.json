@@ -1,0 +1,23 @@
+{
+  "version": "learn-test-launch-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa",
+  "observedAt": "2026-10-09T19:42:16.609Z",
+  "runId": "32e73293-55cf-47d9-9bb5-c08a5166b9c4",
+  "state": "passed_synthetic_acceptance",
+  "checks": [
+    "Synthetic fixture users signed in through Auth",
+    "Owner/admin Edge reads: tenant counts, labels, recording links, statuses and unknown voicemail",
+    "Viewer/ops, foreign tenant, machine headers, missing and invalid JWT denied",
+    "PostgREST tenant isolation, payload/error redaction and private-source denial",
+    "Role revocation takes effect for the same existing JWT in Edge and PostgREST"
+  ],
+  "failure": null,
+  "cleanupVerified": true,
+  "cleanupErrors": [],
+  "fixtureManifest": "/private/tmp/serviceos-learn-launch-fixtures-32e73293-55cf-47d9-9bb5-c08a5166b9c4.json",
+  "limitations": [
+    "Synthetic TEST identities and metadata only; no customer records, provider traffic, audio playback or frontend were verified.",
+    "Existing keys were reused in memory; no email was sent and no new project key was created."
+  ]
+}

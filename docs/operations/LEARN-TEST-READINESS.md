@@ -1,8 +1,9 @@
 # Existing TEST environment: verified release gaps
 
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
-No project, deployment, schema, grant, policy, provider configuration, API key or
-customer record was created or changed. The Vercel CLI refreshed its existing local
+Those initial audits changed no hosted state. The later **TEST-only metadata release
+and signed-in synthetic acceptance** are recorded below; production remains untouched.
+The Vercel CLI refreshed its existing local
 session after a direct request using the old saved access token returned HTTP 403.
 
 ## Current evidence
@@ -17,33 +18,38 @@ Supabase project listing reports both known projects `ACTIVE_HEALTHY`:
 Only TEST schema catalogs and its deployment ledger were queried. Production
 database contents and schema were not queried during this audit.
 
-The latest retained TEST catalog/function audit is **2026-10-09 19:16:20 UTC**. Its
-[version 2 readiness report](evidence/learn-test-readiness-2026-10-09-v2.json) identifies
+The latest retained TEST catalog/function audit is **2026-10-09 19:39:30 UTC**. Its
+[post-release report](evidence/learn-test-readiness-after-release-2026-10-09.json) identifies
 the missing prerequisites. The earlier [catalog snapshot](evidence/learn-test-schema-2026-10-09.json)
 at 18:57:35 UTC retains table/column definitions, policy expressions and function
 signatures; these are schema metadata, not tenant data or credentials.
 
-- 26 public tables; all have RLS enabled. Twenty-one have no policies.
+- 26 public tables; all have RLS enabled. Fifteen have no policies. Eight additional
+  launch metadata views are installed; views are counted separately from tables.
 - Of those public tables, only `profiles` has a table-level SELECT grant for
   `authenticated`. The audit also checks column-level SELECT privileges; none
-  satisfy the eight-table launch status contract.
+  satisfy the direct eight-table launch status contract. This is intentional:
+  authenticated launch reads now use the restricted views instead.
 - Existing email account/checkpoint/receipt/run policies target
   `email_ingestion_protocol_owner`. They do not establish access for a normal
   signed-in application user. Preserve these policies and their service workflow.
-- All required launch-status columns currently exist. The missing read authority
-  is separate from schema presence; do not turn unreadable results into zero.
+- All required launch-status columns exist. The restricted view contract passes
+  catalog checks, and the separate synthetic user acceptance has passed. A catalog
+  audit alone still does not declare JWT/API acceptance.
 - `customer_cards`, `jobs`, `team_members`, `org_units`, `intelligence_objects`
   and `graph_nodes` are absent. `interactions` exists but lacks the required user
   read authority. The nine inspected LEARN scorecard/review/work/Slack setup RPCs
   are absent or not executable by authenticated users.
-- No Edge Functions are deployed in TEST, including `learn-launch-status`.
-- The restricted launch reader role and all eight proposed metadata views are
-  absent. The separate `launchMetadata` assessment correctly reports this as
-  blocked; it does not recommend broad source-table grants to bypass the gap.
+- `learn-launch-status` version 1 is ACTIVE, with gateway JWT verification enabled
+  and TEST-only metadata mode. No other Edge Function is deployed by this release.
+- The restricted reader role and eight views are installed. The audit records
+  `needs_semantic_and_user_verification`; the linked acceptance report supplies the
+  runtime evidence without turning this catalog-only script into a release gate.
 - TEST uses `of_test_deploy.migrations`; no standard Supabase migration ledger
-  appeared in the catalog. Its one retained entry is
-  `openfolk_test_learn_bootstrap_v5`, applied **2026-10-04 20:12:22 UTC**. The
-  source SHA-256 is preserved in the report. Its source file is absent from this
+  appeared in the catalog. It retains the original
+  `openfolk_test_learn_bootstrap_v5`, applied **2026-10-04 20:12:22 UTC**, and the
+  new `learn_launch_metadata_views_v1`, applied **2026-10-09 19:32:31 UTC**. The
+  source checksums are preserved in the report. The original bootstrap source is absent from this
   checkout, and targeted searches of the older ServiceOS checkout, recovered
   OpenFolk source, Codex worktrees and task temporary files did not locate it.
   Absence from the checkout or standard ledger is not evidence of an empty TEST.
@@ -88,14 +94,13 @@ ordinary-user access, tenant isolation or connector acceptance.
 
 ## Concrete release work now required
 
-A [restricted launch metadata proposal](LEARN-TEST-LAUNCH-ACCESS.md) now implements
-the minimum read surface and passes handler and isolated SQL privilege tests.
-A hosted TEST rehearsal at **19:24:52–19:24:54 UTC** executed the corrected SQL and
-rolled back, with matching audited catalog/ledger fingerprints. An earlier hosted
-failure exposed deployment-role ownership requirements that the initial superuser
-test had missed; the verifier now uses matching non-superuser capabilities.
-No persistent release has occurred. Real JWT/API verification, a release receipt
-and the wider product foundations remain required.
+The [restricted metadata release](LEARN-TEST-LAUNCH-ACCESS.md) was installed at
+19:32 after a matching hosted rollback rehearsal, with an atomic checksum receipt.
+The function deployed at 19:33, and signed-in synthetic acceptance passed at 19:38.
+It verified owner/admin access, viewer/ops denial, tenant isolation, payload/error
+redaction, private-source denial and role revocation through real Auth/PostgREST/Edge.
+All fixture users and records were removed and absence verified. The broader
+product foundations, frontend and providers remain incomplete.
 
 1. Reconcile the deployed bootstrap and custom ledger. Recover its exact source if
    available; otherwise document the deployed definitions from read-only catalog
@@ -105,14 +110,12 @@ and the wider product foundations remain required.
    canonical customer/job/roster/graph/work foundations, then the local LEARN
    performance/capture/publication adapters. The successful local schema-clone
    tests used a different, fuller schema and do not establish TEST compatibility.
-3. Prepare the minimum intended authenticated read authority while preserving
-   existing protocol-role policies. Review column exposure (including raw payload
-   and sync error fields) and tenant/role semantics; do not silently substitute
-   service-role reads or blanket SELECT grants.
-4. Rehearse the candidate against an isolated representation of the actual TEST
-   schema, retain a schema/ledger comparison, and test no-JWT, foreign-tenant and
-   own-tenant paths with genuine signed-in users. Verify function signatures,
-   helper authority and ordinary-user RLS, not just table/function names.
+3. Extend appropriate read authority for the remaining card/work/roster surfaces.
+   Preserve the now-verified launch metadata boundary and original ingestion
+   protocol policies; no service-role fallback or blanket source grants.
+4. Rehearse each remaining candidate against TEST's actual schema and repeat
+   ordinary-user, foreign-tenant and no-JWT acceptance for its own contract. The
+   launch-status result does not prove unrelated RPC or full application access.
 5. Prepare a separate Vercel TEST project/candidate with TEST-only configuration,
    verified included capacity and deployment protection. Rehearse the full product
    build rather than deploying the synthetic browser harness.
@@ -121,6 +124,6 @@ and the wider product foundations remain required.
    Birchills voicemail discovery, Commusoft and vehicle-source mappings. Neither
    project health nor database row counts proves working ingestion.
 
-This is a verified environment map and runnable preflight, not a deployment or
-complete LEARN acceptance. No release decision or permission expansion is bundled
-into running the audit. The overall LEARN V1 goal remains active.
+The audit remains read-only. The separately recorded metadata deployment and
+synthetic acceptance cover one release slice, not complete LEARN acceptance.
+The overall LEARN V1 goal remains active.

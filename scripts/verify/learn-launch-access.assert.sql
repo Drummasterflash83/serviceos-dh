@@ -70,6 +70,9 @@ do $$ begin
 end $$;
 reset role;
 do $$ begin
+ assert (select count(*) from of_test_deploy.migrations)=2, 'Bootstrap and one release receipt must remain';
+ assert (select count(*) from of_test_deploy.migrations where migration_name='learn_launch_metadata_views_v1'
+   and project_ref='saatxzwxvdvqevbnskxy' and source_sha256 ~ '^[a-f0-9]{64}$' and applied_at is not null)=1;
  assert (select rows from source_before)=(select jsonb_agg(to_jsonb(e)) from email_messages e), 'Original source payloads must be unchanged';
  assert not exists(select * from test_policy_before except select * from pg_policies where schemaname='public'), 'Existing policies must remain identical';
  assert not has_schema_privilege('learn_launch_metadata_reader','public','CREATE');

@@ -7,22 +7,28 @@ import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { readTestCatalog, savedCliToken, TEST_PROJECT } from './learn-test-readiness.mjs';
 
-export const SOURCE_SHA256 = '56fc429ae3391fcf6e94bc258fc81ca812c8d42573807f3e4c7e0beb73692263';
+export const SOURCE_SHA256 = '5bbff33c4ece496cd6220a9beb1fc0d70cb31e205f2deaa4a10026e4a3e219aa';
 const SOURCE = new URL('../../supabase/release/learn-test/001_launch_metadata_views.sql', import.meta.url);
 const MARKER = 'learn-test-launch-rehearsal/1';
 const hash = value => createHash('sha256').update(value).digest('hex');
-export function rehearsalSql(source = readFileSync(SOURCE, 'utf8')) {
+export const RELEASE_NAME='learn_launch_metadata_views_v1';
+export function releaseSql(source = readFileSync(SOURCE, 'utf8')) {
   if (hash(source) !== SOURCE_SHA256) throw Error('Reviewed rehearsal SQL checksum differs');
   if (source.split('\nbegin;\n').length !== 2 || source.split('\ncommit;\n').length !== 2)
     throw Error('Unexpected release transaction framing');
   return source.replace('\nbegin;\n', `\nbegin;\nset local serviceos.release_target='${TEST_PROJECT}';
+set local serviceos.release_source_sha256='${SOURCE_SHA256}';
 set local lock_timeout='3s';
-set local statement_timeout='30s';\n`).replace('\ncommit;\n', `
+set local statement_timeout='30s';\n`);
+}
+export function rehearsalSql(source = readFileSync(SOURCE, 'utf8')) {
+  return releaseSql(source).replace('\ncommit;\n', `
 rollback;
 select '${MARKER}' as rehearsal,
  not exists(select 1 from pg_catalog.pg_roles where rolname='learn_launch_metadata_reader') as reader_absent,
  not exists(select 1 from pg_catalog.pg_class c join pg_catalog.pg_namespace n on n.oid=c.relnamespace
-  where n.nspname='public' and c.relname like 'learn_launch_%') as views_absent;
+  where n.nspname='public' and c.relname like 'learn_launch_%') as views_absent,
+ not exists(select 1 from of_test_deploy.migrations where migration_name='${RELEASE_NAME}') as receipt_absent;
 `);
 }
 function canonical(value) {
@@ -64,7 +70,7 @@ export async function rehearseLaunch({allowProjectRef,token,fetcher=fetch}) {
       if (/^[0-9A-Z]{5}$/.test(body?.code??'')) databaseCode=body.code;
       else databaseCode=/ERROR:\s*([0-9A-Z]{5}):/.exec(typeof body?.message==='string'?body.message:'')?.[1]??null;
     } else acknowledged=Array.isArray(body)&&body.length===1&&body[0].rehearsal===MARKER
-      &&body[0].reader_absent===true&&body[0].views_absent===true;
+      &&body[0].reader_absent===true&&body[0].views_absent===true&&body[0].receipt_absent===true;
   } catch { /* Unknown outcomes are inspected, never automatically retried. */ }
   let after=null;
   try {after=await readTestCatalog({allowProjectRef,token,fetcher});}catch { /* Report unverified state. */ }

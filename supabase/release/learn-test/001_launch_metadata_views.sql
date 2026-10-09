@@ -5,16 +5,21 @@ begin;
 do $$ begin
  if current_setting('serviceos.release_target',true) is distinct from 'saatxzwxvdvqevbnskxy' then
   raise exception 'Explicit existing TEST target required'; end if;
+ if coalesce(current_setting('serviceos.release_source_sha256',true),'') !~ '^[a-f0-9]{64}$' then
+  raise exception 'Reviewed release source checksum required'; end if;
  if not exists(select 1 from of_test_deploy.migrations where project_ref='saatxzwxvdvqevbnskxy'
    and migration_name='openfolk_test_learn_bootstrap_v5' and source_sha256='821515d9b8034b74826e1a81837c64d1b02804402da223715404d84b307a34d6') then
   raise exception 'Existing TEST bootstrap provenance differs'; end if;
  if exists(select 1 from pg_roles where rolname='learn_launch_metadata_reader') then
   raise exception 'Metadata reader role already exists; inspect release state before retrying'; end if;
+ if exists(select 1 from of_test_deploy.migrations where migration_name='learn_launch_metadata_views_v1') then
+  raise exception 'Release receipt already exists; inspect rather than replay'; end if;
  if exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
    where n.nspname='public' and c.relname=any(array['email_messages','phone_calls','phone_recordings','phone_transcripts',
     'email_accounts','google_workspace_mailboxes','email_sync_runs','phone_sync_runs','profiles']) and not c.relrowsecurity) then
   raise exception 'Existing TEST RLS precondition differs'; end if;
 end $$;
+lock table of_test_deploy.migrations in share row exclusive mode;
 create role learn_launch_metadata_reader nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
 -- Hosted postgres is CREATEROLE but not a superuser. It needs SET permission
 -- for ownership transfer. This temporary deployer membership is removed below.
@@ -112,4 +117,8 @@ end $$;
 -- PostgreSQL's automatic ADMIN-only creator grant may remain, with neither
 -- INHERIT nor SET. No application membership is granted. auth.uid() still
 -- drives the base-table RLS evaluated through the view owner.
+insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)
+ values(current_setting('serviceos.release_source_sha256'),'learn_launch_metadata_views_v1',
+  'saatxzwxvdvqevbnskxy',clock_timestamp());
+notify pgrst,'reload schema';
 commit;

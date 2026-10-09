@@ -109,13 +109,24 @@ try:
         "grant usage on schema auth to postgres with grant option;",
         "grant execute on function auth.uid() to postgres with grant option;",
         "grant usage on schema of_test_deploy to postgres;",
-        "grant select on of_test_deploy.migrations to postgres;"]
+        "alter table of_test_deploy.migrations owner to postgres;"]
     deployer += ['alter table public.' + ident(name) + ' owner to postgres;' for name in needed]
     apply('\n'.join(deployer).encode(), 'Hosted non-superuser deployment privilege model')
     before = metadata_report()
     assert before['state'] == 'blocked' and 'missing_reader_role' in before['roleIssues']
     assert all('missing_view' in view['issues'] for view in before['views'])
     print('Catalog audit recognizes absent release: PASS')
+    release = subprocess.run([NODE, '--input-type=module', '-e',
+        "import {releaseSql} from './scripts/verify/learn-test-launch-rehearsal.mjs'; process.stdout.write(releaseSql());"],
+        cwd=ROOT, capture_output=True, check=True).stdout
+    apply(b"alter table of_test_deploy.migrations add constraint verify_reject_release_receipt check(migration_name<>'learn_launch_metadata_views_v1');",
+          'Synthetic receipt failure constraint')
+    rejected = subprocess.run([DOCKER, 'exec', '-i', TARGET, 'psql', '-U', 'supabase_admin', '-d',
+        'roster_verify', '-v', 'ON_ERROR_STOP=1', '-f', '-'], input=b'set role postgres;\n'+release, capture_output=True)
+    assert rejected.returncode != 0 and b'verify_reject_release_receipt' in rejected.stderr
+    assert metadata_report() == before, 'Receipt failure must roll back all new roles, views and policies'
+    apply(b'alter table of_test_deploy.migrations drop constraint verify_reject_release_receipt;', 'Restore synthetic receipt constraint')
+    print('Receipt failure rolls back the whole release: PASS')
     rehearsal = subprocess.run([NODE, '--input-type=module', '-e',
         "import {rehearsalSql} from './scripts/verify/learn-test-launch-rehearsal.mjs'; process.stdout.write(rehearsalSql());"],
         cwd=ROOT, capture_output=True, check=True).stdout
@@ -126,7 +137,7 @@ try:
     denied=subprocess.run([DOCKER,'exec','-i',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-v','ON_ERROR_STOP=1','-f','-'],input=proposal.encode(),capture_output=True)
     assert denied.returncode!=0 and b'Explicit existing TEST target required' in denied.stderr
     print('Unscoped release refused: PASS')
-    apply(("set serviceos.release_target='saatxzwxvdvqevbnskxy';\n"+proposal).encode(),'Proposed metadata views', as_deployer=True)
+    apply(release, 'Proposed metadata views and atomic receipt', as_deployer=True)
     apply((ROOT/'scripts/verify/learn-launch-access.assert.sql').read_bytes(),'Owner/admin, tenant, viewer, redaction and preservation assertions')
     after = metadata_report()
     if after['roleIssues']:

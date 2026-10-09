@@ -328,28 +328,27 @@ live or deployed. See [meaning and remaining requirements](../operations/LEARN-W
 
 ## Next work and release gates
 
-The existing TEST target is now verified through reused Supabase/Vercel logins.
-At 19:01 UTC on 9 October, TEST was healthy but had only 26 RLS-enabled public
-tables, no deployed Edge Functions, no authenticated reads for the launch-status
-columns, and none of the canonical card/work/roster foundations. Its custom ledger
-retains the 4 October `openfolk_test_learn_bootstrap_v5` deployment; the source is
-not in this checkout. Allkin still has only the production Vercel project. These
-are concrete release gaps, not missing credentials or an empty TEST database.
-The refreshed 19:16 audit also confirms the proposed metadata reader/views are
-absent. The preflight now distinguishes direct reads from the restricted view
-contract and detects column-grant, ownership and membership drift. See
+The existing TEST target is verified through reused Supabase/Vercel logins.
+At 19:32 UTC on 9 October the restricted launch metadata views were installed with
+an atomic checksum receipt, after a matching hosted rollback rehearsal. Existing
+source-table definitions/grants/policies and the original bootstrap ledger entry
+were preserved. At 19:33, `learn-launch-status` deployed to TEST with gateway JWT
+verification and metadata-view mode. Real signed-in synthetic acceptance passed
+at 19:38; owner/admin access, tenant isolation, redaction, denial and revocation
+were verified through Auth/PostgREST/Edge. All synthetic users and fixture records
+were removed and absence verified. Production remains untouched. See
 [verified inventory, evidence and dependency work](../operations/LEARN-TEST-READINESS.md).
 
-At 19:24 UTC the restricted launch SQL passed a **hosted TEST rollback rehearsal**.
-No persistent views/grants or data changes remain; the before/after audited
-catalog and ledger fingerprints match. The first hosted attempt exposed a
-non-superuser ownership-transfer problem, now reproduced and fixed locally.
-The SQL configures grants before ownership transfer and removes the deployer's
-temporary SET permission. An ADMIN-only PostgreSQL creator entry remains locally,
-with no SET/INHERIT capability or ordinary-user membership. Fifteen audit/rehearsal
-tests and the isolated PostgreSQL privilege assertions pass. Real JWT/PostgREST
-acceptance and a persistent, ledger-recorded release are still required. See
-[proposal, rehearsal evidence and release boundaries](../operations/LEARN-TEST-LAUNCH-ACCESS.md).
+The 19:39 audit still finds only 26 RLS-enabled base tables: canonical customer,
+job, roster, organisation, work and graph foundations remain absent, as do the nine
+inspected LEARN scorecard/review/work/Slack RPCs. The custom ledger now has the
+original 4 October bootstrap plus this metadata release. The bootstrap source is
+still unrecovered; do not overwrite that partial schema with a blanket replay.
+Allkin's last verified Vercel inventory has only the production project, so TEST
+frontend deployment remains outstanding. Twenty-three focused verification-tool
+tests, isolated SQL privilege/receipt-rollback assertions and hosted synthetic
+acceptance pass for this slice. See
+[release evidence and remaining boundaries](../operations/LEARN-TEST-LAUNCH-ACCESS.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.
