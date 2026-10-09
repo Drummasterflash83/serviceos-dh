@@ -4,6 +4,7 @@ create role authenticated;
 create schema auth;
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.actor',true),'')::uuid $$;
 create table profiles(id uuid primary key,tenant_id uuid,role text);
+create table view_as_context(actor_user_id uuid,ended_at timestamptz,expires_at timestamptz);
 create function current_tenant_id() returns uuid language sql security definer as $$ select tenant_id from profiles where id=auth.uid() $$;
 create function current_user_role() returns text language sql security definer as $$ select role from profiles where id=auth.uid() $$;
 create table org_units(id uuid primary key,tenant_id uuid,name text);
@@ -13,6 +14,7 @@ create table operating_profile_entries(id uuid primary key default gen_random_uu
 create unique index ope_natural_uk on operating_profile_entries(tenant_id,scope_kind,coalesce(scope_ref,''),namespace,key);
 insert into profiles values
  ('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000010','owner'),
- ('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000010','viewer');
+ ('00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000010','viewer'),
+ ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000010',null);
 insert into org_units values('00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000099','Other company');
 -- Migration is injected here by the test runner, followed by the assertions file.

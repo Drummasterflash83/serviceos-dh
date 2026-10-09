@@ -18,10 +18,24 @@ begin
   begin perform learn_scorecard_save_draft(t,2,p||'{"groupId":"00000000-0000-4000-8000-000000000020"}','Foreign group');raise exception 'Foreign group accepted';exception when invalid_parameter_value then null;end;
   perform set_config('test.actor','00000000-0000-4000-8000-000000000002',false);
   begin perform learn_scorecard_save_draft(t,2,p,'Viewer save');raise exception 'Viewer accepted';exception when insufficient_privilege then null;end;
+  perform set_config('test.actor','00000000-0000-4000-8000-000000000003',false);
+  begin perform learn_scorecard_save_draft(t,2,p,'Missing role save');raise exception 'Missing role accepted';exception when insufficient_privilege then null;end;
   perform set_config('test.actor','',false);
   begin perform learn_scorecard_save_draft(t,2,p,'No session');raise exception 'Unauthenticated accepted';exception when insufficient_privilege then null;end;
 end;
 $$;
+reset role;
+insert into view_as_context values ('00000000-0000-4000-8000-000000000001',null,now()+interval '1 hour');
+set role authenticated;
+select set_config('test.actor','00000000-0000-4000-8000-000000000001',false);
+do $$
+begin
+  begin
+    perform learn_scorecard_save_draft('00000000-0000-4000-8000-000000000010',2,'{}','Preview session');
+    raise exception 'Preview session accepted';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
 reset role;
 do $$
 begin

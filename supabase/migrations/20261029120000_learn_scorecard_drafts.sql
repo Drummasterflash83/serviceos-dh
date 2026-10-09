@@ -22,7 +22,9 @@ declare
   v_weight numeric := 0;
 begin
   if auth.uid() is null or p_tenant_id is distinct from current_tenant_id()
-     or current_user_role() not in ('owner','admin') then
+     or coalesce(current_user_role(),'') not in ('owner','admin')
+     or exists(select 1 from public.view_as_context where actor_user_id=auth.uid()
+       and ended_at is null and (expires_at is null or expires_at>now())) then
     raise exception 'Only this company owner or admin may save scoring rules' using errcode='42501';
   end if;
   if p_expected_version is null or p_expected_version < 0 or nullif(trim(p_reason),'') is null

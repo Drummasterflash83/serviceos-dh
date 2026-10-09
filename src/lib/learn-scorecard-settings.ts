@@ -74,6 +74,7 @@ export async function saveScorecardDraft(
   const saved = data as ScorecardPolicy;
   if (
     !saved ||
+    (expectedVersion > 0 && saved.id !== policy.id) ||
     saved.tenantId !== policy.tenantId ||
     saved.subjectKind !== policy.subjectKind ||
     (saved.groupId ?? null) !== (policy.groupId ?? null) ||

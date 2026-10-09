@@ -90,4 +90,23 @@ test("draft save sends an expected revision and reason, and never grants client-
     ),
     /verified/,
   );
+  await assert.rejects(
+    saveScorecardDraft(
+      { ...client, rpc: async () => ({ data: { ...policy, id: id(99), version: 2 }, error: null }) },
+      policy,
+      1,
+      "reason",
+    ),
+    /verified/,
+  );
+  // Initial creation may replace the temporary local ID with the server's ID.
+  assert.equal(
+    (await saveScorecardDraft(
+      { ...client, rpc: async () => ({ data: { ...policy, id: id(99) }, error: null }) },
+      policy,
+      0,
+      "Initial creation",
+    )).id,
+    id(99),
+  );
 });

@@ -207,6 +207,13 @@ live migration has been performed by this branch.
   idempotent retry, incomplete-checkpoint protection and prior-window retention.
   Browser testing used only synthetic data; workspace mismatch was rejected and
   a valid submission showed queued status with no console errors.
+- Scorecard authority follow-up: the draft RPC now rejects missing roles and
+  active view-as sessions. The client rejects save acknowledgements that change
+  an existing policy's identity (initial server-assigned IDs remain supported).
+  Fifteen score/settings tests and the application TypeScript check passed.
+  `python3 scripts/verify/learn-scorecard-sql.py` repeats the isolated SQL fixture,
+  including missing-role and preview-session rejection with no extra history rows.
+  These draft migrations are still local and have not been applied to production.
 - Preservation/transcript-status increment: 23 focused tests passed, covering
   pagination and foreign/duplicate rows, missing IDs hidden by rising totals,
   changed storage pointers/objects, failed reads, bounded WAV header inspection
