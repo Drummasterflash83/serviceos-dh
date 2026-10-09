@@ -1,0 +1,317 @@
+{
+  "version": "learn-test-readiness/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T19:01:25.681617+00:00",
+  "state": "not_release_verified",
+  "publicTableCount": 26,
+  "rlsTableCount": 26,
+  "noPolicyTables": [
+    "audit_logs",
+    "config_versions",
+    "email_ai_insights",
+    "email_attachments",
+    "email_messages",
+    "email_oauth_tokens",
+    "email_threads",
+    "google_workspace_connections",
+    "google_workspace_mailboxes",
+    "interactions",
+    "phone_accounts",
+    "phone_ai_insights",
+    "phone_calls",
+    "phone_endpoints",
+    "phone_recordings",
+    "phone_sync_runs",
+    "phone_transcripts",
+    "platform_jobs",
+    "system_health_checks",
+    "system_health_components",
+    "tenants"
+  ],
+  "migrationLedgers": [
+    "of_test_deploy.migrations"
+  ],
+  "edgeFunctions": [],
+  "launchFunctionPresent": false,
+  "slices": {
+    "launch": [
+      {
+        "table": "email_messages",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "created_at",
+          "raw_payload"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "phone_calls",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "created_at",
+          "provider_call_id",
+          "linked_id",
+          "direction",
+          "started_at",
+          "duration_seconds"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "phone_recordings",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "created_at",
+          "provider_call_id",
+          "linked_id"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "phone_transcripts",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "status"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "email_accounts",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "tenant_id",
+          "status"
+        ],
+        "rls": true,
+        "selectPolicyNames": [
+          "email_account_protocol_select_v2"
+        ]
+      },
+      {
+        "table": "google_workspace_mailboxes",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "sync_enabled",
+          "status"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "email_sync_runs",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "tenant_id",
+          "status",
+          "sync_type",
+          "started_at",
+          "completed_at",
+          "records_processed",
+          "error_message"
+        ],
+        "rls": true,
+        "selectPolicyNames": [
+          "email_run_protocol_select_v2"
+        ]
+      },
+      {
+        "table": "phone_sync_runs",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "tenant_id",
+          "status",
+          "sync_type",
+          "started_at",
+          "completed_at",
+          "records_processed",
+          "error_message"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      }
+    ],
+    "cards": [
+      {
+        "table": "customer_cards",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "title",
+          "summary",
+          "person_id",
+          "company_id",
+          "owner_id",
+          "updated_at"
+        ]
+      },
+      {
+        "table": "jobs",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "title",
+          "job_number",
+          "status",
+          "source_system",
+          "verified",
+          "updated_at"
+        ]
+      },
+      {
+        "table": "team_members",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "display_name",
+          "formal_role",
+          "org_unit_id",
+          "profile_id",
+          "confirmed_at",
+          "effective_to",
+          "updated_at"
+        ]
+      },
+      {
+        "table": "org_units",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "name"
+        ]
+      },
+      {
+        "table": "interactions",
+        "state": "blocked",
+        "missingColumns": [],
+        "unreadableColumns": [
+          "id",
+          "tenant_id",
+          "source_connector_id",
+          "source_type",
+          "source_table",
+          "source_id",
+          "occurred_at",
+          "subject",
+          "summary",
+          "body_preview",
+          "status",
+          "related_person_id",
+          "related_company_id",
+          "related_job_id"
+        ],
+        "rls": true,
+        "selectPolicyNames": []
+      },
+      {
+        "table": "intelligence_objects",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "object_type",
+          "subject",
+          "status",
+          "deadline",
+          "responsible_ref",
+          "accountable_ref",
+          "waiting_on_ref",
+          "confidence",
+          "source_interactions",
+          "source_entities",
+          "attributes",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      {
+        "table": "graph_nodes",
+        "state": "missing_table",
+        "missingColumns": [
+          "id",
+          "tenant_id",
+          "source_table",
+          "source_id"
+        ]
+      }
+    ]
+  },
+  "rpcs": [
+    {
+      "name": "learn_scorecard_save_draft",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_scorecard_publish",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_scorecard_policy_for_period",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_performance_review",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_work_history_read",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_member_history_read",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_work_handoffs_collect",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_work_residence_collect",
+      "state": "missing_or_not_executable"
+    },
+    {
+      "name": "learn_slack_start_import",
+      "state": "missing_or_not_executable"
+    }
+  ],
+  "limitations": [
+    "Catalog presence, grants and policy names do not prove ordinary-user access or tenant isolation.",
+    "Policy roles/expressions, column types, function signatures, transitive dependencies and current migration ledgers need review.",
+    "No customer rows, source completeness, backups, restore, OAuth consent or provider traffic are tested.",
+    "Optional voicemail reads and the rest of the full application are outside this minimum read contract.",
+    "This audit cannot authorize deployment or changes to grants/policies; no schema changes are performed."
+  ],
+  "customMigrationEntries": [
+    {
+      "source_sha256": "821515d9b8034b74826e1a81837c64d1b02804402da223715404d84b307a34d6",
+      "migration_name": "openfolk_test_learn_bootstrap_v5",
+      "project_ref": "saatxzwxvdvqevbnskxy",
+      "applied_at": "2026-10-04 20:12:22.960138+00"
+    }
+  ]
+}

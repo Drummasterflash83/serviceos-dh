@@ -173,6 +173,12 @@ function (`_shared/controlplane/authz.ts`).
 
 ## Backend (Supabase) — separate track
 
+For the developing LEARN V1 release, use the separate
+[verified TEST environment map](operations/LEARN-TEST-READINESS.md). The existing
+TEST backend is a partial schema with its own deployment ledger; a successful
+local build does not establish hosted TEST compatibility. Do not point a TEST
+frontend at the production project documented above.
+
 Supabase migrations and edge functions deploy via the Supabase CLI against project
 `tgbnakbxwcqjeimygroz`, independently of Vercel. A frontend deploy must never modify
 Supabase, publish the Customer Health policy, enable the source allowlist, or activate any

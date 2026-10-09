@@ -1,0 +1,2314 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "tables": [
+    {
+      "rls": true,
+      "name": "migrations",
+      "schema": "of_test_deploy",
+      "columns": [
+        {
+          "name": "source_sha256",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "migration_name",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "project_ref",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "applied_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "audit_logs",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "actor",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "resource_type",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "resource_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "detail",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "config_versions",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "artifact_kind",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "artifact_key",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "supersedes",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "author",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "payload_hash",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_accounts",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "backfill_status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "backfill_started_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "backfill_completed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "backfill_page_token",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "backfill_total_fetched",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "backfill_error",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "history_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "auth_state",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "auth_error",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "auth_state_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_success_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_attempt_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_sync_error",
+          "type": "text",
+          "notNull": false
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_account_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT"
+        },
+        {
+          "name": "email_account_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE"
+        }
+      ],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ai_insights",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "message_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "thread_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "intent",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "urgency",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "action_required",
+          "type": "boolean",
+          "notNull": false
+        },
+        {
+          "name": "suggested_owner",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(5,4)",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_attachments",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "message_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "filename",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_checkpoints",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "generation",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "revision",
+          "type": "bigint",
+          "notNull": true
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "owner_attempt_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "continuation",
+          "type": "jsonb",
+          "notNull": false
+        },
+        {
+          "name": "block_code",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_checkpoint_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT"
+        },
+        {
+          "name": "email_checkpoint_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT"
+        },
+        {
+          "name": "email_checkpoint_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE"
+        }
+      ],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_transitions",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "transition_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "operation",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "attempt_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "expected_generation",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "expected_revision",
+          "type": "bigint",
+          "notNull": false
+        },
+        {
+          "name": "expected_owner_attempt_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "request_document",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "request_fingerprint",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "accepted_result",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "checkpoint_stream",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "result_generation",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "result_revision",
+          "type": "bigint",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_receipt_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT"
+        },
+        {
+          "name": "email_receipt_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT"
+        }
+      ],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_messages",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_message_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "from_email",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "to_emails",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "cc_emails",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "snippet",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "body_text",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "body_html",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_oauth_tokens",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "access_token",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "refresh_token",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "token_type",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_sync_runs",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_run_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT"
+        },
+        {
+          "name": "email_run_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE"
+        }
+      ],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_threads",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "participants",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "last_message_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_connections",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "customer_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "service_account_email",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "delegated_scopes",
+          "type": "text[]",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "impersonation_subject",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "service_account_client_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "authorised_scopes",
+          "type": "text[]",
+          "notNull": true
+        },
+        {
+          "name": "last_verified_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "notNull": false
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_mailboxes",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "mailbox_type",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "sync_enabled",
+          "type": "boolean",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "interactions",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "source_connector_id",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "source_type",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "source_table",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "source_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "source_external_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "interaction_type",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "body_preview",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "from_address",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "to_addresses",
+          "type": "text[]",
+          "notNull": true
+        },
+        {
+          "name": "cc_addresses",
+          "type": "text[]",
+          "notNull": true
+        },
+        {
+          "name": "phone_from",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "phone_to",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "processing_status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "related_person_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "related_company_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "related_thread_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "related_job_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "related_task_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_accounts",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_customer_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_ai_insights",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "call_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "recording_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "intent",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "urgency",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "sentiment",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "action_required",
+          "type": "boolean",
+          "notNull": false
+        },
+        {
+          "name": "suggested_owner",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(5,4)",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "transcript_id",
+          "type": "uuid",
+          "notNull": false
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_calls",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "from_number",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "to_number",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "notNull": false
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "cost",
+          "type": "numeric(12,4)",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_endpoints",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "account_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_endpoint_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "endpoint_type",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "extension",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "e164_number",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_recordings",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "provider_recording_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "provider_call_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "linked_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "recording_uri",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "file_size",
+          "type": "bigint",
+          "notNull": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "notNull": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_sync_runs",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "phone_transcripts",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "recording_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "transcript_text",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "language",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "platform_jobs",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "connector_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "module_id",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "job_type",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "job_key",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "progress_current",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "progress_total",
+          "type": "integer",
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "error_count",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "attempt_count",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "max_attempts",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "failed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "next_run_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "result",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_by",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "available_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "claimed_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "claimed_by",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "lease_expires_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_attempt_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "dead_lettered_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "error_code",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "parent_job_id",
+          "type": "uuid",
+          "notNull": false
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "profiles",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": false
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "profiles_select_own",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(( SELECT auth.uid() AS uid) = id)",
+          "command": "SELECT"
+        }
+      ],
+      "anonSelect": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "system_health_checks",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "component",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "last_success_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "last_failure_at",
+          "type": "timestamp with time zone",
+          "notNull": false
+        },
+        {
+          "name": "failure_count",
+          "type": "integer",
+          "notNull": true
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "system_health_components",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "component",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "tenants",
+      "schema": "public",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "notNull": true
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "industry",
+          "type": "text",
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "notNull": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "notNull": true
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "anonSelect": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "functions": [
+    {
+      "name": "current_tenant_id",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "current_user_role",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_connector_diagnostics",
+      "arguments": "p_tenant_id uuid, p_limit integer",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_connector_health",
+      "arguments": "p_tenant_id uuid",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_account_guard_v2",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_checkpoint_json_v2",
+      "arguments": "c email_ingestion_checkpoints",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_count_v2",
+      "arguments": "v jsonb, nullable boolean",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_evidence_v2",
+      "arguments": "v jsonb, kind text",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_keys_v2",
+      "arguments": "v jsonb, names text[]",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_payload_v2",
+      "arguments": "op text, stream text, v jsonb",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_recovery_v2",
+      "arguments": "v jsonb",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_run_guard_v2",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_transition_result_v2",
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_ingestion_transition_v2",
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid, p_operation text, p_expected_generation uuid, p_expected_revision bigint, p_expected_owner_attempt_id uuid, p_payload jsonb",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "email_select_unprojected",
+      "arguments": "p_tenant_id uuid, p_limit integer",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "handle_new_user",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "is_openfolk",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "platform_jobs_claim",
+      "arguments": "p_worker text, p_batch integer, p_lease_seconds integer, p_job_types text[]",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "platform_jobs_complete_email_v1",
+      "arguments": "p_job_id uuid, p_tenant_id uuid, p_claimed_by text, p_attempt_count integer, p_document jsonb",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "serviceos_record_health_check",
+      "arguments": "p_tenant uuid, p_component text, p_status text, p_error text, p_metadata jsonb",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "serviceos_schedule_defs",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "set_updated_at",
+      "arguments": "",
+      "anonExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "observedAt": "2026-10-09T18:57:35.876202+00:00"
+}

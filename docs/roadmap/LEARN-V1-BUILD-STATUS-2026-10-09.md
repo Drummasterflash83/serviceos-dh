@@ -328,6 +328,16 @@ live or deployed. See [meaning and remaining requirements](../operations/LEARN-W
 
 ## Next work and release gates
 
+The existing TEST target is now verified through reused Supabase/Vercel logins.
+At 19:01 UTC on 9 October, TEST was healthy but had only 26 RLS-enabled public
+tables, no deployed Edge Functions, no authenticated reads for the launch-status
+columns, and none of the canonical card/work/roster foundations. Its custom ledger
+retains the 4 October `openfolk_test_learn_bootstrap_v5` deployment; the source is
+not in this checkout. Allkin still has only the production Vercel project. These
+are concrete release gaps, not missing credentials or an empty TEST database.
+The new TEST-only metadata preflight and four focused tests pass. See
+[verified inventory, evidence and dependency work](../operations/LEARN-TEST-READINESS.md).
+
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.
 Confirmed viewer-role staff can act within the same item scope. Synthetic database
