@@ -105,6 +105,11 @@ numerical correction workflow, versioned policy publication, agreed calendars an
 exclusions, team aggregation and saved assessment runs.
 No real person's score or reward is established by these tests.
 
+The local work-transition path now captures immutable before/after ownership,
+state and version snapshots atomically in the existing work history. This supplies
+future work-interval evidence but does not backfill missing history or publish
+measurements. See [scope, provenance and release dependencies](LEARN-WORK-HISTORY.md).
+
 ## Deployment and verification
 
 1. Verify the target project and deployed migration history. Review dependencies

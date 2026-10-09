@@ -116,7 +116,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const actionTypes = (await admin.from("domain_object_types").select("domain, object_type").eq("object_class", "action")).data ?? [];
   const typeKeys = new Set(actionTypes.map((t: Row) => `${t.domain}:${t.object_type}`));
   const { data: rawActions } = await admin.from("intelligence_objects")
-    .select("id, domain, object_type, subject, status, attributes, priority, confidence, deadline, responsible_ref, accountable_ref, waiting_on_ref, source_interactions, source_entities, updated_at")
+    .select("id, version, domain, object_type, subject, status, attributes, priority, confidence, deadline, responsible_ref, accountable_ref, waiting_on_ref, source_interactions, source_entities, updated_at")
     .eq("tenant_id", tenantId).order("updated_at", { ascending: false }).limit(3000);
   const active = (rawActions ?? []).filter((a: Row) => typeKeys.has(`${a.domain}:${a.object_type}`) && !TERMINAL.has(a.status));
   // NORMAL work = meaningful only. Exclude verification artifacts AND non-actionable fallback

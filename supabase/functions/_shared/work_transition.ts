@@ -29,29 +29,40 @@
 type Row = Record<string, any>;
 
 export type WorkVerb =
-  | "acknowledge" | "start" | "wait" | "resume" | "block" | "unblock" | "escalate"
-  | "complete" | "dismiss" | "accept" | "assign" | "correct_owner" | "correct_objective";
+  | "acknowledge"
+  | "start"
+  | "wait"
+  | "resume"
+  | "block"
+  | "unblock"
+  | "escalate"
+  | "complete"
+  | "dismiss"
+  | "accept"
+  | "assign"
+  | "correct_owner"
+  | "correct_objective";
 
 /** What the caller resolved about the actor (from resolveUserOwnership + the object's RACI). */
 export interface ActorAuthority {
-  userRef: string;          // stable actor ref recorded in history (email|userId|'service')
-  isSuperadmin: boolean;    // holds tenant.superadmin (active grant)
-  canAssign: boolean;       // work.assign
-  canApprove: boolean;      // work.approve
+  userRef: string; // stable authenticated user ID for new persisted transitions
+  isSuperadmin: boolean; // holds tenant.superadmin (active grant)
+  canAssign: boolean; // work.assign
+  canApprove: boolean; // work.approve
   canConfirmOwnership: boolean; // ownership.confirm
-  isAssignee: boolean;      // actor is responsible/accountable/waiting_on for THIS object
+  isAssignee: boolean; // actor is responsible/accountable/waiting_on for THIS object
 }
 
 export interface TransitionInput {
-  object: Row;                       // the intelligence_objects row (status, domain, object_type, attributes, *_ref)
+  object: Row; // the intelligence_objects row (status, domain, object_type, attributes, *_ref)
   verb: WorkVerb;
   actor: ActorAuthority;
   legalTransitions: { from_state: string; to_state: string }[]; // state_transitions for (domain, object_type)
-  reason?: string | null;            // required for dismiss / corrections
-  evidence?: unknown;                // completion evidence, blocker note, waiting_on, etc.
-  targetMemberRef?: string | null;   // assign / correct_owner target (team_members.id or role ref)
+  reason?: string | null; // required for dismiss / corrections
+  evidence?: unknown; // completion evidence, blocker note, waiting_on, etc.
+  targetMemberRef?: string | null; // assign / correct_owner target (team_members.id or role ref)
   targetObjectiveId?: string | null; // correct_objective target (objectives.id)
-  approvedException?: boolean;        // complete without done_when — only with canApprove/superadmin
+  approvedException?: boolean; // complete without done_when — only with canApprove/superadmin
 }
 
 export interface HistoryWrite {
@@ -62,14 +73,18 @@ export interface HistoryWrite {
 }
 export interface TransitionDecision {
   ok: boolean;
-  code?: string;              // stable error code when !ok
+  code?: string; // stable error code when !ok
   message?: string;
-  toStatus?: string;          // new intelligence_objects.status (may equal current for attribute corrections)
+  toStatus?: string; // new intelligence_objects.status (may equal current for attribute corrections)
   statusChanged?: boolean;
-  history?: HistoryWrite;     // append to object_state_history
-  objectPatch?: Row;          // partial update to intelligence_objects (RACI hot cache, attributes)
-  objectiveLink?: {           // upsert into objective_links (correct_objective)
-    objectiveId: string; targetKind: "intelligence_object"; relation: string; rationale: string;
+  history?: HistoryWrite; // append to object_state_history
+  objectPatch?: Row; // partial update to intelligence_objects (RACI hot cache, attributes)
+  objectiveLink?: {
+    // upsert into objective_links (correct_objective)
+    objectiveId: string;
+    targetKind: "intelligence_object";
+    relation: string;
+    rationale: string;
   };
 }
 
@@ -98,15 +113,29 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
 
   // ── attribute corrections & ownership claims (NOT status moves) ────────────
   if (verb === "accept") {
+    if ((object.responsible_ref?.ref || object.accountable_ref?.ref) &&
+        !(actor.isAssignee || actor.canAssign || actor.isSuperadmin)) {
+      return fail("forbidden", "Accepting assigned work requires ownership or work.assign authority");
+    }
     // Claiming your queue is always allowed for a tenant member. If proposed, also advance.
     const patch: Row = { responsible_ref: { kind: "user", ref: actor.userRef } };
-    let to = current, changed = false;
+    let to = current,
+      changed = false;
     if (current === "proposed" && legal("proposed", "ready", input.legalTransitions)) {
-      to = "ready"; changed = true;
+      to = "ready";
+      changed = true;
     }
     return {
-      ok: true, toStatus: to, statusChanged: changed, objectPatch: patch,
-      history: { from_state: current, to_state: to, actor: actorStamp, reason: input.reason ?? "accepted ownership" },
+      ok: true,
+      toStatus: to,
+      statusChanged: changed,
+      objectPatch: patch,
+      history: {
+        from_state: current,
+        to_state: to,
+        actor: actorStamp,
+        reason: input.reason ?? "accepted ownership",
+      },
     };
   }
 
@@ -116,9 +145,16 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     }
     if (!input.targetMemberRef) return fail("bad_request", "assign requires a target member");
     return {
-      ok: true, toStatus: current, statusChanged: false,
+      ok: true,
+      toStatus: current,
+      statusChanged: false,
       objectPatch: { responsible_ref: { kind: "member", ref: input.targetMemberRef } },
-      history: { from_state: current, to_state: current, actor: actorStamp, reason: input.reason ?? `assigned to ${input.targetMemberRef}` },
+      history: {
+        from_state: current,
+        to_state: current,
+        actor: actorStamp,
+        reason: input.reason ?? `assigned to ${input.targetMemberRef}`,
+      },
     };
   }
 
@@ -126,42 +162,81 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     if (!(actor.canConfirmOwnership || actor.isSuperadmin)) {
       return fail("forbidden", "Correcting ownership requires ownership.confirm authority");
     }
-    if (!input.targetMemberRef) return fail("bad_request", "correct_owner requires a target member");
-    if (!input.reason) return fail("bad_request", "correct_owner requires a reason (the original inference is preserved)");
+    if (!input.targetMemberRef)
+      return fail("bad_request", "correct_owner requires a target member");
+    if (!input.reason)
+      return fail(
+        "bad_request",
+        "correct_owner requires a reason (the original inference is preserved)",
+      );
     // Preserve the ORIGINAL inferred accountable in attributes for learning; re-point the hot cache.
     const originals = (object.attributes?.owner_corrections as unknown[]) ?? [];
     return {
-      ok: true, toStatus: current, statusChanged: false,
+      ok: true,
+      toStatus: current,
+      statusChanged: false,
       objectPatch: {
         accountable_ref: { kind: "member", ref: input.targetMemberRef },
         attributes: {
           ...(object.attributes ?? {}),
-          owner_corrections: [...originals, { was: object.accountable_ref ?? null, by: actor.userRef, reason: input.reason }],
+          owner_corrections: [
+            ...originals,
+            { was: object.accountable_ref ?? null, by: actor.userRef, reason: input.reason },
+          ],
         },
       },
-      history: { from_state: current, to_state: current, actor: actorStamp, reason: `owner corrected → ${input.targetMemberRef}: ${input.reason}` },
+      history: {
+        from_state: current,
+        to_state: current,
+        actor: actorStamp,
+        reason: `owner corrected → ${input.targetMemberRef}: ${input.reason}`,
+      },
     };
   }
 
   if (verb === "correct_objective") {
     if (!(actor.canConfirmOwnership || actor.isSuperadmin)) {
-      return fail("forbidden", "Correcting the served objective requires ownership.confirm authority");
+      return fail(
+        "forbidden",
+        "Correcting the served objective requires ownership.confirm authority",
+      );
     }
-    if (!input.targetObjectiveId) return fail("bad_request", "correct_objective requires a target objective");
-    if (!input.reason) return fail("bad_request", "correct_objective requires a reason (the original is preserved)");
+    if (!input.targetObjectiveId)
+      return fail("bad_request", "correct_objective requires a target objective");
+    if (!input.reason)
+      return fail("bad_request", "correct_objective requires a reason (the original is preserved)");
     return {
-      ok: true, toStatus: current, statusChanged: false,
+      ok: true,
+      toStatus: current,
+      statusChanged: false,
       objectiveLink: {
-        objectiveId: input.targetObjectiveId, targetKind: "intelligence_object",
-        relation: "contributes_to", rationale: input.reason,
+        objectiveId: input.targetObjectiveId,
+        targetKind: "intelligence_object",
+        relation: "contributes_to",
+        rationale: input.reason,
       },
-      history: { from_state: current, to_state: current, actor: actorStamp, reason: `objective corrected → ${input.targetObjectiveId}: ${input.reason}` },
+      history: {
+        from_state: current,
+        to_state: current,
+        actor: actorStamp,
+        reason: `objective corrected → ${input.targetObjectiveId}: ${input.reason}`,
+      },
     };
   }
 
   // ── status moves — validated against the DATA-driven transition matrix ─────
   const target = STATUS_VERB_TARGET[verb];
   if (!target) return fail("unknown_verb", `Unsupported transition verb: ${verb}`);
+
+  // OWNERSHIP GATE: moving someone else's work requires being the assignee (owner,
+  // RACI party or VALID cover — computed by the caller) or holding work.assign /
+  // superadmin. Authority level alone never grants mutation on another's queue.
+  if (!(actor.isAssignee || actor.canAssign || actor.isSuperadmin)) {
+    return fail(
+      "forbidden",
+      "This is not your work item — only its owner, a valid cover, or a work.assign authority can move it",
+    );
+  }
 
   if (verb === "dismiss" && !input.reason) {
     return fail("bad_request", "dismiss requires a reason (source evidence is never erased)");
@@ -170,7 +245,10 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
     const doneWhen = (object.attributes?.done_when as string | undefined)?.trim();
     const hasEvidence = input.evidence != null && input.evidence !== "";
     if (!doneWhen && !(input.approvedException && (actor.canApprove || actor.isSuperadmin))) {
-      return fail("done_when_required", "Completion requires a done_when definition, or an approved exception by a work.approve authority");
+      return fail(
+        "done_when_required",
+        "Completion requires a done_when definition, or an approved exception by a work.approve authority",
+      );
     }
     if (doneWhen && !hasEvidence) {
       return fail("evidence_required", "Completion requires evidence satisfying done_when");
@@ -185,15 +263,24 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
   }
 
   const patch: Row = {};
-  if (verb === "block" && input.evidence) patch.attributes = { ...(object.attributes ?? {}), blocker: input.evidence };
-  if (verb === "wait" && input.evidence) patch.waiting_on_ref = { kind: "note", ref: String(input.evidence) };
+  if (verb === "block" && input.evidence)
+    patch.attributes = { ...(object.attributes ?? {}), blocker: input.evidence };
+  if (verb === "wait" && input.evidence)
+    patch.waiting_on_ref = { kind: "note", ref: String(input.evidence) };
   if (verb === "complete" && input.evidence) {
     patch.attributes = { ...(object.attributes ?? {}), completion_evidence: input.evidence };
   }
 
   return {
-    ok: true, toStatus: target.to, statusChanged: true,
+    ok: true,
+    toStatus: target.to,
+    statusChanged: true,
     objectPatch: Object.keys(patch).length ? patch : undefined,
-    history: { from_state: current, to_state: target.to, actor: actorStamp, reason: input.reason ?? null },
+    history: {
+      from_state: current,
+      to_state: target.to,
+      actor: actorStamp,
+      reason: input.reason ?? null,
+    },
   };
 }

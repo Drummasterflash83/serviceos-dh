@@ -57,6 +57,7 @@ export interface RankExplanation {
   factors: { factor: string; contribution: number }[];
 }
 export interface WorkItem {
+  objectVersion?: number;
   id: string;
   title: string;
   outcome: string | null;
@@ -177,6 +178,7 @@ export type WorkVerb =
 
 export interface TransitionInput {
   objectId: string;
+  expectedVersion: number;
   verb: WorkVerb;
   reason?: string;
   evidence?: unknown;
@@ -201,6 +203,7 @@ export function transitionWork(
 > {
   return invoke("work-transition", {
     object_id: input.objectId,
+    expected_version: input.expectedVersion,
     verb: input.verb,
     reason: input.reason ?? null,
     evidence: input.evidence ?? null,

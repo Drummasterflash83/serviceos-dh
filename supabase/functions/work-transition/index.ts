@@ -5,7 +5,7 @@
 // (acknowledge/dismiss/edit were lost on refresh — silent data loss). One work item =
 // one intelligence_objects row of object_class='action'.
 //
-//   POST  body: { object_id, verb, reason?, evidence?, target_member_ref?,
+//   POST  body: { object_id, expected_version, verb, reason?, evidence?, target_member_ref?,
 //                 target_objective_id?, approved_exception? }
 //   verbs: acknowledge|start|wait|resume|block|unblock|escalate|complete|dismiss|
 //          accept|assign|correct_owner|correct_objective
@@ -54,6 +54,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const auth = await requireTenantUser(req, admin, ["owner", "admin", "ops"]);
   if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
   const { tenantId } = auth.ctx;
+  if (auth.ctx.userId === "service") return fail("forbidden", "A signed-in work actor is required", 403);
   const actorRef = auth.ctx.email ?? auth.ctx.userId;
 
   let body: Record<string, unknown> = {};
@@ -62,15 +63,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const verb = String(body.verb ?? "") as WorkVerb;
   if (!objectId) return fail("bad_request", "object_id is required", 400);
   if (!VERBS.has(verb)) return fail("bad_request", `unknown verb: ${verb}`, 400);
+  if (!Number.isSafeInteger(body.expected_version) || Number(body.expected_version) < 1)
+    return fail("bad_request", "Refresh work before acting: expected_version is required", 400);
 
   // ── read-only while viewing: if the actor has an ACTIVE View-As context, the
   //    whole session is read-only. Mutations are refused server-side (not just in the
   //    UI) — the actor must exit View-As before acting. ─────────────────────────
-  const { data: activeView } = await admin
+  const { data: activeView, error: viewError } = await admin
     .from("view_as_context")
     .select("id, expires_at, ended_at")
-    .eq("tenant_id", tenantId).eq("actor_user_id", auth.ctx.userId).is("ended_at", null)
+    .eq("actor_user_id", auth.ctx.userId).is("ended_at", null)
     .gt("expires_at", new Date().toISOString()).limit(1).maybeSingle();
+  if (viewError) return fail("authority_unavailable", "Could not verify View-As state", 503);
   if (activeView) {
     await writeAudit(admin, { tenantId, actor: actorRef, action: `work.transition.${verb}`, resourceType: "intelligence_object", resourceId: objectId, status: "denied", detail: { code: "read_only_view_active", view_as_context: activeView.id } });
     return fail("read_only_view_active", "You have an active View-As context — exit it before mutating work", 409);
@@ -82,31 +86,46 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .select("id, tenant_id, domain, object_type, status, attributes, responsible_ref, accountable_ref, waiting_on_ref, version")
     .eq("id", objectId).eq("tenant_id", tenantId).maybeSingle();
   if (!object) return fail("not_found", "work item not found in your tenant", 404);
+  if (object.version !== body.expected_version)
+    return fail("version_conflict", "Work changed since this card was loaded; refresh before retrying", 409);
 
   // ── legal status moves for this object's (domain, object_type) ─────────────
-  const { data: legalTransitions } = await admin
+  const { data: legalTransitions, error: transitionsError } = await admin
     .from("state_transitions")
     .select("from_state, to_state")
     .eq("domain", object.domain).eq("object_type", object.object_type);
+  if (transitionsError) return fail("authority_unavailable", "Could not load work transition rules", 503);
 
   // ── resolve the actor's authority (grants + RACI on THIS object) ───────────
-  const { data: member } = await admin.from("team_members")
-    .select("id").eq("tenant_id", tenantId).eq("profile_id", auth.ctx.userId).is("effective_to", null).maybeSingle();
+  const nowIso = new Date().toISOString();
+  const { data: member, error: memberError } = await admin.from("team_members")
+    .select("id").eq("tenant_id", tenantId).eq("profile_id", auth.ctx.userId)
+    .not("confirmed_at", "is", null).lte("effective_from", nowIso)
+    .or(`effective_to.is.null,effective_to.gt.${nowIso}`).maybeSingle();
+  if (memberError) return fail("authority_unavailable", "Could not resolve an unambiguous active team member", 503);
   const memberId = (member?.id as string | undefined) ?? null;
   let grants: Record<string, unknown>[] = [];
   if (memberId) {
-    grants = (await admin.from("authority_grants")
+    // Scoped team/cover routing needs the older roster dependency chain to be
+    // recovered. Until then, never widen a self/team grant into company authority.
+    const grantResult = await admin.from("authority_grants")
       .select("permission, effective_from, effective_to")
-      .eq("tenant_id", tenantId).eq("member_id", memberId)).data ?? [];
+      .eq("tenant_id", tenantId).eq("member_id", memberId)
+      .eq("confirmed", true).eq("scope", "company");
+    if (grantResult.error) return fail("authority_unavailable", "Could not verify work authority", 503);
+    grants = grantResult.data ?? [];
   }
   const now = Date.now();
   const held = new Set(grants.filter((g) => activeGrant(g, now)).map((g) => g.permission as string));
-  const raciRefs = [object.responsible_ref, object.accountable_ref, object.waiting_on_ref]
-    .map((r) => (r && typeof r === "object" ? String((r as Record<string, unknown>).ref ?? "") : ""));
-  const isAssignee = raciRefs.some((r) => r && (r === actorRef || r === auth.ctx.userId || (memberId && r === memberId)));
+  // Waiting-on identifies a dependency, not authority over someone else's work.
+  const isAssignee = [object.responsible_ref, object.accountable_ref].some((r) => {
+    if (!r || typeof r !== "object") return false;
+    if (r.kind === "member") return memberId !== null && r.ref === memberId;
+    return r.kind === "user" && (r.ref === auth.ctx.userId || r.ref === auth.ctx.email);
+  });
 
   const actor: ActorAuthority = {
-    userRef: actorRef,
+    userRef: auth.ctx.userId,
     isSuperadmin: held.has("tenant.superadmin"),
     canAssign: held.has("work.assign"),
     canApprove: held.has("work.approve"),
@@ -136,25 +155,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return fail(decision.code ?? "denied", decision.message ?? "transition denied", httpStatus);
   }
 
-  // ── persist: history (append-only) + object row + optional objective link ──
+  // One locked transaction captures the actual before/after ownership and state.
+  // A stale request or failed objective link cannot leave a false history row.
   const hist = decision.history!;
-  const { error: hErr } = await admin.from("object_state_history").insert({
-    tenant_id: tenantId, object_id: objectId,
-    from_state: hist.from_state, to_state: hist.to_state, actor: hist.actor, reason: hist.reason,
+  const l = decision.objectiveLink;
+  const { data: applied, error: applyError } = await admin.rpc("work_transition_apply", {
+    p_tenant: tenantId, p_object: objectId, p_expected_version: body.expected_version,
+    p_to_status: decision.toStatus ?? object.status, p_patch: decision.objectPatch ?? {},
+    p_history: { verb, reason: hist.reason, actor: { ...hist.actor, user_id: auth.ctx.userId, member_id: memberId } },
+    p_objective: l ? { objective_id: l.objectiveId, relation: l.relation, rationale: l.rationale, approved: actor.isSuperadmin } : null,
   });
-  if (hErr) return fail("history_write_failed", hErr.message ?? "failed", 400);
-
-  const patch: Record<string, unknown> = { ...(decision.objectPatch ?? {}), version: (object.version ?? 1) + 1 };
-  if (decision.statusChanged && decision.toStatus) patch.status = decision.toStatus;
-  const { error: uErr } = await admin.from("intelligence_objects").update(patch).eq("id", objectId).eq("tenant_id", tenantId);
-  if (uErr) return fail("object_update_failed", uErr.message ?? "failed", 400);
-
-  if (decision.objectiveLink) {
-    const l = decision.objectiveLink;
-    await admin.from("objective_links").insert({
-      tenant_id: tenantId, objective_id: l.objectiveId, target_kind: l.targetKind, target_ref: objectId,
-      relation: l.relation, rationale: l.rationale, created_by: actorRef, approved: actor.isSuperadmin,
-    });
+  if (applyError) {
+    if (applyError.code === "P0409") return fail("version_conflict", "Work changed; refresh before retrying", 409);
+    return fail("transition_failed", "The work transition could not be saved; refresh to check its current state", 409);
   }
 
   await writeAudit(admin, {
@@ -166,6 +179,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   return json({
     ok: true, object_id: objectId, verb,
     from: object.status, to: decision.toStatus, status_changed: decision.statusChanged,
+    version: applied?.version, history_id: applied?.history_id,
     note: "transition persisted to object_state_history — survives refresh",
   });
 });

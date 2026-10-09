@@ -64,6 +64,7 @@ export interface RankExplanation {
   factors: { factor: string; contribution: number }[];
 }
 export interface ProjectedWork {
+  objectVersion?: number;
   id: string; title: string; outcome: string | null; state: string;
   accountableOwner: string | null; operationalOwner: string | null; assignee: string | null;
   team: string | null; role: string | null;
@@ -217,6 +218,7 @@ export function projectWork(a: Row, ctx: ActionContext, now: number): ProjectedW
 
   return {
     id: a.id,
+    objectVersion: Number.isSafeInteger(a.version) && a.version > 0 ? a.version : undefined,
     title: a._collapsedCount > 1 ? `${a.subject ?? "(untitled)"} (+${a._collapsedCount - 1} similar)` : (a.subject ?? "(untitled action)"),
     outcome: at.outcome ?? null, state: a.status ?? "unknown",
     accountableOwner: accountable, operationalOwner: responsible, assignee: responsible,

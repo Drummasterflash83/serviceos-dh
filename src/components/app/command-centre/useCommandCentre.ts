@@ -64,8 +64,10 @@ export function useCommandCentre(): CommandCentreState {
   const transition = useCallback<CommandCentreState["transition"]>(
     async (item, verb, opts) => {
       if (viewAs) return "Read-only while viewing as another user.";
+      if (!item.objectVersion) return "Refresh work before acting; this card has no saved version.";
       const res = await transitionWork({
         objectId: item.id,
+        expectedVersion: item.objectVersion,
         verb,
         reason: opts?.reason,
         evidence: opts?.evidence,
