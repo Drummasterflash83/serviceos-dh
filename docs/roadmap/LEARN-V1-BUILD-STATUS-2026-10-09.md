@@ -538,3 +538,20 @@ Production communications were untouched. No live Slack page or schedule was run
 Live permission/source acceptance, threads, continuous/multi-window history,
 workspace pacing and recovery controls remain. See
 [the release evidence and current ingestion limits](../operations/LEARN-SLACK-INGESTION.md).
+
+## Retained Slack thread capture — local implementation
+
+Added an observed-thread approval, independent thread checkpoint and replies
+transport to the scoped Slack worker. It shares the existing retained source and
+version writer, reuses the existing Vault binding, and preserves channel progress.
+Synthetic checks cover wrong-parent rejection, company/source/connection identity,
+crash-after-page recovery, stale-worker refusal, atomic delayed continuation,
+provider retry delays and qualified window completion. The 63 focused Node tests
+pass; SQL verification runs both draft migrations in disposable offline PostgreSQL.
+
+This has not been deployed. TEST remains release 010/runtime v3. The existing
+release-010 deploy path refuses the newer source until it has a matching schema
+release. Thread release packaging, hosted acceptance, operator discovery/import
+controls, live permission checks, continuous coverage and workspace pacing remain.
+No existing live inputs or credentials were replaced. See
+[thread behavior and remaining ingestion work](../operations/LEARN-SLACK-INGESTION.md#observed-thread-windows--local-implementation-not-deployed).

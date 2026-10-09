@@ -1,0 +1,53 @@
+{
+  "version": "learn-slack-threads-local/1",
+  "observedAt": "2026-10-09T22:59:28.617848+00:00",
+  "state": "local_tests_passed_not_deployed",
+  "nodeTests": 63,
+  "sqlChecks": [
+    "Both new migrations apply together as non-superuser postgres",
+    "Both migrations roll back all source function and table changes",
+    "All existing table definitions and privileges remain identical",
+    "Owner approval binds retained source version and connection revision",
+    "Company separation, exact request replay and changed request refusal",
+    "Real Vault synthetic credential, claim, company and revision checks",
+    "Wrong-parent page rolls back without source or checkpoint writes",
+    "Thread source/version/interaction and independent cursor retention",
+    "Expired claim recovery and old-worker completion refusal",
+    "Published page recovery obtains no additional credential",
+    "Injected successor failure rolls completion back",
+    "Atomic delayed successor and exact completion replay",
+    "Rate-limit delay and continuation completion remain qualified",
+    "Existing email fixture remains byte-equivalent"
+  ],
+  "logSha256": {
+    "node": "a8657ebea6ee7dba648c12cf93996284cdcaf5746270dc8e1f4e2e8f52c3a7dc",
+    "sql": "a4de423f71dd2b4e43c415854965e90279716afd83be33736e0895c63f3c31da"
+  },
+  "sources": {
+    "scripts/verify/learn-foundation-release.py": "1e3dd659d80ba929cd802171fa60296ebb4b33920712d3109d55241d592a8e8b",
+    "scripts/verify/learn-test-worker-deploy.mjs": "061dfab18bbdec011f418ea95f1b4e613be0a3e8cfa3ed3994b47f4ed6017957",
+    "supabase/functions/_shared/slack/slack_history.ts": "652ef20610f864207bd627b556c946c79c29e5d365f991b80ba4efdf279f32af",
+    "supabase/functions/_shared/slack/slack_history_batch.ts": "1e4bf056e5d319c30445da1f1cf4bc7fbdb6a35684f382a330ab859bc9486702",
+    "supabase/functions/_shared/slack/slack_history_binding.ts": "2b0ac80f18b78a8b4ac6a53201e7e24ab383a28913deac68c1a3e393d948c18f",
+    "supabase/functions/_shared/slack/slack_history_persist.ts": "81b4dcd5a2efe728b403cfd2d2fa36b18d64569b0cbacb034ff809f808038f65",
+    "supabase/functions/_shared/slack/slack_history_request.ts": "8c5cd970ed1cc6627b4477851386900cb8032c2cc3ce6c2c749d88588df991d9",
+    "supabase/functions/_shared/slack/slack_history_server.test.ts": "ad8d0b3f7740ecf5045c4b538d0cd269f6359db933f6a5f0d17b753ea15d6318",
+    "supabase/functions/_shared/slack/slack_history_server.ts": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88",
+    "supabase/functions/_shared/slack/slack_worker.test.ts": "32d40321db68e39488cf16e592bc4e8adfe380f95ca223c649765a0ebe8e01c7",
+    "supabase/functions/_shared/slack/slack_worker.ts": "f3da17979be4ca9e97284b078a39601c7a81d7add2030f576c1ebb812f4cdb38",
+    "supabase/functions/_shared/worker_contract.ts": "4bb39eccd023c3ae18c3cff6072a1393c58243374366636aaf0055c1940e5ba3",
+    "supabase/functions/_shared/worker_handlers/slack_history.ts": "cc323858be18f22ceb1f289719f4e85dff728754b822eb43bc6d371de6661882",
+    "scripts/verify/learn-slack-thread-storage.assert.sql": "6004e96d6f315faf1ea1fb5328e7011c273f51658ff62a98ca41d4bafaf373ac",
+    "scripts/verify/learn-test-worker-deploy.test.mjs": "a1e7b573f2e1808c5bdb7bfb28bffd3ec13d2f94aaf97494f96f91f787996694",
+    "supabase/functions/_shared/slack/slack_thread_history.test.ts": "bce844ffb320d62f0ded490c4f0da395df4393fd1ba5998f22c4be363dc1e193",
+    "supabase/functions/_shared/slack/slack_thread_history.ts": "999e7c34266200ca8c349fe787268b1e511a9099ca9630c6321cdae0b5f5f531",
+    "supabase/migrations/20261030120000_learn_slack_thread_storage.sql": "c04cb34944a5ca00c6c1f438f42e00937dd767d8fab359a4290234c3b0a04968",
+    "supabase/migrations/20261030130000_learn_slack_thread_worker.sql": "05fc686bdf849362ce71a17e511ed1aa8be62ef78ae9d2a38791ecce81627c81"
+  },
+  "limitations": [
+    "No thread schema, endpoint, provider or production write occurred. TEST remains release 010/runtime v3.",
+    "Synthetic offline PostgreSQL and Node runtime tests do not establish live provider access or full ingestion.",
+    "Standalone TypeScript check stops at the existing Supabase Deno URL type import; esbuild is not installed. No full Deno typecheck or hosted bundle acceptance is claimed.",
+    "Thread release packaging, complete endpoint manifest, hosted acceptance, operator discovery/import UI, continuous coverage and workspace pacing remain."
+  ]
+}

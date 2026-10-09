@@ -20,6 +20,7 @@ const fields = [
   "consentReference",
   "expiresAt",
   "maxPages",
+  "parentTimestamp",
 ] as const;
 
 /** Actual server transport. Only this closure sees the exact existing Vault
@@ -44,6 +45,7 @@ export function createSlackHistoryServerPorts(
       consentReference: scope.scope.consentReference,
       expiresAt: scope.expiresAt,
       maxPages: scope.maxPages,
+      parentTimestamp: scope.scope.parentTimestamp,
     };
     if (!fields.every((key) => actual[key] === identity[key])) return null;
     const { data: c, error } = await db
@@ -94,7 +96,7 @@ export function createSlackHistoryServerPorts(
         );
       };
       if (!(await authorised())) return null;
-      const secret = await db.rpc("learn_slack_read_credential", {
+      const secret = await db.rpc(ctx.jobType==='slack.thread_sync'?"learn_slack_read_thread_credential":"learn_slack_read_credential", {
         p_tenant_id: ctx.tenantId,
         p_job_id: ctx.jobId,
         p_claimed_by: ctx.claim!.claimedBy,
@@ -112,7 +114,7 @@ export function createSlackHistoryServerPorts(
         return null;
       const token = secret.data;
       async function request(
-        method: "auth.test" | "conversations.info" | "conversations.history",
+        method: "auth.test" | "conversations.info" | "conversations.history" | "conversations.replies",
         params: Record<string, string> = {},
       ) {
         if (!(await authorised())) throw denied();
@@ -234,12 +236,13 @@ export function createSlackHistoryServerPorts(
         history: async (args: HistoryArguments) => {
           // Defence in depth: the lease is safe even if called without the adapter.
           if (
+            args.ts !== identity.parentTimestamp ||
             args.channel !== identity.channelId ||
             args.oldest !== identity.oldest ||
             args.latest !== identity.latest ||
             args.limit !== 15 ||
             Object.keys(args).some(
-              (k) => !["channel", "oldest", "latest", "limit", "cursor"].includes(k),
+              (k) => !["channel", "oldest", "latest", "limit", "cursor",...(identity.parentTimestamp?["ts"]:[])].includes(k),
             ) ||
             (args.cursor !== undefined &&
               (typeof args.cursor !== "string" || !args.cursor || args.cursor.length > 1024))
@@ -251,10 +254,11 @@ export function createSlackHistoryServerPorts(
             latest: identity.latest,
             limit: "15",
             inclusive: "true",
+            ...(identity.parentTimestamp?{ts:identity.parentTimestamp}:{}),
             ...(args.cursor ? { cursor: args.cursor } : {}),
           };
           await inspectChannel();
-          return request("conversations.history", params);
+          return request(identity.parentTimestamp?"conversations.replies":"conversations.history", params);
         },
       };
     },

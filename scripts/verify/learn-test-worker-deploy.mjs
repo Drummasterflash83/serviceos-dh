@@ -13,13 +13,20 @@ export function workerEndpointBundle(){
  const files=WORKER_ENDPOINT_FILES.map(path=>({path,source:readFileSync(new URL('../../supabase/functions/'+path,import.meta.url),'utf8')}));
  return {files,sha256:createHash('sha256').update(JSON.stringify(files)).digest('hex')};
 }
+// Release 010 can only redeploy its verified history-only source. Later runtime
+// changes need their own matching schema/rehearsal and complete dependency list.
+export function assertRelease010Endpoint(bundle){
+ if(bundle.sha256!=='100c2720fbae1e678b0a310c7c5081d21ac05defeed22ea07f0afc46e165f337')
+  throw Error('Worker source has advanced beyond release 010; a matching reviewed schema and endpoint release are required');
+}
 export async function deployWorker({allowProjectRef,token,fetcher=fetch,replaceVersion}){
+ const bundle=workerEndpointBundle();assertRelease010Endpoint(bundle);
  const before=await readWorkerCatalog({allowProjectRef,token,fetcher});
  if(!installedWorker(before))throw Error('Exact installed TEST durable worker schema required');
  const existing=before.base.functions.find(f=>f.slug==='learn-slack-worker');
  if(existing&&existing.version!==replaceVersion||!existing&&replaceVersion!==undefined)throw Error('Exact existing worker version required for replacement');
  if(existing&&(existing.status!=='ACTIVE'||existing.verify_jwt!==true))throw Error('Existing endpoint contract differs');
- const bundle=workerEndpointBundle(),stage=mkdtempSync(join(tmpdir(),'learn-slack-worker-endpoint-'));
+ const stage=mkdtempSync(join(tmpdir(),'learn-slack-worker-endpoint-'));
  let status=null;
  try{
   mkdirSync(join(stage,'supabase/functions/learn-slack-worker'),{recursive:true});mkdirSync(join(stage,'supabase/functions/_shared'),{recursive:true});

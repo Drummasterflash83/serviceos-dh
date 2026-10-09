@@ -7,6 +7,7 @@ views are outside the projection. Hosted rollback rehearsal is still required.
 """
 import hashlib
 import json
+import re
 import shutil
 import sys
 import subprocess
@@ -353,6 +354,20 @@ try:
                                 refused(race_after(held,"select learn_slack_finish_job(verify.id(901),verify.id(980),'learn-slack:'||verify.id(981),1,'{\"success\":true}');"),'slack_queue_not_owned')
                             print('Concurrent claim skips locked jobs; stale worker blocked behind replacement claim is refused: PASS',flush=True)
                             apply((ROOT/'scripts/verify/learn-slack-credential.assert.sql').read_text(),'Real Vault reference, tenant, revision, lease and browser access checks')
+                            if '--slack-threads' in sys.argv:
+                                thread_before=json.loads(run(catalog_sql).stdout)
+                                thread_function_query="select coalesce(jsonb_agg(pg_get_functiondef(p.oid) order by p.oid),'[]') from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prokind='f';"
+                                thread_functions_before=json.loads(run(thread_function_query).stdout)
+                                thread_sources=[(ROOT/('supabase/migrations/'+name)).read_text() for name in ['20261030120000_learn_slack_thread_storage.sql','20261030130000_learn_slack_thread_worker.sql']]
+                                thread_sql='\n'.join(re.sub(r'^(begin|commit);\s*$', '', s, flags=re.M) for s in thread_sources)
+                                apply('set role postgres;begin;'+thread_sql+'\nrollback;', 'Thread schema and shared writer rollback rehearsal')
+                                assert json.loads(run(catalog_sql).stdout)['tables']==thread_before['tables']
+                                assert json.loads(run(thread_function_query).stdout)==thread_functions_before
+                                apply('set role postgres;begin;'+thread_sql+'\ncommit;', 'Retained thread approvals, scoped claims and shared source writer')
+                                thread_after=json.loads(run(catalog_sql).stdout)
+                                assert [t for t in thread_after['tables'] if t['name']!='slack_thread_imports']==thread_before['tables'],'Threads changed existing table definitions or privileges'
+                                apply((ROOT/'scripts/verify/learn-slack-thread-storage.assert.sql').read_text(),'Thread consent, source association, atomic checkpoint, replay and preservation')
+
 
 
 

@@ -186,3 +186,61 @@ The local actual-UI server/fixture guards now recognize release 010. Historical
 release-009 acceptance scripts intentionally require their original schema. Live
 Slack permission and source acceptance, threads, continuous history, workspace-wide
 pacing and operator recovery controls remain required for full ingestion.
+
+## Observed thread windows — local implementation, not deployed
+
+The next worker version handles `slack.thread_sync` alongside channel history.
+It reads replies through Slack's separately paginated
+[conversations.replies API](https://docs.slack.dev/reference/methods/conversations.replies/).
+Each request binds the exact company, workspace, public internal channel, observed
+parent timestamp and approved time window. Parent candidates come from retained
+provider reply counts or reply/broadcast references, including parents older than
+the selected window. Arbitrary timestamps do not establish approval. Out-of-window
+provider content is rejected; live behavior still needs acceptance with the actual
+workspace and app grants.
+
+`20261030120000_learn_slack_thread_storage.sql` adds retained thread approvals and
+separate page checkpoints. It extracts the existing source/version/interaction
+writer into a private shared function, preserving its previous validation and
+history behavior. New thread interactions identify an observed thread page; that
+provenance does not claim the whole thread is complete. Thread pages leave the
+channel checkpoint untouched.
+
+`20261030130000_learn_slack_thread_worker.sql` reserves thread jobs for the scoped
+worker, reuses the existing connection's Vault reference and tenant-qualified
+secret name, and atomically settles each page with a delayed continuation. A
+replacement worker can finish a retained page without fetching it again. Expired
+or replaced claims cannot publish or complete. Rate-limit retries retain their
+minimum delay. Approval, source, version and terminal queue evidence remains.
+
+Current approval is explicitly per observed thread/window, with the reviewed
+source version and connection revision retained. This is not yet automatic thread
+discovery/backfill in the operator UI. `observed_thread_window_complete` means the
+provider pages for that approval have ended; `ingestion_complete` remains false.
+It does not establish all threads were discovered, all historical time was covered,
+or attachments were downloaded.
+
+Local verification:
+
+```sh
+node --test supabase/functions/_shared/slack/*.test.ts supabase/functions/_shared/worker_handlers/slack_history.test.ts supabase/functions/_shared/platform_queue.test.ts scripts/verify/learn-test-worker-release.test.mjs scripts/verify/learn-test-worker-deploy.test.mjs
+python3 scripts/verify/learn-foundation-release.py --rules --conflicts --measurements --work --actions --slack --slack-worker --slack-threads
+```
+
+The focused Node suite passes 63 tests. SQL exercises synthetic retained roots and
+replies, source-version approval, cross-company denial, real Vault with synthetic
+values, exact replay, crash recovery, injected successor failure, delayed retries,
+independent cursors and unchanged existing email evidence. Both draft migrations
+are tested together in an offline disposable PostgreSQL instance. A standalone
+TypeScript check cannot resolve the existing Deno URL import of Supabase; Node's
+runtime tests are not a full Deno typecheck.
+Both migrations rolled back cleanly, and the applied schema preserved every
+existing table definition and privilege. See the
+[local verification record](evidence/learn-slack-threads-local-2026-10-09.json).
+
+TEST is still release 010 and its previously verified history-only runtime v3.
+The release-010 deploy helper now pins its known runtime source hash and refuses
+newer thread source before network access. The thread schema needs a separate
+reviewed release bundle, hosted rehearsal, a complete endpoint dependency manifest,
+deployment and actual authenticated acceptance. No thread job, live provider
+request, credential, schedule or production change was made by this local work.

@@ -10,6 +10,8 @@ export interface WorkerHandlerContext {
    *  invoked by the worker, manual job in the wrapper), or null when untracked.
    *  Handlers may update PROGRESS on it but never create/complete it. */
   jobId: string | null;
+  /** Type from the claimed durable row; never a browser-selected handler. */
+  jobType?: string;
   /** Validated job payload / request body. */
   payload: Record<string, unknown>;
   /** Cooperative cancellation, where a handler chooses to honour it. */

@@ -25,7 +25,7 @@ export async function runSlackWorker(
   const outcomes: unknown[] = [];
   for (const job of claimed.data as Job[]) {
     if (
-      job.job_type !== "slack.history_sync" ||
+      !["slack.history_sync","slack.thread_sync"].includes(job.job_type) ||
       job.claimed_by !== `learn-slack:${workerId}` ||
       !Number.isSafeInteger(job.attempt_count) ||
       job.attempt_count < 1
@@ -46,6 +46,7 @@ export async function runSlackWorker(
           supabaseAdmin: db as WorkerHandlerContext["supabaseAdmin"],
           tenantId: job.tenant_id,
           jobId: job.id,
+          jobType: job.job_type,
           payload: job.payload,
           claim: { claimedBy: job.claimed_by, attemptCount: job.attempt_count },
           signal,
@@ -63,7 +64,8 @@ export async function runSlackWorker(
     }
     // Probe committed state even after a handler failure: publication may have
     // succeeded while its response was lost. SQL derives the result/continuation.
-    let settled = await db.rpc("learn_slack_finish_job", { ...args, p_outcome: { success: true } });
+    const finishRpc=job.job_type==='slack.thread_sync'?'learn_slack_finish_thread_job':'learn_slack_finish_job';
+    let settled = await db.rpc(finishRpc, { ...args, p_outcome: { success: true } });
     if (settled.error) {
       if (
         result.success ||
@@ -79,7 +81,7 @@ export async function runSlackWorker(
       const delay = error?.retryAfterSeconds;
       const retryAfter =
         Number.isSafeInteger(delay) && delay! >= 0 && delay! <= 31536000 ? delay! : 0;
-      settled = await db.rpc("learn_slack_finish_job", {
+      settled = await db.rpc(finishRpc, {
         ...args,
         p_outcome: {
           success: false,

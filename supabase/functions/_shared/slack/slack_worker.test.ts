@@ -21,7 +21,7 @@ function fixture() {
         return state.claimError
           ? { data: null, error: { message: "private" } }
           : { data: [job], error: null };
-      assert.equal(name, "learn_slack_finish_job");
+      assert.equal(name, job.job_type === "slack.thread_sync" ? "learn_slack_finish_thread_job" : "learn_slack_finish_job");
       if (state.settleError)
         return { data: null, error: { code: "XX000", message: "private database failure" } };
       if (args.p_outcome.success && !state.published && !job.metadata.slack_page_v1)
@@ -50,6 +50,22 @@ test("one scoped claim passes the ownership fence and settles the server-derived
   assert.deepEqual(f.calls[0].args, { p_worker: worker, p_batch: 1 });
   assert.deepEqual(f.calls[1].args.p_outcome, { success: true });
   assert.equal(JSON.stringify(f.calls).includes("malicious"), false);
+});
+test("thread jobs carry their trusted type and recover through the thread completion transaction", async () => {
+  const f = fixture();
+  f.job.job_type = "slack.thread_sync";
+  await runSlackWorker(f.db, worker, async (ctx) => {
+    assert.equal(ctx.jobType, "slack.thread_sync");
+    f.state.published = true;
+    return { success: false, error: { code: "slack_history_failed", message: "lost response", retryable: false } };
+  });
+  assert.equal(f.calls[1].name, "learn_slack_finish_thread_job");
+  assert.deepEqual(f.calls[1].args.p_outcome, { success: true });
+  const recovered = fixture();
+  recovered.job.job_type = "slack.thread_sync";
+  recovered.job.metadata.slack_page_v1 = { kind: "thread" };
+  await runSlackWorker(recovered.db, worker, async () => { throw Error("Unexpected provider request"); });
+  assert.equal(recovered.calls[1].name, "learn_slack_finish_thread_job");
 });
 test("a recovered committed page skips the provider entirely", async () => {
   const f = fixture();

@@ -100,7 +100,11 @@ function fixture() {
     },
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
-      if (name === "learn_slack_read_credential") return { data: token, error: null };
+      if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: token, error: null };
+      if (name === "slack_thread_commit_page") {
+        rows.slack_thread_imports.checkpoint = args.p_next;
+        return { data: true, error: null };
+      }
       if (name === "slack_history_commit_page") {
         rows.connector_accounts.sync_cursor = args.p_next;
         return { data: true, error: null };
@@ -152,6 +156,57 @@ function fixture() {
     run: () => createSlackHistoryHandler(bind, () => now)(ctx),
   };
 }
+function threadFixture() {
+  const f = fixture();
+  f.ctx.jobType = "slack.thread_sync";
+  f.rows.platform_jobs.job_type = "slack.thread_sync";
+  f.rows.platform_jobs.payload.thread_import_id = id(7);
+  f.rows.slack_thread_imports = { id: id(7), tenant_id: id(1), account_id: id(3),
+    scope: { ...f.rows.connector_accounts.settings.slack_history, parentTimestamp: "110.1", consentReference: "thread-fixture" }, checkpoint: {} };
+  f.state.history.messages = [{ ts: "123.1", text: "Synthetic reply", user: "U123", thread_ts: "110.1" } as any];
+  return f;
+}
+test("stored thread approval binds exact parent, replies method and independent checkpoint", async () => {
+  const f = threadFixture(), result = await f.run();
+  assert.equal(result.success, true);
+  assert.deepEqual(f.requests.filter(r => r.method.startsWith("conversations.") && r.method !== "conversations.info"), [{
+    method: "conversations.replies", params: { channel: "C123", oldest: "100.1", latest: "200.1", limit: "15", inclusive: "true", ts: "110.1" }
+  }]);
+  assert.ok(f.rpc.some(r => r.name === "learn_slack_read_thread_credential"));
+  assert.ok(!f.rpc.some(r => r.name === "learn_slack_read_credential"));
+  const saved = f.rpc.find(r => r.name === "slack_thread_commit_page");
+  assert.equal(saved.args.p_import_id, id(7));
+  assert.equal(saved.args.p_records[0].provider_payload.thread_ts, "110.1");
+  assert.equal(f.rows.slack_thread_imports.checkpoint.pages, 1);
+  assert.deepEqual(f.rows.connector_accounts.sync_cursor, {});
+  assert.deepEqual(result.continuation?.payload, { connector_account_id: id(3), thread_import_id: id(7) });
+  assert.equal(result.continuation?.jobType, "slack.thread_sync");
+});
+test("foreign, changed or missing thread approvals fail before a credential or provider request", async () => {
+  for (const mutate of [
+    (f: any) => f.rows.slack_thread_imports.tenant_id = id(99),
+    (f: any) => f.rows.slack_thread_imports.account_id = id(99),
+    (f: any) => delete f.rows.slack_thread_imports.scope.parentTimestamp,
+    (f: any) => f.rows.slack_thread_imports.scope.expiresAt = "2026-10-09T11:00:00Z",
+    (f: any) => f.rows.platform_jobs.job_type = "slack.history_sync",
+    (f: any) => f.rows.slack_thread_imports = null,
+  ]) {
+    const f = threadFixture(); mutate(f);
+    assert.equal((await f.run()).success, false);
+    assert.equal(f.rpc.length, 0); assert.equal(f.requests.length, 0);
+  }
+});
+test("history and thread bindings cannot switch methods or widen the approved parent", async () => {
+  const history = fixture(), thread = threadFixture();
+  for (const f of [history, thread]) {
+    const binding = await f.bind(f.ctx); assert.ok(binding);
+    const wrongMethod = f === history ? "conversations.replies" : "conversations.history";
+    const args = { channel: "C123", oldest: "100.1", latest: "200.1", limit: 15, ...(f === thread ? { ts: "110.1" } : {}) };
+    await assert.rejects(binding.request(wrongMethod, args), /history_request_scope_unavailable/);
+    await assert.rejects(binding.request("conversations.replies", { ...args, ts: "109.1" }), /history_request_scope_unavailable/);
+    assert.equal(f.requests.some(r => r.method === "conversations.replies" || r.method === "conversations.history"), false);
+  }
+});
 test("actual server transport scopes secret lookup, validates workspace/channel and checkpoints one page with delayed continuation", async () => {
   const f = fixture(),
     r = await f.run();
