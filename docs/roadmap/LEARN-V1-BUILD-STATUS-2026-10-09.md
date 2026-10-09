@@ -257,12 +257,21 @@ same source timestamp. No real measurement, review or pay change was made.
 
 ## Next work and release gates
 
+Work-transition now resolves confirmed, effective cover and self/team/company
+permissions against the actual item, and rechecks authority in the save transaction.
+Confirmed viewer-role staff can act within the same item scope. Synthetic database
+checks cover revoke-before-save, team target boundaries, cover weekdays/timezone and
+retained owner attribution. No endpoint or migration is deployed. Collection
+visibility and full staff-session acceptance remain required. See
+[work authority](../operations/LEARN-WORK-AUTHORITY.md).
+
 The earlier Directory → Roster workflow is recovered locally: people/lifecycle,
 shared responsibilities, weekday cover and scoped authority, including operator
 routes and audited RPCs. Added review controls, complete-read checks, tenant/team
 validation, safe rejoin dates and serialized responsibility replacement. Synthetic
-database and Edge tests pass. Historical membership coverage and team/cover runtime
-authority still need connecting. See [roster recovery and release limits](../operations/LEARN-ROSTER-RECOVERY.md).
+database and Edge tests pass. Historical membership coverage and team/cover collection
+visibility still need connecting; mutation authority is implemented locally as described above.
+See [roster recovery and release limits](../operations/LEARN-ROSTER-RECOVERY.md).
 
 Work transitions now preserve actual before/after ownership and status snapshots
 in the existing history ledger, using one locked transaction and the revision the
@@ -271,7 +280,7 @@ with a coherent, bounded owner/admin reader. Cards now show elapsed ownership
 intervals, handoffs, source IDs and explicit missing time. Synthetic failure,
 concurrency, gap and limit checks pass; an actual SQL response is accepted by the
 TypeScript reader. Old snapshots remain unknown and no live baseline has run.
-Team/cover authority recovery and a scoring adapter with historical membership,
+Team/cover collection visibility and a scoring adapter with historical membership,
 eligible population, calendars and exclusions remain required. See
 [work history and release order](../operations/LEARN-WORK-HISTORY.md).
 

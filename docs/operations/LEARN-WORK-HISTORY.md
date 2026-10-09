@@ -46,11 +46,11 @@ presented as verified ownership intervals.
 
 The Edge authority gate now distinguishes ownership from a waiting-on dependency,
 checks reference kinds, and uses confirmed, effective company grants for elevated
-actions. Self/team grants are not silently widened to company scope. Team-scoped
-authority and weekday/timezone-aware cover still require the older roster/cover
-dependency chain to be recovered and accepted. Viewer-role self-service was also
-present in the older branch but is not enabled by this increment. These limitations
-must be addressed before the final operational release.
+actions. Self/team grants are not silently widened to company scope. A subsequent
+local increment now resolves scoped authority and weekday/timezone-aware cover in
+SQL and rechecks it at save time, including confirmed viewer-role staff self-service.
+Collection visibility, UI affordances and real-session acceptance remain pending.
+See [work authority](LEARN-WORK-AUTHORITY.md).
 
 ## Verification
 
@@ -63,7 +63,7 @@ npx tsc --noEmit
 npm run build
 ```
 
-Seven targeted tests pass, including actual Edge-handler execution with mocked I/O,
+Ten targeted tests now pass, including actual Edge-handler execution with mocked I/O,
 ownership/acceptance gates, completion evidence, stable actor IDs, revision
 propagation, failed authority reads and database conflicts. Existing work projection
 assertions and all 47 build prerequisite tests pass. Application type checking and
@@ -145,7 +145,7 @@ complete eligible populations, approved calendars/exclusions and policy revision
 selection. It must not infer historical performance from today's ownership or
 treat a waiting/blocked state as an automatically approved exclusion.
 
-Reconcile target migration history, restore scoped authority/cover dependencies,
+Reconcile target migration history and the recovered scoped authority/cover dependencies,
 and verify both additive migrations on the correct test target. Release the work
 projection, transition endpoint and client together: the new client requires a
 projected revision and the new endpoint requires the snapshot transaction. Verify

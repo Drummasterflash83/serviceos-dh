@@ -50,7 +50,9 @@ export interface ActorAuthority {
   canAssign: boolean; // work.assign
   canApprove: boolean; // work.approve
   canConfirmOwnership: boolean; // ownership.confirm
-  isAssignee: boolean; // actor is responsible/accountable/waiting_on for THIS object
+  isAssignee: boolean; // responsible/accountable or valid cover; never merely waiting-on
+  canClaimUnassigned?: boolean; // confirmed staff membership for claiming an unowned item
+  canAcceptAssigned?: boolean; // cover alone cannot become permanent ownership
 }
 
 export interface TransitionInput {
@@ -113,6 +115,10 @@ export function decideWorkTransition(input: TransitionInput): TransitionDecision
 
   // ── attribute corrections & ownership claims (NOT status moves) ────────────
   if (verb === "accept") {
+    if ((object.responsible_ref?.ref || object.accountable_ref?.ref) && actor.canAcceptAssigned === false)
+      return fail("forbidden", "Claiming assigned work requires direct ownership or assignment authority");
+    if (!object.responsible_ref?.ref && !object.accountable_ref?.ref && actor.canClaimUnassigned === false)
+      return fail("forbidden", "Claiming unassigned work requires confirmed staff membership");
     if ((object.responsible_ref?.ref || object.accountable_ref?.ref) &&
         !(actor.isAssignee || actor.canAssign || actor.isSuperadmin)) {
       return fail("forbidden", "Accepting assigned work requires ownership or work.assign authority");

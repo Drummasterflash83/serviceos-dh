@@ -99,6 +99,7 @@ member row and historical changes can inform a future history reader, but the
 ledger does not prove that all old direct/background changes were captured. Do not
 rate earlier periods using today's group or title. Membership history, coverage,
 business calendars, exclusions and eligible work populations still need connecting
-to the performance measurement adapter. Weekday/timezone cover resolution and
-team-scoped work authority remain separate recovery work; this increment configures
-their inputs and does not claim they are already enforced by work-transition.
+to the performance measurement adapter. A subsequent local increment now applies
+weekday/timezone cover and team-scoped authority to work transitions, with a final
+database check before saving. Collection visibility and UI/HTTP acceptance remain
+pending. See [work authority and verification limits](LEARN-WORK-AUTHORITY.md).
