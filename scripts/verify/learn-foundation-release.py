@@ -121,5 +121,22 @@ try:
     duplicate=run(release,False)
     assert duplicate.returncode and b'Foundation receipt exists' in duplicate.stderr
     print('Duplicate installation refused: PASS',flush=True)
+    if '--rules' in sys.argv:
+        rules=json.loads(node("import {checkedRules} from './scripts/verify/learn-rules-bundle.mjs';process.stdout.write(JSON.stringify(checkedRules()));"))
+        rules_sql="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+lit(rules['manifest']['sha256'])+';'+rules['sql']
+        rule_before=json.loads(run(catalog_sql).stdout)
+        apply("alter table of_test_deploy.migrations add constraint rules_receipt_failure check(migration_name<>'learn_rules_membership_v1');",'Injected rules receipt failure')
+        failed=run(rules_sql,False)
+        assert failed.returncode and b'rules_receipt_failure' in failed.stderr,failed.stderr.decode()[-800:]
+        rule_after=json.loads(run(catalog_sql).stdout)
+        assert rule_after['tables']==rule_before['tables'] and rule_after['helpers']==rule_before['helpers']
+        apply('alter table of_test_deploy.migrations drop constraint rules_receipt_failure;','Rules receipt failure restores all prior table definitions and triggers')
+        assert run("select not has_function_privilege('authenticated','public.current_user_role()','EXECUTE')").stdout.strip()==b't'
+        rehearsal=node("import {rulesRehearsalSql} from './scripts/verify/learn-test-rules-rehearsal.mjs';process.stdout.write(rulesRehearsalSql());")
+        apply('set role postgres;'+rehearsal,'Exact rules rehearsal executes and rolls back')
+        assert json.loads(run(catalog_sql).stdout)['tables']==rule_before['tables']
+        apply(rules_sql,'Rules, publication and membership release as non-superuser')
+        apply((ROOT/'scripts/verify/learn-rules-release.assert.sql').read_text(),'Saved-rule authority, prospective publication and retained membership checks')
+
 finally:
     subprocess.run([DOCKER,'rm','-f',TARGET],capture_output=True)

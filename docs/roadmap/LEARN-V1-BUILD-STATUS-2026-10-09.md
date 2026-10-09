@@ -354,12 +354,20 @@ the existing launch redaction/revocation checks. Every marked fixture was remove
 and its absence verified. Thirty-seven focused tests and the isolated SQL exercise
 pass. See [foundation release and acceptance](../operations/LEARN-TEST-FOUNDATIONS.md).
 
-Raw interaction reads and the nine LEARN scorecard/review/work/Slack setup RPCs
-remain unavailable. Configuration/objective/control-plane and later LEARN
+Raw interaction reads and the previously inspected nine LEARN scorecard/review/work/Slack setup RPCs
+remain unavailable; the new draft-reader RPC adds a tenth requirement. Configuration/objective/control-plane and later LEARN
 releases remain necessary. Allkin's last verified Vercel inventory has only the
 production project, so TEST frontend deployment is still outstanding. No real
 customer data, production state, provider traffic or stored audio was changed by
 these TEST releases. Full LEARN V1 is not yet released.
+
+The scorecard-rule/publication and forward membership bundle is prepared from
+five retained sources and passed isolated SQL plus hosted rollback rehearsal at
+20:21 UTC. It is not installed. Draft reads now resolve the highest revision through
+a dedicated RPC instead of transaction timestamps; the client and preview adapter
+are updated and type-check/build verification passed. Permanent installation needs
+retained synthetic acceptance fixtures because history and publications deliberately
+cannot be deleted. See [rules release and remaining acceptance](../operations/LEARN-TEST-RULES.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.

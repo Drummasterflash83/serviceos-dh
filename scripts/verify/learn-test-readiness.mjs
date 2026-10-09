@@ -34,7 +34,7 @@ export const READ_CONTRACT = {
   },
 };
 export const REQUIRED_RPCS = [
-  'learn_scorecard_save_draft', 'learn_scorecard_publish', 'learn_scorecard_policy_for_period',
+  'learn_scorecard_read_draft', 'learn_scorecard_save_draft', 'learn_scorecard_publish', 'learn_scorecard_policy_for_period',
   'learn_performance_review', 'learn_work_history_read', 'learn_member_history_read',
   'learn_work_handoffs_collect', 'learn_work_residence_collect', 'learn_slack_start_import',
 ];

@@ -11,28 +11,24 @@ export type ScorecardSettingsClient = LearnReadClient & {
   ): PromiseLike<{ data: unknown; error: { code?: string } | null }>;
 };
 export async function loadScorecardDraft(
-  db: LearnReadClient,
+  db: ScorecardSettingsClient,
   tenantId: string,
   kind: ScoreSubject["kind"],
   groupId: string | null,
 ): Promise<ScorecardPolicy | null> {
-  const { data, error } = await db
-    .from("operating_profile_entries")
-    .select("tenant_id,value,version_id")
-    .eq("tenant_id", tenantId)
-    .eq("scope_kind", "tenant")
-    .eq("scope_ref", `${kind}:${groupId ?? "all"}`)
-    .eq("namespace", "learn_scorecards")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  if (error || !Array.isArray(data)) throw new Error("Scoring rules could not be read");
-  if (!data.length) return null;
-  const policy = data[0].value as ScorecardPolicy;
+  const { data, error } = await db.rpc("learn_scorecard_read_draft", {
+    p_tenant: tenantId,
+    p_kind: kind,
+    p_group: groupId,
+  });
+  if (error) throw new Error("Scoring rules could not be read");
+  if (data === null) return null;
+  const policy = data as ScorecardPolicy;
   if (
-    data[0].tenant_id !== tenantId ||
     policy?.tenantId !== tenantId ||
     policy?.subjectKind !== kind ||
     (policy.groupId ?? null) !== groupId ||
+    policy.status !== "draft" ||
     validateScorecardPolicy(policy).length
   )
     throw new Error("Invalid scoring rules returned");

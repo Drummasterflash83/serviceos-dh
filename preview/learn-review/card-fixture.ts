@@ -243,3 +243,8 @@ export function cardFixture(table: string) {
   };
   return q;
 }
+
+export function readDraftFixture(args:any){
+ const value=drafts[0]?.value??(new URLSearchParams(location.search).has("performance")?selectedPolicy():null);
+ return {data:value&&value.tenantId===args.p_tenant&&value.subjectKind===args.p_kind&&(value.groupId??null)===(args.p_group??null)?value:null,error:null};
+}

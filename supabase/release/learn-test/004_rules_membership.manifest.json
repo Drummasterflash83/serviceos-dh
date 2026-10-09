@@ -1,0 +1,66 @@
+{
+  "version": "learn-rules-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_rules_membership_v1",
+  "sha256": "37d1673acdc896d182b41e6e079475ef69da1d0cfc5c4fbc4017b9546be98562",
+  "tables": [
+    "view_as_context",
+    "learn_member_history",
+    "learn_scorecard_publications"
+  ],
+  "functions": [
+    "learn_scorecard_save_draft",
+    "learn_member_snapshot",
+    "learn_member_history_immutable",
+    "learn_capture_member_change",
+    "learn_member_capture_baseline",
+    "learn_member_history_read",
+    "learn_scorecard_revision_immutable",
+    "learn_scorecard_publish",
+    "learn_scorecard_policy_for_period",
+    "learn_scorecard_read_draft"
+  ],
+  "sources": [
+    {
+      "path": "supabase/migrations/20260819120000_view_as_and_superadmin.sql",
+      "sha256": "36a7a07fa4eba872180e643f09dcaa972dad70ee4c3bfacd52490ccfbc225814",
+      "selectedSha256": "ef6b929fd5131dc7a9fcac8168ee0006bdcf61ef7777a2f31e562a8f77969116",
+      "selection": "View-As context table/index/RLS only; permission vocabulary and action transitions remain deferred"
+    },
+    {
+      "path": "supabase/migrations/20261029120000_learn_scorecard_drafts.sql",
+      "sha256": "a7cb66a651aa548dacb55d11cf47196e0b414f4d1945df49e8679575ba406386",
+      "selectedSha256": "c1013ca919d6375963b04dc6fb55e7f584c7f4c62250f97a85e3a7b12fecef2e",
+      "selection": "whole file inside enclosing release transaction"
+    },
+    {
+      "path": "supabase/migrations/20261029220000_learn_member_history.sql",
+      "sha256": "a08bcfc8187a9d283eef721e84b2a88b9d09aec1aee9c59af4533f6dadb75783",
+      "selectedSha256": "672fc2e6065e1a6fd436db0cc6b0d04f4b5b02db59ba983e2255e4d85ffd3e6b",
+      "selection": "whole file; temporary schema explicitly last in function search paths"
+    },
+    {
+      "path": "supabase/migrations/20261030000000_learn_scorecard_publication.sql",
+      "sha256": "41ac2b5c7eeb97db980f6cb6d16aa13848b414418956a42ebb305628026c4088",
+      "selectedSha256": "41ac2b5c7eeb97db980f6cb6d16aa13848b414418956a42ebb305628026c4088",
+      "selection": "whole file"
+    },
+    {
+      "path": "supabase/migrations/20261030020000_learn_scorecard_draft_reader.sql",
+      "sha256": "fcf606e367abfde7a8cfff64fa2b0409a259fe83ecba934ea0fa1dc2da187b35",
+      "selectedSha256": "fcf606e367abfde7a8cfff64fa2b0409a259fe83ecba934ea0fa1dc2da187b35",
+      "selection": "whole file"
+    }
+  ],
+  "existingChanges": [
+    "Scorecard-only retention triggers on config_versions and operating_profile_entries; unique saved revision index.",
+    "Forward membership capture and deletion/truncation guards on team_members; no baseline/backfill.",
+    "Authenticated execution of current_user_role() for publication RLS; function body and source grants unchanged."
+  ],
+  "deferred": [
+    "Objective/measurement/review and work-capture/collector RPCs.",
+    "Preview creation/control-plane writers and complete staff collection permissions.",
+    "Source adapters and real source reconciliation."
+  ],
+  "acceptanceNote": "Published rules and membership history are intentionally retained. Hosted acceptance must use a marked retained test tenant or transactional rollback, not disable retention guards to delete fixtures."
+}

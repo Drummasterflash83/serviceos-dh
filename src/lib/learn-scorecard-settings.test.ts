@@ -26,33 +26,20 @@ const policy: ScorecardPolicy = {
     },
   ],
 };
-function db(data: any[], error: any = null) {
-  const filters: any[] = [];
-  const q: any = {
-    select: () => q,
-    eq: (...args: any[]) => {
-      filters.push(args);
-      return q;
-    },
-    order: () => q,
-    limit: () => q,
-    then: (resolve: any) => Promise.resolve({ data, error }).then(resolve),
-  };
-  return { filters, from: () => q };
+function db(data: unknown, error: any = null) {
+  const calls: any[] = [];
+  return { calls, from: () => { throw Error("Draft reader must use revision RPC"); },
+    rpc: async (name: string, args: unknown) => { calls.push({name,args}); return {data,error}; } };
 }
-test("draft reads scope the company and team group, and reject foreign responses", async () => {
-  const client = db([{ tenant_id: id(2), value: policy }]);
+test("draft reads use the authoritative revision reader and reject foreign or non-draft responses", async () => {
+  const client = db(policy);
   assert.deepEqual(await loadScorecardDraft(client, id(2), "member", null), policy);
-  assert.ok(client.filters.some((f) => f[0] === "tenant_id" && f[1] === id(2)));
-  assert.ok(client.filters.some((f) => f[0] === "scope_ref" && f[1] === "member:all"));
-  await assert.rejects(
-    loadScorecardDraft(db([{ tenant_id: id(99), value: policy }]), id(2), "member", null),
-  );
-  await assert.rejects(
-    loadScorecardDraft(db([{ tenant_id: id(2), value: policy }]), id(2), "member", id(90)),
-  );
-  await assert.rejects(loadScorecardDraft(db([], {}), id(2), "member", null));
-  assert.equal(await loadScorecardDraft(db([]), id(2), "member", null), null);
+  assert.deepEqual(client.calls, [{name:"learn_scorecard_read_draft",args:{p_tenant:id(2),p_kind:"member",p_group:null}}]);
+  await assert.rejects(loadScorecardDraft(db({...policy,tenantId:id(99)}), id(2), "member", null));
+  await assert.rejects(loadScorecardDraft(db(policy), id(2), "member", id(90)));
+  await assert.rejects(loadScorecardDraft(db({...policy,status:"published"}), id(2), "member", null));
+  await assert.rejects(loadScorecardDraft(db(null, {}), id(2), "member", null));
+  assert.equal(await loadScorecardDraft(db(null), id(2), "member", null), null);
 });
 test("draft save sends an expected revision and reason, and never grants client-supplied publishing authority", async () => {
   let args: any;

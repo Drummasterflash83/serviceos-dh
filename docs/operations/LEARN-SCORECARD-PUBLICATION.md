@@ -4,7 +4,9 @@ Implemented and verified locally; not deployed or used to rate actual employees.
 
 ## Behaviour
 
-Settings still save immutable drafts. An owner/admin can publish the latest saved
+Settings still save immutable drafts. Draft reads now use the highest saved
+revision through `learn_scorecard_read_draft`, avoiding tied or out-of-order
+transaction timestamps. An owner/admin can publish the latest saved
 revision for that exact tenant and subject/group scope after reviewing its criteria,
 weights, scale and evidence requirements. The UI requires a reason and attestation,
 and blocks publication while the editor differs from the saved draft. The server
@@ -38,7 +40,10 @@ configuration status remains `draft`; the dedicated publication ledger is the
 authority for publication, and the dated reader returns a published snapshot.
 Do not infer publication by checking `config_versions.status` alone.
 
-Dependencies include the draft-save and membership-history migrations. Before any
+Dependencies include the draft-save and membership-history migrations. The TEST
+release bundle now includes both, the View-As context prerequisite and the
+revision-ordered draft reader; it passed a rollback-only hosted rehearsal but is
+not installed. See [TEST rules release](LEARN-TEST-RULES.md). Before any
 deployment, verify target migration history and inspect existing scorecard entries
 for duplicate tenant/policy/revision identities: the new unique index deliberately
 fails on duplicates instead of discarding or silently selecting existing rows.
