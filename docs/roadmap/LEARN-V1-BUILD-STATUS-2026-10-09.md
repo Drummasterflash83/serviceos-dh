@@ -314,6 +314,18 @@ checks covered dirty-draft publication blocking, publication receipt, rejection 
 retrospective application and an eligible historical publication without evidence.
 This remains local and undeployed. See [publication details and limits](../operations/LEARN-SCORECARD-PUBLICATION.md).
 
+## Connected elapsed ownership observation
+
+Cards now collect `work.owned_item_minutes` from captured work intervals and
+as-observed membership, with an immutable segment-level receipt and inferred
+measurement. Concurrent items add separately; all states are included. This is
+elapsed ownership load, not working hours or productivity. Missing history or
+unresolved membership withholds the aggregate. Settings suggest zero weight.
+Database checks include exact clipping, membership endings without work changes,
+known zero, failed-append rollback and two-session duplicate prevention. Browser
+review verified the inferred observation and full receipt display. Nothing is
+live or deployed. See [meaning and remaining requirements](../operations/LEARN-WORK-RESIDENCE-MEASUREMENTS.md).
+
 ## Next work and release gates
 
 Work-transition now resolves confirmed, effective cover and self/team/company

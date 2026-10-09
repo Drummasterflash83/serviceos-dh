@@ -17,24 +17,29 @@ const handoffRuns:any[]=[];
 const handoffPolicy={...performancePolicy,name:"Synthetic recorded handoffs",metrics:[{key:"work.recorded_handoffs",
  label:"Recorded outgoing ownership handoffs",unit:"handoffs",weight:1,zeroAt:0,fullAt:10,minSamples:1,minCoverage:1,
  maxAgeHours:72,sourceSystems:["serviceos.work.handoffs@1"]}]};
-export function collectHandoffFixture(args:any){
+const residencePolicy={...performancePolicy,name:"Synthetic elapsed ownership",metrics:[{key:"work.owned_item_minutes",
+ label:"Elapsed owned item-minutes (all states)",unit:"item_minutes",weight:1,zeroAt:480,fullAt:60,minSamples:1,minCoverage:1,
+ maxAgeHours:72,sourceSystems:["serviceos.work.residence@1"]}]};
+const selectedPolicy=()=>new URLSearchParams(location.search).has("residence")?residencePolicy:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+export function collectHandoffFixture(args:any,residence=false){
+ const metric=residence?"work.owned_item_minutes":"work.recorded_handoffs",source=residence?"serviceos.work.residence@1":"serviceos.work.handoffs@1",unit=residence?"item_minutes":"handoffs",value=residence?120:2;
  const prior=handoffRows.find(r=>r.id===args.p_request);
  if(prior)return {data:{measurementId:prior.id,reused:true},error:null};
- const incomplete=new URLSearchParams(location.search).get("handoffs")==="partial";
+ const incomplete=new URLSearchParams(location.search).get(residence?"residence":"handoffs")==="partial";
  const observed=new Date().toISOString();
  handoffRows.push({id:args.p_request,tenant_id,subject_kind:"member",subject_id:args.p_member,policy_id:args.p_policy,
- policy_revision:args.p_revision,metric_key:"work.recorded_handoffs",value:incomplete?null:2,unit:"handoffs",
- window_start:args.p_start,window_end:args.p_end,measured_at:observed,source:"serviceos.work.handoffs@1",
+ policy_revision:args.p_revision,metric_key:metric,value:incomplete?null:value,unit,
+ window_start:args.p_start,window_end:args.p_end,measured_at:observed,source,
  source_through:incomplete?null:args.p_end,sample_count:incomplete?1:3,covered_count:incomplete?1:3,eligible_count:3,
  review_state:"inferred",evidence:[{table:"learn_work_measurement_runs",id:args.p_request}],exclusions:[],supersedes:null,group_ids:[]});
- handoffRuns.push({id:args.p_request,tenant_id,source_system:"serviceos.work.handoffs@1",metric_key:"work.recorded_handoffs",
- observed_at:observed,explanation:incomplete?"Synthetic missing history: value withheld.":"Synthetic capture: 2 outgoing transfers; 3 of 3 retained items covered. Not speed or quality.",
- proof:{contract:"work-handoffs@1",value:incomplete?null:2,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
+ handoffRuns.push({id:args.p_request,tenant_id,source_system:source,metric_key:metric,
+ observed_at:observed,explanation:incomplete?"Synthetic missing history: value withheld.":residence?"Synthetic capture: 120 item-minutes across all states; 3 of 3 retained items covered. Concurrent items add separately. No calendar or delay exclusion.":"Synthetic capture: 2 outgoing transfers; 3 of 3 retained items covered. Not speed or quality.",
+ proof:{contract:residence?"work-residence@1":"work-handoffs@1",value:incomplete?null:value,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
  return {data:{measurementId:args.p_request,reused:false},error:null};
 }
 const publications:any[]=[];
 function publicationFixtureRows(){
- const policy=new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+ const policy=selectedPolicy();
  return new URLSearchParams(location.search).get("publication")==="historical" ? [{id:id(50),tenant_id,
  policy_id:policy.id,revision:1,effective_from:new Date(Date.parse(performanceEnd)-30*86400000).toISOString(),
  scope:"member:all",policy:{...policy,status:"published"}}] : publications;
@@ -42,7 +47,7 @@ function publicationFixtureRows(){
 export function publishScorecardFixture(args:any){
  const prior=publications.find(r=>r.id===args.p_request);
  if(prior)return {data:{publicationId:prior.id,policyId:prior.policy_id,revision:prior.revision,effectiveFrom:prior.effective_from,reused:true},error:null};
- const policy=drafts[0]?.value??(new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy);
+ const policy=drafts[0]?.value??(selectedPolicy());
  if(policy.id!==args.p_policy||policy.version!==args.p_revision)return {data:null,error:{code:"40001"}};
  const at=new Date().toISOString();
  publications.push({id:args.p_request,tenant_id,policy_id:policy.id,revision:policy.version,effective_from:at,
@@ -90,10 +95,10 @@ function records(): Record<string, any[]> {
   const time = new Date(Date.now() - 3600000).toISOString();
   return {
     provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
-    operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy}] : [],
+    operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:selectedPolicy()}] : [],
     learn_scorecard_publications: publicationFixtureRows(),
     learn_work_measurement_runs: handoffRuns,
-    measurements: new URLSearchParams(location.search).has("handoffs") ? handoffRows : new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
+    measurements: (new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
     learn_performance_reviews: performanceReviews,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [

@@ -10,6 +10,14 @@ import {
 
 const suggestions = [
   {
+    key: "work.owned_item_minutes",
+    label: "Elapsed owned item-minutes (all states, not hours worked)",
+    unit: "item_minutes",
+    zeroAt: 480,
+    fullAt: 60,
+    source: "serviceos.work.residence@1",
+  },
+  {
     key: "work.recorded_handoffs",
     label: "Recorded outgoing ownership handoffs (count, not quality)",
     unit: "handoffs",

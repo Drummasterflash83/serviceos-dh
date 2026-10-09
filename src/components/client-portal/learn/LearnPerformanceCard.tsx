@@ -8,9 +8,10 @@ import {
 } from "@/lib/learn-performance-measurements";
 import { reviewPerformanceMeasurement, type ReviewRequest } from "@/lib/learn-performance-reviews";
 import {
-  collectWorkHandoffs,
-  canCollectWorkHandoffs,
-  HANDOFF_METRIC,
+  collectWorkEvidence,
+  canCollectWork,
+  WORK_COLLECTORS,
+  type WorkCollectionKind,
 } from "@/lib/learn-work-collection";
 import { loadPerformanceEvidence } from "@/lib/learn-performance-evidence";
 import {
@@ -184,16 +185,20 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
               No stored measurements were returned for this exact subject, period and rule revision.
             </p>
           )}
-          {kind === "member" && canCollectWorkHandoffs(current.policy) && (
-            <WorkCollection
-              key={`${id}:${current.policy.id}:${current.policy.version}:${query.from}:${query.until}`}
-              policy={current.policy}
-              memberId={id}
-              period={{ start: query.from + "T00:00:00Z", end: query.until + "T00:00:00Z" }}
-              exists={current.rows.some((m) => m.metricKey === HANDOFF_METRIC)}
-              onSaved={refresh}
-            />
-          )}
+          {kind === "member" &&
+            (["handoffs", "residence"] as const)
+              .filter((mode) => canCollectWork(current.policy, mode))
+              .map((mode) => (
+                <WorkCollection
+                  key={`${mode}:${id}:${current.policy.id}:${current.policy.version}:${query.from}:${query.until}`}
+                  mode={mode}
+                  policy={current.policy}
+                  memberId={id}
+                  period={{ start: query.from + "T00:00:00Z", end: query.until + "T00:00:00Z" }}
+                  exists={current.rows.some((m) => m.metricKey === WORK_COLLECTORS[mode].metric)}
+                  onSaved={refresh}
+                />
+              ))}
           {current.score.metrics.map((metric) => {
             const observations = current.rows.filter((r) => r.metricKey === metric.key);
             const replaced = new Set(observations.map((r) => r.supersedes));
@@ -437,6 +442,7 @@ function Evidence({ tenantId, reference }: { tenantId: string; reference: Eviden
 }
 
 function WorkCollection({
+  mode,
   policy,
   memberId,
   period,
@@ -448,18 +454,14 @@ function WorkCollection({
   period: { start: string; end: string };
   exists: boolean;
   onSaved: () => void;
+  mode: WorkCollectionKind;
 }) {
+  const spec = WORK_COLLECTORS[mode];
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const pending = useRef<{ requestId: string; reason: string } | null>(null);
-  if (exists)
-    return (
-      <p>
-        Recorded handoff evidence has been collected for this period. Review the retained
-        calculation below.
-      </p>
-    );
+  if (exists) return <p>{spec.collected} Review the retained calculation below.</p>;
   return (
     <form
       className="lp-review"
@@ -470,7 +472,8 @@ function WorkCollection({
         setBusy(true);
         setMessage("");
         try {
-          await collectWorkHandoffs(getSupabaseClient(), {
+          await collectWorkEvidence(getSupabaseClient(), {
+            kind: mode,
             policy,
             memberId,
             period,
@@ -484,11 +487,10 @@ function WorkCollection({
         }
       }}
     >
-      <h4>Collect recorded handoff evidence</h4>
+      <h4>{spec.title}</h4>
       <p>
-        Count captured outgoing ownership transfers for this person. This does not measure speed or
-        quality. Missing history withholds the value. The saved observation still needs human
-        review.
+        {spec.description} Missing history withholds the value. The saved observation still needs
+        human review.
       </p>
       <label>
         Collection reason

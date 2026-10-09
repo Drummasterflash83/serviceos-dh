@@ -88,7 +88,8 @@ It requires the existing performance/review, work-capture and member-history
 migrations. Nothing has been deployed or baselined live; historical emails, calls,
 recordings and connections are untouched.
 
-Remaining work includes numerical correction, published policy versions,
+Prospective policy publication and a separate [elapsed ownership observation](LEARN-WORK-RESIDENCE-MEASUREMENTS.md) are now implemented locally.
+Remaining work includes numerical correction,
 historical team-policy observations, team aggregation, desk/business-time and
 response adapters, calendars/exclusions, work complexity and quality measures,
 large-population collection, source reconciliation and verified deployment.

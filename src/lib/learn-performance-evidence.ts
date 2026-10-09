@@ -46,7 +46,7 @@ export async function loadPerformanceEvidence(
       if (ref.table === "learn_work_measurement_runs" && k === "proof") {
         if (
           !value ||
-          value.contract !== "work-handoffs@1" ||
+          !["work-handoffs@1", "work-residence@1"].includes(value.contract) ||
           !Array.isArray(value.items) ||
           !Array.isArray(value.credited)
         )

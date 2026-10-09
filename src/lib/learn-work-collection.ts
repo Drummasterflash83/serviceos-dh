@@ -7,21 +7,48 @@ export const HANDOFF_METRIC = "work.recorded_handoffs";
 export const HANDOFF_SOURCE = "serviceos.work.handoffs@1";
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
-export function canCollectWorkHandoffs(policy: ScorecardPolicy) {
+export const RESIDENCE_METRIC = "work.owned_item_minutes";
+export const RESIDENCE_SOURCE = "serviceos.work.residence@1";
+export const WORK_COLLECTORS = {
+  handoffs: {
+    metric: HANDOFF_METRIC,
+    unit: "handoffs",
+    source: HANDOFF_SOURCE,
+    rpc: "learn_work_handoffs_collect",
+    title: "Collect recorded handoff evidence",
+    description:
+      "Count captured outgoing ownership transfers for this person. This does not measure speed or quality.",
+    collected: "Recorded handoff evidence has been collected for this period.",
+  },
+  residence: {
+    metric: RESIDENCE_METRIC,
+    unit: "item_minutes",
+    source: RESIDENCE_SOURCE,
+    rpc: "learn_work_residence_collect",
+    title: "Collect elapsed ownership evidence",
+    description:
+      "Add elapsed minutes for each owned item, including waiting and closed states. Two items held for an hour count as 120 item-minutes. This is not working hours or productivity; no business calendar or delay exclusion is applied.",
+    collected: "Elapsed ownership evidence has been collected for this period.",
+  },
+} as const;
+export type WorkCollectionKind = keyof typeof WORK_COLLECTORS;
+export function canCollectWork(policy: ScorecardPolicy, kind: WorkCollectionKind) {
+  const spec = WORK_COLLECTORS[kind];
   return (
     policy.subjectKind === "member" &&
     !policy.groupId &&
     policy.metrics.some(
-      (m) =>
-        m.key === HANDOFF_METRIC &&
-        m.unit === "handoffs" &&
-        m.sourceSystems.includes(HANDOFF_SOURCE),
+      (m) => m.key === spec.metric && m.unit === spec.unit && m.sourceSystems.includes(spec.source),
     )
   );
 }
-export async function collectWorkHandoffs(
+export function canCollectWorkHandoffs(policy: ScorecardPolicy) {
+  return canCollectWork(policy, "handoffs");
+}
+export async function collectWorkEvidence(
   db: { rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: any; error: any }> },
   input: {
+    kind?: WorkCollectionKind;
     policy: ScorecardPolicy;
     memberId: string;
     period: ScorePeriod;
@@ -29,12 +56,14 @@ export async function collectWorkHandoffs(
     reason: string;
   },
 ) {
-  const { policy, memberId, period, requestId, reason } = input;
+  const { policy, memberId, period, requestId, reason, kind = "handoffs" } = input;
+  const spec = WORK_COLLECTORS[kind];
   const start = Date.parse(period.start),
     end = Date.parse(period.end);
   if (
     validateScorecardPolicy(policy).length ||
-    !canCollectWorkHandoffs(policy) ||
+    !spec ||
+    !canCollectWork(policy, kind) ||
     !uuid(memberId) ||
     !uuid(requestId) ||
     !Number.isFinite(start) ||
@@ -46,7 +75,7 @@ export async function collectWorkHandoffs(
     reason.length > 1000
   )
     throw Error("Choose a supported policy, completed period and collection reason");
-  const { data, error } = await db.rpc("learn_work_handoffs_collect", {
+  const { data, error } = await db.rpc(spec.rpc, {
     p_tenant: policy.tenantId,
     p_member: memberId,
     p_policy: policy.id,
@@ -69,4 +98,11 @@ export async function collectWorkHandoffs(
       "Collection acknowledgement could not be verified. Refresh before retrying this request.",
     );
   return { measurementId: data.measurementId as string, reused: data.reused as boolean };
+}
+
+export async function collectWorkHandoffs(
+  db: Parameters<typeof collectWorkEvidence>[0],
+  input: Omit<Parameters<typeof collectWorkEvidence>[1], "kind">,
+) {
+  return collectWorkEvidence(db, { ...input, kind: "handoffs" });
 }
