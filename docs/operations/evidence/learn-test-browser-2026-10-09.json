@@ -1,0 +1,69 @@
+{
+  "version": "learn-test-browser-acceptance/1",
+  "observedAt": "2026-10-09T21:56:54.427Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "5abd05f3-a80d-435a-b164-b2854534b56c",
+  "tenantId": "0a503415-6997-401c-855b-9cc6e25c11d2",
+  "method": "Actual application in Codex in-app browser, normal Auth password sign-in, real Supabase client; manual UI observations plus read-only final database verification.",
+  "checks": [
+    "Signed-in roster of isolated synthetic company",
+    "50-point draft with handoff metric saved and reloaded through UI",
+    "Completed same-day UTC period selected, collected and reloaded",
+    "Retained handoff proof opened; one transfer counted once",
+    "Inferred evidence withheld score; confirmation yielded draft 5/50; dispute withheld score again",
+    "Both reviews retained alongside original inferred measurement",
+    "Small server clock lead accepted without extending expiry; actual empty-company source counts loaded",
+    "Membership ended, owner role revoked, login banned/password rotated; existing browser denied scoring-rule read",
+    "Signed out to login page and closed temporary browser tab"
+  ],
+  "state": {
+    "observations": [
+      {
+        "id": "481d3bfe-5498-42d8-bb97-6bf174cec378",
+        "end": "2026-10-09T21:45:20+00:00",
+        "start": "2026-10-02T21:45:13+00:00",
+        "value": 1,
+        "rawReview": "inferred",
+        "policyRevision": 1
+      },
+      {
+        "id": "d2076ef3-bc2f-474d-9dcf-137bca5a467a",
+        "end": "2026-10-09T21:46:30+00:00",
+        "start": "2026-10-09T21:44:02+00:00",
+        "value": 1,
+        "rawReview": "inferred",
+        "policyRevision": 1
+      }
+    ],
+    "reviews": [
+      {
+        "decision": "confirmed",
+        "revision": 1,
+        "measurementId": "d2076ef3-bc2f-474d-9dcf-137bca5a467a"
+      },
+      {
+        "decision": "disputed",
+        "revision": 2,
+        "measurementId": "d2076ef3-bc2f-474d-9dcf-137bca5a467a"
+      }
+    ],
+    "work_items": 1,
+    "captures": 2,
+    "receipts": 2
+  },
+  "accessRevoked": true,
+  "retiredAt": "2026-10-09T21:49:19.029Z",
+  "validation": {
+    "focusedTests": 10,
+    "mainTypeScript": "passed",
+    "previewTypeScript": "passed",
+    "mainBuild": "passed (47 prebuild checks)",
+    "previewBuild": "passed"
+  },
+  "limitations": [
+    "No production/provider changes, real employee scoring or payroll actions.",
+    "Loopback real application only; separate TEST hosting and full work-action browser flows remain pending.",
+    "Screenshot captures confirmation stage; final retained review is disputed."
+  ],
+  "screenshot": "learn-test-browser-confirmed-2026-10-09.jpg"
+}

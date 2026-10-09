@@ -1,3 +1,4 @@
+import { assessmentPeriod, assessmentTimeField } from "@/lib/learn-assessment-period";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { loadPublishedScorecard } from "@/lib/learn-scorecard-publication";
@@ -48,11 +49,11 @@ export function LearnPerformanceCard(props: Props) {
   );
 }
 function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
-  const today = new Date().toISOString().slice(0, 10);
+  const nowField = assessmentTimeField();
   const [from, setFrom] = useState(() =>
-      new Date(Date.parse(today) - 7 * 86400000).toISOString().slice(0, 10),
+      assessmentTimeField(Date.now() - 7 * 86400000),
     ),
-    [until, setUntil] = useState(today);
+    [until, setUntil] = useState(nowField);
   const [ruleMode, setRuleMode] = useState<"draft" | "published">("draft");
   const [query, setQuery] = useState({ from, until, revision: 0 });
   const [loaded, setLoaded] = useState<{
@@ -70,15 +71,7 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
     setMessage("Reading performance evidence…");
     void (async () => {
       try {
-        const period = {
-          start: new Date(query.from).toISOString(),
-          end: new Date(query.until).toISOString(),
-        };
-        if (
-          Date.parse(period.end) > Date.now() ||
-          Date.parse(period.start) >= Date.parse(period.end)
-        )
-          throw Error("Choose a completed period with the end after the start.");
+        const period = assessmentPeriod(query.from, query.until);
         const policy =
           ruleMode === "published"
             ? await loadPublishedScorecard(getSupabaseClient(), tenantId, kind, groupId, period)
@@ -142,18 +135,23 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
       >
         <label>
           From (UTC, inclusive)
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} required />
+          <input type="datetime-local" step="1" value={from} onInput={(e) => setFrom(e.currentTarget.value)} onChange={(e) => setFrom(e.target.value)} required />
         </label>
         <label>
           Until (UTC, exclusive)
           <input
-            type="date"
+            type="datetime-local"
+            step="1"
             value={until}
+            onInput={(e) => setUntil(e.currentTarget.value)}
             onChange={(e) => setUntil(e.target.value)}
-            max={today}
+            max={nowField}
             required
           />
         </label>
+        <button className="cp-secondary" type="button" onClick={() => setUntil(assessmentTimeField())}>
+          Through now
+        </button>
         <button className="cp-secondary" disabled={loading} type="submit">
           {loading ? "Reading…" : "Load / refresh assessment"}
         </button>
@@ -194,7 +192,7 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
                   mode={mode}
                   policy={current.policy}
                   memberId={id}
-                  period={{ start: query.from + "T00:00:00Z", end: query.until + "T00:00:00Z" }}
+                  period={assessmentPeriod(query.from, query.until)}
                   exists={current.rows.some((m) => m.metricKey === WORK_COLLECTORS[mode].metric)}
                   onSaved={refresh}
                 />

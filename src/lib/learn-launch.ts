@@ -13,7 +13,11 @@ function processingAttempt(value:unknown,now:number):LaunchProcessingAttempt|nul
 }
 export function launchSnapshot(raw:any,tenant:string,now:number){
  if(!raw||raw.version!=='learn-launch/1'||raw.tenant_id!==tenant||!Number.isFinite(now))return null;
- const counts=validateLearnStatus(raw.counts,tenant);if(!counts||learnStatusState(counts,now)==='stale'||raw.observed_at!==counts.observed_at||raw.valid_until!==counts.valid_until)return null;
+ const counts=validateLearnStatus(raw.counts,tenant);if(!counts||raw.observed_at!==counts.observed_at||raw.valid_until!==counts.valid_until)return null;
+ // Independent server/browser clocks can differ slightly. Accept at most five
+ // seconds ahead; never extend the server's original validity deadline.
+ const observed=Date.parse(counts.observed_at);if(observed>now+5000)return null;
+ now=Math.max(now,observed);if(learnStatusState(counts,now)==='stale')return null;
  const n=(v:unknown)=>v===null||typeof v==='number'&&Number.isSafeInteger(v)&&v>=0;
  const at=(v:unknown)=>v===null||typeof v==='string'&&Number.isFinite(Date.parse(v))&&Date.parse(v)<=now;
  const emailAttempt=processingAttempt(raw.email?.latest_message_sync_attempt,now),phoneAttempt=processingAttempt(raw.phone?.latest_call_sync_attempt,now);

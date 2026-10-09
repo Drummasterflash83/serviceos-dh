@@ -339,7 +339,7 @@ were verified through Auth/PostgREST/Edge. All synthetic users and fixture recor
 were removed and absence verified. Production remains untouched. See
 [verified inventory, evidence and dependency work](../operations/LEARN-TEST-READINESS.md).
 
-TEST now has 59 RLS-enabled public base tables. The 33-table card/work foundation,
+At the foundation milestone, TEST had 59 RLS-enabled public base tables. The 33-table card/work foundation,
 recovered from nine retained migration sources, installed at 20:06 UTC. Its actual
 schema matched the isolated expected schema, with existing source definitions and
 launch privileges preserved. Real JWT acceptance caught denied tenant-helper
@@ -398,15 +398,17 @@ the real timeline/card readers for alias-safe handoffs, independent elapsed-time
 sums, review, incomplete identity, tenant/role/View-As checks and retained source/proof
 records. Twenty-five focused tests, isolated SQL/concurrency, main/preview type checks
 and preview build passed. Synthetic evidence/actor identities remain, with Auth users
-banned and roles revoked. Governed work actions/authority/endpoint are still unreleased.
+banned and roles revoked. Governed actions were not yet released at that milestone;
+release 008 below supersedes that limitation.
 See [capture release evidence](../operations/LEARN-TEST-WORK-CAPTURE.md).
 
 Work-transition now resolves confirmed, effective cover and self/team/company
 permissions against the actual item, and rechecks authority in the save transaction.
 Confirmed viewer-role staff can act within the same item scope. Synthetic database
 checks cover revoke-before-save, team target boundaries, cover weekdays/timezone and
-retained owner attribution. No endpoint or migration is deployed. Collection
-visibility and full staff-session acceptance remain required. See
+retained owner attribution. Release 008 installed these capabilities in TEST and
+passed actual staff-session checks. Full action browser flows and collection
+visibility beyond owner/admin remain required. See
 [work authority](../operations/LEARN-WORK-AUTHORITY.md).
 
 The earlier Directory → Roster workflow is recovered locally: people/lifecycle,
@@ -439,8 +441,8 @@ See [provenance, verification limits and remaining historical modules](../operat
    verify backup retention and restore, and reconcile against Birchills/Sipcentric
    provider inventory before attempting bounded recovery. Do not assume upstream
    recordings remain available indefinitely.
-2. Verify deployed TEST and production schemas/migration history before applying
-   the additive draft RPC. TEST project identity remains separate from production.
+2. Verify deployed TEST and production schemas/migration history before each next
+   additive release. The draft RPC is installed in TEST; production stays separate.
    Do not blindly apply all pending migrations or touch the separate Emma launch.
 3. Trace real authorised email/phone examples end to end into customer/team evidence
    using ordinary user permissions; service-role inventory does not test user RLS.
@@ -461,3 +463,21 @@ See [provenance, verification limits and remaining historical modules](../operat
    and scorecard stages pass acceptance. No automatic payroll change is implemented.
 
 The overall LEARN V1 goal remains active and incomplete.
+
+## Governed actions and actual browser milestone — 21:23–21:51 UTC
+
+Release 008 installed governed action authority, validation and serialized authority
+changes in TEST, bringing the catalog to 80 public tables and nine receipts. The
+JWT-protected work-transition endpoint deployed at 21:24. Actual signed-in checks
+passed for self/team/company scope, assignment, temporary cover, revocation,
+preview denial and concurrent revisions. Canonical history/card reads counted a
+handoff once. Synthetic evidence remains, with memberships/grants/cover ended and
+logins banned. See [action release evidence](../operations/LEARN-TEST-ACTIONS.md).
+
+The actual application then passed browser sign-in, 50-point rule save/reload,
+same-day UTC evidence collection, source-proof reading, confirmation (5/50 draft),
+dispute (score withheld), retained review history and revoked-session checks.
+Browser testing fixed date-only assessment inputs and a roughly 70ms server-clock
+lead that had made valid source status appear unavailable. No expiry extension or
+provider operation was introduced. Main/preview builds and type checks passed.
+See [actual browser acceptance and remaining scope](../operations/LEARN-TEST-BROWSER.md).
