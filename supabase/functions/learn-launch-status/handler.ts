@@ -25,10 +25,11 @@ function attempt(r:Result,now:number){
  if((row.status==='success'||row.status==='failed')&&Number.isFinite(completed)&&completed>=started&&completed<=now)return {state:row.status,started_at:row.started_at,completed_at:row.completed_at,records_processed:processed,error_present:errorPresent};
  return unknownAttempt();
 }
-export async function readLaunchStatus(body:unknown,db:ReadClient,authorize:Authorize,clock:()=>number=Date.now){
+export async function readLaunchStatus(body:unknown,db:ReadClient,authorize:Authorize,clock:()=>number=Date.now,ownerAdminOnly=false){
  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!uuid((body as any).tenant_id))return fail(400,'invalid_request');
  const tenant=(body as any).tenant_id as string,actor=await authorize();
  if(!actor)return fail(401,'unauthorised');if(actor.tenantId!==tenant)return fail(403,'tenant_mismatch');
+ if(ownerAdminOnly&&!['owner','admin'].includes(actor.role))return fail(403,'owner_admin_required');
  const start=clock();
  const count=(table:string)=>query(()=>db.from(table).select('created_at',{count:'exact'}).eq('tenant_id',tenant).order('created_at',{ascending:false,nullsFirst:false}).limit(1));
  const [phone,email,recordings,accounts,mailboxes,selected,removed,emailSync,phoneSync,emailAttempt,phoneAttempt,voicemails,recentCalls,inboxLabels,sentLabels,draftLabels,...transcriptCounts]=await Promise.all([

@@ -81,6 +81,11 @@ ordinary-user access, tenant isolation or connector acceptance.
 
 ## Concrete release work now required
 
+A [restricted launch metadata proposal](LEARN-TEST-LAUNCH-ACCESS.md) now implements
+the minimum read surface locally and passes handler and isolated SQL privilege
+tests. It preserves raw source data and existing ingestion policies. It has not
+been applied to TEST; full schema and real JWT/API verification remain required.
+
 1. Reconcile the deployed bootstrap and custom ledger. Recover its exact source if
    available; otherwise document the deployed definitions from read-only catalog
    evidence and compare a reviewed reconstruction. Never replay a blanket bootstrap
