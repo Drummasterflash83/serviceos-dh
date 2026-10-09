@@ -1,0 +1,40 @@
+{
+  "version": "learn-slack-threads-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_threads_v1",
+  "sha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030120000_learn_slack_thread_storage.sql",
+      "sha256": "c04cb34944a5ca00c6c1f438f42e00937dd767d8fab359a4290234c3b0a04968"
+    },
+    {
+      "path": "supabase/migrations/20261030130000_learn_slack_thread_worker.sql",
+      "sha256": "05fc686bdf849362ce71a17e511ed1aa8be62ef78ae9d2a38791ecce81627c81"
+    }
+  ],
+  "tables": [
+    "slack_thread_imports"
+  ],
+  "newFunctions": [
+    "learn_slack_store_records",
+    "learn_slack_thread_immutable",
+    "learn_slack_start_thread_import",
+    "slack_thread_commit_page",
+    "learn_slack_read_thread_credential",
+    "learn_slack_finish_thread_job"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "learn_slack_claim_jobs",
+    "learn_slack_commit_page_private"
+  ],
+  "unchanged": [
+    "Existing table definitions, privileges, sources, credentials and schedules.",
+    "Existing history approval/page/finish contracts and unrelated queue completion."
+  ],
+  "deferred": [
+    "Separate matching endpoint release and hosted authenticated acceptance.",
+    "Operator thread discovery/import UI, live Slack access, continuous coverage and workspace pacing."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-threads-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+  "state": "installed_needs_user_verification",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T23:04:23.666152+00:00",
+  "observedAfter": "2026-10-09T23:04:27.223786+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "2a98f828a1b994a035fe33110c2a1cbaea7ad4368bf589d2c82ab11d024f9d53",
+  "afterCatalogSha256": "5ececdb09754f6e38e6b9af5c5585e0e5c2d4664436820135f4bf56042cd3062",
+  "limitations": [
+    "TEST thread approval table and functions only. No credentials, source rows, schedules, provider requests or production changes.",
+    "Hosted API/Edge acceptance is still required. An uncertain write is never automatically retried."
+  ]
+}

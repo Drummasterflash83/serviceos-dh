@@ -1,0 +1,33 @@
+{
+  "version": "learn-test-threads-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+  "observedAt": "2026-10-09T23:05:51.487Z",
+  "runId": "1e9415dd-f2f7-4834-a283-eeab937f5038",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Real owner setup, idempotent retry, HTTP 409, viewer and foreign-owner denial",
+    "Actual Edge denies anonymous/user JWTs; browser cannot claim; generic queue reserves Slack; missing credential becomes a safe retained dead letter without provider access",
+    "Actual service page publication/exact replay, browser/private-writer denial and HTTP lease conflicts; Edge recovers saved page without credentials and atomically creates one delayed successor; source/version/interaction and tenant isolation retained",
+    "Actual signed-in thread approval, exact retry, changed-request conflict, viewer/foreign denial, reserved queue and Edge missing-credential refusal",
+    "Actual service thread publication/replay and independent channel cursor; expired-claim HTTP 409; deployed Edge recovers retained reply and creates one delayed successor with qualified coverage"
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "approvals": 2,
+    "thread_approvals": 2,
+    "interactions": 2,
+    "active_jobs": 0,
+    "active_connections": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-threads-1e9415dd-f2f7-4834-a283-eeab937f5038.json",
+  "limitations": [
+    "No real Slack token, provider credential, provider fetch or production change. Synthetic provider metadata explicitly has no credential.",
+    "Source publication was supplied directly to the real service RPC; deployed Edge exercised missing-credential refusal and saved-page recovery, not live Slack HTTP ingestion. Real provider permission, automatic thread discovery and continuous history remain pending.",
+    "Synthetic actors and evidence retained; queue cancelled, connections disabled, logins banned/passwords rotated and owner roles revoked. Tenant-level source read policy is unchanged; this is not proof of immediate invalidation of all old JWT reads."
+  ]
+}

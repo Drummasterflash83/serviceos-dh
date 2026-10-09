@@ -1,0 +1,14 @@
+{
+  "version": "learn-test-threads-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T23:03:57.960231+00:00",
+  "observedAfter": "2026-10-09T23:04:01.528562+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "2a98f828a1b994a035fe33110c2a1cbaea7ad4368bf589d2c82ab11d024f9d53",
+  "afterCatalogSha256": "2a98f828a1b994a035fe33110c2a1cbaea7ad4368bf589d2c82ab11d024f9d53"
+}

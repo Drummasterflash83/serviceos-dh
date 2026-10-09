@@ -187,7 +187,7 @@ release-009 acceptance scripts intentionally require their original schema. Live
 Slack permission and source acceptance, threads, continuous history, workspace-wide
 pacing and operator recovery controls remain required for full ingestion.
 
-## Observed thread windows — local implementation, not deployed
+## Observed thread windows — implementation and initial local verification
 
 The next worker version handles `slack.thread_sync` alongside channel history.
 It reads replies through Slack's separately paginated
@@ -238,9 +238,56 @@ Both migrations rolled back cleanly, and the applied schema preserved every
 existing table definition and privilege. See the
 [local verification record](evidence/learn-slack-threads-local-2026-10-09.json).
 
-TEST is still release 010 and its previously verified history-only runtime v3.
+At this local milestone, TEST was still release 010 and its previously verified history-only runtime v3.
 The release-010 deploy helper now pins its known runtime source hash and refuses
 newer thread source before network access. The thread schema needs a separate
 reviewed release bundle, hosted rehearsal, a complete endpoint dependency manifest,
 deployment and actual authenticated acceptance. No thread job, live provider
 request, credential, schedule or production change was made by this local work.
+
+## Current TEST state — thread release 011, 10 October
+
+Release 011 is installed in TEST: 88 public tables and twelve retained release
+receipts. The release SHA-256 is
+`c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce`.
+Its exact transaction passed offline injected-failure/rollback checks and a hosted
+rollback rehearsal before installation. The installed table, functions and grants
+match the independently generated PostgreSQL projection. Existing table definitions,
+privileges, source catalogs and unrelated queue completion remain unchanged.
+
+The matching `learn-slack-worker` is active at runtime version 4 with JWT
+verification. Its 13-file source bundle includes twelve runtime files and the
+type-only worker contract. Deployment returned success, and all twelve first-party
+runtime source-map entries from the downloaded deployed bundle match the reviewed
+repository source exactly. The download CLI timed out after writing the complete
+bundle; no deployment retry followed. Existing secrets were reused and the other
+two TEST endpoints were unchanged.
+
+Actual hosted Auth/RPC/Edge acceptance passed for both history and threads. It
+verified owner approval, viewer/foreign-owner denial, exact request retry, changed
+request conflicts, reserved queue claims, missing-credential refusal, page replay,
+expired-claim refusal, separate thread/channel checkpoints and Edge recovery of a
+saved thread page with one delayed successor. Two messages, two immutable versions,
+two interactions, two history approvals and two thread approvals remain as synthetic
+evidence. Fixture logins are banned with rotated passwords and viewer roles;
+connections are disabled and no active fixture job remains. Existing source-read
+policies remain subject to JWT expiry.
+
+The focused Node suite now passes 72 tests, including nine new release/deployment
+checks. Actual-UI server and fixture guards recognize release 011. The prior
+release-010 deployment and acceptance helpers retain their original restrictions.
+
+Evidence:
+
+- [Exact hosted rehearsal](evidence/learn-test-threads-rehearsal-2026-10-10.json)
+- [Installation and preservation](evidence/learn-test-threads-release-2026-10-10.json)
+- [Worker deployment](evidence/learn-test-threads-deploy-2026-10-10.json)
+- [Deployed source comparison](evidence/learn-test-threads-readback-2026-10-10.json)
+- [Actual signed-in and Edge acceptance](evidence/learn-test-threads-acceptance-2026-10-10.json)
+- [Installed schema](evidence/learn-test-threads-installed-schema-2026-10-10.json)
+
+No real Slack credential or provider fetch was used. Source pages in acceptance
+were supplied to the real service RPC; the deployed worker exercised refusal and
+saved-page recovery. Live provider permission and reply behavior, operator thread
+discovery/import controls, continuous history, workspace pacing and recovery UI
+remain required. No production change or schedule was made.

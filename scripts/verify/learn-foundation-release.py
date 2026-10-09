@@ -358,14 +358,28 @@ try:
                                 thread_before=json.loads(run(catalog_sql).stdout)
                                 thread_function_query="select coalesce(jsonb_agg(pg_get_functiondef(p.oid) order by p.oid),'[]') from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prokind='f';"
                                 thread_functions_before=json.loads(run(thread_function_query).stdout)
-                                thread_sources=[(ROOT/('supabase/migrations/'+name)).read_text() for name in ['20261030120000_learn_slack_thread_storage.sql','20261030130000_learn_slack_thread_worker.sql']]
-                                thread_sql='\n'.join(re.sub(r'^(begin|commit);\s*$', '', s, flags=re.M) for s in thread_sources)
-                                apply('set role postgres;begin;'+thread_sql+'\nrollback;', 'Thread schema and shared writer rollback rehearsal')
+                                thread_sql=node("import {threadsReleaseSql} from './scripts/verify/learn-test-threads-release.mjs';process.stdout.write(threadsReleaseSql());")
+                                injected=thread_sql.replace('insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)',"do $$begin raise exception 'Injected thread receipt failure';end $$;\ninsert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)")
+                                failed=run('set role postgres;'+injected,False)
+                                assert failed.returncode and b'Injected thread receipt failure' in failed.stderr
                                 assert json.loads(run(catalog_sql).stdout)['tables']==thread_before['tables']
                                 assert json.loads(run(thread_function_query).stdout)==thread_functions_before
-                                apply('set role postgres;begin;'+thread_sql+'\ncommit;', 'Retained thread approvals, scoped claims and shared source writer')
+                                print('Failed thread receipt rolls back all function, privilege and table changes: PASS',flush=True)
+                                thread_rehearsal=node("import {threadsRehearsalSql} from './scripts/verify/learn-test-threads-release.mjs';process.stdout.write(threadsRehearsalSql());")
+                                apply('set role postgres;'+thread_rehearsal, 'Exact thread release rollback rehearsal')
+                                assert json.loads(run(catalog_sql).stdout)['tables']==thread_before['tables']
+                                assert json.loads(run(thread_function_query).stdout)==thread_functions_before
+                                apply('set role postgres;'+thread_sql, 'Retained thread approvals, scoped claims and shared source writer')
                                 thread_after=json.loads(run(catalog_sql).stdout)
                                 assert [t for t in thread_after['tables'] if t['name']!='slack_thread_imports']==thread_before['tables'],'Threads changed existing table definitions or privileges'
+                                thread_query=node("import {THREADS_FUNCTION_QUERY} from './scripts/verify/learn-slack-threads-catalog.mjs';process.stdout.write(THREADS_FUNCTION_QUERY);")
+                                thread_sha=node("import {checkedThreads} from './scripts/verify/learn-slack-threads-bundle.mjs';process.stdout.write(checkedThreads().manifest.sha256);")
+                                thread_expected={'sourceSha256':thread_sha,'tables':[t for t in thread_after['tables'] if t['name']=='slack_thread_imports'],'functions':json.loads(run(thread_query).stdout)}
+                                thread_expected_path=ROOT/'supabase/release/learn-test/011_slack_threads.expected.json'
+                                if '--write-threads-expected' in sys.argv:thread_expected_path.write_text(json.dumps(thread_expected,indent=2)+'\n')
+                                else:assert thread_expected==json.loads(thread_expected_path.read_text()),'Thread installed projection differs'
+                                duplicate=run('set role postgres;'+thread_sql,False)
+                                assert duplicate.returncode and b'Slack thread release already exists' in duplicate.stderr
                                 apply((ROOT/'scripts/verify/learn-slack-thread-storage.assert.sql').read_text(),'Thread consent, source association, atomic checkpoint, replay and preservation')
 
 

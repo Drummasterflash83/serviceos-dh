@@ -1,0 +1,65 @@
+{
+  "version": "learn-test-threads-readback/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T23:06:21.483035+00:00",
+  "state": "all_runtime_sources_match",
+  "cliExit": null,
+  "bundlePath": "/private/tmp/serviceos-threads-readback-zvuZYI/supabase/.temp/output_learn-slack-worker.eszip",
+  "bundleSha256": "2bbd5f2b5884fd9ce315ce0e1367ce14435e342dddb38b2fa44a642123acd30a",
+  "files": [
+    {
+      "path": "supabase/functions/learn-slack-worker/index.ts",
+      "sha256": "32923324ccd7acbc6904a8fd7d91795e3f2c3659d4ad20145319b097af726f9d"
+    },
+    {
+      "path": "supabase/functions/_shared/worker_handlers/slack_history.ts",
+      "sha256": "cc323858be18f22ceb1f289719f4e85dff728754b822eb43bc6d371de6661882"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_binding.ts",
+      "sha256": "2b0ac80f18b78a8b4ac6a53201e7e24ab383a28913deac68c1a3e393d948c18f"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_errors.ts",
+      "sha256": "3afd89649418a8ac8ec0f9e6f57288358673c3e09faf29968a8bbc8b1c63a630"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history.ts",
+      "sha256": "652ef20610f864207bd627b556c946c79c29e5d365f991b80ba4efdf279f32af"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_server.ts",
+      "sha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_request.ts",
+      "sha256": "8c5cd970ed1cc6627b4477851386900cb8032c2cc3ce6c2c749d88588df991d9"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_batch.ts",
+      "sha256": "1e4bf056e5d319c30445da1f1cf4bc7fbdb6a35684f382a330ab859bc9486702"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_thread_history.ts",
+      "sha256": "999e7c34266200ca8c349fe787268b1e511a9099ca9630c6321cdae0b5f5f531"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_history_persist.ts",
+      "sha256": "81b4dcd5a2efe728b403cfd2d2fa36b18d64569b0cbacb034ff809f808038f65"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_worker.ts",
+      "sha256": "f3da17979be4ca9e97284b078a39601c7a81d7add2030f576c1ebb812f4cdb38"
+    },
+    {
+      "path": "supabase/functions/_shared/slack/slack_worker_http.ts",
+      "sha256": "ca5974311f14bdefa1ae9d778cdf2d5c905e5c916f638749ffd1b17aceeba77b"
+    }
+  ],
+  "omittedTypeOnlyFile": "supabase/functions/_shared/worker_contract.ts",
+  "method": "Exact comparison of all twelve first-party source-map sourcesContent entries in the downloaded deployed ESZIP bundle.",
+  "limitations": [
+    "Download CLI timed out after writing the bundle; this verifies the completed artifact. Deployment was not retried.",
+    "Readback does not establish live provider permission or complete ingestion."
+  ]
+}

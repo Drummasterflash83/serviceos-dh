@@ -1,0 +1,35 @@
+{
+  "version": "learn-test-threads-deploy/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T23:04:51.736Z",
+  "state": "deployed_needs_user_acceptance",
+  "writeAttempted": true,
+  "cliExitStatus": 0,
+  "sourceBundleSha256": "ac8eeeb892dc886ac465751c4aced350538b35c46085f3f1b9392563fb81b378",
+  "replacedVersion": 3,
+  "files": [
+    "learn-slack-worker/index.ts",
+    "_shared/worker_contract.ts",
+    "_shared/worker_handlers/slack_history.ts",
+    "_shared/slack/slack_history.ts",
+    "_shared/slack/slack_thread_history.ts",
+    "_shared/slack/slack_history_batch.ts",
+    "_shared/slack/slack_history_binding.ts",
+    "_shared/slack/slack_history_errors.ts",
+    "_shared/slack/slack_history_persist.ts",
+    "_shared/slack/slack_history_request.ts",
+    "_shared/slack/slack_history_server.ts",
+    "_shared/slack/slack_worker.ts",
+    "_shared/slack/slack_worker_http.ts"
+  ],
+  "endpoint": {
+    "name": "learn-slack-worker",
+    "version": 4,
+    "status": "ACTIVE",
+    "verifyJwt": true
+  },
+  "limitations": [
+    "Only the thread-capable learn-slack-worker TEST endpoint was submitted; no prune, secrets, production or provider operations.",
+    "Deployment metadata is not signed-in HTTP acceptance; uncertain deployment is not retried automatically."
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "version": "learn-test-threads-confirmation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T23:07:31.470713+00:00",
+  "state": "confirmed_by_schema_source_readback_and_http_acceptance",
+  "sourceSha256": "c476f687762c1bb648c7ecdd7bd9bdb054b1d7f5ccc9cb43af17468991edf5ce",
+  "tables": 88,
+  "receipts": 12,
+  "endpoint": {
+    "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+    "slug": "learn-slack-worker",
+    "name": "learn-slack-worker",
+    "status": "ACTIVE",
+    "version": 4,
+    "created_at": 1791584977820,
+    "updated_at": 1791587086905,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_bd55f2b9-77da-4427-92bf-59d2e27d744e_4/source/supabase/functions/learn-slack-worker/index.ts",
+    "ezbr_sha256": "7b1cdf0793bf7f97eb6cb1884f1ccc37f916a61153cbe30e36ed64913e7fa6ae"
+  },
+  "otherEndpointsUnchanged": true,
+  "runtimeSourceCount": 12,
+  "nodeTests": 72,
+  "logSha256": {
+    "isolatedSql": "01e8fe156b6dea0ec5c0cb5d3e7a19d0a9c71f20c4c81b059578d971784a0b02",
+    "nodeTests": "dba66ef4bc03475d3321a8e95020a83be84263428180305bec9d9b0642010aa5"
+  },
+  "acceptanceRunId": "1e9415dd-f2f7-4834-a283-eeab937f5038",
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "approvals": 2,
+    "thread_approvals": 2,
+    "interactions": 2,
+    "active_jobs": 0,
+    "active_connections": 0
+  },
+  "evidence": [
+    "learn-test-threads-rehearsal-2026-10-10.json",
+    "learn-test-threads-release-2026-10-10.json",
+    "learn-test-threads-deploy-2026-10-10.json",
+    "learn-test-threads-readback-2026-10-10.json",
+    "learn-test-threads-acceptance-2026-10-10.json",
+    "learn-test-threads-installed-schema-2026-10-10.json"
+  ],
+  "limitations": [
+    "No real Slack token, provider credential, provider fetch or production change. Synthetic provider metadata explicitly has no credential.",
+    "Source publication was supplied directly to the real service RPC; deployed Edge exercised missing-credential refusal and saved-page recovery, not live Slack HTTP ingestion. Real provider permission, automatic thread discovery and continuous history remain pending.",
+    "Synthetic actors and evidence retained; queue cancelled, connections disabled, logins banned/passwords rotated and owner roles revoked. Tenant-level source read policy is unchanged; this is not proof of immediate invalidation of all old JWT reads."
+  ]
+}

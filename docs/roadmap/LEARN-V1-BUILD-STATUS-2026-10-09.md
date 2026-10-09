@@ -554,4 +554,24 @@ release-010 deploy path refuses the newer source until it has a matching schema
 release. Thread release packaging, hosted acceptance, operator discovery/import
 controls, live permission checks, continuous coverage and workspace pacing remain.
 No existing live inputs or credentials were replaced. See
-[thread behavior and remaining ingestion work](../operations/LEARN-SLACK-INGESTION.md#observed-thread-windows--local-implementation-not-deployed).
+[thread behavior and remaining ingestion work](../operations/LEARN-SLACK-INGESTION.md#observed-thread-windows--implementation-and-initial-local-verification).
+
+## Slack thread release verified in TEST — 10 October
+
+Release 011 is installed with 88 public tables and twelve receipts. Hosted rollback
+rehearsal and installation preserved existing source catalogs and table privileges.
+The thread-capable worker is active at runtime v4 with unchanged JWT verification
+and existing secrets. All twelve downloaded runtime sources match the reviewed
+bundle; unrelated endpoints remain unchanged.
+
+Real TEST owner/viewer/foreign-company sessions and Edge requests passed history
+and thread acceptance, including retained reply publication, replay, independent
+checkpoints, expired-worker denial and recovery with one delayed continuation.
+Synthetic evidence remains; fixture logins and approval roles are revoked,
+connections disabled and all active fixture jobs stopped. The focused suite passes
+72 tests. No live Slack request, production change or schedule was made.
+
+Next ingestion work remains operator thread discovery/import controls, actual
+Slack access, continuous/multi-window backfill, workspace pacing and recovery UI.
+This completes the thread release milestone, not full Slack ingestion or LEARN V1.
+See [current TEST verification](../operations/LEARN-SLACK-INGESTION.md#current-test-state--thread-release-011-10-october).
