@@ -1,5 +1,14 @@
 # Local LEARN design review
 
+9 October card increment: `?launch=1` now mounts the actual current company-card
+and scoring-settings components with synthetic canonical records. Office/engineer
+filtering and source evidence drill-down are available. `&cards=empty` and
+`&cards=error` exercise empty/failed reads. Scoring draft saves are simulated in
+memory only and disappear on page reload; no database or provider is contacted.
+The current application stylesheet is imported so dialog utility classes are
+generated correctly. These changes supersede the older statements below that all
+preview mutations throw and that the global stylesheet is a frozen copy.
+
 A local, static review of the requested LEARN experience, mounted in the actual baseline ClientPortal and OperatorShell. Baseline:13b554368cda86dfb0a4014d4187b548a8b9de02. This supersedes the rejected4a8a05d preview direction; no publication is authorized.
 
 ClientPortal is copied with three preview-only changes: LEARN immediately after AI Receptionist, an injected LEARN content slot, and a type annotation for the synthetic receptionist-workspace query. Its original sidebar/header/mobile menu remain. OperatorShell is byte-identical. Styles and tenant branding come from the existing source; CSS loads in the normal global-before-lazy-shell order.

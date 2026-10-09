@@ -3,6 +3,10 @@
 Chris's direction, 1 October 2026. This is the current delivery order. Older
 roadmap Live labels are historical claims, not fresh acceptance evidence.
 
+9 October continuation: see [LEARN V1 build and preservation record](LEARN-V1-BUILD-STATUS-2026-10-09.md)
+for Chris's Drummonds-first direction, confirmed credential reuse, day-one
+configurable scorecards, live stored-data baseline and current implementation status.
+
 ## Product rule
 
 Help the company grow and improve sustainable net profit. Each module must show

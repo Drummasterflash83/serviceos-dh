@@ -1,4 +1,4 @@
-import './source/styles.css';
+import '../../src/styles.css';
 const deny=()=>{throw Error('Local UX review blocks backend and provider network');};
 window.fetch=async()=>{throw Error('Local UX review makes no API requests');};
 window.XMLHttpRequest=class{constructor(){deny();}} as any;

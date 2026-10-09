@@ -11,20 +11,36 @@ async function query(run:()=>PromiseLike<Result>):Promise<Result>{try{return awa
 function total(r:Result){return !r.error&&Number.isSafeInteger(r.count)&&r.count!>=0?r.count!:null;}
 function stored(r:Result,now:number){const count=total(r);if(count===null||!Array.isArray(r.data))return unavailable();if(count===0)return r.data.length===0?{read_status:'ok' as const,record_count:0,latest_record_at:null}:unavailable();const at=r.data[0]?.created_at;return r.data.length===1&&typeof at==='string'&&Number.isFinite(Date.parse(at))&&Date.parse(at)<=now?{read_status:'ok' as const,record_count:count,latest_record_at:at}:unavailable();}
 function latest(r:Result,key:string,now:number){const at=!r.error&&Array.isArray(r.data)?r.data[0]?.[key]:null;return typeof at==='string'&&Number.isFinite(Date.parse(at))&&Date.parse(at)<=now?at:null;}
+const unknownAttempt=()=>({state:'unknown' as const,started_at:null,completed_at:null,records_processed:null,error_present:null});
+/** A missing row is only evidence that no attempt was recorded. Invalid or
+ * unreadable ledger data stays unknown and can never become zero or success. */
+function attempt(r:Result,now:number){
+ if(r.error||!Array.isArray(r.data)||r.data.length>1)return unknownAttempt();
+ if(r.data.length===0)return {state:'idle' as const,started_at:null,completed_at:null,records_processed:null,error_present:null};
+ const row=r.data[0],started=typeof row?.started_at==='string'?Date.parse(row.started_at):NaN,completed=typeof row?.completed_at==='string'?Date.parse(row.completed_at):NaN;
+ const processed=row?.records_processed,error=row?.error_message;
+ if(!Number.isFinite(started)||started>now||!Number.isSafeInteger(processed)||processed<0||!(error===null||error===undefined||typeof error==='string'))return unknownAttempt();
+ const errorPresent=typeof error==='string'&&error.length>0;
+ if(row.status==='running'&&(row.completed_at===null||row.completed_at===undefined))return {state:'processing' as const,started_at:row.started_at,completed_at:null,records_processed:processed,error_present:errorPresent};
+ if((row.status==='success'||row.status==='failed')&&Number.isFinite(completed)&&completed>=started&&completed<=now)return {state:row.status,started_at:row.started_at,completed_at:row.completed_at,records_processed:processed,error_present:errorPresent};
+ return unknownAttempt();
+}
 export async function readLaunchStatus(body:unknown,db:ReadClient,authorize:Authorize,clock:()=>number=Date.now){
  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!uuid((body as any).tenant_id))return fail(400,'invalid_request');
  const tenant=(body as any).tenant_id as string,actor=await authorize();
  if(!actor)return fail(401,'unauthorised');if(actor.tenantId!==tenant)return fail(403,'tenant_mismatch');
  const start=clock();
  const count=(table:string)=>query(()=>db.from(table).select('created_at',{count:'exact'}).eq('tenant_id',tenant).order('created_at',{ascending:false,nullsFirst:false}).limit(1));
- const [phone,email,recordings,accounts,mailboxes,selected,removed,emailSync,phoneSync,voicemails,recentCalls,inboxLabels,sentLabels,draftLabels]=await Promise.all([
+ const [phone,email,recordings,accounts,mailboxes,selected,removed,emailSync,phoneSync,emailAttempt,phoneAttempt,voicemails,recentCalls,inboxLabels,sentLabels,draftLabels]=await Promise.all([
   count('phone_calls'),count('email_messages'),count('phone_recordings'),
   query(()=>db.from('email_accounts').select('status').eq('tenant_id',tenant).limit(101)),
   query(()=>db.from('google_workspace_mailboxes').select('id',{count:'exact'}).eq('tenant_id',tenant).limit(1)),
   query(()=>db.from('google_workspace_mailboxes').select('id',{count:'exact'}).eq('tenant_id',tenant).eq('sync_enabled',true).neq('status','removed').limit(1)),
   query(()=>db.from('google_workspace_mailboxes').select('id',{count:'exact'}).eq('tenant_id',tenant).eq('status','removed').limit(1)),
-  query(()=>db.from('email_sync_runs').select('completed_at').eq('tenant_id',tenant).eq('status','success').in('sync_type',['messages','scheduled_sync','workspace_messages','workspace_scheduled_sync','workspace_backfill']).order('completed_at',{ascending:false,nullsFirst:false}).limit(1)),
+  query(()=>db.from('email_sync_runs').select('completed_at').eq('tenant_id',tenant).eq('status','success').in('sync_type',['messages','workspace_messages','workspace_backfill']).order('completed_at',{ascending:false,nullsFirst:false}).limit(1)),
   query(()=>db.from('phone_sync_runs').select('completed_at').eq('tenant_id',tenant).eq('status','success').eq('sync_type','calls').order('completed_at',{ascending:false,nullsFirst:false}).limit(1)),
+  query(()=>db.from('email_sync_runs').select('status,started_at,completed_at,records_processed,error_message').eq('tenant_id',tenant).in('sync_type',['messages','workspace_messages','workspace_backfill']).order('started_at',{ascending:false,nullsFirst:false}).limit(1)),
+  query(()=>db.from('phone_sync_runs').select('status,started_at,completed_at,records_processed,error_message').eq('tenant_id',tenant).eq('sync_type','calls').order('started_at',{ascending:false,nullsFirst:false}).limit(1)),
   count('receptionist_voicemails'),
   query(()=>db.from('phone_calls').select('id,provider_call_id,linked_id,direction,started_at,duration_seconds').eq('tenant_id',tenant).order('started_at',{ascending:false,nullsFirst:false}).limit(10)),
   ...['INBOX','SENT','DRAFT'].map(label=>query(()=>db.from('email_messages').select('id',{count:'exact'}).eq('tenant_id',tenant).contains('raw_payload',{label_ids:[label]}).limit(1))),
@@ -41,6 +57,6 @@ export async function readLaunchStatus(body:unknown,db:ReadClient,authorize:Auth
  const validAccounts=!accounts.error&&Array.isArray(accounts.data)&&accounts.data.length<=100;
  return {status:200,body:{version:'learn-launch/1',tenant_id:tenant,observed_at:new Date(now).toISOString(),valid_until:new Date(start+60000).toISOString(),
   counts:{version:'learn-status/1',tenant_id:tenant,observed_at:new Date(now).toISOString(),valid_until:new Date(start+60000).toISOString(),phone:stored(phone,now),email:stored(email,now)},
-  recordings:stored(recordings,now),voicemails:stored(voicemails,now),email:{accounts:validAccounts?accounts.data!.length:null,disabled_accounts:validAccounts?accounts.data!.filter((a:any)=>a.status==='disabled').length:null,mailboxes:total(mailboxes),selected_mailboxes:total(selected),removed_mailboxes:total(removed),last_successful_message_sync_at:latest(emailSync,'completed_at',now),stored_label_counts:{inbox:total(inboxLabels),sent:total(sentLabels),draft:total(draftLabels)},label_scope:'stored_current_metadata',draft_lifecycle:'unverified',coverage:'unverified',pause_deferral_reason:'unavailable'},
-  phone:{last_successful_call_sync_at:latest(phoneSync,'completed_at',now),provider_coverage:'unverified',recent_calls:!recentCalls.error&&Array.isArray(recentCalls.data)&&recentCalls.data.length<=10&&recentCalls.data.every((r:any)=>uuid(r.id)&&[null,undefined,'IN','OUT'].includes(r.direction)&&(r.started_at==null||typeof r.started_at==='string'&&Number.isFinite(Date.parse(r.started_at))&&Date.parse(r.started_at)<=now)&&(r.linked_id==null||typeof r.linked_id==='string'))?recentCalls.data.map((r:any)=>({id:r.id,linked_id:r.linked_id??null,raw_direction:r.direction??null,started_at:r.started_at??null,duration_seconds:r.duration_seconds??null,recording_ids:recordingIds(r)})):null,recording_scope:'direct_or_linked_family_metadata',direction_scope:'raw_provider',family_audio_coverage:'unverified'},slack:{notifications_enabled:null,message_ingestion:'unavailable'},emma:{stored_observation:'unavailable'},acceptance:'not_live_verified'}};
+  recordings:stored(recordings,now),voicemails:stored(voicemails,now),email:{accounts:validAccounts?accounts.data!.length:null,disabled_accounts:validAccounts?accounts.data!.filter((a:any)=>a.status==='disabled').length:null,mailboxes:total(mailboxes),selected_mailboxes:total(selected),removed_mailboxes:total(removed),latest_message_sync_attempt:attempt(emailAttempt,now),last_successful_message_sync_at:latest(emailSync,'completed_at',now),stored_label_counts:{inbox:total(inboxLabels),sent:total(sentLabels),draft:total(draftLabels)},label_scope:'stored_current_metadata',draft_lifecycle:'unverified',coverage:'unverified',pause_deferral_reason:'unavailable'},
+  phone:{latest_call_sync_attempt:attempt(phoneAttempt,now),last_successful_call_sync_at:latest(phoneSync,'completed_at',now),provider_coverage:'unverified',recent_calls:!recentCalls.error&&Array.isArray(recentCalls.data)&&recentCalls.data.length<=10&&recentCalls.data.every((r:any)=>uuid(r.id)&&[null,undefined,'IN','OUT'].includes(r.direction)&&(r.started_at==null||typeof r.started_at==='string'&&Number.isFinite(Date.parse(r.started_at))&&Date.parse(r.started_at)<=now)&&(r.linked_id==null||typeof r.linked_id==='string'))?recentCalls.data.map((r:any)=>({id:r.id,linked_id:r.linked_id??null,raw_direction:r.direction??null,started_at:r.started_at??null,duration_seconds:r.duration_seconds??null,recording_ids:recordingIds(r)})):null,recording_scope:'direct_or_linked_family_metadata',direction_scope:'raw_provider',family_audio_coverage:'unverified'},slack:{notifications_enabled:null,message_ingestion:'unavailable'},emma:{stored_observation:'unavailable'},acceptance:'not_live_verified'}};
 }

@@ -1,1 +1,56 @@
-{"compilerOptions":{"target":"ES2022","lib":["ES2022","DOM","DOM.Iterable"],"module":"ESNext","moduleResolution":"Bundler","jsx":"react-jsx","skipLibCheck":true,"noEmit":true,"strictNullChecks":true,"baseUrl":".","paths":{"@/lib/auth":["auth.tsx"],"@/lib/supabase":["supabase.ts"],"@/components/receptionist/ReceptionistWorkspace":["other-views.tsx"],"@/*":["source/*"]},"allowImportingTsExtensions":true},"include":["*.ts","*.tsx","source/**/*.ts","source/**/*.tsx"]}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/lib/auth": [
+        "auth.tsx"
+      ],
+      "@/lib/supabase": [
+        "supabase.ts"
+      ],
+      "@/components/receptionist/ReceptionistWorkspace": [
+        "other-views.tsx"
+      ],
+      "@/*": [
+        "source/*"
+      ],
+      "@/lib/learn-cards": [
+        "../../src/lib/learn-cards.ts"
+      ],
+      "@/lib/learn-launch": [
+        "../../src/lib/learn-launch.ts"
+      ],
+      "@/lib/api": [
+        "launch-api-fixture.ts"
+      ],
+      "@/components/ui/dialog": [
+        "../../src/components/ui/dialog.tsx"
+      ],
+      "@/lib/learn-scorecards": [
+        "../../src/lib/learn-scorecards.ts"
+      ],
+      "@/lib/learn-scorecard-settings": [
+        "../../src/lib/learn-scorecard-settings.ts"
+      ]
+    },
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "*.ts",
+    "*.tsx",
+    "source/**/*.ts",
+    "source/**/*.tsx"
+  ]
+}

@@ -1,1 +1,1 @@
-export async function startGmailOAuth(){return {ok:false as const,error:{code:'synthetic_config_error',message:'Synthetic TEST Google configuration unavailable'}};}
+export async function startGmailOAuth(): Promise<{ok:true;data:{auth_url:string}}|{ok:false;error:{code:string;message:string}}>{return {ok:false,error:{code:'synthetic_config_error',message:'Synthetic TEST Google configuration unavailable'}};}
