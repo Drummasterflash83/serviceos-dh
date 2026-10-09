@@ -37,9 +37,20 @@ Before a job can make a provider request, all of these must agree:
   `20261029130000_learn_slack_history.sql` on the target database. Storage checks
   happen before resolving credentials. Do not apply unrelated pending migrations.
 
+The LEARN Slack card now opens an owner/admin import form for an existing
+configured connection. It accepts a public-channel link or ID, a past window up
+to 24 hours, a page budget and a reason. `learn_slack_start_import` rechecks the
+owner/admin's tenant, rejects active client-preview sessions, checks the connection
+revision, and writes an immutable approval with its queued job in one transaction.
+The client retains the same request ID when retrying an uncertain response.
+An active or incomplete earlier window cannot have its checkpoint overwritten.
+Starting a new window after completion retains the previous scope/checkpoint in
+the new approval's `previous_state`.
+
 These are server prerequisites, not instructions to fabricate consent or change
-the live database manually. Connection onboarding and scope selection still need
-an authenticated owner/admin service and UI. Existing credentials should be
+the live database manually. Apply the reviewed setup migration
+`20261029140000_learn_slack_import_setup.sql` with the storage migration. The UI
+does not install a Slack app or create a credential. Existing credentials should be
 reused where available. A new or broader Slack permission grant requires the
 workspace owner's normal Slack installation/consent flow.
 
@@ -82,6 +93,12 @@ Slack limit.
 node --test supabase/functions/_shared/slack/*.test.ts supabase/functions/_shared/worker_handlers/slack_history.test.ts supabase/functions/_shared/platform_queue.test.ts
 python3 scripts/verify/learn-slack-sql.py
 ```
+
+The setup UI was reviewed with synthetic fixtures, including a wrong-workspace
+channel link and a queued acknowledgement. The preview never queues a real job.
+Client validation tests are in `src/lib/learn-slack-setup.test.ts`. The SQL runner
+also checks owner/role/tenant/preview boundaries, atomic setup, idempotent request
+retries and preservation of unfinished and previous windows.
 
 The transport tests use synthetic HTTP responses and database fixtures. They cover
 tenant/connection checks, credential scope, restricted requests, continuation,

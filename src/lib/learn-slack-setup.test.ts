@@ -1,0 +1,131 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  loadSlackConnections,
+  slackChannelId,
+  startSlackImport,
+  validateSlackImportRequest,
+  type SlackImportRequest,
+} from "./learn-slack-setup.ts";
+const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const request: SlackImportRequest = {
+  requestId: id(1),
+  tenantId: id(2),
+  connection: {
+    id: id(3),
+    teamId: "T123",
+    name: "Fixture workspace",
+    revision: "2026-10-09T10:00:00Z",
+  },
+  channelId: "C123",
+  start: "2026-01-01T00:00:00Z",
+  end: "2026-01-02T00:00:00Z",
+  maxPages: 3,
+  reason: "First import",
+};
+test("channel link parsing rejects other workspaces and destinations", () => {
+  assert.equal(slackChannelId(" C123 ", "T123"), "C123");
+  assert.equal(slackChannelId("https://app.slack.com/client/T123/C123", "T123"), "C123");
+  for (const v of [
+    "https://app.slack.com/client/T999/C123",
+    "https://app.slack.com.evil.test/client/T123/C123",
+    "https://user@app.slack.com/client/T123/C123",
+    "javascript:alert(1)",
+    "G123",
+  ])
+    assert.equal(slackChannelId(v, "T123"), null);
+});
+test("setup validation rejects invalid windows before any queue call", async () => {
+  let calls = 0;
+  const db: any = {
+    rpc: async () => {
+      calls++;
+      return { error: null, data: {} };
+    },
+  };
+  for (const change of [
+    { end: "2026-01-01T00:00:00Z" },
+    { end: "2026-01-03T00:00:00Z" },
+    { start: "invalid" },
+    { maxPages: 11 },
+    { maxPages: 1.5 },
+    { reason: " " },
+    { requestId: "bad" },
+  ])
+    await assert.rejects(startSlackImport(db, { ...request, ...change }));
+  assert.equal(calls, 0);
+  assert.doesNotThrow(() => validateSlackImportRequest(request));
+});
+test("queue retries retain request identity and reject malformed acknowledgements", async () => {
+  const calls: any[] = [];
+  const db: any = {
+    rpc: async (name: string, args: any) => {
+      calls.push({ name, args });
+      return {
+        data: {
+          requestId: request.requestId,
+          accountId: id(4),
+          jobId: id(5),
+          reused: calls.length > 1,
+        },
+        error: null,
+      };
+    },
+  };
+  await startSlackImport(db, request);
+  assert.equal((await startSlackImport(db, request)).reused, true);
+  assert.deepEqual(calls[0], calls[1]);
+  assert.equal(calls[0].args.p_expected_revision, request.connection.revision);
+  assert.equal(calls[0].args.token, undefined);
+  await assert.rejects(
+    startSlackImport(
+      {
+        rpc: async () => ({
+          data: { requestId: id(99), accountId: id(4), jobId: id(5), reused: false },
+          error: null,
+        }),
+      } as any,
+      request,
+    ),
+    /verified/,
+  );
+});
+test("connection metadata read is tenant scoped and never selects credential references", async () => {
+  const filters: any[] = [];
+  let columns = "";
+  const rows: any[] = [
+    {
+      id: id(3),
+      tenant_id: id(2),
+      status: "configured",
+      revoked_at: null,
+      updated_at: request.connection.revision,
+      team_id: "T123",
+      team_name: "Fixture workspace",
+    },
+  ];
+  const q: any = {
+    select: (s: string) => {
+      columns = s;
+      return q;
+    },
+    eq: (...v: any[]) => {
+      filters.push(v);
+      return q;
+    },
+    is: (...v: any[]) => {
+      filters.push(v);
+      return q;
+    },
+    limit: async () => ({ data: rows, error: null }),
+  };
+  const db: any = { from: () => q };
+  assert.deepEqual(await loadSlackConnections(db, id(2)), [request.connection]);
+  assert.ok(filters.some(([k, v]) => k === "tenant_id" && v === id(2)));
+  assert.ok(!columns.includes("secret_refs") && !columns.includes("bot_token"));
+  assert.ok(columns.includes("team_id:non_secret_config->>team_id"));
+  rows[0].tenant_id = id(99);
+  await assert.rejects(loadSlackConnections(db, id(2)));
+  rows.splice(0);
+  assert.deepEqual(await loadSlackConnections(db, id(2)), []);
+});

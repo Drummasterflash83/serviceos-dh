@@ -43,6 +43,9 @@
       ],
       "@/lib/learn-scorecard-settings": [
         "../../src/lib/learn-scorecard-settings.ts"
+      ],
+      "@/lib/learn-slack-setup": [
+        "../../src/lib/learn-slack-setup.ts"
       ]
     },
     "allowImportingTsExtensions": true

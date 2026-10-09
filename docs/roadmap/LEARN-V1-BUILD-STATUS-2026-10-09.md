@@ -129,6 +129,14 @@ workspace/channel, reuses the tenant's brokered credential, imports one page per
 job, and requests delayed continuation within its approved budget. HTTP rate
 limits carry a minimum delay into the queue's existing finite retry policy.
 
+The Slack card also has an owner/admin setup dialog for an existing configured
+connection. Its additive setup RPC stores an immutable approval and a queued job
+atomically, supports idempotent retries, and refuses to overwrite an active or
+unfinished channel window. A completed window's settings/checkpoint are retained
+when the next window is approved. This is a bounded manual import flow; app
+installation, continuous sync, import-progress controls and historical expansion
+remain incomplete. The setup migration is local and **not deployed**.
+
 - Customer, job and team card browsing over the existing canonical tables, with
   tenant filtering, pagination and company-defined team groups.
 - Bounded evidence drill-down joining existing interactions, graph links and
@@ -192,6 +200,13 @@ live migration has been performed by this branch.
   synthetic HTTP transport through the real binding and worker, plus SQL checks
   for revocation between provider response and publication. This does not prove
   live connector operation or deployment.
+- Setup increment: four client tests passed, application and preview TypeScript
+  checks passed, and the preview and production builds passed (including the 47
+  existing prebuild checks). SQL fixture checks passed for
+  owner/tenant authority, missing roles, preview sessions, atomic approval/enqueue,
+  idempotent retry, incomplete-checkpoint protection and prior-window retention.
+  Browser testing used only synthetic data; workspace mismatch was rejected and
+  a valid submission showed queued status with no console errors.
 - Preservation/transcript-status increment: 23 focused tests passed, covering
   pagination and foreign/duplicate rows, missing IDs hidden by rising totals,
   changed storage pointers/objects, failed reads, bounded WAV header inspection

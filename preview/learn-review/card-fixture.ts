@@ -32,6 +32,7 @@ export async function saveDraftFixture(args: any) {
 function records(): Record<string, any[]> {
   const time = new Date(Date.now() - 3600000).toISOString();
   return {
+    provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
     operating_profile_entries: drafts,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [

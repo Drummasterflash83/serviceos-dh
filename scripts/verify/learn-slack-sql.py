@@ -31,6 +31,9 @@ try:
         'supabase/migrations/20260708140000_interactions.sql',
         'supabase/migrations/20261029130000_learn_slack_history.sql',
         'scripts/verify/learn-slack-history.assert.sql',
+        'scripts/verify/learn-slack-setup.fixture.sql',
+        'supabase/migrations/20261029140000_learn_slack_import_setup.sql',
+        'scripts/verify/learn-slack-setup.assert.sql',
     ]
     sql = '\n'.join((root / path).read_text() for path in paths)
     result = subprocess.run([docker, 'exec', '-i', name, 'psql', '-h',

@@ -9,6 +9,11 @@ The current application stylesheet is imported so dialog utility classes are
 generated correctly. These changes supersede the older statements below that all
 preview mutations throw and that the global stylesheet is a frozen copy.
 
+Slack setup also uses synthetic connection metadata and in-memory import receipts.
+`&slack=empty` shows the missing-connection state. “Approve and queue import” in
+this local preview never creates a database job or contacts Slack. It exercises
+the actual setup form and client request contract only.
+
 A local, static review of the requested LEARN experience, mounted in the actual baseline ClientPortal and OperatorShell. Baseline:13b554368cda86dfb0a4014d4187b548a8b9de02. This supersedes the rejected4a8a05d preview direction; no publication is authorized.
 
 ClientPortal is copied with three preview-only changes: LEARN immediately after AI Receptionist, an injected LEARN content slot, and a type annotation for the synthetic receptionist-workspace query. Its original sidebar/header/mobile menu remain. OperatorShell is byte-identical. Styles and tenant branding come from the existing source; CSS loads in the normal global-before-lazy-shell order.
