@@ -1,0 +1,10 @@
+{
+  "version": "learn-test-worker-key/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T22:34:53.240Z",
+  "name": "LEARN_SLACK_WORKER_KEY",
+  "state": "configured_needs_http_verification",
+  "writeAttempted": true,
+  "cliExitStatus": 0,
+  "reusedExistingServiceCredential": true
+}

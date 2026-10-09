@@ -5,7 +5,7 @@ import type {
   HistoryRequestIdentity,
   HistoryArguments,
 } from "./slack_history_request.ts";
-import type { WorkerHandlerContext } from "../worker_handlers/index.ts";
+import type { WorkerHandlerContext } from "../worker_contract.ts";
 
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);

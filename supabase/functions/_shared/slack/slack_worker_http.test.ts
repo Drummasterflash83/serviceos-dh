@@ -13,6 +13,7 @@ test("only the configured infrastructure credential can trigger an empty POST", 
     { authorization: "Bearer user-jwt" },
     { authorization: `Bearer ${key.slice(0, -1)}x` },
     { authorization: "Bearer " },
+    { authorization: `Bearer ${key}`, "x-serviceos-worker-key": key.slice(0, -1) + "x" },
   ]) {
     assert.equal(
       (await endpoint(new Request("https://fixture.invalid", { method: "POST", headers }))).status,
@@ -22,7 +23,9 @@ test("only the configured infrastructure credential can trigger an empty POST", 
   assert.equal(
     (
       await endpoint(
-        new Request("https://fixture.invalid", { headers: { authorization: `Bearer ${key}` } }),
+        new Request("https://fixture.invalid", {
+          headers: { authorization: `Bearer ${key}`, "x-serviceos-worker-key": key },
+        }),
       )
     ).status,
     405,
@@ -31,7 +34,7 @@ test("only the configured infrastructure credential can trigger an empty POST", 
   const good = await endpoint(
     new Request("https://fixture.invalid", {
       method: "POST",
-      headers: { authorization: `Bearer ${key}` },
+      headers: { authorization: `Bearer ${key}`, "x-serviceos-worker-key": key },
     }),
   );
   assert.equal(good.status, 200);
@@ -49,7 +52,7 @@ test("caller-supplied selectors never reach the queue and runtime errors disclos
       await endpoint(
         new Request("https://fixture.invalid", {
           method: "POST",
-          headers: { authorization: `Bearer ${key}` },
+          headers: { authorization: `Bearer ${key}`, "x-serviceos-worker-key": key },
           body: '{"job_types":["email.gmail_sync"]}',
         }),
       )
@@ -60,7 +63,7 @@ test("caller-supplied selectors never reach the queue and runtime errors disclos
   const response = await endpoint(
     new Request("https://fixture.invalid", {
       method: "POST",
-      headers: { authorization: `Bearer ${key}` },
+      headers: { authorization: `Bearer ${key}`, "x-serviceos-worker-key": key },
     }),
   );
   assert.equal(response.status, 503);
@@ -73,4 +76,24 @@ test("caller-supplied selectors never reach the queue and runtime errors disclos
     ).status,
     503,
   );
+});
+
+test("native empty POST stream is accepted without accepting supplied content", async () => {
+  let calls = 0;
+  const endpoint = slackWorkerEndpoint(key, async () => {
+    calls++;
+    return {};
+  });
+  const request = new Request("https://fixture.invalid", {
+    method: "POST",
+    headers: { "x-serviceos-worker-key": key },
+    body: new ReadableStream({
+      start(controller) {
+        controller.close();
+      },
+    }),
+    duplex: "half",
+  } as RequestInit);
+  assert.equal((await endpoint(request)).status, 200);
+  assert.equal(calls, 1);
 });

@@ -1,0 +1,81 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T22:38:41.546Z",
+  "cliExit": null,
+  "directory": "/private/tmp/serviceos-worker-readback-fmEJXE",
+  "endpoint": {
+    "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+    "slug": "learn-slack-worker",
+    "name": "learn-slack-worker",
+    "status": "ACTIVE",
+    "version": 3,
+    "created_at": 1791584977820,
+    "updated_at": 1791585400134,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_bd55f2b9-77da-4427-92bf-59d2e27d744e_3/source/supabase/functions/learn-slack-worker/index.ts",
+    "ezbr_sha256": "07ab490dae1c5d8e828b7d68367568dd6448aa8c557aba2dde4257dc116eb928"
+  },
+  "files": [
+    {
+      "path": "/private/tmp/serviceos-worker-readback-fmEJXE/supabase/.temp/output_learn-slack-worker.eszip",
+      "sha256": "dcec8d04ceb960b2bf9c8f7e397b1f0b08816c2895a6e075bc85d08e3f1a2b07"
+    },
+    {
+      "path": "/private/tmp/serviceos-worker-readback-fmEJXE/supabase/config.toml",
+      "sha256": "37fa194ca8843eebbdd199f386831f03e7c907cd424a8d748d2a963a5caf004d"
+    }
+  ],
+  "sourceVerification": {
+    "state": "all_runtime_sources_match",
+    "checkedAt": "2026-10-09T22:39:55.021269+00:00",
+    "files": [
+      {
+        "path": "supabase/functions/learn-slack-worker/index.ts",
+        "sha256": "32923324ccd7acbc6904a8fd7d91795e3f2c3659d4ad20145319b097af726f9d"
+      },
+      {
+        "path": "supabase/functions/_shared/worker_handlers/slack_history.ts",
+        "sha256": "14b33fd262f3b1acaabbc00c24fac68a3e66a5dfe25b710dfeea4b69622ad2c8"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_binding.ts",
+        "sha256": "a9d423534418654b04ff14e7b6449bdefdf396c423414885464f5b01883683a7"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_errors.ts",
+        "sha256": "3afd89649418a8ac8ec0f9e6f57288358673c3e09faf29968a8bbc8b1c63a630"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history.ts",
+        "sha256": "7b303753781c93ee8a9fb46e1040fee866d1b93e9b28358afa22b287f7aa0014"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_server.ts",
+        "sha256": "e017f6aa925d9b78c57eb8570cdef02fc1b40a670e094873ddc74b125308a9fd"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_request.ts",
+        "sha256": "97997c793e11d4b5986dbfc51e56c7f22165763e88061f7ff16728412459ac0a"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_batch.ts",
+        "sha256": "c716011e728b34351ec0f1e3ec128afc901707f1d8c1edeead8f7f65b2685985"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_history_persist.ts",
+        "sha256": "d1cb214691174a2e80dff7fb8b186e67466bc4980789b6150d47c38f8d66c953"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_worker.ts",
+        "sha256": "54bac9ae5adf866951797df2e35be4c614898aa4749f4039e00e4bb155a0ceab"
+      },
+      {
+        "path": "supabase/functions/_shared/slack/slack_worker_http.ts",
+        "sha256": "ca5974311f14bdefa1ae9d778cdf2d5c905e5c916f638749ffd1b17aceeba77b"
+      }
+    ],
+    "omittedTypeOnlyFile": "supabase/functions/_shared/worker_contract.ts",
+    "method": "Exact comparison of all 11 first-party source-map sourcesContent entries in the downloaded deployed ESZIP2.3 bundle."
+  }
+}

@@ -6,7 +6,7 @@ import { slackWorkerEndpoint } from "../_shared/slack/slack_worker_http.ts";
 // One page/job per request; no broad handler registry, lease sweep or schedule.
 // The schema release and exact-reference Vault resolver must precede deployment.
 Deno.serve(
-  slackWorkerEndpoint(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), async () => {
+  slackWorkerEndpoint(Deno.env.get("LEARN_SLACK_WORKER_KEY"), async () => {
     const url = Deno.env.get("SUPABASE_URL"),
       key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !key) throw Error("worker_unavailable");

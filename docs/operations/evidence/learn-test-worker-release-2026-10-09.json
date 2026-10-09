@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-worker-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+  "state": "installed_needs_user_verification",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-09T22:29:09.622287+00:00",
+  "observedAfter": "2026-10-09T22:29:12.984827+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "72c90de73fd7eb489b089c86b1deb547ecb8df57f3136cd603dd17549dedefb1",
+  "afterCatalogSha256": "693095cbd760c0dbff9dbb5557f5276981dbe9766d003fd348eea76ccd080885",
+  "limitations": [
+    "TEST functions only. No credentials, source rows, schedules, provider requests or production changes.",
+    "Hosted API/Edge acceptance is still required. An uncertain write is never automatically retried."
+  ]
+}

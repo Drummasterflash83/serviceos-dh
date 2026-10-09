@@ -1,0 +1,35 @@
+{
+  "version": "learn-test-worker-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+  "observedAt": "2026-10-09T22:31:10.329Z",
+  "runId": "2dd48f7c-0140-42e0-b088-babb2a28ab9e",
+  "state": "requires_inspection",
+  "checks": [
+    "Real owner setup, idempotent retry, HTTP 409, viewer and foreign-owner denial"
+  ],
+  "failure": "Missing-credential worker result differs",
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 0,
+    "versions": 0,
+    "approvals": 1,
+    "interactions": 0,
+    "active_jobs": 0,
+    "active_connections": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-worker-2dd48f7c-0140-42e0-b088-babb2a28ab9e.json",
+  "limitations": [
+    "No real Slack token, Vault secret, provider fetch or production change. Synthetic provider metadata explicitly has no credential.",
+    "This attempt stopped at worker trigger authentication before claiming work; only the checks listed above passed. Worker recovery and live provider ingestion were not verified by this attempt.",
+    "Synthetic actors and evidence retained; queue cancelled, connections disabled, logins banned/passwords rotated and owner roles revoked. Tenant-level source read policy is unchanged; this is not proof of immediate invalidation of all old JWT reads."
+  ],
+  "diagnosis": {
+    "verifiedEmptyQueueResponse": {
+      "httpStatus": 403,
+      "code": "worker_forbidden"
+    },
+    "correction": "Explicitly bind the existing TEST service credential to LEARN_SLACK_WORKER_KEY and send it in the dedicated worker header; retain gateway JWT verification."
+  }
+}

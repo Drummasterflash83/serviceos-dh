@@ -2,7 +2,7 @@
 
 ## Current implementation and limits
 
-The local `slack.history_sync` transport now requires an owned, unexpired queue
+The `slack.history_sync` transport now requires an owned, unexpired queue
 claim. Its `learn_slack_read_credential` resolver checks the exact existing Vault
 reference and tenant-qualified credential name, approved connection revision and
 running job before returning the token to the server. It neither creates nor
@@ -10,12 +10,14 @@ rotates credentials, accepts tokens or URLs from jobs, nor falls back to either
 notification bot. No live Slack connection was found in the Drummonds registries
 checked on 9 October.
 
-The fenced worker and credential resolver are implemented and verified locally,
-including real Vault encryption in a disposable offline database. They are **not
-yet installed or deployed in TEST**. Only their earlier storage and approval
-dependencies are installed; see [release 009 and signed-in acceptance](LEARN-TEST-SLACK.md).
-Do not deploy the new transport against release 009 alone: the new page RPC has
-eight arguments and the old six-argument writer becomes private.
+Release 010 installed the fenced worker functions and credential resolver in TEST
+at 22:29 UTC. The `learn-slack-worker` endpoint is active at runtime version 3 and
+passed actual JWT/HTTP acceptance at 22:38 UTC, including missing-credential refusal
+and saved-page recovery. TEST has 87 public tables and eleven release receipts.
+The page RPC now has eight arguments; the old six-argument writer is private.
+The earlier storage/approval foundation is documented in
+[release 009](LEARN-TEST-SLACK.md). No live Slack credential or schedule was created.
+The installed transport has not fetched a real Slack page.
 
 This is one approved internal public channel, one window of at most 24 hours,
 and an explicit budget of 1–10 pages. Each job imports at most one page of 15
@@ -42,11 +44,11 @@ Before a job can make a provider request, all of these must agree:
 - A matching `provider_connections` row with provider `slack`, status
   `configured`, no revocation, `non_secret_config.team_id`, a `bot_token` field
   in `configured_fields`, and its valid Vault reference in `secret_refs`.
-- The reviewed storage/setup release plus pending worker/credential migrations
+- The reviewed storage/setup release plus worker/credential migrations
   `20261030100000_learn_slack_worker.sql` and
-  `20261030110000_learn_slack_credential_binding.sql`. These require a separate
-  catalog-checked TEST release and hosted acceptance before deployment. Storage
-  checks happen before resolving credentials. Do not apply all pending migrations.
+  `20261030110000_learn_slack_credential_binding.sql`, installed in TEST through
+  `supabase/release/learn-test/010_slack_durable_worker.sql`. Storage checks happen
+  before resolving credentials. Production has not received this release.
 
 The LEARN Slack card now opens an owner/admin import form for an existing
 configured connection. It accepts a public-channel link or ID, a past window up
@@ -103,11 +105,16 @@ budget, not a promise of automatic recovery from every persistent failure. Pacin
 is per account/job chain, not a workspace-wide reservation. Shared-workspace pacing,
 scheduler activation and live acceptance remain required.
 
-The pending `learn-slack-worker` endpoint accepts only an empty POST authenticated
-with the existing project service key, in addition to gateway JWT verification.
-User JWTs and caller-supplied job selectors cannot trigger it. Responses contain
-queue outcomes, not credentials or source content. It does not create a schedule.
-The original broad worker must not be deployed as a shortcut for this path.
+The deployed `learn-slack-worker` endpoint accepts an empty POST with gateway JWT
+verification and an explicit `x-serviceos-worker-key` header. TEST's
+`LEARN_SLACK_WORKER_KEY` reuses its existing service credential; the value was bound
+through CLI stdin without entering arguments, local files or reports. The worker
+does not compare the gateway bearer to its runtime-injected service key: hosted
+acceptance demonstrated those values differ. Native empty request streams are
+accepted; non-empty bodies are refused before claiming work. User JWTs alone and
+caller-supplied job selectors cannot trigger it. Responses contain queue outcomes,
+not credentials or source content. No schedule was created. The broad worker must
+not be deployed as a shortcut for this path.
 
 Provider contracts checked against the official documentation:
 [auth.test](https://docs.slack.dev/reference/methods/auth.test/),
@@ -146,6 +153,36 @@ unchanged existing table definitions/privileges. Real Vault tests use synthetic
 non-credential strings and cover tenant/reference/name/revision/revocation/lease
 checks and browser execution denial. The standalone metadata inventory is retained
 in `evidence/learn-test-worker-prerequisites-2026-10-09.json`; it contains no source
-rows or credential values. Release packaging, hosted rollback rehearsal and actual
-JWT/Edge acceptance of this new path are the next gate. Existing release-009
-acceptance helpers will need to recognize the new RPC signature at that gate.
+rows or credential values. The exact release bundle passed an injected receipt
+failure/rollback, real-schema assertions and hosted rollback rehearsal. Seven
+release-tool tests cover wrong targets, changed functions/privileges, stale
+rehearsals, uncertain writes, missing receipts and the verified runtime refresh.
+The focused transport/worker/queue suite has 45 passing tests.
+
+Hosted acceptance retained two approvals, one source message/version/interaction,
+a missing-credential dead letter and a recovered completed job with one cancelled
+delayed successor. Fixture users are banned with rotated passwords and viewer
+roles; connections/accounts are disabled and no active fixture job remains. Old
+JWT approval was denied. Tenant-level source reads still follow their existing
+policy until JWT expiry. The previous failed authentication attempt is retained too.
+
+Secret configuration incremented all three TEST runtime versions; the two existing
+endpoints retained identical source hashes, entrypoints, JWT settings and timestamps.
+The catalog verifier recognizes only that recorded refresh. The replacement worker
+deployment CLI returned exit 1 despite creating active runtime version 3. No blind
+redeploy followed: the deployed bundle was downloaded, all eleven runtime source-map
+contents matched the repository exactly, and real HTTP acceptance passed. The
+source download CLI timed out after the bundle was written; source comparison used
+that complete artifact. No existing local database/container was altered.
+
+Authoritative records:
+
+- [Release and catalog preservation](evidence/learn-test-worker-release-2026-10-09.json)
+- [Deployment resolution and source readback](evidence/learn-test-worker-deployment-confirmed-2026-10-09.json)
+- [Actual JWT/Edge acceptance](evidence/learn-test-worker-acceptance-2026-10-09.json)
+- [Current installed schema](evidence/learn-test-worker-installed-schema-2026-10-09.json)
+
+The local actual-UI server/fixture guards now recognize release 010. Historical
+release-009 acceptance scripts intentionally require their original schema. Live
+Slack permission and source acceptance, threads, continuous history, workspace-wide
+pacing and operator recovery controls remain required for full ingestion.

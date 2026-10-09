@@ -1,7 +1,7 @@
 import {SlackHistoryTransportError} from './slack_history_errors.ts';
 import {historyScopeKey,assertSlackHistoryScope} from './slack_history.ts';
 import type {SlackHistoryScope} from './slack_history.ts';
-import type {WorkerHandlerContext} from '../worker_handlers/index.ts';
+import type {WorkerHandlerContext} from '../worker_contract.ts';
 import type {SlackHistoryBinding} from '../worker_handlers/slack_history.ts';
 const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
 /** Credential-owning server adapter must attest real team/channel membership and

@@ -1,11 +1,11 @@
 /** Actual application, fixed TEST backend, loopback only. No simulated API client. */
 import {spawn} from 'node:child_process';
-import {readSlackCatalog} from './learn-slack-catalog.mjs';
-import {installedSlack} from './learn-test-slack-release.mjs';
+import {readWorkerCatalog} from './learn-slack-worker-catalog.mjs';
+import {installedWorker} from './learn-test-worker-release.mjs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
 if(process.argv.slice(2).join(' ')!=='--serve --existing-cli-login'||process.env.LEARN_TEST_ALLOW_PROJECT_REF!==TEST_PROJECT)throw Error('Explicit TEST local UI and saved login required');
-const token=savedCliToken(),catalog=await readSlackCatalog({allowProjectRef:TEST_PROJECT,token});
-if(!installedSlack(catalog))throw Error('Verified TEST Slack schema required');
+const token=savedCliToken(),catalog=await readWorkerCatalog({allowProjectRef:TEST_PROJECT,token});
+if(!installedWorker(catalog))throw Error('Verified TEST durable worker schema required');
 const response=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/api-keys?reveal=true`,{headers:{Authorization:`Bearer ${token}`},redirect:'error',signal:AbortSignal.timeout(30000)});
 if(!response.ok)throw Error('Existing TEST public key unavailable');
 const rows=(await response.json()).filter(r=>r.name==='anon'&&typeof r.api_key==='string');

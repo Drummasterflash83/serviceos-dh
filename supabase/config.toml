@@ -334,6 +334,6 @@ verify_jwt = false
 [functions.learn-launch-status]
 verify_jwt = true
 
-# Gateway JWT plus exact existing service-key check in the handler. No schedule.
+# Gateway JWT plus explicitly bound existing trigger key. No schedule.
 [functions.learn-slack-worker]
 verify_jwt = true

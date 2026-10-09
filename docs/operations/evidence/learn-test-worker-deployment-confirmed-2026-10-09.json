@@ -1,0 +1,33 @@
+{
+  "version": "learn-test-worker-deployment-confirmation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-09T22:39:55.021600+00:00",
+  "state": "confirmed_by_source_readback_and_http_acceptance",
+  "endpoint": {
+    "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+    "slug": "learn-slack-worker",
+    "name": "learn-slack-worker",
+    "status": "ACTIVE",
+    "version": 3,
+    "created_at": 1791584977820,
+    "updated_at": 1791585400134,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_bd55f2b9-77da-4427-92bf-59d2e27d744e_3/source/supabase/functions/learn-slack-worker/index.ts",
+    "ezbr_sha256": "07ab490dae1c5d8e828b7d68367568dd6448aa8c557aba2dde4257dc116eb928"
+  },
+  "runtimeSourcesMatch": true,
+  "runtimeSourceCount": 11,
+  "acceptanceRunId": "e8b1f9cf-603c-4ce6-a53b-dd54645c983b",
+  "evidence": [
+    "learn-test-worker-deploy-2026-10-09.json",
+    "learn-test-worker-readback-2026-10-09.json",
+    "learn-test-worker-acceptance-2026-10-09.json"
+  ],
+  "notes": [
+    "Deployment CLI returned exit 1 after the endpoint became active; no blind write retry occurred.",
+    "Download CLI timed out after downloading the bundle; source verification used that completed artifact, without retrying deployment.",
+    "Every runtime source matches, and the deployed endpoint passed actual missing-credential and saved-page recovery checks.",
+    "Live Slack HTTP ingestion, threads, schedules and production deployment remain unverified."
+  ]
+}

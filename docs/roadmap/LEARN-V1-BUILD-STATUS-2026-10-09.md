@@ -119,7 +119,7 @@ remain unknown instead of becoming zero.
 Read-only live checks on 9 October returned no Drummonds Slack rows in
 `provider_connections`, `tenant_connectors` (filtered to Slack), or
 `customer_slack_connections`. No Slack secret was read or created. The actual
-worker now has a credential-owning transport implementation, but still requires
+worker now has a credential-owning transport implementation (release 010 below), but still requires
 deployment and approved channel configuration before it can ingest. A notification token would not alone
 establish history permissions. The existing secret broker can support a future
 tenant-scoped binding; its existence does not prove a stored Slack credential.
@@ -512,3 +512,29 @@ instance. An infrastructure-only Edge entrypoint is prepared; no schedule or liv
 provider connection was created. TEST remains at release 009, 87 tables and ten
 receipts. Release packaging, hosted rehearsal, deployment and signed-in/Edge
 acceptance remain pending. See [worker behavior and verification limits](../operations/LEARN-SLACK-INGESTION.md).
+
+
+## Slack durable worker released to TEST — 22:28–22:39 UTC
+
+Release 010 passed isolated failure/rollback and hosted rollback rehearsal, then
+installed the exact worker/credential functions with prior source catalogs,
+table privileges and email completion unchanged. TEST remains at 87 public tables
+and now has eleven receipts. The restricted worker endpoint is active at runtime
+version 3. Actual owner/viewer/foreign-tenant sessions and service requests verified
+browser denial, missing-credential refusal, lease conflicts, exact page replay,
+crash-after-publication recovery and one atomic delayed successor.
+
+Hosted acceptance exposed a mismatch between the gateway bearer and runtime service
+credential. The trigger is now explicitly configured using the existing TEST service
+credential in a dedicated header; no Slack credential was created. This configuration
+refreshed all TEST runtime versions by one with identical existing source hashes.
+The catalog guard verifies that exact refresh. The replacement deployment returned
+an uncertain CLI result; eleven downloaded runtime sources matched exactly and
+actual HTTP acceptance passed, resolving it without blind redeployment.
+
+All synthetic source evidence and terminal job outcomes remain. The delayed job is
+cancelled, connections disabled, and fixture logins/approval authority revoked.
+Production communications were untouched. No live Slack page or schedule was run.
+Live permission/source acceptance, threads, continuous/multi-window history,
+workspace pacing and recovery controls remain. See
+[the release evidence and current ingestion limits](../operations/LEARN-SLACK-INGESTION.md).

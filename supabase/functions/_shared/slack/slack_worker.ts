@@ -1,4 +1,4 @@
-import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_handlers/index.ts";
+import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contract.ts";
 
 type Job = {
   id: string;

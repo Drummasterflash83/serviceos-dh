@@ -1,0 +1,14 @@
+{
+  "version": "learn-test-worker-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-09T22:28:37.497144+00:00",
+  "observedAfter": "2026-10-09T22:28:40.780988+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "72c90de73fd7eb489b089c86b1deb547ecb8df57f3136cd603dd17549dedefb1",
+  "afterCatalogSha256": "72c90de73fd7eb489b089c86b1deb547ecb8df57f3136cd603dd17549dedefb1"
+}

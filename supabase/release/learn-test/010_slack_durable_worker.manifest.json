@@ -1,0 +1,35 @@
+{
+  "version": "learn-slack-worker-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_durable_worker_v1",
+  "sha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030100000_learn_slack_worker.sql",
+      "sha256": "1a06eb01b97cfc314c02abb260a9f398601d1d0ecb08bffa7f4123910a9a2fa1"
+    },
+    {
+      "path": "supabase/migrations/20261030110000_learn_slack_credential_binding.sql",
+      "sha256": "727937cc01f04a38e854f5aea48455829e8f7cf31716b69da2674989feb3195c"
+    }
+  ],
+  "tables": [],
+  "newFunctions": [
+    "learn_slack_claim_jobs",
+    "learn_slack_finish_job",
+    "learn_slack_commit_page_private",
+    "learn_slack_read_credential"
+  ],
+  "changedFunctions": [
+    "platform_jobs_claim",
+    "slack_history_commit_page"
+  ],
+  "unchanged": [
+    "All existing tables, grants, source rows, credentials and schedules.",
+    "Email completion and all other queue job types."
+  ],
+  "deferred": [
+    "Separate Edge deployment and actual JWT acceptance.",
+    "Live Slack permission, threads, continuous/multi-window backfill, workspace-wide pacing."
+  ]
+}

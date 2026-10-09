@@ -1,0 +1,30 @@
+{
+  "version": "learn-test-worker-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "74bfa2f96e5ad2b40fb40b1e6b03f1cdd6f605f3d8d57a598a541222f8a1955e",
+  "observedAt": "2026-10-09T22:38:39.998Z",
+  "runId": "e8b1f9cf-603c-4ce6-a53b-dd54645c983b",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Real owner setup, idempotent retry, HTTP 409, viewer and foreign-owner denial",
+    "Actual Edge denies anonymous/user JWTs; browser cannot claim; generic queue reserves Slack; missing credential becomes a safe retained dead letter without provider access",
+    "Actual service page publication/exact replay, browser/private-writer denial and HTTP lease conflicts; Edge recovers saved page without credentials and atomically creates one delayed successor; source/version/interaction and tenant isolation retained"
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 1,
+    "versions": 1,
+    "approvals": 2,
+    "interactions": 1,
+    "active_jobs": 0,
+    "active_connections": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-worker-e8b1f9cf-603c-4ce6-a53b-dd54645c983b.json",
+  "limitations": [
+    "No real Slack token, provider credential, provider fetch or production change. Synthetic provider metadata explicitly has no credential.",
+    "Source publication was supplied directly to the real service RPC; deployed Edge exercised missing-credential refusal and saved-page recovery, not live Slack HTTP ingestion. Real provider permission, threads and continuous history remain pending.",
+    "Synthetic actors and evidence retained; queue cancelled, connections disabled, logins banned/passwords rotated and owner roles revoked. Tenant-level source read policy is unchanged; this is not proof of immediate invalidation of all old JWT reads."
+  ]
+}

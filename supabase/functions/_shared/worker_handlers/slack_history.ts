@@ -5,7 +5,7 @@ import {SlackHistoryTransportError} from '../slack/slack_history_errors.ts';
 import {readSlackHistoryBatch} from '../slack/slack_history_batch.ts';
 import {slackHistoryPersistence} from '../slack/slack_history_persist.ts';
 import type {SlackHistoryScope} from '../slack/slack_history.ts';
-import type {WorkerHandlerContext,WorkerHandlerResult} from './index.ts';
+import type {WorkerHandlerContext,WorkerHandlerResult} from '../worker_contract.ts';
 export type SlackHistoryBinding={tenantId:string;jobId:string;accountId:string;channelId:string;scope:SlackHistoryScope;checkpoint:Parameters<typeof readSlackHistoryBatch>[3];maxPages:number;authorised:()=>Promise<boolean>;request:Parameters<typeof readSlackHistoryBatch>[5]['request']};
 /** Trusted server binding must verify claimed job, account/team/token, consent,
  * window and checkpoint. Browser/job payload is never itself a binding. */
