@@ -1192,3 +1192,17 @@ The reconstructed working checkout had no Git remote. Its existing 74 local
 commits are being connected to the verified ServiceOS repository using the separate
 `codex/learn-v1-test` checkpoint branch. Branch-specific Vercel Git deployment is
 disabled there; source backup is not frontend publication or database backup.
+
+## Commusoft API source boundary — local, 10 October
+
+Official API schemas now inform a read-only private-app reader for properties,
+property contacts and jobs, plus a provider-neutral source-record adapter. Twenty
+synthetic tests and strict standalone typechecks pass: bounded bodies/deadlines,
+authority revocation, safe errors, cursor integrity, rate-limit reset handling,
+source retention and separate customer/site/contact/job identities are covered.
+Unknown relationships remain held or unresolved candidates rather than guessed
+canonical links. No real API read, deployment or source write occurred.
+
+Drummonds API access remains unconfirmed. Credential/worker authority binding,
+shared quota, durable source/checkpoint storage, canonical reconciliation and live
+acceptance remain required. See [API contract and remaining work](../operations/LEARN-COMMUSOFT-API.md).
