@@ -60,3 +60,16 @@
 .lp-history table { width: 100%; border-collapse: collapse; font-size: .875rem; }
 .lp-history th, .lp-history td { padding: 10px 8px; border-bottom: 1px solid #d8dfda; text-align: left; vertical-align: top; min-width: 90px; }
 .lp-history details { overflow-wrap: anywhere; font-size: .875rem; }
+
+.lr-file-imports { display: grid; gap: 1rem; min-width: 0; }
+.lr-file-imports p { line-height: 1.55; overflow-wrap: anywhere; }
+.lr-import-fields { display: grid; gap: .8rem; padding: 1rem; border: 1px solid var(--cp-border, #d9e0e8); border-radius: .6rem; }
+.lr-import-fields label { display: grid; gap: .4rem; }
+.lr-import-fields select, .lr-import-fields input { width: 100%; max-width: 100%; padding: .5rem; }
+.lr-import-list { display: grid; gap: .5rem; }
+.lr-import-list button { white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.lr-import-table { overflow-x: auto; max-height: 24rem; margin: .7rem 0; }
+.lr-import-table table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.lr-import-table th, .lr-import-table td { padding: .6rem; text-align: left; border-bottom: 1px solid var(--cp-border, #d9e0e8); vertical-align: top; }
+.lr-import-approval { display: grid; gap: .8rem; margin: 1rem 0; }
+.lr-import-approval input { margin-right: .5rem; }

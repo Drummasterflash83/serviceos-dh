@@ -3,6 +3,7 @@ import {randomUUID,randomBytes} from 'node:crypto';import {writeFileSync} from '
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
 import {readGovernedImportCatalog} from './learn-governed-import-catalog.mjs';
 import {installedImportEndpoint} from './learn-test-import-endpoint-catalog.mjs';
+import {exerciseImportConflicts} from './learn-import-conflict-acceptance.mjs';
 import {importEndpointBundle,assertImportEndpoint,IMPORT_ENDPOINT_SHA} from './learn-test-import-deploy.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';import {readAcceptanceResponse} from './learn-test-launch-acceptance.mjs';
 const check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''")}'`,base=`https://${TEST_PROJECT}.supabase.co`;
@@ -57,6 +58,7 @@ export async function acceptImport({allowProjectRef,token,fetcher=fetch}){
   const status=await expect(sessions[0],{action:'status',import_id:plan.imports[2]},200);check(status.import?.status==='completed'&&status.provenance?.length===1,'Saved job provenance differs');
   const rows=await expect(sessions[0],{action:'row_results',import_id:plan.imports[2]},200);check(rows.rows?.length===1&&rows.rows[0].outcome==='created','Durable job row outcome differs');
   await expect(sessions[2],{action:'status',tenant_id:plan.tenants[1],import_id:plan.imports[2]},404,'not_found');
+  await exerciseImportConflicts({expect,session:sessions[0],previewBody,apply,sql,q,tenant,plan,save,counts,checks});
   await sql(`update profiles set role='viewer' where id=${q(plan.users[0].id)}`);await expect(sessions[0],{action:'status',import_id:plan.imports[2]},403,'forbidden');
   checks.push('Actual CSV parser and row RPCs import customer, exact linked site and job in order; durable outcomes/provenance retained, foreign run access and revoked session authority refused.');
  }catch(e){failure=e instanceof Error?e.message:'Import acceptance failed';}
@@ -67,6 +69,6 @@ export async function acceptImport({allowProjectRef,token,fetcher=fetch}){
   try{retained={...await counts(),...(await sql(`select (select count(*)::int from data_imports where tenant_id in (${tenants})) as imports,(select count(*)::int from import_row_results where tenant_id in (${tenants})) as outcomes,(select count(*)::int from profiles where id in (${plan.users.map(u=>q(u.id)).join(',')}) and role<>'viewer') as approving_users`,true))[0]};check(retained.approving_users===0,'Synthetic approval authority remains');}catch{cleanupErrors.push('Fixture retention requires inspection');}
   plan.accessShutdown=cleanupErrors.length===0;save();
  }
- return {version:'learn-test-import-acceptance/1',projectRef:TEST_PROJECT,runId:plan.runId,observedAt:new Date().toISOString(),state:failure||cleanupErrors.length?'requires_inspection':'passed',sourceBundleSha256:IMPORT_ENDPOINT_SHA,checks,failure,cleanupErrors,retained,preExistingSourcesPreserved:sourceBefore!==null&&sourceAfter!==null&&JSON.stringify(sourceBefore)===JSON.stringify(sourceAfter),manifest:path,limitations:['Synthetic TEST records only; no original file imported, provider call or production change.','Single-row customer/site/job flow; conflict/retry, large-file and browser acceptance remain separate.','Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained.']};
+ return {version:'learn-test-import-acceptance/2',projectRef:TEST_PROJECT,runId:plan.runId,observedAt:new Date().toISOString(),state:failure||cleanupErrors.length?'requires_inspection':'passed',sourceBundleSha256:IMPORT_ENDPOINT_SHA,checks,failure,cleanupErrors,retained,preExistingSourcesPreserved:sourceBefore!==null&&sourceAfter!==null&&JSON.stringify(sourceBefore)===JSON.stringify(sourceAfter),manifest:path,limitations:['Synthetic TEST records only; no original file imported, provider call or production change.','Small files only; large-file and browser acceptance remain separate. Old conflicts remain retained and open even after a new corrected file succeeds; a governed resolution workflow is still needed.','Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained.']};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){try{if(process.argv.slice(2).join(' ')!=='--accept --existing-cli-login'||process.env.LEARN_TEST_ALLOW_PROJECT_REF!==TEST_PROJECT)throw Error('Explicit TEST import acceptance required');const r=await acceptImport({allowProjectRef:TEST_PROJECT,token:savedCliToken()});console.log(JSON.stringify(r,null,2));if(r.state!=='passed')process.exitCode=1;}catch(e){console.error(e.message);process.exitCode=1;}}

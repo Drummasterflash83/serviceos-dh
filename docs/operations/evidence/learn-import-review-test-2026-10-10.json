@@ -1,0 +1,72 @@
+{
+  "version": "learn-import-review-acceptance/1",
+  "hosted": {
+    "version": "learn-test-import-acceptance/2",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "140ef174-4ed2-42b9-a361-e43d28925400",
+    "observedAt": "2026-10-10T04:45:16.707Z",
+    "state": "passed",
+    "sourceBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+    "checks": [
+      "Actual anonymous, service, viewer and foreign-company access refused; owner sees the three governed profiles.",
+      "Preview preserves canonical rows; changed bytes, active foreign-company View As, suspended company and ops writes refused; owner apply and replay create one customer.",
+      "Missing customer holds a job without creating an orphan; importing its customer/site then retrying the exact saved file creates one correctly linked job with attempt 2. Replaying remains idempotent.",
+      "A contradictory exact site is shown before apply, retained as a blocking conflict and never falls back to a matching address. Exact replay preserves it; corrected bytes require a new preview and leave the old outcome intact.",
+      "A separately previewed duplicate upload is flagged and links the existing source identity; canonical counts remain two customers, two sites and three jobs.",
+      "Actual CSV parser and row RPCs import customer, exact linked site and job in order; durable outcomes/provenance retained, foreign run access and revoked session authority refused."
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "retained": {
+      "people": 2,
+      "sites": 2,
+      "jobs": 3,
+      "imports": 9,
+      "outcomes": 9,
+      "approving_users": 0
+    },
+    "preExistingSourcesPreserved": true,
+    "manifest": "/private/tmp/serviceos-learn-import-140ef174-4ed2-42b9-a361-e43d28925400.json",
+    "limitations": [
+      "Synthetic TEST records only; no original file imported, provider call or production change.",
+      "Small files only; large-file and browser acceptance remain separate. Old conflicts remain retained and open even after a new corrected file succeeds; a governed resolution workflow is still needed.",
+      "Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained."
+    ]
+  },
+  "client": {
+    "testsPassed": 7,
+    "strictApplicationTypecheck": true,
+    "applicationBuild": true,
+    "syntheticPreviewBuild": true,
+    "existingPreviewBuild": true
+  },
+  "browser": {
+    "environment": "Isolated actual component/client with synthetic in-memory backend; no hosted Auth or provider calls",
+    "strictMode": true,
+    "checks": [
+      "Saved preview remains unapproved until exact original CSV is attached",
+      "Explicit review checkbox enables apply; completed result displays created row outcome",
+      "Uncertain write response reports unconfirmed state and disables repeat apply",
+      "Reload reads completed result after simulated lost response; no automatic write replay",
+      "Ops mode disables file preparation and omits apply approval and row-ledger controls",
+      "Unavailable reads disable preparation and do not claim an empty import history"
+    ],
+    "screenshot": ".verification-results/learn-file-import-review.png",
+    "ownedTabClosed": true,
+    "ownedLoopbackServerStopped": true
+  },
+  "limitations": [
+    "Hosted conflict/retry tests and browser UI checks are separate; actual signed-in integrated browser flow is still outstanding.",
+    "Small synthetic files only; large-file performance and pagination beyond the most recent 25 imports/first 1000 outcomes remain open.",
+    "Corrected files retain earlier conflict records as open; a governed conflict-resolution workflow remains needed.",
+    "No real source package imported or rewritten, no production/provider/frontend deployment. Real Commusoft ownership contradiction remains unresolved."
+  ],
+  "sourceHashes": {
+    "src/lib/learn-imports.ts": "4810807418e4ad09833abafda0766aef8dea7c7969520f24a81ff80e67d12a11",
+    "src/lib/learn-imports.test.ts": "5a5f5b88943eeef6513b6cf7c1b57d8dd9992c58509591601a1d717dedc4023a",
+    "src/components/client-portal/learn/LearnFileImports.tsx": "1140dd6b41b2a437765d547a601c084f19b572fa59020e9a80c4027b32ebdda0",
+    "src/components/client-portal/learn/LearnLaunchPortal.tsx": "699327b2fa254a61539ccdf96dba497ee82ff28d22afcb1851ae9891fecccc76",
+    "scripts/verify/learn-import-conflict-acceptance.mjs": "7b7e6e233ca61fbb84c84e0da89b844ac6013c7d9fa9d3f634dd79e8e77a698e",
+    "scripts/verify/learn-test-import-acceptance.mjs": "b00f5713b2d1c330d29a6e8d291085f2bcce4aed914f4673a9604033c9954099"
+  }
+}

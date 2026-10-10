@@ -7,11 +7,13 @@ import {launchSnapshot,gmailConsentUrl,isCurrentLaunchRequest,type LaunchProcess
 import '@/styles/learn-launch.css';
 import {LearnCards} from './LearnCards';
 import {LearnSlackSetup} from './LearnSlackSetup';
+import {LearnFileImports} from './LearnFileImports';
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle} from '@/components/ui/dialog';
 
 export function LearnLaunchPortal({tenantId}:{tenantId:string}){
  const {user,profile}=useAuth();const [result,setResult]=useState<any>(null),[state,setState]=useState('loading'),[connectState,setConnectState]=useState('idle'),[notice,setNotice]=useState('');
  const [slackSetup,setSlackSetup]=useState(false);
+ const [fileImports,setFileImports]=useState(false);
  const revision=useRef(0),scope=useRef('');scope.current=`${user?.id??''}:${tenantId}`;
  const canConnect=!!user&&profile?.tenant_id===tenantId&&['owner','admin','ops'].includes(profile.role);
  async function refresh(){const ticket=++revision.current,selected=scope.current;setResult(null);setState('loading');try{
@@ -36,6 +38,8 @@ export function LearnLaunchPortal({tenantId}:{tenantId:string}){
   {active&&<p role="status" className="lr-notice">Observed {when(active.observed_at)} · valid until {when(active.valid_until)}. Refresh rereads stored evidence; it does not start a connector sync.</p>}
   <section className="lr-counts" aria-label="Stored source counts">{[{name:'Emails',value:active?.counts.email.record_count,Icon:Mail},{name:'Calls',value:active?.counts.phone.record_count,Icon:Phone},{name:'Recordings',value:active?.recordings.record_count,Icon:Files},{name:'Slack messages',value:null,Icon:MessagesSquare}].map(c=><article className="lr-count" key={c.name}><div className="lr-count-label">{c.name}<c.Icon size={17}/></div><strong className={typeof c.value==='number'?'':'lr-unknown'}>{display(c.value)}</strong><small>Accessible stored rows · source coverage unverified</small></article>)}</section>
   <LearnCards tenantId={tenantId}/>
+  <section className="cp-card"><h2>Customer, site and job files</h2><p>Review prepared source files and retained import results.</p><button className="cp-secondary" onClick={()=>setFileImports(true)}>Review file imports</button></section>
+  <Dialog open={fileImports} onOpenChange={setFileImports}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Customer, site and job imports</DialogTitle><DialogDescription>Preview a prepared CSV, inspect its mapping and approve the saved import.</DialogDescription></DialogHeader>{fileImports&&<LearnFileImports key={`${user?.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
   <Dialog open={slackSetup} onOpenChange={setSlackSetup}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Slack imports</DialogTitle><DialogDescription>Import channel messages and observed thread replies using an existing company connection.</DialogDescription></DialogHeader>{slackSetup&&<LearnSlackSetup key={`${user?.id}:${tenantId}`} tenantId={tenantId} actorId={user?.id??''} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
   <div className="lr-section-heading"><div><h2>Launch sources</h2><p>Slack, email and phone first. Emma stays independent.</p></div></div>
   <section className="lr-connectors">

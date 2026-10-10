@@ -1058,3 +1058,18 @@ concurrency and rollback checks pass. No real package, provider, frontend or
 production deployment ran. Hosted conflict/retry, scale and browser review remain
 open, as does the disputed Commusoft site ownership.
 See [implementation and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#governed-endpoint-and-atomic-import-authority--10-october).
+
+## Import conflicts, retry and review screen — 10 October
+
+Hosted Auth/HTTP checks now prove held dependency retry, exact-site ownership
+conflict refusal, correction through a new sealed file, retained original outcomes
+and duplicate identity linking. Existing TEST source fingerprints matched; fixture
+users were retired with nine import records retained.
+
+The LEARN file review dialog is implemented with explicit profile/file selection,
+saved mappings/results, exact-file approval and reload after uncertain responses.
+Seven client tests, application typecheck/build and synthetic browser interaction
+checks pass. Hosted tests and synthetic UI tests are separate evidence; integrated
+signed-in browser acceptance, scale, pagination and conflict resolution remain open.
+No real source package, provider or production/frontend deployment changed.
+See [implementation and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#hosted-conflict-recovery-and-file-review-screen--10-october).

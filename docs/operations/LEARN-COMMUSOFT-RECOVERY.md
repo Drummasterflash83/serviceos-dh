@@ -345,3 +345,42 @@ a row. These were acceptance-tool corrections; no endpoint redeployment was need
 Hosted conflict/held-retry and large-file behavior, the browser review surface and
 the real package remain outstanding. No production preservation scan ran in this
 increment. See [release and signed-in evidence](evidence/learn-governed-import-endpoint-test-2026-10-10.json).
+
+## Hosted conflict recovery and file review screen — 10 October
+
+The expanded actual Auth/HTTP check passed at **04:45:16 UTC** against the unchanged
+TEST endpoint v1. A missing customer held a job without creating an orphan. After
+its customer and site were imported, retrying the exact saved file created one
+correctly linked job with attempt 2. Replay created no duplicate. A cross-customer
+exact site was flagged at preview and retained as a blocking conflict; a plausible
+matching address did not override it. Corrected bytes were refused on that run and
+required a new preview. Its original conflict/outcome remained intact. A duplicate
+upload was flagged and linked the existing source identity rather than creating it.
+
+The fixture retained **2 people, 2 sites, 3 jobs, 9 imports and 9 row outcomes**.
+Pre-existing TEST communications, canonical and import evidence fingerprints
+matched. Temporary users were banned, password-rotated and demoted. No original
+source package, provider, production or endpoint deployment changed in this step.
+
+The LEARN portal now includes a file review dialog using `learn-data-import`.
+It offers explicit governed profile selection, prepared CSV attachment, saved
+preview counts/mapping, duplicate warnings, saved results and bounded row outcomes.
+CSV content stays in memory. Applying requires the exact saved checksum, current
+company/profile evidence and an explicit review checkbox; the server independently
+checks authority. Unknown writes are never automatically retried. The screen disables
+another apply until a successful reload and displays completed-with-invalid rows
+distinctly from a clean finish.
+
+Seven client contract tests pass, including wrong-company/configuration responses,
+malformed counts/mappings, changed bytes, completed runs, uncertain writes and request
+limits. Application typecheck/build and both isolated/existing preview builds pass.
+The actual component/client passed synthetic browser checks for file reattachment,
+approval, apply, lost-response recovery, ops read-only controls and unavailable reads.
+The preview uses React StrictMode, has no credentials and blocks network connections;
+it is separate from hosted Auth acceptance. Its owned tab and server were closed.
+
+Still required: actual signed-in integrated browser acceptance, larger-file behavior,
+history/row pagination and a governed conflict-resolution workflow. Earlier conflict
+records remain open even after a separately corrected file succeeds. The real
+package's ownership contradiction is not resolved by these synthetic tests.
+See [hosted and browser evidence](evidence/learn-import-review-test-2026-10-10.json).

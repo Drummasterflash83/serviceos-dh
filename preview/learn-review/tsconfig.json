@@ -94,6 +94,9 @@
       ],
       "@/lib/learn-slack-thread-recovery-outbox": [
         "../../src/lib/learn-slack-thread-recovery-outbox.ts"
+      ],
+      "@/lib/learn-imports": [
+        "../../src/lib/learn-imports.ts"
       ]
     },
     "allowImportingTsExtensions": true,
