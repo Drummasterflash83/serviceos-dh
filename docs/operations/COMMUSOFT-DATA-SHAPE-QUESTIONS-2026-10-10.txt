@@ -14,7 +14,7 @@ GET /api/v2/jobs?limit=100, with Authorization: Bearer [REDACTED], Accept: appli
 createdOnDateTime arrives as an ISO timestamp with Z. completed.completedOnDateTime arrives as a string in the format YYYY-MM-DD HH:MM:SS, with no timezone or offset, and an empty string when not populated. Is a populated completion value UTC or the account's local timezone? We retain the original value and are holding conversion until confirmed, so elapsed-time calculations do not assume the wrong timezone.
 
 3. Property coverage
-Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Does an unfiltered property list exclude dormant or deleted records, and what is the supported read-only way to resolve those historical references?
+Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties, including active and dormant records. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Are deleted or other historical records excluded from that list, and what is the supported read-only way to resolve those references?
 
 These are contract/coverage questions following successful requests, rather than a request to enable access. We can provide correlation IDs for a specific request if helpful. No API keys or customer details are included here.
 

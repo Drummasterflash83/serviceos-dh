@@ -33,7 +33,7 @@ That returned HTTP 200 at 20:00:23 UTC, correlation ID eb94cbe5-9ac9-40b3-a1b1-d
 
 For completeness, our earlier Node request used x-api-key and the default Node User-Agent. It returned HTML 403. Identifying our application with its own User-Agent produced a JSON 401; changing to the Bearer header shown in the endpoint example resolved authentication. No key regeneration, permission or account changes were needed.
 
-We have also verified read-only customer and work-address contact requests using the required propertyID parameter, including continuation pages for customer contacts. Full hosted import validation is still in progress.
+We have also verified read-only customer and work-address contact requests using the required propertyID parameter, including continuation pages for customer contacts. The hosted integration has since retained 2,418 property source records and a bounded first 10,000 job source records. The property traversal completed; more jobs remain beyond this test's approved page limit. We are now validating data mappings and historical relationships before publishing into customer/job views.
 
 We will continue validating the integration on our side. Thank you for your help.
 

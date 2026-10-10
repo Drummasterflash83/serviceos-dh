@@ -1,0 +1,29 @@
+{
+  "runId": "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d",
+  "status": "read_only_source_compatibility_counts_not_projection_acceptance",
+  "observed": {
+    "checked_at": "2026-10-10 21:06:52.431918+00",
+    "invalid_identity": 0,
+    "customers_without_name": 0,
+    "sites_without_captured_customer": 18,
+    "jobs_without_captured_property": 1306,
+    "jobs_with_invalid_property_reference": 0,
+    "jobs_with_unrecognised_status": 10000,
+    "jobs_outside_current_description_limit": 0,
+    "jobs_with_unzoned_created_time": 0,
+    "jobs_with_unzoned_completed_time": 9940,
+    "property_statuses": [
+      {
+        "status": "active",
+        "records": 2409
+      },
+      {
+        "status": "dormant",
+        "records": 9
+      }
+    ],
+    "jobs_with_status_unsupported_by_local_fix": 0,
+    "jobs_with_empty_optional_completion_time": 60,
+    "sampled_jobs": 10000
+  }
+}

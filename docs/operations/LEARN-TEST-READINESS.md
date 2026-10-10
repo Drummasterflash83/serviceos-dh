@@ -1,5 +1,31 @@
 # Existing TEST environment: verified release gaps
 
+## Real Drummonds TEST capture — approved run retired at 21:06 UTC
+
+The existing private-app credential now works through the hosted setup,
+verification and worker paths. The approved run retained **2,418 property records**
+(1,547 customers and 871 work addresses) and **10,000 job records**. Properties
+exhausted their unfiltered traversal after 25 pages. Jobs reached the approved
+100-page limit with more remaining; their checkpoint is retained. Contacts did
+not start because the shared sequential account still has an incomplete job
+traversal. This is source capture, not completed canonical publication or scoring.
+
+All 78 monitored pre-existing datasets match their original baseline. The run
+used 125 page permits plus one verification permit. Capture is paused, the exact
+temporary grant has ended and the login is banned. TEST source records and the
+encrypted credential remain. Production is unchanged. The normal signed-in
+operator overview passed the application parser; browser visual acceptance is
+still unconfirmed. [Run evidence](evidence/learn-commusoft-real-test-result-2026-10-10.json).
+
+Compatibility checks found 18 missing customer references for work addresses and
+1,306 missing property references among the captured jobs. Actual job statuses
+need the tested local mapping correction; 9,940 completion timestamps lack a zone
+and 60 are empty. Unresolved relationships and unzoned populated timestamps must
+remain held. Customer discovery and job-lifecycle corrections are verified locally
+and backed up, but not deployed. A
+[provider clarification draft](COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt) is prepared,
+not sent. [Shape counts](evidence/learn-commusoft-real-shapes-2026-10-10.json).
+
 ## Commusoft per-property contacts — TEST release 042 and runtime v4
 
 The schema installed at 20:30 UTC and both endpoints updated at 20:32 UTC,

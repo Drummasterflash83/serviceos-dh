@@ -1,0 +1,137 @@
+{
+  "version": "commusoft-real-test-session/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d",
+  "state": "retired",
+  "tenant": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+  "email": "learn-drummonds-ef5a92ff@example.invalid",
+  "durationMinutes": 30,
+  "maxProviderRequests": 401,
+  "expiresAt": "2026-10-10 21:19:25.0786+00",
+  "verification": {
+    "tenant_id": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+    "request_id": "3559130b-b192-474a-acc7-da3bccb59fb7",
+    "state": "recorded",
+    "connection_id": "59484382-d380-4362-b031-19db133e6d3a",
+    "code": "access_verified",
+    "verified_at": "2026-10-10T20:49:49.78011+00:00",
+    "revision": "2026-10-10T20:49:49.776143+00:00"
+  },
+  "workerInvocations": 125,
+  "inputReceipts": {
+    "enable": {
+      "state": "recorded",
+      "receipt": {
+        "kind": "set_modules",
+        "flags": {
+          "learn.enabled": true,
+          "learn.inputs.commusoft.enabled": true
+        },
+        "state": "recorded",
+        "tenant_id": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+        "request_id": "9c61c948-63b9-4e17-b2c1-d4432009e79d"
+      }
+    },
+    "start-properties": {
+      "state": "recorded",
+      "receipt": {
+        "kind": "start_commusoft",
+        "state": "recorded",
+        "job_id": "79a93b37-4d4b-495a-88bf-7d5a437dd447",
+        "tenant_id": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+        "account_id": "b0609b8b-8a12-4dc2-afdc-0e0f28a29079",
+        "request_id": "9c7c3faf-61a2-427a-b08d-aa4c1bcf9063"
+      }
+    },
+    "start-jobs": {
+      "state": "recorded",
+      "receipt": {
+        "kind": "start_commusoft",
+        "state": "recorded",
+        "job_id": "6e5789cd-e537-407a-af3f-683676205933",
+        "tenant_id": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+        "account_id": "b0609b8b-8a12-4dc2-afdc-0e0f28a29079",
+        "request_id": "8a84cb95-b150-439f-b47b-6214a3439e49"
+      }
+    }
+  },
+  "boundary": {
+    "jobs": 125,
+    "pages": 125,
+    "active_grants": 0,
+    "banned": 1
+  },
+  "preserved": true,
+  "restrictions": [
+    "One hosted read-only verification plus at most 400 worker invocations: properties 200 pages, jobs 100 pages, customer contacts 50 pages, work-address contacts 50 pages; 100 records per page. No provider writes or schedule.",
+    "Existing Drummonds private-app credential copied to TEST Vault through the authenticated setup RPC.",
+    "New temporary operator can administer all TEST clients; actions restricted to the new Drummonds TEST tenant.",
+    "Retain TEST tenant, encrypted credential, imported source records and receipts. Pause capture, end grant and ban temporary login. No production changes. Import completeness is not assumed when a budget or time limit is reached."
+  ],
+  "observed": {
+    "checked_at": "2026-10-10 21:06:51.31574+00",
+    "pages": [
+      {
+        "pages": 100,
+        "records": 10000,
+        "collection": "jobs",
+        "traversal_complete": false
+      },
+      {
+        "pages": 25,
+        "records": 2418,
+        "collection": "properties",
+        "traversal_complete": true
+      }
+    ],
+    "versions": [
+      {
+        "versions": 10000,
+        "collection": "jobs",
+        "source_ids": 10000
+      },
+      {
+        "versions": 2418,
+        "collection": "properties",
+        "source_ids": 2418
+      }
+    ],
+    "property_kinds": [
+      {
+        "kind": "customer",
+        "records": 1547
+      },
+      {
+        "kind": "workaddress",
+        "records": 871
+      }
+    ],
+    "page_permits": 125,
+    "verification_permits": 1,
+    "foreign_observations": 0,
+    "observation_count_mismatches": 0,
+    "job_statuses": [
+      {
+        "jobs": 125,
+        "status": "succeeded"
+      }
+    ],
+    "customer_cards": 0,
+    "canonical_jobs": 0,
+    "canonical_links": 0,
+    "contact_targets": 0,
+    "enabled_capture_flags": 0
+  },
+  "retiredAt": "2026-10-10T21:06:31.703Z",
+  "preservedDataSets": 78,
+  "providerRequestPermits": 126,
+  "interpretation": {
+    "properties": "25 pages exhausted the unfiltered endpoint: 1547 customer properties and 871 work addresses. This does not prove all historical relationships are available.",
+    "jobs": "100 pages / 10000 source jobs; hasMore remained true. Stopped at the exact approved job-page budget, not a complete traversal.",
+    "contacts": "Not started. The sequential account requires completion of its current traversal before starting another resource.",
+    "canonicalPublication": "No source-to-card/person/site/job publication or scoring was performed.",
+    "access": "Capture flags disabled; temporary grant ended and login banned. TEST tenant, encrypted key and retained source evidence remain.",
+    "preservation": "Original baseline was not reset. Ownership filters were corrected for verification child receipts and page observations that carry no tenant_id directly; all 78 pre-existing datasets then matched.",
+    "operatorReadAcceptance": "Normal signed-in operator overview passed the application parser during the run, including job progress. No fresh browser visual acceptance."
+  }
+}

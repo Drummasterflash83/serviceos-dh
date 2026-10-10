@@ -1,9 +1,30 @@
-Prepared Drummonds hosted TEST run — awaiting explicit operator-access approval
+Approved Drummonds hosted TEST run — completed and retired
 
 Run: ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d
 Destination: Supabase TEST saatxzwxvdvqevbnskxy
 Tenant: Drummonds — Commusoft TEST (f8c114fa-fee7-4983-8970-f6e7f5fd3129)
 Temporary login: learn-drummonds-ef5a92ff@example.invalid
+
+Result — 10 October 2026, 21:06 UTC
+- Existing credential verified through the deployed Edge endpoint; no key rotation.
+- Captured 2,418 property source records (1,547 customers, 871 work addresses) over 25 pages, exhausting that unfiltered traversal.
+- Captured 10,000 job source records over the approved 100 pages. More jobs remain; the checkpoint is retained and the import is explicitly incomplete.
+- 125 page permits and one verification permit: 126 provider-request permits, within the 401 maximum. All 125 queue tasks succeeded; task success does not imply full collection coverage.
+- Customer/work-address contacts did not start. The sequential account cannot switch resources while the job traversal is incomplete.
+- Original snapshots for 78 monitored pre-existing datasets still match. Source observations have no foreign tenant joins or record-count mismatches.
+- Capture flags are off, the exact admin grant has ended, the temporary login is banned, and the private journal no longer contains its password. The TEST tenant, encrypted key and source records remain.
+- No canonical cards/jobs were published and no production changes were made. Normal signed-in operator progress parsed successfully; fresh browser visual acceptance is still outstanding.
+
+Source compatibility findings
+- 18 work addresses reference a customer absent from the captured property list; 1,306 captured jobs reference a missing property. Hold unresolved links, do not create guessed owners.
+- All 10,000 job statuses use the actual lowercase vocabulary; the local correction handles it and retains the legacy documented forms. It is not deployed yet.
+- 9,940 completion times lack a timezone and 60 are empty. Empty optional values are treated as absent by the local correction; populated unzoned times remain held until their timezone is established. No performance durations are inferred.
+- The property result contains both active (2,409) and dormant (9) records, so a blanket assumption that the endpoint excludes dormant records would be wrong.
+- A precise follow-up draft is prepared in COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt, not sent.
+
+Evidence: evidence/learn-commusoft-real-test-result-2026-10-10.json and evidence/learn-commusoft-real-shapes-2026-10-10.json.
+
+Original approved scope and recovery protocol
 
 Scope
 Create one TEST tenant and one temporary login with a 30-minute OpenFolk admin grant. This permission can administer all TEST clients; this run changes only the new Drummonds TEST tenant. Existing production and synthetic test tenants are not the import destination.
@@ -19,4 +40,4 @@ Retain the TEST tenant, encrypted key, captured source records and receipts for 
 Execution and recovery
 scripts/verify/learn-commusoft-real-test-session.mjs has separate prepare, activate, connect, verify, enable, start-properties, start-jobs, start-customer-contacts, start-workaddress-contacts, worker-step, status and retire phases. Every privileged phase requires the exact approved run ID. Requests are journalled before submission. An uncertain mutation is inspected using check-connection, check-verification, check-input or check-worker; it is never blindly replayed. No existing login is reactivated.
 
-Read-only preparation passed against the current schema and both v4 endpoints. Eight local tests cover destination/limit guards, approval binding, uncertain-result replay refusal, worker budgets, retirement identity and redaction. No remote write or real provider request has been made by this prepared run.
+Read-only preparation passed against release 042 and both v4 endpoints before activation. The session harness now has nine passing tests covering destination/limit guards, approval binding, uncertain-result replay refusal, worker budgets, retirement identity, redaction and refusal to continue after a preservation mismatch. Two initial integrity-check stops were caused by missing tenant ownership filters on child receipt/observation tables; the original baseline was preserved, the filters were corrected, and read-only rechecks passed before continuation. No provider request was replayed to resolve those stops.
