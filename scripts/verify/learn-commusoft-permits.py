@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-permits-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ['--pages'], ['--worker']):
-    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker]')
+if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers']):
+    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers]')
 
 
 def sql(text):
@@ -45,6 +45,49 @@ try:
         'supabase/migrations/20261031090000_learn_commusoft_page_permits.sql',
         'scripts/verify/learn-commusoft-permits.assert.sql',
     ]
+    if sys.argv[1:] == ['--customers']:
+        sql('\n'.join((root / path).read_text() for path in paths[:2]))
+        sql((root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text())
+        sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())
+        queue = (root / 'supabase/migrations/20260710120000_platform_job_queue.sql').read_text()
+        marker = '-- ── Register the async queue worker'
+        if queue.count(marker) != 1:
+            raise RuntimeError('Original queue source boundary changed')
+        sql(queue.split(marker)[0])
+        sql((root / 'supabase/migrations/20261031110000_learn_commusoft_worker.sql').read_text())
+        sql("update platform_jobs set status='running',attempt_count=1,claimed_by='fixture-worker',lease_expires_at=clock_timestamp()+interval '1 hour';")
+        sql("create function public.set_updated_at() returns trigger language plpgsql as $$begin new.updated_at:=now();return new;end$$;")
+        foundation = (root / 'supabase/migrations/20260709120000_customer_cards_foundation.sql').read_text()
+        start = 'create table if not exists companies ('
+        end = '-- interaction_match_suggestions —'
+        if foundation.count(start) != 1 or foundation.count(end) != 1:
+            raise RuntimeError('Canonical customer schema boundary changed')
+        sql(foundation[foundation.index(start):foundation.index(end)])
+        sql((root / 'scripts/verify/learn-business-input-customers.fixture.sql').read_text())
+        authority = (root / 'supabase/migrations/20261031080000_learn_import_batches.sql').read_text()
+        start = 'create function learn_import_batch_authority('
+        end = 'create function learn_import_match_batch('
+        if authority.count(start) != 1 or authority.count(end) != 1:
+            raise RuntimeError('Import authority source boundary changed')
+        sql(authority[authority.index(start):authority.index(end)])
+        migration = (root / 'supabase/migrations/20261031120000_learn_business_input_customers.sql').read_text()
+        sql(migration.replace('\ncommit;', '\nrollback;'))
+        if sql("select to_regclass('public.learn_business_input_links') is null and to_regprocedure('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)') is null;") != 't':
+            raise RuntimeError('Customer projection rollback left objects')
+        print('Customer projection migration rollback: no new objects retained.')
+        print(sql(migration + '\n' + (root / 'scripts/verify/learn-business-input-customers.assert.sql').read_text()))
+
+        def review(_):
+            return sql("set request.jwt.claim.role='service_role'; set role service_role; select fixture_review(9,'person',null)->>'already';")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(review, [1, 2]))
+        if sorted(results) != ['false', 'true']:
+            raise RuntimeError(f'Concurrent customer review failed: {results}')
+        if sql("select count(*) from learn_business_input_links where external_id='9';") != '1':
+            raise RuntimeError('Concurrent review duplicated identity')
+        print('Concurrent customer review: one identity/card and one replay acknowledgement.')
+        raise SystemExit(0)
     if sys.argv[1:] == ['--worker']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
         sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())

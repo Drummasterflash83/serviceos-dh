@@ -4,7 +4,7 @@
 
 Local source reader, provider-neutral source-record adapter, durable scope binding
 and atomic credential/pacing/source-publication functions, dedicated worker and
-transactional settlement are implemented. Fifty Commusoft tests and three shared
+transactional settlement and reviewed customer/card projection are implemented locally. Fifty Commusoft tests and three shared
 HTTP-guard tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
 This is not an installed connector: no provider request, real API credential read, live sync job,
 production migration or frontend release was performed for this increment.
@@ -23,6 +23,11 @@ Read on 10 October 2026, including the endpoint Markdown OpenAPI exports:
 - [Properties](https://developer.commusoft.com/list-properties-24494182e0):
   `customer` and `workaddress` are different property types. A work address's
   `parentPropertyID` identifies its customer property.
+- [Customer types](https://developer.commusoft.com/list-customer-types-27670540e0.md):
+  `/settings/customerTypes` returns configurable categories. Its export uses
+  string IDs and a string `companyNameRequired` field without defined values;
+  unlike properties it does not specify a cursor envelope. The current three-
+  collection reader does not fetch this endpoint or guess its flag semantics.
 - [Contacts](https://developer.commusoft.com/list-property-contacts-28546275e0):
   people associated with properties; suppliers also exist. The reader requires an
   explicit customer/workaddress contact filter. The exported `type` schema is an
@@ -218,14 +223,53 @@ restored the original generic claim, credential and publication functions. Tests
 use the repository's original generic claim implementation plus a minimal fixture
 schema; the installed TEST catalogue and live API are still unverified.
 
+## Reviewed customer identities and existing cards — local
+
+Migration `20261031120000_learn_business_input_customers.sql` adds a private,
+immutable, provider-neutral source-to-canonical identity ledger. Its identity key
+includes tenant, connection, provider, collection and external ID. It records the
+exact source version, reviewing actor, decision/reason, canonical target and card.
+It does not reuse legacy CSV external IDs across unverified account boundaries.
+
+`learn_commusoft_review_customer` is a private service RPC. An authenticated server
+must supply the verified actor; the database repeats the existing current tenant
+owner/admin and View-As checks. It also locks/checks tenant/module/connector and
+configured connection authority. The connection lock fences page publication while
+the review checks the latest retained observation; stale or ambiguous evidence
+cannot create a customer. Original source versions and pages stay immutable.
+
+The caller explicitly classifies a reviewed customer as person or company and
+chooses an existing canonical target or creation. This is not automatic identity
+matching: creating a new customer must be an explicit decision after inspecting
+existing candidates. There is no review screen or automatic bulk type mapping yet.
+Existing targets and cards are reused without changing any fields. New customers
+receive typed source names/address/contact fields and unverified provenance; new
+cards retain neutral defaults, with no invented activity, score or marketing consent.
+The company's own card remains distinct from a named person's card at that company.
+
+Customer, card and source link commit together. Lost-response replay returns the
+same IDs, concurrent identical reviews create one customer/card, and changed
+decisions cannot overwrite a link. Existing links are not a mechanism for source
+field updates or identity correction; those governed workflows remain required.
+This RPC is not called automatically by the ingestion worker, so a projection
+failure cannot discard an already retained source page.
+
+`--customers` verification uses the original canonical customer table definitions,
+the existing authority function and actual permit/page publisher in disposable
+offline Postgres. It proves person/company creation, unchanged existing records,
+separate connection IDs, authority denials, stale-version refusal, exact/concurrent
+replay, and rollback after an injected late failure. Minimal fixture prerequisites
+are not a substitute for the installed TEST catalogue or authenticated endpoint/UI
+acceptance. No migration has been installed in hosted TEST or production.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Package and verify all three migrations and the worker against the installed
+2. Package and verify all four migrations and the worker against the installed
    TEST schema, including its existing feature flags and queue functions.
 3. Add authorized connection/approval setup and operator progress/recovery controls;
-   project retained source records into canonical customers, contacts, sites and jobs.
+   wire customer review/duplicate discovery, and project contacts, sites and jobs.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -244,6 +288,7 @@ npx tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --modul
 python3 scripts/verify/learn-commusoft-permits.py
 python3 scripts/verify/learn-commusoft-permits.py --pages
 python3 scripts/verify/learn-commusoft-permits.py --worker
+python3 scripts/verify/learn-commusoft-permits.py --customers
 ```
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They

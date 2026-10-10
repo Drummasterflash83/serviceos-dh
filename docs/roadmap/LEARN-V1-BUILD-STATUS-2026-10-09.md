@@ -1266,3 +1266,21 @@ migration rollback restores all modified prior functions. Containers were remove
 The dedicated JWT/key-protected endpoint is local only; no key, schedule, hosted
 schema, deployment or live provider operation was created. Canonical projection,
 operator setup/recovery and TEST/live acceptance remain required.
+
+## Reviewed Commusoft customers reuse existing cards — local, 10 October
+
+Retained customer properties can now be explicitly reviewed into existing people/
+companies or created as the reviewed type, with the existing customer card reused
+or created atomically. A private provider-neutral identity ledger retains the exact
+connection/source version, actor and decision. No automatic name/email merge or
+legacy CSV namespace match occurs. Existing customers/cards are unchanged; new
+cards have no invented performance, ownership or activity. Latest-observation
+checks and connection locks prevent stale approval during source publication.
+
+Isolated SQL verification passed actual source-page-to-card creation, exact replay,
+concurrent replay, cross-connection identity separation, company/person card
+separation, actor/module/connection denials, stale source refusal and late-failure
+rollback. The verification container was removed. This is a local private RPC;
+customer review UI/endpoint, candidate discovery/bulk classification, contact/site/
+job projection, source updates/corrections and hosted/live acceptance remain open.
+No real records, source credentials, hosted schema or production release changed.

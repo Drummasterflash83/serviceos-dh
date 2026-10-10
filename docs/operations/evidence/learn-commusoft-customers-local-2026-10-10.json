@@ -1,0 +1,35 @@
+{
+  "version": "learn-commusoft-customers-local/1",
+  "observedAt": "2026-10-10T08:43:39Z",
+  "scope": "local synthetic verification only",
+  "command": "python3 scripts/verify/learn-commusoft-permits.py --customers",
+  "isolatedPostgres": {
+    "image": "postgres:15",
+    "network": "none",
+    "hostMounts": false,
+    "publishedPorts": false,
+    "canonicalFoundationTables": "loaded from repository migration",
+    "ownerAdminAuthority": "loaded existing import authority function",
+    "sourcePublication": "actual credential permit and atomic page RPCs with synthetic key/data; current worker migration and settlement included",
+    "personAndCompanyCreation": "passed",
+    "existingCanonicalAndCardPreservation": "passed",
+    "companyAndPersonCardsRemainDistinct": "passed",
+    "separateConnectionIdentities": "passed",
+    "exactAndChangedReplay": "passed",
+    "concurrentReview": "one identity/card and one acknowledgement",
+    "authorityDenials": "viewer, foreign actor/target, View-As, module disablement and revoked connection",
+    "staleObservation": "refused",
+    "invalidSourceShape": "refused",
+    "lateLinkFailure": "new customer/card rolled back; source retained",
+    "sourceLinkMutation": "refused",
+    "migrationRollback": "passed",
+    "containersRemoved": true
+  },
+  "limitations": [
+    "Minimal fixture prerequisites; installed hosted schema not verified.",
+    "Private reviewed RPC only; no endpoint/review UI or automatic worker projection.",
+    "Explicit person/company classification; customer-type metadata endpoint and bulk mapping still pending.",
+    "Candidate discovery, contact/site/job projection and source updates/corrections remain incomplete.",
+    "No real provider request, credential setup, hosted migration or production deployment."
+  ]
+}
