@@ -162,3 +162,10 @@ A follow-up [preservation-reader improvement](LEARN-SOURCE-PRESERVATION.md) remo
 redundant page counts and adds matching double scans. Its small count-free live pilot
 also timed out, so this does not resolve the candidate-discovery or live-availability
 gap above. No further full source scan was started after that pilot failed.
+
+At 03:55–03:56 UTC, the intended live-input recheck again stopped at the REST
+tenant identity read, before email or Slack metadata scans. Management project
+metadata returned `ACTIVE_HEALTHY`, but one bounded read-only database identity
+query returned HTTP 544. This does not identify a cause or prove lost records.
+No further source scan or provider request was started. See
+[availability evidence](evidence/learn-live-input-availability-2026-10-10.json).

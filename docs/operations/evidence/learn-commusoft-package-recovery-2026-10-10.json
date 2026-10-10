@@ -1,0 +1,257 @@
+{
+  "version": "learn-commusoft-package-recovery/1",
+  "observedAt": "2026-10-10T04:00:10.509603+00:00",
+  "state": "sources_located_package_requires_review",
+  "verification": {
+    "package_directory": "/Users/chrisdrummond/Documents/DH Works/prepared_packages/commusoft_canonical_v4",
+    "accepted_version": 4,
+    "historical_versions_inactive": [
+      "1",
+      "2",
+      "3"
+    ],
+    "package_version": 4,
+    "output_seals": {
+      "prepared_customers.csv": {
+        "sha256": "9cbb37fcd9d8d5d8e5dd2f3407b603a5c7f572ae40244c7090f1df7016420ece",
+        "rows": 1613,
+        "sealed_rows": 1613
+      },
+      "prepared_jobs.csv": {
+        "sha256": "bdcffb031d2ace2bf997bfb2663a4ab3840a9f2da4b582759c5120975b92c3a7",
+        "rows": 4000,
+        "sealed_rows": 4000
+      },
+      "prepared_sites.csv": {
+        "sha256": "4138c1f4e9c9232f859efd2e00072df911e5833f128f083311126c31c3012b46",
+        "rows": 962,
+        "sealed_rows": 962
+      }
+    },
+    "relationships": {
+      "customers": 1613,
+      "sites": 962,
+      "jobs": 4000,
+      "duplicate_customer_ids": 0,
+      "duplicate_site_ids": 0,
+      "duplicate_job_ids": 0,
+      "orphan_sites": 0,
+      "orphan_job_customers": 0,
+      "orphan_job_sites": 0,
+      "jobs_with_exact_site_link": 228,
+      "exact_site_link_customer_aligned": 227,
+      "exact_site_link_customer_mismatch": 1,
+      "exact_site_link_missing_site": 0,
+      "exact_site_link_ambiguous_site": 0
+    },
+    "source_classification": {
+      "customers_export": {
+        "sha256_prefix": "7ab5b6cb432c6991",
+        "classification": "locally_sealed_recovered_export",
+        "in_evidence_register": false,
+        "provenance_record": "present"
+      },
+      "work_addresses_export": {
+        "sha256_prefix": "8fa8d4e2b189c67a",
+        "classification": "locally_sealed_recovered_export",
+        "in_evidence_register": false,
+        "provenance_record": "present"
+      },
+      "profit_by_job_fy2025_26": {
+        "sha256_prefix": "fe73b7ae2b17e86d",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "aborted_jobs_all_time": {
+        "sha256_prefix": "56e8a29d1ddb1f90",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "profit_by_job_current_window": {
+        "sha256_prefix": "678562f622108378",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "prepared_job_financials": {
+        "sha256_prefix": "1932de479e5b9007",
+        "classification": "unclassified",
+        "in_evidence_register": false,
+        "provenance_record": "not required"
+      },
+      "purchase_orders": {
+        "sha256_prefix": "42427549756b007e",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "parts": {
+        "sha256_prefix": "8ceab3eff80a5568",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "diary_events": {
+        "sha256_prefix": "e0cc154c41450536",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "additional_works": {
+        "sha256_prefix": "d090d4e60f0927c7",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      },
+      "further_works": {
+        "sha256_prefix": "2fb1c9798f728c9d",
+        "classification": "register_verified",
+        "in_evidence_register": true,
+        "provenance_record": "not required"
+      }
+    },
+    "provenance_disclosure": {
+      "customers_export": {
+        "provenance_class": "locally_sealed_recovered_export",
+        "register_verified": false
+      },
+      "work_addresses_export": {
+        "provenance_class": "locally_sealed_recovered_export",
+        "register_verified": false
+      }
+    },
+    "unregistered_sources": [
+      "customers_export",
+      "work_addresses_export"
+    ],
+    "required_to_upgrade_provenance": [
+      "Commusoft \u2192 Customers \u2192 Customers (full customer list export)",
+      "Commusoft \u2192 Customers \u2192 Work addresses (full work-address export)"
+    ],
+    "contract_ok": false,
+    "classification_failures": 0,
+    "failures": [
+      {
+        "code": "exact_site_customer_mismatch",
+        "detail": "1 job row(s) reference a site belonging to a DIFFERENT customer \u2014 an exact link may never cross customers"
+      }
+    ]
+  },
+  "sourceShape": {
+    "diary": {
+      "rows": 8889,
+      "columns": [
+        "Customer Name",
+        "Customer Account Number",
+        "WorkAddress Account Number",
+        "Type of Event",
+        "Record number",
+        "Job Address Name",
+        "Job Address Line 1",
+        "Diary Date",
+        "Engineer Name",
+        "Time",
+        "Engineer Status",
+        "Record created date",
+        "Record description",
+        "Customer reference",
+        "Quoted Amount",
+        "Diary Created By",
+        "Diary Created On",
+        "Event Description",
+        "Event Notes",
+        "Total Travel Time",
+        "Total Time on Site",
+        "Total Labour Cost",
+        "Total Travel Cost",
+        "Business unit",
+        "Source file",
+        "Diary Date parsed",
+        "Fiscal year",
+        "Travel minutes",
+        "Onsite minutes",
+        "Job event flag",
+        "Completed visit flag",
+        "Negative status flag"
+      ],
+      "sha256": "4f460c701b16e5a1a6a04c231bec238e20181e35b382b4b4ba613fcb2995949d",
+      "nonempty": {
+        "Customer Name": 5419,
+        "Customer Account Number": 5419,
+        "WorkAddress Account Number": 2493,
+        "Type of Event": 8889,
+        "Record number": 5419,
+        "Job Address Name": 5419,
+        "Job Address Line 1": 5419,
+        "Diary Date": 8889,
+        "Engineer Name": 8889,
+        "Time": 8889,
+        "Engineer Status": 4784,
+        "Record created date": 5419,
+        "Record description": 5419,
+        "Customer reference": 1719,
+        "Quoted Amount": 8889,
+        "Diary Created By": 8800,
+        "Diary Created On": 8889,
+        "Event Description": 8888,
+        "Event Notes": 5767,
+        "Total Travel Time": 8889,
+        "Total Time on Site": 8889,
+        "Total Labour Cost": 8889,
+        "Total Travel Cost": 8889,
+        "Business unit": 3624,
+        "Source file": 8889,
+        "Diary Date parsed": 8889,
+        "Fiscal year": 8889,
+        "Travel minutes": 8889,
+        "Onsite minutes": 8889,
+        "Job event flag": 8889,
+        "Completed visit flag": 8889,
+        "Negative status flag": 8889
+      }
+    },
+    "preparedJobs": {
+      "jobs": 4000,
+      "statusCounts": {
+        "aborted": 954,
+        "completed": 2796,
+        "open": 250
+      },
+      "engineerPresent": 0,
+      "createdDatePresent": 3046,
+      "completedDatePresent": 0,
+      "createdDatesWithExplicitOffset": 0,
+      "completedDatesWithExplicitOffset": 0,
+      "mismatches": 1
+    }
+  },
+  "recoveredFrom": "/Users/chrisdrummond/serviceos-dh",
+  "provenance": {
+    "packageContractCommit": "c4b332df34e8ad6619e12492947167bd54f60d6b",
+    "canonicalCoreCommit": "4a5d14c0b0eb4e898856a410c489b15dff0541ba",
+    "verifierCommit": "0d8bee179c20cc02c683d558ff25fc19bbdb32d6"
+  },
+  "sourceHashes": {
+    "scripts/commusoft/lib/package-contract.mjs": "f2c5f4cb989419903cc1034fc6ef63c252a2032152e1568526eb4c1b57a1807b",
+    "scripts/commusoft/lib/prepare-canonical-core.mjs": "e2245afb38ed5067cdbbda30e78ed02b41114226b06121baaefe48d0bf758cc2",
+    "scripts/commusoft/verify-canonical-package.mjs": "d2144d87c94bdba6d2ab09ce5a36f69b41f5cc100f538f71f7310eb36a1f8bec",
+    "scripts/commusoft/package-contract.test.mjs": "3ed79ee91d27111ca9845127bb0006840c0ec652812f0d2042cca10f8d3377f1"
+  },
+  "validation": {
+    "focusedTestsPassed": 22,
+    "newSyntheticPackageTests": 4,
+    "networkCallsByVerifier": 0,
+    "sourceWrites": 0,
+    "imports": 0
+  },
+  "limitations": [
+    "Manifest/output hashes prove consistency with retained package, not live provider completeness or currentness.",
+    "One exact job/site link crosses customer ownership and causes package refusal.",
+    "Customer/address sources remain locally sealed recovered exports, not register-verified originals.",
+    "Prepared job engineer and completed-date fields are empty; created timestamps carry no explicit offset.",
+    "Diary CSV is derived data; transformation, source identity and timestamps must be reconciled before scoring.",
+    "No personal source rows copied into repository; source files and old checkout unchanged."
+  ]
+}

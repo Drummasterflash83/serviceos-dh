@@ -993,3 +993,21 @@ owned browser/server were closed. Workspace home remained unavailable for the
 synthetic company, so this proves the LEARN thread flow only. Real provider capture,
 continuous ingestion, voicemail, Commusoft and broader V1 acceptance remain open.
 See [API/browser evidence](../operations/evidence/learn-slack-thread-recovery-test-acceptance-2026-10-10.json).
+
+## Existing Commusoft sources located — 10 October
+
+The retained DH Works v4 package contains 1,613 customers, 962 sites and 4,000 jobs;
+its output hashes, row counts and manifest seal match. The historical validator was
+recovered with its later cross-customer site check and tested against this branch's
+importer. It correctly refuses one contradictory exact site link among 228; no
+source files were changed and no import was started. Twenty-two focused tests pass.
+
+An 8,889-row derived diary export provides a concrete source for further visit
+evidence work. It needs provenance, timestamp and engineer-identity reconciliation.
+Prepared job engineer/completion-date fields are empty, so no individual completion
+measure can be inferred. See [source findings and remaining work](../operations/LEARN-COMMUSOFT-RECOVERY.md).
+
+Production reads remain unverified: REST identity failed, while management reported
+an active project but returned HTTP 544 for a bounded database identity query.
+No new source scan ran and no missing data is inferred. Independent local input
+recovery continued; the overall goal remains active.

@@ -1,0 +1,33 @@
+{
+  "version": "learn-live-input-availability/1",
+  "observedAt": "2026-10-10T04:00:10.510205+00:00",
+  "projectHealth": {
+    "version": "learn-live-project-health/1",
+    "observedAt": "2026-10-10T03:55:43.056Z",
+    "identityRestProbe": "failed; no subsequent source reads attempted",
+    "result": {
+      "httpStatus": 200,
+      "projectRef": "tgbnakbxwcqjeimygroz",
+      "status": "ACTIVE_HEALTHY",
+      "region": "eu-west-2"
+    }
+  },
+  "databaseHealth": {
+    "version": "learn-live-database-health/1",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "observedAt": "2026-10-10T03:56:29.846Z",
+    "result": {
+      "httpStatus": 544,
+      "ok": false,
+      "code": null
+    }
+  },
+  "state": "source_reads_unverified",
+  "limitations": [
+    "REST tenant identity read failed, so the intended email pilot and Slack metadata reads were not attempted.",
+    "Project ACTIVE_HEALTHY does not prove database query availability.",
+    "Bounded management read-only tenant identity query returned HTTP 544.",
+    "No source loss inferred; latest complete source-preservation comparison remains 00:40\u201300:41 UTC.",
+    "No timeout configuration, role, database session, provider or production state changed."
+  ]
+}

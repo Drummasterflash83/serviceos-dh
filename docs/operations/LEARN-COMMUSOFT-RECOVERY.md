@@ -98,3 +98,69 @@ Next: reconcile those identity/work-history dependencies, locate the prepared
 Commusoft exports and actual authorized connection configuration, then feed only
 verified subject/period evidence into the existing performance append/review path.
 No data gap should become a zero score or an assumed employee assignment.
+
+## Located package and retained validator — 10 October
+
+The existing files are at
+`/Users/chrisdrummond/Documents/DH Works/prepared_packages/commusoft_canonical_v4`.
+The package contains **1,613 customers, 962 sites and 4,000 jobs**. All three
+file hashes and row counts match their manifest, and the manifest seal verifies.
+The 4,000 jobs comprise 2,796 completed, 250 open and 954 aborted records. These
+are historical package statuses, not fresh provider observations.
+
+The later historical package contract, pure preparation core and offline verifier
+have now been recovered into `scripts/commusoft/`. Provenance: contract commit
+`c4b332df34e8ad6619e12492947167bd54f60d6b`, core commit
+`4a5d14c0b0eb4e898856a410c489b15dff0541ba`, verifier commit
+`0d8bee179c20cc02c683d558ff25fc19bbdb32d6`. The contract comment was corrected to
+describe its existing accepted version 4. The verifier uses this branch's actual
+importer coercion. Older package versions remain historical evidence.
+
+The current package **does not pass the full contract**. Of 228 exact job/site
+references, 227 align with the job's customer; one points to a site owned by a
+different customer. No external IDs are duplicated and no customer/site references
+are missing. This is an ownership contradiction, not an absent-site fallback. The
+validator refuses the package and the existing database resolver also refuses such
+a link. The original source files were left unchanged, and no import was attempted.
+Private external-ID references for review are retained only in ignored verification
+output; no customer rows were copied into this repository.
+
+The customer and address source seals match the retained source-evidence record,
+whose classification remains `locally_sealed_recovered_export`. They are not
+register-verified originals. Registered job-related source hashes match the evidence
+register. The derived financial package remains unclassified in this verifier;
+it is not part of the three-file canonical import.
+
+The nearby derived diary file
+`/Users/chrisdrummond/Documents/DH Works/output/v2_analysis/normalized/diary_events.csv`
+contains **8,889 rows** with engineer names, visit statuses, diary/creation dates,
+travel and on-site durations. Only 5,419 rows have a job record number. Its values
+must be traced through the original exports and normalization rules; filled cells
+do not establish completeness, reliable time measurement or confirmed identity.
+There is no stable event-ID column in this derived CSV. Engineer names need a
+reviewed source-to-member mapping before they can support individual scores.
+
+All 4,000 prepared jobs have blank engineer and completed-date fields. 3,046 have
+created dates, with no explicit timezone offsets. Consequently this package cannot
+by itself establish engineer assignment, completion elapsed time, desk residence,
+return-visit cause or driving performance. Those gaps remain unassessed.
+
+Reproduce the read-only package check:
+
+```sh
+node scripts/commusoft/verify-canonical-package.mjs --package '/Users/chrisdrummond/Documents/DH Works/prepared_packages/commusoft_canonical_v4' --source-evidence '/Users/chrisdrummond/Documents/DH Works/prepared_packages/source_evidence/commusoft_source_evidence.json' --register '/Users/chrisdrummond/Documents/DH Works/output/v2_analysis/normalized/evidence_register.csv'
+node --test scripts/commusoft/package-contract.test.mjs scripts/import-pure.test.mjs scripts/learn-import-contract.test.mjs
+```
+
+The real-package command correctly exits 1 for the ownership contradiction. All 22
+synthetic/import tests pass, including four new tests for same-customer links,
+cross-customer refusal, file/manifest/profile drift, historical versions, phone
+coercion and honest provenance. The old broad test runners were not run because
+they inspect the separate historical database; the new tests use only synthetic
+in-memory packages.
+
+See [package and source-shape evidence](evidence/learn-commusoft-package-recovery-2026-10-10.json).
+Next: reconcile the disputed link from authoritative source records without
+guessing, trace diary identities/timestamps, and finish the governed import's TEST
+release and ordinary-user preview/apply path. Package consistency is not a live
+Commusoft connection or scoring acceptance.
