@@ -232,3 +232,84 @@ test("source pages enforce scope, cursor order and typed display fields", async 
   ])
     await assert.rejects(loadWorkPage(db({ ...page, ...changed }), id(1), id(4), "job"));
 });
+
+test("contact summaries retain multiple source phones and reject incomplete contact projections", async () => {
+  const row = {
+    external_id: "501",
+    version_id: id(5),
+    title: "Site contact",
+    property_reference: "31",
+    customer_name: "Customer",
+    relationship_reason: null,
+    source_status: null,
+    linked_version_id: null,
+    last_result: null,
+    selectable: true,
+    contact: {
+      email: "site@example.invalid",
+      position: "Caretaker",
+      phones: ["Mobile: 07700 900123", "Office: 020 7946 0123"],
+    },
+  };
+  const page = {
+    tenant_id: scope.tenantId,
+    connection_id: id(4),
+    kind: "contact",
+    rows: [row],
+    next_cursor: null,
+  };
+  const client: ReviewClient = { rpc: async () => ({ data: page, error: null }) };
+  assert.deepEqual(
+    (await loadWorkPage(client, scope.tenantId, id(4), "contact")).rows[0].contact,
+    row.contact,
+  );
+  for (const contact of [
+    undefined,
+    { ...row.contact, phones: "incorrect" },
+    { ...row.contact, email: 3 },
+  ]) {
+    await assert.rejects(
+      loadWorkPage(
+        { rpc: async () => ({ data: { ...page, rows: [{ ...row, contact }] }, error: null }) },
+        scope.tenantId,
+        id(4),
+        "contact",
+      ),
+    );
+  }
+});
+test("contact recovery binds the chosen existing person and preserves a request after a conflicting receipt", async () => {
+  const d = draft();
+  d.kind = "contact";
+  d.items[0].target_id = id(7);
+  const r = receipt();
+  r.kind = "contact";
+  r.items[0].outcome.entity_kind = "contact";
+  const store = storage(),
+    lock: RecoveryLock = async (_key, fn) => fn();
+  const saved = structuredClone(r);
+  saved.items[0].outcome.entity_id = id(99);
+  await assert.rejects(
+    resolveWorkDraft(
+      { rpc: async () => ({ data: saved, error: null }) },
+      store,
+      lock,
+      scope,
+      d,
+      "apply",
+      () => true,
+    ),
+  );
+  assert.equal(readWorkDraft(store, scope)?.items[0].target_id, id(7));
+  const result = await resolveWorkDraft(
+    { rpc: async () => ({ data: r, error: null }) },
+    store,
+    lock,
+    scope,
+    d,
+    "check",
+    () => true,
+  );
+  assert.equal(result?.kind, "contact");
+  assert.equal(readWorkDraft(store, scope), null);
+});

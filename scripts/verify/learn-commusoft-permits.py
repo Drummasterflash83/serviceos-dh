@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-permits-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers'], ['--work'], ['--batches']):
-    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers|--work|--batches]')
+if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers'], ['--work'], ['--batches'], ['--contacts']):
+    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers|--work|--batches|--contacts]')
 
 
 def sql(text):
@@ -45,7 +45,7 @@ try:
         'supabase/migrations/20261031090000_learn_commusoft_page_permits.sql',
         'scripts/verify/learn-commusoft-permits.assert.sql',
     ]
-    if sys.argv[1:] in (['--customers'], ['--work'], ['--batches']):
+    if sys.argv[1:] in (['--customers'], ['--work'], ['--batches'], ['--contacts']):
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
         sql((root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text())
         sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())
@@ -94,7 +94,7 @@ try:
         if sql("select md5(pg_get_functiondef('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)'::regprocedure));") != before:
             raise RuntimeError('Review facade rollback changed private writer')
         print(sql(review_migration + '\n' + (root / 'scripts/verify/learn-business-input-review.assert.sql').read_text()))
-        if sys.argv[1:] in (['--work'], ['--batches']):
+        if sys.argv[1:] in (['--work'], ['--batches'], ['--contacts']):
             schema = (root / 'supabase/migrations/20260814120000_universal_imports_and_jobs.sql').read_text()
             start, end = 'create table if not exists sites (', '-- ── Job-number aliases'
             if schema.count(start) != 1 or schema.count(end) != 1:
@@ -114,7 +114,7 @@ try:
             if sorted(results) != ['false', 'true'] or sql("select count(*) from jobs where external_id='111';") != '1':
                 raise RuntimeError('Concurrent work projection duplicated or lost identity')
             print('Concurrent job projection: one canonical job and one exact replay acknowledgement.')
-            if sys.argv[1:] == ['--batches']:
+            if sys.argv[1:] in (['--batches'], ['--contacts']):
                 migration = (root / 'supabase/migrations/20261031150000_learn_business_input_work_batches.sql').read_text()
                 sql(migration.replace('\ncommit;', '\nrollback;'))
                 if sql("select to_regclass('public.learn_business_input_projection_batches') is null;") != 't':
@@ -132,6 +132,27 @@ try:
                 if sql("select count(*) from jobs where external_id='205';") != expected_jobs:
                     raise RuntimeError('Batch race receipt disagrees with canonical state')
                 print('Concurrent apply/cancel: both callers receive the same retained outcome; canonical state matches.')
+        if sys.argv[1:] == ['--contacts']:
+            sql("create function current_tenant_id() returns uuid language sql stable as $$select tenant_id from profiles where id=auth.uid()$$;")
+            sql((root/'supabase/migrations/20260709160000_business_graph.sql').read_text())
+            endpoints=(root/'supabase/migrations/20260828120000_marketing_foundation.sql').read_text()
+            sql(endpoints[endpoints.index('create table if not exists contact_points ('):endpoints.index('-- contact_relationships —')])
+            normalizer=(root/'supabase/migrations/20260912120000_commusoft_governed_import.sql').read_text()
+            sql(normalizer[normalizer.index('create or replace function import_normalize_phone_uk('):normalizer.index('create or replace function import_normalize_postcode(')])
+            migration=(root/'supabase/migrations/20261031190000_learn_business_input_contacts.sql').read_text()
+            before=sql("select md5(pg_get_functiondef('learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)'::regprocedure)||pg_get_functiondef('learn_commusoft_work_review_page(uuid,uuid,text,text,integer)'::regprocedure));")
+            sql(migration.replace('\ncommit;', '\nrollback;'))
+            if before!=sql("select md5(pg_get_functiondef('learn_commusoft_work_batch(uuid,uuid,uuid,text,jsonb,text,boolean,uuid)'::regprocedure)||pg_get_functiondef('learn_commusoft_work_review_page(uuid,uuid,text,text,integer)'::regprocedure));"):
+                raise RuntimeError('Contact migration rollback changed existing review')
+            sql(migration)
+            print(sql((root/'scripts/verify/learn-business-input-contacts.assert.sql').read_text()))
+            def contact_race(_):
+                return sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select learn_commusoft_confirm_contact(fixture_id(1),fixture_work_version('propertyContacts','510'),null,'Concurrent contact review')->>'already';")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                results=list(pool.map(contact_race,[0,1]))
+            if sorted(results)!=['false','true'] or sql("select count(*) from people where display_name='Concurrent contact';")!='1':
+                raise RuntimeError('Concurrent contact review duplicated identity')
+            print('Concurrent contact review retained one person, one source link and one replay acknowledgement.')
         raise SystemExit(0)
     if sys.argv[1:] == ['--worker']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))

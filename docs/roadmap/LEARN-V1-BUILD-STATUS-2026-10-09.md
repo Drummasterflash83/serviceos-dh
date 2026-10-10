@@ -1758,3 +1758,34 @@ Next is real Drummonds API access/coverage and the remaining usable import flow:
 contacts projection, reconciliation with existing targets, ongoing source updates
 and incomplete-import recovery. The frontend and production are unchanged; wider
 OpenFolk controls, Slack/voicemail and LEARN V1 production acceptance remain open.
+
+## Commusoft contact projection and review — local checkpoint, 10 October
+
+Added the retained property-contact path into existing People, contact endpoints,
+and customer/site graph relationships. Shared email or phone details hold a new
+identity for explicit review; selecting an existing person retains their fields and
+verification choices. No duplicate customer cards or inferred marketing consent.
+Contacts join the existing saved batch, cancellation and recovery flow. Candidate
+search and source phone/email details are available in the owner/admin screen;
+changing a search clears its prior selected person.
+
+Isolated PostgreSQL acceptance includes source-to-canonical projection, preserved
+existing rows, invalid/foreign targets, missing ownership, mixed results, exact
+replay, cancellation fencing, rollback and concurrent contact confirmation. All
+15 customer/work client tests pass, as do TypeScript and the application build.
+A network-disabled browser fixture passed identity reset, mixed linked/held results,
+lost-response recovery after reload and viewer denial. Contact SQL and frontend
+remain local/TEST-branch code: neither hosted TEST installation nor production
+release has been claimed.
+
+Chris supplied a logged-in Commusoft session in Arc. The Settings menu exposes
+API keys and Private Application; existing system/device tokens were not treated
+as integration credentials. No credential or account settings were changed and no
+Commusoft API request was issued. Arc controls became intermittently unavailable;
+Chris was asked to open the private-application page so its existing configuration
+can be inspected. Real API credentials, scopes and coverage remain unverified.
+
+Next: inspect Drummonds' private application, complete the hosted contact release
+and acceptance, then reconcile existing identities and support ongoing updates and
+incomplete-import recovery. Existing communication history and live hosting remain
+unchanged by this checkpoint.

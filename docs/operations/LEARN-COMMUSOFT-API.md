@@ -37,6 +37,33 @@ connection or Commusoft-named project secret. Checked local environment variable
 names also yielded no Commusoft entry. This does not establish whether Drummonds'
 Commusoft subscription has private-application API access enabled.
 
+## Contact review checkpoint — local acceptance, 10 October
+
+Property contacts now project into the existing `people`, `contact_points` and
+business graph models, linked to reviewed customer cards and sites. No additional
+customer card is created for a contact. Multiple phone numbers are preserved;
+shared email/phone identities require an explicit existing-person choice. Existing
+person fields, endpoint verification and primary choices remain intact. Source
+communication preferences remain evidence and do not grant marketing permission.
+
+The owner/admin review screen includes Contacts, source details, bounded candidate
+search and durable batch recovery. Editing a search clears the previous identity
+choice. SQL acceptance passed in isolated PostgreSQL, including tenant/role checks,
+canonical identity preservation, held dependencies, cancellation, late-failure
+rollback and concurrent replay. All 15 customer/work client tests, TypeScript and
+the application build passed. The network-disabled browser fixture verified
+multiple phones, identity-choice reset, mixed outcomes, recovery after a lost reply
+and reload, and viewer denial. These contact changes are not installed in hosted
+TEST or production; hosted dependency checks and acceptance remain necessary.
+
+Chris provided a logged-in Arc session. Read-only navigation confirmed API keys
+and Private Application settings are present; the key list includes system/device
+tokens, which are not assumed to be private-application credentials. No key was
+created, revoked, copied into ServiceOS or used in an API request. Private-app
+permissions and usable integration credentials remain unverified. Native Arc
+controls became intermittently unavailable; Chris was asked to open the Private
+Application page. Browser login does not establish API access or import coverage.
+
 ## Official contract inspected
 
 Read on 10 October 2026, including the endpoint Markdown OpenAPI exports:

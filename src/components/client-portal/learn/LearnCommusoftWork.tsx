@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   loadCommusoftReviewConnections,
+  findCommusoftContacts,
+  type CustomerCandidate,
   type ReviewConnection,
 } from "@/lib/learn-commusoft-review";
 import {
@@ -36,6 +38,11 @@ export function LearnCommusoftWork({
   const [rows, setRows] = useState<WorkSource[]>([]),
     [pages, setPages] = useState<(string | null)[]>([null]),
     [next, setNext] = useState<string | null>(null);
+  const [targets, setTargets] = useState<Record<string, string>>({}),
+    [searches, setSearches] = useState<Record<string, string>>({}),
+    [matches, setMatches] = useState<
+      Record<string, { rows: CustomerCandidate[]; next: string | null }>
+    >({});
   const [selected, setSelected] = useState<string[]>([]),
     [reason, setReason] = useState(""),
     [approved, setApproved] = useState(false);
@@ -60,6 +67,9 @@ export function LearnCommusoftWork({
     }
   }
   function reset() {
+    setTargets({});
+    setSearches({});
+    setMatches({});
     setSelected([]);
     setApproved(false);
   }
@@ -146,7 +156,10 @@ export function LearnCommusoftWork({
         id: crypto.randomUUID(),
         connection,
         kind,
-        items: selected.map((version_id) => ({ version_id, target_id: null })),
+        items: selected.map((version_id) => ({
+          version_id,
+          target_id: kind === "contact" ? targets[version_id] || null : null,
+        })),
         reason,
       };
     }
@@ -182,12 +195,13 @@ export function LearnCommusoftWork({
       setReady(false);
     });
   }
-  if (!canEdit) return <p>Only your company’s owner or administrator can review sites and jobs.</p>;
+  if (!canEdit)
+    return <p>Only your company’s owner or administrator can review sites, jobs and contacts.</p>;
   return (
     <div className="lr-customer-review space-y-4">
       <p>
-        Link retained sites and jobs to reviewed customers. Review customers first, then sites, then
-        jobs. Records with unresolved ownership stay available for review.
+        Link retained sites, jobs and contacts to reviewed customers. Review customers first, then
+        sites, then jobs and contacts. Records with unresolved ownership stay available for review.
       </p>
       {notice && (
         <p role="status" className="lr-notice">
@@ -199,7 +213,7 @@ export function LearnCommusoftWork({
         <section className="cp-card space-y-3" aria-label="Saved work review">
           <h3>Saved review needs a result</h3>
           <p>
-            {pending.items.length} {pending.kind === "site" ? "sites" : "jobs"} · {pending.reason}
+            {pending.items.length} {`${pending.kind}s`} · {pending.reason}
           </p>
           <p>
             Check the saved result first. A retry uses this same request. Cancelling checks whether
@@ -255,7 +269,7 @@ export function LearnCommusoftWork({
         </section>
       )}
       <button className="cp-secondary" disabled={busy} onClick={() => void reload()}>
-        Reload sites and jobs
+        Reload sites, jobs and contacts
       </button>
       {ready && !connections.length && (
         <p>No verified Commusoft connection is available for review.</p>
@@ -300,11 +314,12 @@ export function LearnCommusoftWork({
           >
             <option value="site">Sites</option>
             <option value="job">Jobs</option>
+            <option value="contact">Contacts</option>
           </select>
         </label>
         {connection && (
           <>
-            <ul className="space-y-3" aria-label="Retained sites and jobs">
+            <ul className="space-y-3" aria-label="Retained sites, jobs and contacts">
               {rows.map((r) => (
                 <li className="cp-card" key={r.external_id}>
                   <label className="block">
@@ -329,6 +344,122 @@ export function LearnCommusoftWork({
                     {r.property_reference && ` · Property ${r.property_reference}`}
                     {r.source_status && ` · ${r.source_status}`}
                   </p>
+                  {r.contact && (
+                    <div className="space-y-2">
+                      <p>
+                        {r.contact.position && `${r.contact.position} · `}
+                        {r.contact.email ?? "No source email"}
+                      </p>
+                      {r.contact.phones.map((phone, i) => (
+                        <p key={i}>{phone}</p>
+                      ))}
+                      {r.version_id && (
+                        <>
+                          <label className="block">
+                            Find an existing person
+                            <input
+                              aria-label={`Find person for contact ${r.external_id}`}
+                              value={searches[r.version_id] ?? ""}
+                              maxLength={150}
+                              onChange={(e) => {
+                                setApproved(false);
+                                setSearches((s) => ({ ...s, [r.version_id!]: e.target.value }));
+                                setTargets((t) => {
+                                  const next = { ...t };
+                                  delete next[r.version_id!];
+                                  return next;
+                                });
+                                setMatches((m) => {
+                                  const next = { ...m };
+                                  delete next[r.version_id!];
+                                  return next;
+                                });
+                              }}
+                            />
+                          </label>
+                          <button
+                            className="cp-secondary"
+                            disabled={(searches[r.version_id] ?? "").trim().length === 1}
+                            onClick={() =>
+                              void operation(async (ticket) => {
+                                const found = await findCommusoftContacts(
+                                  db,
+                                  tenantId,
+                                  r.version_id!,
+                                  searches[r.version_id!] ?? "",
+                                );
+                                if (current(ticket))
+                                  setMatches((m) => ({ ...m, [r.version_id!]: found }));
+                              })
+                            }
+                          >
+                            Find matches
+                          </button>
+                          {matches[r.version_id] && (
+                            <>
+                              <label className="block">
+                                Contact identity
+                                <select
+                                  aria-label={`Identity for contact ${r.external_id}`}
+                                  value={targets[r.version_id] ?? ""}
+                                  onChange={(e) => {
+                                    setApproved(false);
+                                    setTargets((t) => ({ ...t, [r.version_id!]: e.target.value }));
+                                  }}
+                                >
+                                  <option value="">
+                                    Create a new person if no channel match exists
+                                  </option>
+                                  {matches[r.version_id].rows.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                      {p.name ?? "Unnamed person"} ·{" "}
+                                      {p.email ?? p.phone ?? "No primary endpoint"}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              {!matches[r.version_id].rows.length && (
+                                <p>
+                                  No matching person found. Search by name or email to check another
+                                  person.
+                                </p>
+                              )}
+                              {matches[r.version_id].next && (
+                                <button
+                                  className="cp-secondary"
+                                  onClick={() =>
+                                    void operation(async (ticket) => {
+                                      const found = await findCommusoftContacts(
+                                        db,
+                                        tenantId,
+                                        r.version_id!,
+                                        searches[r.version_id!] ?? "",
+                                        matches[r.version_id!].next,
+                                      );
+                                      if (current(ticket))
+                                        setMatches((m) => ({
+                                          ...m,
+                                          [r.version_id!]: {
+                                            rows: [...m[r.version_id!].rows, ...found.rows],
+                                            next: found.next,
+                                          },
+                                        }));
+                                    })
+                                  }
+                                >
+                                  More matching people
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <p>
+                            Matching names or shared contact details are suggestions. Select a
+                            person only after reviewing their identity.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <p>
                     {r.relationship_reason
                       ? workHoldMessage(r.relationship_reason)
@@ -346,8 +477,7 @@ export function LearnCommusoftWork({
             </ul>
             {!rows.length && (
               <p>
-                No retained {kind === "site" ? "sites" : "jobs"} on this page. Reload after an
-                approved import completes.
+                No retained {`${kind}s`} on this page. Reload after an approved import completes.
               </p>
             )}
             <div className="flex gap-2">

@@ -157,13 +157,49 @@ export async function loadCommusoftReviewPage(
   if (d.next_cursor !== null && (!rows.length || d.next_cursor !== last)) throw unavailable();
   return { rows, next: d.next_cursor };
 }
-export async function findCommusoftCustomers(
+export function findCommusoftCustomers(
   db: ReviewClient,
   tenant: string,
   version: string,
   kind: CustomerKind,
   search: string,
   after: string | null = null,
+) {
+  return findCandidates(
+    db,
+    tenant,
+    version,
+    kind,
+    search,
+    after,
+    "learn_commusoft_customer_candidates",
+  );
+}
+export function findCommusoftContacts(
+  db: ReviewClient,
+  tenant: string,
+  version: string,
+  search: string,
+  after: string | null = null,
+) {
+  return findCandidates(
+    db,
+    tenant,
+    version,
+    "person",
+    search,
+    after,
+    "learn_commusoft_contact_candidates",
+  );
+}
+async function findCandidates(
+  db: ReviewClient,
+  tenant: string,
+  version: string,
+  kind: CustomerKind,
+  search: string,
+  after: string | null,
+  rpcName: "learn_commusoft_customer_candidates" | "learn_commusoft_contact_candidates",
 ): Promise<{ rows: CustomerCandidate[]; next: string | null }> {
   scope(tenant);
   if (
@@ -174,7 +210,7 @@ export async function findCommusoftCustomers(
     (after !== null && !uuid(after))
   )
     throw unavailable();
-  const d = await read(db, "learn_commusoft_customer_candidates", {
+  const d = await read(db, rpcName, {
     p_tenant: tenant,
     p_version: version,
     p_kind: kind,

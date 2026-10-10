@@ -4,7 +4,7 @@ import {
   type RecoveryLock,
   type RecoveryScope,
 } from "./learn-slack-recovery-outbox.ts";
-export type WorkKind = "site" | "job";
+export type WorkKind = "site" | "job" | "contact";
 type Outcome =
   | { state: "held"; reason: string; attempt_id?: string }
   | {
@@ -26,6 +26,7 @@ export type WorkSource = {
   linked_version_id: string | null;
   last_result: Outcome | null;
   selectable: boolean;
+  contact?: { email: string | null; position: string | null; phones: string[] };
 };
 export type WorkDraft = {
   version: 1;
@@ -68,7 +69,7 @@ function outcome(v: unknown): Outcome {
     v.state === "linked" &&
     uuid(v.entity_id) &&
     uuid(v.link_id) &&
-    ["site", "job"].includes(v.entity_kind) &&
+    ["site", "job", "contact"].includes(v.entity_kind) &&
     typeof v.already === "boolean"
   )
     return {
@@ -96,7 +97,7 @@ export function checkedWorkDraft(scope: RecoveryScope, d: unknown): WorkDraft {
     d.scope.tenantId !== scope.tenantId ||
     !uuid(d.id) ||
     !uuid(d.connection) ||
-    !["site", "job"].includes(d.kind) ||
+    !["site", "job", "contact"].includes(d.kind) ||
     !Array.isArray(d.items) ||
     d.items.length < 1 ||
     d.items.length > 50 ||
@@ -194,7 +195,7 @@ export async function loadWorkPage(
   if (
     !uuid(tenant) ||
     !uuid(connection) ||
-    !["site", "job"].includes(kind) ||
+    !["site", "job", "contact"].includes(kind) ||
     (after !== null && !/^\d{1,16}$/.test(after))
   )
     throw failure();
@@ -238,6 +239,16 @@ export async function loadWorkPage(
       ![r.property_reference, r.customer_name, r.relationship_reason, r.source_status].every(text)
     )
       throw failure();
+    if (
+      kind === "contact" &&
+      (!obj(r.contact) ||
+        !text(r.contact.email) ||
+        !text(r.contact.position) ||
+        !Array.isArray(r.contact.phones) ||
+        r.contact.phones.length > 50 ||
+        r.contact.phones.some((p: unknown) => typeof p !== "string" || p.length > 1000))
+    )
+      throw failure();
     last = r.external_id;
     return {
       external_id: r.external_id,
@@ -250,6 +261,15 @@ export async function loadWorkPage(
       linked_version_id: r.linked_version_id,
       last_result: r.last_result === null ? null : outcome(r.last_result),
       selectable: r.selectable,
+      ...(kind === "contact"
+        ? {
+            contact: {
+              email: r.contact.email,
+              position: r.contact.position,
+              phones: [...r.contact.phones],
+            },
+          }
+        : {}),
     };
   });
   if (d.next_cursor !== null && (!rows.length || d.next_cursor !== last)) throw failure();
@@ -326,6 +346,14 @@ export async function resolveWorkDraft(
 }
 export function workHoldMessage(reason: string | null | undefined): string {
   const messages: Record<string, string> = {
+    contact_identity_needs_review:
+      "A matching contact may already exist. Find and select the correct person before linking.",
+    contact_target_missing: "The selected person is unavailable in this company.",
+    contact_relationship_needs_review: "An existing inactive contact relationship needs review.",
+    contact_field_invalid: "The contact details need correction at source.",
+    contact_name_required: "A contact name is required before linking.",
+    contact_email_invalid: "The contact email address needs correction at source.",
+    contact_phone_invalid: "The contact phone details need correction at source.",
     property_missing_or_ambiguous: "The referenced property needs to be captured or reconciled.",
     property_identity_unreviewed: "Review the referenced customer or site first.",
     customer_target_missing: "The linked customer needs review.",
