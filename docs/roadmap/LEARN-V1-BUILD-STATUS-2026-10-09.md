@@ -1073,3 +1073,17 @@ checks pass. Hosted tests and synthetic UI tests are separate evidence; integrat
 signed-in browser acceptance, scale, pagination and conflict resolution remain open.
 No real source package, provider or production/frontend deployment changed.
 See [implementation and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#hosted-conflict-recovery-and-file-review-screen--10-october).
+
+## Actual browser import acceptance and missing card projection — 10 October
+
+The real signed-in app/TEST endpoint passed preview, interrupted-preview recovery,
+original-file reattachment, mapping review and apply. Final database inspection
+confirmed one completed synthetic customer import and unchanged pre-existing source
+fingerprints. Fixture access is retired and owned browser/server resources closed.
+The post-apply full page reopen was interrupted and remains unverified.
+
+The imported person has no customer card: the import engine creates canonical
+identities, while LEARN lists the existing customer-card projection. Connecting
+these without invented activity or scoring is now a verified integration requirement.
+Hosted large-file tests and the real package ownership conflict also remain open.
+See [browser evidence and next requirement](../operations/LEARN-COMMUSOFT-RECOVERY.md#actual-signed-in-browser-import-and-customer-card-gap--10-october).

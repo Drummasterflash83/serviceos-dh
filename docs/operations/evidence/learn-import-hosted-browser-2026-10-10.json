@@ -1,0 +1,114 @@
+{
+  "version": "learn-import-hosted-browser/1",
+  "state": "signed_in_preview_recovery_and_apply_passed",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceCommit": "78f9f54",
+  "fixtureRunId": "57fa75ab-3fd5-4dac-8e80-680c8307bf9f",
+  "browser": {
+    "app": "Actual local application with verified hosted TEST backend",
+    "checks": [
+      "Real temporary owner sign-in reached the LEARN workspace",
+      "Three governed profiles loaded from the deployed endpoint",
+      "Prepared synthetic customer file saved an explicit preview",
+      "Reopened saved preview after interrupted browser turn; no second run created",
+      "Approval disabled until original CSV reattached and review checkbox selected",
+      "Saved column mapping displayed expected source-to-destination fields",
+      "Apply completed through actual endpoint; saved result showed one created row with attempt 1"
+    ],
+    "notProven": [
+      "Post-apply full page reload/reopen was interrupted before its result could be observed",
+      "Larger-file performance",
+      "Customer card visibility from imported identity"
+    ],
+    "screenshot": ".verification-results/learn-import-hosted-browser.png",
+    "ownedBrowserTabsClosed": true,
+    "ownedServerStopped": true
+  },
+  "beforeApplyAfterInterruption": {
+    "version": "learn-import-browser-inspection/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "57fa75ab-3fd5-4dac-8e80-680c8307bf9f",
+    "observedAt": "2026-10-10T06:17:52.659Z",
+    "state": "requires_inspection",
+    "preExistingSourcesPreserved": true,
+    "imports": [
+      {
+        "id": "da45c366-5436-4658-9e57-501a3a31b11c",
+        "status": "previewed",
+        "row_count": 1,
+        "created_records": 0,
+        "updated_records": 0,
+        "invalid_rows": 0,
+        "conflict_records": 0
+      }
+    ],
+    "counts": {
+      "people": 0,
+      "links": 0,
+      "outcomes": 0,
+      "provenance": 0
+    },
+    "accessRevoked": false,
+    "limitations": [
+      "Database inspection supplements actual UI observations; it does not prove UI behavior by itself.",
+      "Synthetic single customer only; no original package or provider traffic."
+    ]
+  },
+  "finalDatabaseInspection": {
+    "version": "learn-import-browser-inspection/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "57fa75ab-3fd5-4dac-8e80-680c8307bf9f",
+    "observedAt": "2026-10-10T06:20:10.916Z",
+    "state": "passed",
+    "preExistingSourcesPreserved": true,
+    "imports": [
+      {
+        "id": "da45c366-5436-4658-9e57-501a3a31b11c",
+        "status": "completed",
+        "row_count": 1,
+        "created_records": 1,
+        "updated_records": 0,
+        "invalid_rows": 0,
+        "conflict_records": 0
+      }
+    ],
+    "counts": {
+      "people": 1,
+      "links": 1,
+      "outcomes": 1,
+      "provenance": 1,
+      "customer_cards": 0
+    },
+    "accessRevoked": true,
+    "limitations": [
+      "Database inspection supplements actual UI observations; it does not prove UI behavior by itself.",
+      "Synthetic single customer only; no original package or provider traffic."
+    ]
+  },
+  "retirement": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "57fa75ab-3fd5-4dac-8e80-680c8307bf9f",
+    "accessRevoked": true,
+    "retained": {
+      "work_items": 1,
+      "captures": 2,
+      "measurements": 0,
+      "receipts": 0
+    }
+  },
+  "finding": {
+    "importedPeople": 1,
+    "customerCards": 0,
+    "explanation": "LEARN customer list reads customer_cards. Governed importer creates/links people or companies; legacy identity_resolve creates cards from interactions. Customer-card sync refreshes existing cards and does not create a missing import-only card.",
+    "nextRequirement": "Connect canonical imported customer identities to card projection without fabricating interaction activity, health or scores, preserving existing card identities and locked fields."
+  },
+  "sourceHashes": {
+    "scripts/verify/learn-test-import-browser-fixture.mjs": "8185a0811adaa34ceb256c185ea011f4b05bebbeb590e92d09b5a1f14b4b33c0"
+  },
+  "limitations": [
+    "One synthetic person customer only. No original Drummonds source file imported or changed.",
+    "No production, provider, schedule, endpoint or frontend deployment change.",
+    "Source preservation covers the 17 TEST tables captured by the fixture; this is not a new production scan or backup/restore proof.",
+    "The marked TEST fixture and CSV are retained; login banned, password rotated, role demoted and temporary plaintext password file removed."
+  ]
+}

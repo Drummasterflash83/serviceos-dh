@@ -384,3 +384,32 @@ history/row pagination and a governed conflict-resolution workflow. Earlier conf
 records remain open even after a separately corrected file succeeds. The real
 package's ownership contradiction is not resolved by these synthetic tests.
 See [hosted and browser evidence](evidence/learn-import-review-test-2026-10-10.json).
+
+## Actual signed-in browser import and customer-card gap — 10 October
+
+The actual local app, using the verified hosted TEST backend, passed owner sign-in,
+governed profile selection, CSV preview, saved mapping review and apply. An interrupted
+browser turn was recovered by opening the same saved preview and reattaching its
+original file; no second preview was created. Approval remained disabled until the
+file matched and the review checkbox was selected. The real applied response showed
+one created row, attempt 1. A later full page reload was started but its reopened
+result was interrupted; that particular browser check is not claimed as passed.
+
+At **06:20:10 UTC**, final read-only inspection confirmed one completed import,
+one person, one source link, one outcome and one provenance record. The 17 captured
+pre-existing TEST source/import table fingerprints matched. The temporary owner
+was banned, password-rotated and demoted; its members were retired. Fixture evidence
+remains, its plaintext password file was removed, and the owned server/browser tabs
+are closed. No source package, production, provider or deployment changed.
+
+This exposed a concrete card integration gap: the imported person has **zero
+customer cards**. The LEARN customer list reads `customer_cards`; governed customer
+imports create/link `people` or `companies`. The legacy identity resolver creates
+cards from interactions, while customer-card sync refreshes existing cards. Import
+success therefore does not yet make an import-only customer visible as a card.
+
+Next work must connect those canonical identities to the card projection, preserve
+existing card IDs/locked fields and avoid manufacturing interaction activity, health
+or performance scores. The real package remains refused for its unresolved site
+ownership contradiction. Large-file behavior remains untested in the hosted runtime.
+See [signed-in evidence and retained finding](evidence/learn-import-hosted-browser-2026-10-10.json).
