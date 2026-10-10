@@ -1,6 +1,18 @@
 -- Explicit ongoing channel approval; no activation, credentials or schedule seeded.
 -- Each new window uses the existing fenced Slack worker and retained page protocol.
 begin;
+create function public.learn_slack_recurring_access(p_tenant uuid,p_write boolean) returns boolean
+language sql stable security definer set search_path=pg_catalog as $$
+ select coalesce(auth.uid() is not null and p_tenant is not null and p_write is not null
+  and (case when p_write then
+   ((p_tenant=public.current_tenant_id() and public.current_user_role() in ('owner','admin'))
+     or public.current_user_is_openfolk_operator('platform.controlplane.admin'))
+   and not exists(select 1 from public.view_as_context where actor_user_id=auth.uid() and ended_at is null
+    and (expires_at is null or expires_at>now()))
+  else p_tenant=public.current_tenant_id() or public.current_user_is_openfolk_operator('platform.controlplane.view') end),false);
+$$;
+revoke all on function public.learn_slack_recurring_access(uuid,boolean) from public,anon;
+grant execute on function public.learn_slack_recurring_access(uuid,boolean) to authenticated;
 create table public.slack_recurring_channels (
  account_id uuid primary key references public.connector_accounts(id),
  tenant_id uuid not null references public.tenants(id),
@@ -23,7 +35,7 @@ create index slack_recurring_due on public.slack_recurring_channels(next_check_a
 revoke all on public.slack_recurring_channels from public,anon,authenticated,service_role;
 grant select on public.slack_recurring_channels to authenticated,service_role;
 create policy slack_recurring_read on public.slack_recurring_channels for select to authenticated
- using(tenant_id=public.current_tenant_id() and public.current_user_role() in ('owner','admin'));
+ using(public.learn_slack_recurring_access(tenant_id,false));
 create table public.slack_recurring_requests (
  id uuid primary key,tenant_id uuid not null references public.tenants(id),
  actor_id uuid not null references public.profiles(id),definition jsonb not null,receipt jsonb not null,
@@ -35,7 +47,7 @@ create trigger slack_recurring_request_immutable before update or delete on publ
  for each row execute function public.slack_version_immutable();
 
 create function public.learn_slack_recurring_control(p_tenant uuid,p_request uuid,p_account uuid,
- p_revision bigint,p_enabled boolean,p_reason text) returns jsonb
+ p_revision bigint,p_enabled boolean,p_reason text,p_mode text default 'apply',p_actor uuid default auth.uid()) returns jsonb
 language plpgsql security definer set search_path=pg_catalog as $$
 declare a public.connector_accounts%rowtype;c public.provider_connections%rowtype;
  s public.slack_recurring_channels%rowtype;r public.slack_recurring_requests%rowtype;
@@ -45,13 +57,10 @@ begin
   raise exception 'slack_recurring_snapshot' using errcode='22023';end if;
  perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));
  perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant::text,0));
- if auth.uid() is null or p_tenant is distinct from public.current_tenant_id()
-  or coalesce(public.current_user_role(),'') not in ('owner','admin')
-  or exists(select 1 from public.view_as_context where actor_user_id=auth.uid() and ended_at is null
-   and (expires_at is null or expires_at>clock_timestamp())) then
+ if p_actor is distinct from auth.uid() or not public.learn_slack_recurring_access(p_tenant,true) then
   raise exception 'slack_recurring_forbidden' using errcode='42501';end if;
  if p_request is null or p_account is null or p_revision is null or p_revision<0 or p_enabled is null
-  or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then
+  or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 or p_mode is null or p_mode not in ('apply','check','cancel') then
   raise exception 'slack_recurring_invalid' using errcode='22023';end if;
  definition:=jsonb_build_object('accountId',p_account,'revision',p_revision,'enabled',p_enabled,'reason',btrim(p_reason));
  perform pg_advisory_xact_lock(hashtextextended('learn-slack-recurring-request:'||p_request::text,0));
@@ -60,6 +69,13 @@ begin
   if r.tenant_id<>p_tenant or r.actor_id<>auth.uid() or r.definition<>definition then
    raise exception 'slack_recurring_request_changed' using errcode='40001';end if;
   return r.receipt;
+ end if;
+ answer:=jsonb_build_object('tenantId',p_tenant,'requestId',p_request,'accountId',p_account,
+  'state',case when p_mode='cancel' then 'cancelled' else 'pending' end);
+ if p_mode='check' then return answer;end if;
+ if p_mode='cancel' then
+  insert into public.slack_recurring_requests(id,tenant_id,actor_id,definition,receipt) values(p_request,p_tenant,auth.uid(),definition,answer);
+  return answer;
  end if;
  -- Same setup lock as manual channel imports; subscription precedes account locks.
  perform pg_advisory_xact_lock(hashtextextended('learn-slack-setup:'||p_tenant::text,0));
@@ -125,7 +141,7 @@ begin
    update public.connector_accounts set settings=jsonb_set(settings,'{slack_history,approved}','false') where id=p_account;
   end if;
  end if;
- answer:=jsonb_build_object('tenantId',p_tenant,'requestId',p_request,'accountId',p_account,'enabled',s.enabled,'revision',s.revision);
+ answer:=jsonb_build_object('tenantId',p_tenant,'requestId',p_request,'accountId',p_account,'state','recorded','enabled',s.enabled,'revision',s.revision);
  insert into public.slack_recurring_requests(id,tenant_id,actor_id,definition,receipt) values(p_request,p_tenant,auth.uid(),definition,answer);
  return answer;
 end $$;
@@ -152,7 +168,10 @@ begin
   checked:=checked+1;state:='ready';boundary:=s.next_start;
   if not public.learn_capture_allowed(s.tenant_id,'slack') then state:='capture_paused';
   end if;
-  perform 1 from public.profiles where id=s.approved_by and tenant_id=s.tenant_id and role in ('owner','admin') for share;
+  perform 1 from public.profiles p where p.id=s.approved_by and
+   ((p.tenant_id=s.tenant_id and p.role in ('owner','admin')) or exists(select 1 from public.platform_authority_grants g
+     where g.profile_id=p.id and g.permission='platform.controlplane.admin'
+     and coalesce(g.effective_from,'-infinity')<=now() and coalesce(g.effective_to,'infinity')>now())) for share;
   if state='ready' and not found then state:='approval_changed';end if;
   select * into a from public.connector_accounts where id=s.account_id and tenant_id=s.tenant_id for update;
   if not found or a.status is distinct from 'active' then state:='account_unavailable';end if;
@@ -208,8 +227,38 @@ begin
  end loop;
  return jsonb_build_object('checked',checked,'queued',queued,'held',held);
 end $$;
-revoke all on function public.learn_slack_recurring_control(uuid,uuid,uuid,bigint,boolean,text) from public,anon,service_role;
-grant execute on function public.learn_slack_recurring_control(uuid,uuid,uuid,bigint,boolean,text) to authenticated;
+revoke all on function public.learn_slack_recurring_control(uuid,uuid,uuid,bigint,boolean,text,text,uuid) from public,anon,service_role;
+grant execute on function public.learn_slack_recurring_control(uuid,uuid,uuid,bigint,boolean,text,text,uuid) to authenticated;
 revoke all on function public.learn_slack_schedule_recurring(integer) from public,anon,authenticated;
 grant execute on function public.learn_slack_schedule_recurring(integer) to service_role;
+
+create function public.learn_slack_recurring_read(p_tenant uuid,p_after uuid default null) returns jsonb
+language plpgsql stable security definer set search_path=pg_catalog as $$
+declare result jsonb;begin
+ if not public.learn_slack_recurring_access(p_tenant,false) then raise exception 'slack_recurring_forbidden' using errcode='42501';end if;
+ with candidates as (
+  select a.* from public.connector_accounts a join public.tenant_connectors tc on tc.id=a.tenant_connector_id and tc.tenant_id=p_tenant
+  where a.tenant_id=p_tenant and tc.connector_id='slack' and (p_after is null or a.id>p_after)
+   and a.settings ? 'slack_history' order by a.id limit 51
+ ), page as (select * from candidates order by id limit 50), rows as (
+  select a.id,jsonb_build_object('accountId',a.id,'name',left(coalesce(a.display_name,'Slack channel'),200),
+   'teamId',case when a.settings->'slack_history'->>'teamId' ~ '^T[A-Z0-9]+$' then a.settings->'slack_history'->>'teamId' else null end,
+   'channelId',case when a.settings->'slack_history'->>'channelId' ~ '^C[A-Z0-9]+$' then a.settings->'slack_history'->>'channelId' else null end,
+   'enabled',coalesce(s.enabled,false),'revision',coalesce(s.revision,0),'state',coalesce(s.last_state,'not_configured'),
+   'nextStart',s.next_start,'nextCheckAt',s.next_check_at,'updatedAt',s.updated_at,
+   'completeVerified',coalesce(a.sync_cursor->'complete'='true'::jsonb and exists(select 1 from public.platform_jobs j
+    where j.tenant_id=p_tenant and j.job_type='slack.history_sync' and j.payload->>'connector_account_id'=a.id::text and j.status='succeeded'
+     and j.metadata->'slack_page_v1'->'next'=a.sync_cursor and j.metadata->'slack_page_v1'->>'account_id'=a.id::text),false),
+   'pausedWindow',coalesce(not s.enabled and s.current_import is not null
+    and a.settings->'slack_history'->>'consentReference'='learn-slack-import:'||s.current_import::text
+    and a.settings->'slack_history'->'approved'='false'::jsonb,false)
+  ) as item from page a left join public.slack_recurring_channels s on s.account_id=a.id and s.tenant_id=p_tenant
+ ) select jsonb_build_object('version','learn-slack-recurring/1','tenantId',p_tenant,
+  'canWrite',public.learn_slack_recurring_access(p_tenant,true),'channels',coalesce((select jsonb_agg(item order by id) from rows),'[]'),
+  'next',case when (select count(*) from candidates)>50 then (select id from page order by id desc limit 1) else null end)
+ into result;
+ return result;
+end $$;
+revoke all on function public.learn_slack_recurring_read(uuid,uuid) from public,anon,service_role;
+grant execute on function public.learn_slack_recurring_read(uuid,uuid) to authenticated;
 commit;

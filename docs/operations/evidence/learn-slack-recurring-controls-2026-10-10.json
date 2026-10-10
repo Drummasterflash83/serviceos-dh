@@ -1,0 +1,33 @@
+{
+  "version": "learn-slack-recurring-controls/1",
+  "observedAt": "2026-10-10T17:23:21.431483+00:00",
+  "state": "local_verified_not_deployed",
+  "nodeTests": 62,
+  "sqlScenarios": 11,
+  "typecheck": "passed",
+  "previewBuild": "passed",
+  "browserFixture": "Actual React component with injected synthetic RPC, local persistence and connect-src none",
+  "browserChecks": [
+    "Enable committed but response lost; saved request retained",
+    "Reload recovered saved request; apply count remained one",
+    "Check recovered receipt without duplicate apply",
+    "Pause saved; previous history retained by SQL checks",
+    "Editing authority withdrawn: status remains, edit form hidden"
+  ],
+  "screenshot": "learn-slack-recurring-controls-2026-10-10.png",
+  "sourceSha256": {
+    "src/lib/learn-slack-recurring.ts": "b93994da9b616f067d1109b80e6023ca2ba2c28ab3c54425010c92aa3394a8ed",
+    "src/lib/learn-slack-recurring.test.ts": "43b2b49b1e8031631697a86296f530bb7f7e84275bb9529438a465a09e8536d5",
+    "src/components/client-portal/learn/LearnSlackRecurring.tsx": "c994765917dd99f339ba5737c6ac9f2661b591592d75a0040a3f273fb60aef67",
+    "src/components/client-portal/learn/LearnSlackSetup.tsx": "0b83eb2859784dc476876acef5179b0a687aa6c42a0b83330a7924319d0ace5d",
+    "src/components/app/OperatorModules.tsx": "dae9b09148b5746c58a7833549d9241d5a387e36cc1553fca94586d4ce4915b0",
+    "supabase/migrations/20261101003000_learn_slack_recurring.sql": "a97f894a53f39acadff7ee5fe3a576da82dbedc81704df4e7faa79a13e91a48f"
+  },
+  "remoteChanges": false,
+  "providerRequests": 0,
+  "limitations": [
+    "Synthetic browser and disposable SQL checks are separate; no signed-in hosted end-to-end acceptance.",
+    "Recurring migration and scheduler are not deployed or activated.",
+    "Real Slack workspace access and broader communication coverage remain outstanding."
+  ]
+}

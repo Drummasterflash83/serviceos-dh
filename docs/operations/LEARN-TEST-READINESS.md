@@ -6,9 +6,11 @@ An explicit recurring-channel approval and service-only scheduling endpoint now
 advance an existing public channel through bounded windows, preserving each prior
 checkpoint and requiring matching completion evidence. Pause/resume, authority and
 connection changes, queue rollback and concurrent calls are covered by disposable
-PostgreSQL verification; all 56 Slack Node tests pass. No hosted schema, schedule,
-Slack credential or source data changed. The control UI, hosted release acceptance
-and live workspace authorization remain outstanding. See
+PostgreSQL verification; all 62 Slack Node tests, TypeScript and the preview build
+pass. Client and OpenFolk controls now include retained request recovery and
+permission-aware editing, verified in a browser with synthetic data. No hosted
+schema, schedule, Slack credential or source data changed. Hosted release acceptance,
+trigger activation and live workspace authorization remain outstanding. See
 [implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--local-implementation-10-october-2026).
 
 ## Hosted operator acceptance session — prepared, approval pending

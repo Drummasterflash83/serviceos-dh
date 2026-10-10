@@ -50,6 +50,7 @@ try:
       alter table tenants add status text not null default 'active';
       alter table platform_jobs add metadata jsonb not null default '{}';
       create table feature_flags(tenant_id uuid,flag text,value jsonb,primary key(tenant_id,flag));
+      create table platform_authority_grants(profile_id uuid,permission text,effective_from timestamptz,effective_to timestamptz);
       create or replace function auth.role() returns text language sql stable as $$select current_setting('test.role',true)$$;
       grant usage on schema public,auth to authenticated,anon,service_role;
       create schema verify;
@@ -57,8 +58,12 @@ try:
       grant usage on schema verify to authenticated,service_role;
       grant select on verify.fixture to authenticated,service_role;
     """ + predicate)
+    health = json.loads((root/'supabase/release/learn-test/034_operator_health.expected.json').read_text())
+    operator = next(f['definition'] for f in health['catalog']['functions'] if f['signature'].startswith('current_user_is_openfolk_operator('))
+    sql(operator + ';')
     sql((root/'supabase/migrations/20261101003000_learn_slack_recurring.sql').read_text())
     sql((root/'scripts/verify/learn-slack-recurring.assert.sql').read_text())
+    sql((root/'scripts/verify/learn-slack-recurring-controls.assert.sql').read_text())
     # Reconcile a synthetic completed page, then race actual concurrent scheduler
     # transactions. The second must skip the locked tenant, not create a duplicate.
     sql("""

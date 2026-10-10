@@ -3,7 +3,7 @@
 ## Recurring channel capture — local implementation, 10 October 2026
 
 `20261101003000_learn_slack_recurring.sql` adds an explicit ongoing approval for
-an existing captured public channel. Owner/admin approval binds the company,
+an existing captured public channel. Tenant owner/admin or active OpenFolk admin approval binds the company,
 account, workspace, channel and connection revision. The request ledger supports
 exact lost-response replay and optimistic revision checks. Viewer and View-As
 sessions cannot change it; browsers cannot call the service-only scheduler.
@@ -29,7 +29,19 @@ aggregate outcomes. It uses gateway JWT verification and the existing dedicated
 Slack worker trigger header. It never reads a provider credential or calls Slack.
 No schedule, channel approval or credential is installed by these files.
 
-Validation: **56 Slack Node tests pass**. An offline disposable PostgreSQL test
+Client LEARN and the OpenFolk module controller now share an Ongoing capture panel.
+It shows the last checked setting separately from processing progress, requires a
+reason and confirmation to change it, and restricts editing to current authority.
+A scoped browser outbox retains an uncertain request across reloads; check, retry
+and cancellation use the same immutable request identity. Cancellation fences a
+late apply. Status reads are tenant scoped and paginated, with a normalized public
+projection. Viewers can read status; View-As cannot edit. OpenFolk access requires
+an active platform grant, checked again by SQL.
+
+Validation: **62 Slack Node tests pass**, along with TypeScript and the preview
+frontend build. The actual component was tested in a browser against a synthetic
+fixture: lost reply, reload, receipt recovery without duplicate apply, pause, and
+revoked editing access. An offline disposable PostgreSQL test
 exercises actual recurring/storage/setup SQL, the real capture predicate, recorded
 tenant/role helper definitions, and minimal Auth/queue fixtures. It checks request
 replay, viewer/preview denial, successive boundaries, receipt requirements,
@@ -38,12 +50,12 @@ retained synthetic source/version fingerprints and two concurrent scheduler
 sessions producing one job. Completion receipts in this fixture are synthetic;
 this does not establish actual provider-to-worker execution.
 
-**Not deployed or activated.** Remaining work includes the reviewable client and
-OpenFolk controls, current-schema hosted rehearsal, authenticated acceptance,
+**Not deployed or activated.** Remaining work includes current-schema hosted rehearsal, authenticated acceptance,
 explicit trigger activation and real Slack workspace/channel access. This path
 covers channel-history windows only: automatic thread discovery, older message
 edit/delete reconciliation, other channel types and attachment capture remain
-separate requirements. See [local verification evidence](evidence/learn-slack-recurring-local-2026-10-10.json).
+separate requirements. See [local verification evidence](evidence/learn-slack-recurring-local-2026-10-10.json) and
+[controls verification](evidence/learn-slack-recurring-controls-2026-10-10.json).
 
 ## Current implementation and limits
 

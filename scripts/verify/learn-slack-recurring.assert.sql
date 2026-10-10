@@ -45,7 +45,7 @@ select 'PASS: owner approval, request replay and service-only scheduler';
 set role authenticated;
 set test.actor='00000000-0000-4000-8000-000000000012';
 do $$declare denied boolean:=false;begin
- if (select count(*) from slack_recurring_channels)<>0 then raise exception 'Viewer reads operator configuration';end if;
+ if (select count(*) from slack_recurring_channels)<>1 then raise exception 'Viewer cannot read own channel status';end if;
  begin perform learn_slack_recurring_control('00000000-0000-4000-8000-000000000010',gen_random_uuid(),(select account_id from verify.fixture),1,false,'Viewer');exception when insufficient_privilege then denied:=true;end;
  if not denied then raise exception 'Viewer changed subscription';end if;
 end $$;

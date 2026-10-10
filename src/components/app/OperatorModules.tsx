@@ -43,6 +43,11 @@ const OperatorCaptureHealth = lazy(() =>
 const OperatorCaptureControls = lazy(() =>
   import("./OperatorCaptureControls").then((m) => ({ default: m.OperatorCaptureControls })),
 );
+const LearnSlackRecurring = lazy(() =>
+  import("../client-portal/learn/LearnSlackRecurring").then((m) => ({
+    default: m.LearnSlackRecurring,
+  })),
+);
 const OperatorLearnInputs = lazy(() =>
   import("./OperatorLearnInputs").then((module) => ({ default: module.OperatorLearnInputs })),
 );
@@ -155,6 +160,11 @@ function OperatorModuleContent({
               />
               <OperatorLearnInputs
                 key={`${tenantId}:${user.id}:${captureRevision}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
+              <LearnSlackRecurring
+                key={`slack-recurring:${tenantId}:${user.id}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />

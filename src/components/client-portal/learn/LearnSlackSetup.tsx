@@ -3,6 +3,7 @@ import { useSlackImportOutbox } from "./useSlackImportOutbox";
 import { SlackSavedImport } from "./SlackSavedImport";
 import { LearnSlackRecovery } from "./LearnSlackRecovery";
 import { LearnSlackThreads } from "./LearnSlackThreads";
+import { LearnSlackRecurring } from "./LearnSlackRecurring";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   loadSlackConnections,
@@ -23,7 +24,7 @@ export function LearnSlackSetup({
   actorId: string;
   canEdit: boolean;
 }) {
-  const [view, setView] = useState<"channel" | "threads" | "recovery">("recovery");
+  const [view, setView] = useState<"channel" | "threads" | "recovery" | "ongoing">("recovery");
   const [connections, setConnections] = useState<SlackConnectionOption[] | null>(null),
     [loading, setLoading] = useState(true),
     [notice, setNotice] = useState("");
@@ -91,6 +92,16 @@ export function LearnSlackSetup({
       <div role="group" aria-label="Slack import type" className="flex flex-wrap gap-2">
         <button
           type="button"
+          id="slack-ongoing-tab"
+          aria-pressed={view === "ongoing"}
+          aria-controls="slack-ongoing-panel"
+          className={view === "ongoing" ? "cp-primary" : "cp-secondary"}
+          onClick={() => setView("ongoing")}
+        >
+          Ongoing capture
+        </button>
+        <button
+          type="button"
           id="slack-recovery-tab"
           aria-pressed={view === "recovery"}
           aria-controls="slack-recovery-panel"
@@ -120,6 +131,16 @@ export function LearnSlackSetup({
           Thread replies
         </button>
       </div>
+      {view === "ongoing" && (
+        <div id="slack-ongoing-panel" role="region" aria-labelledby="slack-ongoing-tab">
+          <LearnSlackRecurring
+            key={`${tenantId}:${actorId}`}
+            tenantId={tenantId}
+            actorId={actorId}
+            canEdit={canEdit}
+          />
+        </div>
+      )}
       <div
         id="slack-recovery-panel"
         role="region"
