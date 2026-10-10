@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Team cards and scoring scopes — frontend candidate verified
+## Team cards and scoring scopes — protected TEST frontend installed
 
 Separate team cards now read explicit team-assigned work and linked evidence.
 Settings expose the existing individual, team, job and customer policy scopes
@@ -8,7 +8,10 @@ without mixing their revisions. Thirty-one focused tests, four readiness checks,
 app/preview builds and actual synthetic browser scope checks pass. Existing hosted
 TEST columns and scoring contracts were read back; fresh signed-in acceptance and
 team calculation adapters remain pending. No backend migration or source mutation
-is required. [Implementation and limits](LEARN-TEAM-CARDS.md).
+is required. The protected TEST frontend is READY from Git `4468eca77953410a6d36490255df362f7d65ad30`
+at 22:45 UTC; Vercel protection and actual same-origin sign-in redirect pass.
+[Implementation and limits](LEARN-TEAM-CARDS.md) ·
+[release evidence](evidence/learn-team-cards-2026-10-10.json).
 
 ## Retained job detail — TEST release 047 and paired frontend installed
 

@@ -1,6 +1,11 @@
 # Team cards and scoring scopes
 
-10 October 2026: the card UI now exposes separate **Team members** and **Teams**
+The protected TEST frontend is READY at 22:45 UTC on 10 October 2026 from Git
+`4468eca77953410a6d36490255df362f7d65ad30`. Vercel route protection and the actual
+browser same-origin sign-in redirect pass. Production is unchanged. See
+[release evidence](evidence/learn-team-cards-2026-10-10.json).
+
+The card UI now exposes separate **Team members** and **Teams**
 tabs, alongside customers and jobs. This frontend increment uses existing tenant
 organisation units and existing scoring RPCs; it adds no migration or source rows.
 

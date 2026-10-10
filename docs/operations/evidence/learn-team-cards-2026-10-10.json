@@ -103,7 +103,51 @@
     ]
   },
   "hostedSignedInAcceptance": false,
-  "frontendDeployment": "pending",
+  "frontendDeployment": {
+    "observedAt": "2026-10-10T22:45:45.703Z",
+    "id": "dpl_BWJgyAzWoypHqA1z1vfxjjEkGQmr",
+    "url": "serviceos-learn-test-dpgndab6d-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "4468eca77953410a6d36490255df362f7d65ad30"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "protection": {
+      "observedAt": "2026-10-10T22:45:36.702Z",
+      "base": "https://serviceos-learn-test-dpgndab6d-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "backendBinding": "saatxzwxvdvqevbnskxy",
+    "browser": {
+      "observedAt": "2026-10-10T22:46:10.652Z",
+      "loginRendered": true,
+      "sameOriginClientRedirect": true,
+      "signedInOwnerAcceptance": false,
+      "screenshot": ".verification-results/learn-team-cards-test-login-2026-10-10.png"
+    }
+  },
   "remaining": [
     "Fresh signed-in hosted team card and scoring scope acceptance",
     "Team source calculation adapters and aggregation",
