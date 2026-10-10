@@ -2,8 +2,9 @@
 
 ## Current state — 10 October 2026
 
-Local source reader and provider-neutral source-record adapter are implemented.
-Twenty synthetic tests and strict standalone TypeScript checks pass. This is not
+Local source reader, provider-neutral source-record adapter and durable scope
+binding are implemented. Twenty-eight synthetic tests and strict standalone
+TypeScript checks pass. This is not
 an installed connector: no provider request, API credential read, sync job,
 production migration or frontend release was performed for this increment.
 
@@ -50,7 +51,8 @@ three allowlisted collections. It disables redirects and cookies, bounds streame
 body/record sizes and request duration, rejects malformed/repeating pages, and
 rechecks supplied authority before the request and before returning data. Safe
 errors exclude response prose, source payloads, credentials and network exceptions.
-The supplied authority callback is a port, not yet a production permission check.
+The low-level authority callback is now supplied by the local stored-scope binding
+described below; production credential acquisition/publication are still missing.
 
 `source_records.ts` produces `BusinessSourceRecord` candidates under exact tenant,
 connection, collection and external-ID identities. Equal numbers in different
@@ -66,12 +68,50 @@ not be copied directly into a canonical customer/site foreign key. Company versu
 individual identity also requires the provider's customer-type metadata, not a
 guess based on whether a contact/name happens to exist.
 
+## Durable scope and worker boundary
+
+`stored_scope.ts` reads only authoritative rows, with explicit tenant filters:
+active tenant; running claimed `commusoft.source_sync` job and unexpired lease;
+active connector/account; stored import approval and matching checkpoint; and a
+configured, verified, unrevoked private-app connection with matching account,
+region, revision and Vault reference. Caller/queued payload does not select the
+provider account, region, credential, resource or cursor.
+
+The existing `feature_flags` table carries two new opt-in keys: `learn.enabled`
+and `learn.inputs.commusoft.enabled`. Both must have a tenant-specific JSON boolean
+`true` value. Missing, global-only, unreadable or non-boolean values deny execution.
+No flags have been seeded or changed. These keys currently gate this new adapter
+only; they do not yet control other LEARN workers or implement operator settings UI.
+
+Account settings contract: `commusoft_import` holds `approved`, `approvalId`,
+`connectionId`, `consentReference`, `expiresAt`, `maxPages`, `pageSize`, `resource`
+and contact-only `contactType`. Empty `sync_cursor` starts that approval; subsequent
+checkpoints carry `approvalId`, `after`, `pages`, `complete`. An exhausted page
+budget, terminal cursor or changed approval prevents another request. Connection
+configuration uses auth mode `private_api_key`, non-secret `region` and
+`account_key`, and the existing broker field `api_key`. Setup/verification must
+write these through authorized server controls; no such setup action is wired yet.
+
+`bound_page.ts` snapshots worker context and rechecks the stored scope before
+acquisition and around the provider read. Its mandatory credential/permit port
+must atomically recheck that scope, reserve shared quota and resolve the exact
+Vault reference. Throttled/exhausted-quota responses require a durable shared
+deferral acknowledgement. That database port is **not implemented yet**: there
+is no fallback to general secret lookup, registered handler, enqueue action or
+automatic provider activity. Tests inject synthetic permits and HTTP responses.
+
+The SQL implementation must repeat these checks under locks. Current metadata
+reads are not a transaction; they cannot alone authorize a source/checkpoint write.
+Binding tests cover suspension, missing/disabled flags, stale or expired leases,
+wrong tenants/accounts, revoked/unverified credentials, changed connection
+revisions/approvals/cursors, terminal windows, waiting permits and failed deferrals.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Bind persisted tenant, connection revision, module controls and worker lease to
-   secret access; revalidate them transactionally when committing source data.
+2. Implement the atomic credential/permit port for the stored scope and worker
+   binding; revalidate authority transactionally when committing source data.
 3. Persist raw revisions, canonical mappings and checkpoints atomically; reserve
    quota across all workers using the same credential. The transport alone does
    not enforce the per-key shared quota.

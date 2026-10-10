@@ -1206,3 +1206,12 @@ canonical links. No real API read, deployment or source write occurred.
 Drummonds API access remains unconfirmed. Credential/worker authority binding,
 shared quota, durable source/checkpoint storage, canonical reconciliation and live
 acceptance remain required. See [API contract and remaining work](../operations/LEARN-COMMUSOFT-API.md).
+
+The following local increment binds a page to durable tenant/job/account/approval/
+connection metadata and the existing feature-flag store. Explicit LEARN and
+Commusoft opt-ins, active client/connector, current job lease and unchanged
+connection/cursor are required. Twenty-eight transport, source and binding tests
+plus strict typechecking pass. Tests include revocation during reads and permit
+deferral failures. The credential/quota database port is still required, so this
+handler remains unregistered and cannot start a production sync. No flag, provider
+credential, TEST schema or source data was changed.
