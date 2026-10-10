@@ -252,17 +252,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ...(Object.keys(errors).length > 0 ? { errors } : {}),
       };
 
+      let waitingRecorded = !waiting;
       if (syncRunId) {
-        await supabase
-          .from("phone_sync_runs")
-          .update({
-            status: overallOk ? "success" : waiting ? "paused" : "failed",
-            completed_at: new Date().toISOString(),
-            records_processed: callsProcessed + recProcessed,
-            error_message: overallOk || waiting ? null : JSON.stringify(errors),
-            metadata,
-          })
-          .eq("id", syncRunId);
+        const patch = {
+          status: overallOk ? "success" : waiting ? "paused" : "failed",
+          completed_at: new Date().toISOString(),
+          records_processed: callsProcessed + recProcessed,
+          error_message: overallOk || waiting ? null : JSON.stringify(errors),
+          metadata,
+        };
+        if (waiting) {
+          try {
+            const saved = await supabase
+              .from("phone_sync_runs")
+              .update(patch)
+              .eq("id", syncRunId)
+              .eq("tenant_id", tenantId)
+              .eq("status", "running")
+              .select("id")
+              .maybeSingle();
+            waitingRecorded = !saved.error && saved.data?.id === syncRunId;
+          } catch {
+            /* Retain unknown outcomes for operator verification. */
+          }
+        } else {
+          await supabase.from("phone_sync_runs").update(patch).eq("id", syncRunId);
+        }
       }
 
       // Advance the durable cursor ONLY on full success, so a missed/failed run
@@ -307,20 +322,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
             result: { calls_processed: callsProcessed, recordings_processed: recProcessed },
           });
         } else if (waiting) {
-          await supabase
-            .from("platform_jobs")
-            .update({
-              status: "cancelled",
-              completed_at: new Date().toISOString(),
-              lease_expires_at: null,
-              result: {
-                capture_waiting: true,
-                calls_processed: callsProcessed,
-                recordings_processed: recProcessed,
-              },
-            })
-            .eq("id", jobId)
-            .eq("tenant_id", tenantId);
+          try {
+            const saved = await supabase
+              .from("platform_jobs")
+              .update({
+                status: "cancelled",
+                completed_at: new Date().toISOString(),
+                lease_expires_at: null,
+                result: {
+                  capture_waiting: true,
+                  calls_processed: callsProcessed,
+                  recordings_processed: recProcessed,
+                },
+              })
+              .eq("id", jobId)
+              .eq("tenant_id", tenantId)
+              .eq("status", "running")
+              .select("id")
+              .maybeSingle();
+            waitingRecorded = waitingRecorded && !saved.error && saved.data?.id === jobId;
+          } catch {
+            waitingRecorded = false;
+          }
         } else {
           await failPlatformJob(supabase, jobId, JSON.stringify(errors), {
             calls_processed: callsProcessed,
@@ -333,7 +356,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
         tenant_id: tenantId,
         provider_customer_id: customerId,
         ok: overallOk,
-        ...(waiting ? { waiting: "capture_control" } : {}),
+        ...(waiting
+          ? waitingRecorded
+            ? { waiting: "capture_control" }
+            : { error: "learn_capture_wait_unconfirmed" }
+          : {}),
         calls_processed: callsProcessed,
         recordings_processed: recProcessed,
         sync_run_id: syncRunId,

@@ -1,0 +1,131 @@
+{
+  "version": "learn-capture-runtime-audit/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T13:56:40.74555+00:00",
+  "state": "not_release_verified",
+  "missingWorkers": [
+    "gmail-sync-messages",
+    "gmail-workspace-sync-messages",
+    "gmail-workspace-backfill-messages",
+    "google-workspace-discover-mailboxes",
+    "email-scheduled-sync",
+    "email-workspace-scheduled-sync",
+    "email-workspace-backfill-scheduled-sync",
+    "platform-worker",
+    "phone-scheduled-sync",
+    "phone-process-pipeline"
+  ],
+  "missingFunctions": [
+    "phone_retry_state",
+    "phone_pending_readiness",
+    "phone_select_pending"
+  ],
+  "phoneViewPresent": false,
+  "emailProtocolPresent": true,
+  "localEmailSources": [
+    {
+      "name": "gmail-sync-messages",
+      "sha256": "44feb285505493ebada54c62718f6b16984becb1fdfb04754c06f00877a7ded7",
+      "callsTransitionV2": false
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "sha256": "74e8d1dd17b5a6fd5c1ce0cf5251e8617f2d9835f028192d675ec9df9bb8fcae",
+      "callsTransitionV2": false
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "sha256": "ea1adb607edea67cd57aca3d916bf879e4ff474737074b71ad7d64152ffabd67",
+      "callsTransitionV2": false
+    }
+  ],
+  "functionReferences": [
+    {
+      "name": "email_ingestion_account_guard_v2",
+      "arguments": "",
+      "sha256": "ff7301e8542d2401fdd9cc339ae094e163bf04dd0f3b6895922d509d0b754e0b"
+    },
+    {
+      "name": "email_ingestion_checkpoint_json_v2",
+      "arguments": "c email_ingestion_checkpoints",
+      "sha256": "8ef29008b7cb13eb26ae92bd2cd4b109bdd586f30b5820b0ec6228c67af13323"
+    },
+    {
+      "name": "email_ingestion_count_v2",
+      "arguments": "v jsonb, nullable boolean",
+      "sha256": "d7be4e8d27c48b08580faf01f1606b0bc88e31f50987e7059f298ae15644a11c"
+    },
+    {
+      "name": "email_ingestion_evidence_v2",
+      "arguments": "v jsonb, kind text",
+      "sha256": "952aac5071cb80127cf8cd17898f4b6608083fd93d28169eaf6aa08c56d982f8"
+    },
+    {
+      "name": "email_ingestion_keys_v2",
+      "arguments": "v jsonb, names text[]",
+      "sha256": "4b2a2c2f830a9b94c48477d3c2d605c858bc1e38246969b7126364273e1a20d1"
+    },
+    {
+      "name": "email_ingestion_payload_v2",
+      "arguments": "op text, stream text, v jsonb",
+      "sha256": "e19bca59d09d39137fc4220be374d09dd57ea5dae7cf2bd350c5484bbb6e8261"
+    },
+    {
+      "name": "email_ingestion_recovery_v2",
+      "arguments": "v jsonb",
+      "sha256": "bea6bad989671813fe39a45f31b622d2f8bbded4912c4903445cc9b09f5ccb50"
+    },
+    {
+      "name": "email_ingestion_run_guard_v2",
+      "arguments": "",
+      "sha256": "91826e19193805167a7bdf5b09113d15243d6635423b6fa049336e0a4b4a3feb"
+    },
+    {
+      "name": "email_ingestion_transition_result_v2",
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid",
+      "sha256": "6a7cd2aeb12a27cdfa232ef1e9c3d25e82cd8ea1f585e34d98686d1b50f9855f"
+    },
+    {
+      "name": "email_ingestion_transition_v2",
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid, p_operation text, p_expected_generation uuid, p_expected_revision bigint, p_expected_owner_attempt_id uuid, p_payload jsonb",
+      "sha256": "103d3da19fdb09455871a6def08b34724c3a6860131121745f2f2ad6e8d9a973"
+    },
+    {
+      "name": "learn_slack_claim_jobs",
+      "arguments": "p_worker uuid, p_batch integer",
+      "sha256": "fed915ae10df2f35944058c38690505edf5fbd970d6543541ad5ccd7c6ce27ea"
+    },
+    {
+      "name": "platform_jobs_claim",
+      "arguments": "p_worker text, p_batch integer, p_lease_seconds integer, p_job_types text[]",
+      "sha256": "eaddf38e53a5e9d0792f540489f4b24c5b73b7b83cac2449c0b6c8414e178dcb"
+    },
+    {
+      "name": "platform_jobs_complete_email_v1",
+      "arguments": "p_job_id uuid, p_tenant_id uuid, p_claimed_by text, p_attempt_count integer, p_document jsonb",
+      "sha256": "e94098fa29c4e08e02dce64aab7440afcda6403209b188c1b4e400a89afbec04"
+    }
+  ],
+  "limitations": [
+    "Metadata inventory only; installed worker bodies and schedules are not validated.",
+    "Local source markers do not establish protocol compatibility or absence of indirect calls.",
+    "This reference contains no source records and is not a full database backup or deployment migration.",
+    "No capture, provider requests, credentials, grants or hosted data were changed."
+  ],
+  "reference": {
+    "path": "supabase/reference/learn-email-ingestion-test-2026-10-10.json",
+    "sha256": "8070cf839267c323b60a677b94e5a92cb553b43edaa59d16dcb0fb3b8ee8d062"
+  },
+  "localPhonePauseValidation": {
+    "testsPassed": 29,
+    "suite": "actual handler/worker VM tests",
+    "cases": [
+      "Entry refusal opens no run and preserves the account cursor.",
+      "Mid-run child refusal retains successful sibling counts without capture success.",
+      "A real provider error remains visible alongside a pause.",
+      "Pipeline waits use a distinct sync type so existing retry history is retained.",
+      "Database errors, zero-row writes and transport exceptions return an unresolved status without private diagnostics."
+    ],
+    "deployment": "local_only"
+  }
+}

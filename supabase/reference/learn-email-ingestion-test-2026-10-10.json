@@ -1,0 +1,1363 @@
+{
+  "version": "learn-capture-runtime-reference/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "functions": [
+    {
+      "name": "email_ingestion_account_guard_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_account_guard_v2()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$ begin\n  if current_user='email_ingestion_protocol_owner' then return new; end if;\n  if tg_op='INSERT' then\n    if new.history_id is not null or new.backfill_status<>'idle' or new.backfill_started_at is not null or new.backfill_completed_at is not null or new.backfill_page_token is not null or new.backfill_total_fetched<>0 or new.backfill_error is not null then\n      raise exception using errcode='42501',message='email_progress_requires_protocol';\n    end if;\n  elsif row(new.history_id,new.backfill_status,new.backfill_started_at,new.backfill_completed_at,new.backfill_page_token,new.backfill_total_fetched,new.backfill_error)\n    is distinct from row(old.history_id,old.backfill_status,old.backfill_started_at,old.backfill_completed_at,old.backfill_page_token,old.backfill_total_fetched,old.backfill_error) then\n    raise exception using errcode='42501',message='email_progress_requires_protocol';\n  end if;\n  return new;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_checkpoint_json_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "c email_ingestion_checkpoints",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_checkpoint_json_v2(c email_ingestion_checkpoints)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\n select case when c.tenant_id is null then null else to_jsonb(c)||jsonb_build_object('revision',c.revision::text,\n   'continuation',case when c.stream='recent' and jsonb_typeof(c.continuation)='object' and not (c.continuation ? 'fetch_policy')\n     then c.continuation||jsonb_build_object('fetch_policy','missing_only') else c.continuation end) end\n$function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_count_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "v jsonb, nullable boolean",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_count_v2(v jsonb, nullable boolean DEFAULT false)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$ begin\n  if v='null'::jsonb then return nullable; end if;\n  if v is null or jsonb_typeof(v)<>'number' then return false; end if;\n  return (v#>>'{}')::numeric between 0 and 2147483647 and trunc((v#>>'{}')::numeric)=(v#>>'{}')::numeric;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_evidence_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "v jsonb, kind text",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_evidence_v2(v jsonb, kind text)\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare k text; names text[]:=array['persistence','message_upsert_count','thread_upsert_count','ids_seen','gone_count','unresolved_count'];\nbegin\n  if kind='failure' then names:=names||array['classification','coverage_complete'];\n  elsif kind='release' then names:=names||array['coverage_complete'];\n  elsif kind<>'success' then raise exception using errcode='22023',message='invalid_evidence'; end if;\n  perform public.email_ingestion_keys_v2(v,names);\n  if kind='failure' then\n    if not coalesce(v->>'classification'=any(array['provider_expired','pagination_cycle','fetch_failure','parse_failure','persistence_failure','checkpoint_conflict','source_ineligible','unexpected_failure']),false)\n      or not coalesce(v->>'persistence'=any(array['confirmed','unknown']),false) then\n      raise exception using errcode='22023',message='invalid_evidence';\n    end if;\n  elsif v->>'persistence' is distinct from 'confirmed' or v->'unresolved_count' is distinct from '0'::jsonb then\n    raise exception using errcode='22023',message='invalid_evidence';\n  end if;\n  if kind<>'success' and v->'coverage_complete' is distinct from 'false'::jsonb then raise exception using errcode='22023',message='invalid_evidence'; end if;\n  foreach k in array array['message_upsert_count','thread_upsert_count','ids_seen','gone_count','unresolved_count'] loop\n    if not public.email_ingestion_count_v2(v->k,kind='failure' and v->>'persistence'='unknown') then\n      raise exception using errcode='22023',message='invalid_evidence';\n    end if;\n  end loop;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_keys_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "v jsonb, names text[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_keys_v2(v jsonb, names text[])\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$ begin\n  if v is null or jsonb_typeof(v)<>'object' then raise exception using errcode='22023',message='invalid_payload'; end if;\n  if (select count(*) from jsonb_object_keys(v))<>cardinality(names) or not (v ?& names) then\n    raise exception using errcode='22023',message='invalid_payload';\n  end if;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_payload_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "op text, stream text, v jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_payload_v2(op text, stream text, v jsonb)\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare names text[]; t jsonb; k text;\nbegin\n  case op\n  when 'claim' then\n    names:=array['recovery'];\n    if stream='recent' and v ? 'force' then\n      names:=names||array['force'];\n      if jsonb_typeof(v->'force') is distinct from 'boolean' then raise exception using errcode='22023',message='invalid_force'; end if;\n    end if;\n    perform public.email_ingestion_keys_v2(v,names);\n    if v->'recovery'<>'null'::jsonb then perform public.email_ingestion_recovery_v2(v->'recovery'); end if;\n  when 'initialize_traversal' then\n    perform public.email_ingestion_keys_v2(v,array['captured_history_id','captured_at','page_size','query']);\n    if stream<>'recent' or jsonb_typeof(v->'captured_history_id') is distinct from 'string' or\n      not coalesce(v->>'captured_history_id'~'^(0|[1-9][0-9]{0,19})$',false) then raise exception using errcode='22023',message='invalid_boundary'; end if;\n    if (v->>'captured_history_id')::numeric>18446744073709551615 or v->'query'<>'null'::jsonb or\n      not public.email_ingestion_count_v2(v->'page_size') or (v->>'page_size')::integer not between 1 and 500 or\n      not coalesce(v->>'captured_at'~'^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$',false) then raise exception using errcode='22023',message='invalid_boundary'; end if;\n    perform (v->>'captured_at')::timestamptz;\n  when 'checkpoint' then\n    names:=array['returned_next_page_token','exhausted','page_evidence','yield_after_page'];\n    if stream='recent' then names:=names||array['label','expected_input_page_token'];\n    else names:=names||array['expected_page_token','expected_total','listed_count']; end if;\n    perform public.email_ingestion_keys_v2(v,names);\n    perform public.email_ingestion_evidence_v2(v->'page_evidence','success');\n    if stream='recent' then\n      if not coalesce(v->>'label'=any(array['INBOX','SENT']),false) then raise exception using errcode='22023',message='invalid_page'; end if;\n      k:='expected_input_page_token';\n    else\n      k:='expected_page_token';\n      if not public.email_ingestion_count_v2(v->'expected_total') or not public.email_ingestion_count_v2(v->'listed_count') then raise exception using errcode='22023',message='invalid_page'; end if;\n    end if;\n    foreach t in array array[v->k,v->'returned_next_page_token'] loop\n      if t<>'null'::jsonb and (jsonb_typeof(t)<>'string' or length(t#>>'{}') not between 1 and 8192) then raise exception using errcode='22023',message='invalid_token'; end if;\n    end loop;\n    if jsonb_typeof(v->'exhausted')<>'boolean' or jsonb_typeof(v->'yield_after_page')<>'boolean' or\n      (v->>'exhausted')::boolean is distinct from (v->'returned_next_page_token'='null'::jsonb) then raise exception using errcode='22023',message='invalid_page'; end if;\n  when 'release' then\n    perform public.email_ingestion_keys_v2(v,array['reason_code','attempt_evidence']);\n    if not coalesce(v->>'reason_code'=any(array['page_budget','time_budget','requested_yield']),false) then raise exception using errcode='22023',message='invalid_release'; end if;\n    perform public.email_ingestion_evidence_v2(v->'attempt_evidence','release');\n  when 'block','finish_attempt' then\n    names:=array['error_code','attempt_evidence'];\n    if op='finish_attempt' then names:=names||array['outcome'];\n      if not coalesce(v->>'outcome'=any(array['failed','superseded']),false) then raise exception using errcode='22023',message='invalid_outcome'; end if;\n    end if;\n    perform public.email_ingestion_keys_v2(v,names);\n    if not coalesce(v->>'error_code'=any(array['history_expired','continuation_expired','pagination_no_progress','fetch_failed','parse_failed','persistence_failed','checkpoint_conflict','source_ineligible','unexpected_failure']),false) then raise exception using errcode='22023',message='invalid_error'; end if;\n    perform public.email_ingestion_evidence_v2(v->'attempt_evidence','failure');\n  when 'takeover' then\n    perform public.email_ingestion_keys_v2(v,array['recovery']); perform public.email_ingestion_recovery_v2(v->'recovery');\n  when 'restart' then\n    names:=array['reason_code','recovery'];\n    if stream='recent' and v ? 'fetch_policy' then\n      names:=names||array['fetch_policy'];\n      if not coalesce(v->>'fetch_policy'=any(array['missing_only','refetch_all']),false) then raise exception using errcode='22023',message='invalid_fetch_policy'; end if;\n    end if;\n    perform public.email_ingestion_keys_v2(v,names); perform public.email_ingestion_recovery_v2(v->'recovery');\n    if not coalesce(v->>'reason_code'=any(array['operator_restart','history_expired','continuation_expired']),false) then raise exception using errcode='22023',message='invalid_restart'; end if;\n  else raise exception using errcode='22023',message='invalid_operation';\n  end case;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_recovery_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "v jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_recovery_v2(v jsonb)\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$ begin\n  perform public.email_ingestion_keys_v2(v,array['actor_user_id','authorization_reference','reason_code']);\n  if jsonb_typeof(v->'actor_user_id') is distinct from 'string' or\n    not coalesce(v->>'actor_user_id'~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',false) or\n    not coalesce(v->>'authorization_reference'~'^[A-Za-z0-9_.:/-][A-Za-z0-9_.:/-]{0,255}$',false) or\n    not coalesce(v->>'reason_code'=any(array['operator_resume','operator_takeover','operator_restart','history_expired','continuation_expired']),false) then\n    raise exception using errcode='22023',message='invalid_recovery';\n  end if;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_run_guard_v2",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_run_guard_v2()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare protected boolean;\nbegin\n  if tg_op='INSERT' then\n    if new.sync_type in ('messages','workspace_messages','workspace_backfill') then\n      if new.status<>'running' or new.completed_at is not null or new.records_processed<>0 or\n        jsonb_typeof(new.metadata->'email_account_id') is distinct from 'string' or\n        not coalesce(new.metadata->>'email_account_id'~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',false) or new.metadata ? 'email_ingestion_v2' then\n        raise exception using errcode='42501',message='invalid_ingestion_attempt';\n      end if;\n    end if;\n    return new;\n  end if;\n  protected:=old.sync_type in ('messages','workspace_messages','workspace_backfill');\n  if tg_op='UPDATE' then protected:=protected or new.sync_type in ('messages','workspace_messages','workspace_backfill'); end if;\n  if not protected then if tg_op='DELETE' then return old; else return new; end if; end if;\n  if tg_op='DELETE' or current_user<>'email_ingestion_protocol_owner' then\n    raise exception using errcode='42501',message='email_attempt_requires_protocol';\n  end if;\n  if row(new.id,new.tenant_id,new.provider,new.sync_type,new.started_at,new.metadata->'email_account_id') is distinct from\n     row(old.id,old.tenant_id,old.provider,old.sync_type,old.started_at,old.metadata->'email_account_id') then\n    raise exception using errcode='42501',message='immutable_ingestion_attempt';\n  end if;\n  return new;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "email_ingestion_transition_result_v2",
+      "owner": "email_ingestion_protocol_owner",
+      "grants": [
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_transition_result_v2(p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare c public.email_ingestion_checkpoints%rowtype; r public.email_ingestion_transitions%rowtype;\n a public.email_sync_runs%rowtype; has_receipt boolean;\nbegin\n if p_tenant_id is null or p_email_account_id is null or p_attempt_id is null or p_transition_id is null or p_stream is null or p_stream not in ('recent','historical') then\n   raise exception using errcode='22023',message='invalid_request';\n end if;\n perform 1 from public.email_accounts where tenant_id=p_tenant_id and id=p_email_account_id and provider='gmail' for update;\n if not found then raise exception using errcode='42501',message='account_not_found'; end if;\n perform 1 from public.email_ingestion_checkpoints where tenant_id=p_tenant_id and email_account_id=p_email_account_id\n   order by case stream when 'recent' then 0 else 1 end for update;\n select * into c from public.email_ingestion_checkpoints where tenant_id=p_tenant_id and email_account_id=p_email_account_id and stream=p_stream;\n select * into r from public.email_ingestion_transitions where tenant_id=p_tenant_id and email_account_id=p_email_account_id and stream=p_stream and transition_id=p_transition_id;\n has_receipt:=found;\n select * into a from public.email_sync_runs where tenant_id=p_tenant_id and id=p_attempt_id for update;\n if not found or a.provider<>'gmail' or jsonb_typeof(a.metadata->'email_account_id') is distinct from 'string' or\n   not coalesce(a.metadata->>'email_account_id'~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',false) then\n   raise exception using errcode='42501',message='attempt_mismatch';\n end if;\n if (a.metadata->>'email_account_id')::uuid<>p_email_account_id or\n   (p_stream='historical' and a.sync_type<>'workspace_backfill') or (p_stream='recent' and a.sync_type not in ('messages','workspace_messages')) or\n   (has_receipt and r.attempt_id<>p_attempt_id) or\n   exists(select 1 from public.email_ingestion_transitions where attempt_id=p_attempt_id and\n     (tenant_id<>p_tenant_id or email_account_id<>p_email_account_id or stream<>p_stream)) then raise exception using errcode='42501',message='attempt_mismatch'; end if;\n -- Terminal attempts and subsequently disabled sources can still inspect their receipts.\n return jsonb_build_object('contract_version',2,'disposition',case when has_receipt then 'replayed' else 'conflict' end,\n   'code',case when has_receipt then 'receipt_replayed' else 'not_found' end,'transition_id',p_transition_id,\n   'accepted_result',case when has_receipt then r.accepted_result else null end,\n   'current_checkpoint',public.email_ingestion_checkpoint_json_v2(c),'historical_receipt',has_receipt);\nend $function$\n",
+      "securityDefiner": true
+    },
+    {
+      "name": "email_ingestion_transition_v2",
+      "owner": "email_ingestion_protocol_owner",
+      "grants": [
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "email_ingestion_protocol_owner",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid, p_operation text, p_expected_generation uuid, p_expected_revision bigint, p_expected_owner_attempt_id uuid, p_payload jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_ingestion_transition_v2(p_tenant_id uuid, p_email_account_id uuid, p_stream text, p_attempt_id uuid, p_transition_id uuid, p_operation text, p_expected_generation uuid, p_expected_revision bigint, p_expected_owner_attempt_id uuid, p_payload jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n a record; c public.email_ingestion_checkpoints%rowtype; receipt public.email_ingestion_transitions%rowtype;\n attempt public.email_sync_runs%rowtype; doc jsonb; result jsonb; evidence jsonb;\n exists_checkpoint boolean; replay boolean; changed boolean:=true; eligible boolean;\n done boolean:=false; terminal boolean:=false; attempt_status text:='running'; error_code text;\n records integer; label text; input_token text; next_token text; mode text; current_cursor text;\n new_total bigint; code text; v_attempt_metadata jsonb; confirmed_count integer; v_fetch_policy text; v_force boolean;\nbegin\n if p_tenant_id is null or p_email_account_id is null or p_attempt_id is null or p_transition_id is null or\n   p_stream is null or p_stream not in ('recent','historical') or p_operation is null or\n   p_expected_revision<0 then raise exception using errcode='22023',message='invalid_request'; end if;\n perform public.email_ingestion_payload_v2(p_operation,p_stream,p_payload);\n -- Defaults do not rewrite the frozen request_document: omitted/false remain\n -- different requests for same-ID replay equality, even when semantically equal.\n v_force:=p_stream='recent' and p_operation='claim' and coalesce((p_payload->>'force')::boolean,false);\n -- No whole account SELECT: this role has no token, identity-write or authority privileges.\n select id,tenant_id,provider,status,auth_state,history_id,backfill_status,backfill_started_at,\n   backfill_completed_at,backfill_page_token,backfill_total_fetched,backfill_error\n into a from public.email_accounts where tenant_id=p_tenant_id and id=p_email_account_id and provider='gmail' for update;\n if not found then raise exception using errcode='P0001',message='account_not_found'; end if;\n perform 1 from public.email_ingestion_checkpoints where tenant_id=p_tenant_id and email_account_id=p_email_account_id\n   order by case stream when 'recent' then 0 else 1 end for update;\n select * into c from public.email_ingestion_checkpoints where tenant_id=p_tenant_id and email_account_id=p_email_account_id and stream=p_stream;\n exists_checkpoint:=found;\n select * into receipt from public.email_ingestion_transitions where tenant_id=p_tenant_id and email_account_id=p_email_account_id and stream=p_stream and transition_id=p_transition_id;\n replay:=found;\n -- Own attempt lock comes BEFORE mutable status/association validation and mutation.\n select * into attempt from public.email_sync_runs where id=p_attempt_id and tenant_id=p_tenant_id for update;\n if not found or attempt.provider<>'gmail' or jsonb_typeof(attempt.metadata->'email_account_id') is distinct from 'string' or\n   not coalesce(attempt.metadata->>'email_account_id'~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',false) then\n   raise exception using errcode='P0001',message='attempt_mismatch';\n end if;\n if (attempt.metadata->>'email_account_id')::uuid<>p_email_account_id or\n   (p_stream='historical' and attempt.sync_type<>'workspace_backfill') or\n   (p_stream='recent' and attempt.sync_type not in ('messages','workspace_messages')) or\n   exists(select 1 from public.email_ingestion_transitions where attempt_id=p_attempt_id and\n     (tenant_id<>p_tenant_id or email_account_id<>p_email_account_id or stream<>p_stream)) or\n   exists(select 1 from public.email_ingestion_checkpoints where owner_attempt_id=p_attempt_id and\n     (tenant_id<>p_tenant_id or email_account_id<>p_email_account_id or stream<>p_stream)) then\n   raise exception using errcode='P0001',message='attempt_mismatch';\n end if;\n doc:=jsonb_build_object('tenant_id',p_tenant_id,'email_account_id',p_email_account_id,'stream',p_stream,\n   'attempt_id',p_attempt_id,'transition_id',p_transition_id,'operation',p_operation,\n   'expected_generation',p_expected_generation,'expected_revision',p_expected_revision::text,\n   'expected_owner_attempt_id',p_expected_owner_attempt_id,'payload',p_payload);\n if replay then\n   if receipt.attempt_id<>p_attempt_id or receipt.request_document<>doc then raise exception using errcode='P0001',message='transition_id_reused'; end if;\n   return jsonb_build_object('contract_version',2,'disposition','replayed','code','receipt_replayed','transition_id',p_transition_id,\n     'accepted_result',receipt.accepted_result,'current_checkpoint',public.email_ingestion_checkpoint_json_v2(c),'historical_receipt',true);\n end if;\n if attempt.status<>'running' then raise exception using errcode='P0001',message='attempt_terminal'; end if;\n records:=attempt.records_processed;\n -- Slice A account check ONLY; DWD relationship/revision locking is not claimed.\n eligible:=case when attempt.sync_type='messages' then a.status='active' and a.auth_state in ('ok','unknown')\n   else a.status in ('pending_tokenless_dwd','active_dwd') end;\n if p_operation not in ('block','release','finish_attempt') and not eligible then raise exception using errcode='P0001',message='source_ineligible'; end if;\n if p_operation='finish_attempt' then\n   if exists_checkpoint and c.owner_attempt_id=p_attempt_id then raise exception using errcode='P0001',message='owner_must_release'; end if;\n   if not exists_checkpoint and (p_expected_generation is not null or p_expected_revision is not null or p_expected_owner_attempt_id is not null) then\n     raise exception using errcode='22023',message='absent_checkpoint_requires_null_fences';\n   end if;\n   -- Explicit stale-version exception: only caller's own evidence; no progress update.\n   changed:=false; terminal:=true; attempt_status:='failed'; error_code:=p_payload->>'error_code';\n   evidence:=p_payload->'attempt_evidence';\n else\n   if not exists_checkpoint then\n     if p_operation<>'claim' or p_expected_generation is not null or p_expected_revision is not null or p_expected_owner_attempt_id is not null or p_payload->'recovery'<>'null'::jsonb then\n       raise exception using errcode='P0001',message='checkpoint_missing';\n     end if;\n     c.tenant_id:=p_tenant_id; c.email_account_id:=p_email_account_id; c.stream:=p_stream; c.contract_version:=2;\n     c.generation:=gen_random_uuid(); c.revision:=0; c.state:='ready'; c.owner_attempt_id:=null;\n     c.created_at:=now(); c.updated_at:=now();\n     if p_stream='recent' then c.continuation:=jsonb_build_object('version',2,'phase','uninitialized',\n       'intent',case when v_force then 'reconcile' else 'normal' end,\n       'fetch_policy',case when v_force then 'refetch_all' else 'missing_only' end);\n     elsif a.backfill_status='completed' then c.state:='completed';\n     elsif a.backfill_status='error' then\n       c.state:='blocked';\n       -- Preserve recognised classifications, especially restart-only expiry.\n       -- Unknown legacy error text must not leak into protocol evidence.\n       c.block_code:=case when a.backfill_error in (\n         'history_expired','continuation_expired','pagination_no_progress',\n         'fetch_failed','parse_failed','persistence_failed','checkpoint_conflict',\n         'source_ineligible','unexpected_failure') then a.backfill_error else 'unexpected_failure' end;\n     elsif a.backfill_status not in ('idle','running') then raise exception using errcode='P0001',message='legacy_state_invalid'; end if;\n   elsif c.generation is distinct from p_expected_generation or c.revision is distinct from p_expected_revision or c.owner_attempt_id is distinct from p_expected_owner_attempt_id then\n     raise exception using errcode='P0001',message='checkpoint_conflict';\n   end if;\n   if p_stream='recent' and p_operation<>'restart' then\n     -- Known pre-policy generations were missing-only. Materialize only an\n     -- absent field, never coalesce explicit null/invalid policy into permission.\n     if jsonb_typeof(c.continuation) is distinct from 'object' then raise exception using errcode='P0001',message='invalid_legacy_policy'; end if;\n     if not (c.continuation ? 'fetch_policy') then c.continuation:=c.continuation||jsonb_build_object('fetch_policy','missing_only'); end if;\n     v_fetch_policy:=c.continuation->>'fetch_policy';\n     if not coalesce(v_fetch_policy=any(array['missing_only','refetch_all']),false) or\n       (v_fetch_policy='refetch_all' and not coalesce(\n         (c.continuation->>'phase'='uninitialized' and c.continuation->>'intent'='reconcile') or\n         (c.continuation->>'phase'='initialized' and c.continuation->>'mode'='reconcile'),false)) then\n       raise exception using errcode='P0001',message='invalid_legacy_policy';\n     end if;\n   end if;\n   case p_operation\n   when 'claim' then\n     if p_stream='recent' and exists_checkpoint and c.state<>'completed' and v_force and v_fetch_policy<>'refetch_all' then\n       raise exception using errcode='P0001',message='force_generation_busy';\n     end if;\n     if not exists_checkpoint and c.state in ('completed','blocked') then\n       terminal:=true; done:=c.state='completed'; attempt_status:=case when done then 'success' else 'failed' end;\n       error_code:=case when done then null else c.block_code end;\n     elsif p_stream='historical' and c.state='completed' then\n       if p_payload->'recovery'<>'null'::jsonb then raise exception using errcode='P0001',message='invalid_recovery_state'; end if;\n       changed:=false; done:=true; terminal:=true; attempt_status:='success';\n     else\n       if c.state='blocked' then\n         if p_payload->'recovery'='null'::jsonb or c.block_code in ('history_expired','continuation_expired') then\n           raise exception using errcode='P0001',message='explicit_recovery_required';\n         end if;\n       elsif p_payload->'recovery'<>'null'::jsonb then raise exception using errcode='P0001',message='invalid_recovery_state';\n       elsif c.state<>'ready' and not(p_stream='recent' and c.state='completed') then raise exception using errcode='P0001',message='already_claimed'; end if;\n       if p_stream='recent' and c.state='completed' then\n         c.generation:=gen_random_uuid(); c.continuation:=jsonb_build_object('version',2,'phase','uninitialized',\n           'intent',case when v_force then 'reconcile' else 'normal' end,\n           'fetch_policy',case when v_force then 'refetch_all' else 'missing_only' end);\n       end if;\n       c.state:='claimed'; c.owner_attempt_id:=p_attempt_id; c.block_code:=null;\n       if p_stream='historical' then\n         update public.email_accounts set backfill_status='running',backfill_error=null,\n           backfill_started_at=case when backfill_status='idle' and backfill_started_at is null then now() else backfill_started_at end\n           where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if;\n       end if;\n     end if;\n   when 'takeover' then\n     if c.state<>'claimed' or c.owner_attempt_id=p_attempt_id then raise exception using errcode='P0001',message='invalid_recovery_state'; end if;\n     c.owner_attempt_id:=p_attempt_id;\n     if p_stream='historical' then update public.email_accounts set backfill_status='running',backfill_error=null where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if; end if;\n   when 'restart' then\n     c.generation:=gen_random_uuid(); c.state:='claimed'; c.owner_attempt_id:=p_attempt_id; c.block_code:=null;\n     if p_stream='recent' then c.continuation:=jsonb_build_object('version',2,'phase','uninitialized','intent','reconcile',\n       'fetch_policy',coalesce(p_payload->>'fetch_policy','missing_only'));\n     else update public.email_accounts set backfill_status='running',backfill_page_token=null,backfill_total_fetched=0,\n       backfill_started_at=now(),backfill_completed_at=null,backfill_error=null where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if; end if;\n   else\n     if c.state<>'claimed' or c.owner_attempt_id is distinct from p_attempt_id then raise exception using errcode='P0001',message='not_owner'; end if;\n     case p_operation\n     when 'initialize_traversal' then\n       if c.continuation->>'phase' is distinct from 'uninitialized' then raise exception using errcode='P0001',message='already_initialized'; end if;\n       current_cursor:=a.history_id;\n       if current_cursor is not null then\n         if current_cursor!~'^(0|[1-9][0-9]{0,19})$' then raise exception using errcode='P0001',message='invalid_legacy_cursor'; end if;\n         if current_cursor::numeric>18446744073709551615 or (p_payload->>'captured_history_id')::numeric<current_cursor::numeric then raise exception using errcode='P0001',message='boundary_regression'; end if;\n       end if;\n       mode:=case when c.continuation->>'intent'='normal' and current_cursor is not null then 'history' else 'reconcile' end;\n       c.continuation:=jsonb_build_object('version',2,'phase','initialized','mode',mode,'origin_history_id',current_cursor,\n         'fetch_policy',c.continuation->>'fetch_policy',\n         'captured_history_id',p_payload->>'captured_history_id','captured_at',p_payload->>'captured_at',\n         'page_size',p_payload->'page_size','query',null,'labels',jsonb_build_array('INBOX','SENT'),\n         'labels_state',jsonb_build_object('INBOX',jsonb_build_object('next_page_token',null,'complete',false),\n           'SENT',jsonb_build_object('next_page_token',null,'complete',false)));\n     when 'checkpoint' then\n       next_token:=p_payload->>'returned_next_page_token'; evidence:=p_payload->'page_evidence';\n       if p_stream='recent' then\n         label:=p_payload->>'label'; input_token:=p_payload->>'expected_input_page_token';\n         if c.continuation->>'phase' is distinct from 'initialized' then raise exception using errcode='P0001',message='not_initialized'; end if;\n         if c.continuation#>>array['labels_state',label,'complete'] is distinct from 'false' or\n           c.continuation#>>array['labels_state',label,'next_page_token'] is distinct from input_token then raise exception using errcode='P0001',message='page_conflict'; end if;\n         if a.history_id is distinct from c.continuation->>'origin_history_id' then raise exception using errcode='P0001',message='cursor_conflict'; end if;\n       else\n         label:=null; input_token:=p_payload->>'expected_page_token';\n         if a.backfill_status<>'running' or a.backfill_page_token is distinct from input_token or a.backfill_total_fetched<>(p_payload->>'expected_total')::integer then raise exception using errcode='P0001',message='page_conflict'; end if;\n       end if;\n       if next_token is not null and (next_token is not distinct from input_token or exists(\n         select 1 from public.email_ingestion_transitions t where t.tenant_id=p_tenant_id and t.email_account_id=p_email_account_id\n           and t.stream=p_stream and t.result_generation=c.generation and t.operation='checkpoint'\n           and (t.request_document->'payload'->>'label') is not distinct from label\n           and ((md5(coalesce(t.request_document->'payload'->>'expected_input_page_token',t.request_document->'payload'->>'expected_page_token'))=md5(next_token)\n             and coalesce(t.request_document->'payload'->>'expected_input_page_token',t.request_document->'payload'->>'expected_page_token')=next_token)\n           or (md5(t.request_document->'payload'->>'returned_next_page_token')=md5(next_token) and t.request_document->'payload'->>'returned_next_page_token'=next_token))\n       )) then raise exception using errcode='P0001',message='pagination_no_progress'; end if;\n       if p_stream='recent' then\n         c.continuation:=jsonb_set(c.continuation,array['labels_state',label],jsonb_build_object('next_page_token',next_token,'complete',(p_payload->>'exhausted')::boolean));\n         done:=(c.continuation#>>'{labels_state,INBOX,complete}')::boolean and (c.continuation#>>'{labels_state,SENT,complete}')::boolean;\n         if done then update public.email_accounts set history_id=c.continuation->>'captured_history_id' where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if; end if;\n       else\n         new_total:=a.backfill_total_fetched::bigint+(p_payload->>'listed_count')::bigint;\n         if new_total>2147483647 then raise exception using errcode='P0001',message='total_overflow'; end if;\n         done:=(p_payload->>'exhausted')::boolean;\n         update public.email_accounts set backfill_page_token=next_token,backfill_total_fetched=new_total::integer,\n           backfill_status=case when done then 'completed' else 'running' end,\n           backfill_completed_at=case when done then now() else null end,backfill_error=null\n           where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if;\n       end if;\n       new_total:=records::bigint+(evidence->>'message_upsert_count')::bigint;\n       if new_total>2147483647 then raise exception using errcode='P0001',message='total_overflow'; end if;\n       records:=new_total::integer;\n       if done or (p_payload->>'yield_after_page')::boolean then\n         c.state:=case when done then 'completed' else 'ready' end; c.owner_attempt_id:=null; terminal:=true; attempt_status:='success';\n       end if;\n     when 'release' then\n       c.state:='ready'; c.owner_attempt_id:=null; terminal:=true; attempt_status:='success'; evidence:=p_payload->'attempt_evidence';\n     when 'block' then\n       c.state:='blocked'; c.owner_attempt_id:=null; c.block_code:=p_payload->>'error_code';\n       terminal:=true; attempt_status:='failed'; error_code:=c.block_code; evidence:=p_payload->'attempt_evidence';\n       if p_stream='historical' then update public.email_accounts set backfill_status='error',backfill_error=c.block_code where tenant_id=p_tenant_id and id=p_email_account_id;\n         if not found then raise exception 'account progress update affected no row'; end if; end if;\n     else raise exception using errcode='22023',message='invalid_operation';\n     end case;\n   end case;\n end if;\n if changed then\n   if c.revision=9223372036854775807 then raise exception using errcode='P0001',message='revision_exhausted'; end if;\n   c.revision:=c.revision+1; c.updated_at:=now();\n   if not exists_checkpoint then\n     insert into public.email_ingestion_checkpoints(tenant_id,email_account_id,stream,contract_version,generation,revision,state,owner_attempt_id,continuation,block_code,created_at,updated_at)\n     values(c.tenant_id,c.email_account_id,c.stream,c.contract_version,c.generation,c.revision,c.state,c.owner_attempt_id,c.continuation,c.block_code,c.created_at,c.updated_at);\n   else\n     update public.email_ingestion_checkpoints set generation=c.generation,revision=c.revision,state=c.state,\n       owner_attempt_id=c.owner_attempt_id,continuation=c.continuation,block_code=c.block_code,updated_at=c.updated_at\n       where tenant_id=p_tenant_id and email_account_id=p_email_account_id and stream=p_stream;\n     if not found then raise exception 'checkpoint update affected no row'; end if;\n   end if;\n end if;\n if p_operation in ('block','release','finish_attempt') then\n   -- These counts are attempt-wide known totals; NULL never overwrites with zero.\n   confirmed_count:=(evidence->>'message_upsert_count')::integer;\n   if confirmed_count is not null then\n     if confirmed_count<records then raise exception using errcode='22023',message='count_regression'; end if;\n     records:=confirmed_count;\n   end if;\n end if;\n result:=jsonb_build_object('operation',p_operation,'attempt_id',p_attempt_id,'tenant_id',p_tenant_id,'email_account_id',p_email_account_id,'stream',p_stream,\n   'checkpoint_present',c.tenant_id is not null,'generation',c.generation,'revision',c.revision::text,\n   'checkpoint_state',c.state,'owner_attempt_id',c.owner_attempt_id,'attempt_status',attempt_status,\n   'records_processed',records,'coverage_complete',done);\n insert into public.email_ingestion_transitions(tenant_id,email_account_id,stream,transition_id,operation,attempt_id,\n   expected_generation,expected_revision,expected_owner_attempt_id,request_document,request_fingerprint,accepted_result,checkpoint_stream,result_generation,result_revision)\n values(p_tenant_id,p_email_account_id,p_stream,p_transition_id,p_operation,p_attempt_id,p_expected_generation,p_expected_revision,\n   p_expected_owner_attempt_id,doc,md5(doc::text),result,case when c.tenant_id is not null then p_stream else null end,c.generation,c.revision);\n v_attempt_metadata:=attempt.metadata||jsonb_build_object('email_ingestion_v2',jsonb_build_object('contract_version',2,'stream',p_stream,\n   'transition_id',p_transition_id,'operation',p_operation,'checkpoint_present',c.tenant_id is not null,'generation',c.generation,'revision',c.revision::text,\n   'coverage_complete',done,'continuation_pending',c.state<>'completed','evidence',evidence,\n   'classification',case when p_operation='finish_attempt' then p_payload->>'outcome' else null end));\n update public.email_sync_runs as target_run set status=attempt_status,completed_at=case when terminal then now() else null end,\n   records_processed=records,error_message=error_code,metadata=v_attempt_metadata\n   where target_run.id=p_attempt_id and target_run.tenant_id=p_tenant_id and target_run.status='running';\n if not found then raise exception 'attempt update disappeared'; end if;\n return jsonb_build_object('contract_version',2,'disposition','applied','code','transition_applied','transition_id',p_transition_id,\n   'accepted_result',result,'current_checkpoint',public.email_ingestion_checkpoint_json_v2(c),'historical_receipt',false);\nexception\n when invalid_parameter_value or invalid_text_representation or invalid_datetime_format or datetime_field_overflow then\n   return jsonb_build_object('contract_version',2,'disposition','denied','code','invalid_request','transition_id',p_transition_id,'accepted_result',null,'current_checkpoint',null,'historical_receipt',false);\n when sqlstate 'P0001' then\n   code:=sqlerrm;\n   if code<>all(array['account_not_found','attempt_mismatch','transition_id_reused','attempt_terminal','source_ineligible','owner_must_release',\n     'checkpoint_missing','legacy_state_invalid','checkpoint_conflict','invalid_recovery_state','explicit_recovery_required','already_claimed',\n     'not_owner','already_initialized','invalid_legacy_cursor','boundary_regression','not_initialized','page_conflict','cursor_conflict',\n     'pagination_no_progress','total_overflow','revision_exhausted','force_generation_busy','invalid_legacy_policy']) then raise; end if;\n   -- Exception subtransaction rolled back ALL writes; never return staged c as current.\n   return jsonb_build_object('contract_version',2,'disposition',case when code in ('account_not_found','attempt_mismatch','transition_id_reused','source_ineligible') then 'denied' else 'conflict' end,\n     'code',code,'transition_id',p_transition_id,'accepted_result',null,'current_checkpoint',null,'historical_receipt',false);\nend $function$\n",
+      "securityDefiner": true
+    },
+    {
+      "name": "learn_slack_claim_jobs",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_worker uuid, p_batch integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_slack_claim_jobs(p_worker uuid, p_batch integer DEFAULT 1)\n RETURNS SETOF platform_jobs\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j public.platform_jobs%rowtype;team text;pace public.slack_workspace_pacing%rowtype;\n claimed integer:=0;expires timestamptz;candidate uuid;begin\n if current_user<>'service_role' then raise exception 'slack_queue_forbidden' using errcode='42501';end if;\n if current_setting('transaction_isolation')<>'read committed' then raise exception 'slack_queue_snapshot' using errcode='22023';end if;\n if p_worker is null or p_batch is null or p_batch not between 1 and 5 then raise exception 'slack_queue_invalid' using errcode='22023';end if;\n -- Bounded scan; paced entries move out of the ready queue without consuming an\n -- attempt or becoming an error. Other workspaces can proceed in the same scan.\n for candidate in select q.id from public.platform_jobs q where q.job_type in ('slack.history_sync','slack.thread_sync')\n  and q.status in ('queued','retrying','running') and coalesce(q.available_at,'-infinity')<=clock_timestamp()\n  and coalesce(q.lease_expires_at,'-infinity')<=clock_timestamp()\n  order by q.priority,q.created_at,q.id limit 100\n loop\n  exit when claimed>=p_batch;\n  -- Lock only the row being considered: a prefetched FOR UPDATE cursor would\n  -- otherwise lock other workspaces before this worker has chosen its one job.\n  select * into j from public.platform_jobs q where q.id=candidate\n   and q.job_type in ('slack.history_sync','slack.thread_sync') and q.status in ('queued','retrying','running')\n   and coalesce(q.available_at,'-infinity')<=clock_timestamp() and coalesce(q.lease_expires_at,'-infinity')<=clock_timestamp()\n   for update skip locked;\n  if not found then continue;end if;\n  if j.attempt_count is null or j.max_attempts is null or j.max_attempts<1 or (j.attempt_count>=j.max_attempts and not(coalesce(j.metadata,'{}') ? 'slack_page_v1')) then\n   update public.platform_jobs set status='dead_letter',dead_lettered_at=clock_timestamp(),failed_at=clock_timestamp(),\n    lease_expires_at=null,error_code='slack_history_attempts_exhausted' where id=j.id;\n   continue;\n  end if;\n  team:=null;\n  -- A committed page needs only settlement. It never requests another provider\n  -- page, so crash recovery is allowed even while that workspace is cooling down.\n  if not(coalesce(j.metadata,'{}') ? 'slack_page_v1') then\n   if j.job_type='slack.history_sync' then\n    select a.settings->'slack_history'->>'teamId' into team from public.connector_accounts a\n     join public.tenant_connectors c on c.id=a.tenant_connector_id and c.tenant_id=a.tenant_id and c.connector_id='slack'\n     where a.id::text=j.payload->>'connector_account_id' and a.tenant_id=j.tenant_id;\n   else\n    select t.scope->>'teamId' into team from public.slack_thread_imports t\n     join public.connector_accounts a on a.id=t.account_id and a.tenant_id=t.tenant_id\n     join public.tenant_connectors c on c.id=a.tenant_connector_id and c.tenant_id=a.tenant_id and c.connector_id='slack'\n     where t.id::text=j.payload->>'thread_import_id' and t.tenant_id=j.tenant_id and a.id::text=j.payload->>'connector_account_id';\n   end if;\n   if team is null or team !~ '^T[A-Z0-9]+$' then\n    update public.platform_jobs set status='dead_letter',dead_lettered_at=clock_timestamp(),failed_at=clock_timestamp(),\n     lease_expires_at=null,error_code='slack_history_binding_unavailable' where id=j.id;\n    continue;\n   end if;\n   -- Never wait while holding other queue/gate rows. This also serializes the\n   -- first insert when two workers see a previously unseen workspace.\n   if not pg_try_advisory_xact_lock(hashtextextended('learn-slack-workspace:'||team,0)) then continue;end if;\n   select * into pace from public.slack_workspace_pacing where team_id=team for update;\n   if found and greatest(pace.next_allowed_at,pace.blocked_until)>clock_timestamp() then\n    update public.platform_jobs set available_at=greatest(pace.blocked_until,least(pace.next_allowed_at,clock_timestamp()+interval '60 seconds')) where id=j.id;\n    continue;\n   end if;\n  end if;\n  expires:=clock_timestamp()+interval '180 seconds';\n  if team is not null then\n   insert into public.slack_workspace_pacing(team_id,next_allowed_at,active_job_id,last_started_at)\n    values(team,expires+interval '60 seconds',j.id,clock_timestamp())\n    on conflict(team_id) do update set next_allowed_at=excluded.next_allowed_at,active_job_id=excluded.active_job_id,last_started_at=excluded.last_started_at;\n  end if;\n  update public.platform_jobs set status='running',claimed_by='learn-slack:'||p_worker::text,\n   claimed_at=clock_timestamp(),lease_expires_at=expires,attempt_count=j.attempt_count+1,last_attempt_at=clock_timestamp(),\n   started_at=coalesce(started_at,clock_timestamp()),\n   metadata=case when team is null then metadata else coalesce(metadata,'{}')||jsonb_build_object('slack_workspace_v1',jsonb_build_object('teamId',team)) end\n   where id=j.id returning * into j;\n  claimed:=claimed+1;\n  return next j;\n end loop;\nend $function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "platform_jobs_claim",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": null,
+      "arguments": "p_worker text, p_batch integer, p_lease_seconds integer, p_job_types text[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_jobs_claim(p_worker text, p_batch integer DEFAULT 5, p_lease_seconds integer DEFAULT 300, p_job_types text[] DEFAULT NULL::text[])\n RETURNS SETOF platform_jobs\n LANGUAGE plpgsql\nAS $function$\nbegin\n  return query\n  update platform_jobs j set\n    status           = 'running',\n    claimed_at       = now(),\n    claimed_by       = p_worker,\n    lease_expires_at = now() + make_interval(secs => greatest(30, p_lease_seconds)),\n    attempt_count    = j.attempt_count + 1,\n    last_attempt_at  = now(),\n    started_at       = coalesce(j.started_at, now())\n  where j.id in (\n    select c.id\n    from platform_jobs c\n    where c.status in ('queued', 'retrying')\n      and c.job_type <> 'commusoft.source_sync'\n      and c.job_type not in ('slack.history_sync','slack.thread_sync')\n      and (c.available_at is null or c.available_at <= now())\n      and (c.lease_expires_at is null or c.lease_expires_at < now())\n      and (p_job_types is null or c.job_type = any(p_job_types))\n    order by c.priority asc, c.created_at asc\n    for update skip locked\n    limit greatest(1, least(50, p_batch))\n  )\n  returning j.*;\nend;\n$function$\n",
+      "securityDefiner": false
+    },
+    {
+      "name": "platform_jobs_complete_email_v1",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_job_id uuid, p_tenant_id uuid, p_claimed_by text, p_attempt_count integer, p_document jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_jobs_complete_email_v1(p_job_id uuid, p_tenant_id uuid, p_claimed_by text, p_attempt_count integer, p_document jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE\n j public.platform_jobs%rowtype; run_row public.email_sync_runs%rowtype;\n successor public.platform_jobs%rowtype; receipt jsonb; result_doc jsonb;\n ingestion jsonb; continuation jsonb; expected_payload jsonb;\n account_id uuid; run_id uuid; successor_id uuid; expected_sync text;\n expected_stream text; expected_connector text; expected_priority integer;\n processed integer; affected integer;\nBEGIN\n IF current_user <> 'service_role' THEN\n  RAISE EXCEPTION USING errcode='42501',message='queue_completion_forbidden';\n END IF;\n IF p_job_id IS NULL OR p_tenant_id IS NULL OR p_claimed_by IS NULL OR\n    p_claimed_by='' OR p_attempt_count IS NULL OR p_attempt_count<1 OR\n    jsonb_typeof(p_document) IS DISTINCT FROM 'object' THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_invalid';\n END IF;\n IF NOT p_document ?& ARRAY['result','records_processed','continuation'] OR\n    (SELECT count(*) FROM jsonb_object_keys(p_document))<>3 OR\n    jsonb_typeof(p_document->'result') IS DISTINCT FROM 'object' THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_invalid';\n END IF;\n SELECT * INTO j FROM public.platform_jobs WHERE id=p_job_id AND tenant_id=p_tenant_id FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION USING errcode='P0001',message='queue_completion_not_owned'; END IF;\n receipt:=j.metadata->'email_queue_completion_v1';\n IF j.status='succeeded' THEN\n  IF j.claimed_by=p_claimed_by AND j.attempt_count=p_attempt_count AND\n     jsonb_typeof(receipt)='object' AND receipt->>'version'='1' AND\n     receipt->>'claimed_by'=p_claimed_by AND\n     receipt->>'attempt_count'=p_attempt_count::text AND\n     receipt->'document'=p_document THEN\n   RETURN jsonb_build_object('version',1,'disposition','replayed','job_id',j.id,\n     'successor_id',receipt->'successor_id');\n  END IF;\n  RAISE EXCEPTION USING errcode='P0001',message='queue_completion_replay_conflict';\n END IF;\n IF j.status<>'running' OR j.claimed_by IS DISTINCT FROM p_claimed_by OR\n    j.attempt_count<>p_attempt_count OR j.lease_expires_at IS NULL OR\n    j.lease_expires_at<=clock_timestamp() THEN\n  RAISE EXCEPTION USING errcode='P0001',message='queue_completion_not_owned';\n END IF;\n IF j.job_type NOT IN ('email.gmail_sync','email.workspace_sync','email.workspace_backfill') OR\n    jsonb_typeof(j.payload) IS DISTINCT FROM 'object' OR\n    jsonb_typeof(j.payload->'email_account_id') IS DISTINCT FROM 'string' OR\n    jsonb_typeof(j.metadata) IS DISTINCT FROM 'object' THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_invalid';\n END IF;\n account_id:=(j.payload->>'email_account_id')::uuid;\n IF j.job_key IS DISTINCT FROM j.job_type||':'||(j.payload->>'email_account_id') THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n END IF;\n expected_sync:=CASE j.job_type WHEN 'email.gmail_sync' THEN 'messages'\n  WHEN 'email.workspace_sync' THEN 'workspace_messages' ELSE 'workspace_backfill' END;\n expected_stream:=CASE WHEN j.job_type='email.workspace_backfill' THEN 'historical' ELSE 'recent' END;\n expected_connector:=CASE WHEN j.job_type='email.gmail_sync' THEN 'gmail' ELSE 'google-workspace' END;\n expected_priority:=CASE WHEN j.job_type='email.workspace_backfill' THEN 200 ELSE 100 END;\n result_doc:=p_document->'result'; ingestion:=result_doc->'ingestion';\n IF jsonb_typeof(ingestion) IS DISTINCT FROM 'object' OR ingestion->'success' IS DISTINCT FROM 'true'::jsonb OR\n    ingestion->>'stream' IS DISTINCT FROM expected_stream OR\n    (ingestion->>'email_account_id')::uuid IS DISTINCT FROM account_id OR\n    jsonb_typeof(result_doc->'sync_run_id') IS DISTINCT FROM 'string' OR\n    result_doc->>'sync_run_id' IS DISTINCT FROM ingestion->>'sync_run_id' THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n END IF;\n run_id:=(result_doc->>'sync_run_id')::uuid;\n PERFORM 1 FROM public.email_accounts WHERE id=account_id AND tenant_id=j.tenant_id AND provider='gmail' FOR KEY SHARE;\n IF NOT FOUND THEN RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity'; END IF;\n SELECT * INTO run_row FROM public.email_sync_runs WHERE id=run_id AND tenant_id=j.tenant_id\n  AND provider='gmail' AND sync_type=expected_sync AND status='success' AND completed_at IS NOT NULL\n  AND (metadata->>'email_account_id')::uuid=account_id FOR KEY SHARE;\n IF NOT FOUND THEN RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity'; END IF;\n -- Worker counts are invocation-local; historical receipts retain the run's cumulative count.\n IF jsonb_typeof(p_document->'records_processed') IS DISTINCT FROM 'number' OR\n    jsonb_typeof(ingestion->'records_processed') IS DISTINCT FROM 'number' OR\n    jsonb_typeof(ingestion->'invocation_records_processed') IS DISTINCT FROM 'number' OR\n    ingestion->'historical_receipt' NOT IN ('true'::jsonb,'false'::jsonb) OR\n    ingestion->'historical_receipt' IS NULL THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_invalid';\n END IF;\n processed:=(p_document->>'records_processed')::integer;\n IF processed<0 OR (ingestion->>'records_processed')::integer<>run_row.records_processed OR\n    processed<>(ingestion->>'invocation_records_processed')::integer THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n END IF;\n IF ingestion->'historical_receipt'='true'::jsonb THEN\n  IF processed<>0 OR ingestion->'threads_processed' IS DISTINCT FROM 'null'::jsonb OR\n     ingestion->>'retry_action' IS DISTINCT FROM 'none' OR\n     ingestion->>'persistence_certainty' IS DISTINCT FROM 'confirmed' OR\n     ingestion->>'checkpoint_certainty' IS DISTINCT FROM 'confirmed' OR\n     p_document->'continuation' IS DISTINCT FROM 'null'::jsonb THEN\n   RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n  END IF;\n ELSIF processed<>run_row.records_processed THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n END IF;\n continuation:=p_document->'continuation';\n IF continuation<>'null'::jsonb THEN\n  expected_payload:=jsonb_build_object('email_account_id',j.payload->'email_account_id')||\n    CASE WHEN j.payload ? 'max_results' THEN jsonb_build_object('max_results',j.payload->'max_results') ELSE '{}'::jsonb END;\n  IF jsonb_typeof(continuation) IS DISTINCT FROM 'object' OR\n     ingestion->>'retry_action' IS DISTINCT FROM 'continue' OR\n     ingestion->'historical_receipt' IS DISTINCT FROM 'false'::jsonb OR\n     continuation IS DISTINCT FROM jsonb_build_object('job_type',j.job_type,'job_key',j.job_key,\n       'connector_id',expected_connector,'module_id','communications.email',\n       'priority',expected_priority,'payload',expected_payload) THEN\n   RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n  END IF;\n ELSIF ingestion->>'retry_action'='continue' THEN\n  RAISE EXCEPTION USING errcode='22023',message='queue_completion_identity';\n END IF;\n UPDATE public.platform_jobs SET status='succeeded',completed_at=clock_timestamp(),lease_expires_at=NULL,\n  error_code=NULL,result=result_doc,records_processed=coalesce(processed,j.records_processed) WHERE id=j.id;\n GET DIAGNOSTICS affected=ROW_COUNT;\n IF affected<>1 THEN RAISE EXCEPTION 'queue_completion_disappeared'; END IF;\n IF continuation<>'null'::jsonb THEN\n  INSERT INTO public.platform_jobs(tenant_id,connector_id,module_id,job_type,job_key,status,priority,\n    max_attempts,available_at,payload)\n  VALUES(j.tenant_id,expected_connector,'communications.email',j.job_type,j.job_key,'queued',expected_priority,\n    5,clock_timestamp(),expected_payload)\n  ON CONFLICT (tenant_id,job_key) WHERE job_key IS NOT NULL AND status IN ('queued','running','retrying')\n  DO NOTHING RETURNING id INTO successor_id;\n  IF successor_id IS NULL THEN\n   SELECT * INTO successor FROM public.platform_jobs WHERE tenant_id=j.tenant_id AND job_key=j.job_key\n    AND status IN ('queued','running','retrying') FOR UPDATE;\n   IF NOT FOUND OR successor.job_type<>j.job_type OR successor.payload IS DISTINCT FROM expected_payload OR\n      successor.connector_id IS DISTINCT FROM expected_connector OR\n      successor.module_id IS DISTINCT FROM 'communications.email' OR successor.priority<>expected_priority THEN\n    RAISE EXCEPTION USING errcode='P0001',message='queue_completion_successor_conflict';\n   END IF;\n   successor_id:=successor.id;\n  END IF;\n END IF;\n IF j.lease_expires_at<=clock_timestamp() THEN\n  RAISE EXCEPTION USING errcode='P0001',message='queue_completion_not_owned';\n END IF;\n receipt:=jsonb_build_object('version',1,'claimed_by',p_claimed_by,'attempt_count',p_attempt_count,\n  'document',p_document,'successor_id',successor_id);\n UPDATE public.platform_jobs SET metadata=metadata||jsonb_build_object('email_queue_completion_v1',receipt) WHERE id=j.id;\n RETURN jsonb_build_object('version',1,'disposition','applied','job_id',j.id,'successor_id',successor_id);\nEXCEPTION WHEN invalid_text_representation OR numeric_value_out_of_range THEN\n RAISE EXCEPTION USING errcode='22023',message='queue_completion_invalid';\nEND $function$\n",
+      "securityDefiner": false
+    }
+  ],
+  "phoneView": null,
+  "observedAt": "2026-10-10T13:56:40.74555+00:00",
+  "protocolRole": {
+    "name": "email_ingestion_protocol_owner",
+    "login": false,
+    "inherit": false,
+    "createDb": false,
+    "bypassRls": false,
+    "superuser": false,
+    "createRole": false
+  },
+  "protocolGrants": [
+    {
+      "table": "email_accounts",
+      "column": "auth_state",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_completed_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_completed_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_error",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_error",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_page_token",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_page_token",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_started_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_started_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_status",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_status",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_total_fetched",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "backfill_total_fetched",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "history_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "history_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_accounts",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "provider",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "status",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_accounts",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "block_code",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "continuation",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "generation",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "owner_attempt_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "revision",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "state",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": "updated_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": null,
+      "schema": "public",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "table": "email_ingestion_checkpoints",
+      "column": null,
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_ingestion_transitions",
+      "column": null,
+      "schema": "public",
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "table": "email_ingestion_transitions",
+      "column": null,
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": "completed_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": "error_message",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": "metadata",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": "records_processed",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": "status",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "table": "email_sync_runs",
+      "column": null,
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    }
+  ],
+  "tables": [
+    {
+      "rls": true,
+      "name": "email_accounts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "backfill_status",
+          "type": "text",
+          "default": "'idle'::text",
+          "notNull": true
+        },
+        {
+          "name": "backfill_started_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_page_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "backfill_total_fetched",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "backfill_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "history_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "auth_state",
+          "type": "text",
+          "default": "'unknown'::text",
+          "notNull": true
+        },
+        {
+          "name": "auth_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "auth_state_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_success_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_incremental_attempt_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_sync_error",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_accounts_pkey",
+          "definition": "CREATE UNIQUE INDEX email_accounts_pkey ON public.email_accounts USING btree (id)"
+        },
+        {
+          "name": "email_accounts_tenant_id_idx",
+          "definition": "CREATE INDEX email_accounts_tenant_id_idx ON public.email_accounts USING btree (tenant_id)"
+        },
+        {
+          "name": "email_accounts_tenant_id_provider_email_address_key",
+          "definition": "CREATE UNIQUE INDEX email_accounts_tenant_id_provider_email_address_key ON public.email_accounts USING btree (tenant_id, provider, email_address)"
+        },
+        {
+          "name": "email_accounts_tenant_id_uk",
+          "definition": "CREATE UNIQUE INDEX email_accounts_tenant_id_uk ON public.email_accounts USING btree (tenant_id, id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_account_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_account_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_accounts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_accounts_set_updated_at BEFORE UPDATE ON public.email_accounts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        },
+        {
+          "name": "email_ingestion_account_guard_v2",
+          "function": "email_ingestion_account_guard_v2",
+          "definition": "CREATE TRIGGER email_ingestion_account_guard_v2 BEFORE INSERT OR UPDATE ON public.email_accounts FOR EACH ROW EXECUTE FUNCTION email_ingestion_account_guard_v2()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_accounts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_accounts_tenant_id_provider_email_address_key",
+          "definition": "UNIQUE (tenant_id, provider, email_address)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_checkpoints",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "default": "2",
+          "notNull": true
+        },
+        {
+          "name": "generation",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "owner_attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "continuation",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "block_code",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_ingestion_checkpoints_pkey",
+          "definition": "CREATE UNIQUE INDEX email_ingestion_checkpoints_pkey ON public.email_ingestion_checkpoints USING btree (tenant_id, email_account_id, stream)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_checkpoint_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_checkpoint_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_checkpoint_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check",
+          "definition": "CHECK (((state = 'claimed'::text) = (owner_attempt_id IS NOT NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check1",
+          "definition": "CHECK (((state = 'blocked'::text) = (block_code IS NOT NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_check2",
+          "definition": "CHECK (((stream <> 'historical'::text) OR (continuation IS NULL)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_continuation_check",
+          "definition": "CHECK (((continuation IS NULL) OR (jsonb_typeof(continuation) = 'object'::text)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_contract_version_check",
+          "definition": "CHECK ((contract_version = 2))"
+        },
+        {
+          "kind": "p",
+          "name": "email_ingestion_checkpoints_pkey",
+          "definition": "PRIMARY KEY (tenant_id, email_account_id, stream)"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_revision_check",
+          "definition": "CHECK ((revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_state_check",
+          "definition": "CHECK ((state = ANY (ARRAY['ready'::text, 'claimed'::text, 'blocked'::text, 'completed'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_checkpoints_stream_check",
+          "definition": "CHECK ((stream = ANY (ARRAY['recent'::text, 'historical'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_checkpoints_tenant_id_email_account_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id) REFERENCES email_accounts(tenant_id, id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_checkpoints_tenant_id_owner_attempt_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, owner_attempt_id) REFERENCES email_sync_runs(tenant_id, id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_ingestion_transitions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "stream",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "transition_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "contract_version",
+          "type": "integer",
+          "default": "2",
+          "notNull": true
+        },
+        {
+          "name": "operation",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "expected_generation",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expected_revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expected_owner_attempt_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "request_document",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "request_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "accepted_result",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "checkpoint_stream",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "result_generation",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "result_revision",
+          "type": "bigint",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_ingestion_attempt_v2",
+          "definition": "CREATE INDEX email_ingestion_attempt_v2 ON public.email_ingestion_transitions USING btree (attempt_id)"
+        },
+        {
+          "name": "email_ingestion_input_token_v2",
+          "definition": "CREATE INDEX email_ingestion_input_token_v2 ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, result_generation, (((request_document -> 'payload'::text) ->> 'label'::text)), md5(COALESCE(((request_document -> 'payload'::text) ->> 'expected_input_page_token'::text), ((request_document -> 'payload'::text) ->> 'expected_page_token'::text)))) WHERE (operation = 'checkpoint'::text)"
+        },
+        {
+          "name": "email_ingestion_output_token_v2",
+          "definition": "CREATE INDEX email_ingestion_output_token_v2 ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, result_generation, (((request_document -> 'payload'::text) ->> 'label'::text)), md5(((request_document -> 'payload'::text) ->> 'returned_next_page_token'::text))) WHERE (operation = 'checkpoint'::text)"
+        },
+        {
+          "name": "email_ingestion_transitions_pkey",
+          "definition": "CREATE UNIQUE INDEX email_ingestion_transitions_pkey ON public.email_ingestion_transitions USING btree (tenant_id, email_account_id, stream, transition_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_receipt_insert_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": null,
+          "command": "INSERT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_receipt_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_accepted_result_check",
+          "definition": "CHECK ((jsonb_typeof(accepted_result) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_check",
+          "definition": "CHECK ((((checkpoint_stream IS NULL) AND (operation = 'finish_attempt'::text) AND (result_generation IS NULL) AND (result_revision IS NULL)) OR ((checkpoint_stream IS NOT NULL) AND (checkpoint_stream = stream) AND (result_generation IS NOT NULL) AND (result_revision IS NOT NULL))))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_check1",
+          "definition": "CHECK (((checkpoint_stream IS NOT NULL) OR (accepted_result @> '{\"revision\": null, \"generation\": null, \"attempt_status\": \"failed\", \"checkpoint_state\": null, \"owner_attempt_id\": null, \"coverage_complete\": false, \"checkpoint_present\": false}'::jsonb)))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_contract_version_check",
+          "definition": "CHECK ((contract_version = 2))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_expected_revision_check",
+          "definition": "CHECK ((expected_revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_operation_check",
+          "definition": "CHECK ((operation = ANY (ARRAY['claim'::text, 'initialize_traversal'::text, 'checkpoint'::text, 'release'::text, 'block'::text, 'takeover'::text, 'restart'::text, 'finish_attempt'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "email_ingestion_transitions_pkey",
+          "definition": "PRIMARY KEY (tenant_id, email_account_id, stream, transition_id)"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_request_document_check",
+          "definition": "CHECK ((jsonb_typeof(request_document) = 'object'::text))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_result_revision_check",
+          "definition": "CHECK ((result_revision >= 0))"
+        },
+        {
+          "kind": "c",
+          "name": "email_ingestion_transitions_stream_check",
+          "definition": "CHECK ((stream = ANY (ARRAY['recent'::text, 'historical'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_attempt_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, attempt_id) REFERENCES email_sync_runs(tenant_id, id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_email_account_id_che_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id, checkpoint_stream) REFERENCES email_ingestion_checkpoints(tenant_id, email_account_id, stream) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "f",
+          "name": "email_ingestion_transitions_tenant_id_email_account_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id, email_account_id) REFERENCES email_accounts(tenant_id, id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_sync_runs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "sync_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'running'::text",
+          "notNull": true
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "records_processed",
+          "type": "integer",
+          "default": "0",
+          "notNull": true
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_sync_runs_pkey",
+          "definition": "CREATE UNIQUE INDEX email_sync_runs_pkey ON public.email_sync_runs USING btree (id)"
+        },
+        {
+          "name": "email_sync_runs_tenant_id_id_v2",
+          "definition": "CREATE UNIQUE INDEX email_sync_runs_tenant_id_id_v2 ON public.email_sync_runs USING btree (tenant_id, id)"
+        },
+        {
+          "name": "email_sync_runs_tenant_id_idx",
+          "definition": "CREATE INDEX email_sync_runs_tenant_id_idx ON public.email_sync_runs USING btree (tenant_id)"
+        },
+        {
+          "name": "email_sync_runs_type_status_idx",
+          "definition": "CREATE INDEX email_sync_runs_type_status_idx ON public.email_sync_runs USING btree (tenant_id, sync_type, status)"
+        },
+        {
+          "name": "learn_email_capture_run_lookup",
+          "definition": "CREATE INDEX learn_email_capture_run_lookup ON public.email_sync_runs USING btree (tenant_id, ((metadata ->> 'email_account_id'::text)), started_at DESC, id DESC) WHERE ((provider = 'gmail'::text) AND (sync_type = ANY (ARRAY['messages'::text, 'workspace_messages'::text])))"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "email_run_protocol_select_v2",
+          "check": null,
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "email_run_protocol_update_v2",
+          "check": "true",
+          "roles": [
+            "email_ingestion_protocol_owner"
+          ],
+          "using": "true",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_ingestion_run_guard_v2",
+          "function": "email_ingestion_run_guard_v2",
+          "definition": "CREATE TRIGGER email_ingestion_run_guard_v2 BEFORE INSERT OR DELETE OR UPDATE ON public.email_sync_runs FOR EACH ROW EXECUTE FUNCTION email_ingestion_run_guard_v2()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_sync_runs_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "workers": [
+    {
+      "slug": "learn-launch-status",
+      "version": 3,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "work-transition",
+      "version": 3,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "learn-slack-worker",
+      "version": 5,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "simwood-sync-calls",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "simwood-sync-recordings",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "simwood-download-recording",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "simwood-test-connection",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "learn-data-import",
+      "version": 4,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "learn-commusoft-worker",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "slug": "learn-commusoft-verify",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    }
+  ]
+}

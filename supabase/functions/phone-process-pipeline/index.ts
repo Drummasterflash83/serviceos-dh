@@ -246,18 +246,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const d = await ensureRecordingDownloaded({ tenantId, recordingId, force, authToken });
   if (!d.ok) {
     if (["learn_capture_paused", "learn_capture_unavailable"].includes(d.code)) {
-      await supabase
-        .from("phone_sync_runs")
-        .update({
-          status: "paused",
-          sync_type: "pipeline_waiting",
-          completed_at: new Date().toISOString(),
-          records_processed: 0,
-          error_message: null,
-          metadata: { ...baseMetadata, capture_waiting: d.code },
-        })
-        .eq("id", syncRunId)
-        .eq("tenant_id", tenantId);
+      let waitingRecorded = false;
+      try {
+        const saved = await supabase
+          .from("phone_sync_runs")
+          .update({
+            status: "paused",
+            sync_type: "pipeline_waiting",
+            completed_at: new Date().toISOString(),
+            records_processed: 0,
+            error_message: null,
+            metadata: { ...baseMetadata, capture_waiting: d.code },
+          })
+          .eq("id", syncRunId)
+          .eq("tenant_id", tenantId)
+          .eq("status", "running")
+          .select("id")
+          .maybeSingle();
+        waitingRecorded = !saved.error && saved.data?.id === syncRunId;
+      } catch {
+        /* An unknown write outcome needs operator verification. */
+      }
+      if (!waitingRecorded)
+        return failResponse(
+          "learn_capture_wait_unconfirmed",
+          "Capture stopped, but its waiting status could not be confirmed. Review this run before retrying.",
+          503,
+          {
+            sync_run_id: syncRunId,
+            recording_id: recordingId,
+          },
+        );
       return failResponse(d.code, d.message, d.httpStatus, {
         sync_run_id: syncRunId,
         recording_id: recordingId,

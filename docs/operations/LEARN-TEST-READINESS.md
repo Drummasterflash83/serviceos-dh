@@ -1,5 +1,41 @@
 # Existing TEST environment: verified release gaps
 
+## Capture runtime reconciliation and phone pause races — 10 October 2026
+
+A read-only TEST inventory at **13:56:40 UTC** confirms that email ingestion v2
+exists in the database, but its Gmail/Workspace workers, three email schedulers,
+generic platform worker, phone scheduler and phone pipeline are not deployed in
+TEST. The phone pipeline-state view and all three retry/selection functions are
+also absent. The capture-control migration's exact phone-selector patch therefore
+cannot yet be installed there. Existing Slack and Commusoft claimant exclusions
+remain present in the generic database claimant.
+
+The three local mailbox handlers still directly update terminal sync runs and
+mailbox progress. TEST's existing guards require the v2 transition functions for
+those writes. A capture-admission check alone does not make these handlers
+compatible. Reconcile them with the recorded transition, receipt recovery and
+queue-completion protocol; do not disable the guards or overwrite saved progress.
+This is a TEST finding, not evidence of a new production capture failure.
+
+The audit reader is `scripts/verify/learn-capture-runtime-audit.mjs`. Its
+[report](evidence/learn-capture-runtime-audit-2026-10-10.json) identifies the exact
+missing dependencies and hashes the inspected functions. The hosted protocol's
+13 function definitions, four table contracts and scoped grants are retained in
+[`supabase/reference`](../../supabase/reference/README.md) as an integration
+reference. No source records or credential values are included. This is neither
+a deployable migration nor a full database backup.
+
+Actual handler tests now exercise phone pauses after initial admission. Partial
+call counts remain recorded when the recordings child pauses; neither cursor nor
+account health is advanced. A genuine provider failure alongside a pause remains
+a failure. A waiting pipeline run stays separate from real retry history.
+Testing exposed an unconfirmed-write bug: the scheduler and pipeline previously
+returned waiting even if its database update failed. They now require the exact
+company-bound running row to be returned. Database errors, zero-row updates and
+transport exceptions return `learn_capture_wait_unconfirmed`, with no private
+diagnostic details or false settled-waiting result. All **29** actual Edge/queue
+handler VM tests pass. These changes remain local; no hosted runtime was changed.
+
 ## Capture module controls — local implementation, 10 October 2026
 
 `20261031230000_learn_capture_controls.sql` adds audited operator control requests
@@ -35,9 +71,10 @@ waiting on the admission lock. See
 [local control evidence](evidence/learn-capture-controls-local-2026-10-10.json).
 
 **Not installed in TEST or production.** Remaining release work includes an
-actual-schema rehearsal of these additional dependencies, deployed email-worker
-reconciliation (the existing TEST ingestion protocol differs from this checkout),
-phone scheduler/pipeline race acceptance, new pinned worker bundles, hosted
+actual-schema rehearsal and installation of the missing phone dependencies,
+email-worker reconciliation (the existing TEST ingestion protocol differs from
+this checkout), new pinned worker bundles, hosted phone pause-race
+acceptance,
 acceptance, and the operator UI with retained-request recovery and intentional-pause
 health states. Existing historical phone/Slack deployment bundles must not be
 repointed at the changed source. Deploy the coordinated schema/runtime before

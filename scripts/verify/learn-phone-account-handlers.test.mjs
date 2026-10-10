@@ -33,6 +33,11 @@ async function harness(
     credentials = true,
     captureAllowed = true,
     captureError = false,
+    childResponses = {},
+    pauseWriteError = false,
+    pauseWriteMissing = false,
+    pauseWriteThrow = false,
+    pauseWriteTarget = "phone_sync_runs",
   } = {},
 ) {
   const requests = [],
@@ -57,37 +62,59 @@ async function harness(
     },
     from(table) {
       let op = "read";
-      const result = () =>
-        table === "connector_accounts"
-          ? { data: accounts, error: null, count: accounts.length }
-          : table === "phone_sync_runs" && op === "insert"
-            ? { data: { id: id(4) }, error: null }
-            : table === "phone_recordings" && op === "read"
-              ? {
-                  data: {
-                    id: id(5),
-                    provider: "simwood",
-                    provider_recording_id: "recording_1",
-                    recording_uri: stored,
-                    storage_path: alreadyStored ? "retained.wav" : null,
-                    started_at: "2026-01-01T00:00:00Z",
-                  },
-                  error: null,
-                }
-              : { data: [], error: null };
+      const filters = [];
+      let patch;
+      const result = () => {
+        const pauseWrite = patch?.status === "paused" || patch?.result?.capture_waiting;
+        const faultApplies = table === pauseWriteTarget;
+        if (pauseWrite && faultApplies && pauseWriteThrow) throw Error("PRIVATE_TRANSPORT_DETAIL");
+        return patch?.status === "paused" || patch?.result?.capture_waiting
+          ? {
+              data:
+                faultApplies && (pauseWriteError || pauseWriteMissing)
+                  ? null
+                  : { id: table === "platform_jobs" ? id(7) : id(4) },
+              error: faultApplies && pauseWriteError ? { message: "PRIVATE_DB_DETAIL" } : null,
+            }
+          : table === "tenant_connectors" && op === "read"
+            ? { data: [{ id: id(3), tenant_id: tenant }], error: null }
+            : table === "platform_jobs" && op === "insert"
+              ? { data: { id: id(7) }, error: null }
+              : table === "connector_accounts"
+                ? { data: accounts, error: null, count: accounts.length }
+                : table === "phone_sync_runs" && op === "insert"
+                  ? { data: { id: id(4) }, error: null }
+                  : table === "phone_recordings" && op === "read"
+                    ? {
+                        data: {
+                          id: id(5),
+                          provider: "simwood",
+                          provider_recording_id: "recording_1",
+                          recording_uri: stored,
+                          storage_path: alreadyStored ? "retained.wav" : null,
+                          started_at: "2026-01-01T00:00:00Z",
+                        },
+                        error: null,
+                      }
+                    : { data: [], error: null };
+      };
       const q = {
         select: () => q,
-        eq: () => q,
+        eq: (name, value) => {
+          filters.push([name, value]);
+          return q;
+        },
         limit: () => q,
         in: () => q,
         insert(v) {
           op = "insert";
-          writes.push({ table, op, v });
+          writes.push({ table, op, v, filters });
           return q;
         },
         update(v) {
           op = "update";
-          writes.push({ table, op, v });
+          patch = v;
+          writes.push({ table, op, v, filters });
           return q;
         },
         upsert(v) {
@@ -113,6 +140,7 @@ async function harness(
   const env = {
     SUPABASE_URL: "https://synthetic.invalid",
     SUPABASE_SERVICE_ROLE_KEY: "synthetic-service",
+    PHONE_SCHEDULE_SECRET: "synthetic-schedule",
     SIMWOOD_USERNAME: credentials ? "synthetic-user" : undefined,
     SIMWOOD_PASSWORD: credentials ? "synthetic-password" : undefined,
   };
@@ -141,6 +169,11 @@ async function harness(
     },
     fetch: async (url, options) => {
       requests.push({ url: String(url), options });
+      if (String(url).startsWith("https://synthetic.invalid/functions/v1/")) {
+        const response = childResponses[String(url).split("/").at(-1)];
+        if (!response) throw Error("Unexpected child request");
+        return Response.json(response.body, { status: response.status ?? 200 });
+      }
       if (name === "simwood-test-connection")
         return Response.json({ id: providerAccount, name: "Synthetic company" });
       if (name === "simwood-download-recording")
@@ -192,6 +225,7 @@ async function harness(
             Authorization: "Bearer synthetic-service",
             "x-internal-tenant-id": tenant,
             "content-type": "application/json",
+            "x-schedule-secret": "synthetic-schedule",
           },
           body: JSON.stringify({ tenant_id: tenant, recording_id: id(5), ...body }),
         }),
@@ -310,4 +344,132 @@ test("pause retains cached audio access but prevents a forced replacement", asyn
   assert.equal((await forced.run({ force: true })).status, 409);
   assert.equal(forced.requests.length, 0);
   assert.equal(forced.writes.length, 0);
+});
+
+const childPause = (code = "learn_capture_paused") => ({
+  status: code === "learn_capture_paused" ? 409 : 503,
+  body: { success: false, error: { code, message: "Capture is waiting." } },
+});
+const childSuccess = { body: { success: true, records_processed: 3, sync_run_id: id(8) } };
+test("phone scheduler advances its cursor only when both children complete", async () => {
+  const h = await harness("phone-scheduled-sync", {
+    childResponses: { "simwood-sync-calls": childSuccess, "simwood-sync-recordings": childSuccess },
+  });
+  const body = await (await h.run({})).json();
+  assert.equal(body.success, true);
+  assert.equal(body.results[0].ok, true);
+  assert.equal(body.results[0].waiting, undefined);
+  const accountWrite = h.writes.find((w) => w.table === "connector_accounts" && w.v.sync_cursor);
+  assert.equal(accountWrite.v.sync_cursor.last_synced_until, body.results[0].to);
+  assert.equal(accountWrite.v.last_successful_sync_at, body.results[0].to);
+  assert.ok(
+    h.writes.some(
+      (w) =>
+        w.table === "phone_sync_runs" && w.v.status === "success" && w.v.records_processed === 6,
+    ),
+  );
+  assert.ok(h.writes.some((w) => w.table === "platform_jobs" && w.v.status === "succeeded"));
+  assert.ok(!h.writes.some((w) => w.v.status === "paused" || w.v.status === "cancelled"));
+});
+test("phone scheduler pauses at entry without opening runs or advancing saved progress", async () => {
+  for (const captureError of [false, true]) {
+    const h = await harness("phone-scheduled-sync", { captureAllowed: false, captureError });
+    const body = await (await h.run({})).json();
+    assert.equal(body.success, true);
+    assert.equal(body.results[0].ok, false);
+    assert.equal(body.results[0].waiting, captureError ? "unavailable" : "paused");
+    assert.equal(h.writes.length, 0);
+    assert.equal(h.requests.length, 0);
+  }
+});
+test("phone scheduler retains the cursor and partial counts when a child pauses", async () => {
+  for (const code of ["learn_capture_paused", "learn_capture_unavailable"]) {
+    const h = await harness("phone-scheduled-sync", {
+      childResponses: {
+        "simwood-sync-calls": childSuccess,
+        "simwood-sync-recordings": childPause(code),
+      },
+    });
+    const body = await (await h.run({})).json();
+    assert.equal(body.success, true);
+    assert.equal(body.results[0].ok, false);
+    assert.equal(body.results[0].waiting, "capture_control");
+    const run = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
+    assert.equal(run.v.status, "paused");
+    assert.equal(run.v.records_processed, 3);
+    assert.equal(run.v.error_message, null);
+    assert.ok(run.filters.some(([k, v]) => k === "tenant_id" && v === tenant));
+    assert.ok(run.filters.some(([k, v]) => k === "status" && v === "running"));
+    assert.equal(run.v.metadata.errors.recordings, code);
+    assert.ok(!h.writes.some((w) => ["connector_accounts", "tenant_connectors"].includes(w.table)));
+    const job = h.writes.find((w) => w.table === "platform_jobs" && w.v.status === "cancelled");
+    assert.equal(job.v.result.capture_waiting, true);
+    assert.ok(!h.writes.some((w) => w.v.status === "failed" || w.v.status === "succeeded"));
+  }
+});
+test("phone scheduler keeps a real provider failure visible alongside a capture pause", async () => {
+  const h = await harness("phone-scheduled-sync", {
+    childResponses: {
+      "simwood-sync-calls": {
+        status: 502,
+        body: { success: false, error: { code: "provider_unavailable" } },
+      },
+      "simwood-sync-recordings": childPause(),
+    },
+  });
+  const body = await (await h.run({})).json();
+  assert.equal(body.success, false);
+  assert.equal(body.results[0].waiting, undefined);
+  assert.ok(h.writes.some((w) => w.table === "phone_sync_runs" && w.v.status === "failed"));
+  assert.ok(h.writes.some((w) => w.table === "connector_accounts" && w.v.last_failed_sync_at));
+  assert.ok(!h.writes.some((w) => w.v.sync_cursor));
+});
+test("pipeline pause between admission and download preserves retry history without downstream work", async () => {
+  for (const code of ["learn_capture_paused", "learn_capture_unavailable"]) {
+    const h = await harness("phone-process-pipeline", {
+      childResponses: { "simwood-download-recording": childPause(code) },
+    });
+    const r = await h.run({}),
+      body = await r.json();
+    assert.equal(body.capture_waiting, true);
+    assert.equal(body.error.code, code);
+    assert.equal(h.requests.length, 1);
+    const run = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
+    assert.equal(run.v.sync_type, "pipeline_waiting");
+    assert.equal(run.v.status, "paused");
+    assert.equal(run.v.error_message, null);
+    assert.ok(!h.writes.some((w) => w.table === "audit_logs"));
+  }
+});
+test("unconfirmed phone pause writes stay unresolved and never report settled waiting", async () => {
+  for (const name of ["phone-process-pipeline", "phone-scheduled-sync"])
+    for (const fault of ["pauseWriteError", "pauseWriteMissing", "pauseWriteThrow"])
+      for (const pauseWriteTarget of name === "phone-scheduled-sync"
+        ? ["phone_sync_runs", "platform_jobs"]
+        : ["phone_sync_runs"]) {
+        const h = await harness(name, {
+          [fault]: true,
+          pauseWriteTarget,
+          childResponses: {
+            "simwood-download-recording": childPause(),
+            "simwood-sync-calls": childSuccess,
+            "simwood-sync-recordings": childPause(),
+          },
+        });
+        const r = await h.run({}),
+          body = await r.json();
+        assert.equal(body.success, false);
+        if (name === "phone-process-pipeline") {
+          assert.equal(r.status, 503);
+          assert.equal(body.error.code, "learn_capture_wait_unconfirmed");
+          assert.notEqual(body.capture_waiting, true);
+        } else {
+          assert.equal(body.results[0].error, "learn_capture_wait_unconfirmed");
+          assert.equal(body.results[0].waiting, undefined);
+        }
+        assert.ok(!JSON.stringify(body).includes("PRIVATE_"));
+        assert.ok(
+          !h.writes.some((w) => ["connector_accounts", "tenant_connectors"].includes(w.table)),
+        );
+      }
 });
