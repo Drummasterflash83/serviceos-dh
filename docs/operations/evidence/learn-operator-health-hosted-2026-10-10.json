@@ -1,0 +1,63 @@
+{
+  "version": "learn-operator-health-hosted/1",
+  "local": {
+    "version": "learn-operator-health-local/1",
+    "state": "passed",
+    "sources": [
+      "20261016120000_client_portal.sql",
+      "20261017120000_receptionist_workspace.sql",
+      "20261101002000_client_portal_view_as_writes.sql"
+    ],
+    "checks": [
+      "Operator sees both companies; each portal member sees only their assigned company.",
+      "Programme updates atomically stamp versions, retain revisions and queue notifications.",
+      "Clients can submit their own notes and feedback, but cannot edit programmes or resolve feedback.",
+      "Active View-As retains reads but blocks all five direct programme/note/feedback write paths.",
+      "Expired preview permits normal authorized editing; expired operator grant removes cross-company access.",
+      "Anonymous reads and client notification claims are denied; only the service can claim the queue."
+    ],
+    "limitations": [
+      "Synthetic disposable database with minimal FK prerequisites and the actual observed operator predicate. Hosted compatibility and full receptionist workflows remain separate checks."
+    ]
+  },
+  "rehearsal": {
+    "version": "learn-operator-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T16:44:07.383Z",
+    "priorFingerprint": "6e706d18f0515ae74e6d44ae2bca55d7",
+    "expectedFingerprint": "fdc6a58cd52c032da172ddde7bd50265",
+    "afterFingerprint": "6e706d18f0515ae74e6d44ae2bca55d7",
+    "preservedDataSets": 56,
+    "receipt": {
+      "fingerprint": "fdc6a58cd52c032da172ddde7bd50265",
+      "tables": 8,
+      "functions": 7
+    }
+  },
+  "installation": {
+    "version": "learn-operator-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816",
+    "mode": "apply",
+    "state": "installed_needs_signed_in_acceptance",
+    "observedAt": "2026-10-10T16:44:40.712Z",
+    "priorFingerprint": "6e706d18f0515ae74e6d44ae2bca55d7",
+    "expectedFingerprint": "fdc6a58cd52c032da172ddde7bd50265",
+    "afterFingerprint": "fdc6a58cd52c032da172ddde7bd50265",
+    "preservedDataSets": 56,
+    "receipt": {
+      "fingerprint": "fdc6a58cd52c032da172ddde7bd50265",
+      "tables": 8,
+      "functions": 7
+    }
+  },
+  "releaseToolTests": 5,
+  "limitations": [
+    "Shared health foundation only. Later receptionist/care/notifications/invoice schema and endpoints are not installed by this release.",
+    "No account, per-user operator grant, provider credential, source import, worker schedule or external notification was created.",
+    "Positive signed-in hosted UI acceptance remains outstanding."
+  ]
+}

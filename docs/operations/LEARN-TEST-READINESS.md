@@ -1,5 +1,58 @@
 # Existing TEST environment: verified release gaps
 
+## Operator backend and shared health foundation — installed in TEST, 10 October 2026
+
+The recovered **openfolk-control-plane** endpoint is deployed in TEST at version 1.
+Its complete 17-file source closure is pinned at
+`671270974732e854100782168105abdd4d8687a27849b2bdafdc4f9d1b00e53d`.
+The endpoint verifies user sessions and active platform grants itself; gateway JWT
+verification is false, as required by its existing authorization design. All other
+endpoints, the prior schema and 52 retained dataset fingerprints were preserved.
+Eight hosted protocol/denial checks passed: missing or invalid user authorization,
+anonymous/service credentials presented as users, and invalid/service credentials
+presented as the dedicated machine key all fail closed. No machine key was added.
+
+Sixteen local endpoint/deployment regressions passed, including directory pagination
+beyond 1,000 clients, tenant-owner denial, failed authority reads and denial of
+machine access to the directory. The old local Supabase demo requires a separate
+stack/credential configuration and was not counted as passing. These tests do not
+replace positive signed-in hosted acceptance. See
+[control-plane evidence](evidence/learn-controlplane-hosted-2026-10-10.json).
+
+Release **034** installed the existing shared portal/receptionist health foundation
+at **16:44:40 UTC**, after a successful hosted rollback rehearsal. It creates eight
+empty tables: portal membership, programmes, revisions, notes, receptionist
+workspaces, receptionist access, feedback and the notification outbox. All have
+RLS. The package includes the original triggers and service-only queue claim,
+preserving programme revisions and durable notification intent without sending
+anything or starting a dispatcher.
+
+Review found the earlier direct browser-write policies did not enforce read-only
+View-As for programme, note and feedback writes. An additive restrictive policy
+migration now blocks all five write paths during an active View-As context while
+retaining the existing membership/operator requirements. A disposable networkless
+PostgreSQL test passed six scenarios covering tenant isolation, version/revision/
+outbox atomicity, customer permissions, View-As denial, expiry and service-only
+queue claiming. Five release-tool tests cover journal-before-submit, exact target
+and rehearsal requirements, rollback verification and uncertain-response handling.
+
+All **56 retained dataset fingerprints** were preserved during rehearsal and apply.
+Independent read-back matched health schema fingerprint
+`fdc6a58cd52c032da172ddde7bd50265`; the ledger now has 35 entries. The email-runtime
+catalog fingerprint is now `d270f687aa83be3d18f80c6a168892ea` because its catalog
+includes that ledger. Earlier release tools intentionally retain their earlier
+prerequisite pins; do not overwrite pins or replay old releases without reviewing
+the new state. Release SHA:
+`24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816`.
+See [health release evidence](evidence/learn-operator-health-hosted-2026-10-10.json).
+
+**Remaining:** create/authorize the planned TEST operator access, verify the actual
+signed-in directory, module controls and client surfaces, and complete the later
+care/notification/invoice dependencies where those screens require them. The
+foundation is not a claim that every receptionist workflow is installed. No user
+account, per-user grant, provider secret, source import or schedule was added;
+production remains unchanged.
+
 ## Protected TEST frontend — deployed and navigation verified, 10 October 2026
 
 The separate Allkin Vercel project **serviceos-learn-test**
@@ -24,11 +77,12 @@ checks pass; the corrected hosted link was clicked and confirmed on TEST.
 See [deployment evidence](evidence/learn-hosted-test-frontend-2026-10-10.json)
 and [sign-in screenshot](evidence/learn-hosted-test-login-2026-10-10.png).
 
-**Still required before signed-in operator acceptance:** TEST has no
+**At this frontend checkpoint, before the backend installation above:** TEST had no
 `chris@openfolk.ai` account, no `openfolk-control-plane` endpoint, and none of the
 four shared health tables queried by `useOperatorHealth`: `receptionist_workspaces`,
 `client_programmes`, `receptionist_feedback`, `client_notification_outbox`.
-Complete the relevant existing control-plane dependencies with preservation and
+The endpoint and eight-table shared foundation are now installed as recorded above.
+Complete remaining control-plane dependencies with preservation and
 authorization checks before claiming that the full hosted operator workspace works.
 No new login or grant was created. Release-033 capture RPCs and the earlier
 synthetic worker acceptance remain separate established evidence.

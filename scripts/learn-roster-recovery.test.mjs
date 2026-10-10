@@ -37,7 +37,8 @@ async function call(body = {}, options = {}) {
     },
     from(table) {
       const q = {};
-      for (const name of ["select", "eq", "is"]) q[name] = () => q;
+      for (const name of ["select", "eq", "is", "order"]) q[name] = () => q;
+      q.range = async (from, to) => ({ ...results[table], data: results[table]?.data?.slice(from, to + 1) ?? null });
       q.maybeSingle = async () => results[table];
       q.then = (resolve, reject) => Promise.resolve(results[table]).then(resolve, reject);
       return q;
@@ -94,6 +95,32 @@ async function call(body = {}, options = {}) {
   );
   return { status: response.status, body: await response.json(), writes };
 }
+test("operator directory reads all pages and refuses tenant-only or failed authority", async () => {
+  const tenants = Array.from({ length: 1001 }, (_, i) => ({ tenant_id: String(i), slug: `test-${i}`, display_name: `Synthetic ${i}` }));
+  const r = await call({ action: "tenants.directory" }, { tables: { tenants: { data: tenants, error: null } } });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.data.tenants.length, 1001);
+  assert.equal(r.writes.length, 0);
+  for (const tables of [
+    { platform_authority_grants: { data: [], error: null } },
+    { profiles: { data: null, error: null } },
+    { platform_authority_grants: { data: null, error: "offline" } },
+    { tenants: { data: null, error: "offline" } },
+  ]) {
+    const denied = await call({ action: "tenants.directory" }, { tables });
+    assert.notEqual(denied.status, 200);
+    assert.equal(denied.body.ok, false);
+    assert.equal(denied.body.data, undefined);
+    assert.equal(denied.writes.length, 0);
+  }
+});
+test("directory is not available to machine callers even with the dedicated machine key", async () => {
+  const r = await call({ action: "tenants.directory" }, { headers: {
+    "x-openfolk-machine-key": "synthetic-machine-key", "x-openfolk-actor": "synthetic-machine",
+  } });
+  assert.equal(r.status, 403);
+  assert.equal(r.writes.length, 0);
+});
 test("all six recovered roster actions use the gated audited RPC contract", async () => {
   for (const [action, rpc, extra] of [
     ["member_upsert", "cp_roster_upsert_member", {}],

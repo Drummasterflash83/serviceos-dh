@@ -1,0 +1,114 @@
+{
+  "version": "learn-controlplane-hosted/1",
+  "deployment": {
+    "version": "learn-controlplane-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "671270974732e854100782168105abdd4d8687a27849b2bdafdc4f9d1b00e53d",
+    "observedAt": "2026-10-10T16:37:44.149Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "openfolk-control-plane",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "786126c1-55e8-4fe4-b079-b197063ae6a2",
+        "slug": "openfolk-control-plane",
+        "name": "openfolk-control-plane",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1791650263300,
+        "updated_at": 1791650263300,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_786126c1-55e8-4fe4-b079-b197063ae6a2_1/source/supabase/functions/openfolk-control-plane/index.ts",
+        "ezbr_sha256": "b3561af7cee2b123107a1485cba394bfa19eeac94a3f132a0ce2e2597697c306"
+      }
+    ],
+    "dependencyFiles": 17
+  },
+  "http": {
+    "version": "learn-controlplane-http/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T16:38:47.663Z",
+    "checks": [
+      {
+        "name": "preflight",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "method",
+        "status": 405,
+        "code": "method_not_allowed",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      }
+    ],
+    "state": "boundary_checks_passed",
+    "preservedDataSets": 52,
+    "sourcesPreserved": true,
+    "schemaPreserved": true,
+    "endpoint": {
+      "id": "786126c1-55e8-4fe4-b079-b197063ae6a2",
+      "slug": "openfolk-control-plane",
+      "name": "openfolk-control-plane",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791650263300,
+      "updated_at": 1791650263300,
+      "verify_jwt": false,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_786126c1-55e8-4fe4-b079-b197063ae6a2_1/source/supabase/functions/openfolk-control-plane/index.ts",
+      "ezbr_sha256": "b3561af7cee2b123107a1485cba394bfa19eeac94a3f132a0ce2e2597697c306"
+    },
+    "limitations": [
+      "No signed-in operator, tenant directory result or database mutation was tested. No account, grant, machine credential, provider request or schedule was created."
+    ]
+  },
+  "localTests": {
+    "passed": 16,
+    "legacyLocalDemo": "Not run: its separate local Supabase URL and service credential were absent. It is not counted as acceptance."
+  }
+}

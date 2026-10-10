@@ -10,6 +10,11 @@ export const EMAIL_RUNTIME_ENDPOINTS = [
   { name: "gmail-workspace-backfill-messages", verifyJwt: true },
 ];
 export function emailRuntimeBundle() {
+  return edgeRuntimeBundle(EMAIL_RUNTIME_ENDPOINTS);
+}
+export function edgeRuntimeBundle(endpoints) {
+  if (!Array.isArray(endpoints) || !endpoints.length || endpoints.some(e => !/^[a-z][a-z0-9-]+$/.test(e.name)))
+    throw Error("Explicit endpoint names required");
   const files = new Map(),
     external = new Set();
   function visit(path) {
@@ -38,7 +43,7 @@ export function emailRuntimeBundle() {
     }
     walk(file);
   }
-  for (const e of EMAIL_RUNTIME_ENDPOINTS) visit(e.name + "/index.ts");
+  for (const e of endpoints) visit(e.name + "/index.ts");
   const entries = [...files]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([path, source]) => ({ path, source }));

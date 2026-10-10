@@ -72,7 +72,18 @@ function sources(rows) {
     throw Error("Complete source preservation snapshot required");
   return [...rows].sort((a, b) => a.name.localeCompare(b.name));
 }
-export async function deployEmailRuntime({
+export async function deployEmailRuntime(args) {
+  return deployPinnedTestRuntime(args, {
+    bundle: emailRuntimeBundle,
+    endpoints: EMAIL_RUNTIME_ENDPOINTS,
+    bundleSha: EMAIL_RUNTIME_EDGE_SHA,
+    databaseFingerprint: EMAIL_RUNTIME_DATABASE,
+    version: "learn-email-runtime-deploy/3",
+    stagePrefix: "learn-email-runtime-",
+  });
+}
+/** Shared mechanics only; each release supplies its reviewed, immutable contract. */
+export async function deployPinnedTestRuntime({
   allowProjectRef,
   token,
   persistJournal,
@@ -80,7 +91,9 @@ export async function deployEmailRuntime({
   fetcher = fetch,
   runCli = spawnSync,
   onProgress = () => {},
-}) {
+}, specification) {
+  const { endpoints: EMAIL_RUNTIME_ENDPOINTS, bundleSha: EMAIL_RUNTIME_EDGE_SHA,
+    databaseFingerprint: EMAIL_RUNTIME_DATABASE } = specification;
   if (
     allowProjectRef !== TEST_PROJECT ||
     typeof token !== "string" ||
@@ -88,7 +101,7 @@ export async function deployEmailRuntime({
     typeof persistJournal !== "function"
   )
     throw Error("Explicit TEST deployment and durable journal required");
-  const bundle = emailRuntimeBundle();
+  const bundle = specification.bundle();
   if (bundle.sha256 !== EMAIL_RUNTIME_EDGE_SHA)
     throw Error("Reviewed email runtime bundle changed");
   const [schema, before, sourceRows] = await Promise.all([
@@ -117,7 +130,7 @@ export async function deployEmailRuntime({
   )
     throw Error("Exact installed TEST database and endpoint versions required");
   const journal = {
-    version: "learn-email-runtime-deploy/3",
+    version: specification.version,
     replaceVersions,
     projectRef: TEST_PROJECT,
     sourceBundleSha256: bundle.sha256,
@@ -128,7 +141,7 @@ export async function deployEmailRuntime({
     targets: EMAIL_RUNTIME_ENDPOINTS,
   };
   await persistJournal(journal);
-  const stage = mkdtempSync(join(tmpdir(), "learn-email-runtime-")),
+  const stage = mkdtempSync(join(tmpdir(), specification.stagePrefix)),
     attempts = [];
   try {
     for (const f of bundle.files) {

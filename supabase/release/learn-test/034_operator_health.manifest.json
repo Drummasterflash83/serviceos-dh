@@ -1,0 +1,21 @@
+{
+  "version": "learn-operator-health-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816",
+  "priorFingerprint": "6e706d18f0515ae74e6d44ae2bca55d7",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261016120000_client_portal.sql",
+      "sha256": "0258a0fb596e6df55341bbc8c9288e57d13d72ed476ba3fb646b27f833816df2"
+    },
+    {
+      "path": "supabase/migrations/20261017120000_receptionist_workspace.sql",
+      "sha256": "f586283e7a54aac54b99e6c89ae78fa4d9bf8a3efd099c033929a7db87f3c080"
+    },
+    {
+      "path": "supabase/migrations/20261101002000_client_portal_view_as_writes.sql",
+      "sha256": "f85953575d49d797938ec7af0a86859b2f6688dccfa3a7138bca1fc051f72b88"
+    }
+  ],
+  "preservedDataSets": 56
+}
