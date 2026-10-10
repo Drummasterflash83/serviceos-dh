@@ -161,4 +161,19 @@ test("preservation covers all prior datasets and only excludes the exact new ten
   assert.ok(q.includes("id<>'" + p.grant));
   assert.ok(q.includes("id<>'" + p.user));
   assert.ok(q.includes("provider_secret:" + p.tenant + ":commusoft:api_key"));
+  assert.ok(q.includes("r.id=s.page_id and r.tenant_id='" + p.tenant));
+  assert.equal(q.split("r.id=s.request_id and r.tenant_id='" + p.tenant).length - 1, 2);
+});
+test("a known preservation mismatch blocks further mutations before external access", async () => {
+  const p = { ...plan(), state: "verified", preserved: false };
+  await assert.rejects(
+    runRealTestSession("worker-step", {
+      read: () => p,
+      approvedRun: p.runId,
+      fetcher: forbidden,
+      sql: forbidden,
+      save: forbidden,
+    }),
+    /preservation mismatch/,
+  );
 });

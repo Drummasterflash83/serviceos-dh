@@ -36,6 +36,7 @@ export type CustomerCandidate = {
   phone: string | null;
   postcode: string | null;
   reason: "shared_email" | "shared_phone" | "same_name" | "search";
+  match_detail?: { channel: "email" | "phone"; value: string } | null;
 };
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
@@ -234,7 +235,14 @@ async function findCandidates(
       !uuid(r.id) ||
       (last !== null && r.id <= last) ||
       !["shared_email", "shared_phone", "same_name", "search"].includes(r.reason) ||
-      ![r.name, r.email, r.phone, r.postcode].every(nullableText)
+      ![r.name, r.email, r.phone, r.postcode].every(nullableText) ||
+      (r.match_detail !== undefined &&
+        r.match_detail !== null &&
+        (!object(r.match_detail) ||
+          !["email", "phone"].includes(r.match_detail.channel) ||
+          typeof r.match_detail.value !== "string" ||
+          !r.match_detail.value.trim() ||
+          r.match_detail.value.length > 1000))
     )
       throw unavailable();
     last = r.id;
@@ -245,6 +253,17 @@ async function findCandidates(
       phone: r.phone,
       postcode: r.postcode,
       reason: r.reason,
+      ...(r.match_detail === undefined
+        ? {}
+        : {
+            match_detail:
+              r.match_detail === null
+                ? null
+                : {
+                    channel: r.match_detail.channel,
+                    value: r.match_detail.value,
+                  },
+          }),
     };
   });
   if (d.next_cursor !== null && (!rows.length || last !== d.next_cursor)) throw unavailable();

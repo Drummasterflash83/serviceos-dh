@@ -142,3 +142,42 @@ test("lost acknowledgement never causes an automatic write retry or exposes erro
   );
   assert.equal(calls, 1);
 });
+test("matching endpoints retain bounded evidence without private fields or requiring a new backend", async () => {
+  const candidate = {
+    id: id(4),
+    name: "Existing person",
+    email: null,
+    phone: null,
+    postcode: null,
+    reason: "shared_email",
+  };
+  const envelope = (match: unknown, include = true) => ({
+    tenant_id: id(1),
+    version_id: id(3),
+    kind: "person",
+    rows: [{ ...candidate, ...(include ? { match_detail: match } : {}) }],
+    next_cursor: null,
+  });
+  const find = (data: unknown) => findCommusoftCustomers(client(data), id(1), id(3), "person", "");
+  const match = {
+    channel: "email",
+    value: "shared@example.invalid",
+    private_metadata: "must not leak",
+  };
+  assert.deepEqual((await find(envelope(match))).rows[0], {
+    ...candidate,
+    match_detail: { channel: "email", value: "shared@example.invalid" },
+  });
+  assert.deepEqual((await find(envelope(null, false))).rows[0], candidate);
+  assert.equal((await find(envelope(null))).rows[0].match_detail, null);
+  for (const invalid of [
+    [],
+    "phone",
+    { channel: "secret", value: "test" },
+    { channel: "email", value: " " },
+    { channel: "phone", value: false },
+    { channel: "email", value: "x".repeat(1001) },
+  ]) {
+    await assert.rejects(find(envelope(invalid)));
+  }
+});

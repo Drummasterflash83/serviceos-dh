@@ -117,6 +117,13 @@ export function preservationQuery(p) {
         predicate = `name is distinct from ${q("provider_secret:" + p.tenant + ":commusoft:api_key")}`;
       if (name === "public.learn_business_input_request_gates")
         predicate = `credential_fingerprint<>${q(p.keyFingerprint)}`;
+      if (name === "public.learn_business_input_observations")
+        predicate = `not exists(select 1 from public.learn_business_input_pages r where r.id=s.page_id and r.tenant_id=${q(p.tenant)})`;
+      if (
+        name === "public.learn_commusoft_verification_permits" ||
+        name === "public.learn_commusoft_verification_results"
+      )
+        predicate = `not exists(select 1 from public.learn_commusoft_verification_requests r where r.id=s.request_id and r.tenant_id=${q(p.tenant)})`;
       return `select '${name}' as name,count(*)::int as count,md5(coalesce(string_agg(md5(row_to_json(s)::text),'' order by md5(row_to_json(s)::text)),'')) as fingerprint from ${name} s where ${predicate}`;
     })
     .join(" union all ");
@@ -195,6 +202,8 @@ export async function runRealTestSession(
   const persist = () => save(p);
   if (writeModes.includes(mode))
     check(approvedRun === p.runId, "Explicit approval of this exact run required");
+  if (writeModes.includes(mode))
+    check(p.preserved !== false, "Resolve the preservation mismatch before continuing");
   const snapshot = async () => {
     const rows = await sql(preservationQuery(p));
     check(

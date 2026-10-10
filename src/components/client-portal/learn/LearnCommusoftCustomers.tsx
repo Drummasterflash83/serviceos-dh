@@ -362,6 +362,11 @@ export function LearnCommusoftCustomers({
                       {c.name ?? "Unnamed customer"} ·{" "}
                       {[c.email, c.phone, c.postcode].filter(Boolean).join(" · ")} ·{" "}
                       {matchLabel[c.reason]}
+                      {c.match_detail && (
+                        <span className="block text-xs">
+                          Matching recorded {c.match_detail.channel}: {c.match_detail.value}
+                        </span>
+                      )}
                     </label>
                   ))}
                   {candidateNext && (

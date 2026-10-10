@@ -1,5 +1,20 @@
 # Commusoft read-only API adapter
 
+## Secondary contact discovery — local candidate, not deployed
+
+Customer review now considers both the source telephone and mobile, plus existing
+people's additional email addresses and phone numbers. Shared endpoints return
+all matching people for review; the interface shows which recorded endpoint
+matched. Invalid secondary endpoints and other tenants are excluded. Connection
+region controls phone normalization, and person/company lists remain separate.
+No customer, card, contact consent or source record is changed by discovery.
+
+The migration preserves existing grants and ownership. Disposable PostgreSQL
+checks cover real source publication, shared identities, pagination, access
+boundaries, source/canonical preservation and rollback. Sixteen focused Node tests,
+application TypeScript and the build pass. Hosted rollout and visual acceptance
+remain pending. [Local evidence](evidence/learn-customer-candidate-endpoints-local-2026-10-10.json).
+
 ## Property-scoped contacts — TEST schema and runtime installed
 
 Release **042** installed at **20:30 UTC, 10 October**, after a successful hosted
