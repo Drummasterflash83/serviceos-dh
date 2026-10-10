@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import {
   deployEmailRuntime,
+  deployPinnedTestRuntime,
   EMAIL_RUNTIME_DATABASE,
   EMAIL_RUNTIME_EDGE_SHA,
 } from "./learn-test-email-runtime-deploy.mjs";
@@ -93,9 +94,22 @@ function fixture({
   };
 }
 const args = { allowProjectRef: TEST_PROJECT, token };
-test("pinned closure includes email engine, credentials and all generic-worker dependencies", () => {
+// Exercise shared deployment mechanics against a test-only current-source contract.
+// The historical production-facing release pin remains immutable and must refuse it.
+const deployMechanics = args => deployPinnedTestRuntime(args, {
+  bundle: emailRuntimeBundle, bundleSha: emailRuntimeBundle().sha256,
+  endpoints: EMAIL_RUNTIME_ENDPOINTS, databaseFingerprint: EMAIL_RUNTIME_DATABASE,
+  version: 'synthetic-deployer-test', stagePrefix: 'synthetic-deployer-test-',
+});
+test('historical email release refuses newer shared Slack source before network or CLI',async()=>{
+ let calls=0;
+ await assert.rejects(deployEmailRuntime({...args,persistJournal:async()=>{calls++;},
+ fetcher:async()=>{calls++;throw Error('Unexpected network');},runCli:()=>{calls++;}}),/bundle changed/);
+ assert.equal(calls,0);
+});
+test("current closure includes email engine, credentials and all generic-worker dependencies", () => {
   const b = emailRuntimeBundle();
-  assert.equal(b.sha256, EMAIL_RUNTIME_EDGE_SHA);
+  assert.notEqual(b.sha256, EMAIL_RUNTIME_EDGE_SHA);
   assert.equal(b.files.length, 100);
   assert.deepEqual(b.external, ["https://esm.sh/@supabase/supabase-js@2.45.4"]);
   for (const path of [
@@ -108,7 +122,7 @@ test("pinned closure includes email engine, credentials and all generic-worker d
 });
 test("deployment stages exact files/auth settings and preserves other endpoints, schema and sources", async () => {
   const f = fixture();
-  const r = await deployEmailRuntime({ ...args, ...f });
+  const r = await deployMechanics({ ...args, ...f });
   assert.equal(r.state, "deployed_needs_http_acceptance");
   assert.equal(f.calls, 4);
   assert.equal(r.preservedDataSets, 52);
@@ -118,16 +132,16 @@ test("deployment stages exact files/auth settings and preserves other endpoints,
 test("wrong project, schema drift, existing targets and journal failure prevent CLI writes", async () => {
   for (const config of [{ schemaChanged: true }, { existing: true }]) {
     const f = fixture(config);
-    await assert.rejects(deployEmailRuntime({ ...args, ...f }), /Exact installed/);
+    await assert.rejects(deployMechanics({ ...args, ...f }), /Exact installed/);
     assert.equal(f.calls, 0);
   }
   const f = fixture();
   await assert.rejects(
-    deployEmailRuntime({ ...args, ...f, allowProjectRef: "production" }),
+    deployMechanics({ ...args, ...f, allowProjectRef: "production" }),
     /Explicit TEST/,
   );
   await assert.rejects(
-    deployEmailRuntime({
+    deployMechanics({
       ...args,
       ...f,
       persistJournal: async () => {
@@ -140,7 +154,7 @@ test("wrong project, schema drift, existing targets and journal failure prevent 
 });
 test("uncertain CLI result stops deployment, inspects once and never resubmits", async () => {
   const f = fixture({ exit: null });
-  const r = await deployEmailRuntime({ ...args, ...f });
+  const r = await deployMechanics({ ...args, ...f });
   assert.equal(r.state, "requires_inspection");
   assert.equal(f.calls, 1);
   assert.equal(r.endpoints.length, 1);
@@ -148,7 +162,7 @@ test("uncertain CLI result stops deployment, inspects once and never resubmits",
 });
 test("changed retained sources prevent a successful deployment verdict", async () => {
   const f = fixture({ sourceChanged: true });
-  const r = await deployEmailRuntime({ ...args, ...f });
+  const r = await deployMechanics({ ...args, ...f });
   assert.equal(r.state, "requires_inspection");
   assert.equal(r.priorSchemaAndEndpointsPreserved, false);
 });
@@ -156,7 +170,7 @@ test("replacement requires exact existing versions and verifies their single ver
   const versions = Object.fromEntries(EMAIL_RUNTIME_ENDPOINTS.map((e) => [e.name, 1]));
   const wrong = fixture({ replacement: true });
   await assert.rejects(
-    deployEmailRuntime({
+    deployMechanics({
       ...args,
       ...wrong,
       replaceVersions: { ...versions, "platform-worker": 2 },
@@ -165,7 +179,7 @@ test("replacement requires exact existing versions and verifies their single ver
   );
   assert.equal(wrong.calls, 0);
   const f = fixture({ replacement: true });
-  const r = await deployEmailRuntime({ ...args, ...f, replaceVersions: versions });
+  const r = await deployMechanics({ ...args, ...f, replaceVersions: versions });
   assert.equal(r.state, "deployed_needs_http_acceptance");
   assert.equal(
     r.endpoints.every((e) => e.version === 2),

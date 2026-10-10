@@ -1,5 +1,17 @@
 # Existing TEST environment: verified release gaps
 
+## Slack worker v7 — deployed and read back, 10 October 2026
+
+The dedicated TEST worker now retains valid broadcast replies and includes the
+worker-level capture pause/deferral check. Version 7 is ACTIVE with JWT protection.
+All 65 monitored datasets, schema and other endpoints are unchanged. Local runtime
+checks passed 63 tests; 57 applicable tests also passed against the downloaded
+published code using synthetic provider/database ports. Nine deployment checks and
+seven real HTTP checks pass, including an authorized idle call claiming zero jobs.
+No provider requests or automatic triggers were started. Full real-channel ingestion
+and automatic thread coverage remain outstanding.
+See [release evidence](evidence/learn-slack-broadcast-hosted-2026-10-10.json).
+
 ## Recurring Slack backend — installed in TEST, not activated
 
 Release **035** installed two empty RLS tables and four scoped recurring functions

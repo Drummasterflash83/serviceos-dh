@@ -1,6 +1,6 @@
 # LEARN Slack history ingestion
 
-## Broadcast reply retention — local verification, 10 October 2026
+## Broadcast reply retention — TEST worker v7, 10 October 2026
 
 Channel history previously rejected `thread_broadcast`, which could stop a whole
 page containing a reply shared with the channel. The reader now retains that
@@ -16,14 +16,33 @@ and equivalent timestamps repeated in one page are rejected before persistence.
 Review also confirmed the credential-owning transport already supplies
 `inclusive=true` for both history and replies; no boundary transport fix was needed.
 
-All **60** shared Slack/worker-handler Node tests pass, including a synthetic
-provider → real server adapter → worker → persistence-port broadcast check and
-invalid-parent rejection with no checkpoint advance. Targeted TypeScript checks
-pass. These are local tests with synthetic provider/database responses; the fix
-has **not been deployed**. The complete current worker closure is recorded in
-[local evidence](evidence/learn-slack-broadcast-local-2026-10-10.json) for the next
-reviewed TEST worker replacement. Real workspace acceptance, automatic thread
-capture and unsupported message subtypes remain outstanding.
+The dedicated TEST `learn-slack-worker` was replaced from v6 to **v7** at
+**17:47:19 UTC**, with gateway JWT verification retained. The 14-file reviewed
+closure also includes the previously built worker capture-admission/deferral
+checks, absent from v6. A paused or unverifiable batch is deferred without spending
+a retry; a page already committed can settle without contacting Slack again.
+The existing schema already contained those capture functions.
+
+**63** local Slack/capture tests and **9** deployment tests pass. Downloading the
+published worker produced 13 transpiled runtime files (the type-only contract is
+omitted); **57** applicable tests passed against that downloaded code, including
+broadcast retention, malformed-parent refusal, pause handling and lost-response
+settlement. Tests use synthetic provider/database ports. The standalone admission
+suite also imports generic queue code absent from this endpoint, so it was excluded
+from downloaded-runtime checks rather than supplied from local code.
+
+Seven actual HTTP checks passed: missing JWT, missing/wrong worker keys, wrong
+method and supplied selectors were refused; an authorized idle invocation claimed
+zero jobs. No provider calls occurred. An independent final comparison preserved
+all **65** monitored datasets, the schema and every other endpoint. No credentials,
+user grants, channels or triggers were created, and production was untouched.
+
+The historical email/platform-worker release pin now correctly refuses the changed
+shared source. Its tests retain that refusal check and exercise shared deployment
+mechanics under a test-only contract; its release pin was not changed or redeployed.
+Real workspace acceptance, automatic thread capture and unsupported message subtypes
+remain outstanding. See [hosted release evidence](evidence/learn-slack-broadcast-hosted-2026-10-10.json)
+and the [earlier local evidence](evidence/learn-slack-broadcast-local-2026-10-10.json).
 
 ## Recurring channel capture — TEST backend installed, 10 October 2026
 
