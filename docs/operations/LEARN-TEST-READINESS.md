@@ -1,15 +1,24 @@
 # Existing TEST environment: verified release gaps
 
-## Retained job detail — verified local candidate, not deployed
+## Retained job detail — TEST release 047 and paired frontend installed
 
 Owners can inspect a captured Commusoft job's source fields and dates while its
 canonical linking remains held. Unzoned dates are labelled and never converted to
-an assumed instant. Nineteen client tests, isolated database authority/preservation
-checks, SQL-to-client parsing and actual synthetic browser retry/detail/scope checks
-passed. The exact TEST package and hosted acceptance are the next steps. This
-candidate makes no provider requests and does not alter the pending import approval.
-[Implementation and verification](LEARN-COMMUSOFT-JOB-DETAILS.md).
+an assumed instant. The exact package passed hosted rollback rehearsal and was
+installed at 22:34 UTC; all 88 monitored datasets and existing function privileges
+were preserved. Four hosted HTTP access-denial checks passed. The paired protected
+frontend is READY from Git `e94944bc94573076aeed49f2970e85788a7f239d`.
+Vercel protection and actual browser same-origin login redirect passed. Nineteen
+client tests, isolated database checks and synthetic browser detail/retry/scope
+checks support the implementation; fresh signed-in hosted owner acceptance remains
+pending. No provider requests or production changes occurred. The prepared import
+still awaits its existing approval, with no active grant or request; its schema
+fingerprint now recognises 047 without changing the requested scope.
+[Implementation](LEARN-COMMUSOFT-JOB-DETAILS.md) ·
+[release evidence](evidence/learn-job-details-test-2026-10-10.json).
 
+Earlier deployment entries below are historical; use [DEPLOYMENT](../DEPLOYMENT.md)
+for the current paired frontend.
 
 ## Assessment history — protected TEST frontend installed
 

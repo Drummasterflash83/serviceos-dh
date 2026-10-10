@@ -1,0 +1,152 @@
+{
+  "version": "learn-job-details-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "047_job_details",
+  "rehearsal": {
+    "version": "learn-job-details/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "a707572ce30caafd402109c8055b4d7fe1d5f722cf0011a25100869f8e9c75a9",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T22:34:03.043Z",
+    "priorFingerprint": "f380f1bcfc60dd0da7bd99f8822d969d",
+    "expectedFingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+    "afterFingerprint": "f380f1bcfc60dd0da7bd99f8822d969d",
+    "preservedDataSets": 88,
+    "receipt": {
+      "fingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+      "functions": 2
+    }
+  },
+  "installation": {
+    "version": "learn-job-details/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "a707572ce30caafd402109c8055b4d7fe1d5f722cf0011a25100869f8e9c75a9",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T22:34:25.383Z",
+    "priorFingerprint": "f380f1bcfc60dd0da7bd99f8822d969d",
+    "expectedFingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+    "afterFingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+    "preservedDataSets": 88,
+    "receipt": {
+      "fingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+      "functions": 2
+    }
+  },
+  "httpAccess": {
+    "observedAt": "2026-10-10T22:34:39.363Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "path": "rpc/learn_commusoft_job_details",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "rpc/learn_business_input_time_detail",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_commusoft_job_details",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_business_input_time_detail",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "postHttpPreservation": {
+    "observedAt": "2026-10-10T22:34:52.191Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "fingerprint": "8a6854682aebb7dc6eb2b4bbadaff14e",
+    "ledger": 48,
+    "preservedDataSets": 88,
+    "continuationSchemaFingerprint": "cbf737677e2262076905af1c8a2a7e6b"
+  },
+  "verification": {
+    "releaseGuardTests": 6,
+    "releaseAndContinuationBoundaryTests": 28,
+    "clientTests": 19,
+    "localSQL": "Full publication, mapping and detail regression, exact hosted date/access probe and actual SQL-to-client parsing passed.",
+    "signedInHostedOwnerAcceptance": false,
+    "hostedVisualAcceptance": false
+  },
+  "frontend": {
+    "observedAt": "2026-10-10T22:35:41.228Z",
+    "id": "dpl_5AvNoqHPvdNjW89zCZMcEK9qzNEW",
+    "url": "serviceos-learn-test-8mf3rcul4-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "e94944bc94573076aeed49f2970e85788a7f239d"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "protection": {
+      "observedAt": "2026-10-10T22:35:39.745Z",
+      "base": "https://serviceos-learn-test-8mf3rcul4-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "browser": {
+      "observedAt": "2026-10-10T22:37:55.218Z",
+      "url": "https://serviceos-learn-test-8mf3rcul4-allkin.vercel.app/login?redirect=%2Fclient%3Fsection%3Dlearn",
+      "loginRendered": true,
+      "sameOriginClientRedirect": true,
+      "signedInOwnerAcceptance": false,
+      "screenshot": ".verification-results/learn-job-details-test-login-2026-10-10.png"
+    }
+  },
+  "continuation": {
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "boundary": {
+      "requests": 0,
+      "active_grants": 0,
+      "banned": 0
+    },
+    "schemaFingerprint": "cbf737677e2262076905af1c8a2a7e6b",
+    "scopeChanged": false
+  },
+  "scope": [
+    "88 datasets preserved, including assessment cancellation history.",
+    "Existing metadata, function definitions, ownership and permissions unchanged.",
+    "No login, operator grant, provider request, canonical publication, capture activation or production change."
+  ],
+  "remaining": [
+    "Fresh signed-in hosted owner job-detail acceptance.",
+    "Completion-time timezone and missing property references remain unresolved.",
+    "The existing additional-import approval remains pending."
+  ]
+}

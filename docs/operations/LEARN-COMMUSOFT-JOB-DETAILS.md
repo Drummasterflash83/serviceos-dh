@@ -1,9 +1,10 @@
 # Retained Commusoft job details
 
-Local candidate verified on 10 October 2026. The database migration and matching
-frontend are **not yet installed in hosted TEST or production**. The currently
-hosted TEST candidate remains the assessment-history release recorded in
-[DEPLOYMENT](../DEPLOYMENT.md).
+TEST release 047 was installed at 22:34 UTC on 10 October 2026 after a matching
+rollback rehearsal. Its paired protected frontend is READY from Git commit
+`e94944bc94573076aeed49f2970e85788a7f239d`. Production is unchanged.
+Fresh signed-in hosted owner acceptance remains pending. See
+[deployment](../DEPLOYMENT.md) and [release evidence](evidence/learn-job-details-test-2026-10-10.json).
 
 ## What the owner can inspect
 
@@ -82,9 +83,17 @@ Synthetic preview: `&launch=1&jobDetails=retry`; select its synthetic connection
 then Jobs. `jobDetails=stale` shows the old-version warning. The fixture permits
 only read operations and has no hosted/provider traffic.
 
-Next: prepare the exact additive TEST release against the installed 046 catalog,
-rehearse it with existing source/scoring preservation checks, then install its
-paired backend/frontend. Positive signed-in hosted acceptance remains separate.
-Do not deploy the frontend alone or replay older release packages. The pending
-Commusoft continuation remains paused; its credentials and access grants are not
-changed by this candidate.
+The exact additive package was rehearsed against the installed 046 catalog, then
+installed with identical existing function definitions, ownership and privileges.
+All 88 monitored datasets were preserved, including assessment cancellations.
+Four hosted HTTP checks confirm anonymous/service-role denial for the reader and
+private date helper. Six release guard tests and 28 combined release/continuation
+boundary tests passed. The protected frontend targets TEST; all three checked
+routes retain Vercel protection, and the actual browser client route redirects to
+the same-origin sign-in screen. These checks do not prove a signed-in owner read.
+
+Next: fresh signed-in hosted owner acceptance of detail reading, retry, scope
+changes and OpenFolk controls. Do not replay older release packages. The prepared
+Commusoft continuation remains awaiting its existing approval, with zero requests
+and zero active grants. Only its expected schema fingerprint changed to recognise
+047; its identity, duration, request budgets and preservation baseline are unchanged.
