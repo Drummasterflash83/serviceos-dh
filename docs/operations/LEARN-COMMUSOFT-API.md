@@ -622,5 +622,43 @@ before save and lost-reply recovery across reload into viewer access. Read-only
 switches show recorded values, including explicit unconfigured status. Evidence:
 `evidence/learn-operator-inputs-viewer-2026-10-10.json`.
 
-Successful import approval/page acceptance, connection setup, incomplete-import
-recovery and Drummonds API access remain open.
+Successful import approval/page acceptance with synthetic source responses is
+recorded below. Connection setup, incomplete-import recovery and Drummonds API
+access remain open.
+
+## Successful ingestion and deployed recovery acceptance — 10 October
+
+`learn-test-commusoft-ingestion-acceptance.mjs` exercises the complete synthetic
+operator approval → scoped credential acquisition → retained page → checkpoint →
+continuation → reviewed customer/site/job → card path against hosted TEST.
+The runner's network allowlist permits only the named TEST project and its
+management endpoints. Provider transport is replaced by deterministic responses;
+the temporary Vault value is explicitly fake and never valid for a provider.
+No production state or schedule changes.
+
+The first properties page commits and creates one successor. Page two is saved
+before its worker is deliberately interrupted. The fixture's Commusoft switch is
+then disabled and its claim expired. Only after checking the retained page,
+disabled module and singleton queue does the runner invoke the deployed worker.
+That invocation recovers and settles the saved page at attempt two without
+acquiring a new permit or creating a successor. Disabled capture prevents a source
+request even if source-free recovery fails.
+
+A subsequent jobs traversal reuses the same account while preserving the prior
+approval/checkpoint. A simulated lost commit reply still settles successfully
+from retained state. Actual signed-in review adapters then create one customer
+card, one site and one job from the captured source versions. Three pages, versions,
+permits and successful worker jobs remain, with no active work.
+
+Preservation comparisons across 29 tables/metadata sets match, and schema/runtime
+contracts are unchanged. The temporary login is banned/password rotated, grant
+ended, profile demoted, switches/connector/account disabled and connection revoked.
+The fake Vault entry is retained under a retired fixture name, breaking its active
+tenant binding. A separate read-only confirmation verifies retirement. Evidence:
+`evidence/learn-commusoft-ingestion-test-2026-10-10.json`.
+
+This validates hosted integration with synthetic responses. Real Commusoft API
+access, response shapes, contact/work-address support, coverage and operational
+readiness still require account-specific acceptance. The next build slice is
+operator connection setup; incomplete-import recovery, contacts projection,
+reconciliation and source updates remain unfinished.

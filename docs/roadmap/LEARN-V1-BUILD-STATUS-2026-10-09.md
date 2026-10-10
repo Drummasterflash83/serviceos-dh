@@ -1544,3 +1544,34 @@ viewer access, unavailable permission verification, revocation before save and
 recovery after access restoration; no browser console errors were recorded.
 The temporary tab/server were closed; production and hosted TEST were unchanged.
 See [viewer evidence](../operations/evidence/learn-operator-inputs-viewer-2026-10-10.json).
+
+## Successful Commusoft source-to-card flow in TEST — 10 October
+
+A real signed-in synthetic operator approved two bounded collection traversals.
+The existing account/queue/Vault/RPC path captured two property pages and one job
+page, then the signed-in review adapters produced one customer card, one site and
+one job. Source transport responses were intercepted synthetic fixtures; no real
+Commusoft API request was sent. Successful source reads ran the production worker
+modules locally against hosted TEST. This proves their integration with the
+hosted database, not real provider credentials, payloads or coverage.
+
+The first page queued exactly one successor and advanced the checkpoint. The
+second page committed before a deliberately interrupted worker claim expired.
+With capture disabled, the deployed Edge worker reclaimed that job at attempt two
+and settled the retained page successfully, without a new permit or successor.
+A subsequent jobs approval reused the account and retained the previous completed
+approval/checkpoint. Its commit acknowledgement was deliberately lost; the worker
+settled success from retained state without repeating the source request.
+
+The run retained three pages, versions, permits and successful jobs, with zero
+active jobs. Pre-existing records across 29 tables/metadata sets and all inspected
+schema/runtime contracts remained unchanged. Fixture history remains retained;
+its login was banned/password rotated, role demoted, grant ended, module flags
+turned off, connection revoked and account disabled. The fake, never-provider-valid
+Vault value was renamed out of the active tenant binding. An independent read-only
+check confirmed retirement. Evidence:
+[successful ingestion acceptance](../operations/evidence/learn-commusoft-ingestion-test-2026-10-10.json).
+
+Next: operator connection setup and real Drummonds API access/coverage. Incomplete
+import recovery controls, contacts projection, existing-target reconciliation,
+source updates, Slack/voicemail completion and production release remain open.

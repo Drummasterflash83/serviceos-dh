@@ -1,0 +1,67 @@
+{
+  "version": "learn-commusoft-ingestion-test-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "2e721c37-48f5-4769-a18d-c2328bdd668d",
+  "observedAt": "2026-10-10T10:45:58.068Z",
+  "state": "passed",
+  "stage": "passed",
+  "checks": [
+    "Signed-in operator approval atomically creates one account/job and replays without duplication. Production worker code uses real Vault acquisition, scoped RPCs and an intercepted provider response to commit page one and queue its successor.",
+    "Page two commits, then its claim is deliberately expired before settlement. With capture disabled, the deployed worker reclaims it at attempt two and settles the saved page successfully without any new provider authority or successor.",
+    "A subsequent jobs collection reuses the account and retains the completed prior approval/checkpoint. Its publication reply is deliberately lost after commit; the real worker settles success from durable state without a repeat request.",
+    "The captured customer, work address and job pass the real signed-in review adapters and produce one customer card, one site and one job visible through the application card reader."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "summary": {
+    "pages": 3,
+    "versions": 3,
+    "permits": 3,
+    "succeeded_jobs": 3,
+    "active_jobs": 0,
+    "customer_cards": 1,
+    "sites": 1,
+    "jobs": 1
+  },
+  "syntheticProviderReads": 3,
+  "preExistingSourcesPreserved": true,
+  "retiredLogin": true,
+  "retirement": {
+    "active_jobs": 0,
+    "enabled_flags": 0,
+    "active_grants": 0,
+    "active_secret_bindings": 0
+  },
+  "limitations": [
+    "Provider responses are intercepted synthetic fixtures. This does not prove real Commusoft credentials, API coverage or provider behavior.",
+    "Successful source reads run the production worker modules locally against hosted TEST Vault and RPCs. Deployed Edge execution is exercised only for committed-page recovery while capture is disabled.",
+    "All synthetic history remains retained; login/grant/connection/account/switch authority is retired and the fake Vault binding renamed. No production changes or scheduler."
+  ],
+  "retirementConfirmation": {
+    "observedAt": "2026-10-10T10:46:21.920Z",
+    "runId": "2e721c37-48f5-4769-a18d-c2328bdd668d",
+    "readOnly": true,
+    "verified": true,
+    "counts": {
+      "banned_login": 1,
+      "demoted_profile": 1,
+      "active_grants": 0,
+      "active_jobs": 0,
+      "enabled_flags": 0,
+      "revoked_connection": 1,
+      "disabled_account": 1,
+      "retired_dummy_binding": 1
+    },
+    "preservedTableCount": 29
+  },
+  "sourceSha256": {
+    "scripts/verify/learn-test-commusoft-ingestion-acceptance.mjs": "f9b3526b599631ab4fea52058e6b2ab37e1a2ed802bb5b4168039567b0e28829",
+    "supabase/functions/_shared/commusoft/worker.ts": "6053a46914e49dd0a6a43daf2bc1abb1cc54056af428007d6a54482cd89b4602",
+    "supabase/functions/_shared/commusoft/bound_page.ts": "bedd0818fd05978e365cd90505c5e34c79b4604b69c71340d466ac2015ba113d",
+    "supabase/functions/_shared/commusoft/permit_server.ts": "1f68233a594c4249f16f3c50563c97027d34e4b414cdb442f9cd7a8fb92a4c12",
+    "supabase/functions/_shared/commusoft/page_store.ts": "f53c7fc8533afcc23630551f4bfe0a278120cd073ca3b2132fcca3aa8539c278",
+    "src/lib/learn-operator-inputs.ts": "470046bb505923b2eb81a396fc86c760eae1e80698e3cc37c0269cfc1d6d0d79",
+    "src/lib/learn-commusoft-review.ts": "6b09a89cbd2f92b11ad35ea3106b509260133025286588f65449a11600d3c479",
+    "src/lib/learn-commusoft-work.ts": "ca34e19f5155a50d2951e60fe749c1e688da8ee070539adca913f46b5d09cd2c"
+  }
+}
