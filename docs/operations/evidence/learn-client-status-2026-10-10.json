@@ -1,0 +1,30 @@
+{
+  "observedAt": "2026-10-10T18:04:05.894108+00:00",
+  "scope": "local actual LearnLaunchPortal with synthetic auth/transport/child stubs",
+  "checks": {
+    "unavailableOmitsCountGrid": true,
+    "savedCardStubRemainsMounted": true,
+    "freshCounts": [
+      42,
+      12,
+      8
+    ],
+    "slackCount": "Not checked",
+    "voicemailCount": 0,
+    "failedEmailAttemptAndLastSuccessVisible": true,
+    "keyboardCoverageDisclosure": true,
+    "expiryRemovesCountGrid": true,
+    "refreshRestoresCountGrid": true,
+    "mobileViewportWidth": 390,
+    "mobileDocumentWidth": 390,
+    "fullApplicationBuild": "passed",
+    "typescript": "passed",
+    "launchContractTests": 7
+  },
+  "limitations": [
+    "No hosted frontend deployment",
+    "No real provider requests or data changes",
+    "Real child-component/card access and client-role hosted acceptance not established"
+  ],
+  "screenshot": "learn-client-status-2026-10-10.png"
+}

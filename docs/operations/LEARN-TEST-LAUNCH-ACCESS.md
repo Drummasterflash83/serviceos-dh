@@ -189,3 +189,24 @@ these new views and retain the evidence. Returning to `existing` mode is only
 appropriate where the prior reader was verified; on the currently restricted
 TEST schema it would report unavailable. Inspect before retrying a partially
 recorded release. No rollback requires deleting communications or recordings.
+
+## Client status presentation — 10 October 2026
+
+The launch portal now gives one actionable notice when the capture snapshot is
+unavailable or expires, and omits the count grid until a valid snapshot arrives.
+Saved-card rendering remains independent of this status request. Failed updates
+retain their processed counts and last successful update date, with a next step
+to ask OpenFolk to review the connection. Detailed email and transcript coverage
+is expandable; the page continues to distinguish stored records from complete
+provider history. No endpoint, permission or ingestion contract changed.
+
+Local browser verification used the actual component with synthetic transport,
+authentication and child-component stubs. It checked unavailable/fresh/expired
+status, refresh recovery, exact stored counts, zero voicemail, unknown Slack
+count, keyboard disclosure and a 390-pixel viewport without horizontal overflow.
+This verifies presentation, not real card access, provider capture or hosted
+client-role acceptance. The full application build, TypeScript check and seven
+launch-contract tests passed. The frontend change is not yet deployed.
+
+Evidence: [synthetic preview](evidence/learn-client-status-2026-10-10.png) and
+[verification record](evidence/learn-client-status-2026-10-10.json).

@@ -1,62 +1,496 @@
-import {useEffect,useRef,useState} from 'react';
-import {Mail,Phone,MessagesSquare,Headphones,RefreshCw,ArrowUpRight,ShieldCheck,Files} from 'lucide-react';
-import {useAuth} from '@/lib/auth';
-import {getSupabaseClient} from '@/lib/supabase';
-import {startGmailOAuth} from '@/lib/api';
-import {launchSnapshot,gmailConsentUrl,isCurrentLaunchRequest,type LaunchProcessingAttempt} from '@/lib/learn-launch';
-import '@/styles/learn-launch.css';
-import {LearnCards} from './LearnCards';
-import {LearnSlackSetup} from './LearnSlackSetup';
-import {LearnFileImports} from './LearnFileImports';
-import {LearnCommusoftCustomers} from './LearnCommusoftCustomers';
-import {LearnCommusoftWork} from './LearnCommusoftWork';
-import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle} from '@/components/ui/dialog';
+import { useEffect, useRef, useState } from "react";
+import {
+  Mail,
+  Phone,
+  MessagesSquare,
+  Headphones,
+  RefreshCw,
+  ArrowUpRight,
+  ShieldCheck,
+  Files,
+} from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { getSupabaseClient } from "@/lib/supabase";
+import { startGmailOAuth } from "@/lib/api";
+import {
+  launchSnapshot,
+  gmailConsentUrl,
+  isCurrentLaunchRequest,
+  type LaunchProcessingAttempt,
+} from "@/lib/learn-launch";
+import "@/styles/learn-launch.css";
+import { LearnCards } from "./LearnCards";
+import { LearnSlackSetup } from "./LearnSlackSetup";
+import { LearnFileImports } from "./LearnFileImports";
+import { LearnCommusoftCustomers } from "./LearnCommusoftCustomers";
+import { LearnCommusoftWork } from "./LearnCommusoftWork";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-export function LearnLaunchPortal({tenantId}:{tenantId:string}){
- const {user,profile}=useAuth();const [result,setResult]=useState<any>(null),[state,setState]=useState('loading'),[connectState,setConnectState]=useState('idle'),[notice,setNotice]=useState('');
- const [slackSetup,setSlackSetup]=useState(false);
- const [fileImports,setFileImports]=useState(false);
- const [commusoftReview,setCommusoftReview]=useState(false);
- const [commusoftWork,setCommusoftWork]=useState(false);
- const [cardRevision,setCardRevision]=useState(0);
- const revision=useRef(0),scope=useRef('');scope.current=`${user?.id??''}:${tenantId}`;
- const canConnect=!!user&&profile?.tenant_id===tenantId&&['owner','admin','ops'].includes(profile.role);
- async function refresh(){const ticket=++revision.current,selected=scope.current;setResult(null);setState('loading');try{
-  const {data,error}=await getSupabaseClient().functions.invoke('learn-launch-status',{body:{tenant_id:tenantId}});
-  if(!isCurrentLaunchRequest(ticket,selected,revision.current,scope.current))return;
-  const valid=!error&&launchSnapshot(data,tenantId,Date.now());setResult(valid||null);setState(valid?'ready':'unavailable');
- }catch{if(isCurrentLaunchRequest(ticket,selected,revision.current,scope.current)){setResult(null);setState('failed');}}}
- useEffect(()=>{void refresh();const timer=setInterval(()=>{setResult((old:any)=>old&&Date.now()>=Date.parse(old.valid_until)?null:old);},1000);return()=>{clearInterval(timer);revision.current++;};},[user?.id,tenantId]);
- async function connect(){if(!canConnect||connectState==='connecting')return;const selected=scope.current,ticket=revision.current;setConnectState('connecting');setNotice('');try{
-  const response=await startGmailOAuth();if(!isCurrentLaunchRequest(ticket,selected,revision.current,scope.current))return;
-  const url=response.ok?gmailConsentUrl(response.data.auth_url):null;
-  if(!url){setConnectState('failed');setNotice('Gmail connection could not start. Check TEST Google configuration and try again.');return;}
-  window.location.assign(url);
- }catch{if(isCurrentLaunchRequest(ticket,selected,revision.current,scope.current)){setConnectState('failed');setNotice('Gmail connection could not start. Please try again.');}}}
- const display=(v:unknown)=>typeof v==='number'?v.toLocaleString('en-GB'):'Unknown';
- const when=(v:unknown)=>typeof v==='string'?new Date(v).toLocaleString('en-GB'):'Unverified';
- const attempt=(v:LaunchProcessingAttempt|undefined)=>{if(!v||v.state==='unknown')return 'Latest attempt unavailable';if(v.state==='idle')return 'No recorded attempt';if(v.state==='processing')return `Processing · ${display(v.records_processed)} processed so far · started ${when(v.started_at)}`;return `${v.state==='success'?'Succeeded':'Failed'} · ${display(v.records_processed)} processed · completed ${when(v.completed_at)}`;};
- const active=result&&Date.now()<Date.parse(result.valid_until)?result:null;
- return <div className="lr-page">
-  <div className="cp-page-heading lr-heading"><div><p className="of-eyebrow">STAGE 1 · LEARN</p><h1>Your business, coming into view.</h1><p>Stored evidence, connection scope and what needs attention.</p></div><button className="cp-secondary" disabled={state==='loading'} onClick={()=>void refresh()}><RefreshCw size={15}/>Refresh</button></div>
-  {(state!=='ready'||!active)&&<p role="status" className="lr-notice">{state==='loading'?'Reading your workspace…':'Current evidence is unavailable or expired. Refresh to retry. No connector success is inferred.'}</p>}
-  {active&&<p role="status" className="lr-notice">Observed {when(active.observed_at)} · valid until {when(active.valid_until)}. Refresh rereads stored evidence; it does not start a connector sync.</p>}
-  <section className="lr-counts" aria-label="Stored source counts">{[{name:'Emails',value:active?.counts.email.record_count,Icon:Mail},{name:'Calls',value:active?.counts.phone.record_count,Icon:Phone},{name:'Recordings',value:active?.recordings.record_count,Icon:Files},{name:'Slack messages',value:null,Icon:MessagesSquare}].map(c=><article className="lr-count" key={c.name}><div className="lr-count-label">{c.name}<c.Icon size={17}/></div><strong className={typeof c.value==='number'?'':'lr-unknown'}>{display(c.value)}</strong><small>Accessible stored rows · source coverage unverified</small></article>)}</section>
-  <LearnCards key={cardRevision} tenantId={tenantId}/>
-  <section className="cp-card"><h2>Customer and job systems</h2><p>Review customers retained from your connected business system before linking their cards.</p><button className="cp-secondary" onClick={()=>setCommusoftReview(true)}>Review Commusoft customers</button> <button className="cp-secondary" onClick={()=>setCommusoftWork(true)}>Review Commusoft sites, jobs and contacts</button></section>
-  <Dialog open={commusoftWork} onOpenChange={setCommusoftWork}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Commusoft site, job and contact review</DialogTitle><DialogDescription>Review customer relationships and recover saved batches.</DialogDescription></DialogHeader>{commusoftWork&&<LearnCommusoftWork onSaved={()=>setCardRevision(v=>v+1)} key={`${user?.id}:${tenantId}:${profile?.role}`} actorId={user?.id??''} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
-  <Dialog open={commusoftReview} onOpenChange={setCommusoftReview}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Commusoft customer review</DialogTitle><DialogDescription>Inspect retained source details and confirm the appropriate customer identity.</DialogDescription></DialogHeader>{commusoftReview&&<LearnCommusoftCustomers onSaved={()=>setCardRevision(v=>v+1)} key={`${user?.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
-  <section className="cp-card"><h2>Customer, site and job files</h2><p>Review prepared source files and retained import results.</p><button className="cp-secondary" onClick={()=>setFileImports(true)}>Review file imports</button></section>
-  <Dialog open={fileImports} onOpenChange={setFileImports}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Customer, site and job imports</DialogTitle><DialogDescription>Preview a prepared CSV, inspect its mapping and approve the saved import.</DialogDescription></DialogHeader>{fileImports&&<LearnFileImports key={`${user?.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
-  <Dialog open={slackSetup} onOpenChange={setSlackSetup}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Slack imports</DialogTitle><DialogDescription>Import channel messages and observed thread replies using an existing company connection.</DialogDescription></DialogHeader>{slackSetup&&<LearnSlackSetup key={`${user?.id}:${tenantId}`} tenantId={tenantId} actorId={user?.id??''} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
-  <div className="lr-section-heading"><div><h2>Launch sources</h2><p>Slack, email and phone first. Emma stays independent.</p></div></div>
-  <section className="lr-connectors">
-   <article className="lr-connector"><div className="lr-source-icon slack"><MessagesSquare size={21}/></div><h3>Slack</h3><p className="lr-scope">Conversation ingestion</p><p className="lr-source-note">History ingestion has not been verified for this workspace. Notifications and user-directory records are separate.</p><div className="lr-sync"><span>Notification delivery configuration</span><strong>{active?.slack.notifications_enabled===true?'Enabled · not message ingestion':active?.slack.notifications_enabled===false?'Disabled · not message ingestion':'Unverified'}</strong></div><button className="lr-source-action" onClick={()=>setSlackSetup(true)}>Set up history import<ArrowUpRight size={15}/></button></article>
-   <article className="lr-connector"><div className="lr-source-icon email"><Mail size={21}/></div><h3>Email</h3><p className="lr-scope">Gmail / Workspace</p><p className="lr-source-note">{display(active?.email.accounts)} accounts · {display(active?.email.disabled_accounts)} disabled. {display(active?.email.selected_mailboxes)} selected of {display(active?.email.mailboxes)} discovered mailboxes.</p><p className="lr-source-note">Stored labels: Inbox {display(active?.email.stored_label_counts?.inbox)} · Sent {display(active?.email.stored_label_counts?.sent)} · Draft {display(active?.email.stored_label_counts?.draft)}. Labels may overlap; draft lifecycle and full coverage are unverified.</p><div className="lr-sync"><span>Latest message-sync attempt</span><strong>{attempt(active?.email.latest_message_sync_attempt)}</strong>{active?.email.latest_message_sync_attempt?.state==='failed'&&<strong>{active.email.latest_message_sync_attempt.error_present?'An error was recorded; details are hidden.':'No error detail was recorded.'} Refresh safely rereads status.</strong>}<span>Last successful message-sync run</span><strong>{when(active?.email.last_successful_message_sync_at)}</strong></div><button className="lr-source-action" disabled={!canConnect||connectState==='connecting'} onClick={()=>void connect()}>{connectState==='connecting'?'Starting consent…':connectState==='failed'?'Retry Gmail connection':'Connect Gmail'}<ArrowUpRight size={15}/></button></article>
-   <article className="lr-connector"><div className="lr-source-icon birchills"><Phone size={21}/></div><h3>Phone / Birchills</h3><p className="lr-scope">Stored call and recording rows</p><p className="lr-source-note">{display(active?.counts.phone.record_count)} calls stored. Stored rows do not establish carrier attribution, number coverage or recording accessibility.</p><p className="lr-source-note">Transcripts: {display(active?.phone.transcript_status_counts?.completed)} completed · {display(active?.phone.transcript_status_counts?.failed)} failed · {display(active?.phone.transcript_status_counts?.pending)} pending · {display(active?.phone.transcript_status_counts?.processing)} processing. These are stored statuses; completed does not establish transcript accuracy or complete call coverage.</p><div className="lr-sync"><span>Latest call-sync attempt</span><strong>{attempt(active?.phone.latest_call_sync_attempt)}</strong>{active?.phone.latest_call_sync_attempt?.state==='failed'&&<strong>{active.phone.latest_call_sync_attempt.error_present?'An error was recorded; details are hidden.':'No error detail was recorded.'} Refresh safely rereads status.</strong>}<span>Last successful call-sync run</span><strong>{when(active?.phone.last_successful_call_sync_at)}</strong></div><a className="lr-source-action" href="/app#communications">Open existing communications<ArrowUpRight size={15}/></a></article>
-   <article className="lr-connector"><div className="lr-source-icon emma"><Headphones size={21}/></div><h3>Emma</h3><p className="lr-scope">Independent AI receptionist</p><p className="lr-source-note">No extra call total. Live provider conversation refresh is outside this read-only portal.</p><div className="lr-sync"><span>Stored processing observation</span><strong>Unverified</strong></div></article>
-  </section>
-  <article className="cp-card lr-activity" style={{marginTop:24}}><h2>Recent stored calls</h2><p>Provider directions are raw leg metadata. Canonical inbound direction, linked call families and family audio coverage remain separate.</p>{active?.phone.recent_calls?.length?<ul>{active.phone.recent_calls.map((c:any)=><li key={c.id}><div><strong>{when(c.started_at)}</strong><small>Provider {c.raw_direction??'direction unknown'} · {display(c.recording_ids?.length)} associated recordings · family audio unverified</small></div></li>)}</ul>:<p>No recent-call observation is available.</p>}</article>
-  <section className="lr-bottom"><article className="cp-card"><h2>Email onboarding</h2><p>Connect one Gmail account above. TEST LEARN consent should request Gmail read access and identity only. Check the Google consent screen; existing grants are unchanged. Connecting does not enable sending or complete history.</p><p>Existing Gmail and Workspace message sync select INBOX and SENT. Their inclusion is supported by source code, not a completeness claim. Draft ingestion and draft deletion lifecycle are not supported by this flow. Workspace administration uses the existing settings flow. Discovered, selected, disabled, removed, paused and deferred mailboxes are distinct; pause/deferral reason and inventory freshness remain unverified.</p><a className="cp-secondary" href="/app#settings">Open existing Workspace setup<ArrowUpRight size={14}/></a>{!canConnect&&<p>Only your company’s owner, admin or ops user can connect Gmail.</p>}{notice&&<p role="alert">{notice}</p>}</article><article className="cp-card lr-safety"><div className="lr-small-heading"><ShieldCheck size={18}/><h2>Your data, under your control</h2></div><p>Reads use your existing signed-in tenant and database permissions. Stored counts, last sync, coverage and delivery acceptance remain separate. Voicemails: {display(active?.voicemails?.record_count)} accessible stored rows. Coverage and audio accessibility are unverified; recording totals do not establish complete inbound audio.</p><p>Customer-system records can be reviewed above as they become available.</p></article></section>
- </div>;
+export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
+  const { user, profile } = useAuth();
+  const [result, setResult] = useState<any>(null),
+    [state, setState] = useState("loading"),
+    [connectState, setConnectState] = useState("idle"),
+    [notice, setNotice] = useState("");
+  const [slackSetup, setSlackSetup] = useState(false);
+  const [fileImports, setFileImports] = useState(false);
+  const [commusoftReview, setCommusoftReview] = useState(false);
+  const [commusoftWork, setCommusoftWork] = useState(false);
+  const [cardRevision, setCardRevision] = useState(0);
+  const revision = useRef(0),
+    scope = useRef("");
+  scope.current = `${user?.id ?? ""}:${tenantId}`;
+  const canConnect =
+    !!user && profile?.tenant_id === tenantId && ["owner", "admin", "ops"].includes(profile.role);
+  async function refresh() {
+    const ticket = ++revision.current,
+      selected = scope.current;
+    setResult(null);
+    setState("loading");
+    try {
+      const { data, error } = await getSupabaseClient().functions.invoke("learn-launch-status", {
+        body: { tenant_id: tenantId },
+      });
+      if (!isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) return;
+      const valid = !error && launchSnapshot(data, tenantId, Date.now());
+      setResult(valid || null);
+      setState(valid ? "ready" : "unavailable");
+    } catch {
+      if (isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) {
+        setResult(null);
+        setState("failed");
+      }
+    }
+  }
+  useEffect(() => {
+    void refresh();
+    const timer = setInterval(() => {
+      setResult((old: any) => (old && Date.now() >= Date.parse(old.valid_until) ? null : old));
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+      revision.current++;
+    };
+  }, [user?.id, tenantId]);
+  async function connect() {
+    if (!canConnect || connectState === "connecting") return;
+    const selected = scope.current,
+      ticket = revision.current;
+    setConnectState("connecting");
+    setNotice("");
+    try {
+      const response = await startGmailOAuth();
+      if (!isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) return;
+      const url = response.ok ? gmailConsentUrl(response.data.auth_url) : null;
+      if (!url) {
+        setConnectState("failed");
+        setNotice(
+          "Gmail connection could not start. Please try again or ask OpenFolk to check the connection.",
+        );
+        return;
+      }
+      window.location.assign(url);
+    } catch {
+      if (isCurrentLaunchRequest(ticket, selected, revision.current, scope.current)) {
+        setConnectState("failed");
+        setNotice("Gmail connection could not start. Please try again.");
+      }
+    }
+  }
+  const display = (v: unknown) =>
+    typeof v === "number" ? v.toLocaleString("en-GB") : "Not checked";
+  const when = (v: unknown) =>
+    typeof v === "string" ? new Date(v).toLocaleString("en-GB") : "Not confirmed";
+  const attempt = (v: LaunchProcessingAttempt | undefined) => {
+    if (!v || v.state === "unknown") return "Status not available";
+    if (v.state === "idle") return "No update recorded yet";
+    if (v.state === "processing")
+      return `Processing · ${display(v.records_processed)} processed so far · started ${when(v.started_at)}`;
+    return `${v.state === "success" ? "Update completed" : "Update needs attention"} · ${display(v.records_processed)} processed · completed ${when(v.completed_at)}`;
+  };
+  const active = result && Date.now() < Date.parse(result.valid_until) ? result : null;
+  return (
+    <div className="lr-page">
+      <div className="cp-page-heading lr-heading">
+        <div>
+          <p className="of-eyebrow">STAGE 1 · LEARN</p>
+          <h1>Your business, coming into view.</h1>
+          <p>Your saved communications, connected systems and next steps.</p>
+        </div>
+        <button
+          className="cp-secondary"
+          disabled={state === "loading"}
+          onClick={() => void refresh()}
+        >
+          <RefreshCw size={15} />
+          Refresh
+        </button>
+      </div>
+      {(state !== "ready" || !active) && (
+        <p role="status" className="lr-notice">
+          {state === "loading"
+            ? "Checking your saved activity…"
+            : "Capture status is not available for this session. You can still review saved cards below. Refresh to try again, or ask OpenFolk to check access."}
+        </p>
+      )}
+      {active && (
+        <p role="status" className="lr-notice">
+          Status checked {when(active.observed_at)}. Refresh checks for updates; it does not start
+          an import.
+        </p>
+      )}
+      {active && (
+        <section className="lr-counts" aria-label="Saved communications">
+          {[
+            { name: "Emails", value: active?.counts.email.record_count, Icon: Mail },
+            { name: "Calls", value: active?.counts.phone.record_count, Icon: Phone },
+            { name: "Recordings", value: active?.recordings.record_count, Icon: Files },
+            { name: "Slack messages", value: null, Icon: MessagesSquare },
+          ].map((c) => (
+            <article className="lr-count" key={c.name}>
+              <div className="lr-count-label">
+                {c.name}
+                <c.Icon size={17} />
+              </div>
+              <strong className={typeof c.value === "number" ? "" : "lr-unknown"}>
+                {display(c.value)}
+              </strong>
+              <small>
+                {c.name === "Slack messages"
+                  ? "See Slack imports for channel progress."
+                  : "Saved records · full history not yet confirmed."}
+              </small>
+            </article>
+          ))}
+        </section>
+      )}
+      <LearnCards key={cardRevision} tenantId={tenantId} />
+      <section className="cp-card">
+        <h2>Customer and job systems</h2>
+        <p>
+          Review customers retained from your connected business system before linking their cards.
+        </p>
+        <button className="cp-secondary" onClick={() => setCommusoftReview(true)}>
+          Review Commusoft customers
+        </button>{" "}
+        <button className="cp-secondary" onClick={() => setCommusoftWork(true)}>
+          Review Commusoft sites, jobs and contacts
+        </button>
+      </section>
+      <Dialog open={commusoftWork} onOpenChange={setCommusoftWork}>
+        <DialogContent
+          overlayClassName="z-[90]"
+          className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"
+        >
+          <DialogHeader>
+            <DialogTitle>Commusoft site, job and contact review</DialogTitle>
+            <DialogDescription>
+              Review customer relationships and recover saved batches.
+            </DialogDescription>
+          </DialogHeader>
+          {commusoftWork && (
+            <LearnCommusoftWork
+              onSaved={() => setCardRevision((v) => v + 1)}
+              key={`${user?.id}:${tenantId}:${profile?.role}`}
+              actorId={user?.id ?? ""}
+              tenantId={tenantId}
+              canEdit={
+                !!user &&
+                profile?.tenant_id === tenantId &&
+                ["owner", "admin"].includes(profile.role)
+              }
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={commusoftReview} onOpenChange={setCommusoftReview}>
+        <DialogContent
+          overlayClassName="z-[90]"
+          className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"
+        >
+          <DialogHeader>
+            <DialogTitle>Commusoft customer review</DialogTitle>
+            <DialogDescription>
+              Inspect retained source details and confirm the appropriate customer identity.
+            </DialogDescription>
+          </DialogHeader>
+          {commusoftReview && (
+            <LearnCommusoftCustomers
+              onSaved={() => setCardRevision((v) => v + 1)}
+              key={`${user?.id}:${tenantId}:${profile?.role}`}
+              tenantId={tenantId}
+              canEdit={
+                !!user &&
+                profile?.tenant_id === tenantId &&
+                ["owner", "admin"].includes(profile.role)
+              }
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      <section className="cp-card">
+        <h2>Customer, site and job files</h2>
+        <p>Review prepared source files and retained import results.</p>
+        <button className="cp-secondary" onClick={() => setFileImports(true)}>
+          Review file imports
+        </button>
+      </section>
+      <Dialog open={fileImports} onOpenChange={setFileImports}>
+        <DialogContent
+          overlayClassName="z-[90]"
+          className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"
+        >
+          <DialogHeader>
+            <DialogTitle>Customer, site and job imports</DialogTitle>
+            <DialogDescription>
+              Preview a prepared CSV, inspect its mapping and approve the saved import.
+            </DialogDescription>
+          </DialogHeader>
+          {fileImports && (
+            <LearnFileImports
+              key={`${user?.id}:${tenantId}:${profile?.role}`}
+              tenantId={tenantId}
+              canEdit={
+                !!user &&
+                profile?.tenant_id === tenantId &&
+                ["owner", "admin"].includes(profile.role)
+              }
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={slackSetup} onOpenChange={setSlackSetup}>
+        <DialogContent
+          overlayClassName="z-[90]"
+          className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto"
+        >
+          <DialogHeader>
+            <DialogTitle>Slack imports</DialogTitle>
+            <DialogDescription>
+              Import channel messages and observed thread replies using an existing company
+              connection.
+            </DialogDescription>
+          </DialogHeader>
+          {slackSetup && (
+            <LearnSlackSetup
+              key={`${user?.id}:${tenantId}`}
+              tenantId={tenantId}
+              actorId={user?.id ?? ""}
+              canEdit={
+                !!user &&
+                profile?.tenant_id === tenantId &&
+                ["owner", "admin"].includes(profile.role)
+              }
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      <div className="lr-section-heading">
+        <div>
+          <h2>Your communication sources</h2>
+          <p>Review each connection and its latest recorded activity.</p>
+        </div>
+      </div>
+      <section className="lr-connectors">
+        <article className="lr-connector">
+          <div className="lr-source-icon slack">
+            <MessagesSquare size={21} />
+          </div>
+          <h3>Slack</h3>
+          <p className="lr-scope">Channel messages and replies</p>
+          <p className="lr-source-note">
+            Open Slack imports to review channel progress and replies. Slack notifications do not
+            confirm that conversations have been imported.
+          </p>
+          <div className="lr-sync">
+            <span>Slack notifications</span>
+            <strong>
+              {active?.slack.notifications_enabled === true
+                ? "Enabled"
+                : active?.slack.notifications_enabled === false
+                  ? "Disabled"
+                  : "Not confirmed"}
+            </strong>
+          </div>
+          <button className="lr-source-action" onClick={() => setSlackSetup(true)}>
+            Review Slack imports
+            <ArrowUpRight size={15} />
+          </button>
+        </article>
+        <article className="lr-connector">
+          <div className="lr-source-icon email">
+            <Mail size={21} />
+          </div>
+          <h3>Email</h3>
+          <p className="lr-scope">Gmail / Workspace</p>
+          <p className="lr-source-note">
+            {active
+              ? `${display(active.email.accounts)} accounts · ${display(active.email.selected_mailboxes)} selected mailboxes.`
+              : "Connection details are not available. Refresh the status or ask OpenFolk to check access."}
+          </p>
+          {active && (
+            <details className="lr-coverage">
+              <summary>Email coverage details</summary>
+              <p>
+                {display(active.email.disabled_accounts)} accounts disabled ·{" "}
+                {display(active.email.mailboxes)} mailboxes discovered.
+              </p>
+              <p>
+                Saved labels: Inbox {display(active.email.stored_label_counts?.inbox)} · Sent{" "}
+                {display(active.email.stored_label_counts?.sent)} · Draft{" "}
+                {display(active.email.stored_label_counts?.draft)}. A message can have more than one
+                label. Full history and changes to drafts are not confirmed.
+              </p>
+            </details>
+          )}
+          <div className="lr-sync">
+            <span>Latest email update</span>
+            <strong>{attempt(active?.email.latest_message_sync_attempt)}</strong>
+            {active?.email.latest_message_sync_attempt?.state === "failed" && (
+              <strong>
+                Ask OpenFolk to review the email connection. Saved messages remain available.
+              </strong>
+            )}
+            <span>Last completed email update</span>
+            <strong>{when(active?.email.last_successful_message_sync_at)}</strong>
+          </div>
+          <button
+            className="lr-source-action"
+            disabled={!canConnect || connectState === "connecting"}
+            onClick={() => void connect()}
+          >
+            {connectState === "connecting"
+              ? "Starting consent…"
+              : connectState === "failed"
+                ? "Retry Gmail connection"
+                : "Connect Gmail"}
+            <ArrowUpRight size={15} />
+          </button>
+        </article>
+        <article className="lr-connector">
+          <div className="lr-source-icon birchills">
+            <Phone size={21} />
+          </div>
+          <h3>Phone / Birchills</h3>
+          <p className="lr-scope">Calls, recordings and transcripts</p>
+          <p className="lr-source-note">
+            {active
+              ? `${display(active.counts.phone.record_count)} calls saved. Coverage across your phone numbers and recording access still need confirmation.`
+              : "Call status is not available. You can open your saved communications below."}
+          </p>
+          {active && (
+            <details className="lr-coverage">
+              <summary>Transcript coverage details</summary>
+              <p>
+                {display(active.phone.transcript_status_counts?.completed)} completed ·{" "}
+                {display(active.phone.transcript_status_counts?.failed)} need attention ·{" "}
+                {display(active.phone.transcript_status_counts?.pending)} waiting ·{" "}
+                {display(active.phone.transcript_status_counts?.processing)} processing.
+              </p>
+              <p>
+                These are saved processing results. They do not confirm transcript accuracy or that
+                every call was captured.
+              </p>
+            </details>
+          )}
+          <div className="lr-sync">
+            <span>Latest call update</span>
+            <strong>{attempt(active?.phone.latest_call_sync_attempt)}</strong>
+            {active?.phone.latest_call_sync_attempt?.state === "failed" && (
+              <strong>
+                Ask OpenFolk to review the phone connection. Saved calls remain available.
+              </strong>
+            )}
+            <span>Last completed call update</span>
+            <strong>{when(active?.phone.last_successful_call_sync_at)}</strong>
+          </div>
+          <a className="lr-source-action" href="/app#communications">
+            Open saved communications
+            <ArrowUpRight size={15} />
+          </a>
+        </article>
+        <article className="lr-connector">
+          <div className="lr-source-icon emma">
+            <Headphones size={21} />
+          </div>
+          <h3>Emma</h3>
+          <p className="lr-scope">Independent AI receptionist</p>
+          <p className="lr-source-note">
+            Emma is managed separately. Check its workspace for receptionist activity.
+          </p>
+          <div className="lr-sync">
+            <span>Receptionist activity here</span>
+            <strong>Unverified</strong>
+          </div>
+        </article>
+      </section>
+      <article className="cp-card lr-activity" style={{ marginTop: 24 }}>
+        <h2>Recent saved calls</h2>
+        <p>
+          A call can include several connected legs and recordings. The list below does not confirm
+          that the whole conversation was captured.
+        </p>
+        {active?.phone.recent_calls?.length ? (
+          <ul>
+            {active.phone.recent_calls.map((c: any) => (
+              <li key={c.id}>
+                <div>
+                  <strong>{when(c.started_at)}</strong>
+                  <small>
+                    Provider {c.raw_direction ?? "direction unknown"} ·{" "}
+                    {display(c.recording_ids?.length)} linked recordings · full audio not confirmed
+                  </small>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No recent call details are available in this view.</p>
+        )}
+      </article>
+      <section className="lr-bottom">
+        <article className="cp-card">
+          <h2>Email onboarding</h2>
+          <p>
+            Connect a Gmail account above and review the permissions on Google’s consent screen.
+            Connecting an account does not confirm that its history has been imported.
+          </p>
+          <p>
+            Inbox and Sent are supported by the current import. Draft changes are not supported. Use
+            Workspace setup to review your company’s mailboxes; finding a mailbox does not mean it
+            has been selected or fully imported.
+          </p>
+          <a className="cp-secondary" href="/app#settings">
+            Open Workspace setup
+            <ArrowUpRight size={14} />
+          </a>
+          {!canConnect && <p>Only your company’s owner, admin or ops user can connect Gmail.</p>}
+          {notice && <p role="alert">{notice}</p>}
+        </article>
+        <article className="cp-card lr-safety">
+          <div className="lr-small-heading">
+            <ShieldCheck size={18} />
+            <h2>Your data, under your control</h2>
+          </div>
+          <p>
+            Your access is limited to the records your account can view. Refreshing this page does
+            not change saved communications.{" "}
+            {active && (
+              <>
+                Voicemails saved: {display(active.voicemails?.record_count)}. Complete voicemail
+                history and playable audio still need confirmation.
+              </>
+            )}
+          </p>
+          <p>Customer-system records can be reviewed above as they become available.</p>
+        </article>
+      </section>
+    </div>
+  );
 }

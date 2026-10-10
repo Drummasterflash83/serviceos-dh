@@ -88,3 +88,12 @@
 .lr-customer-review dt { color: #75658b; }
 .lr-customer-review dd { margin: 0; }
 @media (max-width: 500px) { .lr-customer-review dl { grid-template-columns: 1fr; gap: 4px; } .lr-customer-review dd { margin-bottom: 12px; } }
+
+/* Keep client status actionable; detailed coverage stays available on demand. */
+.lr-page > .lr-notice { padding: 14px 16px; border: 1px solid #e4dce9; border-radius: 12px; background: #f8f5fa; color: #665672; font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
+.lr-coverage { margin: 12px 0 16px; font-size: 12px; line-height: 1.6; color: #665672; }
+.lr-coverage summary { cursor: pointer; min-height: 30px; font-weight: 500; }
+.lr-coverage summary:focus-visible { outline: 2px solid #806296; outline-offset: 4px; border-radius: 3px; }
+.lr-coverage p { margin: 8px 0; }
+.lr-connector .lr-sync { font-size: 11px; line-height: 1.5; color: #766781; }
+.lr-connector .lr-sync strong { font-size: 12px; color: #665672; }
