@@ -1,0 +1,31 @@
+{
+  "version": "learn-test-phone-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "ce528612-fe07-4d92-9881-8f520726fae7",
+  "observedAt": "2026-10-10T00:56:21.052Z",
+  "state": "requires_inspection",
+  "sourceBundleSha256": "56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249",
+  "checks": [
+    "Anonymous, viewer and foreign-company callers denied by actual JWT/Auth/profile handling."
+  ],
+  "failure": "simwood-sync-calls: expected HTTP 409, observed 500",
+  "cleanupErrors": [],
+  "retained": {
+    "calls": 1,
+    "recordings": 3,
+    "sync_runs": 0,
+    "audits": 0,
+    "running_syncs": 0,
+    "active_accounts": 0,
+    "active_connectors": 0,
+    "approving_users": 0
+  },
+  "preExistingSourcesPreserved": false,
+  "manifest": "/private/tmp/serviceos-learn-phone-ce528612-fe07-4d92-9881-8f520726fae7.json",
+  "limitations": [
+    "Credential-free TEST only; no real provider calls, audio objects, paid processing or production mutations.",
+    "Synthetic storage pointer was not backed by an audio object; cached response is metadata behavior only.",
+    "No schema or schedule change. Source records and audit logs retained; fixture logins/roles disabled.",
+    "Account binding is not a publication fence against mid-run reconfiguration. Live provider capture and voicemail remain outstanding."
+  ]
+}

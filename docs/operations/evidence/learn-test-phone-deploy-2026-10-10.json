@@ -1,0 +1,66 @@
+{
+  "version": "learn-test-phone-deploy/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T00:50:07.389Z",
+  "state": "requires_inspection",
+  "sourceBundleSha256": "56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249",
+  "files": [
+    "simwood-sync-calls/index.ts",
+    "simwood-sync-recordings/index.ts",
+    "simwood-download-recording/index.ts",
+    "simwood-test-connection/index.ts",
+    "_shared/authz.ts",
+    "_shared/simwood.ts",
+    "_shared/simwood-account.ts",
+    "_shared/phone-sync-completeness.ts",
+    "_shared/phone_pipeline.ts"
+  ],
+  "attempts": [
+    {
+      "name": "simwood-sync-calls",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "simwood-download-recording",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "simwood-test-connection",
+      "cliExitStatus": 0
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "simwood-sync-calls",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "name": "simwood-download-recording",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    },
+    {
+      "name": "simwood-test-connection",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true
+    }
+  ],
+  "limitations": [
+    "Four TEST phone functions only; no secrets, schedule, schema, production or provider operation.",
+    "CLI source hash and deployment metadata are not authenticated handler acceptance. Uncertain deployment is never retried automatically."
+  ]
+}

@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {phoneBundle,assertPhoneBundle,assertNoPhoneCredentials,PHONE_ENDPOINTS} from './learn-test-phone-deploy.mjs';
+test('reviewed phone bundle includes exact source and transitive local imports',()=>{const b=phoneBundle();assert.doesNotThrow(()=>assertPhoneBundle(b));assert.equal(PHONE_ENDPOINTS.length,4);assert.throws(()=>assertPhoneBundle({...b,sha256:'0'.repeat(64)}),/source differs/);});
+test('provider-free acceptance requires a complete valid secret-name response with neither credential',async()=>{await assertNoPhoneCredentials('synthetic',async()=>Response.json([{name:'UNRELATED'}]));for(const payload of [[{name:'SIMWOOD_USERNAME'}],[{name:'SIMWOOD_PASSWORD'}],[{}],{}])await assert.rejects(assertNoPhoneCredentials('synthetic',async()=>Response.json(payload)));await assert.rejects(assertNoPhoneCredentials('synthetic',async()=>new Response('',{status:500})));});

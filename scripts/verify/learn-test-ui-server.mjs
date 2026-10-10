@@ -1,11 +1,10 @@
 /** Actual application, fixed TEST backend, loopback only. No simulated API client. */
 import {spawn} from 'node:child_process';
-import {readRecoveryCatalog} from './learn-slack-recovery-catalog.mjs';
-import {installedRecovery} from './learn-test-recovery-release.mjs';
+import {installedPhoneAccess,readPhoneCatalog} from './learn-test-phone-access.mjs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
 if(process.argv.slice(2).join(' ')!=='--serve --existing-cli-login'||process.env.LEARN_TEST_ALLOW_PROJECT_REF!==TEST_PROJECT)throw Error('Explicit TEST local UI and saved login required');
-const token=savedCliToken(),catalog=await readRecoveryCatalog({allowProjectRef:TEST_PROJECT,token});
-if(!installedRecovery(catalog))throw Error('Verified TEST recovery schema required');
+const token=savedCliToken(),catalog=await readPhoneCatalog({allowProjectRef:TEST_PROJECT,token});
+if(!installedPhoneAccess(catalog))throw Error('Verified TEST release 015 and phone endpoints required');
 const response=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/api-keys?reveal=true`,{headers:{Authorization:`Bearer ${token}`},redirect:'error',signal:AbortSignal.timeout(30000)});
 if(!response.ok)throw Error('Existing TEST public key unavailable');
 const rows=(await response.json()).filter(r=>r.name==='anon'&&typeof r.api_key==='string');

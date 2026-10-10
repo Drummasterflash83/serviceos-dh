@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-10T01:00:12.002Z",
+  "state": "verified",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "015_phone_service_access",
+  "publicTables": 89,
+  "receipts": 16,
+  "catalogFingerprint": "5e2378e98fe0b08ef6e4f6ffa76f43490f5de15fe31f2f532da6c14a2287010d",
+  "phoneEndpoints": [
+    {
+      "name": "simwood-sync-calls",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-download-recording",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-test-connection",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    }
+  ],
+  "providerCredentialsConfigured": false,
+  "fixtures": [
+    {
+      "runId": "ce528612-fe07-4d92-9881-8f520726fae7",
+      "banned_users": 3,
+      "viewer_users": 3,
+      "active_accounts": 0,
+      "active_connectors": 0,
+      "running_syncs": 0
+    },
+    {
+      "runId": "1e80a586-29ea-4c1d-af1d-3940607216ff",
+      "banned_users": 3,
+      "viewer_users": 3,
+      "active_accounts": 0,
+      "active_connectors": 0,
+      "running_syncs": 0
+    }
+  ],
+  "limitations": [
+    "Credential-free TEST metadata verification; no real provider, audio playback or production write."
+  ]
+}

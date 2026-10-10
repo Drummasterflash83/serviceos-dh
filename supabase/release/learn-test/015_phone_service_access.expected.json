@@ -1,0 +1,238 @@
+{
+  "before": [
+    {
+      "name": "audit_logs",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "audit_logs",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "audit_logs",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "connector_accounts",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "connector_accounts",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": true,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "connector_accounts",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_calls",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_calls",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_calls",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_recordings",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_recordings",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_recordings",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_sync_runs",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_sync_runs",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "phone_sync_runs",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "tenant_connectors",
+      "role": "anon",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": false,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "tenant_connectors",
+      "role": "authenticated",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": true,
+        "UPDATE": false,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    },
+    {
+      "name": "tenant_connectors",
+      "role": "service_role",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true,
+        "TRIGGER": false,
+        "TRUNCATE": false,
+        "REFERENCES": false
+      }
+    }
+  ]
+}

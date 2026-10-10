@@ -1,0 +1,35 @@
+{
+  "version": "learn-test-phone-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "1e80a586-29ea-4c1d-af1d-3940607216ff",
+  "observedAt": "2026-10-10T00:59:36.854Z",
+  "state": "passed",
+  "sourceBundleSha256": "56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249",
+  "checks": [
+    "Anonymous, viewer and foreign-company callers denied by actual JWT/Auth/profile handling.",
+    "Both companies denied the other registered provider account; invalid requested IDs refused.",
+    "Owner/admin/ops reached their registered account and stopped at missing provider credentials, with no provider call.",
+    "Stored synthetic pointer returned without provider credentials or upload; missing audio stopped at credential gate; foreign URL/account and foreign recording refused. This is metadata acceptance, not object/playback proof.",
+    "Disabling connector blocks new provider work while cached pointer remains available; revoking role blocks the same existing session."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "calls": 1,
+    "recordings": 3,
+    "sync_runs": 23,
+    "audits": 23,
+    "running_syncs": 0,
+    "active_accounts": 0,
+    "active_connectors": 0,
+    "approving_users": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "manifest": "/private/tmp/serviceos-learn-phone-1e80a586-29ea-4c1d-af1d-3940607216ff.json",
+  "limitations": [
+    "Credential-free TEST only; no real provider calls, audio objects, paid processing or production mutations.",
+    "Synthetic storage pointer was not backed by an audio object; cached response is metadata behavior only.",
+    "No schema or schedule change. Source records and audit logs retained; fixture logins/roles disabled.",
+    "Account binding is not a publication fence against mid-run reconfiguration. Live provider capture and voicemail remain outstanding."
+  ]
+}

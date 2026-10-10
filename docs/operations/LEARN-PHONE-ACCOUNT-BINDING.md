@@ -1,11 +1,11 @@
-# LEARN phone account binding — local, 10 October 2026
+# LEARN phone account binding — TEST acceptance, 10 October 2026
 
 Call and recording sync, connection tests and recording downloads previously
 accepted an arbitrary requested provider customer or fell back to the first
 customer visible through the shared Simwood credentials. A signed-in company
 boundary therefore did not itself establish which provider account would be read.
 
-The local implementation now resolves accounts through the existing server-managed
+The implementation now resolves accounts through the existing server-managed
 `tenant_connectors` / `connector_accounts` registry. It verifies both tenant IDs,
 the relationship, Simwood provider/connector identity, enabled state and active
 account status. A connector with operational `error` status can still recover when
@@ -73,11 +73,11 @@ and [preservation comparison](evidence/learn-preservation-phone-binding-2026-10-
 
 ## Release and remaining work
 
-No schema migration, production write, Edge deployment, provider request, credential
-change, schedule or paid processing occurred. Before release, inspect the target
-registry/schema and deployed function versions, exercise authenticated TEST handlers,
-and verify all intended recording URL shapes. Deploy only reviewed phone functions
-and their dependency bundles; do not blindly apply pending migrations or change Emma.
+The local milestone above made no hosted change. The TEST release and acceptance
+below now supersede its hosted-acceptance gap. Production deployment still requires
+its own registry/schema/version inspection and broader historical URL verification.
+Deploy only reviewed phone functions and dependencies; do not blindly apply pending
+migrations or change Emma.
 Missing provider accounts must be configured through an authorized operator flow,
 not guessed from the first provider customer or silently enabled.
 
@@ -85,3 +85,71 @@ Voicemail discovery still needs the existing provider-credential environment and
 verified message/audio API contract. This account resolver does not discover or
 capture voicemail. Provider reconciliation, failed-audio repair, backup restoration,
 continuous coverage, tenant credential lifecycle and the wider LEARN V1 scope remain.
+
+
+## TEST deployment and signed-in acceptance — 10 October
+
+Four reviewed endpoints are now runtime v1, ACTIVE, with JWT verification enabled:
+`simwood-sync-calls`, `simwood-sync-recordings`, `simwood-download-recording` and
+`simwood-test-connection`. The exact nine-file bundle SHA-256 is
+`56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249`.
+No provider credentials were added; metadata checks before and after acceptance
+confirmed neither Simwood credential exists in TEST.
+
+The first deployment post-check expected the historical three-endpoint inventory
+and stopped. Read-only inspection confirmed that only the four reviewed endpoints
+were added; removing those additions restores the exact prior release fingerprint.
+No deployment was repeated. The new recognizer pins complete endpoint metadata and
+preserves the original release checks. Current UI/fixture launchers use the new
+release recognizer; historical release scripts retain their historical contracts.
+
+The first signed-in acceptance passed authorization checks but could not open a
+sync run: TEST deliberately lacked server-role permissions on the three phone
+tables. That run was retired with its evidence intact. Its source comparison was
+not reached, so its `preExistingSourcesPreserved: false` means unverified in that
+run, not an observed deletion. The subsequent successful run compared all existing
+TEST source rows, including that initial fixture.
+
+Release 015 (`learn_phone_service_access_v1`) adds only SELECT, INSERT and UPDATE
+for `service_role` on `phone_calls`, `phone_recordings` and `phone_sync_runs`.
+Anonymous/authenticated grants remain unchanged; DELETE and TRUNCATE remain denied.
+Existing registry and audit permissions remain unchanged. The exact permission
+matrix is now checked separately because the older catalog's combined `serviceDml`
+flag does not distinguish these partial grants. Hosted rollback rehearsal restored
+the full prior fingerprint, then installation/readback passed: 89 public tables,
+sixteen release receipts, unchanged earlier definitions, privileges and endpoints.
+No source rows were changed by the permission release.
+
+Fresh actual Auth/HTTP acceptance verified:
+
+- Anonymous, viewer and wrong-company callers are refused.
+- Both companies are denied the other registered provider account; invalid IDs fail.
+- Owner/admin/ops reach their own account and stop at the missing-credential gate.
+- A stored synthetic recording pointer returns without provider credentials; missing
+  audio stops at the credential gate, and foreign account URLs/recording IDs fail.
+- Disabling a connector blocks new work while its cached pointer remains available.
+  Demoting a user blocks the same existing session.
+- Counts and full-row fingerprints match for all pre-existing TEST email, phone,
+  transcript, Slack/version and interaction records.
+
+The successful fixture retains one call, three recording rows, 23 finished sync
+runs and 23 audit rows. Both fixtures retain their records; all six synthetic users
+were banned, had passwords rotated and became viewers. Final independent readback
+confirmed zero active fixture accounts/connectors, approving users or running syncs.
+The synthetic pointer had no audio object: this proves response behavior, not audio
+playback. No real provider request, production mutation, scheduler or paid processing
+occurred. Storage upload, live capture, voicemail, concurrent publication fencing
+and production release remain outstanding.
+
+Eight focused deployment/catalog/access tests passed, including privilege/runtime
+mutation rejection, rollback, stale rehearsal rejection and uncertain-write handling.
+The ten actual-handler VM tests, ten pure/completeness tests, seven historical
+release tests and strict handler typecheck also passed.
+
+Evidence: [deployment](evidence/learn-test-phone-deploy-2026-10-10.json),
+[deployment confirmation](evidence/learn-test-phone-confirmation-2026-10-10.json),
+[initial acceptance](evidence/learn-test-phone-acceptance-initial-2026-10-10.json),
+[permission rehearsal](evidence/learn-test-phone-access-rehearsal-2026-10-10.json),
+[permission installation](evidence/learn-test-phone-access-installed-2026-10-10.json),
+[signed-in acceptance](evidence/learn-test-phone-acceptance-2026-10-10.json), and
+[final readback](evidence/learn-test-phone-final-2026-10-10.json).

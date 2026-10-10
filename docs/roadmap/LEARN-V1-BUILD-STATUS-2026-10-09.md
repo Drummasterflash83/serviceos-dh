@@ -751,3 +751,25 @@ shapes passed the new guard. Twenty local tests and strict handler typechecking
 passed. No provider request, hosted deployment or production mutation occurred.
 Read-time binding still needs concurrent-publication fencing and hosted acceptance.
 See [implementation, preservation evidence and release limits](../operations/LEARN-PHONE-ACCOUNT-BINDING.md).
+
+
+## Company-bound phone handlers accepted in TEST — 10 October
+
+The four phone endpoints are deployed as runtime v1 with JWT verification. Signed-in
+acceptance verified company/account isolation, owner/admin/ops handling, disabled
+connector behavior, retained recording references and immediate role revocation.
+All pre-existing TEST communications kept their counts and full-row fingerprints.
+Both synthetic fixture runs retain their evidence with six logins banned/passwords
+rotated, viewer-only profiles and zero active connectors/accounts or running syncs.
+
+Acceptance exposed missing server permissions in TEST. Release 015 grants only
+SELECT/INSERT/UPDATE on three phone tables to the server role after a successful
+rollback rehearsal; no ordinary-user, DELETE or TRUNCATE grants were added. TEST
+now has 89 public tables and sixteen receipts. Exact endpoint metadata, permission
+matrix and all earlier catalog definitions are checked. The initial failed checks
+and subsequent inspection/repair remain documented rather than overwritten.
+
+No real provider credentials, production mutations, audio uploads, paid processing
+or schedules were involved. The cached reference test is not playable-audio proof.
+Live capture, voicemail, source reconciliation, concurrent publication fencing and
+production deployment remain. See [TEST evidence and limits](../operations/LEARN-PHONE-ACCOUNT-BINDING.md#test-deployment-and-signed-in-acceptance--10-october).

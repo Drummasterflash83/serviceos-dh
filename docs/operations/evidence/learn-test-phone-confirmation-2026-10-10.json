@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-10-10T00:52:10.087Z",
+  "state": "deployment_confirmed_needs_authenticated_acceptance",
+  "schemaAndPriorEndpointsUnchanged": true,
+  "normalizedRecoveryCatalogSha256": "a83ad15eee3c7ba25f64c1f646d28cfc1be77ce4ee8854f81827b8e8354af923",
+  "expectedEndpointMetadataSha256": "e6281e4e6229f9a46bd8d5f0eade8d8a83f9b0aac0dc6a4e39c745b095feccbd",
+  "sourceBundleSha256": "56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249",
+  "providerCredentialsConfigured": false,
+  "endpointVersions": [
+    {
+      "name": "simwood-download-recording",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-sync-calls",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-sync-recordings",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "simwood-test-connection",
+      "version": 1,
+      "verifyJwt": true,
+      "status": "ACTIVE"
+    }
+  ],
+  "initialCheckExplanation": "The release-014 fingerprint includes the Edge endpoint list. Four new endpoints changed that list; removing only these verified additions restores the exact historical release fingerprint. No deployment was repeated."
+}

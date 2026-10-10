@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-phone-access/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "f2e4706559d9a44b099126bd9bd8f364a4e5448ee3783b551a4369a188cebecb",
+  "observedAt": "2026-10-10T00:58:57.397Z",
+  "writeAttempted": true,
+  "acknowledged": true,
+  "state": "installed_needs_authenticated_acceptance",
+  "beforeFingerprint": "d0ebf0cdcf854be088298a4b2cbad8ba2a0482274fccb6864caf9972c3e905db",
+  "afterFingerprint": "5e2378e98fe0b08ef6e4f6ffa76f43490f5de15fe31f2f532da6c14a2287010d",
+  "scope": "Only SELECT/INSERT/UPDATE for service_role on phone_calls, phone_recordings, phone_sync_runs; no client grants, DELETE, TRUNCATE, source edits, provider credentials or schedules."
+}

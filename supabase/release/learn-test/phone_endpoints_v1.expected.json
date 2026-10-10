@@ -1,0 +1,57 @@
+{
+  "sourceBundleSha256": "56d1b9c228d80f6b84e79b7a814b4d957f93fe3f7dd6313e22d8c8cb25641249",
+  "endpoints": [
+    {
+      "id": "f61e96a9-80d7-4476-90d4-d10b2976a00c",
+      "slug": "simwood-download-recording",
+      "name": "simwood-download-recording",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791593401337,
+      "updated_at": 1791593401337,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_f61e96a9-80d7-4476-90d4-d10b2976a00c_1/source/supabase/functions/simwood-download-recording/index.ts",
+      "ezbr_sha256": "96460af7fa8892fab8659d608e37827e41908af92b183caaeb4b2cb216edf0cd"
+    },
+    {
+      "id": "46b816e2-13d0-4d7c-924a-a40698c0277e",
+      "slug": "simwood-sync-calls",
+      "name": "simwood-sync-calls",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791593397096,
+      "updated_at": 1791593397096,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_46b816e2-13d0-4d7c-924a-a40698c0277e_1/source/supabase/functions/simwood-sync-calls/index.ts",
+      "ezbr_sha256": "20359f1b3ddc78b72096b33383de09d3b2f3dd6812477f21d86c02c0bc1996ac"
+    },
+    {
+      "id": "0d980de4-9f6f-489c-8b29-103da9342a42",
+      "slug": "simwood-sync-recordings",
+      "name": "simwood-sync-recordings",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791593399666,
+      "updated_at": 1791593399666,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_0d980de4-9f6f-489c-8b29-103da9342a42_1/source/supabase/functions/simwood-sync-recordings/index.ts",
+      "ezbr_sha256": "51241a98a920c9dc34f35edce6bba4334d85858b0f6986d9f84f756f0dcd2336"
+    },
+    {
+      "id": "928f60bd-d277-41c1-95af-42cf584fc6dc",
+      "slug": "simwood-test-connection",
+      "name": "simwood-test-connection",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791593402956,
+      "updated_at": 1791593402956,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_928f60bd-d277-41c1-95af-42cf584fc6dc_1/source/supabase/functions/simwood-test-connection/index.ts",
+      "ezbr_sha256": "8930ec6ce003000f1daa2f520da50083b145ef2978376799820add6221c776fe"
+    }
+  ]
+}
