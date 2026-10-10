@@ -1,0 +1,25 @@
+{
+  "version": "learn-email-protocol-client-local/1",
+  "observedAt": "2026-10-10T14:05:30.027Z",
+  "state": "local_contract_verified_not_integrated",
+  "testResults": 10,
+  "integrationScenarios": 9,
+  "typescript": "passed",
+  "referenceSha256": "8070cf839267c323b60a677b94e5a92cb553b43edaa59d16dcb0fb3b8ee8d062",
+  "files": [
+    {
+      "path": "supabase/functions/_shared/email_ingestion_protocol.ts",
+      "sha256": "8fae99e0a5050c6c60b4aa44b504c4bc91c74e4848c3e1e3dc66d0ed34612a84"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "ab6ce4e2d623a1e0d417c1f47d707345fd5fecf2fceb06e887ccca917fa329c8"
+    }
+  ],
+  "limitations": [
+    "The shared client is not wired into the deployed or local mailbox handlers.",
+    "Local file retention demonstrates the persistence contract; durable Edge request storage remains required.",
+    "The isolated database restores the email protocol, not unrelated launch-reader policy or timestamp trigger dependencies.",
+    "No hosted data, provider requests, credentials, schedules or permissions were changed."
+  ]
+}

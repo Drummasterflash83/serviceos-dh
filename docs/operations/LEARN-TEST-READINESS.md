@@ -1,5 +1,38 @@
 # Existing TEST environment: verified release gaps
 
+## Email protocol client — local contract verification, 10 October 2026
+
+`supabase/functions/_shared/email_ingestion_protocol.ts` now provides the typed
+client for the existing v2 transition and receipt functions. It retains an exact,
+frozen request before dispatch, preserves bigint revisions as decimal strings,
+validates company/account/attempt identity on responses, and distinguishes a
+historical receipt from the current checkpoint. An unknown response never causes
+an automatic new transition or provider retry. An absent receipt keeps the
+original request unresolved. Retention compares canonical JSON so JSONB key
+ordering does not falsely change a saved document.
+
+Nine integration scenarios (10 passing Node test results including the parent)
+exercise this client against the ten actual email protocol function definitions
+from the recorded TEST reference, four table structures, indexes, constraints,
+protocol grants, RLS policies and ingestion guards in an isolated Postgres 15
+container. The protocol owner has no superuser or RLS bypass. Tests use synthetic
+mailbox attempts and local file retention; no provider or hosted database is
+contacted. They cover lost-response recovery, immutable request identities, stale
+ownership, exact revisions above JavaScript's safe integer range, malformed and
+cross-company responses, incomplete-page refusal, historical yield, and cursor
+advancement only after all INBOX/SENT pages. Direct terminal/progress writes remain
+rejected by the existing guards. The new client also passes TypeScript checking.
+
+**Not wired into the mailbox handlers or deployed.** The Edge worker still needs
+a durable, company/attempt-bound request store, validated provider continuations,
+page fetching/persistence, and lease-bound queue completion. An in-memory retain
+callback would not satisfy the client's contract. The isolated fixture omits the
+unrelated launch-reader policy and account timestamp trigger; it is protocol
+verification, not a full hosted-schema or worker acceptance test. Run it with
+`node --test scripts/verify/learn-email-protocol-client.test.mjs` using the existing
+local Docker engine. Its container has no network or host mounts and is removed
+after the run.
+
 ## Capture runtime reconciliation and phone pause races — 10 October 2026
 
 A read-only TEST inventory at **13:56:40 UTC** confirms that email ingestion v2
