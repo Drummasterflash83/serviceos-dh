@@ -1,5 +1,33 @@
 # Commusoft read-only API adapter
 
+## Existing private application found; live read denied — 10 October 2026
+
+The signed-in Chrome session exposes the existing **OpenFolk — Drummonds read-only**
+private application, created 5 October. Its description identifies Drummond Heating,
+client 19136. The authentication page lists `crm.properties.read` and `jobs.jobs.read`.
+The existing key was read privately for the authorized integration diagnostic;
+no key was created, regenerated or revoked and no scopes were changed. It remains
+in ignored local storage with owner-only file permissions, never in Git or reports.
+
+At **16:22:09 UTC**, the actual server transport requested UK `properties?limit=1`
+using the documented `x-api-key` header. It returned **HTTP 403**; the diagnostic
+stopped without requesting jobs or contacts. One subsequent diagnostic of the
+same endpoint/authentication mode confirmed a short **HTML** denial rather than
+the expected JSON API envelope. No explicit invalid-key, expiry or scope error
+was identified. The application's API-log screen showed no entries after the
+first attempt. These observations do not establish which access layer denied the
+request, whether the key is usable, or whether the described account is its actual
+data account. Do not work around this by guessing hosts or authentication modes.
+
+The bounded diagnostic journals attempts before sending, makes no automatic
+retry, reads at most one record per collection and reports no source values.
+Three tests verify request bounds, denied/throttled stopping, source-value
+exclusion and refusal to send when journaling fails. See
+[sanitized live diagnostic](evidence/learn-commusoft-live-read-2026-10-10.json).
+There were two provider GETs total, no database/provider mutations, no hosted
+credential binding and no import or schedule. Real contacts scope and complete
+customer/site/job coverage remain unverified.
+
 ## Current state — 10 October 2026
 
 The input schema, dedicated worker and OpenFolk switch/import-approval RPCs are

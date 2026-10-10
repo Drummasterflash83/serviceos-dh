@@ -1,5 +1,18 @@
 # Existing TEST environment: verified release gaps
 
+## Real Commusoft access — existing application found, read denied, 10 October 2026
+
+The existing private application **OpenFolk — Drummonds read-only** has visible
+property-read and job-read scopes. Its existing key was reused privately without
+regeneration or permission changes. The first bounded property GET returned 403;
+a diagnostic of the same request confirmed an HTML denial, with no API-log entry
+visible after the first attempt. The responsible access layer is not established.
+Jobs and contacts were not requested, and no data was imported or changed.
+The earlier successful synthetic TEST acceptance remains valid but does not
+resolve this real-provider access gap. See the
+[API access checkpoint](LEARN-COMMUSOFT-API.md#existing-private-application-found-live-read-denied--10-october-2026)
+and [sanitized evidence](evidence/learn-commusoft-live-read-2026-10-10.json).
+
 ## OpenFolk capture controls — frontend implemented and locally verified, 10 October 2026
 
 The operator Modules screen now exposes the shared LEARN master switch plus

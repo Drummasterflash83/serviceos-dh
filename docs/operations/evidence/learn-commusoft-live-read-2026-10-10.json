@@ -1,0 +1,77 @@
+{
+  "version": "learn-commusoft-live-read/1",
+  "observedAt": "2026-10-10T16:22:09.605Z",
+  "application": "OpenFolk \u2014 Drummonds read-only",
+  "observedScopes": [
+    "crm.properties.read",
+    "jobs.jobs.read"
+  ],
+  "region": "uk",
+  "attempts": [
+    {
+      "resource": "properties",
+      "startedAt": "2026-10-10T16:22:09.607Z"
+    }
+  ],
+  "checks": [
+    {
+      "resource": "properties",
+      "method": "GET",
+      "limit": 1,
+      "httpStatus": 403,
+      "state": "failed",
+      "code": "access_denied",
+      "retryAt": null
+    }
+  ],
+  "state": "not_verified",
+  "limitations": [
+    "Direct provider diagnostic only; no hosted connection, account-identity proof, import, traversal or scheduling.",
+    "Contacts access not requested or established. No source records or credentials in this report."
+  ],
+  "completedAt": "2026-10-10T16:22:09.755Z",
+  "denialDiagnostic": {
+    "observedAt": "2026-10-10T16:22:52.317Z",
+    "purpose": "Classify the first denied response without changing credentials, host or authentication mode",
+    "method": "GET",
+    "resource": "properties",
+    "limit": 1,
+    "status": 403,
+    "contentType": "text/html",
+    "server": "other_or_absent",
+    "headerNames": [
+      "connection",
+      "content-encoding",
+      "content-type",
+      "date",
+      "server",
+      "transfer-encoding"
+    ],
+    "responseSignals": {
+      "html": true,
+      "cloudflare": false,
+      "accessDenied": true,
+      "invalidKey": false,
+      "expired": false,
+      "missingScope": false,
+      "ipRestriction": false,
+      "gatewayRestriction": false
+    },
+    "bodyBytesInspected": 150
+  },
+  "totalProviderRequests": 2,
+  "providerMutations": 0,
+  "hostedDatabaseMutations": 0,
+  "providerUiObservation": {
+    "applicationName": "OpenFolk \u2014 Drummonds read-only",
+    "createdDate": "2026-10-05",
+    "descriptionAccountReference": "19136",
+    "scopes": [
+      "crm.properties.read",
+      "jobs.jobs.read"
+    ],
+    "apiLogEntriesAfterFirstRequest": 0,
+    "existingKeyReused": true,
+    "keyOrScopesChanged": false
+  }
+}
