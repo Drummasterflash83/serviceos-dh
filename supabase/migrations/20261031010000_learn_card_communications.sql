@@ -6,9 +6,12 @@ do $$ begin
 end $$;
 create role learn_card_communication_reader nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
 do $$ begin execute format('grant learn_card_communication_reader to %I with inherit false, set true',current_user);end $$;
-grant usage on schema public,auth to learn_card_communication_reader;
+grant usage on schema public to learn_card_communication_reader;
 grant create on schema public to learn_card_communication_reader;
 grant execute on function auth.uid() to learn_card_communication_reader;
+do $$ begin
+ if not has_function_privilege('learn_card_communication_reader','auth.uid()','EXECUTE') then raise exception 'Reader UID execution is required for profile RLS';end if;
+end $$;
 grant select(id,tenant_id,role) on public.profiles to learn_card_communication_reader;
 create policy learn_card_communication_profile on public.profiles for select to learn_card_communication_reader using(id=(select auth.uid()));
 grant select(id,tenant_id,source_connector_id,source_type,source_table,source_id,occurred_at,subject,summary,body_preview,status,related_person_id,related_company_id,related_job_id) on public.interactions to learn_card_communication_reader;
@@ -19,8 +22,10 @@ create function public.learn_card_communications_read(p_tenant uuid,p_person uui
 returns jsonb language plpgsql stable security definer set search_path=pg_catalog as $$
 declare actor_tenant uuid;actor_role text;result jsonb;
 begin
- select p.tenant_id,p.role into actor_tenant,actor_role from public.profiles p where p.id=auth.uid();
- if auth.uid() is null or actor_tenant is distinct from p_tenant or coalesce(actor_role,'') not in ('owner','admin') then
+ -- The reader role can see only the actual caller profile through its RLS policy.
+ -- Policies bind auth.uid() at creation; runtime auth-schema lookup is unnecessary.
+ select p.tenant_id,p.role into actor_tenant,actor_role from public.profiles p;
+ if actor_tenant is distinct from p_tenant or coalesce(actor_role,'') not in ('owner','admin') then
   raise exception 'Company owner/admin communication access required' using errcode='42501';end if;
  if p_tenant is null or
   (p_ids is null and p_person is null and p_company is null and p_job is null) or

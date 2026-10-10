@@ -1,0 +1,26 @@
+{
+  "version": "learn-test-communications-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "87f54342bffc35c32b81434dd54fb2b662fbfcd7aefd516b511fd21c6cad6403",
+  "runId": "799bd73c-dcb4-484c-bb70-ec5ae7a98f50",
+  "observedAt": "2026-10-10T01:21:06.330Z",
+  "state": "requires_inspection",
+  "checks": [],
+  "failure": "TEST communication metadata/operation failed HTTP 400",
+  "cleanupErrors": [],
+  "retained": {
+    "emails": 0,
+    "calls": 0,
+    "slack_messages": 0,
+    "interactions": 0,
+    "privileged_users": 0,
+    "active_members": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "manifest": "/private/tmp/serviceos-learn-communications-799bd73c-dcb4-484c-bb70-ec5ae7a98f50.json",
+  "limitations": [
+    "Actual Auth/PostgREST/application readers with synthetic TEST sources; no live provider ingestion or real employee data.",
+    "Source links were seeded explicitly; this does not verify the ingestion/projection pipeline or browser rendering.",
+    "No production changes, credentials, schedules, employee score or payroll action."
+  ]
+}

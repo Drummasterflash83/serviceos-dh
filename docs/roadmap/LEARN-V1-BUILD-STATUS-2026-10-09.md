@@ -791,3 +791,25 @@ fingerprints. The actual SQL response passed the application reader. This is loc
 only: TEST remains release 015. A pinned TEST release, hosted rollback and signed-in
 card acceptance are next; real-source and production acceptance remain. See
 [reader contract and release gates](../operations/LEARN-CARD-COMMUNICATIONS.md).
+
+
+## Card communication excerpts accepted in TEST — 10 October
+
+Releases 016/017 install the restricted reader with 89 tables and eighteen receipts.
+The hosted deployer could not grant `auth` schema usage; inspection preserved the
+acknowledged initial release, and a rehearsed function-only correction now resolves
+the caller profile through its existing RLS policy. Auth-schema access stays closed.
+Exact prior definitions, endpoints and ordinary-client column grants remain pinned.
+
+Fresh actual Auth/PostgREST acceptance used the application customer/job/member
+readers in two synthetic companies. Email, phone and Slack excerpts linked to the
+right work/card records; raw table, wrong-company and unauthorised role access were
+denied. Same-session demotion produced a visible card gap. Existing TEST sources
+kept their counts and full-row fingerprints. All six fixture logins were retired;
+evidence remains, with zero active members. Five release/context and twelve card
+reader tests passed, alongside isolated migration/rollback/context checks.
+
+This resolves the hosted reader gap above. Source links were seeded, so provider
+capture/projection, real-source user acceptance, actual browser rendering and
+production deployment remain. No score or pay action was created. See
+[release evidence and limitations](../operations/LEARN-CARD-COMMUNICATIONS.md#test-release-and-actual-signed-in-acceptance--10-october).

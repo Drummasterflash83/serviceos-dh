@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-card-communications/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "78b6871e377b3e35280769edff0f28c3ec0872208578daed958cec0b97776ebc",
+  "observedAt": "2026-10-10T01:12:51.399Z",
+  "writeAttempted": true,
+  "acknowledged": true,
+  "state": "rehearsed_and_rolled_back",
+  "beforeFingerprint": "11b82442a9d1678a13bb381d0fcbd89b73feaa41d13a1246605d30ab517f3a78",
+  "afterFingerprint": "11b82442a9d1678a13bb381d0fcbd89b73feaa41d13a1246605d30ab517f3a78",
+  "scope": "One restricted read-only role/RPC and two new RLS reader policies; no raw client grants, source-row edits, provider credentials, Edge changes or schedules."
+}

@@ -1,5 +1,5 @@
 """Offline role/RLS tests against recorded source columns; no existing container or live data access."""
-import json,subprocess,time,uuid,shutil
+import json,subprocess,time,uuid,shutil,hashlib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 DOCKER=shutil.which('docker') or '/usr/local/bin/docker'
@@ -37,7 +37,7 @@ try:
  migration=(ROOT/'supabase/migrations/20261031010000_learn_card_communications.sql').read_text()
  run('set role postgres;'+migration.replace('\ncommit;\n','\nrollback;\n'))
  assert run("select count(*) from pg_roles where rolname='learn_card_communication_reader'").stdout.strip()==b'0'
- run('set role postgres;'+migration);checks.append('Non-superuser migration and rollback including role ownership transfer passed.')
+ run('set role postgres;'+migration);assert run("select has_schema_privilege('learn_card_communication_reader','auth','USAGE');").stdout.strip()==b'f';checks.append('Non-superuser migration and rollback including role ownership transfer passed.')
  result=response(f"'{T}',p_company=>'{COMPANY}'");assert len(result['rows'])==51 and all(r['tenant_id']==T and r['status']!='deleted' and 'metadata' not in r and len(r['body_preview'])==4021 for r in result['rows'])
  assert result['rows'][0]['occurred_at']>result['rows'][-1]['occurred_at'];checks.append('51-row sentinel, deterministic ordering, deletion filtering, excerpts and field allowlist passed.')
  ids=[r['id'] for r in result['rows'][:2]];rows=response(f"'{T}',p_ids=>array['{ids[0]}'::uuid,'{ids[1]}'::uuid]")['rows'];assert {r['id'] for r in rows}==set(ids)
@@ -52,6 +52,24 @@ try:
  assert run(fingerprint).stdout==before
  assert run("select count(*) from pg_auth_members where roleid='learn_card_communication_reader'::regrole and (member<>'postgres'::regrole or inherit_option or set_option);").stdout.strip()==b'0'
  checks.append('Invalid/unbounded scopes denied; source rows unchanged; temporary deployer SET/INHERIT privileges removed (PostgreSQL retains creator ADMIN ownership).')
+ # Reproduce the acknowledged initial hosted function with no auth-schema grant,
+ # then verify the exact corrective release under the non-superuser deployer.
+ original=json.loads((ROOT/'supabase/release/learn-test/016_card_communications.expected.json').read_text())['functions'][0]['definition']
+ run(original+';')
+ denied=run(call(f"'{T}',p_company=>'{COMPANY}'"),False);assert denied.returncode and b'permission denied for schema auth' in denied.stderr,denied.stderr.decode()
+ run("create schema of_test_deploy authorization postgres;create table of_test_deploy.migrations(source_sha256 text,migration_name text primary key,project_ref text,applied_at timestamptz);alter table of_test_deploy.migrations owner to postgres;insert into of_test_deploy.migrations values('78b6871e377b3e35280769edff0f28c3ec0872208578daed958cec0b97776ebc','learn_card_communications_v1','saatxzwxvdvqevbnskxy',now());")
+ repair=(ROOT/'supabase/release/learn-test/017_card_communication_context.sql').read_text();repair_sha=hashlib.sha256(repair.encode()).hexdigest()
+ prefix=f"set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256='{repair_sha}';"
+ run(prefix+repair.replace('\ncommit;\n','\nrollback;\n'))
+ assert run("select count(*) from of_test_deploy.migrations;").stdout.strip()==b'1'
+ run(prefix+repair)
+ assert len(response(f"'{T}',p_company=>'{COMPANY}'")['rows'])==51
+ assert run("select count(*) from pg_auth_members where roleid='learn_card_communication_reader'::regrole and (member<>'postgres'::regrole or inherit_option or set_option);").stdout.strip()==b'0'
+ assert run(fingerprint).stdout==before
+ checks.append('Reproduced original auth-schema lookup failure; exact context repair rollback/install passed without granting auth schema access.')
+ query=subprocess.run(['node','--input-type=module','-e',"import {COMMUNICATION_CATALOG_QUERY} from './scripts/verify/learn-card-communication-catalog.mjs';process.stdout.write(COMMUNICATION_CATALOG_QUERY);"],cwd=ROOT,capture_output=True,check=True).stdout.decode()
+ observed=json.loads(run('begin;'+query+';rollback;').stdout.decode().splitlines()[-2]);observed.pop('sourceAccess')
+ (ROOT/'.verification-results/learn-card-communication-expected.json').write_text(json.dumps(observed,indent=2)+'\n')
  (ROOT/'.verification-results/learn-card-communications-response.json').write_text(json.dumps(result))
  print(json.dumps({'state':'passed','checks':checks,'limitations':['Offline recorded source columns; synthetic Auth UID/profile and source fixtures, not hosted Auth or full existing policy projection.']},indent=2),flush=True)
 finally:

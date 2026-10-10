@@ -1,0 +1,191 @@
+{
+  "role": {
+    "name": "learn_card_communication_reader",
+    "login": false,
+    "inherit": false,
+    "createDb": false,
+    "bypassRls": false,
+    "superuser": false,
+    "createRole": false,
+    "replication": false
+  },
+  "policies": [
+    {
+      "name": "learn_card_communication_read",
+      "check": null,
+      "roles": [
+        "learn_card_communication_reader"
+      ],
+      "table": "interactions",
+      "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "learn_card_communication_profile",
+      "check": null,
+      "roles": [
+        "learn_card_communication_reader"
+      ],
+      "table": "profiles",
+      "using": "(id = ( SELECT auth.uid() AS uid))",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_card_communications_read",
+      "owner": "learn_card_communication_reader",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_person uuid, p_company uuid, p_job uuid, p_ids uuid[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_card_communications_read(p_tenant uuid, p_person uuid DEFAULT NULL::uuid, p_company uuid DEFAULT NULL::uuid, p_job uuid DEFAULT NULL::uuid, p_ids uuid[] DEFAULT NULL::uuid[])\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare actor_tenant uuid;actor_role text;result jsonb;\nbegin\n select p.tenant_id,p.role into actor_tenant,actor_role from public.profiles p where p.id=auth.uid();\n if auth.uid() is null or actor_tenant is distinct from p_tenant or coalesce(actor_role,'') not in ('owner','admin') then\n  raise exception 'Company owner/admin communication access required' using errcode='42501';end if;\n if p_tenant is null or\n  (p_ids is null and p_person is null and p_company is null and p_job is null) or\n  (p_ids is not null and (cardinality(p_ids)<1 or cardinality(p_ids)>50 or array_position(p_ids,null) is not null or p_person is not null or p_company is not null or p_job is not null)) or\n  (p_job is not null and (p_person is not null or p_company is not null)) then\n  raise exception 'One bounded communication scope is required' using errcode='22023';end if;\n select coalesce(jsonb_agg(to_jsonb(s) order by s.occurred_at desc nulls last,s.id),'[]'::jsonb) into result from (\n  select i.id,i.tenant_id,i.source_connector_id,i.source_type,i.source_table,i.source_id,i.occurred_at,\n   case when length(i.subject)>4000 then left(i.subject,4000)||'\u2026 [excerpt shortened]' else i.subject end as subject,\n   case when length(i.summary)>4000 then left(i.summary,4000)||'\u2026 [excerpt shortened]' else i.summary end as summary,\n   case when length(i.body_preview)>4000 then left(i.body_preview,4000)||'\u2026 [excerpt shortened]' else i.body_preview end as body_preview,\n   i.status,i.related_person_id,i.related_company_id,i.related_job_id\n  from public.interactions i where i.tenant_id=p_tenant and coalesce(i.status,'') not in ('deleted','removed') and\n   (i.related_person_id=p_person or i.related_company_id=p_company or i.related_job_id=p_job or i.id=any(p_ids))\n  order by i.occurred_at desc nulls last,i.id limit 51\n ) s;\n return jsonb_build_object('version','learn-card-communications/1','tenant_id',p_tenant,'rows',result);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ],
+  "memberships": [
+    {
+      "set": false,
+      "role": "learn_card_communication_reader",
+      "admin": true,
+      "member": "postgres",
+      "inherit": false
+    }
+  ],
+  "readerGrants": [
+    {
+      "schema": "auth",
+      "grantable": false,
+      "privilege": "USAGE"
+    },
+    {
+      "schema": "public",
+      "grantable": false,
+      "privilege": "USAGE"
+    },
+    {
+      "table": "interactions",
+      "column": "body_preview",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "occurred_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "related_company_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "related_job_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "related_person_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "source_connector_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "source_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "source_table",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "source_type",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "status",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "subject",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "summary",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "interactions",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "profiles",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "profiles",
+      "column": "role",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "profiles",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    }
+  ]
+}

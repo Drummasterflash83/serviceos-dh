@@ -1,0 +1,49 @@
+{
+  "observedAt": "2026-10-10T01:24:02.497Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "verified",
+  "release": "017_card_communication_context",
+  "publicTables": 89,
+  "receipts": 18,
+  "catalogFingerprint": "6ac4b9cc98f00a6e285a716a0a377809b14649948e1449fff78da8f3250b54ae",
+  "readerRole": {
+    "name": "learn_card_communication_reader",
+    "login": false,
+    "inherit": false,
+    "createDb": false,
+    "bypassRls": false,
+    "superuser": false,
+    "createRole": false,
+    "replication": false
+  },
+  "memberships": [
+    {
+      "set": false,
+      "role": "learn_card_communication_reader",
+      "admin": true,
+      "member": "postgres",
+      "inherit": false
+    }
+  ],
+  "runtime": {
+    "auth_schema_usage": false,
+    "uid_execute": true
+  },
+  "fixtures": [
+    {
+      "runId": "799bd73c-dcb4-484c-bb70-ec5ae7a98f50",
+      "banned_users": 3,
+      "viewer_users": 3,
+      "active_members": 0
+    },
+    {
+      "runId": "0c4765b1-8583-45a8-87db-b2ca1683028a",
+      "banned_users": 3,
+      "viewer_users": 3,
+      "active_members": 0
+    }
+  ],
+  "limitations": [
+    "Signed-in source-link acceptance uses synthetic TEST data; no provider ingestion, browser rendering or production deployment verified."
+  ]
+}

@@ -1,0 +1,1028 @@
+[
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "body_preview",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "cc_addresses",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "from_address",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "from_name",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "interaction_type",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "metadata",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "occurred_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "phone_from",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "phone_to",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "priority",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "processing_status",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "related_company_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "related_job_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "related_person_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "related_task_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "related_thread_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "sentiment",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "source_connector_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "source_external_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "source_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "source_table",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "source_type",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "status",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "subject",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "summary",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "to_addresses",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "interactions",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "email",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "full_name",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "role",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "profiles",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "body_preview",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "cc_addresses",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "from_address",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "from_name",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "interaction_type",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "metadata",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "occurred_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "phone_from",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "phone_to",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "priority",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "processing_status",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "related_company_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "related_job_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "related_person_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "related_task_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "related_thread_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "sentiment",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "source_connector_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "source_external_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "source_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "source_table",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "source_type",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "status",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "subject",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "summary",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "to_addresses",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "interactions",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "created_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "email",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "full_name",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "role",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "tenant_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "profiles",
+    "column": "updated_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "body_preview",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "cc_addresses",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "created_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "direction",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "from_address",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "from_name",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "interaction_type",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "metadata",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "occurred_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "phone_from",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "phone_to",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "priority",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "processing_status",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "related_company_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "related_job_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "related_person_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "related_task_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "related_thread_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "sentiment",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "source_connector_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "source_external_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "source_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "source_table",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "source_type",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "status",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "subject",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "summary",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "tenant_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "to_addresses",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "interactions",
+    "column": "updated_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "created_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "email",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "full_name",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "role",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "tenant_id",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "profiles",
+    "column": "updated_at",
+    "insert": false,
+    "select": true,
+    "update": false,
+    "references": false
+  }
+]

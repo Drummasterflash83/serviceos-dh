@@ -1,0 +1,29 @@
+{
+  "version": "learn-test-communications-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "87f54342bffc35c32b81434dd54fb2b662fbfcd7aefd516b511fd21c6cad6403",
+  "runId": "0c4765b1-8583-45a8-87db-b2ca1683028a",
+  "observedAt": "2026-10-10T01:23:11.536Z",
+  "state": "passed",
+  "checks": [
+    "Actual application customer/job/member readers, using two ordinary signed-in owner sessions, returned their three retained source-linked excerpts and one work item each.",
+    "Anonymous/viewer/ops/operator and foreign-company requests denied; raw table remained closed; exact foreign IDs returned no rows; demotion affected the same session and the card displayed an access gap."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "emails": 2,
+    "calls": 2,
+    "slack_messages": 2,
+    "interactions": 8,
+    "privileged_users": 0,
+    "active_members": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "manifest": "/private/tmp/serviceos-learn-communications-0c4765b1-8583-45a8-87db-b2ca1683028a.json",
+  "limitations": [
+    "Actual Auth/PostgREST/application readers with synthetic TEST sources; no live provider ingestion or real employee data.",
+    "Source links were seeded explicitly; this does not verify the ingestion/projection pipeline or browser rendering.",
+    "No production changes, credentials, schedules, employee score or payroll action."
+  ]
+}
