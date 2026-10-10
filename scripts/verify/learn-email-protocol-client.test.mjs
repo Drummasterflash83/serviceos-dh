@@ -29,6 +29,7 @@ import {
   applyDurableEmailTransition,
   pendingEmailTransition,
 } from "../../supabase/functions/_shared/email_ingestion_outbox.ts";
+import { bindEmailJobAttempt } from "../../supabase/functions/_shared/email_job_attempt.ts";
 const docker = "/usr/local/bin/docker",
   name = "learn-email-protocol-" + randomUUID().slice(0, 8);
 const source = readFileSync(
@@ -69,6 +70,7 @@ const db = {
         "learn_email_transition_prepare",
         "learn_email_transition_pending",
         "learn_email_transition_apply",
+        "learn_email_job_attempt",
       ].includes(fn),
     );
     return {
@@ -774,6 +776,224 @@ test("email client preserves the existing hosted progress protocol", async (t) =
         assert.equal(
           sql(
             `select count(*) from learn_email_transition_requests where attempt_id=${q(concurrent.attemptId)}`,
+          ),
+          "1",
+        );
+      },
+    );
+    const queueSource = readFileSync(
+      new URL("../../supabase/reference/learn-email-job-test-2026-10-10.json", import.meta.url),
+    );
+    assert.equal(
+      createHash("sha256").update(queueSource).digest("hex"),
+      "3891b55bf623886527a14ea8e7c402431567eeffd00975882ed93481e73f8716",
+    );
+    const qt = JSON.parse(queueSource).table;
+    sql(
+      "create table platform_jobs(" +
+        qt.columns
+          .map(
+            (c) =>
+              i(c.name) +
+              " " +
+              c.type +
+              (c.default ? " default " + c.default : "") +
+              (c.notNull ? " not null" : ""),
+          )
+          .join(",") +
+        ");" +
+        qt.constraints
+          .map(
+            (c) =>
+              "alter table platform_jobs add constraint " + i(c.name) + " " + c.definition + ";",
+          )
+          .join("") +
+        qt.indexes
+          .filter((x) => !qt.constraints.some((c) => c.name === x.name))
+          .map((x) => x.definition + ";")
+          .join("") +
+        "alter table platform_jobs enable row level security;grant select,insert,update on platform_jobs to service_role;",
+    );
+    const jobMigration = readFileSync(
+      new URL(
+        "../../supabase/migrations/20261031234500_learn_email_job_attempts.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    await t.test(
+      "job-binding migration rolls back API changes and installs lease-aware signatures",
+      async () => {
+        const before = count();
+        sql(jobMigration.replace("\ncommit;", "\nrollback;"));
+        assert.equal(
+          sql("select to_regprocedure('learn_email_transition_prepare(jsonb)') is not null"),
+          "t",
+        );
+        assert.equal(sql("select to_regclass('learn_email_job_attempts') is null"), "t");
+        assert.equal(count(), before);
+        sql(jobMigration);
+        assert.equal(
+          sql("select to_regprocedure('learn_email_transition_prepare(jsonb)') is null"),
+          "t",
+        );
+        assert.equal(
+          sql(
+            "select has_function_privilege('authenticated','learn_email_job_attempt(uuid,uuid,text,integer)','EXECUTE')",
+          ),
+          "f",
+        );
+        const standalone = attempt();
+        const prior = await readEmailTransition(db, standalone, randomUUID());
+        const result = await applyDurableEmailTransition(
+          db,
+          prepareEmailTransition(standalone, prior.checkpoint, randomUUID(), "claim", {
+            recovery: null,
+          }),
+        );
+        assert.equal(result.code, "already_claimed");
+      },
+    );
+    function queueJob() {
+      const accountId = randomUUID(),
+        jobId = randomUUID();
+      sql(
+        `insert into email_accounts(id,tenant_id,provider,status) values(${q(accountId)},${q(tenant)},'gmail','active_dwd');insert into platform_jobs(id,tenant_id,job_type,job_key,connector_id,module_id,payload,status,claimed_by,attempt_count,lease_expires_at) values(${q(jobId)},${q(tenant)},'email.workspace_sync',${q("email.workspace_sync:" + accountId)},'google-workspace','communications.email',${q(JSON.stringify({ email_account_id: accountId, max_results: 25 }))}::jsonb,'running','worker-old',1,clock_timestamp()+interval '1 hour');`,
+      );
+      return { accountId, tenantId: tenant, jobId, claimedBy: "worker-old", attemptCount: 1 };
+    }
+    const job = queueJob();
+    let bound, jobRequest, jobResult;
+    const replacement = { ...job, claimedBy: "worker-new", attemptCount: 2 };
+    await t.test(
+      "lost binding response recovers one run and one immutable job association",
+      async () => {
+        const before = Number(sql("select count(*) from email_sync_runs"));
+        await assert.rejects(
+          bindEmailJobAttempt(
+            {
+              rpc: async (...args) => {
+                await db.rpc(...args);
+                throw Error("PRIVATE_LOST_BIND");
+              },
+            },
+            job,
+          ),
+          /could not be confirmed/,
+        );
+        bound = await bindEmailJobAttempt(db, job);
+        assert.equal(bound.recovered, true);
+        assert.equal(bound.accountId, job.accountId);
+        assert.equal(bound.status, "running");
+        assert.equal(Number(sql("select count(*) from email_sync_runs")), before + 1);
+        assert.equal(sql("select count(*) from learn_email_job_attempts"), "1");
+        jobRequest = prepareEmailTransition(bound, null, randomUUID(), "claim", { recovery: null });
+        await db.rpc("learn_email_transition_prepare", {
+          p_document: jobRequest,
+          p_claimed_by: job.claimedBy,
+          p_claim: job.attemptCount,
+        });
+      },
+    );
+    await t.test(
+      "replacement workers recover the original pending request; stale leases cannot apply it",
+      async () => {
+        sql(
+          `update platform_jobs set claimed_by='worker-new',attempt_count=2 where id=${q(job.jobId)}`,
+        );
+        const recovered = await bindEmailJobAttempt(db, replacement);
+        assert.equal(recovered.attemptId, bound.attemptId);
+        const pending = await pendingEmailTransition(db, recovered);
+        assert.deepEqual(pending, jobRequest);
+        const before = count();
+        await assert.rejects(
+          applyDurableEmailTransition(db, pending, job),
+          EmailTransitionUnconfirmed,
+        );
+        await assert.rejects(applyDurableEmailTransition(db, pending), EmailTransitionUnconfirmed);
+        assert.equal(count(), before);
+        jobResult = await applyDurableEmailTransition(db, pending, replacement);
+        assert.equal(jobResult.disposition, "applied");
+        await assert.rejects(bindEmailJobAttempt(db, job), /could not be confirmed/);
+      },
+    );
+    await t.test(
+      "changed job definitions and foreign companies cannot reuse the binding",
+      async () => {
+        sql(
+          `update platform_jobs set payload=jsonb_set(payload,'{max_results}','50') where id=${q(job.jobId)}`,
+        );
+        await assert.rejects(bindEmailJobAttempt(db, replacement), /could not be confirmed/);
+        await assert.rejects(
+          applyDurableEmailTransition(db, jobRequest, replacement),
+          EmailTransitionUnconfirmed,
+        );
+        sql(
+          `update platform_jobs set payload=jsonb_set(payload,'{max_results}','25') where id=${q(job.jobId)}`,
+        );
+        await assert.rejects(
+          bindEmailJobAttempt(db, { ...replacement, tenantId: randomUUID() }),
+          /could not be confirmed/,
+        );
+        assert.throws(() => sql("set role authenticated;select * from learn_email_job_attempts"));
+        assert.throws(() => sql("delete from learn_email_job_attempts"));
+      },
+    );
+    await t.test("binding failure rolls back its new sync attempt", async () => {
+      const bad = queueJob(),
+        before = sql("select count(*) from email_sync_runs");
+      sql(
+        `alter table learn_email_job_attempts add constraint reject_binding check(job_id<>${q(bad.jobId)}::uuid)`,
+      );
+      await assert.rejects(bindEmailJobAttempt(db, bad), /could not be confirmed/);
+      assert.equal(sql("select count(*) from email_sync_runs"), before);
+      sql("alter table learn_email_job_attempts drop constraint reject_binding");
+    });
+    await t.test(
+      "a lease expiring during settlement rolls back progress and recovers under the next lease",
+      async () => {
+        const release = prepareEmailTransition(
+          bound,
+          jobResult.checkpoint,
+          randomUUID(),
+          "release",
+          {
+            reason_code: "requested_yield",
+            attempt_evidence: { ...evidence, coverage_complete: false },
+          },
+        );
+        await db.rpc("learn_email_transition_prepare", {
+          p_document: release,
+          p_claimed_by: replacement.claimedBy,
+          p_claim: replacement.attemptCount,
+        });
+        sql(
+          `create sequence lease_delay_observed;grant usage on sequence lease_delay_observed to service_role;create function test_lease_delay() returns trigger language plpgsql as $$begin if new.request_id=${q(release.transitionId)}::uuid then perform nextval('public.lease_delay_observed');perform pg_sleep(1.2);end if;return new;end$$;create trigger test_lease_delay before insert on learn_email_transition_settlements for each row execute function test_lease_delay();update platform_jobs set lease_expires_at=clock_timestamp()+interval '1 second' where id=${q(job.jobId)};`,
+        );
+        const before = count();
+        await assert.rejects(
+          applyDurableEmailTransition(db, release, replacement),
+          EmailTransitionUnconfirmed,
+        );
+        assert.equal(sql("select is_called from lease_delay_observed"), "t");
+        assert.equal(count(), before);
+        assert.equal(
+          sql(`select status from email_sync_runs where id=${q(bound.attemptId)}`),
+          "running",
+        );
+        assert.deepEqual(await pendingEmailTransition(db, bound), release);
+        sql(
+          `drop trigger test_lease_delay on learn_email_transition_settlements;update platform_jobs set claimed_by='worker-final',attempt_count=3,lease_expires_at=clock_timestamp()+interval '1 hour' where id=${q(job.jobId)}`,
+        );
+        const finalLease = { ...job, claimedBy: "worker-final", attemptCount: 3 };
+        const result = await applyDurableEmailTransition(db, release, finalLease);
+        assert.equal(result.accepted.attempt_status, "success");
+        const recovered = await bindEmailJobAttempt(db, finalLease);
+        assert.equal(recovered.status, "success");
+        assert.equal(recovered.attemptId, bound.attemptId);
+        assert.equal(
+          sql(
+            `select count(*) from email_sync_runs where metadata->>'learn_email_job_id'=${q(job.jobId)}`,
           ),
           "1",
         );

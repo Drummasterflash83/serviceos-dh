@@ -141,7 +141,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // The one place every pipeline stage reports health: map the job to its sensor
       // component and emit healthy on success / degraded (retry) / failed (dead-letter).
       const component = healthComponentForJob(jobType);
-      const r = await handler({ supabaseAdmin: admin, tenantId, jobId: id, payload });
+      const r = await handler({
+        supabaseAdmin: admin,
+        tenantId,
+        jobId: id,
+        jobType,
+        payload,
+        claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
+      });
       if (r.success) {
         await completeJob(admin, id, {
           recordsProcessed: r.recordsProcessed,

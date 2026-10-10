@@ -7,6 +7,7 @@ import {
   type EmailTransition,
   type EmailTransitionResult,
 } from "./email_ingestion_protocol.ts";
+import { validateEmailJobLease, type EmailJobLease } from "./email_job_attempt.ts";
 
 /** Persist first, then atomically apply the saved document and its settlement.
  * A failed prepare/apply response remains unknown: recover the pending request
@@ -15,8 +16,11 @@ import {
 export async function applyDurableEmailTransition(
   db: EmailProtocolClient,
   request: EmailTransition,
+  lease?: EmailJobLease,
 ): Promise<EmailTransitionResult> {
   validateEmailTransition(request);
+  if (lease) validateEmailJobLease(lease);
+  const leaseArgs = lease ? { p_claimed_by: lease.claimedBy, p_claim: lease.attemptCount } : {};
   const frozen = structuredClone(request);
   const proxy: EmailProtocolClient = {
     async rpc(name) {
@@ -27,6 +31,7 @@ export async function applyDurableEmailTransition(
         p_stream: frozen.stream,
         p_attempt: frozen.attemptId,
         p_request: frozen.transitionId,
+        ...leaseArgs,
       });
     },
   };
@@ -34,6 +39,7 @@ export async function applyDurableEmailTransition(
     try {
       const { data, error } = await db.rpc("learn_email_transition_prepare", {
         p_document: document,
+        ...leaseArgs,
       });
       if (error) throw new EmailTransitionUnconfirmed();
       validateEmailTransition(data as EmailTransition);

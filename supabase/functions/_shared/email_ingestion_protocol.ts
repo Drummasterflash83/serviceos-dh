@@ -223,7 +223,10 @@ export function prepareEmailTransition(
   scope(s);
   const c = checkpoint(prior, s);
   const r = {
-    ...s,
+    tenantId: s.tenantId,
+    accountId: s.accountId,
+    attemptId: s.attemptId,
+    stream: s.stream,
     transitionId,
     operation,
     expectedGeneration: c?.generation ?? null,

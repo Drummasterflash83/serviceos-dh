@@ -12,6 +12,7 @@ async function run({ allowed = true, childPaused = false, deferError = false } =
     writes = [],
     health = [];
   let handler,
+    workContext,
     work = 0;
   const db = {
     rpc: async (name, args) => {
@@ -110,7 +111,8 @@ async function run({ allowed = true, childPaused = false, deferError = false } =
     if (cache.has(file)) return cache.get(file);
     if (file.endsWith("/_shared/worker_handlers/index.ts"))
       return synthetic(file, {
-        getWorkerHandler: () => async () => {
+        getWorkerHandler: () => async (context) => {
+          workContext = context;
           work++;
           return childPaused
             ? {
@@ -151,7 +153,7 @@ async function run({ allowed = true, childPaused = false, deferError = false } =
       body: "{}",
     }),
   );
-  return { result: await response.json(), calls, writes, health, work };
+  return { result: await response.json(), calls, writes, health, work, workContext };
 }
 test("pause after claim returns the lease without dispatch, failed capture or healthy capture telemetry", async () => {
   const r = await run({ allowed: false });
@@ -186,4 +188,10 @@ test("enabled capture retains normal dispatch, completion and actual work teleme
   assert.equal(r.result.waiting, 0);
   assert.equal(r.health.length, 1);
   assert.equal(r.health[0].metadata.records, 2);
+  assert.equal(r.workContext.jobType, "email.gmail_sync");
+  assert.equal(r.workContext.claim.attemptCount, 1);
+  assert.equal(
+    r.workContext.claim.claimedBy,
+    r.calls.find((c) => c.name === "platform_jobs_claim").args.p_worker,
+  );
 });

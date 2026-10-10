@@ -1,5 +1,40 @@
 # Existing TEST environment: verified release gaps
 
+## Email job/attempt recovery — local implementation, 10 October 2026
+
+`20261031234500_learn_email_job_attempts.sql` binds each email queue job to one
+immutable sync attempt. Run creation and binding are atomic. A lost response or
+replacement worker recovers the same run, including a terminal result; it does not
+open a fresh run to conceal interrupted work. The binding freezes the job's
+identity and payload and verifies company, mailbox, job type and current lease.
+`email_job_attempt.ts` validates that response and distinguishes recovered terminal
+evidence from permission to fetch new pages.
+
+The migration adds lease arguments to the outbox's two mutation APIs and removes
+their old signatures. Job-bound attempts require the current worker/claim before
+preparation or application. Locks follow job, attempt, account/run order. The
+application rechecks expiry after the protocol and settlement writes so an expired
+lease rolls the transaction back. Standalone service attempts retain their prior
+behavior. Existing low-level v2 protocol APIs are unchanged; job workers must use
+the lease-aware outbox adapter rather than bypass it. The generic worker now passes
+the authoritative job type and claim into its handler context.
+
+The combined isolated SQL/client suite passes **22 scenarios / 23 Node results**,
+including rollback of the API upgrade, lost binding acknowledgements, replacement
+workers, missing/stale leases, changed job definitions, foreign companies, and an
+injected delay that expires the lease after protocol execution. That test proves
+the settlement trigger ran, then confirms that progress rolled back and the next
+lease recovers the original request. Four generic-worker VM tests also pass and
+verify claim propagation. The shared modules pass TypeScript checking. See
+[local evidence](evidence/learn-email-job-local-2026-10-10.json).
+
+A fresh read-only TEST inventory at **14:14:33 UTC** captured the queue table
+contract used by the fixture in `supabase/reference/learn-email-job-test-2026-10-10.json`.
+No queue records were read. **Not deployed or wired into mailbox handlers.**
+Validated provider pagination, persistence and lease-bound queue completion still
+need integrating before a coordinated TEST release. No provider requests, hosted
+records, permissions, credentials or schedules changed.
+
 ## Durable email transitions — local implementation, 10 October 2026
 
 `20261031233000_learn_email_transition_outbox.sql` adds append-only request and
@@ -27,9 +62,9 @@ rollback, immutable history, role restrictions and company isolation. Both share
 modules pass TypeScript checking. See the
 [local evidence](evidence/learn-email-outbox-local-2026-10-10.json).
 
-**Not deployed or wired into mailbox handlers.** The next dependency is durable
-association between a queue job and its sync attempt; an Edge restart must recover
-that same attempt before reading its pending request. Provider continuation
+**Not deployed or wired into mailbox handlers.** Durable association between a
+queue job and its sync attempt is now implemented locally above. An Edge restart
+must recover that same attempt before reading its pending request. Provider continuation
 validation, page persistence, queue completion and actual-schema TEST release
 acceptance remain required. The isolated fixture retains the scope limitations
 described below.

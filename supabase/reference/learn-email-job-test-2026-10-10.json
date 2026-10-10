@@ -1,0 +1,274 @@
+{
+  "version": "learn-email-job-reference/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T14:14:33.993635+00:00",
+  "table": {
+    "rls": true,
+    "name": "platform_jobs",
+    "owner": "postgres",
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "default": "gen_random_uuid()",
+        "notNull": true
+      },
+      {
+        "name": "tenant_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "connector_id",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "module_id",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "job_type",
+        "type": "text",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "job_key",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "default": "'queued'::text",
+        "notNull": true
+      },
+      {
+        "name": "priority",
+        "type": "integer",
+        "default": "100",
+        "notNull": true
+      },
+      {
+        "name": "progress_current",
+        "type": "integer",
+        "default": "0",
+        "notNull": true
+      },
+      {
+        "name": "progress_total",
+        "type": "integer",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "records_processed",
+        "type": "integer",
+        "default": "0",
+        "notNull": true
+      },
+      {
+        "name": "error_count",
+        "type": "integer",
+        "default": "0",
+        "notNull": true
+      },
+      {
+        "name": "attempt_count",
+        "type": "integer",
+        "default": "0",
+        "notNull": true
+      },
+      {
+        "name": "max_attempts",
+        "type": "integer",
+        "default": "3",
+        "notNull": true
+      },
+      {
+        "name": "started_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "completed_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "failed_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "cancelled_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "next_run_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "last_error",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "payload",
+        "type": "jsonb",
+        "default": "'{}'::jsonb",
+        "notNull": true
+      },
+      {
+        "name": "result",
+        "type": "jsonb",
+        "default": "'{}'::jsonb",
+        "notNull": true
+      },
+      {
+        "name": "metadata",
+        "type": "jsonb",
+        "default": "'{}'::jsonb",
+        "notNull": true
+      },
+      {
+        "name": "created_by",
+        "type": "uuid",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "default": "now()",
+        "notNull": true
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "default": "now()",
+        "notNull": true
+      },
+      {
+        "name": "available_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "claimed_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "claimed_by",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "lease_expires_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "last_attempt_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "dead_lettered_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "error_code",
+        "type": "text",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "parent_job_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "platform_jobs_active_job_key_uk",
+        "definition": "CREATE UNIQUE INDEX platform_jobs_active_job_key_uk ON public.platform_jobs USING btree (tenant_id, job_key) WHERE ((job_key IS NOT NULL) AND (status = ANY (ARRAY['queued'::text, 'running'::text, 'retrying'::text])))"
+      },
+      {
+        "name": "platform_jobs_claim_idx",
+        "definition": "CREATE INDEX platform_jobs_claim_idx ON public.platform_jobs USING btree (available_at, priority, created_at) WHERE (status = ANY (ARRAY['queued'::text, 'retrying'::text]))"
+      },
+      {
+        "name": "platform_jobs_lease_idx",
+        "definition": "CREATE INDEX platform_jobs_lease_idx ON public.platform_jobs USING btree (lease_expires_at) WHERE (status = 'running'::text)"
+      },
+      {
+        "name": "platform_jobs_parent_idx",
+        "definition": "CREATE INDEX platform_jobs_parent_idx ON public.platform_jobs USING btree (tenant_id, parent_job_id) WHERE (parent_job_id IS NOT NULL)"
+      },
+      {
+        "name": "platform_jobs_pkey",
+        "definition": "CREATE UNIQUE INDEX platform_jobs_pkey ON public.platform_jobs USING btree (id)"
+      },
+      {
+        "name": "platform_jobs_tenant_connector_idx",
+        "definition": "CREATE INDEX platform_jobs_tenant_connector_idx ON public.platform_jobs USING btree (tenant_id, connector_id, created_at DESC)"
+      },
+      {
+        "name": "platform_jobs_tenant_next_run_idx",
+        "definition": "CREATE INDEX platform_jobs_tenant_next_run_idx ON public.platform_jobs USING btree (tenant_id, next_run_at)"
+      },
+      {
+        "name": "platform_jobs_tenant_status_idx",
+        "definition": "CREATE INDEX platform_jobs_tenant_status_idx ON public.platform_jobs USING btree (tenant_id, status, created_at DESC)"
+      },
+      {
+        "name": "platform_jobs_tenant_type_idx",
+        "definition": "CREATE INDEX platform_jobs_tenant_type_idx ON public.platform_jobs USING btree (tenant_id, job_type, created_at DESC)"
+      }
+    ],
+    "forceRls": false,
+    "policies": [],
+    "triggers": [
+      {
+        "name": "platform_jobs_set_updated_at",
+        "function": "set_updated_at",
+        "definition": "CREATE TRIGGER platform_jobs_set_updated_at BEFORE UPDATE ON public.platform_jobs FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+      }
+    ],
+    "anonAccess": false,
+    "serviceDml": false,
+    "constraints": [
+      {
+        "kind": "p",
+        "name": "platform_jobs_pkey",
+        "definition": "PRIMARY KEY (id)"
+      }
+    ],
+    "authenticatedWrite": false,
+    "authenticatedSelect": false
+  }
+}

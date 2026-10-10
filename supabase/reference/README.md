@@ -1,5 +1,11 @@
 # Hosted integration references
 
+`learn-email-job-test-2026-10-10.json` records the TEST `platform_jobs` table
+contract at 14:14:33 UTC. It supplies the exact columns, constraints and indexes for
+the local email job/attempt fixture; it contains no queue rows. The fixture omits
+the unrelated update-timestamp trigger. This reference is not a deployment or
+full database restore package.
+
 `learn-email-ingestion-test-2026-10-10.json` records metadata read from the existing
 TEST project `saatxzwxvdvqevbnskxy` at 13:56:40 UTC on 10 October 2026. It contains
 13 function definitions and execution grants, four email table contracts, protocol

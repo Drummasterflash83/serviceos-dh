@@ -16,7 +16,7 @@ export interface WorkerHandlerContext {
   payload: Record<string, unknown>;
   /** Cooperative cancellation, where a handler chooses to honour it. */
   signal?: AbortSignal;
-  /** Queue ownership fence. Required by Slack's durable page writer. */
+  /** Queue ownership fence. Required by durable Slack/email worker writes. */
   claim?: { claimedBy: string; attemptCount: number };
 }
 

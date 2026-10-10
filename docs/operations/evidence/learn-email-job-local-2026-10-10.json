@@ -1,0 +1,54 @@
+{
+  "version": "learn-email-job-local/1",
+  "observedAt": "2026-10-10T14:21:15.115Z",
+  "state": "local_verified_not_integrated",
+  "protocolTestResults": 23,
+  "protocolScenarios": 22,
+  "workerTests": 4,
+  "typescript": "passed",
+  "queueReferenceSha256": "3891b55bf623886527a14ea8e7c402431567eeffd00975882ed93481e73f8716",
+  "files": [
+    {
+      "path": "supabase/migrations/20261031234500_learn_email_job_attempts.sql",
+      "sha256": "fae443075e7f1ff3d5a4ca3add9908fefb8a3e36bc126106ba3714d4defbc4cf"
+    },
+    {
+      "path": "supabase/functions/_shared/email_job_attempt.ts",
+      "sha256": "956e34ee78e4a8d8b5d108223b2052dbaeaaebb03bd442bff6ba8adb7605de60"
+    },
+    {
+      "path": "supabase/functions/_shared/email_ingestion_outbox.ts",
+      "sha256": "77c27b83a59a388511fc9d542ddf6eed7f266cd03cc0bcb04916b372399a3f8f"
+    },
+    {
+      "path": "supabase/functions/_shared/email_ingestion_protocol.ts",
+      "sha256": "92dbfb9dde92c6d6519db1987b45608373c42310af1fe496d053c2050af249fc"
+    },
+    {
+      "path": "supabase/functions/platform-worker/index.ts",
+      "sha256": "e947874c49acdaa1304cf1714b2b15c20aea44f61aa58f9a854588a329c30fff"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "d411ba9b51defa2493d9dcc5f9b7573e09691b819774ada30834435d88b639cb"
+    },
+    {
+      "path": "scripts/verify/learn-capture-queue-handler.test.mjs",
+      "sha256": "8bcaa4a8623873d02fa981b686b138848e1b44bdfe7ce3c5bcf7fae969d33f4f"
+    }
+  ],
+  "verified": [
+    "One atomic sync attempt and immutable binding per job, recovered after lost response and worker replacement.",
+    "Outbox preparation/application reject stale or omitted leases for job-bound attempts.",
+    "Expiry after protocol execution rolls back progress and settlement; the retained request recovers under the next lease.",
+    "Job definition changes, foreign company requests and client-role access are refused.",
+    "Worker handler context includes the authoritative job type and claim."
+  ],
+  "limitations": [
+    "Not deployed or wired into mailbox handlers.",
+    "Provider pagination, persistence and queue completion still need integrating.",
+    "Existing low-level email protocol APIs remain service-accessible; job workers must use the lease-aware outbox adapter.",
+    "Fixture reproduces observed protocol/queue dependencies, omitting unrelated launch policies and timestamp triggers.",
+    "No hosted data, credentials, permissions or schedules changed."
+  ]
+}
