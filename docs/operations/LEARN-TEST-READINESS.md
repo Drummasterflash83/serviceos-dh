@@ -1,16 +1,19 @@
 # Existing TEST environment: verified release gaps
 
-## Commusoft contact traversal — provider access verified, implementation correction pending
+## Commusoft contact traversal — local database/worker candidate verified
 
-Real customer and work-address contacts both return HTTP 200 when the documented
-required `propertyID` is supplied. Customer-contact pagination passes too. The
-earlier unscoped contact request returned 404; our synthetic fixtures had missed
-this requirement. The local reader now binds and checks the parent, with 72 tests
-and strict TypeScript passing. **Not deployed:** the database permit/publication,
-per-property traversal and operator progress must be updated together. Full
-contact import remains unfinished. This is internal implementation work, not an
-external API-access blocker.
-[Evidence and required workflow](LEARN-COMMUSOFT-API.md#contacts-require-a-parent-property--live-samples-verified-traversal-correction-pending).
+The contact reader, SQL permits/publication, fixed property plans, resumable cursor
+and operator progress now work together locally. Empty properties advance; one
+property's completion cannot finish the whole plan. Lost acknowledgements recover
+without refetching, and late write failures preserve the prior cursor. Larger
+traversals can continue beyond 10,000 total pages with bounded new allowances.
+
+Seventy-eight tests, strict application/worker TypeScript and the application build
+pass. Real PostgreSQL contact and legacy continuation suites pass; the actual worker
+completes the synthetic SQL/provider bridge. **Not deployed:** the additive TEST
+schema/runtime/frontend release and real hosted import remain next. Real scoped
+customer/work-address contact access was already verified separately.
+[Candidate evidence](evidence/learn-commusoft-contact-traversal-local-2026-10-10.json).
 
 ## Commusoft request correction — real bounded reads and TEST runtime verified
 

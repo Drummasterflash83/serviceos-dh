@@ -9,6 +9,12 @@ export interface CommusoftWorkerScope {
   signal?: AbortSignal;
   supabaseAdmin: { from: (table: string) => any };
 }
+export interface CommusoftContactTarget {
+  propertyId: number;
+  nextPropertyId: number | null;
+  position: number;
+  total: number;
+}
 export interface StoredCommusoftScope {
   tenantId: string;
   jobId: string;
@@ -23,6 +29,7 @@ export interface StoredCommusoftScope {
   pages: number;
   complete: boolean;
   scopeKey: string;
+  contactTarget?: CommusoftContactTarget;
 }
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
@@ -142,12 +149,15 @@ export async function readStoredCommusoftScope(
       !date(cfg.expiresAt) ||
       Date.parse(cfg.expiresAt) <= now ||
       !id(cfg.maxPages) ||
-      cfg.maxPages > 10000 ||
+      cfg.maxPages > 2147483647 ||
       !id(cfg.pageSize) ||
       cfg.pageSize > 100 ||
       !["properties", "propertyContacts", "jobs"].includes(cfg.resource) ||
       (cfg.resource === "propertyContacts" &&
-        (!["customer", "workaddress"].includes(cfg.contactType) || !id(cfg.propertyId))) ||
+        (!["customer", "workaddress"].includes(cfg.contactType) ||
+          cfg.contactPlanVersion !== 1 ||
+          !id(cfg.firstPropertyId) ||
+          !id(cfg.contactTargetCount))) ||
       (cfg.resource !== "propertyContacts" &&
         (cfg.contactType !== undefined || cfg.propertyId !== undefined))
     )
@@ -192,10 +202,52 @@ export async function readStoredCommusoftScope(
       typeof checkpoint.complete !== "boolean" ||
       (checkpoint.after !== null && !id(checkpoint.after)) ||
       (checkpoint.pages === 0 && (checkpoint.after !== null || checkpoint.complete)) ||
-      (checkpoint.pages > 0 && !checkpoint.complete && checkpoint.after === null) ||
+      (checkpoint.pages > 0 &&
+        !checkpoint.complete &&
+        checkpoint.after === null &&
+        cfg.resource !== "propertyContacts") ||
       (checkpoint.complete && checkpoint.after !== null)
     )
       return null;
+    let contactTarget: CommusoftContactTarget | undefined;
+    if (cfg.resource === "propertyContacts") {
+      const propertyId =
+        Object.keys(saved).length === 0 ? cfg.firstPropertyId : checkpoint.propertyId;
+      const done = Object.keys(saved).length === 0 ? 0 : checkpoint.propertiesCompleted;
+      if (!Number.isSafeInteger(done) || done < 0 || done > cfg.contactTargetCount) return null;
+      if (checkpoint.complete) {
+        if (propertyId !== null || done !== cfg.contactTargetCount) return null;
+      } else {
+        if (!id(propertyId) || done >= cfg.contactTargetCount) return null;
+        const target = await read(
+          "learn_commusoft_contact_targets",
+          "tenant_id,connection_id,approval_id,property_id,property_type,position,next_property_id",
+          [
+            ["tenant_id", ctx.tenantId],
+            ["connection_id", cfg.connectionId],
+            ["approval_id", cfg.approvalId],
+            ["property_id", propertyId],
+          ],
+        );
+        if (
+          target.tenant_id !== ctx.tenantId ||
+          target.connection_id !== cfg.connectionId ||
+          target.approval_id !== cfg.approvalId ||
+          target.property_id !== propertyId ||
+          target.property_type !== cfg.contactType ||
+          target.position !== done + 1 ||
+          (target.next_property_id !== null && !id(target.next_property_id)) ||
+          (target.next_property_id === null) !== (target.position === cfg.contactTargetCount)
+        )
+          return null;
+        contactTarget = {
+          propertyId,
+          nextPropertyId: target.next_property_id,
+          position: target.position,
+          total: cfg.contactTargetCount,
+        };
+      }
+    }
     if (
       ctx.signal?.aborted ||
       Date.parse(job.lease_expires_at) <= clock() ||
@@ -208,7 +260,7 @@ export async function readStoredCommusoftScope(
       after: checkpoint.after,
       limit: cfg.pageSize,
       ...(cfg.contactType ? { contactType: cfg.contactType } : {}),
-      ...(cfg.propertyId !== undefined ? { propertyId: cfg.propertyId } : {}),
+      ...(contactTarget ? { propertyId: contactTarget.propertyId } : {}),
     };
     // Compare all selected authority and cursor fields; a lease extension alone is
     // allowed. Stored approval/config changes invalidate the acquired binding.
@@ -222,6 +274,7 @@ export async function readStoredCommusoftScope(
       connector.id,
       cfg,
       saved,
+      contactTarget ?? null,
       connection.id,
       connection.updated_at,
       connection.verified_at,
@@ -242,6 +295,7 @@ export async function readStoredCommusoftScope(
       pages: checkpoint.pages,
       complete: checkpoint.complete,
       scopeKey,
+      ...(contactTarget ? { contactTarget } : {}),
     };
   } catch {
     return null;

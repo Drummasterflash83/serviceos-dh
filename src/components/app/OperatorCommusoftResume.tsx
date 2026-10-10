@@ -27,7 +27,7 @@ export function OperatorCommusoftResume({
   onSubmit: (definition: OperatorInputDefinition) => void;
 }) {
   const [maximum, setMaximum] = useState(
-    Math.min(10000, Math.max(a.max_pages ?? 1, (a.checkpoint.pages ?? 0) + 10)),
+    Math.min(2147483647, Math.max(a.max_pages ?? 1, (a.checkpoint.pages ?? 0) + 10)),
   );
   const [hours, setHours] = useState(2);
   const j = a.latest_job;
@@ -53,7 +53,8 @@ export function OperatorCommusoftResume({
     Number.isInteger(maximum) &&
     maximum > (a.checkpoint.pages ?? 0) &&
     maximum >= (a.max_pages ?? 1) &&
-    maximum <= 10000 &&
+    maximum <= 2147483647 &&
+    maximum - (a.checkpoint.pages ?? 0) <= 10000 &&
     Number.isInteger(hours) &&
     hours >= 1 &&
     hours <= 24;
@@ -76,7 +77,7 @@ export function OperatorCommusoftResume({
             className="cp-input w-full"
             type="number"
             min={Math.max(a.max_pages ?? 1, (a.checkpoint.pages ?? 0) + 1)}
-            max={10000}
+            max={Math.min(2147483647, (a.checkpoint.pages ?? 0) + 10000)}
             value={maximum}
             onChange={(e) => {
               setMaximum(Number(e.target.value));
@@ -101,7 +102,8 @@ export function OperatorCommusoftResume({
       </div>
       <p className="text-sm">
         The total includes pages already retained. The existing collection, contact type and records
-        per page are preserved. Approval expiry will not be shortened.
+        per page are preserved. Each continuation allows up to 10,000 further pages. Approval expiry
+        will not be shortened.
       </p>
       <button
         className="cp-secondary"
@@ -131,7 +133,7 @@ export function OperatorCommusoftResume({
           Restore the module, account and verified connection before continuing.
         </p>
       )}
-      {(a.checkpoint.pages ?? 0) >= 10000 && (
+      {(a.checkpoint.pages ?? 0) >= 2147483647 && (
         <p className="text-sm">
           This traversal reached its maximum page allowance. Operator review is required before
           further capture.

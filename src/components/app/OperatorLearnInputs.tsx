@@ -485,10 +485,10 @@ export function OperatorLearnInputs({
                   must be reviewed before a new one can start. Captured contacts are available for
                   review and linking to existing people, customers and sites.
                 </p>
-                {resource === "workaddress" && (
+                {["customer", "workaddress"].includes(resource) && (
                   <p className="text-sm">
-                    Confirm work-address contact support with this Commusoft account before
-                    approving this collection.
+                    Contacts are read separately for each property in the last completed property
+                    import. A later contact import can include newly imported properties.
                   </p>
                 )}
                 <button
@@ -572,6 +572,12 @@ export function OperatorLearnInputs({
                 <p className="text-sm">
                   {a.checkpoint.pages ?? 0} pages retained · approval expires {stamp(a.expires_at)}
                 </p>
+                {a.resource === "propertyContacts" && a.contact_target_count != null && (
+                  <p className="text-sm">
+                    {a.checkpoint.propertiesCompleted ?? 0} of {a.contact_target_count} properties
+                    checked for contacts. Retained pages are preserved when work pauses.
+                  </p>
+                )}
                 {a.latest_job?.error_code && (
                   <p className="text-sm">
                     Diagnostic: {a.latest_job.error_code}. Review connection authority and retained

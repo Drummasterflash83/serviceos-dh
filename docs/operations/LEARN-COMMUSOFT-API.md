@@ -1,5 +1,40 @@
 # Commusoft read-only API adapter
 
+## Per-property contact import — local candidate verified, deployment pending
+
+The new migration and worker now build a fixed contact plan from the last completed
+property traversal for the same company and connection. Each selected property's
+source version, order and successor are retained. The SQL credential permit binds
+its exact parent; publication checks every returned contact against that parent.
+Empty properties advance normally. Completing one property resets its contact
+cursor and advances to the next; only completing the final property ends the plan.
+
+Property position and contact cursor are retained atomically with the source page.
+Operator continuation keeps the same plan and cannot substitute another property.
+A lost publication acknowledgement settles the retained page without fetching it
+again. A forced late observation failure rolls back the page, source version and
+cursor together. The operator UI reports properties checked as well as pages saved,
+and gives specific guidance when the property import or contact plan is missing.
+
+Initial approval still allows at most 10,000 pages. Continuations may advance the
+cumulative limit while authorizing at most 10,000 further pages each, so larger
+companies do not permanently stop at the old cumulative ceiling. The existing
+24-hour approval expiry, shared quota and source history protections remain.
+
+**Verified locally:** 78 tests, strict application/worker TypeScript, application
+build, actual PostgreSQL migration rollback and both contact/legacy continuation
+SQL suites. The actual worker, reader, permit/publication/settlement RPCs complete
+a three-request synthetic traversal, including a lost acknowledgement. Actual SQL
+operator output passes the application parser.
+[Evidence](evidence/learn-commusoft-contact-traversal-local-2026-10-10.json).
+
+**Not deployed:** prepare the additive TEST schema release, update/read back the
+runtime and frontend, then verify signed-in setup and a real hosted import. No
+external requests or hosted mutations occurred during this candidate verification.
+Empty target sets are refused explicitly; old unscoped contact approvals require
+review rather than automatic reinterpretation. New properties need a later
+property traversal/contact plan; no snapshot/deletion/future coverage is inferred.
+
 ## Contacts require a parent property — live samples verified, traversal correction pending
 
 At **20:11 UTC**, actual properties and jobs both passed first/next-page reads.
@@ -27,7 +62,7 @@ and refuses the changed bundle; deployed TEST v3 still uses the earlier contact
 contract. No contact jobs/connections were enabled by the preceding release.
 [Redacted checks](evidence/learn-commusoft-contact-scope-2026-10-10.json).
 
-**Required correction to the import workflow:** derive a frozen, tenant/connection-
+**Workflow requirement (implemented in the local candidate above):** derive a frozen, tenant/connection-
 scoped list of customer or work-address properties from a completed property
 traversal. Retain the property source version and plan membership. Traverse each
 property's contacts with its own cursor, including empty properties; checkpoint

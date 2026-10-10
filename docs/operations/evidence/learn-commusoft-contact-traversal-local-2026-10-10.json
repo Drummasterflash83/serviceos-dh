@@ -1,0 +1,55 @@
+{
+  "version": "learn-commusoft-contact-traversal-local/1",
+  "observedAt": "2026-10-10T20:25:10.718953+00:00",
+  "state": "local_candidate_verified_not_deployed",
+  "sourceSha256": {
+    "supabase/migrations/20261101020000_learn_commusoft_contact_traversal.sql": "aa1a0e0ce952bed84ea0c1f3f623b2d982ae6f8c760084ba76fe0ac59e10d960",
+    "supabase/functions/_shared/commusoft/read_page.ts": "fe512265314c5fb19527623dbf7345576c789a94ff598e8bb05005b0d4017545",
+    "supabase/functions/_shared/commusoft/stored_scope.ts": "2a40396248f3ac94328b5c63b75b1e1668a375e3235b5e0dbc8cc84e09837188",
+    "supabase/functions/_shared/commusoft/page_store.ts": "4538a90df66acb1f515e018a38454e1f5b6c200e5028400dbec0475fc4f0ec93",
+    "src/lib/learn-operator-inputs.ts": "ae0281fab3c632431213e9df9f6c5d595336d8ef62431753eadfafb820b9d6c6",
+    "src/components/app/OperatorLearnInputs.tsx": "2098889119082fe48488c61f44acc940a107337ac84a0e4b4f8917e7f3e368e5",
+    "src/components/app/OperatorCommusoftResume.tsx": "1e2134d0850d79f0e3a169363019c428980b341221298ec53905d16c8e51c4d1"
+  },
+  "checks": {
+    "typescriptTests": 78,
+    "strictApplicationTypeScript": "passed",
+    "strictWorkerTypeScript": "passed",
+    "applicationBuild": "passed",
+    "migrationRollback": "restored five pre-existing function definitions; no target table retained",
+    "realPostgres": [
+      "contacts require a completed property traversal",
+      "frozen customer/work-address property plans retain source versions",
+      "exact parent and successor binding before credential release",
+      "wrong-parent contact publication rejected",
+      "cross-tenant and cross-connection target lookup refused",
+      "immutable plan and private helper permissions",
+      "per-property pagination and empty property handling",
+      "property boundary remains incomplete while targets remain",
+      "page-budget pause and exact checkpoint continuation",
+      "continued cumulative allowance above 10,000 with at most 10,000 further pages per approval",
+      "repeated page publication returns retained receipt",
+      "late observation failure rolls back page, version and cursor together",
+      "previous property/job continuation, authority, cancellation and rollback regression",
+      "actual SQL overview accepted by application parser"
+    ],
+    "actualWorkerSqlBridge": {
+      "provider": "synthetic response fixture, no external network",
+      "requests": 3,
+      "checks": [
+        "production worker, bound reader, permit RPC, publication and settlement",
+        "property 101 initial -> property 101 after 11 -> property 202 initial",
+        "lost publication acknowledgement recovered without refetch",
+        "one retained page per request; final property plan complete"
+      ]
+    }
+  },
+  "limits": [
+    "Local disposable PostgreSQL and synthetic provider only. Hosted migration, runtime/frontend deployment and signed-in acceptance remain pending.",
+    "Real contacts access was established separately by the bounded live-read report; full hosted customer/contact/job import is still unverified.",
+    "Target plans cover one selected type from a completed property traversal, not a transactional provider snapshot, deleted data or future properties.",
+    "An empty matching target set is explicitly refused before creating work; it is not reported as company-wide completeness.",
+    "Legacy unscoped contact approvals cannot be resumed automatically; retained history needs a reviewed migration.",
+    "No hosted credential, authority grant, provider traffic, import, schedule or production mutation in this candidate verification."
+  ]
+}

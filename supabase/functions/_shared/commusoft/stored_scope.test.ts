@@ -147,22 +147,83 @@ test("scope comes from tenant-scoped durable rows, never queued payload", async 
     assert.ok(read.filters.some(([k, v]) => k === "tenant_id" && v === id(1)));
 });
 
-test("contacts require a durable parent binding before credential acquisition", async () => {
-  for (const propertyId of [undefined, 0, "42", Number.MAX_SAFE_INTEGER + 1]) {
-    const f = fixture();
-    Object.assign(f.cfg, { resource: "propertyContacts", contactType: "customer", propertyId });
+function contactFixture() {
+  const f = fixture();
+  Object.assign(f.cfg, {
+    resource: "propertyContacts",
+    contactType: "customer",
+    contactPlanVersion: 1,
+    firstPropertyId: 42,
+    contactTargetCount: 2,
+  });
+  f.rows.learn_commusoft_contact_targets = [
+    {
+      tenant_id: id(1),
+      connection_id: id(5),
+      approval_id: id(6),
+      property_id: 42,
+      property_type: "customer",
+      position: 1,
+      next_property_id: 84,
+    },
+    {
+      tenant_id: id(1),
+      connection_id: id(5),
+      approval_id: id(6),
+      property_id: 84,
+      property_type: "customer",
+      position: 2,
+      next_property_id: null,
+    },
+  ];
+  return f;
+}
+test("contacts bind immutable plan membership before credential acquisition", async () => {
+  for (const mutate of [
+    (f: ReturnType<typeof contactFixture>) => {
+      delete (f.cfg as any).contactPlanVersion;
+    },
+    (f: ReturnType<typeof contactFixture>) => {
+      f.rows.learn_commusoft_contact_targets[0].tenant_id = id(99);
+    },
+    (f: ReturnType<typeof contactFixture>) => {
+      f.rows.learn_commusoft_contact_targets[0].property_type = "workaddress";
+    },
+    (f: ReturnType<typeof contactFixture>) => {
+      f.rows.learn_commusoft_contact_targets[0].position = 2;
+    },
+    (f: ReturnType<typeof contactFixture>) => {
+      f.rows.learn_commusoft_contact_targets[0].next_property_id = null;
+    },
+  ]) {
+    const f = contactFixture();
+    mutate(f);
     assert.equal(await f.read(), null);
     await assert.rejects(f.run(), /authority_unavailable/);
     assert.deepEqual(f.counts(), { acquisitions: 0, fetches: 0 });
   }
-  const f = fixture();
-  Object.assign(f.cfg, { resource: "propertyContacts", contactType: "customer", propertyId: 42 });
+  const f = contactFixture();
   Object.assign(f.ctx.payload, { propertyId: 99 });
+  assert.equal((await f.read())?.request.propertyId, 42);
+  f.rows.connector_accounts[0].sync_cursor = {
+    approvalId: id(6),
+    pages: 2,
+    after: null,
+    complete: false,
+    propertyId: 84,
+    propertiesCompleted: 1,
+  };
   const scope = await f.read();
-  assert.equal(scope?.request.propertyId, 42);
-  const originalKey = scope?.scopeKey;
-  Object.assign(f.cfg, { propertyId: 43 });
-  assert.notEqual((await f.read())?.scopeKey, originalKey);
+  assert.equal(scope?.request.propertyId, 84);
+  assert.equal(scope?.request.after, null);
+  assert.deepEqual(scope?.contactTarget, {
+    propertyId: 84,
+    nextPropertyId: null,
+    position: 2,
+    total: 2,
+  });
+  f.rows.connector_accounts[0].sync_cursor.propertiesCompleted = 0;
+  assert.equal(await f.read(), null);
 });
 
 test("client, module, connector, account, approval, lease and credential gates all fail closed", async () => {
@@ -204,7 +265,7 @@ test("client, module, connector, account, approval, lease and credential gates a
       f.cfg.pageSize = 101;
     },
     (f) => {
-      f.cfg.maxPages = 10001;
+      f.cfg.maxPages = 2147483648;
     },
     (f) => {
       f.rows.platform_jobs[0].claimed_by = "another-worker";

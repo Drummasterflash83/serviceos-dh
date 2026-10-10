@@ -41,7 +41,7 @@ test("continuation cannot inject a cursor shape, collection, secret, completed c
     { resource: "jobs" },
     { secret: "unexpected" },
     { max_pages: 3 },
-    { max_pages: 10001 },
+    { max_pages: 10004 },
     { account_id: "invalid" },
     { checkpoint: { ...definition.checkpoint, after: "150" } },
     { checkpoint: { ...definition.checkpoint, complete: true } },
@@ -120,4 +120,97 @@ test("a lost continuation reply survives reload and recovers exactly once even a
   );
   assert.equal(applies, 1);
   assert.equal(readSavedInput(store, scope), null);
+});
+
+test("contact continuation binds property position as well as its page cursor", async () => {
+  const cp = { ...definition.checkpoint, after: null, propertyId: 84, propertiesCompleted: 1 };
+  const r = { ...request, definition: { ...definition, checkpoint: cp } };
+  validateInputRequest(r);
+  const saved = { ...receipt, checkpoint: cp };
+  assert.equal(
+    (await resolveOperatorInput({ rpc: async () => ({ data: saved, error: null }) }, r, "check"))
+      .state,
+    "recorded",
+  );
+  for (const changes of [{ propertyId: 42 }, { propertiesCompleted: 0 }]) {
+    await assert.rejects(
+      resolveOperatorInput(
+        {
+          rpc: async () => ({ data: { ...saved, checkpoint: { ...cp, ...changes } }, error: null }),
+        },
+        r,
+        "check",
+      ),
+    );
+  }
+  for (const propertyId of [null, 0, "84"])
+    assert.throws(() =>
+      validateInputRequest({
+        ...r,
+        definition: { ...r.definition, checkpoint: { ...cp, propertyId } },
+      }),
+    );
+});
+
+test("continuation keeps large traversal progress while bounding each new allowance", () => {
+  const checkpoint = {
+    ...definition.checkpoint,
+    pages: 10000,
+    after: 25,
+    propertyId: 84,
+    propertiesCompleted: 9999,
+  };
+  validateInputRequest({ ...request, definition: { ...definition, checkpoint, max_pages: 20000 } });
+  assert.throws(() =>
+    validateInputRequest({
+      ...request,
+      definition: { ...definition, checkpoint, max_pages: 20001 },
+    }),
+  );
+});
+
+test("known contact-plan failures give bounded operator guidance without forwarding database prose", async () => {
+  await assert.rejects(
+    resolveOperatorInput(
+      {
+        rpc: async () => ({
+          data: null,
+          error: { code: "PT409", message: "learn_operator_contact_plan_invalid" },
+        }),
+      },
+      request,
+      "apply",
+    ),
+    /saved contact plan could not be verified/,
+  );
+  await assert.rejects(
+    resolveOperatorInput(
+      {
+        rpc: async () => ({
+          data: null,
+          error: { code: "55000", message: "learn_operator_property_traversal_required" },
+        }),
+      },
+      request,
+      "apply",
+    ),
+    /Finish a property import/,
+  );
+  await assert.rejects(
+    resolveOperatorInput(
+      {
+        rpc: async () => ({
+          data: null,
+          error: {
+            code: "PRIVATE",
+            message: "learn_operator_property_traversal_required",
+            detail: "PRIVATE DATA",
+          },
+        }),
+      },
+      request,
+      "apply",
+    ),
+    /request was not confirmed/,
+  );
 });

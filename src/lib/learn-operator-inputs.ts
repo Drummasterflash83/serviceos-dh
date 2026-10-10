@@ -8,6 +8,8 @@ export type InputCheckpoint = {
   pages: number | null;
   after: number | null;
   complete: boolean | null;
+  propertyId?: number | null;
+  propertiesCompleted?: number;
 };
 export type OperatorInputDefinition =
   | { kind: "set_modules"; reason: string; expected: InputFlags; values: InputFlags }
@@ -70,6 +72,7 @@ export type InputAccount = {
   approval_id: string | null;
   expires_at: string | null;
   max_pages: number | null;
+  contact_target_count?: number | null;
   checkpoint: InputCheckpoint;
   latest_job: null | {
     id: string;
@@ -116,7 +119,18 @@ const integer = (v: unknown) => Number.isSafeInteger(v) && Number(v) >= 0;
 function checkpoint(v: unknown): v is InputCheckpoint {
   return (
     object(v) &&
-    Object.keys(v).sort().join() === ["approvalId", "pages", "after", "complete"].sort().join() &&
+    Object.keys(v).sort().join() ===
+      (Object.hasOwn(v, "propertyId") || Object.hasOwn(v, "propertiesCompleted")
+        ? ["approvalId", "pages", "after", "complete", "propertyId", "propertiesCompleted"]
+        : ["approvalId", "pages", "after", "complete"]
+      )
+        .sort()
+        .join() &&
+    (!Object.hasOwn(v, "propertyId") ||
+      (integer(v.propertiesCompleted) &&
+        (v.complete === true
+          ? v.propertyId === null
+          : integer(v.propertyId) && v.propertyId > 0))) &&
     nullable(v.approvalId, uuid) &&
     nullable(v.pages, integer) &&
     nullable(v.after, integer) &&
@@ -126,7 +140,7 @@ function checkpoint(v: unknown): v is InputCheckpoint {
 function sameCheckpoint(a: unknown, b: InputCheckpoint) {
   return (
     checkpoint(a) &&
-    ["approvalId", "pages", "after", "complete"].every(
+    ["approvalId", "pages", "after", "complete", "propertyId", "propertiesCompleted"].every(
       (k) => a[k as keyof InputCheckpoint] === b[k as keyof InputCheckpoint],
     )
   );
@@ -219,7 +233,8 @@ export function validateInputRequest(r: unknown): asserts r is OperatorInputRequ
       !checkpoint(d.checkpoint) ||
       !integer(d.max_pages) ||
       d.max_pages < 1 ||
-      d.max_pages > 10000 ||
+      d.max_pages > 2147483647 ||
+      d.max_pages - (d.checkpoint.pages ?? 0) > 10000 ||
       d.checkpoint.complete === true ||
       d.max_pages <= (d.checkpoint.pages ?? 0) ||
       (d.checkpoint.approvalId !== null && d.checkpoint.approvalId !== d.approval_id)
@@ -266,11 +281,8 @@ export async function readOperatorInputs(
         !nullable(a.resource, string) ||
         !nullable(a.expires_at, date) ||
         !nullable(a.max_pages, integer) ||
-        !object(a.checkpoint) ||
-        !nullable(a.checkpoint.approvalId, uuid) ||
-        !nullable(a.checkpoint.pages, integer) ||
-        !nullable(a.checkpoint.after, integer) ||
-        !nullable(a.checkpoint.complete, (v) => typeof v === "boolean") ||
+        !checkpoint(a.checkpoint) ||
+        (a.contact_target_count !== undefined && !nullable(a.contact_target_count, integer)) ||
         (a.latest_job !== null &&
           (!object(a.latest_job) ||
             !uuid(a.latest_job.id) ||
@@ -306,10 +318,36 @@ export async function resolveOperatorInput(
       p_mode: mode,
     },
   );
-  if (error)
+  if (error) {
+    const contactFailures: Record<string, { code: string; message: string }> = {
+      learn_operator_property_traversal_required: {
+        code: "55000",
+        message:
+          "Finish a property import before importing its contacts. Cancel this saved request, complete the property import, then approve contacts.",
+      },
+      learn_operator_contact_properties_missing: {
+        code: "55000",
+        message:
+          "The completed property import contains no properties of this contact type. Cancel this request and review the selected type or refresh the property import.",
+      },
+      learn_operator_contact_plan_invalid: {
+        code: "PT409",
+        message:
+          "The saved contact plan could not be verified. Keep its retained history and review the plan before continuing.",
+      },
+    };
+    if (
+      object(error) &&
+      typeof error.message === "string" &&
+      Object.hasOwn(contactFailures, error.message)
+    ) {
+      const known = contactFailures[error.message];
+      if (error.code === known.code) throw Error(known.message);
+    }
     throw Error(
       "The request was not confirmed. Keep it saved and check its receipt before making another change.",
     );
+  }
   if (
     !object(data) ||
     data.tenant_id !== r.tenantId ||

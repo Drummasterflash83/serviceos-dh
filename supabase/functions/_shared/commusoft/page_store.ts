@@ -11,7 +11,14 @@ export type RpcContext = CommusoftWorkerScope & {
 };
 export interface CommusoftPageReceipt {
   pageId: string;
-  checkpoint: { approvalId: string; after: number | null; pages: number; complete: boolean };
+  checkpoint: {
+    approvalId: string;
+    after: number | null;
+    pages: number;
+    complete: boolean;
+    propertyId?: number | null;
+    propertiesCompleted?: number;
+  };
   records: number;
   already: boolean;
 }
@@ -37,7 +44,17 @@ function claimArgs(ctx: RpcContext) {
   };
 }
 function receipt(value: unknown): CommusoftPageReceipt {
+  const cp = obj(value) && obj(value.checkpoint) ? value.checkpoint : {};
+  const contacts = Object.hasOwn(cp, "propertyId") || Object.hasOwn(cp, "propertiesCompleted");
+  const validContactPosition =
+    !contacts ||
+    (Number.isSafeInteger(cp.propertiesCompleted) &&
+      cp.propertiesCompleted >= 0 &&
+      (cp.complete === true
+        ? cp.propertyId === null
+        : Number.isSafeInteger(cp.propertyId) && cp.propertyId > 0));
   if (
+    !validContactPosition ||
     !obj(value) ||
     !uuid(value.pageId) ||
     typeof value.already !== "boolean" ||
@@ -48,10 +65,11 @@ function receipt(value: unknown): CommusoftPageReceipt {
     !uuid(value.checkpoint.approvalId) ||
     !Number.isSafeInteger(value.checkpoint.pages) ||
     value.checkpoint.pages < 1 ||
-    value.checkpoint.pages > 10000 ||
+    value.checkpoint.pages > 2147483647 ||
     typeof value.checkpoint.complete !== "boolean" ||
     (value.checkpoint.complete && value.checkpoint.after !== null) ||
     (!value.checkpoint.complete &&
+      !(contacts && value.checkpoint.after === null) &&
       (!Number.isSafeInteger(value.checkpoint.after) || value.checkpoint.after < 1))
   ) {
     throw Error("commusoft_publication_receipt_invalid");
@@ -64,6 +82,9 @@ function receipt(value: unknown): CommusoftPageReceipt {
       after: value.checkpoint.after,
       pages: value.checkpoint.pages,
       complete: value.checkpoint.complete,
+      ...(contacts
+        ? { propertyId: cp.propertyId, propertiesCompleted: cp.propertiesCompleted }
+        : {}),
     },
     records: value.records,
     already: value.already,
@@ -91,9 +112,20 @@ export async function persistCommusoftPage(
     approvalId: input.scope.approval.approvalId,
     pages: input.scope.pages + 1,
     after: input.page.nextCursor,
-    complete: input.page.collectionExhausted,
+    complete:
+      input.page.collectionExhausted &&
+      (!input.scope.contactTarget || input.scope.contactTarget.nextPropertyId === null),
     records: input.page.records.length,
   };
+  const target = input.scope.contactTarget;
+  const expectedPropertyId = target
+    ? input.page.collectionExhausted
+      ? target.nextPropertyId
+      : target.propertyId
+    : undefined;
+  const expectedPropertiesCompleted = target
+    ? target.position - (input.page.collectionExhausted ? 0 : 1)
+    : undefined;
   let result;
   try {
     result = await ctx.supabaseAdmin.rpc("learn_commusoft_commit_page", {
@@ -111,7 +143,9 @@ export async function persistCommusoftPage(
     saved.checkpoint.pages !== expected.pages ||
     saved.checkpoint.after !== expected.after ||
     saved.checkpoint.complete !== expected.complete ||
-    saved.records !== expected.records
+    saved.records !== expected.records ||
+    saved.checkpoint.propertyId !== expectedPropertyId ||
+    saved.checkpoint.propertiesCompleted !== expectedPropertiesCompleted
   ) {
     throw Error("commusoft_publication_receipt_invalid");
   }

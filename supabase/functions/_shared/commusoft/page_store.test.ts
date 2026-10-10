@@ -139,3 +139,30 @@ test("malformed recovery cannot be treated as a missing receipt or permission to
     await assert.rejects(committedCommusoftPage(f.ctx), /receipt_invalid/);
   }
 });
+
+test("property completion advances the plan and exact receipt survives recovery", async () => {
+  for (const last of [false, true]) {
+    const f = fixture();
+    Object.assign(f.input.scope, {
+      contactTarget: {
+        propertyId: 42,
+        nextPropertyId: last ? null : 84,
+        position: last ? 2 : 1,
+        total: 2,
+      },
+    });
+    f.input.page.collectionExhausted = true;
+    f.input.page.nextCursor = null as any;
+    Object.assign(f.saved.checkpoint, {
+      after: null,
+      complete: last,
+      propertyId: last ? null : 84,
+      propertiesCompleted: last ? 2 : 1,
+    });
+    assert.deepEqual(await persistCommusoftPage(f.ctx, f.input), f.saved);
+    f.state.data = { ...f.saved, already: true };
+    assert.deepEqual((await committedCommusoftPage(f.ctx))?.checkpoint, f.saved.checkpoint);
+    f.state.data = { ...f.saved, checkpoint: { ...f.saved.checkpoint, propertyId: 999 } };
+    await assert.rejects(persistCommusoftPage(f.ctx, f.input), /receipt_invalid/);
+  }
+});
