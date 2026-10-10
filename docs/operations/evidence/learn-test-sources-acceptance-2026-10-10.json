@@ -1,0 +1,31 @@
+{
+  "version": "learn-test-sources-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86",
+  "observedAt": "2026-10-10T02:20:06.060Z",
+  "runId": "9fcf91fd-3294-44a0-be50-0ea1a1807204",
+  "state": "passed",
+  "checks": [
+    "Two ordinary signed-in company owners read email, call, recording metadata and interaction evidence through the actual application helper; Unicode clipping, zero duration and existing linked customer cards passed.",
+    "Anonymous/viewer/ops/operator/service and foreign-company scopes were denied. Foreign IDs exposed no row, raw tables stayed closed, unsupported references failed, and same-session demotion reached the actual application helper."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "emails": 2,
+    "calls": 2,
+    "recording_metadata_rows": 2,
+    "slack_messages": 2,
+    "interactions": 8,
+    "active_users": 0,
+    "active_members": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "syntheticSourcesPreserved": true,
+  "fixtureManifest": "/private/tmp/serviceos-learn-sources-9fcf91fd-3294-44a0-be50-0ea1a1807204.json",
+  "limitations": [
+    "Actual Auth/PostgREST/application reads against retained synthetic TEST sources, not real employee data or live ingestion.",
+    "Recording rows contain metadata only; no audio object, provider request, playback or transcript acceptance.",
+    "No production changes, paid processing, schedules, employee score or payroll."
+  ]
+}

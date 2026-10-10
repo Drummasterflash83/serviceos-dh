@@ -862,3 +862,20 @@ checks passed. The actual card component rendered all four synthetic evidence ki
 with readable labels, UTC dates and explicit units. This is local-only; TEST stays
 release 018. Pinned hosted rehearsal and real signed-in acceptance are next. See
 [reader contract, evidence and release limits](../operations/LEARN-CARD-SOURCES.md).
+
+
+## Original-source readers accepted in TEST — 10 October
+
+Release 019 is installed and verified: 90 public tables, 20 receipts. Its bounded
+email/call/recording reader passed isolated atomic rollback, exact hosted rehearsal,
+installation and actual signed-in application acceptance for two synthetic companies.
+Raw source grants stayed closed; tenant/role boundaries, Unicode clipping, zero
+call duration and immediate role revocation passed. Nine release-runner tests passed.
+
+All pre-existing source and performance records retained their counts/fingerprints
+across rehearsal, installation and acceptance. Synthetic evidence remains; all three
+fixture users were banned, rotated and demoted, with memberships ended and final
+zero-active readback. Production and frontend deployment are unchanged. Recording
+metadata is not playable audio; real provider capture, Slack/voicemail completion,
+retained assessments and real-source acceptance remain open. See
+[release evidence and limits](../operations/LEARN-CARD-SOURCES.md#accepted-in-test--10-october-2026).

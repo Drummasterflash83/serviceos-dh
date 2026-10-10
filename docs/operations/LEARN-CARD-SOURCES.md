@@ -52,7 +52,7 @@ their existing reads. The card displays readable source names, UTC timestamps,
 duration units and the exact reference inside each panel. A record with no
 available values is explicitly described rather than shown as a blank success.
 
-## Verification and remaining release work
+## Local verification
 
 - Eleven source/review/collector tests passed, including foreign/malformed/denied
   responses, no raw-table fallback and preservation of a long Unicode excerpt.
@@ -71,10 +71,56 @@ available values is explicitly described rather than shown as a blank success.
 [Database evidence](evidence/learn-card-sources-local-2026-10-10.json) and
 [SQL-to-client evidence](evidence/learn-card-sources-client-from-sql-2026-10-10.json).
 
-This increment is local only. TEST remains release 018, with 90 tables and 19
-receipts. Before deploying the application, pin the source-reader release against
-that catalog, rehearse/roll back on TEST, install once, and verify ordinary signed-in
-source reads and unchanged existing rows. The new policies and reader column grants
-must be accounted for explicitly by the catalog verifier; broad raw-client grants
-are not an acceptable substitute. Production, actual source acceptance, provider
-completeness, audio playback and retained assessment runs remain separate work.
+The initial local checks preceded the TEST release recorded below. Production,
+real-source acceptance, provider completeness, audio playback and retained
+assessment runs remain separate work.
+
+## Accepted in TEST — 10 October 2026
+
+Release `019_card_sources.sql` was rehearsed and rolled back on TEST, installed
+once, and accepted through actual Auth/PostgREST application readers. TEST now has
+90 public tables and 20 release receipts. Source SHA-256:
+`cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86`.
+
+The release validator pins the entire preceding release 018, the new function,
+three source policies and 19 restricted-reader column grants. Ordinary anon,
+authenticated and service-role source privileges remain exactly as before. It
+rejects drift in prior objects/endpoints, authority, policies or grants; installation
+requires a matching acknowledged rollback report no older than one hour. An unknown
+write response triggers inspection, never an automatic replay.
+
+The exact release wrapper passed isolated PostgreSQL 17 checks, including rollback
+of function/policies/grants when receipt insertion fails. Nine release-runner tests
+passed across the source, correction and communication releases, including lost
+responses, stale prerequisites and once-only installation. Updated TEST UI helpers
+require release 019; their syntax checks passed.
+
+Two ordinary signed-in owners from separate synthetic companies used the actual
+application evidence helper for email, call, recording and interaction references.
+Long Unicode clipping, zero call duration and the existing customer-card linkage
+passed. Anonymous/viewer/ops/operator/service and foreign-company scope requests
+were denied; foreign IDs returned no record. Direct raw reads remained closed,
+unsupported references failed, and changing the owner's role revoked access in the
+same session. Source reads did not change the new synthetic source records.
+
+The three fixture users were banned, had passwords rotated, and were demoted to
+viewer; memberships ended. Two emails, two calls, two recording metadata rows,
+two Slack messages and eight interactions remain as evidence. Final readback at
+02:20:42 UTC confirmed zero active fixture users or memberships. The fixture has
+no audio objects and does not prove playback or live capture.
+
+Across the complete hosted rehearsal, installation and acceptance, all pre-existing
+email, call, recording, transcript, Slack, interaction, measurement, review and
+correction rows retained identical counts and fingerprints. Only the two newly
+created synthetic tenants were excluded from that comparison. No production,
+provider, storage, ingestion, payroll or frontend deployment operation was made.
+
+Evidence: [isolated release](evidence/learn-test-sources-local-release-2026-10-10.json),
+[hosted rollback](evidence/learn-test-sources-rehearsal-2026-10-10.json),
+[installation](evidence/learn-test-sources-install-2026-10-10.json),
+[actual signed-in acceptance](evidence/learn-test-sources-acceptance-2026-10-10.json),
+[final catalog, retirement and preservation](evidence/learn-test-sources-final-2026-10-10.json).
+
+This acceptance verifies synthetic TEST source reads. It does not establish provider
+completeness, real employee scores, live Slack/voicemail capture, playable recordings,
+transcript access or production readiness. The frontend remains undeployed.

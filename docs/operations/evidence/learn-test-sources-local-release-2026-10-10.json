@@ -1,0 +1,13 @@
+{
+  "state": "passed",
+  "checks": [
+    "Pinned TEST wrapper receipt failure rolls back RPC, policies and reader grants atomically.",
+    "Caller-profile/source RLS prerequisites, non-superuser installation and exact rollback of reader grants, policies and RPC passed.",
+    "Owner and foreign-company owner receive only their requested row; Unicode clipping and exact field allowlists passed. Raw bodies, phone numbers, storage pointers and provider payloads are absent.",
+    "Same-session demotion and unsupported references are denied; clients cannot assume the reader role; the reader cannot read excluded columns or create objects.",
+    "All existing synthetic source/profile rows have identical fingerprints after reads and checks."
+  ],
+  "limitations": [
+    "Offline recorded column types and synthetic UID/profile/source data. No hosted Auth, provider ingestion, audio playback or production acceptance."
+  ]
+}

@@ -1,5 +1,5 @@
 """Offline original-source read checks. New isolated PostgreSQL 17; no existing database access."""
-import json,subprocess,time,uuid,shutil
+import json,subprocess,time,uuid,shutil,sys,hashlib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 DOCKER=shutil.which('docker') or '/usr/local/bin/docker'
@@ -11,6 +11,11 @@ def run(sql,check=True):
  r=subprocess.run([DOCKER,'exec','-i',NAME,'psql','-h','127.0.0.1','-U','supabase_admin','-d','postgres','-At','-v','ON_ERROR_STOP=1'],input=sql,text=True,capture_output=True)
  if check and r.returncode:raise RuntimeError(r.stderr[-2000:])
  return r
+release_catalog=None
+if len(sys.argv)>1:
+ if len(sys.argv)!=3 or sys.argv[1]!='--release':raise SystemExit('Use --release with the verified schema-only catalog path')
+ release_catalog=json.loads(Path(sys.argv[2]).read_text())
+ assert len(release_catalog['tables'])==90 and len(release_catalog['readiness']['customMigrationEntries'])==19
 checks=[]
 try:
  subprocess.run([DOCKER,'run','-d','--pull=never','--network','none','--name',NAME,'-e','POSTGRES_HOST_AUTH_METHOD=trust',IMAGE],capture_output=True,check=True)
@@ -30,6 +35,14 @@ try:
   run(f"insert into email_messages(id,tenant_id,provider,provider_message_id,subject,snippet,body_text,body_html,raw_payload) values('{source}','{tenant}','gmail','synthetic-{source}','Synthetic email',repeat('😀',4500),'PRIVATE BODY','PRIVATE HTML','{{\"secret\":\"PRIVATE RAW\"}}');insert into phone_calls(id,tenant_id,provider,provider_call_id,direction,started_at,duration_seconds,outcome,from_number,to_number,cost,raw_payload) values('{source}','{tenant}','simwood','synthetic-{source}','IN','2026-10-10T00:00:00Z',120,'completed','PRIVATE FROM','PRIVATE TO',123,'{{\"secret\":\"PRIVATE RAW\"}}');insert into phone_recordings(id,tenant_id,provider,provider_recording_id,started_at,duration_seconds,storage_path,recording_uri,raw_payload) values('{source}','{tenant}','simwood','synthetic-{source}','2026-10-10T00:00:00Z',115,'PRIVATE PATH','PRIVATE URI','{{\"secret\":\"PRIVATE RAW\"}}');")
  base=(ROOT/'supabase/migrations/20261031010000_learn_card_communications.sql').read_text();run('set role postgres;'+base)
  migration=(ROOT/'supabase/migrations/20261031030000_learn_card_sources.sql').read_text()
+ if release_catalog:
+  migration=(ROOT/'supabase/release/learn-test/019_card_sources.sql').read_text()
+  sha=hashlib.sha256(migration.encode()).hexdigest()
+  run('create schema of_test_deploy authorization postgres;create table of_test_deploy.migrations(source_sha256 text,migration_name text primary key,project_ref text,applied_at timestamptz);alter table of_test_deploy.migrations owner to postgres;')
+  quote=lambda s:"'"+str(s).replace("'","''")+"'"
+  for e in release_catalog['readiness']['customMigrationEntries']:
+   run('insert into of_test_deploy.migrations values('+','.join(quote(e[k]) for k in ['source_sha256','migration_name','project_ref','applied_at'])+');')
+  migration=migration.replace('begin;','begin;set local serviceos.release_target=\'saatxzwxvdvqevbnskxy\';set local serviceos.release_source_sha256='+quote(sha)+';',1)
  metadata="select jsonb_build_object('grants',(select jsonb_agg(jsonb_build_object('table',c.relname,'column',a.attname,'acl',a.attacl::text) order by c.relname,a.attname) from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('email_messages','phone_calls','phone_recordings') and a.attnum>0),'memberships',(select jsonb_agg(jsonb_build_object('role',r.rolname,'member',u.rolname,'admin',m.admin_option,'inherit',m.inherit_option,'set',m.set_option)) from pg_auth_members m join pg_roles r on r.oid=m.roleid join pg_roles u on u.oid=m.member where r.rolname='learn_card_communication_reader'));"
  before=run(metadata).stdout
  for table in ['profiles','email_messages']:
@@ -41,6 +54,13 @@ try:
  run('set role postgres;'+migration.replace('\ncommit;\n','\nrollback;\n'))
  assert run(metadata).stdout==before
  assert run("select to_regprocedure('public.learn_card_source_read(uuid,text,uuid)') is null and not exists(select 1 from pg_policies where policyname in ('learn_card_email_source_read','learn_card_call_source_read','learn_card_recording_source_read'));").stdout.strip()=='t'
+ if release_catalog:
+  run("alter table of_test_deploy.migrations add constraint fail_source_receipt check(migration_name<>'learn_card_sources_v1');")
+  failed=run('set role postgres;'+migration,False);assert failed.returncode and 'fail_source_receipt' in failed.stderr
+  assert run(metadata).stdout==before
+  assert run("select to_regprocedure('public.learn_card_source_read(uuid,text,uuid)') is null;").stdout.strip()=='t'
+  run('alter table of_test_deploy.migrations drop constraint fail_source_receipt;')
+  checks.append('Pinned TEST wrapper receipt failure rolls back RPC, policies and reader grants atomically.')
  run('set role postgres;'+migration)
  checks.append('Caller-profile/source RLS prerequisites, non-superuser installation and exact rollback of reader grants, policies and RPC passed.')
  def call(table,source=SOURCE,tenant=T,actor=OWNER,role='authenticated'):
@@ -75,5 +95,11 @@ try:
  assert run(fingerprints).stdout==source_before
  checks.append('All existing synthetic source/profile rows have identical fingerprints after reads and checks.')
  (ROOT/'.verification-results/learn-card-sources-responses.json').write_text(json.dumps(responses,ensure_ascii=False))
+ if release_catalog:
+  query=subprocess.run([NODE,'--input-type=module','-e',"import {SOURCE_CATALOG_QUERY} from './scripts/verify/learn-card-sources-catalog.mjs';process.stdout.write(SOURCE_CATALOG_QUERY);"],cwd=ROOT,capture_output=True,check=True).stdout.decode()
+  output=run('begin;'+query+';commit;').stdout
+  expected=json.loads(next(line for line in output.splitlines() if line.startswith('{')));expected.pop('access')
+  assert len(expected['functions'])==1 and len(expected['policies'])==3 and len(expected['grants'])==19
+  (ROOT/'.verification-results/learn-card-sources-expected.json').write_text(json.dumps(expected,indent=2)+'\n')
  print(json.dumps({'state':'passed','checks':checks,'limitations':['Offline recorded column types and synthetic UID/profile/source data. No hosted Auth, provider ingestion, audio playback or production acceptance.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

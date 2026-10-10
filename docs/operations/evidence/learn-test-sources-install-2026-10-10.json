@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-card-sources/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86",
+  "observedAt": "2026-10-10T02:19:39.968Z",
+  "writeAttempted": true,
+  "acknowledged": true,
+  "state": "installed_needs_authenticated_acceptance",
+  "beforeFingerprint": "d1d61afc1e45dbc76c08b3bc9cae0e47fa6775549578514cfe621ba2ed9d5640",
+  "afterFingerprint": "8e43a77c98507154d17c4cb9056442d528ab4b6764ee8f11d941d9e826f5b11c",
+  "scope": "Bounded source RPC, three RLS policies and 19 reader column grants. No ordinary-client raw grants, source changes, provider traffic, endpoint changes or production writes."
+}

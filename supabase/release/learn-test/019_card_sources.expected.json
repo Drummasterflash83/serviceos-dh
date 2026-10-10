@@ -1,0 +1,187 @@
+{
+  "grants": [
+    {
+      "table": "email_messages",
+      "column": "direction",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "received_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "sent_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "snippet",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "subject",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "email_messages",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "direction",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "duration_seconds",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "outcome",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "provider",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "started_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_calls",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_recordings",
+      "column": "duration_seconds",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_recordings",
+      "column": "id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_recordings",
+      "column": "provider",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_recordings",
+      "column": "started_at",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "table": "phone_recordings",
+      "column": "tenant_id",
+      "schema": "public",
+      "grantable": false,
+      "privilege": "SELECT"
+    }
+  ],
+  "policies": [
+    {
+      "name": "learn_card_email_source_read",
+      "check": null,
+      "roles": [
+        "learn_card_communication_reader"
+      ],
+      "table": "email_messages",
+      "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.role = ANY (ARRAY['owner'::text, 'admin'::text]))))",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "learn_card_call_source_read",
+      "check": null,
+      "roles": [
+        "learn_card_communication_reader"
+      ],
+      "table": "phone_calls",
+      "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.role = ANY (ARRAY['owner'::text, 'admin'::text]))))",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    },
+    {
+      "name": "learn_card_recording_source_read",
+      "check": null,
+      "roles": [
+        "learn_card_communication_reader"
+      ],
+      "table": "phone_recordings",
+      "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.role = ANY (ARRAY['owner'::text, 'admin'::text]))))",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE"
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_card_source_read",
+      "owner": "learn_card_communication_reader",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_table text, p_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_card_source_read(p_tenant uuid, p_table text, p_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare actor_tenant uuid;actor_role text;result jsonb;\nbegin\n -- Profile RLS exposes only the actual caller. The reader has no auth-schema access.\n select p.tenant_id,p.role into actor_tenant,actor_role from public.profiles p;\n if actor_tenant is distinct from p_tenant or coalesce(actor_role,'') not in ('owner','admin') then\n  raise exception 'Company owner/admin source access required' using errcode='42501';end if;\n if p_tenant is null or p_id is null or p_table is null or p_table not in ('email_messages','phone_calls','phone_recordings') then\n  raise exception 'One supported source reference required' using errcode='22023';end if;\n if p_table='email_messages' then\n  select to_jsonb(s) into result from (\n   select id,tenant_id,\n    case when length(subject)>4000 then left(subject,4000)||'\u2026 [excerpt shortened]' else subject end as subject,\n    case when length(snippet)>4000 then left(snippet,4000)||'\u2026 [excerpt shortened]' else snippet end as snippet,\n    sent_at,received_at,case when length(direction)>4000 then left(direction,4000)||'\u2026 [excerpt shortened]' else direction end as direction\n   from public.email_messages where tenant_id=p_tenant and id=p_id\n  ) s;\n elsif p_table='phone_calls' then\n  select to_jsonb(s) into result from (\n   select id,tenant_id,\n    case when length(provider)>4000 then left(provider,4000)||'\u2026 [excerpt shortened]' else provider end as provider,\n    case when length(direction)>4000 then left(direction,4000)||'\u2026 [excerpt shortened]' else direction end as direction,\n    started_at,duration_seconds,\n    case when length(outcome)>4000 then left(outcome,4000)||'\u2026 [excerpt shortened]' else outcome end as outcome\n   from public.phone_calls where tenant_id=p_tenant and id=p_id\n  ) s;\n else\n  select to_jsonb(s) into result from (\n   select id,tenant_id,\n    case when length(provider)>4000 then left(provider,4000)||'\u2026 [excerpt shortened]' else provider end as provider,\n    started_at,duration_seconds\n   from public.phone_recordings where tenant_id=p_tenant and id=p_id\n  ) s;\n end if;\n return jsonb_build_object('version','learn-card-source/1','tenant_id',p_tenant,'table',p_table,'id',p_id,'record',result);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ]
+}

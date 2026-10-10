@@ -1,0 +1,1676 @@
+[
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "body_html",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "body_text",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "cc_emails",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "from_email",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "from_name",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "provider_message_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "provider_thread_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "received_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "sent_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "snippet",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "subject",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "to_emails",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "email_messages",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "cost",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "duration_seconds",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "from_number",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "linked_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "outcome",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "provider_call_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "started_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "to_number",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_calls",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "duration_seconds",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "file_size",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "linked_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "provider_call_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "provider_recording_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "recording_uri",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "started_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "storage_path",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "anon",
+    "table": "phone_recordings",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "body_html",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "body_text",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "cc_emails",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "from_email",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "from_name",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "provider_message_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "provider_thread_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "received_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "sent_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "snippet",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "subject",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "to_emails",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "email_messages",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "cost",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "direction",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "duration_seconds",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "from_number",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "linked_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "outcome",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "provider_call_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "started_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "to_number",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_calls",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "created_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "duration_seconds",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "file_size",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "linked_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "provider_call_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "provider_recording_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "provider",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "raw_payload",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "recording_uri",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "started_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "storage_path",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "tenant_id",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "authenticated",
+    "table": "phone_recordings",
+    "column": "updated_at",
+    "insert": false,
+    "select": false,
+    "update": false,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": true,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": true,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "allowed": true,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "body_html",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "body_text",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "cc_emails",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "created_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "direction",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "from_email",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "from_name",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "provider_message_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "provider_thread_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "provider",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "raw_payload",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "received_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "sent_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "snippet",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "subject",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "tenant_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "to_emails",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "email_messages",
+    "column": "updated_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": true,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": true,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "allowed": true,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "cost",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "created_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "direction",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "duration_seconds",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "from_number",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "linked_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "outcome",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "provider_call_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "provider",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "raw_payload",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "started_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "tenant_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "to_number",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_calls",
+    "column": "updated_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "DELETE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "REFERENCES"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRIGGER"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": false,
+    "privilege": "TRUNCATE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": true,
+    "privilege": "INSERT"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": true,
+    "privilege": "SELECT"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "allowed": true,
+    "privilege": "UPDATE"
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "created_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "duration_seconds",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "file_size",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "linked_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "provider_call_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "provider_recording_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "provider",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "raw_payload",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "recording_uri",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "started_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "storage_path",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "tenant_id",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  },
+  {
+    "role": "service_role",
+    "table": "phone_recordings",
+    "column": "updated_at",
+    "insert": true,
+    "select": true,
+    "update": true,
+    "references": false
+  }
+]

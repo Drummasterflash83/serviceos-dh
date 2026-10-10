@@ -1,0 +1,125 @@
+{
+  "version": "learn-test-sources-final/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T02:20:42.404Z",
+  "state": "passed",
+  "sourceSha256": "cca8c835fdf7b3e088796ecd34dae4e09b6ed615f93386ff2f03cfdea9d86e86",
+  "catalogFingerprint": "8e43a77c98507154d17c4cb9056442d528ab4b6764ee8f11d941d9e826f5b11c",
+  "publicTables": 90,
+  "releaseReceipts": 20,
+  "retirement": {
+    "retained_users": 3,
+    "active_users": 0,
+    "active_members": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "comparison": "Before hosted rollback through installed release and actual Auth acceptance, excluding only this run’s two new synthetic tenants.",
+  "before": [
+    {
+      "name": "email_messages",
+      "count": 2,
+      "fingerprint": "cfe8f02ea6a15155163b5d97703139be"
+    },
+    {
+      "name": "interactions",
+      "count": 21,
+      "fingerprint": "479ee2bf3faed3041fe744a74946230b"
+    },
+    {
+      "name": "learn_performance_corrections",
+      "count": 4,
+      "fingerprint": "7e5a5d4d820ee14a0feab9a1611ec00f"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 12,
+      "fingerprint": "b1bf25519f6cd62a3d07989c020be653"
+    },
+    {
+      "name": "measurements",
+      "count": 17,
+      "fingerprint": "a51a13064406f3153ab4019d763436d7"
+    },
+    {
+      "name": "phone_calls",
+      "count": 4,
+      "fingerprint": "0e788c946ca4f0048d7bc06903ef8162"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 6,
+      "fingerprint": "3361a866add68e38eeb95fa702f3a283"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 15,
+      "fingerprint": "7d93bd5d7a02b50e64d5e19141d8492a"
+    }
+  ],
+  "after": [
+    {
+      "name": "email_messages",
+      "count": 2,
+      "fingerprint": "cfe8f02ea6a15155163b5d97703139be"
+    },
+    {
+      "name": "interactions",
+      "count": 21,
+      "fingerprint": "479ee2bf3faed3041fe744a74946230b"
+    },
+    {
+      "name": "learn_performance_corrections",
+      "count": 4,
+      "fingerprint": "7e5a5d4d820ee14a0feab9a1611ec00f"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 12,
+      "fingerprint": "b1bf25519f6cd62a3d07989c020be653"
+    },
+    {
+      "name": "measurements",
+      "count": 17,
+      "fingerprint": "a51a13064406f3153ab4019d763436d7"
+    },
+    {
+      "name": "phone_calls",
+      "count": 4,
+      "fingerprint": "0e788c946ca4f0048d7bc06903ef8162"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 6,
+      "fingerprint": "3361a866add68e38eeb95fa702f3a283"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 15,
+      "fingerprint": "7d93bd5d7a02b50e64d5e19141d8492a"
+    }
+  ],
+  "limitations": [
+    "TEST only; production and provider/storage completeness were not assessed by this check.",
+    "Retained recording fixtures are metadata, not playable audio."
+  ]
+}
