@@ -80,5 +80,47 @@ access or hosted persistence.
 The hosted login and unauthenticated client redirect also passed in the actual
 browser. Next: verify signed-in owner recovery within an authorized acceptance
 session. No temporary user or grant was created for this release.
-History pagination beyond the latest 20 assessments remains separate unfinished
-work. This does not activate scoring, payroll, capture or a provider import.
+History now supports older pages in the local candidate described below. This does
+not activate scoring, payroll, capture or a provider import.
+
+
+## Saved assessment history beyond the first 20
+
+The history reader now loads older assessments in pages of 20, ordered by the
+original save timestamp and ID. Its position retains PostgreSQL microseconds and
+is bound to the company and card. Newer saves cannot shift the older-page boundary;
+refresh explicitly returns to the latest records. Each page reports the remaining
+count as observed at that read, rather than promising a live total.
+
+A failed older-page read retains the displayed assessments and offers retry.
+Refreshing retains the selected immutable assessment while returning the list to
+its latest page. Scope changes invalidate pending reads. Each retained assessment
+continues to use its original published rules, evidence and saved time.
+
+Verification for this increment:
+
+- Five additional history tests (24 combined client tests) cover timestamp ties,
+  microsecond boundaries, foreign/malformed cursors, partial and failed responses,
+  and the actual Supabase client's bounded request with a concurrent newer save.
+- The disposable PostgreSQL verifier reads all 48 synthetic assessments through
+  three pages while inserting a newer record after page one: no duplicates or
+  omissions, and refresh exposes the newer record. Foreign-owner and same-company
+  viewer reads remain denied by the actual assessment RLS.
+- Those real SQL results pass the production history reader and frozen-snapshot
+  parser through the Supabase client with a local replacement fetch. This bridge is
+  part of the reproducible verifier; it makes no hosted request.
+- The actual local browser loaded 20, then 40, then 43 synthetic rows, recovered
+  from the deliberately failed second page, opened the oldest retained assessment,
+  and refreshed the list without closing its original detail.
+- App and preview TypeScript/build checks pass, including 47 prebuild checks.
+
+```sh
+node --test src/lib/learn-assessments.test.ts src/lib/learn-assessment-outbox.test.ts src/lib/learn-assessment-history.test.ts
+python3 scripts/verify/learn-saved-assessments.py --recovery --history
+```
+
+The synthetic browser scenario is `&performance=1&publication=historical&assessmentHistory=retry`
+(or `assessmentHistory=many` without the deliberate failure). No backend migration,
+permission change, provider request or source-data rewrite is needed. Hosted owner
+acceptance remains pending. Deployment status is recorded in
+[history evidence](evidence/learn-assessment-history-test-2026-10-10.json).

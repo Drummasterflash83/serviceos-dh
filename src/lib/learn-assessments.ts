@@ -113,10 +113,35 @@ export function parseSavedAssessment(row: any, tenant: string, subject: ScoreSub
   };
 }
 export type SavedAssessment = ReturnType<typeof parseSavedAssessment>;
+export const ASSESSMENT_HISTORY_PAGE_SIZE = 20;
+export type AssessmentHistoryCursor = {
+  tenantId: string;
+  subjectKind: ScoreSubject["kind"];
+  subjectId: string;
+  recordedAt: string;
+  id: string;
+};
+// PostgreSQL timestamps retain microseconds. Converting the cursor to JS Date
+// would collapse distinct saves and could skip rows at a page boundary.
+function recordedMicros(value: string): bigint {
+  const m = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.exec(
+    value,
+  );
+  const seconds = m ? Date.parse(m[1] + m[3]) : NaN;
+  if (!m || !Number.isFinite(seconds) || new Date(m[1] + "Z").toISOString().slice(0, 19) !== m[1])
+    throw Error("Assessment history position could not be verified");
+  return BigInt(seconds) * 1000n + BigInt((m[2] ?? "").padEnd(6, "0"));
+}
+function olderThan(a: { recorded_at: string; id: string }, b: { recorded_at: string; id: string }) {
+  const at = recordedMicros(a.recorded_at),
+    bt = recordedMicros(b.recorded_at);
+  return at < bt || (at === bt && a.id.toLowerCase() < b.id.toLowerCase());
+}
 export async function loadAssessmentHistory(
   db: LearnReadClient,
   tenant: string,
   subject: ScoreSubject,
+  after: AssessmentHistoryCursor | null = null,
 ) {
   if (
     !uuid(tenant) ||
@@ -124,26 +149,58 @@ export async function loadAssessmentHistory(
     !["member", "team", "job", "customer"].includes(subject.kind)
   )
     throw Error("Invalid assessment history scope");
-  const { data, error, count } = await db
+  if (
+    after &&
+    (after.tenantId !== tenant ||
+      after.subjectKind !== subject.kind ||
+      after.subjectId !== subject.id ||
+      !uuid(after.id))
+  )
+    throw Error("Assessment history position belongs to another card");
+  if (after) recordedMicros(after.recordedAt);
+  let query = db
     .from("learn_assessments")
     .select(columns, { count: "exact" })
     .eq("tenant_id", tenant)
     .eq("subject_kind", subject.kind)
-    .eq("subject_id", subject.id)
+    .eq("subject_id", subject.id);
+  if (after)
+    query = query.or(
+      `recorded_at.lt.${after.recordedAt},and(recorded_at.eq.${after.recordedAt},id.lt.${after.id})`,
+    );
+  const { data, error, count } = await query
     .order("recorded_at", { ascending: false })
     .order("id", { ascending: false })
-    .limit(20);
+    .limit(ASSESSMENT_HISTORY_PAGE_SIZE);
   if (
     error ||
     !Array.isArray(data) ||
     !Number.isSafeInteger(count) ||
     count < 0 ||
-    data.length !== Math.min(20, count) ||
+    data.length !== Math.min(ASSESSMENT_HISTORY_PAGE_SIZE, count) ||
     new Set(data.map((r: any) => r.id)).size !== data.length
   )
     throw Error("Saved assessment history could not be read");
-  data.forEach((r: any) => validateSummary(r, tenant, subject));
-  return { rows: data as AssessmentSummary[], total: count as number };
+  let previous = after ? { id: after.id, recorded_at: after.recordedAt } : null;
+  for (const row of data) {
+    validateSummary(row, tenant, subject);
+    recordedMicros(row.recorded_at);
+    if (previous && !olderThan(row, previous))
+      throw Error("Assessment history order could not be verified");
+    previous = row;
+  }
+  const last = data.at(-1) as AssessmentSummary | undefined;
+  const nextCursor: AssessmentHistoryCursor | null =
+    last && count > data.length
+      ? {
+          tenantId: tenant,
+          subjectKind: subject.kind,
+          subjectId: subject.id,
+          recordedAt: last.recorded_at,
+          id: last.id,
+        }
+      : null;
+  return { rows: data as AssessmentSummary[], total: count as number, nextCursor };
 }
 export async function loadSavedAssessment(
   db: LearnReadClient,

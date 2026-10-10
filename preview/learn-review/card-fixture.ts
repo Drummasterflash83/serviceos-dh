@@ -74,6 +74,19 @@ export function resolveAssessmentFixture(args:any){
  return {data:{state:prior?'recorded':cancelledAssessments[args.p_request]?'cancelled':'pending',assessmentId:args.p_request,
  tenantId:tenant_id,actorId:'22222222-2222-4222-8222-222222222222',...(prior?{recordedAt:prior.recorded_at}:{})},error:null};
 }
+// Bounded, synthetic history fixture; never reads or writes hosted records.
+if(new URLSearchParams(location.search).has('assessmentHistory')&&!assessmentRows.some(r=>r.reason.startsWith('Synthetic historical assessment '))){
+ const period={start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),end:performanceEnd};
+ const policy=publishedPeriodFixture({p_kind:'member',p_group:null,p_start:period.start}).data;
+ if(policy)for(let n=1;n<=43;n++){
+  const at=performanceEnd.slice(0,10)+'T00:01:00.'+String(Math.floor(n/17)).padStart(6,'0')+'Z';
+  assessmentRows.push({id:id(1000+n),tenant_id,publication_id:policy.publication.id,subject_kind:'member',subject_id:id(6),window_start:period.start,window_end:period.end,recorded_at:at,recorded_by:'22222222-2222-4222-8222-222222222222',reason:'Synthetic historical assessment '+n,
+   snapshot:{version:'learn-assessment/1',engine:'learn-scorecards/1',policy,subject:{kind:'member',id:id(6),groupIds:[]},period,assessedAt:at,measurements:[],reviews:[],corrections:[]}});
+ }
+ persistAssessments();
+}
+let historyPageFailed=false;
+const fixtureMicros=(s:string)=>BigInt(Date.parse(s.replace(/\.\d+(?=Z|[+-])/,'')))*1000n+BigInt((s.match(/\.(\d+)/)?.[1]??'').padEnd(6,'0'));
 const performanceCorrections:any[]=[];
 const performanceReviews:any[]=[];
 export function correctPerformanceFixture(args:any){
@@ -206,13 +219,15 @@ function records(): Record<string, any[]> {
 }
 export function cardFixture(table: string) {
   if (!Object.hasOwn(records(), table)) return null;
-  let data = records()[table];
+  let data = [...records()[table]];
+  let olderPage=false; const orders:{key:string;ascending:boolean}[]=[];
   const scenario = new URLSearchParams(location.search).get("cards");
   if (scenario === "empty") data = [];
   const simple = (s: string, r: any) => {
-    const m = /^(\w+)\.(eq|in)\.(.*)$/.exec(s);
+    const m = /^(\w+)\.(eq|in|lt)\.(.*)$/.exec(s);
     if (!m) throw Error("Unsupported fixture filter");
-    return m[2] === "eq" ? r[m[1]] === m[3] : m[3].slice(1, -1).split(",").includes(r[m[1]]);
+    if(table==='learn_assessments'&&m[1]==='recorded_at')return m[2]==='eq'?fixtureMicros(r[m[1]])===fixtureMicros(m[3]):fixtureMicros(r[m[1]])<fixtureMicros(m[3]);
+    return m[2]==='lt'?r[m[1]]<m[3]:m[2] === "eq" ? r[m[1]] === m[3] : m[3].slice(1, -1).split(",").includes(r[m[1]]);
   };
   function split(s: string) {
     let depth = 0,
@@ -240,6 +255,7 @@ export function cardFixture(table: string) {
       return q;
     },
     or: (s: string) => {
+      if(table==='learn_assessments')olderPage=true;
       data = data.filter((r) =>
         split(s).some((p) =>
           p.startsWith("and(") ? split(p.slice(4, -1)).every((c) => simple(c, r)) : simple(p, r),
@@ -259,7 +275,12 @@ export function cardFixture(table: string) {
       data = data.filter((r) => Object.entries(value).every(([k, v]) => r[key]?.[k] === v));
       return q;
     },
-    order: () => q,
+    order: (key:string,options:{ascending?:boolean}={}) => {
+      if(table==='learn_assessments'){
+        orders.push({key,ascending:options.ascending!==false});
+        data.sort((a,b)=>{for(const o of orders){const av=o.key==='recorded_at'?fixtureMicros(a[o.key]):a[o.key],bv=o.key==='recorded_at'?fixtureMicros(b[o.key]):b[o.key];if(av!==bv)return (av<bv?-1:1)*(o.ascending?1:-1);}return 0;});
+      }return q;
+    },
     limit: (n: number) => {
       exactCount = data.length;
       data = data.slice(0, n);
@@ -269,12 +290,15 @@ export function cardFixture(table: string) {
       data = data.slice(a, b + 1);
       return q;
     },
-    then: (resolve: any) =>
-      Promise.resolve(
-        scenario === "error"
+    then: (resolve: any) => {
+      const failPage=table==='learn_assessments'&&olderPage&&!historyPageFailed&&new URLSearchParams(location.search).get('assessmentHistory')==='retry';
+      if(failPage)historyPageFailed=true;
+      return Promise.resolve(
+        scenario === "error" || failPage
           ? { data: null, error: { message: "Synthetic denied read" } }
           : { data, count: exactCount ?? data.length, error: null },
-      ).then(resolve),
+      ).then(resolve);
+    },
   };
   return q;
 }

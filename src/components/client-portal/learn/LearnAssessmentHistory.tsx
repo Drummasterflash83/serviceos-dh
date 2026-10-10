@@ -5,6 +5,7 @@ import {
   loadAssessmentHistory,
   loadSavedAssessment,
   type AssessmentSummary,
+  type AssessmentHistoryCursor,
   type SavedAssessment,
 } from "@/lib/learn-assessments";
 import {
@@ -83,33 +84,77 @@ export function LearnAssessmentHistory({
     };
   }, [tenantId, actorId, subject.kind, subject.id]);
   const [history, setHistory] = useState<AssessmentSummary[]>([]),
-    [total, setTotal] = useState(0),
+    [remaining, setRemaining] = useState(0),
+    [nextCursor, setNextCursor] = useState<AssessmentHistoryCursor | null>(null),
+    [historyLoading, setHistoryLoading] = useState(false),
     [historyMessage, setHistoryMessage] = useState("Reading saved assessments…");
   const [selected, setSelected] = useState<string | null>(null),
     [saved, setSaved] = useState<SavedAssessment | null>(null),
     [savedMessage, setSavedMessage] = useState("");
+  const historyGeneration = useRef(0),
+    historyBusy = useRef(false);
   useEffect(() => {
-    let active = true;
+    const ticket = ++historyGeneration.current;
+    historyBusy.current = true;
+    setHistoryLoading(true);
+    setNextCursor(null);
+    setRemaining(0);
     setHistoryMessage("Reading saved assessments…");
     setHistory([]);
     void loadAssessmentHistory(getSupabaseClient(), tenantId, subject)
       .then((r) => {
-        if (active) {
+        if (ticket === historyGeneration.current) {
           setHistory(r.rows);
-          setTotal(r.total);
+          setRemaining(r.total - r.rows.length);
+          setNextCursor(r.nextCursor);
           setHistoryMessage(r.total ? "" : "No saved assessments for this card yet.");
         }
       })
       .catch((e) => {
-        if (active)
+        if (ticket === historyGeneration.current)
           setHistoryMessage(
             e instanceof Error ? e.message : "Assessment history could not be read",
           );
+      })
+      .finally(() => {
+        if (ticket === historyGeneration.current) {
+          historyBusy.current = false;
+          setHistoryLoading(false);
+        }
       });
     return () => {
-      active = false;
+      historyGeneration.current++;
     };
   }, [tenantId, subject.kind, subject.id, revision]);
+  async function loadOlder() {
+    if (historyBusy.current || !nextCursor) return;
+    const ticket = historyGeneration.current;
+    historyBusy.current = true;
+    setHistoryLoading(true);
+    setHistoryMessage("Reading older assessments…");
+    try {
+      const page = await loadAssessmentHistory(getSupabaseClient(), tenantId, subject, nextCursor);
+      if (ticket !== historyGeneration.current) return;
+      if (page.rows.some((row) => history.some((old) => old.id === row.id)))
+        throw Error(
+          "Assessment history changed unexpectedly. Refresh the history before continuing.",
+        );
+      setHistory([...history, ...page.rows]);
+      setRemaining(page.total - page.rows.length);
+      setNextCursor(page.nextCursor);
+      setHistoryMessage("");
+    } catch (e) {
+      if (ticket === historyGeneration.current)
+        setHistoryMessage(
+          `${e instanceof Error ? e.message : "Older assessments could not be read"}. Your displayed history is kept. Try loading older assessments again.`,
+        );
+    } finally {
+      if (ticket === historyGeneration.current) {
+        historyBusy.current = false;
+        setHistoryLoading(false);
+      }
+    }
+  }
   useEffect(() => {
     let active = true;
     setSaved(null);
@@ -251,11 +296,23 @@ export function LearnAssessmentHistory({
         <p>Load published rules for the selected dates to save an assessment.</p>
       )}
       {message && <p role="status">{message}</p>}
+      <button
+        className="cp-secondary"
+        type="button"
+        disabled={historyLoading}
+        onClick={() => setRevision((r) => r + 1)}
+      >
+        Refresh saved history
+      </button>
       {historyMessage && <p role="status">{historyMessage}</p>}
       {!!history.length && (
         <>
           <p>
-            Showing the latest {history.length} of {total} saved assessments.
+            Showing {history.length} saved assessments.{" "}
+            {remaining > 0
+              ? `${remaining} older records remained at the last check.`
+              : "No older records at the last check."}{" "}
+            Refresh history to see new saves.
           </p>
           <ul>
             {history.map((r) => (
@@ -272,6 +329,16 @@ export function LearnAssessmentHistory({
             ))}
           </ul>
         </>
+      )}
+      {nextCursor && (
+        <button
+          className="cp-secondary"
+          type="button"
+          disabled={historyLoading}
+          onClick={() => void loadOlder()}
+        >
+          {historyLoading ? "Reading older assessments…" : "Load older assessments"}
+        </button>
       )}
       {savedMessage && <p role="status">{savedMessage}</p>}
       {saved && (

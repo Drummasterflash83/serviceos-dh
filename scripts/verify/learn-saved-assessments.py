@@ -85,5 +85,31 @@ try:
  assert run("select count(*) from first_assessment f join learn_assessments a using(id) where to_jsonb(f)=to_jsonb(a);").stdout.strip()=='1'
  rows=json.loads(run("select jsonb_agg(to_jsonb(a) order by id) from learn_assessments a;").stdout.strip())
  (ROOT/'.verification-results/learn-saved-assessments-rows.json').write_text(json.dumps(rows,indent=2)+'\n')
- print(json.dumps({'state':'passed','checks':['Server-owned canonical snapshots retain published policy, original measurements and complete review/correction ledgers.','Changed request, stale evidence, wrong publication, future period, foreign subject, role/company/View-As and raw writes denied.','A later review creates a new snapshot without changing the first. Exact retry and simultaneous same-request saves retain one record.','Snapshot rewrite/delete/truncate and injected insert failure denied; prior source measurements and reviews retained.'],'recoveryChecks':recovery_checks,'limitations':['Isolated PostgreSQL and synthetic dependencies with actual published-policy reader; not hosted Auth, production or provider acceptance.']},indent=2))
+
+ history_checks=[]
+ if '--history' in sys.argv:
+  run((ROOT/'scripts/verify/learn-assessment-history.fixture.sql').read_text())
+  auth="set role authenticated;set test.actor='00000000-0000-4000-8000-000000000030';"
+  scope="tenant_id='00000000-0000-4000-8000-000000000001' and subject_kind='member' and subject_id='00000000-0000-4000-8000-000000000003'"
+  order=' order by recorded_at desc,id desc'
+  original=json.loads(run(auth+f"select jsonb_agg(id order by recorded_at desc,id desc) from learn_assessments where {scope};").stdout.strip().splitlines()[-1])
+  seen=[];after=None;pages=[]
+  while True:
+   bound='' if after is None else f" and (recorded_at<'{after['recorded_at']}'::timestamptz or (recorded_at='{after['recorded_at']}'::timestamptz and id<'{after['id']}'::uuid))"
+   q=f"select jsonb_build_object('data',(select coalesce(jsonb_agg(to_jsonb(a) order by recorded_at desc,id desc),'[]') from (select * from learn_assessments where {scope}{bound}{order} limit 20)a),'count',(select count(*) from learn_assessments where {scope}{bound}));"
+   page=json.loads(run(auth+q).stdout.strip().splitlines()[-1]);pages.append(page)
+   seen.extend(r['id'] for r in page['data'])
+   if len(pages)==1:
+    run("insert into learn_assessments select '00000000-0000-4000-8000-000000001999',tenant_id,publication_id,subject_kind,subject_id,window_start,window_end,clock_timestamp(),recorded_by,'Synthetic newer save',request,jsonb_set(snapshot,'{assessedAt}',to_jsonb(clock_timestamp())) from learn_assessments where id='00000000-0000-4000-8000-000000000070';")
+   if page['count']<=len(page['data']):break
+   after=page['data'][-1]
+  assert seen==original and len(set(seen))==len(seen)
+  for actor in ['00000000-0000-4000-8000-000000000041','00000000-0000-4000-8000-000000000042']:
+   assert run(f"set role authenticated;set test.actor='{actor}';select count(*) from learn_assessments where {scope};").stdout.strip().splitlines()[-1]=='0'
+  refreshed=json.loads(run(auth+f"select jsonb_agg(id) from (select id from learn_assessments where {scope}{order} limit 20)a;").stdout.strip().splitlines()[-1])
+  assert refreshed[0]=='00000000-0000-4000-8000-000000001999'
+  (ROOT/'.verification-results/learn-assessment-history-pages.json').write_text(json.dumps(pages,indent=2)+'\n')
+  subprocess.run(['node',str(ROOT/'scripts/verify/learn-assessment-history-client.mjs')],cwd=ROOT,check=True)
+  history_checks=['All '+str(len(original))+' existing rows read through bounded keyset pages, including equal timestamps and microsecond differences. A newer save inserted after page one caused no duplicate or omission; refresh exposes it.', 'Actual authenticated RLS excludes the foreign owner and same-company viewer from all assessment history.']
+ print(json.dumps({'state':'passed','checks':['Server-owned canonical snapshots retain published policy, original measurements and complete review/correction ledgers.','Changed request, stale evidence, wrong publication, future period, foreign subject, role/company/View-As and raw writes denied.','A later review creates a new snapshot without changing the first. Exact retry and simultaneous same-request saves retain one record.','Snapshot rewrite/delete/truncate and injected insert failure denied; prior source measurements and reviews retained.'],'recoveryChecks':recovery_checks,'historyChecks':history_checks,'limitations':['Isolated PostgreSQL and synthetic dependencies with actual published-policy reader; not hosted Auth, production or provider acceptance.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

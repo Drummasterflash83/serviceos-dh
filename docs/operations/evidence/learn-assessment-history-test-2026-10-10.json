@@ -1,0 +1,46 @@
+{
+  "version": "learn-assessment-history-test/1",
+  "observedAt": "2026-10-10T22:20:29.764542+00:00",
+  "state": "local_verified_pending_test_frontend",
+  "verification": {
+    "clientTests": 24,
+    "appPrebuildChecks": 47,
+    "appTypecheckAndBuild": true,
+    "previewTypecheckAndBuild": true,
+    "localSQL": {
+      "state": "passed",
+      "assessments": 48,
+      "pages": 3,
+      "concurrentNewerSave": "No duplicate or omission; refresh exposes the new assessment.",
+      "access": "Foreign owner and same-company viewer see no assessment rows.",
+      "productionClientAndSnapshotParsing": true
+    },
+    "syntheticBrowser": {
+      "state": "passed",
+      "pageCounts": [
+        20,
+        40,
+        43
+      ],
+      "failedPageRetainsHistory": true,
+      "retry": true,
+      "oldestSnapshotOpened": true,
+      "refreshKeepsSelectedDetail": true
+    },
+    "signedInHostedOwnerAcceptance": false
+  },
+  "screenshot": {
+    "path": ".verification-results/learn-assessment-history-oldest-2026-10-10.png",
+    "sha256": "6dd84636244220db1ec113ff44942f25e90c35c709b24988ba812d510611177d",
+    "scope": "Local synthetic card only"
+  },
+  "scope": [
+    "Frontend-only; existing assessment RLS and immutable snapshots unchanged.",
+    "No provider requests, new grants, capture activation or production changes."
+  ],
+  "remaining": [
+    "Signed-in hosted owner history and recovery acceptance.",
+    "Complete source coverage, reviewed card evidence and production promotion.",
+    "Commusoft continuation remains subject to its existing pending approval."
+  ]
+}

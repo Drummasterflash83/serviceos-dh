@@ -1,5 +1,17 @@
 # Existing TEST environment: verified release gaps
 
+## Assessment history — local candidate verified
+
+Saved assessment history now loads beyond the first 20 records, retaining exact
+save ordering and the original frozen evidence. Failed older-page reads keep the
+visible history and can be retried; refresh shows the latest records. Twenty-four
+client tests, isolated SQL with 48 synthetic records and a concurrent newer save,
+actual SQL-to-client parsing, app/preview builds and actual browser paging/retry/
+refresh checks passed. No backend or access changes are required. Protected TEST
+frontend deployment and signed-in hosted acceptance are recorded separately in
+[history evidence](evidence/learn-assessment-history-test-2026-10-10.json).
+
+
 ## Assessment recovery — TEST release 046 and paired frontend installed
 
 The recovery RPC and immutable cancellation ledger were installed in TEST at
