@@ -7,6 +7,7 @@ import type { CaptureHealthRow } from "../../src/lib/learn-operator-capture-heal
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const stamp = (minutes: number) => new Date(Date.now() - minutes * 60000).toISOString();
 let fail = false;
+const scenario = new URLSearchParams(location.search).get("phone");
 const rows: CaptureHealthRow[] = Array.from({ length: 50 }, (_, i) => ({
   key: `email:${id(i + 1)}`,
   id: id(i + 1),
@@ -38,6 +39,40 @@ const extra: CaptureHealthRow[] = [
     provider: "simwood",
     label: "Phone · synthetic account",
     enabled: true,
+    phone_evidence:
+      scenario === "legacy"
+        ? undefined
+        : {
+            version: "learn-phone-account-evidence/1",
+            tenant_id: id(100),
+            account_id: id(51),
+            scope: "scheduled_capture",
+            capture_allowed: true,
+            latest_attempt: {
+              id: id(91),
+              status: "success",
+              started_at: stamp(3),
+              completed_at: stamp(2),
+              confirmed: scenario !== "unconfirmed",
+              job: {
+                id: id(92),
+                status: "succeeded",
+                lease_expires_at: null,
+                ownership_current: false,
+              },
+            },
+            last_confirmed:
+              scenario === "unconfirmed"
+                ? null
+                : {
+                    id: id(91),
+                    completed_at: stamp(2),
+                    from: stamp(8),
+                    to: stamp(3),
+                    calls_processed: 20,
+                    recordings_processed: 8,
+                  },
+          },
   },
   {
     ...rows[0],
@@ -67,8 +102,27 @@ const client = {
         version: "learn-operator-capture-health/1",
         tenant_id: args.p_tenant,
         checked_at: stamp(0),
-        rows: args.p_after ? extra : rows,
-        next_cursor: args.p_after ? null : rows.at(-1)!.key,
+        rows: scenario ? extra : args.p_after ? extra : rows,
+        next_cursor: scenario || args.p_after ? null : rows.at(-1)!.key,
+        phone_processing:
+          scenario === "legacy"
+            ? undefined
+            : {
+                version: "learn-phone-processing-evidence/1",
+                tenant_id: id(100),
+                scope: "company",
+                total: 8,
+                complete: 1,
+                download_pending: 4,
+                transcribe_pending: 2,
+                analyse_pending: 1,
+                needs_review: 1,
+                cooling_down: 1,
+                recent_processing: 1,
+                ready: 2,
+                waiting_provider: 2,
+                unknown_retry: 0,
+              },
       },
       error: null,
     };

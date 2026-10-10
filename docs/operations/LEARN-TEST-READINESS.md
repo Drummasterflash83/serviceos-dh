@@ -1,5 +1,33 @@
 # Existing TEST environment: verified release gaps
 
+## Commusoft request correction — real bounded reads succeed, deployment pending
+
+The existing private-app credential now returns HTTP 200 for properties and jobs
+using Bearer authentication and an explicit OpenFolk User-Agent. The previous
+access-denied blocker was caused by our outgoing request configuration. Both
+sampled records pass the actual parser and in-memory source adapter; successful
+GETs are visible in app 49's API log. Seventy tests, strict TypeScript and the local
+SQL verification bridge pass. No provider/customer writes, hosted binding, import
+or schedule were performed. The corrected source is **not deployed** yet.
+[Investigation and evidence](LEARN-COMMUSOFT-API.md#request-configuration-corrected--properties-and-jobs-verified-10-october-2000-utc).
+
+## Phone operator evidence — local candidate, deployment pending
+
+The controller candidate now separates receipt-confirmed scheduled imports from
+company-wide recording processing counts. Account timestamps alone cannot produce
+a confirmed Phone status; live jobs need matching account/window/owner and lease.
+Review holds, retry pacing and provider waiting conditions remain visible. The
+read explicitly does not prove that a schedule is configured or enabled.
+
+The actual SQL migration passes rollback, source isolation, operator-only authority,
+receipt mismatch, job/lease, pause and exact stage/retry-count checks in disposable
+PostgreSQL. Every returned page passes the application parser. Seven model tests,
+strict app TypeScript, the app build and synthetic preview build pass. The existing
+Phone publication/recovery/settlement regression suite also passes. The UI and
+migration are **not deployed**; a fresh visual check and reviewed TEST release are
+still required. [Evidence](evidence/learn-phone-operator-evidence-local-2026-10-10.json).
+
+
 ## Phone import/scheduler settlement — TEST release 041 and runtime deployed
 
 The schema installed at **19:33 UTC, 10 October** after hosted rollback rehearsal;

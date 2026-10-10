@@ -1,3 +1,10 @@
+import {
+  validPhoneAccountEvidence,
+  validPhoneProcessingEvidence,
+  phoneCaptureSignal,
+  type PhoneAccountEvidence,
+  type PhoneProcessingEvidence,
+} from "./learn-phone-operator-evidence.ts";
 import { CADENCE_SEC, freshnessVerdict } from "./health-model.ts";
 import type { OperatorInputClient } from "./learn-operator-inputs.ts";
 export type CaptureSource = "email" | "phone" | "slack";
@@ -21,6 +28,7 @@ export type CaptureHealthRow = {
     completed_at: string | null;
   };
   bounded_complete: boolean | null;
+  phone_evidence?: PhoneAccountEvidence | null;
 };
 export type CaptureHealthPage = {
   version: "learn-operator-capture-health/1";
@@ -28,6 +36,7 @@ export type CaptureHealthPage = {
   checked_at: string;
   rows: CaptureHealthRow[];
   next_cursor: string | null;
+  phone_processing?: PhoneProcessingEvidence | null;
 };
 const object = (v: any) => !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: any) =>
@@ -55,6 +64,7 @@ export async function readCaptureHealth(
     v.version !== "learn-operator-capture-health/1" ||
     v.tenant_id !== tenant ||
     !date(v.checked_at) ||
+    (v.phone_processing != null && !validPhoneProcessingEvidence(v.phone_processing, tenant)) ||
     !Array.isArray(v.rows) ||
     v.rows.length > 50 ||
     v.rows.some(
@@ -84,6 +94,8 @@ export async function readCaptureHealth(
         !(r.enabled === null || typeof r.enabled === "boolean") ||
         !(r.bounded_complete === null || typeof r.bounded_complete === "boolean") ||
         ![r.last_success_at, r.last_failure_at, r.last_attempt_at].every(maybeDate) ||
+        (r.phone_evidence != null &&
+          (r.source !== "phone" || !validPhoneAccountEvidence(r.phone_evidence, tenant, r.id))) ||
         (r.latest_job !== null &&
           (!object(r.latest_job) ||
             !uuid(r.latest_job.id) ||
@@ -152,6 +164,7 @@ export function captureHealthSignal(
       "Status timestamps need review",
       "Check the worker clock and refresh the recorded evidence.",
     );
+  if (r.source === "phone") return phoneCaptureSignal(r.phone_evidence, r.last_failure_at, now);
   if (r.source === "slack") {
     const j = r.latest_job;
     if (!j)
@@ -198,12 +211,7 @@ export function captureHealthSignal(
       "Latest capture needs attention",
       "Check this account’s most recent sync and connection. Resume from the saved position after resolving the cause.",
     );
-  const cadence =
-    r.source === "phone"
-      ? CADENCE_SEC.phoneSync
-      : r.provider === "gmail"
-        ? CADENCE_SEC.emailGmail
-        : CADENCE_SEC.emailWorkspace;
+  const cadence = r.provider === "gmail" ? CADENCE_SEC.emailGmail : CADENCE_SEC.emailWorkspace;
   const fresh = freshnessVerdict(r.last_success_at, cadence, now);
   if (fresh === "never")
     return attention(
@@ -217,10 +225,7 @@ export function captureHealthSignal(
     );
   return {
     label: "Recent capture recorded",
-    action:
-      r.source === "phone"
-        ? "Recording downloads, transcripts and voicemail coverage need their own checks."
-        : "Historical coverage and conversion into LEARN records need their own checks.",
+    action: "Historical coverage and conversion into LEARN records need their own checks.",
     tone: "current",
   };
 }

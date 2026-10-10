@@ -1,0 +1,29 @@
+{
+  "version": "learn-phone-operator-evidence-local/1",
+  "observedAt": "2026-10-10T20:02:37.579828+00:00",
+  "state": "local_candidate_not_deployed",
+  "checks": [
+    "Actual SQL migration rollback restores previous health and readiness definitions",
+    "Confirmed scheduled capture requires tenant/account/customer/filter/run/job/receipt agreement",
+    "Unconfirmed latest runs do not hide older confirmed evidence",
+    "Current claim requires exact account/window/owner, attempt and live lease",
+    "Company-wide pipeline/retry counts and recovery selection against original Phone tables",
+    "Source redaction, foreign tenant exclusion, tenant-owner and revoked operator denial; helper functions private",
+    "Every actual paginated SQL response passes application parser",
+    "7 client model tests passed",
+    "Strict application TypeScript and npm run build passed",
+    "Synthetic preview build passed",
+    "Existing offline Phone publication, recovery, import completion and scheduler concurrency regression passed"
+  ],
+  "limits": [
+    "No hosted schema/frontend deployment, new grant, provider call or production change for this Phone slice.",
+    "Visual browser acceptance remains pending.",
+    "Schedule configuration/enablement and complete provider/voicemail/card coverage remain explicitly unverified."
+  ],
+  "sourceFiles": {
+    "supabase/migrations/20261101010000_learn_phone_operator_evidence.sql": "59c436347c06fa5c9eae6d0e750aa97b6166c23b947b4f241eca715f7eb5f456",
+    "src/lib/learn-phone-operator-evidence.ts": "4e79c682c55a975b0d8d1953c5904d85dcff3333600ecb85585e1aa4c33a0b7e",
+    "src/components/app/OperatorCaptureHealth.tsx": "6ee6c34f4e9bb242bc46535e1645eb0b38d508e0c2429dcae59a52925a3b274f",
+    "scripts/verify/learn-phone-operator-evidence.assert.sql": "b069a49c7f032c09a9e195890e4c154db1a47aff2f9ec71ee9a380a4dc47500d"
+  }
+}
