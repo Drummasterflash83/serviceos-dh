@@ -1,7 +1,7 @@
 {
   "version": "learn-assessment-history-test/1",
   "observedAt": "2026-10-10T22:20:29.764542+00:00",
-  "state": "local_verified_pending_test_frontend",
+  "state": "ready_protected_test_needs_owner_acceptance",
   "verification": {
     "clientTests": 24,
     "appPrebuildChecks": 47,
@@ -27,7 +27,13 @@
       "oldestSnapshotOpened": true,
       "refreshKeepsSelectedDetail": true
     },
-    "signedInHostedOwnerAcceptance": false
+    "signedInHostedOwnerAcceptance": false,
+    "hostedLoginVisualAcceptance": true,
+    "hostedUnauthenticatedClientRedirect": {
+      "result": "login_on_same_test_origin",
+      "returnTarget": "/client?section=learn",
+      "signedIn": false
+    }
   },
   "screenshot": {
     "path": ".verification-results/learn-assessment-history-oldest-2026-10-10.png",
@@ -42,5 +48,49 @@
     "Signed-in hosted owner history and recovery acceptance.",
     "Complete source coverage, reviewed card evidence and production promotion.",
     "Commusoft continuation remains subject to its existing pending approval."
-  ]
+  ],
+  "frontend": {
+    "observedAt": "2026-10-10T22:21:52.937Z",
+    "id": "dpl_J8q4RQBkQkRDczdtyXFbsddvCF4x",
+    "url": "serviceos-learn-test-ecvz7ulqb-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "899b567665a8c47a08c1ae9c336b14a33be72b2b"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "configurationChecked": true
+  },
+  "protection": {
+    "observedAt": "2026-10-10T22:21:28.619Z",
+    "base": "https://serviceos-learn-test-ecvz7ulqb-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "loginScreenshot": {
+    "path": ".verification-results/learn-assessment-history-test-login-2026-10-10.png",
+    "sha256": "c188fec548ca6e0e50fcec09459d61652eb47878ac2bc2f73ecc12f2f227d072",
+    "scope": "TEST login and unauthenticated client redirect only"
+  }
 }

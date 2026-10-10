@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Assessment history — local candidate verified
+## Assessment history — protected TEST frontend installed
 
 Saved assessment history now loads beyond the first 20 records, retaining exact
 save ordering and the original frozen evidence. Failed older-page reads keep the
@@ -8,7 +8,9 @@ visible history and can be retried; refresh shows the latest records. Twenty-fou
 client tests, isolated SQL with 48 synthetic records and a concurrent newer save,
 actual SQL-to-client parsing, app/preview builds and actual browser paging/retry/
 refresh checks passed. No backend or access changes are required. Protected TEST
-frontend deployment and signed-in hosted acceptance are recorded separately in
+frontend is READY from Git `899b567665a8c47a08c1ae9c336b14a33be72b2b`;
+anonymous protection, TEST binding, actual browser login and unauthenticated client
+redirect passed. Signed-in hosted owner acceptance remains pending. See
 [history evidence](evidence/learn-assessment-history-test-2026-10-10.json).
 
 

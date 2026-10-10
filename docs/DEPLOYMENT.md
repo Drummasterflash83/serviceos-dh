@@ -50,8 +50,8 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-o318vsaa2-allkin.vercel.app](https://serviceos-learn-test-o318vsaa2-allkin.vercel.app),
-built remotely from GitHub commit `77cff26969aca10daddab2e27f1857d942b9bfc3`.
+[serviceos-learn-test-ecvz7ulqb-allkin.vercel.app](https://serviceos-learn-test-ecvz7ulqb-allkin.vercel.app),
+built remotely from GitHub commit `899b567665a8c47a08c1ae9c336b14a33be72b2b`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
@@ -59,16 +59,19 @@ login stays on the current origin; production keeps the canonical login URL.
 The refreshed candidate includes per-property Commusoft contact progress, secondary-contact
 matching explanations, the specific unresolved-timezone review hold and retained-record
 search backed by TEST release 045, plus durable assessment recovery backed by
-TEST release 046 (installed at 22:06 UTC). The latter preserves all 87 monitored
-datasets, including assessment and scoring ledgers, and existing assessment privileges.
+TEST release 046 (installed at 22:06 UTC), and older saved-assessment paging.
+History paging is a frontend-only change with no new backend migration. Release 046
+preserved all 87 monitored datasets, including assessment and scoring ledgers, and
+existing assessment privileges.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
-login and client routes pass. The actual browser login and unauthenticated client
-redirect were verified. Signed-in hosted card recovery and control acceptance remain pending;
+login and client routes pass. This candidate passed actual browser login and
+unauthenticated client redirect checks. Signed-in hosted history, card recovery
+and control acceptance remain pending;
 a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-assessment-recovery-test-2026-10-10.json).
+See [current deployment evidence](operations/evidence/learn-assessment-history-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
 `vercel.json` disables that branch. Verify and deploy a pinned Git commit explicitly.

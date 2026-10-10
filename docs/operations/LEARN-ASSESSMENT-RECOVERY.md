@@ -80,7 +80,7 @@ access or hosted persistence.
 The hosted login and unauthenticated client redirect also passed in the actual
 browser. Next: verify signed-in owner recovery within an authorized acceptance
 session. No temporary user or grant was created for this release.
-History now supports older pages in the local candidate described below. This does
+History now supports older pages in the protected TEST candidate described below. This does
 not activate scoring, payroll, capture or a provider import.
 
 
@@ -124,3 +124,7 @@ The synthetic browser scenario is `&performance=1&publication=historical&assessm
 permission change, provider request or source-data rewrite is needed. Hosted owner
 acceptance remains pending. Deployment status is recorded in
 [history evidence](evidence/learn-assessment-history-test-2026-10-10.json).
+
+The history frontend is READY on [protected TEST](https://serviceos-learn-test-ecvz7ulqb-allkin.vercel.app)
+from Git `899b567665a8c47a08c1ae9c336b14a33be72b2b`. TEST backend binding and
+anonymous protection passed; signed-in hosted acceptance remains pending.
