@@ -1,0 +1,19 @@
+{
+  "state": "passed",
+  "checks": [
+    {
+      "table": "email_messages",
+      "fieldCount": 2
+    },
+    {
+      "table": "phone_calls",
+      "fieldCount": 5
+    },
+    {
+      "table": "phone_recordings",
+      "fieldCount": 3
+    }
+  ],
+  "scope": "Actual isolated SQL responses through the application source/evidence readers",
+  "observedAt": "2026-10-10T02:09:31.071681+00:00"
+}

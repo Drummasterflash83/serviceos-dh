@@ -94,3 +94,11 @@ separate confirmation enables a draft simulation. Explicit withholding creates a
 new unassessed observation. Correction metadata and original source timing remain
 visible. These measurements, correction receipts and reviews live only in memory
 and reset on a full browser reload; no database or provider is contacted.
+
+Original-source evidence fixture (10 October): the performance observation now links
+to a synthetic communication, email, phone call and recording. Expand **Communication
+excerpt**, **Email excerpt**, **Call details** and **Recording details** to inspect
+the actual evidence component. The preview implements the restricted RPC envelopes
+in memory; it does not query raw source tables or any hosted service. Recording
+details contain metadata only, not playable audio. Rebuilding requires reloading
+the page; all synthetic state resets.

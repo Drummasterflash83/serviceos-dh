@@ -114,19 +114,19 @@ test("review writes retain request identity and compare revision/decision receip
   assert.equal(calls.length, 2);
 });
 test("evidence reads only allowed fields for the selected tenant and source", async () => {
-  const c = db([{ id: id(3), tenant_id: id(2), subject: "A subject", snippet: "Source excerpt" }]);
-  const result = await loadPerformanceEvidence(c, id(2), { table: "email_messages", id: id(3) });
-  assert.equal(result[1].value, "Source excerpt");
+  const c = db([{ id: id(3), tenant_id: id(2), display_name: "Example member", formal_role: "Coordinator" }]);
+  const result = await loadPerformanceEvidence(c, id(2), { table: "team_members", id: id(3) });
+  assert.equal(result[1].value, "Coordinator");
   assert.ok(c.filters.some(([k, v]) => k === "tenant_id" && v === id(2)));
   assert.ok(!c.columns().includes("body_html") && !c.columns().includes("raw_payload"));
   await assert.rejects(loadPerformanceEvidence(c, id(2), { table: "profiles", id: id(3) }));
   await assert.rejects(
     loadPerformanceEvidence(db([{ id: id(3), tenant_id: id(99) }]), id(2), {
-      table: "email_messages",
+      table: "team_members",
       id: id(3),
     }),
   );
   await assert.rejects(
-    loadPerformanceEvidence(db([]), id(2), { table: "phone_recordings", id: id(3) }),
+    loadPerformanceEvidence(db([]), id(2), { table: "team_members", id: id(3) }),
   );
 });

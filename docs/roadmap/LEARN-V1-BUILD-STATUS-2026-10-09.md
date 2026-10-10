@@ -846,3 +846,19 @@ as evidence. Source and earlier performance rows were preserved. Production and
 frontend deployment are unchanged. This is synthetic TEST acceptance, not a real
 employee score or proof of complete provider capture. See
 [release evidence and limitations](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#numerical-corrections-accepted-in-test--10-october).
+
+## Original-source evidence panels — local, 10 October
+
+Performance interaction evidence now uses the existing restricted communication
+RPC. A new bounded reader provides original email excerpts and call/recording
+metadata under actual owner/admin company scope, resolving the design mismatch
+between performance drill-down and TEST's closed raw tables. Raw bodies, provider
+payloads, phone numbers and recording storage pointers stay outside the reader.
+No source rows, ingestion state, measurements or connections are changed.
+
+Eleven focused tests, isolated PostgreSQL 17 authority/rollback/preservation checks,
+SQL responses through the actual client, both typechecks/builds and 47 prebuild
+checks passed. The actual card component rendered all four synthetic evidence kinds
+with readable labels, UTC dates and explicit units. This is local-only; TEST stays
+release 018. Pinned hosted rehearsal and real signed-in acceptance are next. See
+[reader contract, evidence and release limits](../operations/LEARN-CARD-SOURCES.md).

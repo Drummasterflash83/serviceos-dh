@@ -1,0 +1,31 @@
+{
+  "state": "passed",
+  "checks": [
+    "Caller-profile/source RLS prerequisites, non-superuser installation and exact rollback of reader grants, policies and RPC passed.",
+    "Owner and foreign-company owner receive only their requested row; Unicode clipping and exact field allowlists passed. Raw bodies, phone numbers, storage pointers and provider payloads are absent.",
+    "Same-session demotion and unsupported references are denied; clients cannot assume the reader role; the reader cannot read excluded columns or create objects.",
+    "All existing synthetic source/profile rows have identical fingerprints after reads and checks."
+  ],
+  "limitations": [
+    "Offline recorded column types and synthetic UID/profile/source data. No hosted Auth, provider ingestion, audio playback or production acceptance."
+  ],
+  "observedAt": "2026-10-10T02:09:31.071302+00:00",
+  "clientTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "prebuildTests": {
+    "passed": 47,
+    "failed": 0
+  },
+  "typechecks": [
+    "application passed",
+    "preview passed"
+  ],
+  "builds": [
+    "application passed",
+    "preview passed"
+  ],
+  "browser": "Actual card component rendered synthetic communication, email, call and recording panels; no console errors. Labels, UTC dates, duration units and source references verified.",
+  "deployment": "Local only; TEST and production unchanged."
+}

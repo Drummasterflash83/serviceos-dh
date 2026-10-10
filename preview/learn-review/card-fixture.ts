@@ -1,3 +1,4 @@
+import { CARD_SOURCE_FIELDS } from "../../src/lib/learn-card-sources";
 // Synthetic records only. Used by the local UI review; never imported by src.
 const tenant_id = "11111111-1111-4111-8111-111111111111";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -59,7 +60,7 @@ export function publishedPeriodFixture(args:any){
  const row=rows.at(-1);if(!row)return {data:null,error:null};
  return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
 }
-const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}];
+const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)},{table:"email_messages",id:id(18)},{table:"phone_calls",id:id(19)},{table:"phone_recordings",id:id(21)}],exclusions:[],supersedes:null,group_ids:[]}];
 const performanceCorrections:any[]=[];
 const performanceReviews:any[]=[];
 export function correctPerformanceFixture(args:any){
@@ -140,12 +141,15 @@ function records(): Record<string, any[]> {
         effective_to: null,
       }),
     ],
+    email_messages: [row(18,{subject:"Synthetic appointment request",snippet:"Please confirm a morning visit.",sent_at:time,received_at:time,direction:"inbound"})],
+    phone_calls: [row(19,{provider:"simwood",direction:"IN",started_at:time,duration_seconds:120,outcome:"completed"})],
+    phone_recordings: [row(21,{provider:"simwood",started_at:time,duration_seconds:115})],
     interactions: [
       row(8, {
         related_company_id: id(2),
         related_job_id: id(3),
         source_connector_id: "gmail",
-        source_table: "emails",
+        source_table: "email_messages",
         source_id: id(18),
         subject: "Service appointment request",
         body_preview: "Synthetic example: Please confirm a morning visit.",
@@ -273,4 +277,15 @@ export async function communicationFixture(args:any) {
  const fields="id,tenant_id,source_connector_id,source_type,source_table,source_id,occurred_at,subject,summary,body_preview,status,related_person_id,related_company_id,related_job_id".split(",");
  const rows=(result.data??[]).filter((r:any)=>!["deleted","removed"].includes(r.status)&&(args.p_ids?.includes(r.id)||(args.p_person&&r.related_person_id===args.p_person)||(args.p_company&&r.related_company_id===args.p_company)||(args.p_job&&r.related_job_id===args.p_job))).slice(0,51).map((r:any)=>Object.fromEntries(fields.map(k=>[k,r[k]??null])));
  return {data:{version:"learn-card-communications/1",tenant_id,rows},error:null};
+}
+
+export async function sourceFixture(args:any){
+ const names=(CARD_SOURCE_FIELDS as Record<string,readonly string[]>)[args.p_table];
+ if(!names||args.p_tenant!==tenant_id||new URLSearchParams(location.search).has("viewer"))return {data:null,error:{code:"42501"}};
+ const query=cardFixture(args.p_table);
+ const result=await query.select().eq("tenant_id",args.p_tenant).eq("id",args.p_id);
+ if(result.error)return result;
+ const row=result.data[0];
+ const record=row?Object.fromEntries(["id","tenant_id",...names].map(k=>[k,row[k]??null])):null;
+ return {data:{version:"learn-card-source/1",tenant_id,table:args.p_table,id:args.p_id,record},error:null};
 }
