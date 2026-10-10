@@ -1,5 +1,49 @@
 # Existing TEST environment: verified release gaps
 
+## Atomic email page storage — local implementation, 10 October 2026
+
+`20261031235500_learn_email_page_store.sql` and `gmail_page_store.ts` connect the
+page processor to the existing email tables through server-only RPCs. Message and
+thread writes share one transaction. Older messages retain newer thread subjects
+and timestamps, and participants are merged. Missing-only capture does not replace
+an existing message; explicit refetch keeps its ID, preserves bodies when a new
+body is absent, and refuses an older known Gmail history version. Extra columns
+outside capture, including any production-only origin fields, are not assigned.
+
+Every lookup/write validates tenant, mailbox address, running attempt, checkpoint
+generation/revision/owner, fetch policy and current queue lease when job-bound.
+The existing account lock serializes these checks with protocol transitions;
+checkpoint access remains SELECT-only. A final lease check rolls back writes if
+expiry occurs inside the transaction. This does not grant new progress-writing
+permissions or replace capture admission and Workspace authorization checks.
+
+The typed adapter freezes its scope and lease and validates returned context,
+IDs and actual write counts. An unknown reply provides no persistence evidence.
+An explicit retry can find an already committed message without fetching it again;
+that lookup proves its presence, not the lost call's affected-row count. There is
+no independent durable page-write receipt. Cursor and run completion remain the
+responsibility of the existing durable transition protocol.
+
+The combined isolated database suite passes **29 scenarios / 30 Node results**,
+including the seven new storage scenarios. A deliberately rejected message
+proves both thread and message writes roll back. An injected delay demonstrably
+runs, expires the lease during insertion, and rolls back the whole page. Lost
+replies, preserved identities, old history, stale scopes and role denials are
+also exercised. **14 page/adapter unit tests** and shared-module TypeScript
+checking pass. See [local evidence](evidence/learn-email-page-store-local-2026-10-10.json).
+
+The fixture uses newly read TEST email-table definitions, update triggers and
+service table grants, plus the existing recorded protocol and queue contracts.
+Service checkpoint permissions are checked as SELECT-only. It omits client
+reader policies and unrelated account/queue timestamp triggers; it does not prove
+production schema parity. No customer rows were read for this metadata reference.
+
+**Not deployed or wired into mailbox handlers.** The next step is the mailbox
+engine: recover its attempt/request, validate saved provider continuation, process
+an owned page, settle a durable transition, and complete the queue atomically.
+Coordinated hosted TEST acceptance remains required. No hosted data, permissions,
+credentials, schedules or production deployment changed.
+
 ## Gmail page processing — local implementation, 10 October 2026
 
 `gmail_capture_page.ts` reads one explicit recent or historical page and validates

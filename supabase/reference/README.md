@@ -1,5 +1,13 @@
 # Hosted integration references
 
+`learn-email-storage-test-2026-10-10.json` records the TEST `email_messages` and
+`email_threads` contracts read at 14:33:27 UTC, their update-timestamp helper and
+the service table grants checked during this storage implementation. It contains
+no message rows or credentials. The local page-store fixture reproduces their
+columns, constraints, indexes and update triggers, with the observed service
+permissions; client reader policies are omitted. This is a schema reference,
+not a database backup or evidence of production parity.
+
 `learn-email-job-test-2026-10-10.json` records the TEST `platform_jobs` table
 contract at 14:14:33 UTC. It supplies the exact columns, constraints and indexes for
 the local email job/attempt fixture; it contains no queue rows. The fixture omits

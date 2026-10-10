@@ -1,0 +1,59 @@
+{
+  "version": "learn-email-page-store-local/1",
+  "observedAt": "2026-10-10T14:42:05.820Z",
+  "state": "local_verified_not_integrated",
+  "databaseScenarios": 29,
+  "databaseTestResults": 30,
+  "pageAndAdapterUnitTests": 14,
+  "typescript": "passed",
+  "files": [
+    {
+      "path": "supabase/migrations/20261031235500_learn_email_page_store.sql",
+      "sha256": "021c1c4e7f83cf80a5cba8f7ddb685d06d20446c2bed3be2597d95439765c799"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_page_store.ts",
+      "sha256": "3f8cf0202ffcbe63c0e91e7a68efaabd43d29a2fcbbceaae69a1f15b583dde63"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_page_store.test.ts",
+      "sha256": "a7bb9f2da7a02df2f3f09ffd2b4de15bf2697d7669bf898c545f50bbc28e940d"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_capture_page.ts",
+      "sha256": "107dcb13ae35304b9f1f709c62d1c90888a130b6a5dc578559afef26b32141e5"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_capture_page.test.ts",
+      "sha256": "73a1c6ce028a2c3baa7afae09ab7c0a14b242946ddfa767405fae1bdcd59ed6d"
+    },
+    {
+      "path": "scripts/verify/learn-email-page-store-cases.mjs",
+      "sha256": "f5392ffd8919b50ea4171883565449a1435137225299a2be7891015b91cc3ac3"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "7dd406595f03c9de73596b663feb583ff61514d55abcc40da93ddc881beda3c8"
+    },
+    {
+      "path": "supabase/reference/learn-email-storage-test-2026-10-10.json",
+      "sha256": "3cc3fa240bd256f68b7963dc2df9493e09eff5c9d3fff392d3b0fe6c9f6cbced"
+    }
+  ],
+  "verified": [
+    "Thread and message page writes are atomic; an injected message constraint rolls back the thread update.",
+    "Older imports preserve newer thread summaries, union participants, and retain message IDs.",
+    "Current checkpoint, source identity, fetch policy and job lease are required without new checkpoint write permissions.",
+    "A trigger-observed lease expiry during message insertion rolls back messages and threads.",
+    "A lost write acknowledgement stays uncertain; a later missing-only lookup finds the saved message without another provider fetch.",
+    "Explicit refetch preserves IDs and refuses older known history versions; invalid acknowledgement contexts and counts are rejected."
+  ],
+  "limitations": [
+    "Not deployed or wired into mailbox handlers; orchestration and atomic queue completion remain.",
+    "Schema, update helper and service grants read from TEST; no customer source rows read.",
+    "Local PostgreSQL fixture omits client reader policies and unrelated account/queue timestamp triggers; production parity is not established.",
+    "No durable page-write receipt; a retry reports its own affected rows, not counts from an unacknowledged prior call.",
+    "Capture admission and Workspace connection authorization remain separate required worker checks.",
+    "No real provider calls, hosted data/permission changes, credential changes, schedules or production deployment."
+  ]
+}

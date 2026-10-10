@@ -22,9 +22,14 @@ export type GmailPageEvidence = {
 };
 export interface GmailPageStore {
   existingMessageIds(ids: string[]): Promise<string[]>;
-  /** The storage adapter must preserve newer thread summaries and participants. */
-  saveThreads(rows: Record<string, unknown>[]): Promise<void>;
-  saveMessages(rows: Record<string, unknown>[]): Promise<void>;
+  /** Atomically save both sets, preserving newer summaries and participants. */
+  savePage(
+    threads: Record<string, unknown>[],
+    messages: Record<string, unknown>[],
+  ): Promise<{
+    thread_upsert_count: number;
+    message_upsert_count: number;
+  }>;
 }
 export class GmailCaptureError extends Error {
   readonly code:
@@ -336,16 +341,26 @@ export async function persistGmailCapturePage(options: {
   } catch {
     throw new GmailCaptureError("parse_failed");
   }
+  let counts = { thread_upsert_count: 0, message_upsert_count: 0 };
   try {
-    if (parsed.threadRows.length) await store.saveThreads(parsed.threadRows);
-    if (parsed.messageRows.length) await store.saveMessages(parsed.messageRows);
+    if (parsed.messageRows.length)
+      counts = await store.savePage(parsed.threadRows, parsed.messageRows);
+    if (
+      !counts ||
+      !Number.isInteger(counts.thread_upsert_count) ||
+      counts.thread_upsert_count < 0 ||
+      counts.thread_upsert_count > parsed.threadRows.length ||
+      !Number.isInteger(counts.message_upsert_count) ||
+      counts.message_upsert_count < 0 ||
+      counts.message_upsert_count > parsed.messageRows.length
+    )
+      throw Error();
   } catch {
     throw new GmailCaptureError("persistence_failed", true);
   }
   return {
     persistence: "confirmed",
-    message_upsert_count: parsed.messageRows.length,
-    thread_upsert_count: parsed.threadRows.length,
+    ...counts,
     ids_seen: page.ids.length,
     gone_count: gone,
     unresolved_count: 0,

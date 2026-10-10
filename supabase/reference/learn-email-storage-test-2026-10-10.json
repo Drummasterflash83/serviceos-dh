@@ -1,0 +1,355 @@
+{
+  "version": "learn-email-storage-reference/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T14:33:27.008601+00:00",
+  "tables": [
+    {
+      "rls": true,
+      "name": "email_messages",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_message_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "from_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "to_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "cc_emails",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "snippet",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_text",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "body_html",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_messages_from_idx",
+          "definition": "CREATE INDEX email_messages_from_idx ON public.email_messages USING btree (tenant_id, from_email)"
+        },
+        {
+          "name": "email_messages_pkey",
+          "definition": "CREATE UNIQUE INDEX email_messages_pkey ON public.email_messages USING btree (id)"
+        },
+        {
+          "name": "email_messages_received_idx",
+          "definition": "CREATE INDEX email_messages_received_idx ON public.email_messages USING btree (tenant_id, received_at DESC)"
+        },
+        {
+          "name": "email_messages_tenant_id_idx",
+          "definition": "CREATE INDEX email_messages_tenant_id_idx ON public.email_messages USING btree (tenant_id)"
+        },
+        {
+          "name": "email_messages_tenant_id_provider_provider_message_id_key",
+          "definition": "CREATE UNIQUE INDEX email_messages_tenant_id_provider_provider_message_id_key ON public.email_messages USING btree (tenant_id, provider, provider_message_id)"
+        },
+        {
+          "name": "email_messages_thread_idx",
+          "definition": "CREATE INDEX email_messages_thread_idx ON public.email_messages USING btree (tenant_id, provider_thread_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_card_email_source_read",
+          "check": null,
+          "roles": [
+            "learn_card_communication_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE (p.role = ANY (ARRAY['owner'::text, 'admin'::text]))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        },
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "email_messages_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_messages_set_updated_at BEFORE UPDATE ON public.email_messages FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_messages_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_messages_tenant_id_provider_provider_message_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_message_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "email_threads",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "provider_thread_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "participants",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "last_message_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_threads_feed_idx",
+          "definition": "CREATE INDEX email_threads_feed_idx ON public.email_threads USING btree (tenant_id, last_message_at DESC)"
+        },
+        {
+          "name": "email_threads_pkey",
+          "definition": "CREATE UNIQUE INDEX email_threads_pkey ON public.email_threads USING btree (id)"
+        },
+        {
+          "name": "email_threads_tenant_id_idx",
+          "definition": "CREATE INDEX email_threads_tenant_id_idx ON public.email_threads USING btree (tenant_id)"
+        },
+        {
+          "name": "email_threads_tenant_id_provider_provider_thread_id_key",
+          "definition": "CREATE UNIQUE INDEX email_threads_tenant_id_provider_provider_thread_id_key ON public.email_threads USING btree (tenant_id, provider, provider_thread_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "email_threads_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_threads_set_updated_at BEFORE UPDATE ON public.email_threads FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "email_threads_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "email_threads_tenant_id_provider_provider_thread_id_key",
+          "definition": "UNIQUE (tenant_id, provider, provider_thread_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "helpers": [
+    {
+      "name": "set_updated_at",
+      "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n"
+    }
+  ],
+  "serviceTableGrants": [
+    {
+      "name": "email_accounts",
+      "privileges": [
+        "SELECT",
+        "UPDATE"
+      ]
+    },
+    {
+      "name": "email_ingestion_checkpoints",
+      "privileges": [
+        "SELECT"
+      ]
+    },
+    {
+      "name": "email_messages",
+      "privileges": [
+        "INSERT",
+        "SELECT",
+        "UPDATE"
+      ]
+    },
+    {
+      "name": "email_sync_runs",
+      "privileges": [
+        "INSERT",
+        "SELECT",
+        "UPDATE"
+      ]
+    },
+    {
+      "name": "email_threads",
+      "privileges": [
+        "INSERT",
+        "SELECT",
+        "UPDATE"
+      ]
+    }
+  ]
+}

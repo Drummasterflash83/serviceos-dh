@@ -56,11 +56,9 @@ function store(existing: string[] = []) {
     writes,
     port: {
       existingMessageIds: async () => existing,
-      saveThreads: async (rows) => {
-        writes.push({ kind: "threads", rows });
-      },
-      saveMessages: async (rows) => {
-        writes.push({ kind: "messages", rows });
+      savePage: async (threads, messages) => {
+        writes.push({ kind: "threads", rows: threads }, { kind: "messages", rows: messages });
+        return { thread_upsert_count: threads.length, message_upsert_count: messages.length };
       },
     },
   } satisfies { writes: typeof writes; port: GmailPageStore };
@@ -323,7 +321,7 @@ test("a single unresolved fetch or malformed message prevents all page writes an
 });
 test("storage failure stays uncertain and cannot produce checkpoint evidence", async () => {
   const s = store();
-  s.port.saveMessages = async () => {
+  s.port.savePage = async () => {
     throw Error("PRIVATE_DB_DETAIL");
   };
   await assert.rejects(
@@ -338,8 +336,7 @@ test("storage failure stays uncertain and cannot produce checkpoint evidence", a
     }),
     isError("persistence_failed", true),
   );
-  assert.equal(s.writes.length, 1);
-  assert.equal(s.writes[0].kind, "threads");
+  assert.equal(s.writes.length, 0);
   const bad = store(["unrequested"]);
   const p = provider(raw("m1"));
   await assert.rejects(
