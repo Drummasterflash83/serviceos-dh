@@ -1,5 +1,60 @@
 # Existing TEST environment: verified release gaps
 
+## Commusoft contact acceptance — hosted TEST, 10 October 2026
+
+The explicitly approved single-account test passed at **13:21:15 UTC**, with a
+separate read-only retirement confirmation at **13:21:47 UTC**. Seven synthetic
+pages, versions, permits and successful jobs remain as evidence. Signed-in review
+produced one customer card, one site, one job, two people and four contact points.
+The test exercises customer and site contacts, unresolved-property holds, shared
+email identity review, deliberate lost-response recovery, receipt replay,
+cancellation and immediate access loss after demotion. Existing person fields and
+contact verification state remain unchanged. All 39 checked pre-existing datasets
+and the installed schema/runtime contract match their pre-run snapshots.
+
+The synthetic login is banned, its profile demoted, temporary operator grant ended,
+connection revoked, account/connector/switches disabled and dummy Vault binding
+renamed. No active synthetic job or authority remains. See
+[hosted acceptance and retirement evidence](evidence/learn-commusoft-contacts-hosted-2026-10-10.json).
+
+The initial preservation preflight failed before creating any fixture records:
+two verification child tables require a parent-request join for company scoping.
+After correcting that query, the runner verified authoritative absence and resumed
+with the exact approved identities, retaining the failed attempt's recovery record.
+It refuses this continuation if any account, company, grant, connection or binding
+exists, or if any fixture work was previously attempted.
+
+Provider responses were intercepted synthetic fixtures. Successful capture used
+the production worker modules locally with hosted TEST Vault/RPCs; deployed Edge
+execution was exercised for saved-page recovery while capture was disabled. This
+does not verify Drummonds' real Commusoft API credentials, response coverage or
+production readiness. No production changes or real Commusoft requests occurred.
+
+## Email capture evidence correction — local, 10 October 2026
+
+Read-only production checks at approximately 13:10–13:15 UTC found that all 30
+inspected email accounts lacked `last_incremental_success_at`. Recent Workspace
+sync-run records nevertheless reported successful captures, including one changed
+record at 13:08 UTC. This is a reporting mismatch, not evidence that all capture
+stopped. The deployed `gmail-workspace-sync-messages` version 45 was downloaded
+and inspected without invocation: it updates run completion but does not populate
+the newer account-success field. Its version and deployment hash were reconfirmed
+at 13:14:47 UTC. Deployed shared helpers differ from this checkout; reconcile those
+versions before changing capture guards or deploying replacements.
+
+The local follow-up migration `20261031220000_learn_email_capture_evidence.sql`
+adds mailbox-specific terminal sync-run evidence to the operator health reader.
+It matches company, mailbox and OAuth/Workspace capture path, excludes scheduler
+heartbeats and historical backfill, rejects incomplete success records, and keeps
+raw errors and private metadata out of the response. Existing release 031 is
+unchanged. Local Postgres checks pass for rollback, company/mailbox separation,
+failure and recovery, provider-path separation, redaction and the application
+response parser. This follow-up has **not** been installed in TEST or production;
+actual-schema rehearsal and a separately verified release remain required.
+
+Recent run results do not prove full mailbox coverage or preservation of every
+email. No production account, worker, schedule or source record was changed.
+
 ## OpenFolk capture diagnostics — TEST backend, 10 October 2026
 
 The operator Modules view now includes a tenant-scoped email, phone and Slack

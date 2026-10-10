@@ -51,6 +51,14 @@ try:
     assert sql("select to_regprocedure('learn_operator_capture_health(uuid,text)') is null")=='t'
     sql(migration)
     print(sql(source('scripts/verify/learn-operator-capture-health.assert.sql')),flush=True)
+    sql(source('scripts/verify/learn-email-capture-evidence.fixture.sql'))
+    before=sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")
+    migration=source('supabase/migrations/20261031220000_learn_email_capture_evidence.sql')
+    sql(migration.replace('\ncommit;','\nrollback;'))
+    assert sql("select pg_get_functiondef('learn_operator_capture_health(uuid,text)'::regprocedure)")==before
+    assert sql("select to_regclass('learn_email_capture_run_lookup') is null")=='t'
+    sql(migration)
+    print(sql(source('scripts/verify/learn-email-capture-evidence.assert.sql')),flush=True)
     data=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000182';set role authenticated;select learn_operator_capture_health(fixture_id(100));")
     output=root/'.verification-results/learn-operator-capture-health-local.json'
     output.write_text(data+'\n')

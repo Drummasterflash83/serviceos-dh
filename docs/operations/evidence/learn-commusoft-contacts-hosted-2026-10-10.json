@@ -1,0 +1,85 @@
+{
+  "version": "learn-commusoft-contacts-test-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "f5b28649-a6ac-4fdc-b2f7-478ff3c66846",
+  "observedAt": "2026-10-10T13:21:15.093Z",
+  "state": "passed",
+  "stage": "passed",
+  "checks": [
+    "Signed-in operator approval atomically creates one account/job and replays without duplication. Production worker code uses real Vault acquisition, scoped RPCs and an intercepted provider response to commit page one and queue its successor.",
+    "Page two commits, then its claim is deliberately expired before settlement. With capture disabled, the deployed worker reclaims it at attempt two and settles the saved page successfully without any new provider authority or successor.",
+    "A subsequent jobs collection reuses the account and retains the completed prior approval/checkpoint. Its publication reply is deliberately lost after commit; the real worker settles success from durable state without a repeat request.",
+    "The captured customer, work address and job pass the real signed-in review adapters and produce one customer card, one site and one job visible through the application card reader.",
+    "A real signed-in contact batch links the site contact and holds an unresolved property. Its response is deliberately lost; the production outbox recovers the saved mixed result while capture is disabled without resubmitting.",
+    "A shared email is held for identity review. Real candidate lookup finds the captured customer; explicit selection links that same person without changing their saved fields, and the batch receipt replays the chosen identity.",
+    "Cancellation fences a later apply. Anonymous and wrong-tenant contact lookups are denied; demoting the signed-in owner to viewer immediately removes contact review access."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "summary": {
+    "pages": 7,
+    "versions": 7,
+    "permits": 7,
+    "succeeded_jobs": 7,
+    "active_jobs": 0,
+    "customer_cards": 1,
+    "sites": 1,
+    "jobs": 1
+  },
+  "contactSummary": {
+    "people": 2,
+    "endpoints": 4,
+    "changed_verification": 0,
+    "contact_links": 2,
+    "contact_relationships": 3,
+    "held_or_cancelled_links": 0,
+    "customer_cards": 1
+  },
+  "sourceDataSets": 39,
+  "syntheticProviderReads": 7,
+  "preExistingSourcesPreserved": true,
+  "retiredLogin": true,
+  "retirement": {
+    "active_jobs": 0,
+    "enabled_flags": 0,
+    "active_grants": 0,
+    "active_secret_bindings": 0
+  },
+  "limitations": [
+    "Provider responses are intercepted synthetic fixtures. This does not prove real Commusoft credentials, API coverage or provider behavior.",
+    "Successful source reads run the production worker modules locally against hosted TEST Vault and RPCs. Deployed Edge execution is exercised only for committed-page recovery while capture is disabled.",
+    "All synthetic history remains retained; login/grant/connection/account/switch authority is retired and the fake Vault binding renamed. No production changes or scheduler."
+  ],
+  "retirementConfirmation": {
+    "observedAt": "2026-10-10T13:21:47.936Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "retired",
+    "checks": {
+      "banned_login": 1,
+      "viewer_profile": 1,
+      "active_grants": 0,
+      "revoked_connection": 1,
+      "enabled_accounts": 0,
+      "enabled_connectors": 0,
+      "enabled_flags": 0,
+      "active_jobs": 0,
+      "active_secret_bindings": 0,
+      "retired_synthetic_binding": 1
+    }
+  },
+  "approval": {
+    "explicitUserApproval": true,
+    "accounts": 1,
+    "operatorGrantMinutes": 30,
+    "providerCredential": "synthetic_never_provider_valid",
+    "realProviderRequests": 0,
+    "productionChanges": false
+  },
+  "preflightRepair": {
+    "initialFailure": "Two verification child tables lack a direct tenant_id column.",
+    "authoritativeAbsenceVerified": true,
+    "fixtureCreatedBeforeRepair": false,
+    "sameApprovedIdentities": true,
+    "priorManifestRetained": true
+  }
+}

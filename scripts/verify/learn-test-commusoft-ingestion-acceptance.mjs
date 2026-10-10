@@ -4,7 +4,8 @@
  */
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { contactFixtureIdentities } from "./learn-commusoft-contact-fixture-plan.mjs";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { assertUncreatedContactRetry } from "./learn-commusoft-contact-fixture-plan.mjs";
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
@@ -53,6 +54,7 @@ export async function acceptCommusoftIngestion({
   fetcher = fetch,
   includeContacts = false,
   contactFixturePlan = null,
+  resumeUncreated = false,
 }) {
   check(allowProjectRef === TEST_PROJECT, "Explicit TEST project required");
   const planned = includeContacts ? contactFixtureIdentities(contactFixturePlan) : null;
@@ -159,7 +161,29 @@ export async function acceptCommusoftIngestion({
   const save = () => writeFileSync(manifest, JSON.stringify(p, null, 2) + "\n", { mode: 0o600 });
   // A fixed approved plan is single-use. Preserve any earlier run's recovery
   // record instead of overwriting it and attempting the same identities again.
-  writeFileSync(manifest, JSON.stringify(p, null, 2) + "\n", { mode: 0o600, flag: "wx" });
+  if (resumeUncreated) {
+    check(includeContacts, "Only an approved contact plan can resume before creation");
+    const previous = JSON.parse(readFileSync(manifest, "utf8"));
+    // A failed preservation preflight may resume only after authoritative reads
+    // prove that no approved identity or credential was ever created.
+    const absence = (
+      await sql(
+        `select
+      (select count(*)::int from auth.users where id=${q(p.actor)} or email=${q(p.email)}) as auth,
+      (select count(*)::int from tenants where id=${q(p.tenant)}) as tenant,
+      (select count(*)::int from profiles where id=${q(p.actor)}) as profile,
+      (select count(*)::int from platform_authority_grants where id=${q(p.grant)} or profile_id=${q(p.actor)}) as grants,
+      (select count(*)::int from provider_connections where id=${q(p.connection)} or tenant_id=${q(p.tenant)}) as connections,
+      (select count(*)::int from vault.secrets where name in (${q(secretName)},${q("retired-synthetic:" + p.runId)})) as bindings`,
+        true,
+      )
+    )[0];
+    assertUncreatedContactRetry(contactFixturePlan, previous, absence);
+    p.priorAttempts = [previous];
+    save();
+  } else {
+    writeFileSync(manifest, JSON.stringify(p, null, 2) + "\n", { mode: 0o600, flag: "wx" });
+  }
   const snapshot = async () => {
     const tables = [
       ...new Set([
@@ -188,8 +212,12 @@ export async function acceptCommusoftIngestion({
       ]),
     ];
     const statements = tables.map((name) => {
-      const filter =
-        name === "learn_business_input_observations"
+      const filter = [
+        "learn_commusoft_verification_permits",
+        "learn_commusoft_verification_results",
+      ].includes(name)
+        ? `not exists (select 1 from public.learn_commusoft_verification_requests r where r.id=s.request_id and r.tenant_id=${q(p.tenant)})`
+        : name === "learn_business_input_observations"
           ? `page_id not in (select id from public.learn_business_input_pages where tenant_id=${q(p.tenant)})`
           : name === "platform_authority_grants"
             ? `profile_id<>${q(p.actor)}`

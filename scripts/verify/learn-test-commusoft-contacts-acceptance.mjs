@@ -3,8 +3,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { acceptCommusoftIngestion } from "./learn-test-commusoft-ingestion-acceptance.mjs";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 try {
+  const resumeUncreated = process.argv[6] === "--resume-uncreated";
   if (
-    process.argv.length !== 6 ||
+    process.argv.length !== (resumeUncreated ? 7 : 6) ||
     process.argv.slice(2, 5).join(" ") !== "--run --existing-cli-login --plan" ||
     process.env.LEARN_TEST_ALLOW_PROJECT_REF !== TEST_PROJECT
   )
@@ -14,6 +15,7 @@ try {
     token: savedCliToken(),
     includeContacts: true,
     contactFixturePlan: JSON.parse(readFileSync(process.argv[5], "utf8")),
+    resumeUncreated,
   });
   writeFileSync(
     ".verification-results/commusoft-contacts-hosted-acceptance.json",

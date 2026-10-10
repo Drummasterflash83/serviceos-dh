@@ -41,3 +41,28 @@ export function contactFixtureIdentities(plan) {
     throw Error("Exact reviewed TEST contact fixture recipient and scope required");
   return Object.fromEntries([...keys, "email"].map((k) => [k, plan[k]]));
 }
+
+/** Never replay an account-creation attempt or overwrite its recovery evidence. */
+export function assertUncreatedContactRetry(plan, previous, absence) {
+  const ids = contactFixtureIdentities(plan);
+  if (
+    !previous ||
+    Object.entries(ids).some(([k, v]) => previous[k] !== v) ||
+    previous.projectRef !== TEST_PROJECT ||
+    previous.includeContacts !== true ||
+    previous.created !== false ||
+    previous.secret !== null ||
+    previous.sourceBefore !== null ||
+    previous.stage !== "setup" ||
+    previous.providerReads !== 0 ||
+    !Array.isArray(previous.requests) ||
+    previous.requests.length !== 0 ||
+    previous.failure !== "Synthetic ingestion SQL failed (HTTP 400)" ||
+    previous.priorAttempts ||
+    !absence ||
+    Object.keys(absence).sort().join() !==
+      ["auth", "tenant", "profile", "grants", "connections", "bindings"].sort().join() ||
+    Object.values(absence).some((v) => v !== 0)
+  )
+    throw Error("Uncreated fixture retry requires exact prior evidence and authoritative absence");
+}
