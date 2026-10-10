@@ -366,3 +366,20 @@ test("resumed page uses durable cursor; complete and exhausted windows do not sc
   assert.equal(exhausted.continuation, undefined);
   assert.equal(exhausted.result?.ingestion_complete, false);
 });
+
+test('worker commits channel broadcasts through the real adapter and transport without inferring complete threads',async()=>{
+ const f=fixture();
+ const broadcast={ts:'123.1',text:'Synthetic broadcast',user:'U123',subtype:'thread_broadcast',thread_ts:'90.1',root:{ts:'90.1',text:'Retained reference'}};
+ f.state.history={ok:true,has_more:false,messages:[broadcast],response_metadata:{next_cursor:''}};
+ const result=await f.run();assert.equal(result.success,true);
+ const saved=f.rpc.find(r=>r.name==='slack_history_commit_page');
+ assert.ok(saved);assert.deepEqual(saved.args.p_records[0].provider_payload,broadcast);
+ assert.equal(saved.args.p_records[0].thread_timestamp,'90.1');
+ assert.equal(result.result?.threadCoverage,'unverified');
+ assert.equal(f.requests.find(r=>r.method==='conversations.history').params.inclusive,'true');
+ assert.ok(!f.requests.some(r=>r.method==='conversations.replies'));
+ const denied=fixture();denied.state.history.messages=[{...broadcast,thread_ts:'124.1'}];
+ assert.equal((await denied.run()).success,false);
+ assert.ok(!denied.rpc.some(r=>r.name==='slack_history_commit_page'));
+ assert.deepEqual(denied.rows.connector_accounts.sync_cursor,{});
+});

@@ -1,0 +1,43 @@
+{
+  "observedAt": "2026-10-10T17:45:01.791Z",
+  "state": "local_verified_not_deployed",
+  "endpoint": "learn-slack-worker",
+  "bundleSha256": "3edcadf65ebcde648d4009e89d2ca08b946643fd645cdc80cde55ebdab8c7636",
+  "files": [
+    "_shared/learn_capture_control.ts",
+    "_shared/slack/slack_history_batch.ts",
+    "_shared/slack/slack_history_binding.ts",
+    "_shared/slack/slack_history_errors.ts",
+    "_shared/slack/slack_history_persist.ts",
+    "_shared/slack/slack_history_request.ts",
+    "_shared/slack/slack_history_server.ts",
+    "_shared/slack/slack_history.ts",
+    "_shared/slack/slack_thread_history.ts",
+    "_shared/slack/slack_worker_http.ts",
+    "_shared/slack/slack_worker.ts",
+    "_shared/worker_contract.ts",
+    "_shared/worker_handlers/slack_history.ts",
+    "learn-slack-worker/index.ts"
+  ],
+  "tests": {
+    "command": "node --test supabase/functions/_shared/slack/*.test.ts supabase/functions/_shared/worker_handlers/slack_history*.test.ts",
+    "passed": 60,
+    "failed": 0
+  },
+  "typeCheck": "Changed history reader, its tests, thread reader and batch coordinator passed targeted tsc",
+  "changes": [
+    "Retain thread_broadcast messages and their original thread references.",
+    "Reject absent, invalid, equal or later broadcast parents before checkpoint publication.",
+    "Compare timestamps and page duplicates at exact microsecond precision."
+  ],
+  "limitations": [
+    "Worker transport and persistence ports were exercised with synthetic provider/database responses.",
+    "The existing transport already sets inclusive=true; no boundary transport change was needed.",
+    "No hosted deployment, provider request, credential change or schedule activation in this checkpoint.",
+    "Automatic thread discovery/capture and other unsupported subtypes remain outstanding."
+  ],
+  "sources": [
+    "https://docs.slack.dev/reference/events/message/thread_broadcast/",
+    "https://docs.slack.dev/reference/methods/conversations.history/"
+  ]
+}

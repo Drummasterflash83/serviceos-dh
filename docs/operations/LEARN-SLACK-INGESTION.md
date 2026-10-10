@@ -1,5 +1,30 @@
 # LEARN Slack history ingestion
 
+## Broadcast reply retention — local verification, 10 October 2026
+
+Channel history previously rejected `thread_broadcast`, which could stop a whole
+page containing a reply shared with the channel. The reader now retains that
+message's original payload and `thread_ts`, requiring a valid earlier parent.
+The parent may predate the selected window; its embedded reference is preserved,
+not expanded into a fabricated root record. Thread coverage remains unverified.
+Slack describes broadcasts as references that do not establish complete reply or
+attachment content ([provider contract](https://docs.slack.dev/reference/events/message/thread_broadcast/)).
+
+Scope, window and duplicate comparisons now use exact integer microseconds,
+matching the existing thread reader. Numeric timestamps, future thread references,
+and equivalent timestamps repeated in one page are rejected before persistence.
+Review also confirmed the credential-owning transport already supplies
+`inclusive=true` for both history and replies; no boundary transport fix was needed.
+
+All **60** shared Slack/worker-handler Node tests pass, including a synthetic
+provider → real server adapter → worker → persistence-port broadcast check and
+invalid-parent rejection with no checkpoint advance. Targeted TypeScript checks
+pass. These are local tests with synthetic provider/database responses; the fix
+has **not been deployed**. The complete current worker closure is recorded in
+[local evidence](evidence/learn-slack-broadcast-local-2026-10-10.json) for the next
+reviewed TEST worker replacement. Real workspace acceptance, automatic thread
+capture and unsupported message subtypes remain outstanding.
+
 ## Recurring channel capture — TEST backend installed, 10 October 2026
 
 `20261101003000_learn_slack_recurring.sql` adds an explicit ongoing approval for
