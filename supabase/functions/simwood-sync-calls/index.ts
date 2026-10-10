@@ -1,3 +1,4 @@
+import { publishPhonePage } from "../_shared/phone-page-publication.ts";
 import { phoneCaptureGuard } from "../_shared/phone-capture-guard.ts";
 import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
@@ -275,10 +276,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
         502,
         processed,
       );
-    if (items.length === 0) {
-      exhausted = true;
-      break;
-    }
 
     // Respect an explicit limit across pages.
     const room = limit && limit > 0 ? limit - processed : items.length;
@@ -306,24 +303,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
         raw_payload: c,
       }));
 
-    if (rows.length > 0) {
-      const { error: upsertErr } = await supabase
-        .from("phone_calls")
-        .upsert(rows, { onConflict: "tenant_id,provider,provider_call_id" });
-      if (upsertErr) {
-        return await finishFailed(
-          "db_error",
-          `Failed to upsert calls: ${upsertErr.message}`,
-          500,
-          processed,
-          {
-            customer_id: customerId,
-            pages_fetched: pagesFetched,
-          },
-        );
-      }
-      processed += rows.length;
-    }
+    const published = await publishPhonePage(supabase, {
+      tenantId,
+      runId: syncRunId,
+      account,
+      kind: "calls",
+      page,
+      records: rows,
+    });
+    if (!published.ok)
+      return await finishFailed(
+        published.code,
+        published.message,
+        published.httpStatus,
+        processed,
+        {
+          customer_id: customerId,
+          pages_fetched: pagesFetched,
+          window_complete: false,
+          publication_unconfirmed: published.code === "phone_page_unconfirmed",
+        },
+      );
+    processed += published.recordsProcessed;
 
     // Stop conditions: hit the limit, or a short page (no more data).
     if (limit && limit > 0 && processed >= limit) break;

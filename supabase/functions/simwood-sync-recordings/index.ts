@@ -1,3 +1,4 @@
+import { publishPhonePage } from "../_shared/phone-page-publication.ts";
 import { phoneCaptureGuard } from "../_shared/phone-capture-guard.ts";
 import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
@@ -277,10 +278,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
         502,
         processed,
       );
-    if (items.length === 0) {
-      exhausted = true;
-      break;
-    }
 
     // Respect an explicit limit across pages.
     const room = limit && limit > 0 ? limit - processed : items.length;
@@ -315,36 +312,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
         };
       });
 
-    if (rows.length > 0) {
-      // Which of these provider_recording_ids already existed? (to trigger the
-      // pipeline for genuinely NEW recordings only — never historical ones).
-      const providerIds = rows.map((r) => r.provider_recording_id);
-      const { data: existingRows } = await supabase
-        .from("phone_recordings")
-        .select("provider_recording_id")
-        .eq("tenant_id", tenantId)
-        .eq("provider", PROVIDER)
-        .in("provider_recording_id", providerIds);
-      const existingSet = new Set((existingRows ?? []).map((r) => r.provider_recording_id));
-
-      const { data: upserted, error: upsertErr } = await supabase
-        .from("phone_recordings")
-        .upsert(rows, { onConflict: "tenant_id,provider,provider_recording_id" })
-        .select("id, provider_recording_id");
-      if (upsertErr) {
-        return await finishFailed(
-          "db_error",
-          `Failed to upsert recordings: ${upsertErr.message}`,
-          500,
-          processed,
-          { customer_id: customerId, pages_fetched: pagesFetched },
-        );
-      }
-      for (const u of upserted ?? []) {
-        if (!existingSet.has(u.provider_recording_id)) newRecordingIds.push(u.id as string);
-      }
-      processed += rows.length;
-    }
+    const published = await publishPhonePage(supabase, {
+      tenantId,
+      runId: syncRunId,
+      account,
+      kind: "recordings",
+      page,
+      records: rows,
+    });
+    if (!published.ok)
+      return await finishFailed(
+        published.code,
+        published.message,
+        published.httpStatus,
+        processed,
+        {
+          customer_id: customerId,
+          pages_fetched: pagesFetched,
+          window_complete: false,
+          publication_unconfirmed: published.code === "phone_page_unconfirmed",
+        },
+      );
+    processed += published.recordsProcessed;
+    newRecordingIds.push(...published.newRecordingIds);
 
     // Stop conditions: hit the limit, or a short page (no more data).
     if (limit && limit > 0 && processed >= limit) break;

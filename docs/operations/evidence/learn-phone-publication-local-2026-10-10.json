@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-10-10T18:45:12Z",
+  "state": "passed",
+  "scope": "Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.",
+  "checks": [
+    "migration rollback",
+    "exact replay and conflicting definitions",
+    "tenant/run/page validation",
+    "recording storage retention and new-recording classification",
+    "pause/account denial",
+    "atomic rollback on receipt failure",
+    "page bounds and browser/service privileges",
+    "immutable receipts",
+    "concurrent pause-first and publication-first",
+    "concurrent account disable",
+    "concurrent insertion returns exactly one new recording ID"
+  ],
+  "limits": [
+    "No hosted deployment, real provider, application UI or complete source-pipeline acceptance.",
+    "Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture."
+  ],
+  "handlerTests": {
+    "passed": 42,
+    "scope": "Actual handler modules in VM; synthetic DB/provider ports"
+  },
+  "accountCompletenessTests": {
+    "passed": 10
+  },
+  "strictHandlerTypecheck": "passed",
+  "deployment": "local only; TEST remains sync v4; production unchanged"
+}

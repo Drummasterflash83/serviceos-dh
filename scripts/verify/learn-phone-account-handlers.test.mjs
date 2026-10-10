@@ -36,6 +36,7 @@ async function harness(
     childResponses = {},
     providerPage,
     onSourceWrite,
+    publicationResponse,
     pauseWriteError = false,
     pauseWriteMissing = false,
     pauseWriteThrow = false,
@@ -48,6 +49,24 @@ async function harness(
   let handler;
   const db = {
     async rpc(name, args) {
+      if (name === "learn_phone_publish_page") {
+        writes.push({ table: name, op: "rpc", v: args });
+        if (publicationResponse) return publicationResponse(args);
+        const table = args.p_kind === "calls" ? "phone_calls" : "phone_recordings";
+        onSourceWrite?.(table, args.p_records);
+        return {
+          data: {
+            version: "learn-phone-page/1",
+            tenantId: args.p_tenant,
+            runId: args.p_run,
+            page: args.p_page,
+            kind: args.p_kind,
+            recordsProcessed: args.p_records.length,
+            newRecordingIds: [],
+          },
+          error: null,
+        };
+      }
       if (name === "learn_email_enqueue") {
         assert.equal(captureAllowed, false);
         return {
@@ -545,7 +564,11 @@ for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
     assert.equal(r.status, 409);
     assert.equal((await r.json()).error.code, "learn_capture_paused");
     assert.equal(h.requests.length, 1);
-    assert.equal(h.writes.filter((w) => w.table === source && w.op === "upsert").length, 1);
+    assert.equal(
+      h.writes.filter((w) => w.table === "learn_phone_publish_page" && w.v.p_records.length > 0)
+        .length,
+      1,
+    );
     const final = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
     assert.equal(final.v.records_processed, 200);
     assert.equal(final.v.metadata.window_complete, false);
@@ -564,7 +587,11 @@ for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
     assert.equal(r.status, 409);
     assert.equal((await r.json()).error.code, "learn_capture_paused");
     assert.equal(h.requests.length, 1);
-    assert.equal(h.writes.filter((w) => w.table === source && w.op === "upsert").length, 1);
+    assert.equal(
+      h.writes.filter((w) => w.table === "learn_phone_publish_page" && w.v.p_records.length > 0)
+        .length,
+      1,
+    );
     assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.v.status === "success"));
     assert.ok(!h.requests.some((r) => r.url.includes("phone-process-pipeline")));
   });
@@ -612,3 +639,112 @@ for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
     assert.ok(!h.writes.some((w) => w.v.status === "success"));
   });
 }
+
+for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
+  const kind = name === "simwood-sync-calls" ? "calls" : "recordings";
+  const receipt = (a) => ({
+    version: "learn-phone-page/1",
+    tenantId: a.p_tenant,
+    runId: a.p_run,
+    page: a.p_page,
+    kind: a.p_kind,
+    recordsProcessed: a.p_records.length,
+    newRecordingIds: [],
+  });
+  test(`${name} binds every publication including empty exhaustion to its run and account`, async () => {
+    const h = await harness(name, {
+      providerPage: (url) => ({
+        items:
+          new URL(url).searchParams.get("page") === "1"
+            ? Array.from({ length: 200 }, (_, i) => ({ callId: `c${i}`, id: `r${i}` }))
+            : [],
+      }),
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 200);
+    const pages = h.writes.filter((w) => w.table === "learn_phone_publish_page");
+    assert.equal(pages.length, 2);
+    for (const [i, p] of pages.entries()) {
+      assert.equal(p.v.p_tenant, tenant);
+      assert.equal(p.v.p_run, id(4));
+      assert.equal(p.v.p_account, id(2));
+      assert.equal(p.v.p_connector, id(3));
+      assert.equal(p.v.p_customer, "3950");
+      assert.equal(p.v.p_kind, kind);
+      assert.equal(p.v.p_page, i + 1);
+    }
+    assert.equal(pages[1].v.p_records.length, 0);
+    assert.ok(!h.writes.some((w) => ["phone_calls", "phone_recordings"].includes(w.table)));
+  });
+  test(`${name} stops safely on lost, rejected or malformed publication without direct-write fallback`, async () => {
+    for (const fault of [
+      () => {
+        throw Error("PRIVATE_TRANSPORT_DETAIL");
+      },
+      () => ({ data: null, error: { code: "XX000", message: "PRIVATE_DB_DETAIL" } }),
+      () => ({ data: null, error: null }),
+      (a) => ({ data: { ...receipt(a), tenantId: id(50) }, error: null }),
+      (a) => ({ data: { ...receipt(a), runId: id(50) }, error: null }),
+      (a) => ({ data: { ...receipt(a), page: 2 }, error: null }),
+      (a) => ({ data: { ...receipt(a), recordsProcessed: 0 }, error: null }),
+      (a) => ({ data: { ...receipt(a), newRecordingIds: ["PRIVATE_BAD_ID"] }, error: null }),
+      (a) => ({ data: { ...receipt(a), newRecordingIds: [id(7), id(7)] }, error: null }),
+    ]) {
+      const h = await harness(name, {
+        providerPage: () => ({ items: [{ callId: "c1", id: "r1" }] }),
+        publicationResponse: fault,
+      });
+      const r = await h.run({});
+      const body = await r.json();
+      assert.equal(r.status, 503);
+      assert.equal(body.error.code, "phone_page_unconfirmed");
+      assert.ok(!JSON.stringify(body).includes("PRIVATE_"));
+      assert.equal(h.writes.filter((w) => w.table === "learn_phone_publish_page").length, 1);
+      assert.ok(!h.writes.some((w) => ["phone_calls", "phone_recordings"].includes(w.table)));
+      assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.v.status === "success"));
+      assert.ok(!h.requests.some((r) => r.url.includes("phone-process-pipeline")));
+      const final = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
+      assert.equal(final.v.metadata.window_complete, false);
+      assert.equal(final.v.metadata.publication_unconfirmed, true);
+    }
+  });
+  test(`${name} respects a database pause or account change after its last application check`, async () => {
+    for (const code of ["learn_capture_paused", "phone_account_unavailable"]) {
+      const h = await harness(name, {
+        providerPage: () => ({ items: [{ callId: "c1", id: "r1" }] }),
+        publicationResponse: () => ({ data: null, error: { code: "PT409", message: code } }),
+      });
+      const r = await h.run({});
+      assert.equal(r.status, 409);
+      assert.equal((await r.json()).error.code, code);
+      assert.ok(!h.writes.some((w) => w.v.status === "success"));
+      assert.equal(h.requests.length, 1);
+    }
+  });
+}
+
+test("recording follow-on processing uses only database-confirmed new recording IDs", async () => {
+  const h = await harness("simwood-sync-recordings", {
+    providerPage: () => ({ items: [{ id: "old-provider-id" }, { id: "new-provider-id" }] }),
+    publicationResponse: (a) => ({
+      data: {
+        version: "learn-phone-page/1",
+        tenantId: a.p_tenant,
+        runId: a.p_run,
+        page: a.p_page,
+        kind: a.p_kind,
+        recordsProcessed: 2,
+        newRecordingIds: [id(8)],
+      },
+      error: null,
+    }),
+    childResponses: { "phone-process-pipeline": { body: { success: true } } },
+  });
+  assert.equal((await h.run({})).status, 200);
+  const children = h.requests.filter((r) => r.url.includes("phone-process-pipeline"));
+  assert.equal(children.length, 1);
+  const input = JSON.parse(children[0].options.body);
+  assert.equal(input.recording_id, id(8));
+  assert.equal(input.tenant_id, tenant);
+  assert.equal(input.force, false);
+});

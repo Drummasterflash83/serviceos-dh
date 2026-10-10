@@ -1,5 +1,18 @@
 # Existing TEST environment: verified release gaps
 
+## Phone atomic page publication — local candidate only
+
+The local Phone sync handlers now save pages through a service-only transaction
+that checks capture/account authority and records a durable receipt alongside
+source writes. Concurrent local PostgreSQL tests prove pause ordering, rollback
+and one-new-recording classification while preserving existing audio pointers.
+Forty-two actual-handler tests and ten account/completeness tests pass, with strict
+TypeScript checks. Hosted TEST remains v4; the additive migration and dependent
+handlers still require coordinated TEST packaging and acceptance. Final run/cursor
+persistence and durable follow-on recovery remain separate work.
+[Details and evidence](LEARN-PHONE-ACCOUNT-BINDING.md#atomic-page-publication--local-candidate-not-deployed).
+
+
 ## Phone per-page controls — TEST v4, 10 October 18:33 UTC
 
 The call and recording sync endpoints now check the Phone switch and pinned

@@ -175,3 +175,46 @@ This is per-page read-time revalidation, not an atomic publication fence: a
 concurrent change between the last check and its database write remains possible.
 Concurrent new-recording processing and real provider end-to-end capture still
 need separate verification. [Release evidence](evidence/learn-phone-page-guards-hosted-2026-10-10.json).
+
+
+## Atomic page publication — local candidate, not deployed
+
+The new migration `20261101006000_learn_phone_page_publication.sql` and both local
+sync handlers publish each bounded page through one service-only database RPC.
+It locks against the existing OpenFolk capture controller, verifies the pinned
+company/account/connector and active run, writes source metadata and appends an
+immutable receipt in one transaction. Direct Phone/master flag changes also take
+that controller lock. Account/connector/tenant row locks fence changes through
+publication. Exact replay returns the existing receipt; changed replay or skipped
+pages are refused. Empty exhaustion pages receive receipts too.
+
+Recording inserts use the source unique constraint to identify genuinely new
+recordings under concurrency. Existing recording IDs, creation timestamps and
+storage paths are retained. The handlers no longer perform a separate existence
+read or direct source upsert. They accept only matching versioned receipts. A
+lost response, malformed receipt or database failure leaves the window incomplete,
+with no blind retry, direct-write fallback or follow-on processing. Receipts are
+available for operator reconciliation, but automatic reconciliation is not yet wired.
+
+Verification passed in a disposable networkless PostgreSQL 15 database using the
+original source/registry definitions: migration rollback, replay/conflict/sequence,
+tenant bounds, audio-pointer retention, page limits and privileges, receipt failure
+rolling back source writes, concurrent pause-first/publication-first/account-disable
+ordering, and concurrent recording inserts yielding exactly one new classification.
+All 42 actual-handler VM tests, 10 account/completeness tests and strict four-handler
+TypeScript checks passed. Synthetic ports also prove empty-page receipts, safe
+unknown outcomes and processing only database-confirmed new recording IDs.
+
+**Deployment status:** local only. TEST remains on sync handlers v4. Install the
+additive schema through a fresh, pinned TEST package and verify it before deploying
+these dependent handlers. No hosted schemas, credentials, source records, schedules,
+access grants or production deployments changed in this checkpoint.
+
+**Remaining limits:** page publication is atomic, not the entire sync/pipeline.
+Final run completion and scheduler cursor updates remain separate writes. Existing
+background processing is not a durable outbox; interrupted/uncertain runs can leave
+new recordings needing explicit recovery. The receipt does not itself guarantee
+exactly-once audio download/transcription. Real provider acceptance, TEST hosted
+acceptance and production promotion remain outstanding.
+
+[Local evidence](evidence/learn-phone-publication-local-2026-10-10.json).
