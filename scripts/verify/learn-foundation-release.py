@@ -463,6 +463,36 @@ try:
                                             resume_races={}
                                             exec((ROOT/'scripts/verify/learn-slack-history-resume-concurrency.py').read_text(),resume_races)
                                             resume_races['verify_history_resume_races'](run,Held,race_after,refused)
+                                            if '--slack-thread-resume' in sys.argv:
+                                                thread_resume_sql=(ROOT/'supabase/migrations/20261031050000_learn_slack_thread_resume.sql').read_text()
+                                                before_thread_resume=json.loads(run(catalog_sql).stdout)
+                                                before_thread_functions=json.loads(run(thread_function_query).stdout)
+                                                apply('set role postgres;'+thread_resume_sql.replace('commit;','rollback;'),'Thread recovery migration rollback')
+                                                assert {k:v for k,v in json.loads(run(catalog_sql).stdout).items() if k!='observedAt'}=={k:v for k,v in before_thread_resume.items() if k!='observedAt'}
+                                                assert json.loads(run(thread_function_query).stdout)==before_thread_functions
+                                                apply('set role postgres;'+thread_resume_sql,'Local thread recovery functions and retained-approval indexes')
+                                                thread_after_functions=json.loads(run(thread_function_query).stdout)
+                                                assert len(thread_after_functions)==len(before_thread_functions)+3
+                                                assert thread_after_functions[:len(before_thread_functions)]==before_thread_functions,'Thread recovery changed existing worker definitions'
+                                                thread_after=json.loads(run(catalog_sql).stdout)
+                                                added_indexes=[]
+                                                for table in thread_after['tables']:
+                                                    if table['name']=='slack_thread_imports':
+                                                        added_indexes=[i for i in table['indexes'] if i['name'] in ('learn_slack_thread_approval_order','learn_slack_thread_one_recovery')]
+                                                        table['indexes']=[i for i in table['indexes'] if i not in added_indexes]
+                                                assert len(added_indexes)==2
+                                                assert {k:v for k,v in thread_after.items() if k!='observedAt'}=={k:v for k,v in before_thread_resume.items() if k!='observedAt'},'Thread recovery changed unrelated table metadata'
+
+                                                apply((ROOT/'scripts/verify/learn-slack-thread-resume.assert.sql').read_text(),'Thread recovery permissions, retained cursor, retry, restart, queue rollback, worker publication and preservation')
+                                                thread_resume_races={}
+                                                exec((ROOT/'scripts/verify/learn-slack-thread-resume-concurrency.py').read_text(),thread_resume_races)
+                                                thread_resume_races['verify_thread_resume_races'](run,Held,race_after,refused)
+                                                thread_client_query="set role authenticated;set request.jwt.claim.sub='f0000000-0000-0000-0000-000000000911';select jsonb_build_object('state',learn_slack_thread_recovery_read(verify.id(901),verify.id(1523)),'original',learn_slack_thread_recovery_read(verify.id(901),verify.id(1500)),'request',jsonb_build_object('tenantId',verify.id(901),'accountId',(select state->>'accountId' from verify.thread_recovery_review),'requestId',verify.id(1523),'importId',verify.id(1520),'stateVersion',(select state->>'stateVersion' from verify.thread_recovery_review),'mode','continue','maxPages',1,'reason','Controlled thread recovery race'),'receipt',learn_slack_resume_thread(verify.id(901),verify.id(1523),verify.id(1520),(select state->>'stateVersion' from verify.thread_recovery_review),'continue',1,'Controlled thread recovery race'));"
+                                                client_json=[line for line in run(thread_client_query).stdout.decode().splitlines() if line.startswith('{')][-1]
+                                                (ROOT/'.verification-results/learn-thread-recovery-sql-client.json').write_text(client_json+'\n')
+                                                print('Actual SQL recovery states and retained receipt exported for client validation: PASS',flush=True)
+
+
 
 
 

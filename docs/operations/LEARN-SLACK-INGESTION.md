@@ -712,3 +712,17 @@ to the browser, not a server outbox or cross-device queue. No hosted schema,
 production data, provider, credential or schedule changed. TEST remains release
 014/runtime v4. Live capture, thread recovery, continuous/multi-window capture,
 frontend deployment and the broader LEARN V1 requirements remain outstanding.
+
+## Interrupted thread recovery — local, 10 October
+
+Incomplete observed-thread windows now have a local recovery backend and strict
+client adapter. Reviewed continue/restart creates a new retained approval, preserving
+the original scope, checkpoint and source evidence. Active, complete, stale and
+superseded reviews are refused; exact retries retain their receipt, and competing
+reviews queue once. The existing worker processes these approvals unchanged.
+
+The full isolated SQL chain, controlled authority/connection/approval races,
+39 Slack client checks, actual SQL responses through the client and application
+TypeScript passed. This is local implementation: the recovery screen/outbox and
+hosted release/acceptance are next. TEST remains release 020/runtime v4. See
+[contract, evidence and limits](LEARN-SLACK-THREAD-RECOVERY.md).

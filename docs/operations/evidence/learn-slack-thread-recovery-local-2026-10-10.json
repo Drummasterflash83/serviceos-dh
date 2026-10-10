@@ -1,0 +1,68 @@
+{
+  "version": "learn-slack-thread-recovery-local/1",
+  "recordedAt": "2026-10-10T03:30:03.807650+00:00",
+  "state": "local_verified",
+  "sourceHashes": {
+    "supabase/migrations/20261031050000_learn_slack_thread_resume.sql": "1b9f3bdd6dd234c3d6c38e4301006456a888b2d082df20758bb407ce0ed50927",
+    "src/lib/learn-slack-thread-recovery.ts": "cc75098d8c9340fa0a36c7abc6581ee2820cc0948203019b745b95f461e0cd54",
+    "src/lib/learn-slack-thread-recovery.test.ts": "c68d34bd5d524f84bb0e5ec51b6238a345004b0e057fac093f748337edfcfacf",
+    "scripts/verify/learn-slack-thread-resume.assert.sql": "a40c4ca3a96c4e51f8077b361fc449371f7f06b282f25b8382ceb33e5fb28439",
+    "scripts/verify/learn-slack-thread-resume-concurrency.py": "bd13dd2069c6e15d94f87c2c4c8500543df641ee46564a95b354e6df0d4cd7a3",
+    "scripts/verify/learn-slack-thread-client.mjs": "bbb4f8d4833e9e4b1e330fa3cb7317706595fd9d546e97dddab3076b1fa40f62"
+  },
+  "clientTests": {
+    "passed": 39,
+    "newThreadRecoveryTests": 6,
+    "command": "node --test src/lib/learn-slack-*.test.ts"
+  },
+  "typechecks": {
+    "strictClient": true,
+    "application": true
+  },
+  "sqlVerification": {
+    "engine": "isolated PostgreSQL 17",
+    "recordedProjection": "foundation and Slack chain through release 014",
+    "migrationRollback": true,
+    "newFunctions": 3,
+    "newIndexes": 2,
+    "existingWorkerDefinitionsUnchanged": true,
+    "otherTableMetadataUnchanged": true,
+    "ownerViewerTenantPreviewChecks": true,
+    "expiredApprovalRenewal": true,
+    "retainedCursorAndBounds": true,
+    "exactRetryAndChangedRequestRefusal": true,
+    "activeStaleCompletedSupersededRefusal": true,
+    "workerContinuationAndMessageDeduplication": true,
+    "restartAndQueueFailureRollback": true,
+    "originalApprovalsAndCommunicationSourcesRetained": true,
+    "controlledRaces": [
+      "owner_revocation",
+      "connection_revision_change",
+      "competing_recovery_approvals"
+    ],
+    "containerRemoved": true
+  },
+  "actualSqlClientValidation": {
+    "safeStates": 2,
+    "retainedReceipt": true,
+    "originalApprovalProgressRetained": true
+  },
+  "initialHarnessCorrections": [
+    "Ignore observation timestamp when comparing rollback catalog.",
+    "Compare prior function prefix and require exactly three additions.",
+    "Restore the isolated disabled-channel fixture and account for its retained pagination rows.",
+    "Grant the service test role SELECT on its synthetic verification snapshot."
+  ],
+  "limitations": [
+    "Local schema projection and synthetic Auth identities, not current hosted TEST acceptance.",
+    "Synthetic consent expiry was advanced under a temporarily disabled trigger, immediately restored.",
+    "No UI or durable browser request store for thread recovery yet.",
+    "No live Slack request, hosted deployment, source mutation, credential change, schedule or production operation."
+  ],
+  "remaining": [
+    "Recovery screen and durable pending requests",
+    "Pinned TEST release and hosted rollback/install",
+    "Actual signed-in application acceptance",
+    "Live provider capture and broader continuous ingestion"
+  ]
+}

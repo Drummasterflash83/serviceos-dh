@@ -948,3 +948,19 @@ without a count timed out. A full new scan was not started, and no production
 setting/session/data changed. The prior complete preservation inventory remains
 current evidence; fresh large-source verification is open. TEST remains release 020.
 See [reader contract and evidence](../operations/LEARN-SOURCE-PRESERVATION.md).
+
+## Interrupted Slack thread recovery — local, 10 October
+
+Thread recovery now creates a new retained approval for continue or restart of the
+same observed window. It preserves old approvals/cursors/messages, renews a bounded
+page budget, rejects active/completed/superseded work, and uses existing worker
+publication and pacing. Company owners/admins approve outside preview; viewer
+progress excludes private cursor/credential fields. Exact request retries and
+competing reviews cannot create duplicate recovery jobs.
+
+The isolated PostgreSQL chain passed rollback, metadata preservation, worker
+continuation/deduplication, authority/revision races, restart and queue rollback.
+Thirty-nine Slack client tests, actual SQL responses through the application adapter,
+and strict/application typechecks passed. No hosted or provider operation occurred;
+TEST stays release 020. Recovery UI/durable requests and hosted release/acceptance
+remain next. See [implementation and evidence](../operations/LEARN-SLACK-THREAD-RECOVERY.md).
