@@ -1,9 +1,15 @@
 # Interrupted assessment saves
 
-Local candidate, 10 October 2026. **Not installed in hosted TEST or production.**
-The frontend must be released together with the recovery migration after the
-ordinary TEST rehearsal and preservation checks. Existing TEST release 045 remains
-in place.
+TEST backend release 046 installed at 22:06 UTC, 10 October 2026, following a
+matching hosted rollback rehearsal. The paired protected TEST frontend deployment
+is pending. Production is unchanged. See [hosted evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
+
+The rehearsal and installation preserved all 87 monitored datasets, including the
+original 78 plus saved assessments and their scoring, review, correction,
+publication and team-history dependencies. Existing assessment table metadata and
+function permissions are unchanged. Six HTTP checks confirm anonymous and
+service-role denial for both RPCs and the private cancellation table. These checks
+do not establish signed-in owner recovery; that acceptance remains outstanding.
 
 A company owner or admin can retain an assessment under published scoring rules.
 Previously, an uncertain save kept its request only in a React ref. Closing the
@@ -71,8 +77,7 @@ recovery requests use the production component's local outbox. No provider or
 hosted database is contacted. These fixtures do not establish real authenticated
 access or hosted persistence.
 
-Next: prepare the explicit additive TEST release against its current catalog,
-rehearse rollback and data preservation, install the paired backend/frontend,
-and verify actual signed-in recovery within an authorized acceptance session.
+Next: deploy the paired protected TEST frontend, then verify actual signed-in
+recovery within an authorized acceptance session.
 History pagination beyond the latest 20 assessments remains separate unfinished
 work. This does not activate scoring, payroll, capture or a provider import.

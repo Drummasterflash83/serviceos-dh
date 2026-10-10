@@ -1,0 +1,17 @@
+{
+  "version": "learn-assessment-recovery-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "eec755ef0db232b7623af8024a09b55df82179b3c282ff4326fba46f0ed7313e",
+  "priorFingerprint": "df3525417edd2a53e1096605c0eb1591",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101060000_learn_assessment_recovery.sql",
+      "sha256": "cf9afb35113bb7db565a6ec6618621511d3398df0963ddba72623d24f5e066f0"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-assessment-recovery-hosted.assert.sql",
+    "sha256": "e00edd8112369bbed573fe419729e4072c6fda3e9796de462107cd9082348a53"
+  },
+  "preservedDataSets": 87
+}

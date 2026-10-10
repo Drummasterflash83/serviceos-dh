@@ -1,0 +1,125 @@
+{
+  "version": "learn-assessment-recovery-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "046_assessment_recovery",
+  "rehearsal": {
+    "version": "learn-assessment-recovery/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "eec755ef0db232b7623af8024a09b55df82179b3c282ff4326fba46f0ed7313e",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T22:05:58.931Z",
+    "priorFingerprint": "df3525417edd2a53e1096605c0eb1591",
+    "expectedFingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+    "afterFingerprint": "df3525417edd2a53e1096605c0eb1591",
+    "preservedDataSets": 87,
+    "receipt": {
+      "fingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+      "functions": 3
+    }
+  },
+  "installation": {
+    "version": "learn-assessment-recovery/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "eec755ef0db232b7623af8024a09b55df82179b3c282ff4326fba46f0ed7313e",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T22:06:18.043Z",
+    "priorFingerprint": "df3525417edd2a53e1096605c0eb1591",
+    "expectedFingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+    "afterFingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+    "preservedDataSets": 87,
+    "receipt": {
+      "fingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+      "functions": 3
+    }
+  },
+  "httpAccess": {
+    "observedAt": "2026-10-10T22:06:39.783Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "path": "rpc/learn_assessment_resolve",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "rpc/learn_assessment_save",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "learn_assessment_cancellations?select=id&limit=1",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_assessment_resolve",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_assessment_save",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "learn_assessment_cancellations?select=id&limit=1",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "postHttpPreservation": {
+    "observedAt": "2026-10-10T22:06:57.123Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "fingerprint": "4f1bd914e956cff933b4298b01ca86dd",
+    "ledger": 47,
+    "preservedDataSets": 87,
+    "continuationSchemaFingerprint": "8ccaa108faa30d2dbfb41e1363011d7c"
+  },
+  "verification": {
+    "releaseGuardTests": 5,
+    "clientTests": 19,
+    "appPrebuildChecks": 47,
+    "localSQL": "Original save regression and both lock-observed save/cancel races passed. Migration rollback, role/company/preview isolation and immutable cancellation passed.",
+    "syntheticBrowser": "Lost reply recovered after full reload to one retained assessment; a separate unfinished save cancelled without changing prior history.",
+    "signedInHostedOwnerAcceptance": false,
+    "hostedVisualAcceptance": false,
+    "releaseAndContinuationBoundaryTests": 27
+  },
+  "frontend": {
+    "state": "pending_paired_deployment"
+  },
+  "remaining": [
+    "Paired protected TEST frontend deployment.",
+    "Real signed-in hosted recovery acceptance.",
+    "Further Commusoft continuation remains subject to its existing pending approval."
+  ],
+  "scope": [
+    "Existing assessment table and function privileges preserved.",
+    "87 monitored datasets unchanged, including original 78 plus assessments, scoring/review/correction/publication and team-history data.",
+    "No new login, operator grant, provider request, capture activation or production change."
+  ],
+  "continuation": {
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "boundary": {
+      "requests": 0,
+      "active_grants": 0,
+      "banned": 0
+    },
+    "schemaFingerprint": "8ccaa108faa30d2dbfb41e1363011d7c",
+    "scopeChanged": false,
+    "explanation": "Only the accepted TEST catalog fingerprint was updated. Existing pending approval, identities, budgets, duration, key binding and original source baseline are unchanged; no activation."
+  }
+}

@@ -1,13 +1,24 @@
 # Existing TEST environment: verified release gaps
 
-## Assessment save recovery — local candidate, not deployed
+## Assessment recovery — TEST backend release 046 installed at 22:06 UTC
+
+The recovery RPC and immutable cancellation ledger are installed in TEST after a
+matching hosted rollback rehearsal. All 87 monitored datasets were preserved,
+including saved assessments, scoring/review/correction/publication and team history.
+Existing assessment table metadata and function privileges are unchanged. Six HTTP
+checks confirm anonymous/service-role denial for recovery, saving and raw cancellation
+reads. The paired TEST frontend deployment and signed-in hosted acceptance remain
+pending. [Release evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
+
+
+## Earlier assessment recovery candidate — TEST backend now installed
 
 Interrupted saves now retain their exact request across card close/reload, with
 check, retry and cancellation controls. The server cancellation record prevents a
 late save from appearing after cancellation; an already completed assessment is
 retained. Nineteen client tests, isolated SQL save/cancel races, app/preview builds
 and actual synthetic browser recovery passed. TEST's installed save body matches
-the verifier baseline, but the new migration and frontend are not yet deployed.
+the verifier baseline, but the backend is now installed as recorded above; the paired frontend is pending.
 See [implementation and acceptance limits](LEARN-ASSESSMENT-RECOVERY.md).
 
 The Commusoft continuation still awaits its existing approval. No provider calls,
