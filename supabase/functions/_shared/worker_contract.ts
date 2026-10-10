@@ -8,7 +8,8 @@ export interface WorkerHandlerContext {
   tenantId: string;
   /** The authoritative platform_jobs row this work belongs to (queue job when
    *  invoked by the worker, manual job in the wrapper), or null when untracked.
-   *  Handlers may update PROGRESS on it but never create/complete it. */
+   *  Most handlers return work to the caller; durable email handlers settle their
+   *  own lease and explicitly return queueOutcome. */
   jobId: string | null;
   /** Type from the claimed durable row; never a browser-selected handler. */
   jobType?: string;
@@ -47,6 +48,13 @@ export interface WorkerHandlerContinuation {
 
 export interface WorkerHandlerResult {
   success: boolean;
+  /** Durable email engine outcome. Never run generic completion/failure again;
+   * unknown acknowledgement leaves the lease available for later recovery. */
+  queueOutcome?: {
+    state: "completed" | "failed" | "unconfirmed";
+    jobId: string;
+    historicalReceipt?: boolean;
+  };
   recordsProcessed?: number;
   result?: Record<string, unknown>;
   /** Present when success === false. */
@@ -58,4 +66,3 @@ export interface WorkerHandlerResult {
 }
 
 export type WorkerHandler = (ctx: WorkerHandlerContext) => Promise<WorkerHandlerResult>;
-

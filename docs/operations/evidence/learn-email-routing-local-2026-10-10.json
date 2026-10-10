@@ -1,0 +1,93 @@
+{
+  "version": "learn-email-routing-local/1",
+  "observedAt": "2026-10-10T15:08:55.451Z",
+  "state": "local_routed_not_deployed",
+  "databaseScenarios": 42,
+  "databaseTestResults": 43,
+  "unitTests": 29,
+  "workerVmTests": 9,
+  "typescript": "passed_with_local_Deno_and_Supabase_ambient_declarations",
+  "files": [
+    {
+      "path": "supabase/functions/_shared/email_capture_ports.ts",
+      "sha256": "bfd5068555a658da9f5e726fa3d9a9a82a8173b97ae12b5a93f106794e1a0651"
+    },
+    {
+      "path": "supabase/functions/_shared/email_capture_ports.test.ts",
+      "sha256": "cd9ee74f8772c78b7c10ff50095a3e6e19a03d9792db9b0f67204ecd07589681"
+    },
+    {
+      "path": "supabase/functions/_shared/email_capture_handler.ts",
+      "sha256": "e3d5328c67f4d36edb95539c4eb98f6569e7a9176d7f972452cc9c70f2449745"
+    },
+    {
+      "path": "supabase/functions/_shared/email_capture_handler.test.ts",
+      "sha256": "581390a6ad626a6d7495c1f935c17cd0b93c8d9516caf07c382394a0e7895bc8"
+    },
+    {
+      "path": "supabase/functions/_shared/email_capture_engine.ts",
+      "sha256": "eb9d0f2b770a41f19b52354316d5d36ececf40576d9dcf138562285f0b7beebb"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_oauth.ts",
+      "sha256": "d6df51e4ba480f940d606add9235288031249f09ce5d327b2969b09c12ce4f7a"
+    },
+    {
+      "path": "supabase/functions/_shared/google_workspace.ts",
+      "sha256": "b5c70c03a91feacf748b80b610c9892ef5c559e9fbb045cd2bb4bab36d094a1b"
+    },
+    {
+      "path": "supabase/functions/_shared/worker_contract.ts",
+      "sha256": "5043f37b8e070ca6b968e125ea1d047c7505db0c00a65ae7ce3c414294a9f4ab"
+    },
+    {
+      "path": "supabase/functions/_shared/worker_handlers/email_sync.ts",
+      "sha256": "8777b979ab2019345f8a017f769856d6d9bc8ea457c74ee3d43d068fae782b00"
+    },
+    {
+      "path": "supabase/functions/_shared/worker_handlers/index.ts",
+      "sha256": "07736c7d3550435c6450130311f856ad527861152c9f98e14d12d416b3acce2d"
+    },
+    {
+      "path": "supabase/functions/platform-worker/index.ts",
+      "sha256": "aa4b86f79ae8ead009917e9a827e0dcc893c63dacf9cc72c9b7ee60d3388dd60"
+    },
+    {
+      "path": "supabase/migrations/20261031235900_learn_email_job_failure.sql",
+      "sha256": "7cc57cf900f017a0dbf5c17899bad746f2d8ea7334d665271c5c2564b16148cb"
+    },
+    {
+      "path": "scripts/verify/learn-email-capture-engine-cases.mjs",
+      "sha256": "96ebc9f774d08c04cbb6bf9fbb73a3b1f39f2352eb29290e01d2484589350676"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "feaa32b39cc6a0624ba326a129ecc2e7b29479c724a090195ddc3c265de11d6a"
+    },
+    {
+      "path": "scripts/verify/learn-capture-queue-handler.test.mjs",
+      "sha256": "5cdd649f66af5da95f6771cff1225bd37529a742ab01f90568e164958d0e0afa"
+    },
+    {
+      "path": "supabase/reference/learn-email-auth-test-2026-10-10.json",
+      "sha256": "2ef503d60e79e589f1fcb05a56b76d87b2b91e27eecfccfc3d4bd5263306bd41"
+    }
+  ],
+  "verified": [
+    "Workspace credential access requires a tenant-bound enabled mailbox, active verified connection, domain and service-account match, and a fresh authority reread before minting.",
+    "OAuth cached-token reuse avoids unnecessary secret/config access; refresh cache writes compare the observed credential version and preserve concurrent reconnection.",
+    "Unknown cache writes and provider credential failures expose safe codes without tokens or automatic refresh retries.",
+    "Real token helper calls use a fixed Google token endpoint, redirect refusal and a timeout, exercised with synthetic transport.",
+    "Mailbox queue handlers route directly to the durable engine; completed/failed outcomes avoid generic duplicate settlement and uncertain outcomes preserve the lease.",
+    "Historical receipts do not produce fresh healthy-capture telemetry.",
+    "Failure settlement is service-only and lease-bound; lost replies replay, and observed expiry during the update rolls back the queue change."
+  ],
+  "limitations": [
+    "Not deployed; direct sync endpoints and paused-recovery queue claim filtering still need adaptation.",
+    "Credential and handler tests use synthetic ports, not real Drummonds credentials or Google requests.",
+    "Postgres fixture uses recorded TEST contracts and earlier documented omissions; this is not hosted acceptance or production parity.",
+    "Shared-module TypeScript checks use ambient runtime declarations; no Deno deployment build was performed.",
+    "Secondary Workspace domains require matching saved connections; authorization for aliases is not inferred.",
+    "No hosted credential values, customer records, permissions, schedules or production deployment changed."
+  ]
+}

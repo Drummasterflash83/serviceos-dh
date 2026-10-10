@@ -76,6 +76,7 @@ const db = {
         "learn_email_store_existing",
         "learn_email_store_page",
         "platform_jobs_complete_email_v1",
+        "learn_email_job_fail",
       ].includes(fn),
     );
     return {

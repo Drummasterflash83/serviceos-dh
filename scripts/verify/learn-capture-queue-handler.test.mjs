@@ -7,7 +7,13 @@ import { webcrypto } from "node:crypto";
 import vm from "node:vm";
 import ts from "typescript";
 const tenant = "00000000-0000-4000-8000-000000000001";
-async function run({ allowed = true, childPaused = false, deferError = false } = {}) {
+async function run({
+  allowed = true,
+  childPaused = false,
+  deferError = false,
+  jobType = "email.mailbox_discovery",
+  queueOutcome,
+} = {}) {
   const calls = [],
     writes = [],
     health = [];
@@ -23,7 +29,7 @@ async function run({ allowed = true, childPaused = false, deferError = false } =
             {
               id: "job",
               tenant_id: tenant,
-              job_type: "email.gmail_sync",
+              job_type: jobType,
               attempt_count: 1,
               max_attempts: 5,
               claimed_by: args.p_worker,
@@ -119,7 +125,11 @@ async function run({ allowed = true, childPaused = false, deferError = false } =
                 success: false,
                 error: { code: "learn_capture_paused", message: "Paused", retryable: false },
               }
-            : { success: true, recordsProcessed: 2 };
+            : {
+                success: queueOutcome ? queueOutcome.state === "completed" : true,
+                recordsProcessed: 2,
+                ...(queueOutcome ? { queueOutcome } : {}),
+              };
         },
       });
     if (file.endsWith("/_shared/system_health.ts"))
@@ -188,10 +198,69 @@ test("enabled capture retains normal dispatch, completion and actual work teleme
   assert.equal(r.result.waiting, 0);
   assert.equal(r.health.length, 1);
   assert.equal(r.health[0].metadata.records, 2);
-  assert.equal(r.workContext.jobType, "email.gmail_sync");
+  assert.equal(r.workContext.jobType, "email.mailbox_discovery");
   assert.equal(r.workContext.claim.attemptCount, 1);
   assert.equal(
     r.workContext.claim.claimedBy,
     r.calls.find((c) => c.name === "platform_jobs_claim").args.p_worker,
   );
+});
+
+for (const historicalReceipt of [false, true])
+  test(`durable email completion bypasses generic writes and only fresh evidence updates health (${historicalReceipt})`, async () => {
+    const r = await run({
+      allowed: false,
+      jobType: "email.workspace_sync",
+      queueOutcome: { state: "completed", jobId: "job", historicalReceipt },
+    });
+    assert.equal(r.work, 1);
+    assert.equal(r.result.succeeded, 1);
+    assert.equal(r.result.unconfirmed, 0);
+    assert.equal(
+      r.calls.some((c) => c.name === "learn_capture_admission"),
+      false,
+    );
+    assert.equal(
+      r.writes.some((w) => w.status === "succeeded" || w.status === "dead_letter"),
+      false,
+    );
+    assert.equal(r.health.length, historicalReceipt ? 0 : 1);
+  });
+test("unknown durable email outcomes retain the lease without completion, failure or health claims", async () => {
+  for (const queueOutcome of [
+    { state: "unconfirmed", jobId: "job" },
+    { state: "completed", jobId: "foreign", historicalReceipt: false },
+    undefined,
+  ]) {
+    const r = await run({ jobType: "email.workspace_sync", queueOutcome });
+    assert.equal(r.result.unconfirmed, 1);
+    assert.equal(r.result.succeeded, 0);
+    assert.equal(r.result.failed, 0);
+    assert.equal(r.result.success, false);
+    assert.equal(r.health.length, 0);
+    assert.equal(
+      r.writes.some((w) => w.status === "succeeded" || w.status === "dead_letter"),
+      false,
+    );
+  }
+});
+test("settled email failure is counted without a second generic failure update", async () => {
+  const r = await run({
+    jobType: "email.workspace_sync",
+    queueOutcome: { state: "failed", jobId: "job" },
+  });
+  assert.equal(r.result.dead_lettered, 1);
+  assert.equal(r.result.unconfirmed, 0);
+  assert.equal(r.health[0].status, "failed");
+  assert.equal(
+    r.writes.some((w) => w.status === "dead_letter"),
+    false,
+  );
+});
+test("an email engine pause still defers its owned lease without failure accounting", async () => {
+  const r = await run({ jobType: "email.workspace_sync", childPaused: true });
+  assert.equal(r.work, 1);
+  assert.equal(r.result.waiting, 1);
+  assert.equal(r.result.unconfirmed, 0);
+  assert.equal(r.health.length, 0);
 });

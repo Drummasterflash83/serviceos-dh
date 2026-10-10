@@ -169,6 +169,8 @@ export async function getDelegatedToken(
   try {
     resp = await fetch(GOOGLE_TOKEN_ENDPOINT, {
       method: "POST",
+      redirect: "error",
+      signal: AbortSignal.timeout(15000),
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ grant_type: JWT_BEARER_GRANT, assertion }).toString(),
     });

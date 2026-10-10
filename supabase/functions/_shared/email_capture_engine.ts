@@ -48,6 +48,8 @@ export type EmailCaptureOutcome =
       attemptId: string;
       successorId: string | null;
       historicalReceipt: boolean;
+      recordsProcessed: number;
+      coverageComplete: boolean | null;
     }
   | { state: "deferred"; jobId: string; attemptId: string; reason: "paused" | "unavailable" }
   | { state: "failed"; jobId: string; attemptId: string; code: string };
@@ -266,6 +268,8 @@ export async function completeEmailCaptureJob(
       attemptId: attempt.attemptId,
       successorId: d.successor_id,
       historicalReceipt: summary.historicalReceipt,
+      recordsProcessed: processed,
+      coverageComplete: summary.coverageComplete,
     };
   } catch {
     throw new EmailQueueCompletionUnconfirmed();

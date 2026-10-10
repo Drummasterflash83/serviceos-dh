@@ -115,6 +115,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     retrying: 0,
     dead_lettered: 0,
     waiting: 0,
+    unconfirmed: 0,
   };
 
   async function processOne(job: JobRow): Promise<void> {
@@ -124,8 +125,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const attempt = (job.attempt_count as number) ?? 1;
     const maxAttempts = (job.max_attempts as number) ?? 5;
     const captureSource = captureSourceForJob(jobType);
+    const durableEmail = [
+      "email.gmail_sync",
+      "email.workspace_sync",
+      "email.workspace_backfill",
+    ].includes(jobType);
     const captureClaim = { tenantId, jobId: id, claimedBy: job.claimed_by as string, attempt };
-    if (captureSource) {
+    if (captureSource && !durableEmail) {
       const admission = await captureAdmission(admin, tenantId, captureSource);
       if (!admission.allowed) {
         await deferCaptureJob(admin, captureClaim, admission.reason);
@@ -149,6 +155,47 @@ Deno.serve(async (req: Request): Promise<Response> => {
         payload,
         claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
       });
+      if (r.queueOutcome) {
+        const q = r.queueOutcome;
+        if (
+          !durableEmail ||
+          q.jobId !== id ||
+          !["completed", "failed"].includes(q.state) ||
+          (q.state === "completed") !== r.success
+        ) {
+          counts.unconfirmed += 1;
+          return;
+        }
+        if (q.state === "completed") {
+          counts.succeeded += 1;
+          // A recovered old receipt is not fresh healthy capture evidence.
+          if (component && q.historicalReceipt === false)
+            await recordHealthCheck(admin, {
+              tenantId,
+              component,
+              status: "healthy",
+              metadata: { job_type: jobType, records: r.recordsProcessed ?? 0 },
+            });
+        } else {
+          counts.dead_lettered += 1;
+          if (component)
+            await recordHealthCheck(admin, {
+              tenantId,
+              component,
+              status: "failed",
+              error: r.error?.message ?? "Email capture requires review.",
+              metadata: { job_type: jobType, code: r.error?.code ?? "capture_failed" },
+            });
+        }
+        return;
+      }
+      if (
+        durableEmail &&
+        !["learn_capture_paused", "learn_capture_unavailable"].includes(r.error?.code ?? "")
+      ) {
+        counts.unconfirmed += 1;
+        return;
+      }
       if (r.success) {
         await completeJob(admin, id, {
           recordsProcessed: r.recordsProcessed,
@@ -243,12 +290,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   await work;
 
   const failed =
-    counts.claimed - counts.succeeded - counts.retrying - counts.dead_lettered - counts.waiting;
+    counts.claimed -
+    counts.succeeded -
+    counts.retrying -
+    counts.dead_lettered -
+    counts.waiting -
+    counts.unconfirmed;
   return json({
-    success: true,
+    success: failed === 0 && counts.unconfirmed === 0,
     claimed: counts.claimed,
     succeeded: counts.succeeded,
     waiting: counts.waiting,
+    unconfirmed: counts.unconfirmed,
     retrying: counts.retrying,
     dead_lettered: counts.dead_lettered,
     failed: Math.max(0, failed),

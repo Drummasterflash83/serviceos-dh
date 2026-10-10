@@ -3,8 +3,9 @@
 //
 // A handler is PURE business logic: given a validated tenant, a service-role
 // client, the job payload and the authoritative platform_jobs id, it does the
-// work and returns a structured result. It NEVER creates/completes the
-// platform_jobs row (the caller owns the job lifecycle) and NEVER derives the
+// work and returns a structured result. Durable email handlers settle the queue
+// atomically and return queueOutcome; other handlers leave settlement to the caller.
+// No handler derives the
 // tenant from browser input — the caller passes an already-validated tenantId.
 //
 // Two callers share each handler with NO duplicated logic:

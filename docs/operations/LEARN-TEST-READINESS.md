@@ -1,5 +1,55 @@
 # Existing TEST environment: verified release gaps
 
+## Credential reuse and queue routing — local implementation, 10 October 2026
+
+The three mailbox queue handlers now call the durable engine in-process with
+`email_capture_ports.ts`. OAuth reads the tenant/account-scoped existing token,
+reuses it when its read scope and remaining lifetime (over two minutes) permit,
+and refreshes otherwise. A cache
+update compares the observed token timestamp and refresh secret, preventing an
+in-flight refresh from overwriting a newer connection. If another refresh wins,
+only its independently validated cached token can be used. Unknown write replies
+remain uncertain and do not trigger another refresh.
+
+Workspace token acquisition requires an active verified tenant connection, exactly
+one enabled pending/active mailbox membership, matching domain and configured
+service-account identity, and a non-suspended mailbox. Authority is reread before
+minting. Secondary domains need their own matching saved connection; this does
+not infer authorization for arbitrary aliases. Existing platform secrets are
+reused server-side. OAuth refresh and delegation requests now reject redirects and
+use a 15-second timeout. Tokens remain outside source metadata and diagnostics.
+
+`platform-worker` recognizes explicit durable email outcomes. It does not repeat
+completion/failure or enqueue another successor after the engine settles a job.
+Recovered historical receipts do not emit fresh healthy-capture telemetry;
+unknown outcomes leave the lease for recovery and are counted as unconfirmed.
+The handler runs before the worker's ordinary capture gate so it can settle saved
+evidence; the engine still checks admission before provider work. Discovery keeps
+its ordinary capture gate and existing endpoint.
+
+`20261031235900_learn_email_job_failure.sql` settles only a bound, terminal failed
+attempt under the current worker lease, retaining a replayable failure receipt.
+It rechecks expiry after the queue update and rejects stale/foreign claims. Failed
+capture is dead-lettered for protocol/operator recovery, rather than repeatedly
+creating attempts against a blocked generation. No successful run or running
+attempt is classified as failed by this API.
+
+**42 database scenarios / 43 Node results**, **29 focused unit tests**, and **nine
+actual-worker VM tests** pass. Checks include retained credentials, concurrent
+reconnection, token transport options, caller identity, receipt handling, lost
+failure acknowledgement and observed lease expiry during failure settlement.
+The new shared modules pass TypeScript checking with local Deno/Supabase ambient
+declarations; this is not a Deno deployment build. See
+[local evidence](evidence/learn-email-routing-local-2026-10-10.json).
+
+**Not deployed.** TEST credential/Workspace table definitions were read without
+credential values or mailbox data. Credential tests use synthetic database and
+provider ports; real Drummonds authorization has not been exercised here. Queue
+claim filtering still needs a narrow exception for saved email recovery while
+capture is paused. Direct sync endpoints still use their old paths and must be
+adapted before coordinated runtime installation. No hosted credentials, data,
+permissions or schedules changed, and no provider request was made.
+
 ## Mailbox page engine — local implementation, 10 October 2026
 
 `email_capture_engine.ts` composes job/attempt recovery, the durable transition

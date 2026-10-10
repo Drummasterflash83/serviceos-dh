@@ -1,0 +1,392 @@
+{
+  "version": "learn-email-auth-reference/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T14:54:23.951715+00:00",
+  "tables": [
+    {
+      "rls": true,
+      "name": "email_oauth_tokens",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_account_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": "'gmail'::text",
+          "notNull": true
+        },
+        {
+          "name": "access_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "refresh_token",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "token_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "email_oauth_tokens_email_account_id_key",
+          "definition": "CREATE UNIQUE INDEX email_oauth_tokens_email_account_id_key ON public.email_oauth_tokens USING btree (email_account_id)"
+        },
+        {
+          "name": "email_oauth_tokens_pkey",
+          "definition": "CREATE UNIQUE INDEX email_oauth_tokens_pkey ON public.email_oauth_tokens USING btree (id)"
+        },
+        {
+          "name": "email_oauth_tokens_tenant_id_idx",
+          "definition": "CREATE INDEX email_oauth_tokens_tenant_id_idx ON public.email_oauth_tokens USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "email_oauth_tokens_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER email_oauth_tokens_set_updated_at BEFORE UPDATE ON public.email_oauth_tokens FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "email_oauth_tokens_email_account_id_fkey",
+          "definition": "FOREIGN KEY (email_account_id) REFERENCES email_accounts(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "u",
+          "name": "email_oauth_tokens_email_account_id_key",
+          "definition": "UNIQUE (email_account_id)"
+        },
+        {
+          "kind": "p",
+          "name": "email_oauth_tokens_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_connections",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "domain",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "customer_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "service_account_email",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'planned'::text",
+          "notNull": true
+        },
+        {
+          "name": "delegated_scopes",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "impersonation_subject",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "service_account_client_id",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "authorised_scopes",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "last_verified_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "error_message",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "google_workspace_connections_pkey",
+          "definition": "CREATE UNIQUE INDEX google_workspace_connections_pkey ON public.google_workspace_connections USING btree (id)"
+        },
+        {
+          "name": "google_workspace_connections_tenant_id_domain_key",
+          "definition": "CREATE UNIQUE INDEX google_workspace_connections_tenant_id_domain_key ON public.google_workspace_connections USING btree (tenant_id, domain)"
+        },
+        {
+          "name": "google_workspace_connections_tenant_id_idx",
+          "definition": "CREATE INDEX google_workspace_connections_tenant_id_idx ON public.google_workspace_connections USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "google_workspace_connections_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER google_workspace_connections_set_updated_at BEFORE UPDATE ON public.google_workspace_connections FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "google_workspace_connections_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "google_workspace_connections_tenant_id_domain_key",
+          "definition": "UNIQUE (tenant_id, domain)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "google_workspace_mailboxes",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "mailbox_type",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "sync_enabled",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'pending'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "google_workspace_mailboxes_connection_id_email_address_key",
+          "definition": "CREATE UNIQUE INDEX google_workspace_mailboxes_connection_id_email_address_key ON public.google_workspace_mailboxes USING btree (connection_id, email_address)"
+        },
+        {
+          "name": "google_workspace_mailboxes_connection_idx",
+          "definition": "CREATE INDEX google_workspace_mailboxes_connection_idx ON public.google_workspace_mailboxes USING btree (connection_id)"
+        },
+        {
+          "name": "google_workspace_mailboxes_pkey",
+          "definition": "CREATE UNIQUE INDEX google_workspace_mailboxes_pkey ON public.google_workspace_mailboxes USING btree (id)"
+        },
+        {
+          "name": "google_workspace_mailboxes_tenant_id_idx",
+          "definition": "CREATE INDEX google_workspace_mailboxes_tenant_id_idx ON public.google_workspace_mailboxes USING btree (tenant_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "learn_launch_metadata_select",
+          "check": null,
+          "roles": [
+            "learn_launch_metadata_reader"
+          ],
+          "using": "(tenant_id IN ( SELECT p.tenant_id\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.role = ANY (ARRAY['owner'::text, 'admin'::text])))))",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "google_workspace_mailboxes_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER google_workspace_mailboxes_set_updated_at BEFORE UPDATE ON public.google_workspace_mailboxes FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "u",
+          "name": "google_workspace_mailboxes_connection_id_email_address_key",
+          "definition": "UNIQUE (connection_id, email_address)"
+        },
+        {
+          "kind": "f",
+          "name": "google_workspace_mailboxes_connection_id_fkey",
+          "definition": "FOREIGN KEY (connection_id) REFERENCES google_workspace_connections(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "google_workspace_mailboxes_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ]
+}

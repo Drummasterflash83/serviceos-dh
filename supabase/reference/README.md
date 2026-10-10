@@ -1,5 +1,11 @@
 # Hosted integration references
 
+`learn-email-auth-test-2026-10-10.json` records the TEST OAuth-token and Workspace
+connection/mailbox table definitions read at 14:54:23 UTC. It contains columns,
+constraints, policies and triggers, not tokens, connection rows or mailbox data.
+These definitions guide the server credential adapter; mocked adapter tests do
+not establish live credential validity or production schema parity.
+
 `learn-email-storage-test-2026-10-10.json` records the TEST `email_messages` and
 `email_threads` contracts read at 14:33:27 UTC, their update-timestamp helper and
 the service table grants checked during this storage implementation. It contains

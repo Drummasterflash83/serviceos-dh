@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import {
   runEmailCaptureJob,
   EmailQueueCompletionUnconfirmed,
@@ -467,6 +468,89 @@ export async function verifyEmailCaptureEngine({ t, sql, db, queueJob, q, refere
         p.calls.some((x) => x.includes("/history?")),
         false,
       );
+    },
+  );
+  const failureMigration = readFileSync(
+    new URL(
+      "../../supabase/migrations/20261031235900_learn_email_job_failure.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await t.test("email failure settlement migration is reversible and service-only", async () => {
+    sql(failureMigration.replace("\ncommit;", "\nrollback;"));
+    assert.equal(
+      sql("select to_regprocedure('learn_email_job_fail(uuid,uuid,uuid,text,integer)') is null"),
+      "t",
+    );
+    sql(failureMigration);
+    for (const role of ["anon", "authenticated"])
+      assert.equal(
+        sql(
+          `select has_function_privilege(${q(role)},'learn_email_job_fail(uuid,uuid,uuid,text,integer)','EXECUTE')`,
+        ),
+        "f",
+      );
+  });
+  async function failedJob() {
+    const j = job(),
+      p = ports(j, () => Response.json({ error: "synthetic provider failure" }, { status: 503 }));
+    const outcome = await runEmailCaptureJob(db, j, p);
+    assert.equal(outcome.state, "failed");
+    return {
+      j,
+      outcome,
+      args: {
+        p_tenant: j.tenantId,
+        p_job: j.jobId,
+        p_attempt: outcome.attemptId,
+        p_claimed_by: j.claimedBy,
+        p_claim: j.attemptCount,
+      },
+    };
+  }
+  await t.test(
+    "failed email attempts settle once under the current lease and recover a lost failure acknowledgement",
+    async () => {
+      const { j, outcome, args } = await failedJob();
+      await assert.rejects(
+        db.rpc("learn_email_job_fail", { ...args, p_claimed_by: "stale-worker" }),
+      );
+      await assert.rejects(db.rpc("learn_email_job_fail", { ...args, p_attempt: randomUUID() }));
+      await assert.rejects(db.rpc("learn_email_job_fail", { ...args, p_tenant: randomUUID() }));
+      assert.equal(sql(`select status from platform_jobs where id=${q(j.jobId)}`), "running");
+      sql(`update email_accounts set status='disabled' where id=${q(j.accountId)}`);
+      await assert.rejects(
+        (async () => {
+          await db.rpc("learn_email_job_fail", args);
+          throw Error("synthetic lost failure reply");
+        })(),
+      );
+      const replay = await db.rpc("learn_email_job_fail", args);
+      assert.equal(replay.data.disposition, "replayed");
+      assert.equal(replay.data.attempt_id, outcome.attemptId);
+      assert.equal(replay.data.code, "fetch_failed");
+      assert.equal(sql(`select status from platform_jobs where id=${q(j.jobId)}`), "dead_letter");
+    },
+  );
+  await t.test(
+    "lease expiry inside failure settlement rolls back the queue update and the replacement can finish it",
+    async () => {
+      const { j, args } = await failedJob();
+      sql(
+        `create sequence email_fail_delay_observed;grant usage on sequence email_fail_delay_observed to service_role;create function test_email_fail_delay() returns trigger language plpgsql as $$begin if new.id=${q(j.jobId)}::uuid and new.status='dead_letter' then perform nextval('public.email_fail_delay_observed');perform pg_sleep(1.2);end if;return new;end$$;create trigger test_email_fail_delay before update on platform_jobs for each row execute function test_email_fail_delay();update platform_jobs set lease_expires_at=clock_timestamp()+interval '1 second' where id=${q(j.jobId)};`,
+      );
+      await assert.rejects(db.rpc("learn_email_job_fail", args));
+      assert.equal(sql("select is_called from email_fail_delay_observed"), "t");
+      assert.equal(sql(`select status from platform_jobs where id=${q(j.jobId)}`), "running");
+      sql("drop trigger test_email_fail_delay on platform_jobs");
+      const replacement = replace(j);
+      const settled = await db.rpc("learn_email_job_fail", {
+        ...args,
+        p_claimed_by: replacement.claimedBy,
+        p_claim: replacement.attemptCount,
+      });
+      assert.equal(settled.data.disposition, "applied");
     },
   );
 }
