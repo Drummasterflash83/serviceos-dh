@@ -1,0 +1,41 @@
+{
+  "version": "learn-email-outbox-local/1",
+  "observedAt": "2026-10-10T14:12:22.065Z",
+  "state": "local_contract_verified_not_integrated",
+  "testResults": 17,
+  "scenarios": 16,
+  "typescript": "passed",
+  "referenceSha256": "8070cf839267c323b60a677b94e5a92cb553b43edaa59d16dcb0fb3b8ee8d062",
+  "files": [
+    {
+      "path": "supabase/migrations/20261031233000_learn_email_transition_outbox.sql",
+      "sha256": "8ba449af5bbd7334c683ca37780fe307c9f36228678f83ed2c7eb07901716e2a"
+    },
+    {
+      "path": "supabase/functions/_shared/email_ingestion_outbox.ts",
+      "sha256": "56dad2fff9c227ec5db87cf817149ec9a8726068c077b693a17c2c68b3b7ac60"
+    },
+    {
+      "path": "supabase/functions/_shared/email_ingestion_protocol.ts",
+      "sha256": "7afa686e1ce570503216f4c590c39ccc472c9b42a5d86866d323e9709a5dee30"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "06e6ea983da8cf3ed1e36f78857b894315faaf4e7172d4604e41e37f8b95ec73"
+    }
+  ],
+  "verified": [
+    "One unresolved request per attempt through serialized preparation APIs.",
+    "Exact request recovery after prepare/apply response loss.",
+    "Protocol progress and settlement are atomic; injected receipt failure leaves the prepared request pending.",
+    "Successful replay reads current ownership; refused requests retain their decision.",
+    "History is append-only, client roles have no access, and foreign scopes cannot apply requests."
+  ],
+  "limitations": [
+    "Not wired into mailbox handlers or deployed.",
+    "Queue job to sync-attempt association remains required for restart recovery.",
+    "Provider page capture and queue-completion integration remain outstanding.",
+    "Isolated fixture covers observed protocol definitions and grants, not unrelated launch policies or timestamp trigger.",
+    "No hosted data, source records, credentials, schedules or permissions changed."
+  ]
+}

@@ -1,5 +1,39 @@
 # Existing TEST environment: verified release gaps
 
+## Durable email transitions — local implementation, 10 October 2026
+
+`20261031233000_learn_email_transition_outbox.sql` adds append-only request and
+settlement tables, restricted to the existing server role. Its preparation API
+binds each document to its company, Gmail account, stream and running sync attempt.
+An attempt lock serializes preparation and application: a second request cannot
+replace an unresolved one. Identical requests can be recovered after the attempt
+finishes; altered documents under the same ID are refused. Client roles receive
+no table access or execution permission.
+
+Application invokes the existing v2 protocol and saves the settlement in the same
+transaction. A settlement failure rolls back the protocol's writes while retaining
+the previously prepared request. Refused requests retain their decision even if
+the account later becomes eligible. Successful replay asks the protocol for the
+current checkpoint alongside its old receipt, rather than treating a cached
+response as present ownership. Existing protocol functions and their grants are
+unchanged. No flags, credentials, provider work or schedules are seeded.
+
+`email_ingestion_outbox.ts` implements database-backed retention and pending-request
+recovery for the typed client. Unknown prepare/apply responses remain unresolved;
+the adapter neither regenerates IDs nor fetches provider pages. The combined
+isolated suite now passes **16 scenarios / 17 Node results**, including concurrent
+preparation in separate database sessions, lost acknowledgements, receipt failure
+rollback, immutable history, role restrictions and company isolation. Both shared
+modules pass TypeScript checking. See the
+[local evidence](evidence/learn-email-outbox-local-2026-10-10.json).
+
+**Not deployed or wired into mailbox handlers.** The next dependency is durable
+association between a queue job and its sync attempt; an Edge restart must recover
+that same attempt before reading its pending request. Provider continuation
+validation, page persistence, queue completion and actual-schema TEST release
+acceptance remain required. The isolated fixture retains the scope limitations
+described below.
+
 ## Email protocol client — local contract verification, 10 October 2026
 
 `supabase/functions/_shared/email_ingestion_protocol.ts` now provides the typed
@@ -23,8 +57,8 @@ cross-company responses, incomplete-page refusal, historical yield, and cursor
 advancement only after all INBOX/SENT pages. Direct terminal/progress writes remain
 rejected by the existing guards. The new client also passes TypeScript checking.
 
-**Not wired into the mailbox handlers or deployed.** The Edge worker still needs
-a durable, company/attempt-bound request store, validated provider continuations,
+**Not wired into the mailbox handlers or deployed.** The durable request store is
+now locally implemented above. The Edge worker still needs job/attempt binding, validated provider continuations,
 page fetching/persistence, and lease-bound queue completion. An in-memory retain
 callback would not satisfy the client's contract. The isolated fixture omits the
 unrelated launch-reader policy and account timestamp trigger; it is protocol

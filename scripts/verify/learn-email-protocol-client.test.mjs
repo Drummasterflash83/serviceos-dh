@@ -3,7 +3,8 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, execFile } from "node:child_process";
+import { promisify } from "node:util";
 import {
   readFileSync,
   mkdtempSync,
@@ -24,6 +25,10 @@ import {
   readEmailTransition,
   EmailTransitionUnconfirmed,
 } from "../../supabase/functions/_shared/email_ingestion_protocol.ts";
+import {
+  applyDurableEmailTransition,
+  pendingEmailTransition,
+} from "../../supabase/functions/_shared/email_ingestion_outbox.ts";
 const docker = "/usr/local/bin/docker",
   name = "learn-email-protocol-" + randomUUID().slice(0, 8);
 const source = readFileSync(
@@ -58,7 +63,13 @@ function sql(s) {
 const db = {
   async rpc(fn, args) {
     assert.ok(
-      ["email_ingestion_transition_v2", "email_ingestion_transition_result_v2"].includes(fn),
+      [
+        "email_ingestion_transition_v2",
+        "email_ingestion_transition_result_v2",
+        "learn_email_transition_prepare",
+        "learn_email_transition_pending",
+        "learn_email_transition_apply",
+      ].includes(fn),
     );
     return {
       data: JSON.parse(
@@ -69,11 +80,15 @@ const db = {
             Object.entries(args)
               .map(
                 ([k, v]) =>
-                  k + "=>" + (k === "p_payload" ? q(JSON.stringify(v)) + "::jsonb" : q(v)),
+                  k +
+                  "=>" +
+                  (["p_payload", "p_document"].includes(k)
+                    ? q(JSON.stringify(v)) + "::jsonb"
+                    : q(v)),
               )
               .join(",") +
             ");",
-        ),
+        ) || "null",
       ),
       error: null,
     };
@@ -550,6 +565,220 @@ test("email client preserves the existing hosted progress protocol", async (t) =
         "18446744073709551614",
       );
     });
+    const outboxMigration = readFileSync(
+      new URL(
+        "../../supabase/migrations/20261031233000_learn_email_transition_outbox.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    await t.test("outbox migration rolls back without changing the existing protocol", async () => {
+      sql("create role anon nologin;create role authenticated nologin;");
+      const before = count();
+      sql(outboxMigration.replace("\ncommit;", "\nrollback;"));
+      assert.equal(
+        sql("select to_regclass('public.learn_email_transition_requests') is null"),
+        "t",
+      );
+      assert.equal(count(), before);
+      sql(outboxMigration);
+    });
+    let outScope = attempt(),
+      outRequest,
+      outResult;
+    await t.test(
+      "a lost prepare response recovers the same durable request without applying it",
+      async () => {
+        const probe = await readEmailTransition(db, outScope, randomUUID());
+        outRequest = prepareEmailTransition(outScope, probe.checkpoint, randomUUID(), "claim", {
+          recovery: null,
+        });
+        const before = count(),
+          calls = [];
+        const lost = {
+          rpc: async (fn, args) => {
+            calls.push(fn);
+            const result = await db.rpc(fn, args);
+            if (fn === "learn_email_transition_prepare") throw Error("PRIVATE_LOST_PREPARE");
+            return result;
+          },
+        };
+        await assert.rejects(
+          applyDurableEmailTransition(lost, outRequest),
+          EmailTransitionUnconfirmed,
+        );
+        assert.deepEqual(calls, ["learn_email_transition_prepare"]);
+        assert.equal(count(), before);
+        assert.deepEqual(await pendingEmailTransition(db, outScope), outRequest);
+        await assert.rejects(
+          applyDurableEmailTransition(db, { ...outRequest, transitionId: randomUUID() }),
+          EmailTransitionUnconfirmed,
+        );
+        await assert.rejects(
+          applyDurableEmailTransition(db, {
+            ...outRequest,
+            payload: { recovery: null, force: true },
+          }),
+          EmailTransitionUnconfirmed,
+        );
+        assert.equal(count(), before);
+      },
+    );
+    await t.test(
+      "lost apply acknowledgement retains one atomic settlement and replays once",
+      async () => {
+        const before = Number(count()),
+          request = await pendingEmailTransition(db, outScope);
+        const lost = {
+          rpc: async (fn, args) => {
+            const result = await db.rpc(fn, args);
+            if (fn === "learn_email_transition_apply") throw Error("PRIVATE_LOST_APPLY");
+            return result;
+          },
+        };
+        await assert.rejects(
+          applyDurableEmailTransition(lost, request),
+          EmailTransitionUnconfirmed,
+        );
+        assert.equal(Number(count()), before + 1);
+        assert.equal(await pendingEmailTransition(db, outScope), null);
+        outResult = await applyDurableEmailTransition(db, request);
+        assert.equal(outResult.disposition, "replayed");
+        assert.equal(outResult.currentMatchesReceipt, true);
+        assert.equal(Number(count()), before + 1);
+        assert.equal(sql("select count(*) from learn_email_transition_settlements"), "1");
+      },
+    );
+    await t.test(
+      "settlement failure rolls back progress and leaves the original request pending",
+      async () => {
+        const r = prepareEmailTransition(outScope, outResult.checkpoint, randomUUID(), "release", {
+          reason_code: "requested_yield",
+          attempt_evidence: { ...evidence, coverage_complete: false },
+        });
+        sql(
+          `alter table learn_email_transition_settlements add constraint reject_receipt check(request_id<>${q(r.transitionId)}::uuid)`,
+        );
+        const before = count();
+        await assert.rejects(applyDurableEmailTransition(db, r), EmailTransitionUnconfirmed);
+        assert.equal(count(), before);
+        assert.deepEqual(await pendingEmailTransition(db, outScope), r);
+        assert.equal(
+          sql(`select status from email_sync_runs where id=${q(outScope.attemptId)}`),
+          "running",
+        );
+        sql("alter table learn_email_transition_settlements drop constraint reject_receipt");
+        const release = await applyDurableEmailTransition(
+          db,
+          await pendingEmailTransition(db, outScope),
+        );
+        assert.equal(release.accepted.attempt_status, "success");
+        assert.equal(Number(count()), Number(before) + 1);
+      },
+    );
+    await t.test(
+      "successful replay reads current ownership; a refused request remains refused",
+      async () => {
+        const fresh = attempt(),
+          probe = await readEmailTransition(db, fresh, randomUUID());
+        const r = prepareEmailTransition(fresh, probe.checkpoint, randomUUID(), "claim", {
+          recovery: null,
+        });
+        sql(`update email_accounts set status='disabled' where id=${q(account)}`);
+        const denied = await applyDurableEmailTransition(db, r);
+        assert.equal(denied.code, "source_ineligible");
+        sql(`update email_accounts set status='active_dwd' where id=${q(account)}`);
+        const before = count(),
+          retry = await applyDurableEmailTransition(db, r);
+        assert.equal(retry.code, "source_ineligible");
+        assert.equal(count(), before);
+        const applied = await applyDurableEmailTransition(db, { ...r, transitionId: randomUUID() });
+        assert.equal(applied.disposition, "applied");
+        const old = await applyDurableEmailTransition(db, outRequest);
+        assert.equal(old.disposition, "replayed");
+        assert.equal(old.currentMatchesReceipt, false);
+        assert.equal(old.checkpoint.owner_attempt_id, fresh.attemptId);
+      },
+    );
+    await t.test(
+      "outbox history is immutable and unavailable to client roles or a foreign scope",
+      async () => {
+        for (const table of [
+          "learn_email_transition_requests",
+          "learn_email_transition_settlements",
+        ]) {
+          assert.throws(() => sql(`set role authenticated;select * from ${table}`));
+          assert.throws(() => sql(`delete from ${table}`));
+        }
+        assert.throws(() =>
+          sql(
+            `update learn_email_transition_requests set document='{}'::jsonb where id=${q(outRequest.transitionId)}`,
+          ),
+        );
+        assert.equal(
+          await pendingEmailTransition(db, { ...outScope, tenantId: randomUUID() }),
+          null,
+        );
+        await assert.rejects(
+          db.rpc("learn_email_transition_apply", {
+            p_tenant: randomUUID(),
+            p_account: account,
+            p_stream: "recent",
+            p_attempt: outScope.attemptId,
+            p_request: outRequest.transitionId,
+          }),
+        );
+        assert.equal(
+          sql(
+            "select has_function_privilege('authenticated','learn_email_transition_prepare(jsonb)','EXECUTE')",
+          ),
+          "f",
+        );
+      },
+    );
+    await t.test(
+      "two simultaneous preparations retain only one unresolved request per attempt",
+      async () => {
+        const concurrent = attempt(),
+          probe = await readEmailTransition(db, concurrent, randomUUID());
+        const candidates = [0, 1].map(() =>
+          prepareEmailTransition(concurrent, probe.checkpoint, randomUUID(), "claim", {
+            recovery: null,
+          }),
+        );
+        const results = await Promise.allSettled(
+          candidates.map((r) =>
+            promisify(execFile)(
+              docker,
+              [
+                "exec",
+                name,
+                "psql",
+                "-h",
+                "127.0.0.1",
+                "-U",
+                "postgres",
+                "-XAtq",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-c",
+                `set role service_role;select learn_email_transition_prepare(${q(JSON.stringify(r))}::jsonb);`,
+              ],
+              { encoding: "utf8", timeout: 20000 },
+            ),
+          ),
+        );
+        assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+        const pending = await pendingEmailTransition(db, concurrent);
+        assert.ok(candidates.some((r) => r.transitionId === pending.transitionId));
+        assert.equal(
+          sql(
+            `select count(*) from learn_email_transition_requests where attempt_id=${q(concurrent.attemptId)}`,
+          ),
+          "1",
+        );
+      },
+    );
   } finally {
     if (created) execFileSync(docker, ["rm", "-f", name], { stdio: "pipe", timeout: 30000 });
     rmSync(dir, { recursive: true, force: true });

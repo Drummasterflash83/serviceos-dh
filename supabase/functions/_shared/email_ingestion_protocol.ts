@@ -197,7 +197,7 @@ function canonical(v: unknown): string {
       .join(",")}}`;
   throw Error("Email transition must contain only JSON values.");
 }
-function validate(r: EmailTransition) {
+export function validateEmailTransition(r: EmailTransition) {
   scope(r);
   if (
     !uuid(r.transitionId) ||
@@ -231,7 +231,7 @@ export function prepareEmailTransition(
     expectedOwner: c?.owner_attempt_id ?? null,
     payload: structuredClone(payload),
   };
-  validate(r);
+  validateEmailTransition(r);
   return freeze(r);
 }
 function parse(
@@ -324,7 +324,7 @@ export async function applyEmailTransition(
   request: EmailTransition,
   retain: (r: EmailTransition) => Promise<EmailTransition>,
 ): Promise<EmailTransitionResult> {
-  validate(request);
+  validateEmailTransition(request);
   const frozen = freeze(structuredClone(request));
   const retained = await retain(frozen);
   if (canonical(retained) !== canonical(frozen))
