@@ -94,6 +94,7 @@ try:
     team_sql=(ROOT/'supabase/migrations/20261101080000_learn_team_work_residence.sql').read_bytes()
     apply(b'begin;'+team_sql+b'rollback;', 'Team migration rollback rehearsal')
     apply(team_sql, 'Team residence migration')
+    apply(b'begin;'+(ROOT/'scripts/verify/learn-team-work-hosted.assert.sql').read_bytes()+b'rollback;', 'Exact hosted team role and ledger probe')
     apply((ROOT/'scripts/verify/learn-team-work-residence.assert.sql').read_bytes(), 'Team history, scope and preservation assertions')
     import concurrent.futures
     def race(i):

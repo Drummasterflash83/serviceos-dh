@@ -1,0 +1,17 @@
+{
+  "version": "learn-team-work-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "fb365f60c88ea0be343c04f2c002f3fb799c55f04384b3e3237cc7e70d9e1fd8",
+  "priorFingerprint": "b0f1f290d66d92517b0bb25651696f71",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101080000_learn_team_work_residence.sql",
+      "sha256": "dc5b889428f07c8d40d9788116ba03ac796a9ce04a36668780c8dd6a6a276ef1"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-team-work-hosted.assert.sql",
+    "sha256": "997dc2bccf479453761c14b61f2c472dc335fd2cd3e19ed7422b87737f2822d1"
+  },
+  "preservedDataSets": 91
+}

@@ -98,3 +98,15 @@ all current source/scoring/assessment datasets and append guards, rehearse rollb
 install the paired backend/frontend, and complete fresh signed-in owner acceptance.
 Do not deploy the new frontend before the collector exists. The pending Commusoft
 continuation scope/access and all existing credentials remain unchanged.
+
+### TEST release package 048 (11 October)
+
+`supabase/release/learn-test/048_team_work` pins the installed TEST 047 metadata,
+16 collection/history dependencies, source-table authority and 91 retained datasets.
+The package compares every existing dependency definition/owner/ACL and table
+contract after migration, allowing only the exact append evidence-list extension.
+The hosted probe uses real anonymous/authenticated-without-identity/service roles,
+checks collector denial and ledger read/write boundaries, and leaves no identities
+or source fixtures. Six release-runner tests and the disposable SQL integration
+suite (including this exact hosted probe) pass. Hosted rehearsal/apply evidence
+and a matching protected frontend deployment are still required.
