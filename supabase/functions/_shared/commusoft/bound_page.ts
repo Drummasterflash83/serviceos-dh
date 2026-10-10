@@ -32,7 +32,7 @@ export interface CommusoftPagePermitPorts {
 export async function readApprovedCommusoftPage(
   supplied: CommusoftWorkerScope,
   ports: CommusoftPagePermitPorts,
-): Promise<{ scope: StoredCommusoftScope; page: CommusoftPage }> {
+): Promise<{ scope: StoredCommusoftScope; page: CommusoftPage; permitId: string }> {
   const ctx = { ...supplied, claim: supplied.claim && { ...supplied.claim } };
   const clock = ports.clock ?? Date.now;
   const scope = await readStoredCommusoftScope(ctx, clock);
@@ -89,5 +89,5 @@ export async function readApprovedCommusoftPage(
   }
   if (page.quota.retryAt !== null) await defer(page.quota.retryAt);
   if (!(await authorized())) throw new CommusoftReadError("authority_unavailable");
-  return { scope, page };
+  return { scope, page, permitId: permit.permitId };
 }

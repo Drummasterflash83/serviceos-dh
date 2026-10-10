@@ -1,0 +1,31 @@
+{
+  "version": "learn-commusoft-pages-local/1",
+  "observedAt": "2026-10-10T08:18:03Z",
+  "scope": "local synthetic verification only",
+  "nodeTests": { "passed": 40, "failed": 0 },
+  "strictTypecheck": "passed",
+  "isolatedPostgres": {
+    "image": "postgres:15",
+    "network": "none",
+    "hostMounts": false,
+    "publishedPorts": false,
+    "authorityAndGrantAssertions": "passed",
+    "checkpointFailure": "entire page rolled back",
+    "receiptFailureAfterCursorWrite": "sources and cursor rolled back",
+    "samePageReplay": "existing receipt acknowledged",
+    "changedPageReplay": "conflict",
+    "newQueueAttemptRecovery": "source-free receipt; no provider acquisition",
+    "cursorContinuation": "second job resumes committed cursor",
+    "versionRetention": "identical payload reused; changed payload retained separately",
+    "privilegedHistoryMutation": "update, delete and truncate refused",
+    "concurrentPublication": "one new page, one exact acknowledgement",
+    "migrationRollback": "new tables and acquisition-function change rolled back",
+    "containersRemoved": true
+  },
+  "limitations": [
+    "Minimal synthetic schema and Vault fixture, not hosted schema acceptance.",
+    "No real provider request, source write, credential read or hosted migration.",
+    "No canonical customer/site/contact/job projection or registered worker yet.",
+    "Fault injection verifies transaction rollback; it does not induce a real provider or hosted process crash."
+  ]
+}

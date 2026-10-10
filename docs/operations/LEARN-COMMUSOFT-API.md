@@ -3,8 +3,8 @@
 ## Current state — 10 October 2026
 
 Local source reader, provider-neutral source-record adapter, durable scope binding
-and atomic credential/pacing functions are implemented. Thirty-four synthetic
-tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
+and atomic credential/pacing/source-publication functions are implemented. Forty
+synthetic tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
 This is not an installed connector: no provider request, real API credential read, sync job,
 production migration or frontend release was performed for this increment.
 
@@ -113,8 +113,8 @@ Migration `20261031090000_learn_commusoft_page_permits.sql` rechecks current
 tenant/flags/job/claim/account/connector/approval/checkpoint/connection under locks.
 Only the exact Vault reference with the existing tenant-qualified broker name can
 release a key. Each job attempt can acquire only one permit; an uncertain response
-cannot be retried inline. Queue-attempt recovery still needs the publication and
-settlement implementation. The permit retains the validated approval, checkpoint,
+cannot be retried inline. Committed-page recovery is now implemented; queue
+settlement remains unwired. The permit retains the validated approval, checkpoint,
 request and connection binding (without the key) for the future atomic page writer.
 
 The private pacing table keys quota by a SHA-256 fingerprint of the credential,
@@ -139,14 +139,52 @@ non-decreasing late deferral, two competing workers (one ready, one waiting), an
 rollback without retained objects. It uses synthetic minimal schema contracts and
 a fixture Vault table; it does not verify hosted schema/Vault compatibility.
 
+## Atomic retained source publication — local
+
+Migration `20261031100000_learn_business_input_pages.sql` adds provider-neutral
+pages, content-addressed versions and per-page observations. All retain the exact
+tenant, connection, collection and source ID context; pages keep their complete
+provider JSON envelope. Identical record content reuses a version while each page
+retains its observation. Changed content creates another retained version. These
+are source records, not canonical customers/jobs or a claim of latest provider state.
+
+The service-only publication function locks the job/account and rechecks current
+tenant, both flags, connector, approval, checkpoint, connection and lease against
+the acquired permit. It validates row order, size and pagination independently of
+the TypeScript reader. Raw page, versions, observations, account checkpoint and job
+receipt commit in one transaction. No canonical record or legacy source is rewritten.
+Direct privileges are revoked; triggers reject update, delete and truncate of the
+retained source tables, including privileged attempts. Source UI access will need
+separate tenant/role-scoped readers.
+
+Exact replay returns the existing receipt; changed replay is a conflict. The
+acquisition function now refuses a job that already has a page receipt. A separate
+source-free recovery function verifies the current worker claim and matches the
+job receipt to the retained page, allowing a new queue attempt to recover without
+fetching the provider again. Receipt recovery also works after a module is disabled;
+it acknowledges committed work without authorizing new processing.
+
+`page_store.ts` uses these RPCs, validates acknowledgements against the submitted
+scope/page and never retries an uncertain write automatically. Worker orchestration
+must call recovery first, then read/publish only when no commit exists.
+
+Isolated checks passed: authority and changed-checkpoint denial; duplicate rows and
+invalid cursor refusal; injected failure at checkpoint update and later job-receipt
+update with full rollback; exact/changed replay; recovery in a new attempt with
+modules disabled; stale-claim and tampered-receipt refusal; continuing from the
+saved cursor; version deduplication plus changed-content retention; privileged
+history mutation refusal; competing identical publications producing one page;
+and migration rollback restoring the acquisition function. This remains synthetic
+minimal-schema evidence, not hosted acceptance or a real interrupted provider sync.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
 2. Package and verify the credential/permit migration against the installed TEST
    schema. Revalidate authority transactionally when committing source data.
-3. Persist raw revisions, canonical mappings and checkpoints atomically; add
-   durable worker settlement, safe retries and continuation through the shared gate.
+3. Wire retained source publication/recovery into durable worker settlement,
+   safe retries and continuation through the shared gate; add canonical projection.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -163,6 +201,7 @@ Validation:
 node --test supabase/functions/_shared/commusoft/*.test.ts
 npx tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions --lib ES2022,DOM supabase/functions/_shared/commusoft/*.ts supabase/functions/_shared/business_inputs/source_record.ts
 python3 scripts/verify/learn-commusoft-permits.py
+python3 scripts/verify/learn-commusoft-permits.py --pages
 ```
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They

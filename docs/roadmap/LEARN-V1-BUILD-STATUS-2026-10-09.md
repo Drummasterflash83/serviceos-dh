@@ -1231,3 +1231,20 @@ pacing across tenants, monotonic deferral, competing workers and migration rollb
 The container was removed. No hosted schema, actual Vault credential, provider,
 flag or production source was changed. Durable source publication/checkpoints and
 worker settlement remain the next integration work before TEST release.
+
+## Commusoft atomic source pages and recovery — local, 10 October
+
+Provider-neutral source pages, retained content versions and per-page observations
+now commit atomically with the account cursor and job receipt. Publication checks
+the exact permit and current authority; retries acknowledge an identical committed
+page, reject changed content and cannot acquire another provider page for that job.
+A source-free receipt reader supports recovery by a new queue attempt even when
+processing was subsequently disabled. The TypeScript persistence bridge validates
+the returned receipt and does not automatically retry uncertain writes.
+
+Forty synthetic tests and strict TypeScript checks pass. Isolated SQL checks passed
+late-failure rollback, source retention/deduplication, cursor continuation, changed
+scope/refused publication, new-attempt recovery, mutation guards, concurrent exact
+replay and migration rollback. Verification containers were confirmed removed.
+No real data, hosted schema, credentials or provider configuration changed. Durable
+worker orchestration, canonical projection and hosted acceptance remain required.
