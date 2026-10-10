@@ -37,6 +37,29 @@ connection or Commusoft-named project secret. Checked local environment variable
 names also yielded no Commusoft entry. This does not establish whether Drummonds'
 Commusoft subscription has private-application API access enabled.
 
+## Hosted contact release — 10 October, 12:17 UTC
+
+Contact projection and review functions are now installed in TEST as release 029.
+The package adds three functions and updates the existing work page/batch functions;
+there are still 110 tables, with 30 release receipts. No source work, connection,
+credential, module flag, endpoint, schedule or frontend deployment was created.
+
+The local PG17 rehearsal reproduced the actual TEST table definitions, constraints,
+indexes, RLS policies, grants and helpers. Contact creation, multiple endpoints,
+customer/site relationships, existing-person preservation, tenant/role checks,
+held relationships, mixed results, cancellation, rollback, replay and simultaneous
+confirmations pass against that schema. Five release regressions pass, including
+unknown acknowledgements, failed journaling and changed source fingerprints.
+
+Hosted rollback rehearsal preserved the schema and all 42 checked existing data
+sets. Installation was acknowledged at 12:15:43 UTC. Its follow-up inspection hit
+HTTP 429; the migration was not resubmitted. Read-only confirmation at 12:17:33 UTC
+verified the compiled function/permission contracts, both receipt inventories,
+unchanged prior schema/endpoints and all 42 data fingerprints, including encrypted
+Vault rows. Signed-in hosted contact acceptance is the next required check. The
+frontend and production remain unchanged. See
+[contact release evidence](evidence/learn-commusoft-contacts-test-release-2026-10-10.json).
+
 ## Contact review checkpoint — local acceptance, 10 October
 
 Property contacts now project into the existing `people`, `contact_points` and
@@ -53,8 +76,9 @@ canonical identity preservation, held dependencies, cancellation, late-failure
 rollback and concurrent replay. All 15 customer/work client tests, TypeScript and
 the application build passed. The network-disabled browser fixture verified
 multiple phones, identity-choice reset, mixed outcomes, recovery after a lost reply
-and reload, and viewer denial. These contact changes are not installed in hosted
-TEST or production; hosted dependency checks and acceptance remain necessary.
+and reload, and viewer denial. At that local checkpoint, the contact changes were not installed in hosted TEST
+or production. The later TEST installation is recorded above; signed-in hosted
+acceptance and production release remain outstanding.
 
 Chris provided a logged-in Arc session. Read-only navigation confirmed API keys
 and Private Application settings are present; the key list includes system/device

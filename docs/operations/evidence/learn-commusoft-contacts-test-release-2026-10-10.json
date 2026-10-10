@@ -1,0 +1,261 @@
+{
+  "version": "learn-commusoft-contacts-release-evidence/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "learn_commusoft_contacts_v1",
+  "sourceSha256": "ad004229c9947b805c30b3985dbcd620c3dc6c5334dd04b9e66eee9b802fe265",
+  "localAcceptance": {
+    "actualTestSchemaProjection": true,
+    "rollbackAndReceiptFailurePreserveSchemaAndRows": true,
+    "canonicalContactsAndEndpoints": true,
+    "customerAndSiteRelationships": true,
+    "existingIdentityPreservation": true,
+    "candidateIsolationAndViewerDenial": true,
+    "mixedResultsCancellationAndReplay": true,
+    "concurrentConfirmation": true,
+    "releaseRecoveryTestsPassed": 5
+  },
+  "hostedRehearsal": {
+    "observedAt": "2026-10-10T12:15:21.952Z",
+    "state": "rehearsed_and_rolled_back",
+    "acknowledged": true,
+    "priorCatalogPreserved": true,
+    "preExistingSourcesPreserved": true
+  },
+  "installation": {
+    "observedAt": "2026-10-10T12:15:43.242Z",
+    "state": "acknowledged_then_confirmed_read_only",
+    "acknowledged": true,
+    "writeAttempted": true
+  },
+  "preservationDataSets": 42,
+  "limits": [
+    "The acknowledged installation hit management API rate limits during follow-up inspection. A later read-only confirmation verified installation; no migration resubmission occurred.",
+    "No new tables, actual credentials, provider requests, imports, schedules or frontend/production deployment.",
+    "Signed-in hosted contact acceptance remains required."
+  ],
+  "confirmation": {
+    "observedAt": "2026-10-10T12:17:33.203Z",
+    "state": "installed_needs_authenticated_acceptance",
+    "writeAttempted": false,
+    "priorCatalogPreserved": true,
+    "preExistingSourcesPreserved": true
+  },
+  "sourceAfter": [
+    {
+      "name": "public.authority_permissions",
+      "count": 19,
+      "fingerprint": "ae0094683e0c39c7cda44a5e11318a8e"
+    },
+    {
+      "name": "public.companies",
+      "count": 7,
+      "fingerprint": "20fc91a159ab76517c41c0eeb313b291"
+    },
+    {
+      "name": "public.config_versions",
+      "count": 16,
+      "fingerprint": "7239658d5a330dcc490236491f67d849"
+    },
+    {
+      "name": "public.connector_accounts",
+      "count": 24,
+      "fingerprint": "9f67406d278abc31fe0a7d5d93adbf17"
+    },
+    {
+      "name": "public.contact_points",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "public.customer_cards",
+      "count": 16217,
+      "fingerprint": "2095de9e651f54b1a0296b87fc7ab505"
+    },
+    {
+      "name": "public.email_messages",
+      "count": 4,
+      "fingerprint": "6090904ee2d3ca779b054f553e657230"
+    },
+    {
+      "name": "public.feature_flags",
+      "count": 8,
+      "fingerprint": "b5fa498787c72b1ed78c786361c659a9"
+    },
+    {
+      "name": "public.graph_edges",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "public.graph_events",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "public.graph_nodes",
+      "count": 4,
+      "fingerprint": "e9b19f16ebb9e0aa51cd20baa3fb4655"
+    },
+    {
+      "name": "public.interactions",
+      "count": 34,
+      "fingerprint": "5bf9a22fcb838ea426a039a20442a50f"
+    },
+    {
+      "name": "public.jobs",
+      "count": 22,
+      "fingerprint": "6bdb0d36dc3a16d4aad06c03d207abd6"
+    },
+    {
+      "name": "public.learn_business_input_links",
+      "count": 8,
+      "fingerprint": "5fd9e58cfa50c14ccf08a53b79ab5614"
+    },
+    {
+      "name": "public.learn_business_input_observations",
+      "count": 10,
+      "fingerprint": "d401328cf83bd88308ff17589b37b786"
+    },
+    {
+      "name": "public.learn_business_input_pages",
+      "count": 5,
+      "fingerprint": "215df3b9df3ec7acc8254bec2678ca97"
+    },
+    {
+      "name": "public.learn_business_input_projection_attempts",
+      "count": 7,
+      "fingerprint": "104b3c056eab2964352dad7caa7f1bbf"
+    },
+    {
+      "name": "public.learn_business_input_projection_batches",
+      "count": 6,
+      "fingerprint": "2ea4eb60148f6cc75c19e8a6c5120d6e"
+    },
+    {
+      "name": "public.learn_business_input_request_gates",
+      "count": 4,
+      "fingerprint": "51542c7ce4e8c8b1c3057751915f5c25"
+    },
+    {
+      "name": "public.learn_business_input_request_permits",
+      "count": 5,
+      "fingerprint": "80b80a6009357826ebff7133c92c6c26"
+    },
+    {
+      "name": "public.learn_business_input_versions",
+      "count": 10,
+      "fingerprint": "f137f3e9d96a5f0f891d252994e029d8"
+    },
+    {
+      "name": "public.learn_commusoft_connection_requests",
+      "count": 2,
+      "fingerprint": "2a7e5ad8917b7efb397207601814886d"
+    },
+    {
+      "name": "public.learn_commusoft_verification_permits",
+      "count": 1,
+      "fingerprint": "83785421af94dc27653b03cdedb8cf40"
+    },
+    {
+      "name": "public.learn_commusoft_verification_requests",
+      "count": 2,
+      "fingerprint": "a54a67ccc4d6144ae58ea0d2941e4b89"
+    },
+    {
+      "name": "public.learn_commusoft_verification_results",
+      "count": 2,
+      "fingerprint": "2e25a7ee4a3c70c1b8a36e95e0d42887"
+    },
+    {
+      "name": "public.learn_operator_input_requests",
+      "count": 9,
+      "fingerprint": "43f5aeddac606e52019503d1de891cdb"
+    },
+    {
+      "name": "public.people",
+      "count": 16219,
+      "fingerprint": "cde9de82170f8b49a5e42ab60fb00792"
+    },
+    {
+      "name": "public.phone_calls",
+      "count": 6,
+      "fingerprint": "08d6f19d63a0d8d219efdefe5a247f3d"
+    },
+    {
+      "name": "public.phone_recordings",
+      "count": 8,
+      "fingerprint": "70a0719a9a9a83f82493606736fc258f"
+    },
+    {
+      "name": "public.phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "public.platform_authority_grants",
+      "count": 7,
+      "fingerprint": "df8be8919bf8432ba17b6ec184e9833f"
+    },
+    {
+      "name": "public.platform_jobs",
+      "count": 47,
+      "fingerprint": "425113cb12a340fd4360da72ec67816b"
+    },
+    {
+      "name": "public.profiles",
+      "count": 125,
+      "fingerprint": "ebae0c91c1ed4d2947f6da46d7655a3d"
+    },
+    {
+      "name": "public.provider_connection_events",
+      "count": 3,
+      "fingerprint": "dfa1e2bfb4d562ad2048e1b3e7a0edb6"
+    },
+    {
+      "name": "public.provider_connections",
+      "count": 18,
+      "fingerprint": "fa157f89f94b993b6a757965ba744aed"
+    },
+    {
+      "name": "public.sites",
+      "count": 13,
+      "fingerprint": "b9b4262e5eee40a0a5ca144f34d47e3f"
+    },
+    {
+      "name": "public.slack_message_versions",
+      "count": 18,
+      "fingerprint": "ec8b9e80873fb3eda69ef16ac0a6941e"
+    },
+    {
+      "name": "public.slack_messages",
+      "count": 22,
+      "fingerprint": "c490c352c6c47e96b90cdfb0995eec62"
+    },
+    {
+      "name": "public.tenant_connectors",
+      "count": 20,
+      "fingerprint": "4375db9ea1d4f59a70f9b2e4a234a8f2"
+    },
+    {
+      "name": "public.tenants",
+      "count": 83,
+      "fingerprint": "3bc1f087fda5c8f28ef366656d14495f"
+    },
+    {
+      "name": "public.view_as_context",
+      "count": 15,
+      "fingerprint": "91567cba44421bee1fbdf13b39b8ee1e"
+    },
+    {
+      "name": "vault.secrets",
+      "count": 2,
+      "fingerprint": "e67af8ca90ba81053f4c7b61cd587c98"
+    }
+  ],
+  "installedCatalog": {
+    "tables": 110,
+    "releaseReceipts": 30,
+    "newFunctions": 3,
+    "changedFunctions": 2
+  }
+}

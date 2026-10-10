@@ -1789,3 +1789,28 @@ Next: inspect Drummonds' private application, complete the hosted contact releas
 and acceptance, then reconcile existing identities and support ongoing updates and
 incomplete-import recovery. Existing communication history and live hosting remain
 unchanged by this checkpoint.
+
+## Commusoft contacts installed in TEST — 10 October, 12:17 UTC
+
+Release 029 adds the three contact functions and updates the existing batch/page
+functions. The actual TEST dependency contracts were captured read-only and
+reproduced in disposable PostgreSQL 17, including the foundation relationship
+checks and existing contact-point constraints. Projection, existing-person and
+endpoint preservation, candidate isolation, viewer denial, mixed outcomes,
+cancellation, late-failure rollback and concurrent exact replay pass. The package
+also passes five release/preservation regressions and duplicate-install refusal.
+
+The hosted rollback rehearsal preserved existing schema and 42 data sets.
+Installation was acknowledged at 12:15:43 UTC; management API rate limits prevented
+immediate follow-up inspection. The single submission was not repeated. Fresh
+read-only confirmation at 12:17:33 UTC verifies the expected functions/permissions,
+30 release receipts, unchanged 110 tables, prior schema/endpoints and identical
+fingerprints for all 42 checked data sets, including encrypted Vault rows.
+[Evidence](../operations/evidence/learn-commusoft-contacts-test-release-2026-10-10.json).
+
+Next: signed-in hosted contact acceptance, then real Commusoft access verification
+and provider coverage. The Arc private-application page is still awaiting user
+navigation after intermittent native window-control failure. No real credentials,
+provider requests, Drummonds imports, frontend or production changes occurred in
+this release. Existing identity reconciliation, updates, incomplete imports,
+broader operator controls, Slack/voicemail and production acceptance remain open.

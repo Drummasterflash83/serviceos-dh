@@ -1,0 +1,20 @@
+{
+  "version": "learn-commusoft-contacts-package/1",
+  "sha256": "ad004229c9947b805c30b3985dbcd620c3dc6c5334dd04b9e66eee9b802fe265",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031190000_learn_business_input_contacts.sql",
+      "sha256": "e7420165ed7a86b10997c15ddc2b0ec37e720d90d66f2da4e335e331e2ae0e4c"
+    }
+  ],
+  "functions": [
+    "learn_business_contact_phone",
+    "learn_commusoft_confirm_contact",
+    "learn_commusoft_contact_candidates"
+  ],
+  "changedFunctions": [
+    "learn_commusoft_work_batch",
+    "learn_commusoft_work_review_page"
+  ],
+  "tables": []
+}
