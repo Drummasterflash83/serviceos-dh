@@ -1,0 +1,253 @@
+{
+  "version": "learn-commusoft-contact-traversal-test/1",
+  "observedAt": "2026-10-10T20:33:48.715407+00:00",
+  "state": "test_schema_and_runtime_verified_frontend_pending",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "schemaRehearsal": {
+    "version": "learn-contact-traversal/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "174dc2d5694a719a81a39488325f94824d7b563e3bcfbaec3aaee3533e6f52c8",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T20:30:41.929Z",
+    "priorFingerprint": "661666ae28c5edcae4e16067b8055bb0",
+    "expectedFingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+    "afterFingerprint": "661666ae28c5edcae4e16067b8055bb0",
+    "preservedDataSets": 77,
+    "receipt": {
+      "fingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+      "tables": 13,
+      "functions": 10
+    }
+  },
+  "schemaInstallation": {
+    "version": "learn-contact-traversal/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "174dc2d5694a719a81a39488325f94824d7b563e3bcfbaec3aaee3533e6f52c8",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T20:30:57.753Z",
+    "priorFingerprint": "661666ae28c5edcae4e16067b8055bb0",
+    "expectedFingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+    "afterFingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+    "preservedDataSets": 77,
+    "receipt": {
+      "fingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+      "tables": 13,
+      "functions": 10
+    }
+  },
+  "installedSqlAcceptance": {
+    "version": "contact-traversal-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T20:31:36.166Z",
+    "state": "service_sql_verified",
+    "schemaFingerprint": "195ca207f0d8a7a95b0fb30580e093fd",
+    "runtimeFingerprint": "cb78a673db41abaf508b76b91309c044",
+    "preservedDataSets": 77,
+    "newTargetRows": 0,
+    "endpointsUnchanged": true,
+    "limits": [
+      "Reviewed synthetic service-path rollback probe only; no real provider call, credential, login or operator grant.",
+      "Signed-in operator plan creation and hosted real import still need acceptance."
+    ]
+  },
+  "runtimeDeployment": {
+    "version": "learn-test-commusoft-contact-runtime-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "471041b23928aa5cce77d4288f3378c3d945e851bb601bbf9edb3f995fc1e77e",
+    "observedAt": "2026-10-10T20:32:27.986Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "learn-commusoft-worker",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "learn-commusoft-verify",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "1c60f3b8-eeda-4c3b-9743-74eabb9dda61",
+        "slug": "learn-commusoft-verify",
+        "name": "learn-commusoft-verify",
+        "status": "ACTIVE",
+        "version": 4,
+        "created_at": 1791632509160,
+        "updated_at": 1791664347408,
+        "verify_jwt": true,
+        "import_map": false,
+        "ezbr_sha256": "3d21e74c55190a4b332a818a2e66b064701a38c5ccca7109be1eea1dce01e194"
+      },
+      {
+        "id": "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+        "slug": "learn-commusoft-worker",
+        "name": "learn-commusoft-worker",
+        "status": "ACTIVE",
+        "version": 4,
+        "created_at": 1791625693801,
+        "updated_at": 1791664346398,
+        "verify_jwt": true,
+        "import_map": false,
+        "ezbr_sha256": "4edd7fdb0a38bde6a0d3feec2cc45bd2d002dc1525246ae4fbf7996dc43ca28d"
+      }
+    ],
+    "dependencyFiles": 12,
+    "fullSchemaPreserved": true,
+    "extendedPreservedDataSets": 78,
+    "extendedPreservationVerified": true
+  },
+  "httpAcceptance": {
+    "version": "learn-test-commusoft-contact-runtime-hosted/1",
+    "observedAt": "2026-10-10T20:33:09.474Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "passed",
+    "checks": [
+      {
+        "label": "Gateway rejects missing JWT",
+        "status": 401
+      },
+      {
+        "label": "Gateway requires JWT even with trigger key",
+        "status": 401
+      },
+      {
+        "label": "Anonymous JWT cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Service JWT alone cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Incorrect trigger key refused",
+        "status": 403
+      },
+      {
+        "label": "GET refused",
+        "status": 405
+      },
+      {
+        "label": "Caller job selectors refused",
+        "status": 400
+      },
+      {
+        "label": "Authorised empty invocation",
+        "status": 200
+      },
+      {
+        "label": "Verification missing JWT",
+        "status": 401
+      },
+      {
+        "label": "Verification anonymous JWT",
+        "status": 401
+      },
+      {
+        "label": "Verification service JWT is not user authority",
+        "status": 401
+      },
+      {
+        "label": "Verification GET refused",
+        "status": 405
+      }
+    ],
+    "preservedDataSets": 78,
+    "sourceAndSchemaPreserved": true,
+    "limits": [
+      "Gateway/authentication and empty-worker runtime checks only. No real provider call, signed-in operator, credential binding or imported record."
+    ]
+  },
+  "downloadedRuntime": {
+    "version": "commusoft-contact-runtime-readback/1",
+    "observedAt": "2026-10-10T20:33:09.618Z",
+    "state": "passed",
+    "endpoints": [
+      {
+        "name": "learn-commusoft-worker",
+        "executableStructureMatches": true,
+        "files": [
+          {
+            "path": "_shared/commusoft/bound_page.ts",
+            "sha256": "3548e8b2b807ee9b8667710269973d58302d37f4646ac4ae3c5e6d55b0cbbf84"
+          },
+          {
+            "path": "_shared/commusoft/page_store.ts",
+            "sha256": "e37df6cbbb8c9b0d2d0e8ed0b5f5d66d740f95e0ed654ee87fd520664e0a1365"
+          },
+          {
+            "path": "_shared/commusoft/permit_server.ts",
+            "sha256": "173b8311f9fcf3de8f8b9594e31b4cb0065cd247cb90c0fded1ba0fb91fedd3c"
+          },
+          {
+            "path": "_shared/commusoft/read_page.ts",
+            "sha256": "addaed0ef0ce9ba85b74e965d1c58bea279343fbddc790afc0f9795df320a78c"
+          },
+          {
+            "path": "_shared/commusoft/stored_scope.ts",
+            "sha256": "4d9c2b3ab49df9d4fabc697707859d9cad3bdbf5a732d687aaade2b6086c0a8d"
+          },
+          {
+            "path": "_shared/commusoft/worker.ts",
+            "sha256": "5689b0ce7005518b46e71781e92e198c459d46d06543396586a9eba3971a08e5"
+          },
+          {
+            "path": "_shared/slack/slack_worker_http.ts",
+            "sha256": "8745cbef9c980a1cb52c7f84c0d1ef0032c09a708498152f8cea89ad68b4e6c8"
+          },
+          {
+            "path": "learn-commusoft-worker/index.ts",
+            "sha256": "399e7bec653f653124522966a45528e1b9b83655bd7a7cd20381c53459b45007"
+          }
+        ],
+        "testsPassed": 48,
+        "repositoryTestSupport": []
+      },
+      {
+        "name": "learn-commusoft-verify",
+        "executableStructureMatches": true,
+        "files": [
+          {
+            "path": "_shared/commusoft/read_page.ts",
+            "sha256": "addaed0ef0ce9ba85b74e965d1c58bea279343fbddc790afc0f9795df320a78c"
+          },
+          {
+            "path": "_shared/commusoft/verification_contract.ts",
+            "sha256": "2503172e5566e1c01a77992632b35eb6c9c711fa5da690390e77ec3e53c7912c"
+          },
+          {
+            "path": "_shared/commusoft/verification_http.ts",
+            "sha256": "463d052db63014046225c4c3a8a0be596cb02870043e5d5c900ddfd4be551ee4"
+          },
+          {
+            "path": "_shared/commusoft/verify_connection.ts",
+            "sha256": "5a87932c7eb1be1e62b2d08795c3b5564d39b1ca6661cd16d010750ac78bb8b0"
+          },
+          {
+            "path": "learn-commusoft-verify/index.ts",
+            "sha256": "aa6a87b78b78255ad9b5c6bba10e5000973da6d572222e129b08d01fc584b50f"
+          }
+        ],
+        "testsPassed": 31,
+        "repositoryTestSupport": [
+          "src/lib/learn-commusoft-verification.ts"
+        ]
+      }
+    ],
+    "limits": [
+      "Downloaded code with synthetic ports; not a signed-in hosted operator or real provider request from Edge."
+    ]
+  },
+  "releaseTestsPassed": 15,
+  "limits": [
+    "Real hosted Commusoft requests and signed-in operator plan creation remain unverified.",
+    "Hosted service-path assertions use synthetic preseeded permits under rollback; successful credential acquisition and operator approval were verified separately in disposable PostgreSQL.",
+    "No production changes, real credentials, logins, authority grants, import schedules or retained synthetic target rows created.",
+    "First hosted rehearsal had a probe syntax error; subsequent catalog and data reads confirmed rollback. Corrected probe passed locally and in hosted rehearsal before installation."
+  ]
+}

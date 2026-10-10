@@ -1,6 +1,16 @@
 # Existing TEST environment: verified release gaps
 
-## Commusoft contact traversal — local database/worker candidate verified
+## Commusoft per-property contacts — TEST release 042 and runtime v4
+
+The schema installed at 20:30 UTC and both endpoints updated at 20:32 UTC,
+10 October. Hosted rollback service-path checks pass. All 77 pre-existing datasets
+are preserved and the new target table is empty. Twelve HTTP checks, 79 tests of
+downloaded code and 15 release/deployer checks pass. The frontend update,
+signed-in operator setup and real hosted import remain pending. No new login,
+grant, real credential, schedule or production change was made.
+[Evidence](evidence/learn-commusoft-contact-traversal-test-2026-10-10.json).
+
+## Earlier Commusoft contact validation — subsequently released to TEST
 
 The contact reader, SQL permits/publication, fixed property plans, resumable cursor
 and operator progress now work together locally. Empty properties advance; one
@@ -10,8 +20,8 @@ traversals can continue beyond 10,000 total pages with bounded new allowances.
 
 Seventy-eight tests, strict application/worker TypeScript and the application build
 pass. Real PostgreSQL contact and legacy continuation suites pass; the actual worker
-completes the synthetic SQL/provider bridge. **Not deployed:** the additive TEST
-schema/runtime/frontend release and real hosted import remain next. Real scoped
+completes the synthetic SQL/provider bridge. The additive TEST schema/runtime
+release is now verified above; the frontend and real hosted import remain next. Real scoped
 customer/work-address contact access was already verified separately.
 [Candidate evidence](evidence/learn-commusoft-contact-traversal-local-2026-10-10.json).
 

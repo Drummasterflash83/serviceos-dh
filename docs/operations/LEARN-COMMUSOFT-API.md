@@ -1,6 +1,26 @@
 # Commusoft read-only API adapter
 
-## Per-property contact import — local candidate verified, deployment pending
+## Property-scoped contacts — TEST schema and runtime installed
+
+Release **042** installed at **20:30 UTC, 10 October**, after a successful hosted
+rollback rehearsal. Both Commusoft endpoints became **v4** at **20:32 UTC**, with
+JWT protection retained. The installed SQL passes the reviewed synthetic service-
+path probe under rollback. All 77 pre-existing datasets are preserved; the new
+contact-target table remains empty. Runtime/HTTP checks preserve all 78 datasets.
+
+Twelve actual HTTP checks pass. Downloaded published code matches the reviewed
+executable structure and passes 79 behavior checks. Fifteen release/deployer tests
+pass. The first rehearsal exposed a syntax error in the probe itself; rollback was
+confirmed, the corrected probe passed locally and then hosted, and only that
+verified package was installed.
+
+The hosted probe uses synthetic preseeded permits to exercise publication and
+settlement. It creates no login, operator grant or Vault credential and does not
+prove signed-in approval or a real provider request from Edge. Those remain next,
+along with the protected TEST frontend update. Production remains unchanged.
+[Release evidence](evidence/learn-commusoft-contact-traversal-test-2026-10-10.json).
+
+## Earlier local validation — now deployed to TEST as release 042
 
 The new migration and worker now build a fixed contact plan from the last completed
 property traversal for the same company and connection. Each selected property's
@@ -28,14 +48,14 @@ a three-request synthetic traversal, including a lost acknowledgement. Actual SQ
 operator output passes the application parser.
 [Evidence](evidence/learn-commusoft-contact-traversal-local-2026-10-10.json).
 
-**Not deployed:** prepare the additive TEST schema release, update/read back the
-runtime and frontend, then verify signed-in setup and a real hosted import. No
+**Subsequently deployed:** the TEST schema and runtime are verified as recorded above.
+The frontend update, signed-in setup and a real hosted import remain pending. No
 external requests or hosted mutations occurred during this candidate verification.
 Empty target sets are refused explicitly; old unscoped contact approvals require
 review rather than automatic reinterpretation. New properties need a later
 property traversal/contact plan; no snapshot/deletion/future coverage is inferred.
 
-## Contacts require a parent property — live samples verified, traversal correction pending
+## Earlier contact diagnosis — required parent corrected and deployed to TEST
 
 At **20:11 UTC**, actual properties and jobs both passed first/next-page reads.
 The existing unscoped contact request returned JSON **404**. The full published
@@ -56,10 +76,9 @@ no database/provider mutations occurred.
 The local reader now requires a positive safe-integer parent ID, sends it as
 `propertyID`, and rejects contacts belonging to a different or missing parent.
 The stored worker scope also refuses an unbound contact request before acquiring
-a credential. Seventy-two tests and strict TypeScript pass. These source changes
-are **not deployed**. The historical authentication-only release remains pinned
-and refuses the changed bundle; deployed TEST v3 still uses the earlier contact
-contract. No contact jobs/connections were enabled by the preceding release.
+a credential. Seventy-two tests and strict TypeScript pass. These source changes were local at this checkpoint and are now included in TEST v4
+as recorded above. The historical authentication-only release remains pinned
+and refuses the changed bundle; TEST v3 used the earlier contact contract. No contact jobs/connections were enabled by the preceding release.
 [Redacted checks](evidence/learn-commusoft-contact-scope-2026-10-10.json).
 
 **Workflow requirement (implemented in the local candidate above):** derive a frozen, tenant/connection-

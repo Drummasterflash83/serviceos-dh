@@ -1,0 +1,17 @@
+{
+  "version": "learn-contact-traversal-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "174dc2d5694a719a81a39488325f94824d7b563e3bcfbaec3aaee3533e6f52c8",
+  "priorFingerprint": "661666ae28c5edcae4e16067b8055bb0",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101020000_learn_commusoft_contact_traversal.sql",
+      "sha256": "aa1a0e0ce952bed84ea0c1f3f623b2d982ae6f8c760084ba76fe0ac59e10d960"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-commusoft-contact-traversal-hosted.assert.sql",
+    "sha256": "4092bb9f3e752bef53102d48f009fbc23bbbab93367e2183d30714be05b02106"
+  },
+  "preservedDataSets": 77
+}

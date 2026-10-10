@@ -50,6 +50,10 @@ try:
     assertions = 'scripts/verify/learn-commusoft-resume.assert.sql' if legacy else 'scripts/verify/learn-commusoft-contact-traversal.assert.sql'
     print(sql(source(assertions)), flush=True)
     if not legacy: subprocess.run(['node','scripts/verify/learn-commusoft-contact-traversal-bridge.mjs',docker,name],cwd=root,check=True,timeout=60)
+    if not legacy:
+        sql("alter table tenants alter column status set default 'active',add column slug text,add column display_name text,add column metadata jsonb default '{}';alter table provider_connections alter column updated_at set default clock_timestamp();")
+        sql("begin;\n"+source('scripts/verify/learn-commusoft-contact-traversal-hosted.assert.sql')+"\nrollback;")
+        print('Hosted rollback probe also passed against the disposable database.',flush=True)
     overview = sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000180';set role authenticated;select learn_operator_inputs(fixture_id(100));")
     path=root/('.verification-results/commusoft-contact-traversal-overview-legacy.json' if legacy else '.verification-results/commusoft-contact-traversal-overview.json')
     path.write_text(overview+'\n')

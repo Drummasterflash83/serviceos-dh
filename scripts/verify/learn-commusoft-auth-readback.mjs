@@ -9,7 +9,10 @@ import { resolve, join, dirname } from "node:path";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { edgeRuntimeBundle } from "./learn-email-runtime-edge-bundle.mjs";
-const base = resolve(".verification-results/commusoft-auth-readback");
+const mode = process.argv.slice(2).join(" ");
+assert.ok(mode === "" || mode === "--contact-runtime", "Known readback release required");
+const label = mode === "--contact-runtime" ? "commusoft-contact-runtime" : "commusoft-auth";
+const base = resolve(`.verification-results/${label}-readback`);
 function structure(source) {
   const js = ts.transpileModule(source, {
     compilerOptions: {
@@ -39,7 +42,7 @@ function structure(source) {
   return JSON.stringify(shape(f));
 }
 const report = {
-  version: "commusoft-auth-runtime-readback/1",
+  version: `${label}-readback/1`,
   observedAt: new Date().toISOString(),
   state: "started",
   endpoints: [],
@@ -101,7 +104,7 @@ for (const name of ["learn-commusoft-worker", "learn-commusoft-verify"]) {
 }
 report.state = "passed";
 writeFileSync(
-  ".verification-results/commusoft-auth-readback.json",
+  `.verification-results/${label}-readback.json`,
   JSON.stringify(report, null, 2) + "\n",
   { mode: 0o600 },
 );
