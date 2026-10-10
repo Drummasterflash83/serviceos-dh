@@ -1,0 +1,201 @@
+{
+  "observedAt": "2026-10-10T18:26:47.291Z",
+  "state": "test_installed_readback_and_idle_verified",
+  "rehearsal": {
+    "version": "learn-slack-auto-threads/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "f5496b9fee5b889f140eb169acac622d10bae8013f513269b41a1b83fa8641ad",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T18:24:28.047Z",
+    "priorFingerprint": "6ecaf9203d8aa4474afc417173431ca2",
+    "expectedFingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+    "afterFingerprint": "6ecaf9203d8aa4474afc417173431ca2",
+    "preservedDataSets": 70,
+    "receipt": {
+      "fingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+      "tables": 14,
+      "functions": 17
+    }
+  },
+  "installation": {
+    "version": "learn-slack-auto-threads/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "f5496b9fee5b889f140eb169acac622d10bae8013f513269b41a1b83fa8641ad",
+    "mode": "apply",
+    "state": "installed_needs_signed_in_acceptance",
+    "observedAt": "2026-10-10T18:24:39.505Z",
+    "priorFingerprint": "6ecaf9203d8aa4474afc417173431ca2",
+    "expectedFingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+    "afterFingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+    "preservedDataSets": 70,
+    "receipt": {
+      "fingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+      "tables": 14,
+      "functions": 17
+    }
+  },
+  "confirmation": {
+    "observedAt": "2026-10-10T18:25:48.219Z",
+    "fingerprint": "528d0756cc0d2388d6f0dc098b653e0d",
+    "preservedDataSets": 70,
+    "checks": [
+      {
+        "marker": "learn-slack-auto-threads-hosted/1",
+        "role_denials": true,
+        "private_tables": true,
+        "empty_scheduler": true,
+        "no_activation": true
+      }
+    ]
+  },
+  "worker": {
+    "version": "learn-slack-auto-threads-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "80e0f6166c3d5489978c2007bde7a672d6e3a73be8ddfd5583b98a872a1d04ca",
+    "observedAt": "2026-10-10T18:25:18.975Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "learn-slack-worker",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "bd55f2b9-77da-4427-92bf-59d2e27d744e",
+        "slug": "learn-slack-worker",
+        "name": "learn-slack-worker",
+        "status": "ACTIVE",
+        "version": 8,
+        "created_at": 1791584977820,
+        "updated_at": 1791656718063,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_bd55f2b9-77da-4427-92bf-59d2e27d744e_8/source/supabase/functions/learn-slack-worker/index.ts",
+        "ezbr_sha256": "5285ad03e91016eaf8111964e2094e85072608ac81fa21499faa1d61bf0feb35"
+      }
+    ],
+    "dependencyFiles": 14
+  },
+  "http": {
+    "version": "learn-slack-auto-threads-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T18:25:54.205Z",
+    "state": "http_verified_idle_no_capture",
+    "checks": [
+      {
+        "name": "missing gateway JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "name": "anonymous key without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "service JWT without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "name": "caller supplied work selector",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "empty authorized worker",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "preservedDataSets": 70,
+    "providerRequests": 0,
+    "activatedChannels": 0,
+    "recurringTriggersCreated": 0
+  },
+  "releaseTests": {
+    "passed": 14,
+    "failed": 0
+  },
+  "downloadedRuntime": {
+    "files": [
+      {
+        "path": "functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history.ts",
+        "sha256": "e656808cc6ace17987f383c95f069dd759dde52f94650e576203b03a24047f2f"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_batch.ts",
+        "sha256": "33ecef4eed9624b27a37d9131bae0c19d6f136c762359e90f7c1ca951cbc9fb8"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_binding.ts",
+        "sha256": "3c59debc16e1246a37aecfc15ba500950805e2570ef3264c0900efc6e0d0a3a2"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_errors.ts",
+        "sha256": "c7c4d744067ae29b728ccfbc89c8c1940d3072dd822030a09b5f3041e5ed7f1a"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_persist.ts",
+        "sha256": "11a880029b7f388e659c131b8ba707e79fb8e8cdf18f11056801f87cfc9a89cd"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_request.ts",
+        "sha256": "432e427693d8b9806a2b89691b1de17b7eec51eaa9a104c7cd94d8163cf299d9"
+      },
+      {
+        "path": "functions/_shared/slack/slack_history_server.ts",
+        "sha256": "c3cbf1801e5829e2bd761cf44f15007c4292b81162059afe30ca026f79d205a1"
+      },
+      {
+        "path": "functions/_shared/slack/slack_thread_history.ts",
+        "sha256": "e7b4cc45fbf87974a566fda0380b166a0e8e6e98137974aeb276a2adac500faa"
+      },
+      {
+        "path": "functions/_shared/slack/slack_worker.ts",
+        "sha256": "5b90a881864f2338641b0c9729369782ae833aafde6d2a3202336c7fe552d91e"
+      },
+      {
+        "path": "functions/_shared/slack/slack_worker_http.ts",
+        "sha256": "8745cbef9c980a1cb52c7f84c0d1ef0032c09a708498152f8cea89ad68b4e6c8"
+      },
+      {
+        "path": "functions/_shared/worker_handlers/slack_history.ts",
+        "sha256": "cdce69211582ee7f7f08625e2312875a2afd2a946d6d18039571da7e29383b84"
+      },
+      {
+        "path": "index.ts",
+        "sha256": "e140959c50259853013f5f30d3ecb1bf0c4fd68e73324e566ce2aaf1d5f06ea1"
+      }
+    ],
+    "passed": 58,
+    "failed": 0,
+    "method": "Downloaded published transpiled worker source; existing tests use synthetic provider/database ports against this copy.",
+    "limits": "No exact TypeScript source-map comparison. Type-only contract absent. Standalone capture-control tests require generic queue code outside this endpoint and are excluded."
+  },
+  "limitations": [
+    "No channels, connections, capture approvals, schedules or credentials activated.",
+    "No real provider requests; populated hosted signed-in thread controls remain unverified.",
+    "Coverage is replies to observed parents only; unseen roots, private/shared channels, attachments, historical edits and deletion coverage remain incomplete.",
+    "Frontend deployment recorded separately. Production unchanged."
+  ]
+}

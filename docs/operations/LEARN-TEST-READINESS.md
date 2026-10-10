@@ -1,5 +1,27 @@
 # Existing TEST environment: verified release gaps
 
+## Observed Slack threads — TEST release 038 and worker v8 installed
+
+Release **038** installed opt-in ongoing replies for observed Slack parents at
+**18:24 UTC on 10 October 2026**, after a matching rollback rehearsal. The separate
+thread approval, progress windows and recovery lineage now exist in TEST. Worker
+**v8** rechecks live recurring approval before credential use and publication.
+Existing channels remain unchanged; no subscriptions, imports or triggers started.
+
+All **70** monitored datasets retained their fingerprints. Hosted checks verified
+private table boundaries, denial of unassigned apply/check/cancel, missing-import
+denial and an idle scheduler. Seven HTTP checks passed with zero claimed jobs.
+Fourteen release/deployment tests passed; **58** applicable tests passed against
+the downloaded published worker using synthetic provider/database ports.
+
+This remains TEST acceptance of infrastructure and idle boundaries. Real Slack
+workspace capture, populated signed-in hosted controls and provider end-to-end
+acceptance remain outstanding. Coverage is replies to observed parents, not all
+historical threads or unseen roots. No production or access-grant changes occurred.
+Frontend deployment is recorded separately. The earlier operator login remains
+retired. [Release evidence](evidence/learn-slack-auto-threads-hosted-2026-10-10.json).
+
+
 ## Private build estimate — TEST release 037 installed
 
 The controller estimate error was traced to absent `openfolk_build_investment()`

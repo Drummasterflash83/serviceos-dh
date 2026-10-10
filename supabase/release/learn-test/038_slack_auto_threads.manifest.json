@@ -1,0 +1,13 @@
+{
+  "version": "learn-slack-auto-threads-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "f5496b9fee5b889f140eb169acac622d10bae8013f513269b41a1b83fa8641ad",
+  "priorFingerprint": "6ecaf9203d8aa4474afc417173431ca2",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101005000_learn_slack_recurring_threads.sql",
+      "sha256": "251f9c8cc1fd2ff32a80d9780b0605880cfee5259f9dbfa02e47452709f9fce6"
+    }
+  ],
+  "preservedDataSets": 70
+}
