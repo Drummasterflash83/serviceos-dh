@@ -1,24 +1,30 @@
 # Existing TEST environment: verified release gaps
 
-## Recurring Slack capture — local implementation, not deployed
+## Recurring Slack backend — installed in TEST, not activated
 
-An explicit recurring-channel approval and service-only scheduling endpoint now
-advance an existing public channel through bounded windows, preserving each prior
-checkpoint and requiring matching completion evidence. Pause/resume, authority and
-connection changes, queue rollback and concurrent calls are covered by disposable
-PostgreSQL verification; all 62 Slack Node tests, TypeScript and the preview build
-pass. Client and OpenFolk controls now include retained request recovery and
-permission-aware editing, verified in a browser with synthetic data. No hosted
-schema, schedule, Slack credential or source data changed. Hosted release acceptance,
-trigger activation and live workspace authorization remain outstanding. See
-[implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--local-implementation-10-october-2026).
+Release **035** installed two empty RLS tables and four scoped recurring functions
+after a successful rollback rehearsal. All 65 monitored datasets remained unchanged,
+including a final comparison after endpoint deployment. `learn-slack-schedule` is
+ACTIVE at version 1, with JWT and existing worker-key checks. Seven real HTTP cases
+passed; the authorized idle call queued no work. No channel approval, credential,
+user grant or recurring trigger was created. Production was untouched.
+
+Client and OpenFolk controls remain local, verified with synthetic browser data.
+The existing 62 Slack tests, TypeScript and frontend build passed; seven additional
+release/deployment tests pass. Protected frontend deployment, authenticated hosted
+channel-control acceptance, trigger activation and real Slack workspace access
+remain outstanding. See [implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--test-backend-installed-10-october-2026)
+and [hosted evidence](evidence/learn-slack-recurring-hosted-2026-10-10.json).
 
 ## Hosted operator acceptance session — prepared, approval pending
 
 The read-only preflight for run `0be31171-a302-4840-80fd-f433726a7300` passed
 against release 034. It rechecked the exact health catalog, existing Auth contract,
 absence of `chris@openfolk.ai` in TEST Auth/profiles, and 64 aggregate preservation
-fingerprints. No account or grant has been created for this run.
+fingerprints. No account or grant has been created for this run. Release 035 later
+changed the health catalog's release ledger; the activation script now pins the
+verified post-035 health fingerprint and still rechecks the saved preservation
+baseline and identity absence before creating any access.
 
 `scripts/verify/learn-hosted-operator-session.mjs` prepares, activates, inspects and
 retires the bounded session. Activation requires explicit approval of this new run;

@@ -1,0 +1,123 @@
+{
+  "version": "learn-slack-recurring-hosted/1",
+  "state": "backend_installed_idle_not_activated",
+  "rehearsal": {
+    "version": "learn-slack-recurring/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "51f9aeb95ff9d47e4e2787285a9917b8ee1b85a912ff65bfdd6f1f9f325f25eb",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T17:25:58.727Z",
+    "priorFingerprint": "5b8642b5dae2e70d07b5a7e40391e639",
+    "expectedFingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+    "afterFingerprint": "5b8642b5dae2e70d07b5a7e40391e639",
+    "preservedDataSets": 65,
+    "receipt": {
+      "fingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+      "tables": 10,
+      "functions": 7
+    }
+  },
+  "installation": {
+    "version": "learn-slack-recurring/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "51f9aeb95ff9d47e4e2787285a9917b8ee1b85a912ff65bfdd6f1f9f325f25eb",
+    "mode": "apply",
+    "state": "installed_needs_signed_in_acceptance",
+    "observedAt": "2026-10-10T17:26:21.685Z",
+    "priorFingerprint": "5b8642b5dae2e70d07b5a7e40391e639",
+    "expectedFingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+    "afterFingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+    "preservedDataSets": 65,
+    "receipt": {
+      "fingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+      "tables": 10,
+      "functions": 7
+    }
+  },
+  "databaseChecks": {
+    "checks": [
+      {
+        "marker": "learn-slack-recurring-hosted/1",
+        "role_denials": true,
+        "empty_scheduler": true,
+        "no_activation": true
+      }
+    ],
+    "fingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+    "runtimeFingerprint": "ff17abb65894813f89e2df1bda2a4624",
+    "preserved": 65
+  },
+  "http": {
+    "version": "learn-slack-schedule-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T17:28:16.288Z",
+    "state": "http_verified_idle_no_capture",
+    "checks": [
+      {
+        "name": "missing gateway JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "name": "anonymous key without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "service JWT without trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong trigger",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "name": "caller supplied work selector",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "name": "empty authorized scheduler",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "preservedDataSets": 65,
+    "providerRequests": 0,
+    "activatedChannels": 0,
+    "recurringTriggersCreated": 0
+  },
+  "finalPreservation": {
+    "observedAt": "2026-10-10T17:28:58.254Z",
+    "fingerprint": "3df03cc4ff78e62c1d2bba5f9579a638",
+    "healthFingerprint": "46a59f9569b729bed69f1ed450f5eb4c",
+    "preservedDataSets": 65
+  },
+  "releaseTests": 7,
+  "limits": [
+    "Frontend controls are local; protected frontend and signed-in hosted acceptance remain required.",
+    "No real Slack workspace requests, channel approvals or recurring trigger activation.",
+    "Only approved public channel history windows; broader coverage remains unfinished."
+  ],
+  "endpoint": {
+    "sourceBundleSha256": "bb84ca48755520f67b50b6ec1b7dac01119212b61428c79240735d62dcae679b",
+    "dependencyFiles": 3,
+    "priorSchemaAndEndpointsPreserved": true,
+    "functions": [
+      {
+        "slug": "learn-slack-schedule",
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    ]
+  }
+}

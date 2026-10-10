@@ -13,7 +13,9 @@ import { AUTH_CONTRACT_QUERY } from './learn-test-auth-contract.mjs';
 import { actionAuthContractMatches } from './learn-test-actions-acceptance.mjs';
 
 export const SESSION_EMAIL = 'chris@openfolk.ai';
-export const HEALTH_FINGERPRINT = 'fdc6a58cd52c032da172ddde7bd50265';
+// Release 035 changes the ledger only within this health catalog. Activation still
+// rechecks all retained data and Auth identity absence from the saved plan.
+export const HEALTH_FINGERPRINT = '46a59f9569b729bed69f1ed450f5eb4c';
 const version = 'learn-hosted-operator-session/1';
 const privateFile = new URL('../../.verification-results/hosted-operator-session.json', import.meta.url);
 const base = `https://${TEST_PROJECT}.supabase.co`;

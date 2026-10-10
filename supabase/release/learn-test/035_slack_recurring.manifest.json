@@ -1,0 +1,13 @@
+{
+  "version": "learn-slack-recurring-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "51f9aeb95ff9d47e4e2787285a9917b8ee1b85a912ff65bfdd6f1f9f325f25eb",
+  "priorFingerprint": "5b8642b5dae2e70d07b5a7e40391e639",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101003000_learn_slack_recurring.sql",
+      "sha256": "a97f894a53f39acadff7ee5fe3a576da82dbedc81704df4e7faa79a13e91a48f"
+    }
+  ],
+  "preservedDataSets": 65
+}

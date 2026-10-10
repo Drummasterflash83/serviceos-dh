@@ -1,6 +1,6 @@
 # LEARN Slack history ingestion
 
-## Recurring channel capture — local implementation, 10 October 2026
+## Recurring channel capture — TEST backend installed, 10 October 2026
 
 `20261101003000_learn_slack_recurring.sql` adds an explicit ongoing approval for
 an existing captured public channel. Tenant owner/admin or active OpenFolk admin approval binds the company,
@@ -50,12 +50,22 @@ retained synthetic source/version fingerprints and two concurrent scheduler
 sessions producing one job. Completion receipts in this fixture are synthetic;
 this does not establish actual provider-to-worker execution.
 
-**Not deployed or activated.** Remaining work includes current-schema hosted rehearsal, authenticated acceptance,
-explicit trigger activation and real Slack workspace/channel access. This path
+Release **035** installed the recurring schema in TEST at **17:26:21 UTC**, after
+a successful rollback rehearsal. All **65** monitored datasets remained unchanged.
+The `learn-slack-schedule` endpoint is ACTIVE at version 1, with gateway JWT and
+existing dedicated worker-key checks. Seven actual HTTP cases passed, including an
+authorized empty scheduler call and refusal of missing keys, wrong keys, incorrect
+methods and supplied work selectors. Hosted SQL also denied an unassigned identity.
+The two recurring tables remain empty. No channel, credential or trigger was added.
+
+**Not activated; frontend controls remain local.** Remaining work includes updating
+the protected frontend, authenticated hosted channel-control acceptance, explicit
+trigger activation and real Slack workspace/channel access. This path
 covers channel-history windows only: automatic thread discovery, older message
 edit/delete reconciliation, other channel types and attachment capture remain
 separate requirements. See [local verification evidence](evidence/learn-slack-recurring-local-2026-10-10.json) and
-[controls verification](evidence/learn-slack-recurring-controls-2026-10-10.json).
+[controls verification](evidence/learn-slack-recurring-controls-2026-10-10.json) and
+[hosted release evidence](evidence/learn-slack-recurring-hosted-2026-10-10.json).
 
 ## Current implementation and limits
 
