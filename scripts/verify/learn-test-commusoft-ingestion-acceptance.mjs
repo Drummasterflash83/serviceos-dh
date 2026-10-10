@@ -34,8 +34,9 @@ import {
 } from "../../src/lib/learn-commusoft-review.ts";
 import { loadWorkPage, resolveWorkDraft } from "../../src/lib/learn-commusoft-work.ts";
 import { readLearnCards } from "../../src/lib/learn-cards.ts";
-import { readContactCatalog } from "./learn-commusoft-contacts-catalog.mjs";
-import { installedContacts, contactFingerprint } from "./learn-test-commusoft-contacts-release.mjs";
+import { readResumeCatalog } from "./learn-commusoft-resume-catalog.mjs";
+import { installedResume, resumeFingerprint } from "./learn-test-commusoft-resume-release.mjs";
+import { installedContacts } from "./learn-test-commusoft-contacts-release.mjs";
 import {
   syntheticContactPage,
   acceptCapturedContacts,
@@ -66,9 +67,11 @@ export async function acceptCommusoftIngestion({
     );
     return fetcher(url, { ...options, redirect: "error" });
   };
-  const readRuntime = includeContacts ? readContactCatalog : readOperatorInputsCatalog,
-    installedRuntime = includeContacts ? installedContacts : installedOperatorInputs,
-    runtimeFingerprint = includeContacts ? contactFingerprint : operatorInputFingerprint;
+  const readRuntime = includeContacts ? readResumeCatalog : readOperatorInputsCatalog,
+    installedRuntime = includeContacts
+      ? (c) => installedResume(c) || installedContacts(c)
+      : installedOperatorInputs,
+    runtimeFingerprint = includeContacts ? resumeFingerprint : operatorInputFingerprint;
   const pre = await readRuntime({ allowProjectRef, token, fetcher: network });
   check(installedRuntime(pre), "Exact installed ingestion/review TEST contract required");
   const management = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };

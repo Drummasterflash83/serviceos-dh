@@ -1,0 +1,82 @@
+{
+  "version": "learn-commusoft-resume-test-release/1",
+  "observedAt": "2026-10-10T12:45:57.385Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "b9a7ec6cb4a8d26a1e89c5bfbca5b13259cf5824eddf3313f3cd99e0ecbefd51",
+  "state": "installed_needs_authenticated_acceptance",
+  "localProjection": {
+    "database": "Supabase PostgreSQL 17.6.1.141",
+    "dependencyTables": 34,
+    "dependencyFunctions": 53,
+    "schemaAndGrants": "matched observed TEST contracts",
+    "rollback": "passed",
+    "failedReleaseReceiptRollback": "passed",
+    "duplicateInstallRefusal": "passed",
+    "workerContinuation": "passed",
+    "concurrentApplyCancel": "passed",
+    "competingContinuationRequests": "one queued job"
+  },
+  "releaseRegressionTests": 5,
+  "hostedRehearsal": {
+    "observedAt": "2026-10-10T12:42:59.848Z",
+    "state": "rehearsed_and_rolled_back",
+    "acknowledged": true,
+    "priorCatalogPreserved": true,
+    "preExistingSourcesPreserved": true
+  },
+  "preservedDataSets": 42,
+  "hostedApply": {
+    "observedAt": "2026-10-10T12:45:57.385Z",
+    "state": "installed_needs_authenticated_acceptance",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "priorCatalogPreserved": true,
+    "preExistingSourcesPreserved": true,
+    "dataSets": 42,
+    "tables": 110,
+    "releaseReceipts": 31,
+    "precheckFailuresBeforeSubmission": [
+      "metadata unavailable",
+      "HTTP 429"
+    ]
+  },
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/030_commusoft_resume.sql",
+      "sha256": "b9a7ec6cb4a8d26a1e89c5bfbca5b13259cf5824eddf3313f3cd99e0ecbefd51"
+    },
+    {
+      "path": "supabase/release/learn-test/030_commusoft_resume.manifest.json",
+      "sha256": "eaab8d0a5e7089b767a76b2432a1ba915417e8583273335de5685d5f39dc9801"
+    },
+    {
+      "path": "supabase/release/learn-test/030_commusoft_resume.expected.json",
+      "sha256": "9aea3d9d78f955e4757f1bb042aa64945da0b73cc6767cb9d7811c3a0cf7a1a2"
+    },
+    {
+      "path": "supabase/release/learn-test/030_commusoft_resume.prerequisites.json",
+      "sha256": "34ef4baa3ff42cce9edea9c33543a35edb8c9df6e88b81cd0aa1b9cf33e12f4f"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-resume-test-projection.py",
+      "sha256": "6863c3dc2a905927a8daa86f07c953049e665d0509f9f4143628697055e0e879"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-resume-projection.fixture.sql",
+      "sha256": "a9c13801f504b0be824fca92e7cfda7b92d8f840c3a2258ab0e2190d05f09c45"
+    },
+    {
+      "path": "scripts/verify/learn-test-commusoft-resume-release.mjs",
+      "sha256": "fb1ca373552b2d9727ac831965529563db7b4386525d03ba6c4c2df809121164"
+    },
+    {
+      "path": "scripts/verify/learn-test-commusoft-resume-release.test.mjs",
+      "sha256": "f82198d372a04c75750124f196df60dcd4ba4ee13398e475e85149dff1f4405b"
+    }
+  ],
+  "limitations": [
+    "Signed-in hosted acceptance remains required",
+    "No real Commusoft API request or provider coverage verification",
+    "Frontend and production unchanged"
+  ]
+}

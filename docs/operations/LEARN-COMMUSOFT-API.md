@@ -85,13 +85,48 @@ of a plan from overwriting a previous run's evidence.
 Local fixture-plan validation passes. Continue unaffected work while approval is
 pending; do not execute this hosted run through an alternative path.
 
+## Hosted continuation release — 10 October, 12:45 UTC
+
+Release package 030 adds only `learn_operator_resume_commusoft`. A fresh read of
+TEST confirmed 110 tables, 30 release receipts and the exact installed contact
+runtime. The local PG17 rehearsal reproduces all 34 relevant table definitions,
+constraints, indexes, RLS policies, triggers, permissions and 53 functions, plus
+real encrypted Vault storage with the actual non-superuser function owner.
+No hosted business data or real credential is copied into the fixture.
+
+The packaged migration passes rollback, injected final-release-receipt failure,
+duplicate-install refusal, signed-in continuation assertions, worker acquisition /
+publication / settlement and competing-request concurrency. Existing tables,
+functions and grants remain unchanged; the one new function is callable through
+the authenticated RPC surface and requires current OpenFolk administrator authority.
+Fixture-only tables and the injected failure trigger are excluded/removed from the
+final schema comparison. Five release regression checks also pass: altered
+permissions/contracts, lost acknowledgements, changed source fingerprints, unavailable
+post-write inspection, stale rehearsals and failed journal persistence.
+
+Hosted rollback rehearsal was acknowledged at 12:42:59 UTC with all 42 pre-existing
+data fingerprints unchanged. Initial installation attempts stopped in read-only
+metadata prechecks (including HTTP 429), before an apply journal or migration
+submission. After cooldown, a single migration submission was acknowledged and
+confirmed at 12:45:57 UTC. The compiled function/permission contracts, both release
+receipt inventories and all prior schema/endpoints match. All 42 data fingerprints,
+including encrypted Vault rows, remain identical. TEST has 110 tables and 31 release
+receipts. No new account, user grant, credential, import, schedule or frontend
+deployment was created. Signed-in hosted continuation acceptance remains required.
+The separate hosted synthetic contact acceptance still needs the requested approval;
+its fixed recipient and access scope are unchanged, and its runtime check now accepts
+this exactly verified continuation release as well as the preceding contact release.
+
+See [continuation release evidence](evidence/learn-commusoft-resume-test-release-2026-10-10.json).
+
 ## Import continuation — local, 10 October
 
 `20261031200000_learn_commusoft_resume.sql` adds an explicit OpenFolk administrator
 continuation operation. It uses the existing immutable operator request ledger
 and apply/check/cancel protocol. No additional table, default grant, credential,
-schedule or queued job is created by installation. This migration is **not yet
-installed in hosted TEST or production**; its frontend remains unreleased.
+schedule or queued job is created by installation. At this local checkpoint the
+migration was not yet installed. The subsequent TEST installation is recorded above;
+its frontend and production remain unreleased.
 
 An administrator reviews a settled, incomplete import, provides a reason, total
 page allowance and expiry, and approves continuation. The server compares the

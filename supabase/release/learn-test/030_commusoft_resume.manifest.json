@@ -1,0 +1,15 @@
+{
+  "version": "learn-commusoft-resume-package/1",
+  "sha256": "b9a7ec6cb4a8d26a1e89c5bfbca5b13259cf5824eddf3313f3cd99e0ecbefd51",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031200000_learn_commusoft_resume.sql",
+      "sha256": "78ac03c85d11fc11f513679ffdc8b7eed942bbe28664ab7c854cfdd34168f70a"
+    }
+  ],
+  "functions": [
+    "learn_operator_resume_commusoft"
+  ],
+  "changedFunctions": [],
+  "tables": []
+}
