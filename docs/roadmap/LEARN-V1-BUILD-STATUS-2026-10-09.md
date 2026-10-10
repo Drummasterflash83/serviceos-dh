@@ -1301,3 +1301,20 @@ and replay, and facade rollback. Synthetic browser acceptance passed existing-ca
 linking, lost-response recovery and viewer restrictions. The temporary preview and
 browser tab were closed. Hosted Auth/PostgREST acceptance, real connection setup,
 bulk/secondary-identifier reconciliation and contact/site/job projection remain.
+
+## Commusoft sites/jobs resolve reviewed ownership — local, 10 October
+
+A signed-in action now projects retained work addresses and jobs into the existing
+canonical tables using the reviewed source identity ledger. Jobs resolve either a
+direct customer or a site's parent customer. Missing/unreviewed dependencies and
+changed ownership leave durable held reasons; no canonical ownership is guessed or
+overwritten. New source namespaces keep equal job numbers in separate connections
+distinct. Existing CSV identities require explicit reconciliation. Source lifecycle
+dates/statuses are bounded and typed; closed jobs do not imply completed work.
+
+The full isolated SQL chain passed source-to-site/job projection, both customer
+types, replay/concurrency, malformed references and dates, changed source/canonical
+ownership, separate connection identity, unchanged existing jobs, retained held
+history and late-failure rollback. Verification containers were removed. Work
+review/batch UI, contacts, source updates/corrections and hosted/live acceptance
+remain outstanding. No provider traffic, production data or deployment changed.

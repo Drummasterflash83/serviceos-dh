@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-permits-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers']):
-    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers]')
+if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers'], ['--work']):
+    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers|--work]')
 
 
 def sql(text):
@@ -45,7 +45,7 @@ try:
         'supabase/migrations/20261031090000_learn_commusoft_page_permits.sql',
         'scripts/verify/learn-commusoft-permits.assert.sql',
     ]
-    if sys.argv[1:] == ['--customers']:
+    if sys.argv[1:] in (['--customers'], ['--work']):
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
         sql((root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text())
         sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())
@@ -94,6 +94,26 @@ try:
         if sql("select md5(pg_get_functiondef('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)'::regprocedure));") != before:
             raise RuntimeError('Review facade rollback changed private writer')
         print(sql(review_migration + '\n' + (root / 'scripts/verify/learn-business-input-review.assert.sql').read_text()))
+        if sys.argv[1:] == ['--work']:
+            schema = (root / 'supabase/migrations/20260814120000_universal_imports_and_jobs.sql').read_text()
+            start, end = 'create table if not exists sites (', '-- ── Job-number aliases'
+            if schema.count(start) != 1 or schema.count(end) != 1:
+                raise RuntimeError('Canonical work schema boundary changed')
+            sql(schema[schema.index(start):schema.index(end)])
+            migration = (root / 'supabase/migrations/20261031140000_learn_business_input_work.sql').read_text()
+            sql(migration.replace('\ncommit;', '\nrollback;'))
+            if sql("select to_regclass('public.learn_business_input_projection_attempts') is null and to_regprocedure('public.learn_commusoft_confirm_work_record(uuid,uuid,uuid,text)') is null;") != 't':
+                raise RuntimeError('Work projection rollback left objects')
+            print(sql(migration + '\n' + (root / 'scripts/verify/learn-business-input-work.fixture.sql').read_text() + '\n' + (root / 'scripts/verify/learn-business-input-work.assert.sql').read_text()))
+
+            def work_review(_):
+                return sql("set request.jwt.claim.role='authenticated'; set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080'; set role authenticated; select learn_commusoft_confirm_work_record(fixture_id(1),fixture_work_version('jobs','111'),null,'Synthetic work review')->>'already';")
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                results = list(pool.map(work_review, [1, 2]))
+            if sorted(results) != ['false', 'true'] or sql("select count(*) from jobs where external_id='111';") != '1':
+                raise RuntimeError('Concurrent work projection duplicated or lost identity')
+            print('Concurrent job projection: one canonical job and one exact replay acknowledgement.')
         raise SystemExit(0)
     if sys.argv[1:] == ['--worker']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))

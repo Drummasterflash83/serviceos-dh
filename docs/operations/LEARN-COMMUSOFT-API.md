@@ -5,7 +5,7 @@
 Local source reader, provider-neutral source-record adapter, durable scope binding
 and atomic credential/pacing/source-publication functions, dedicated worker and
 transactional settlement, reviewed customer/card projection and a signed-in customer
-review flow are implemented locally. Fifty Commusoft tests and three shared
+review flow, plus reviewed site/job projection, are implemented locally. Fifty Commusoft tests and three shared
 HTTP-guard tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
 This is not an installed connector: no provider request, real API credential read, live sync job,
 production migration or frontend release was performed for this increment.
@@ -298,14 +298,56 @@ lost-acknowledgement reload recovery and viewer restrictions. This is not actual
 hosted Auth/PostgREST or real provider acceptance. The temporary browser/server were
 closed. See [review evidence](evidence/learn-commusoft-review-local-2026-10-10.json).
 
+## Site/job ownership projection — local
+
+Migration `20261031140000_learn_business_input_work.sql` adds a signed-in,
+owner/admin `learn_commusoft_confirm_work_record` action and retained projection
+attempts. It accepts a retained site/job version and an explicit existing target
+or creation decision, then resolves the property's reviewed identity in the exact
+tenant/provider/connection. A customer property supplies its person/company. A
+work address supplies its reviewed site plus its reviewed parent customer. Missing
+or ambiguous observations, unreviewed identities, changed source ownership and
+changed canonical ownership produce durable held reasons without a canonical write.
+
+Successful projection writes the existing `sites`/`jobs` model and the shared
+source-identity ledger atomically with its attempt result. Job cards already read
+the canonical jobs table; this does not add a competing job-card store. Existing
+targets are only linked if their customer/site ownership matches, and their fields
+are unchanged. Existing unbound Commusoft CSV external identities are held for
+explicit reconciliation. Newly created source namespaces include the connection ID;
+identical job numbers across accounts remain distinct. No global job-number alias
+is inferred from a connection-scoped ID.
+
+The inspected jobs schema explicitly identifies `id` as the job number. `Open` maps
+to `open`, `Complete` to `completed`, and `Closed` to `closed`: a closed outcome can
+include an abort, so closure does not invent completion. Only well-formed explicit
+source timestamps with a timezone are copied. Missing historical dates remain null;
+malformed dates/statuses are held. No staff attribution, currency amount, invoice
+state, performance measurement, reward or historical ownership is guessed.
+
+The original source pages survive held outcomes and projection failure. Exact
+identity replay reuses the canonical row; changed source versions need a future
+update-review workflow. Concurrent identical job projection creates one job. A
+late failure writing the attempt rolls back both the new canonical row and link.
+The private latest-source helper and attempt ledger are provider-neutral; other
+input adapters can use the same canonical model and source identities.
+
+`--work` runs the complete preceding customer/review chain and original site/job
+table definitions in isolated Postgres. It verifies direct customer/site ownership,
+person/company separation, changed source/canonical site ownership, existing-row
+preservation, cross-connection job-number separation, malformed fields/dates,
+retained held results, replay/concurrency and late atomic rollback. The migration
+rollback leaves no new work objects. No hosted migration or source change occurred.
+Work review/batch UI, contact projection and real provider acceptance remain open.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Package and verify all five migrations and the worker against the installed
+2. Package and verify all six migrations and the worker against the installed
    TEST schema, including its existing feature flags and queue functions.
 3. Add authorized connection/approval setup and operator progress/recovery controls;
-   verify the customer review flow in hosted TEST, and project contacts, sites and jobs.
+   verify customer review in hosted TEST, add work review/batch controls and project contacts.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -326,6 +368,7 @@ python3 scripts/verify/learn-commusoft-permits.py
 python3 scripts/verify/learn-commusoft-permits.py --pages
 python3 scripts/verify/learn-commusoft-permits.py --worker
 python3 scripts/verify/learn-commusoft-permits.py --customers
+python3 scripts/verify/learn-commusoft-permits.py --work
 ```
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They
