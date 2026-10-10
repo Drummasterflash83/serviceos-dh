@@ -1,0 +1,179 @@
+{
+  "version": "learn-commusoft-auth-test-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "test_runtime_verified_import_pending",
+  "observedAt": "2026-10-10T20:09:32.494Z",
+  "sourceBundleSha256": "2115886e435c39b42e179a29ce42fce5f721ca5406fa922f5917edb7efb0c190",
+  "dependencyFiles": 12,
+  "endpoints": [
+    {
+      "name": "learn-commusoft-verify",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791662747765,
+      "ezbr_sha256": "eb72b3d432e61e131118064ffccd5db342d9654e09350b4484e3f980330955e8"
+    },
+    {
+      "name": "learn-commusoft-worker",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791662746699,
+      "ezbr_sha256": "4df45ecee0a06cc79e4466f7c5175ee3def1a7ce321a41528da8bd63458989d9"
+    }
+  ],
+  "preservation": {
+    "monitoredDataSets": 77,
+    "beforeAfterFingerprintsMatch": true,
+    "schemaAndOtherEndpointsPreserved": true
+  },
+  "hostedHttp": {
+    "version": "learn-test-commusoft-auth-hosted/1",
+    "observedAt": "2026-10-10T20:06:51.062Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "passed",
+    "checks": [
+      {
+        "label": "Gateway rejects missing JWT",
+        "status": 401
+      },
+      {
+        "label": "Gateway requires JWT even with trigger key",
+        "status": 401
+      },
+      {
+        "label": "Anonymous JWT cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Service JWT alone cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Incorrect trigger key refused",
+        "status": 403
+      },
+      {
+        "label": "GET refused",
+        "status": 405
+      },
+      {
+        "label": "Caller job selectors refused",
+        "status": 400
+      },
+      {
+        "label": "Authorised empty invocation",
+        "status": 200
+      },
+      {
+        "label": "Verification missing JWT",
+        "status": 401
+      },
+      {
+        "label": "Verification anonymous JWT",
+        "status": 401
+      },
+      {
+        "label": "Verification service JWT is not user authority",
+        "status": 401
+      },
+      {
+        "label": "Verification GET refused",
+        "status": 405
+      }
+    ],
+    "preservedDataSets": 77,
+    "sourceAndSchemaPreserved": true,
+    "limits": [
+      "Gateway/authentication and empty-worker runtime checks only. No real provider call, signed-in operator, credential binding or imported record."
+    ]
+  },
+  "downloadedRuntime": {
+    "version": "commusoft-auth-runtime-readback/1",
+    "observedAt": "2026-10-10T20:09:32.494Z",
+    "state": "passed",
+    "endpoints": [
+      {
+        "name": "learn-commusoft-worker",
+        "executableStructureMatches": true,
+        "files": [
+          {
+            "path": "_shared/commusoft/bound_page.ts",
+            "sha256": "3548e8b2b807ee9b8667710269973d58302d37f4646ac4ae3c5e6d55b0cbbf84"
+          },
+          {
+            "path": "_shared/commusoft/page_store.ts",
+            "sha256": "e9d0f28f47b00b17ffe8998dadf3511cab5b5a93917fe6fb7de77674331864fc"
+          },
+          {
+            "path": "_shared/commusoft/permit_server.ts",
+            "sha256": "173b8311f9fcf3de8f8b9594e31b4cb0065cd247cb90c0fded1ba0fb91fedd3c"
+          },
+          {
+            "path": "_shared/commusoft/read_page.ts",
+            "sha256": "70a34f8d7e3f87de22e0dd59bb7c5cc1d8c22e3e872050569548d16beddf12a3"
+          },
+          {
+            "path": "_shared/commusoft/stored_scope.ts",
+            "sha256": "4f33a35155941d003d3766ae627ce639584eda80c2cfc007f38a1624995c9bb4"
+          },
+          {
+            "path": "_shared/commusoft/worker.ts",
+            "sha256": "5689b0ce7005518b46e71781e92e198c459d46d06543396586a9eba3971a08e5"
+          },
+          {
+            "path": "_shared/slack/slack_worker_http.ts",
+            "sha256": "8745cbef9c980a1cb52c7f84c0d1ef0032c09a708498152f8cea89ad68b4e6c8"
+          },
+          {
+            "path": "learn-commusoft-worker/index.ts",
+            "sha256": "399e7bec653f653124522966a45528e1b9b83655bd7a7cd20381c53459b45007"
+          }
+        ],
+        "testsPassed": 45,
+        "repositoryTestSupport": []
+      },
+      {
+        "name": "learn-commusoft-verify",
+        "executableStructureMatches": true,
+        "files": [
+          {
+            "path": "_shared/commusoft/read_page.ts",
+            "sha256": "70a34f8d7e3f87de22e0dd59bb7c5cc1d8c22e3e872050569548d16beddf12a3"
+          },
+          {
+            "path": "_shared/commusoft/verification_contract.ts",
+            "sha256": "2503172e5566e1c01a77992632b35eb6c9c711fa5da690390e77ec3e53c7912c"
+          },
+          {
+            "path": "_shared/commusoft/verification_http.ts",
+            "sha256": "463d052db63014046225c4c3a8a0be596cb02870043e5d5c900ddfd4be551ee4"
+          },
+          {
+            "path": "_shared/commusoft/verify_connection.ts",
+            "sha256": "5a87932c7eb1be1e62b2d08795c3b5564d39b1ca6661cd16d010750ac78bb8b0"
+          },
+          {
+            "path": "learn-commusoft-verify/index.ts",
+            "sha256": "aa6a87b78b78255ad9b5c6bba10e5000973da6d572222e129b08d01fc584b50f"
+          }
+        ],
+        "testsPassed": 30,
+        "repositoryTestSupport": [
+          "src/lib/learn-commusoft-verification.ts"
+        ]
+      }
+    ],
+    "limits": [
+      "Downloaded code with synthetic ports; not a signed-in hosted operator or real provider request from Edge."
+    ]
+  },
+  "deploymentHarnessTestsPassed": 10,
+  "limits": [
+    "No real provider request from hosted Edge, signed-in operator acceptance, hosted credential binding or imported record in this release.",
+    "The earlier successful property/job reads ran locally using the real adapter and existing authorized key.",
+    "Full traversal, contacts access, canonical publication and scheduled ingestion still need acceptance.",
+    "No production deployment, schema change, new credential, grant, user or schedule."
+  ]
+}

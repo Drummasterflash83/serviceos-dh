@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Commusoft request correction — real bounded reads succeed, deployment pending
+## Commusoft request correction — real bounded reads and TEST runtime verified
 
 The existing private-app credential now returns HTTP 200 for properties and jobs
 using Bearer authentication and an explicit OpenFolk User-Agent. The previous
@@ -8,7 +8,12 @@ access-denied blocker was caused by our outgoing request configuration. Both
 sampled records pass the actual parser and in-memory source adapter; successful
 GETs are visible in app 49's API log. Seventy tests, strict TypeScript and the local
 SQL verification bridge pass. No provider/customer writes, hosted binding, import
-or schedule were performed. The corrected source is **not deployed** yet.
+or schedule were performed in the investigation. The corrected worker and verification
+endpoints are now **v3 in TEST**, with JWT checks retained. Twelve hosted HTTP
+checks and 75 behavioral checks against downloaded deployed code pass. All 77
+monitored datasets, schema and other endpoints are preserved. This proves the
+runtime release, not a real hosted import or signed-in operator workflow.
+[TEST release evidence](evidence/learn-commusoft-auth-test-release-2026-10-10.json).
 [Investigation and evidence](LEARN-COMMUSOFT-API.md#request-configuration-corrected--properties-and-jobs-verified-10-october-2000-utc).
 
 ## Phone operator evidence — local candidate, deployment pending

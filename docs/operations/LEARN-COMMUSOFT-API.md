@@ -30,7 +30,16 @@ historical failures); no provider/database records, credentials or scopes change
 No source values were retained in the report. Seventy connector/diagnostic tests
 and strict TypeScript pass. See [redacted evidence](evidence/learn-commusoft-request-correction-2026-10-10.json).
 
-**The correction is local source, not a deployed TEST/production runtime.** Full
+**The correction is deployed to TEST; production is unchanged.** At 20:05 UTC,
+`learn-commusoft-worker` and `learn-commusoft-verify` became v3 with JWT checks
+retained. Twelve hosted HTTP checks pass, including an authorized empty worker
+invocation. Downloaded deployed code matches the source executable structure and
+passes 75 behavioral checks with synthetic ports. All 77 monitored datasets,
+schema and other endpoints are preserved. No real hosted provider request,
+credential binding or signed-in operator acceptance was performed.
+[TEST runtime evidence](evidence/learn-commusoft-auth-test-release-2026-10-10.json).
+
+Full
 traversal, contacts permissions, canonical publication and scheduled ingestion
 remain to be accepted. Successful one-record reads do not prove full coverage.
 The [support reply](COMMUSOFT-SUPPORT-REPLY-2026-10-10.txt) is prepared for Chris to
