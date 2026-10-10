@@ -93,15 +93,37 @@
     "syntheticBrowser": "Lost reply recovered after full reload to one retained assessment; a separate unfinished save cancelled without changing prior history.",
     "signedInHostedOwnerAcceptance": false,
     "hostedVisualAcceptance": false,
-    "releaseAndContinuationBoundaryTests": 27
+    "releaseAndContinuationBoundaryTests": 27,
+    "hostedLoginVisualAcceptance": true,
+    "hostedUnauthenticatedClientRedirect": {
+      "result": "login_on_same_test_origin",
+      "returnTarget": "/client?section=learn",
+      "signedIn": false
+    }
   },
   "frontend": {
-    "state": "pending_paired_deployment"
+    "observedAt": "2026-10-10T22:09:48.075Z",
+    "id": "dpl_DVWynexgMwTjieJRigdMZX2xifsq",
+    "url": "serviceos-learn-test-o318vsaa2-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "77cff26969aca10daddab2e27f1857d942b9bfc3"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "state": "ready_protected_test",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "configurationChecked": true
   },
   "remaining": [
-    "Paired protected TEST frontend deployment.",
-    "Real signed-in hosted recovery acceptance.",
-    "Further Commusoft continuation remains subject to its existing pending approval."
+    "Signed-in hosted owner assessment recovery acceptance.",
+    "Further Commusoft continuation remains subject to its existing pending approval.",
+    "Assessment history pagination beyond 20 entries, complete source coverage, reviewed card evidence and production promotion."
   ],
   "scope": [
     "Existing assessment table and function privileges preserved.",
@@ -121,5 +143,31 @@
     "schemaFingerprint": "8ccaa108faa30d2dbfb41e1363011d7c",
     "scopeChanged": false,
     "explanation": "Only the accepted TEST catalog fingerprint was updated. Existing pending approval, identities, budgets, duration, key binding and original source baseline are unchanged; no activation."
+  },
+  "protection": {
+    "observedAt": "2026-10-10T22:09:29.757Z",
+    "base": "https://serviceos-learn-test-o318vsaa2-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "loginScreenshot": {
+    "path": ".verification-results/learn-assessment-test-login-2026-10-10.png",
+    "sha256": "c188fec548ca6e0e50fcec09459d61652eb47878ac2bc2f73ecc12f2f227d072",
+    "scope": "TEST login and unauthenticated redirect only; not a signed-in card check"
   }
 }

@@ -1,8 +1,8 @@
 # Interrupted assessment saves
 
 TEST backend release 046 installed at 22:06 UTC, 10 October 2026, following a
-matching hosted rollback rehearsal. The paired protected TEST frontend deployment
-is pending. Production is unchanged. See [hosted evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
+matching hosted rollback rehearsal. The [paired protected TEST frontend](https://serviceos-learn-test-o318vsaa2-allkin.vercel.app)
+is READY from Git `77cff26969aca10daddab2e27f1857d942b9bfc3` at 22:09 UTC. Production is unchanged. See [hosted evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
 
 The rehearsal and installation preserved all 87 monitored datasets, including the
 original 78 plus saved assessments and their scoring, review, correction,
@@ -77,7 +77,8 @@ recovery requests use the production component's local outbox. No provider or
 hosted database is contacted. These fixtures do not establish real authenticated
 access or hosted persistence.
 
-Next: deploy the paired protected TEST frontend, then verify actual signed-in
-recovery within an authorized acceptance session.
+The hosted login and unauthenticated client redirect also passed in the actual
+browser. Next: verify signed-in owner recovery within an authorized acceptance
+session. No temporary user or grant was created for this release.
 History pagination beyond the latest 20 assessments remains separate unfinished
 work. This does not activate scoring, payroll, capture or a provider import.

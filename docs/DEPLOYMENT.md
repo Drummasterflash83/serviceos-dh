@@ -50,23 +50,25 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-pmmtsr47h-allkin.vercel.app](https://serviceos-learn-test-pmmtsr47h-allkin.vercel.app),
-built remotely from GitHub commit `899afbaa5b126be027bdd0cdf7752add6996616f`.
+[serviceos-learn-test-o318vsaa2-allkin.vercel.app](https://serviceos-learn-test-o318vsaa2-allkin.vercel.app),
+built remotely from GitHub commit `77cff26969aca10daddab2e27f1857d942b9bfc3`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
 login stays on the current origin; production keeps the canonical login URL.
 The refreshed candidate includes per-property Commusoft contact progress, secondary-contact
 matching explanations, the specific unresolved-timezone review hold and retained-record
-search backed by TEST release 045.
+search backed by TEST release 045, plus durable assessment recovery backed by
+TEST release 046 (installed at 22:06 UTC). The latter preserves all 87 monitored
+datasets, including assessment and scoring ledgers, and existing assessment privileges.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
-login and client routes pass. Fresh visual acceptance is unconfirmed because the
-browser connection timed out. Signed-in hosted control acceptance remains pending;
+login and client routes pass. The actual browser login and unauthenticated client
+redirect were verified. Signed-in hosted card recovery and control acceptance remain pending;
 a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-review-search-test-2026-10-10.json).
+See [current deployment evidence](operations/evidence/learn-assessment-recovery-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
 `vercel.json` disables that branch. Verify and deploy a pinned Git commit explicitly.

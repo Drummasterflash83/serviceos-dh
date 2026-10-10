@@ -1,14 +1,17 @@
 # Existing TEST environment: verified release gaps
 
-## Assessment recovery — TEST backend release 046 installed at 22:06 UTC
+## Assessment recovery — TEST release 046 and paired frontend installed
 
-The recovery RPC and immutable cancellation ledger are installed in TEST after a
-matching hosted rollback rehearsal. All 87 monitored datasets were preserved,
+The recovery RPC and immutable cancellation ledger were installed in TEST at
+22:06 UTC after a matching hosted rollback rehearsal. All 87 monitored datasets were preserved,
 including saved assessments, scoring/review/correction/publication and team history.
 Existing assessment table metadata and function privileges are unchanged. Six HTTP
 checks confirm anonymous/service-role denial for recovery, saving and raw cancellation
-reads. The paired TEST frontend deployment and signed-in hosted acceptance remain
-pending. [Release evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
+reads. The [paired protected TEST frontend](https://serviceos-learn-test-o318vsaa2-allkin.vercel.app)
+is READY from Git `77cff26969aca10daddab2e27f1857d942b9bfc3` at 22:09 UTC. Homepage,
+login and client routes retain Vercel protection. The actual browser login and
+unauthenticated client redirect passed; signed-in hosted owner recovery and card
+visual acceptance remain pending. [Release evidence](evidence/learn-assessment-recovery-test-2026-10-10.json).
 
 
 ## Earlier assessment recovery candidate — TEST backend now installed
@@ -18,7 +21,7 @@ check, retry and cancellation controls. The server cancellation record prevents 
 late save from appearing after cancellation; an already completed assessment is
 retained. Nineteen client tests, isolated SQL save/cancel races, app/preview builds
 and actual synthetic browser recovery passed. TEST's installed save body matches
-the verifier baseline, but the backend is now installed as recorded above; the paired frontend is pending.
+the verifier baseline, but the backend and paired protected frontend are now installed as recorded above; signed-in hosted acceptance remains pending.
 See [implementation and acceptance limits](LEARN-ASSESSMENT-RECOVERY.md).
 
 The Commusoft continuation still awaits its existing approval. No provider calls,
