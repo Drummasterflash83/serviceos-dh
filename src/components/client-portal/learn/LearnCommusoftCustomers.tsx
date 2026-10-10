@@ -1,3 +1,4 @@
+import { RetainedSourceSearch } from "./RetainedSourceSearch";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -26,6 +27,8 @@ export function LearnCommusoftCustomers({
   const [rows, setRows] = useState<ReviewCustomer[]>([]),
     [pages, setPages] = useState<(string | null)[]>([null]),
     [next, setNext] = useState<string | null>(null);
+  const [sourceSearch, setSourceSearch] = useState(""),
+    [appliedSearch, setAppliedSearch] = useState("");
   const [selected, setSelected] = useState<ReviewCustomer | null>(null),
     [kind, setKind] = useState<CustomerKind | "">("");
   const [search, setSearch] = useState(""),
@@ -73,9 +76,22 @@ export function LearnCommusoftCustomers({
       }
     }
   }
-  async function readPage(id: string, cursors: (string | null)[], ticket: number) {
-    const page = await loadCommusoftReviewPage(db, tenantId, id, cursors[cursors.length - 1]);
+  async function readPage(
+    id: string,
+    cursors: (string | null)[],
+    ticket: number,
+    query = appliedSearch,
+  ) {
+    const page = await loadCommusoftReviewPage(
+      db,
+      tenantId,
+      id,
+      cursors[cursors.length - 1],
+      query,
+    );
     if (ticket !== generation.current || !editable.current) return;
+    setSourceSearch(query);
+    setAppliedSearch(query);
     setConnection(id);
     setRows(page.rows);
     setNext(page.next);
@@ -104,6 +120,10 @@ export function LearnCommusoftCustomers({
   }
   useEffect(() => {
     working.current = false;
+    setSourceSearch("");
+    setAppliedSearch("");
+    setRows([]);
+    setSelected(null);
     void reload();
     return () => {
       generation.current++;
@@ -195,7 +215,7 @@ export function LearnCommusoftCustomers({
               const id = e.target.value;
               setSelected(null);
               resetDecision();
-              if (id) void operation((t) => readPage(id, [null], t));
+              if (id) void operation((t) => readPage(id, [null], t, ""));
               else {
                 setConnection("");
                 setRows([]);
@@ -212,6 +232,17 @@ export function LearnCommusoftCustomers({
         </label>
         {connection && (
           <>
+            <RetainedSourceSearch
+              value={sourceSearch}
+              applied={appliedSearch}
+              hint="Find by customer number, name, email, phone or address"
+              onChange={(value) => {
+                setSourceSearch(value);
+                setSelected(null);
+                resetDecision();
+              }}
+              onSearch={(query) => void operation((t) => readPage(connection, [null], t, query))}
+            />
             <ul className="space-y-2" aria-label="Retained Commusoft customers">
               {rows.map((r) => (
                 <li key={r.external_id}>
@@ -231,8 +262,10 @@ export function LearnCommusoftCustomers({
             </ul>
             {!rows.length && (
               <p>
-                No retained customers on this page. This does not establish that the provider
-                account is empty.
+                {appliedSearch
+                  ? "No retained customers match this search."
+                  : "No retained customers on this page."}{" "}
+                Records that have not yet been imported are not included.
               </p>
             )}
             <div className="flex gap-2">

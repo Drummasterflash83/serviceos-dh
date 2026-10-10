@@ -1,3 +1,4 @@
+import { RetainedSourceSearch } from "./RetainedSourceSearch";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
@@ -38,6 +39,8 @@ export function LearnCommusoftWork({
   const [rows, setRows] = useState<WorkSource[]>([]),
     [pages, setPages] = useState<(string | null)[]>([null]),
     [next, setNext] = useState<string | null>(null);
+  const [sourceSearch, setSourceSearch] = useState(""),
+    [appliedSearch, setAppliedSearch] = useState("");
   const [targets, setTargets] = useState<Record<string, string>>({}),
     [searches, setSearches] = useState<Record<string, string>>({}),
     [matches, setMatches] = useState<
@@ -95,11 +98,19 @@ export function LearnCommusoftWork({
       }
     }
   }
-  async function page(id: string, type: WorkKind, cursors: (string | null)[], ticket: number) {
+  async function page(
+    id: string,
+    type: WorkKind,
+    cursors: (string | null)[],
+    ticket: number,
+    query = appliedSearch,
+  ) {
     setReady(false);
     reset();
-    const result = await loadWorkPage(db, tenantId, id, type, cursors[cursors.length - 1]);
+    const result = await loadWorkPage(db, tenantId, id, type, cursors[cursors.length - 1], query);
     if (!current(ticket)) return;
+    setSourceSearch(query);
+    setAppliedSearch(query);
     setRows(result.rows);
     setNext(result.next);
     setPages(cursors);
@@ -125,6 +136,9 @@ export function LearnCommusoftWork({
   }
   useEffect(() => {
     working.current = false;
+    setSourceSearch("");
+    setAppliedSearch("");
+    setRows([]);
     if (canEdit) {
       restore();
       void reload();
@@ -282,7 +296,7 @@ export function LearnCommusoftWork({
             value={connection}
             onChange={(e) => {
               const id = e.target.value;
-              if (id) void operation((t) => page(id, kind, [null], t));
+              if (id) void operation((t) => page(id, kind, [null], t, ""));
               else {
                 setConnection("");
                 setRows([]);
@@ -305,7 +319,7 @@ export function LearnCommusoftWork({
             value={kind}
             onChange={(e) => {
               const type = e.target.value as WorkKind;
-              if (connection) void operation((t) => page(connection, type, [null], t));
+              if (connection) void operation((t) => page(connection, type, [null], t, ""));
               else {
                 setKind(type);
                 reset();
@@ -319,6 +333,22 @@ export function LearnCommusoftWork({
         </label>
         {connection && (
           <>
+            <RetainedSourceSearch
+              value={sourceSearch}
+              applied={appliedSearch}
+              hint={
+                kind === "job"
+                  ? "Find by job number, property number or description"
+                  : kind === "site"
+                    ? "Find by site number, customer property number or address"
+                    : "Find by contact number, property number, name, email, phone or position"
+              }
+              onChange={(value) => {
+                setSourceSearch(value);
+                reset();
+              }}
+              onSearch={(query) => void operation((t) => page(connection, kind, [null], t, query))}
+            />
             <ul className="space-y-3" aria-label="Retained sites, jobs and contacts">
               {rows.map((r) => (
                 <li className="cp-card" key={r.external_id}>
@@ -477,7 +507,10 @@ export function LearnCommusoftWork({
             </ul>
             {!rows.length && (
               <p>
-                No retained {`${kind}s`} on this page. Reload after an approved import completes.
+                {appliedSearch
+                  ? `No retained ${kind}s match this search.`
+                  : `No retained ${kind}s on this page.`}{" "}
+                Records that have not yet been imported are not included.
               </p>
             )}
             <div className="flex gap-2">

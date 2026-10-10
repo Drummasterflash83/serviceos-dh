@@ -87,18 +87,28 @@ export async function loadCommusoftReviewPage(
   tenant: string,
   connection: string,
   after: string | null = null,
+  search?: string,
 ): Promise<{ rows: ReviewCustomer[]; next: string | null }> {
+  if (search !== undefined && (typeof search !== "string" || search.trim().length > 150))
+    throw unavailable();
+  const query = search?.trim();
   scope(tenant);
   if (!uuid(connection) || (after !== null && !/^\d{1,16}$/.test(after))) throw unavailable();
-  const d = await read(db, "learn_commusoft_review_page", {
-    p_tenant: tenant,
-    p_connection: connection,
-    p_after: after,
-    p_limit: 20,
-  });
+  const d = await read(
+    db,
+    query === undefined ? "learn_commusoft_review_page" : "learn_commusoft_review_search",
+    {
+      p_tenant: tenant,
+      p_connection: connection,
+      p_after: after,
+      p_limit: 20,
+      ...(query === undefined ? {} : { p_search: query }),
+    },
+  );
   if (
     d.tenant_id !== tenant ||
     d.connection_id !== connection ||
+    (query !== undefined && d.search !== query) ||
     !Array.isArray(d.rows) ||
     d.rows.length > 20 ||
     !(

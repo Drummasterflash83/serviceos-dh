@@ -1,5 +1,17 @@
 # Existing TEST environment: verified release gaps
 
+## Retained-record search — local candidate, not deployed
+
+Customer, site, job and contact review now supports server-side search before
+pagination, keeping latest-source and existing identity-review safeguards. Twenty-one
+client tests, 47 build prerequisites, TypeScript, the app build and isolated SQL
+checks pass. Actual SQL results pass application parsing. A 10,000-job synthetic
+search took 172 ms after replacing per-record latest-source lookups with a set-based
+query. This is a local measurement, not hosted acceptance. A paired TEST SQL/frontend
+release and signed-in visual acceptance remain pending; the prepared import
+continuation's hosted baseline is unchanged.
+[Implementation and evidence](LEARN-COMMUSOFT-REVIEW-SEARCH.md).
+
 ## Commusoft continuation — prepared, awaiting new access approval
 
 The existing Drummonds job checkpoint can continue without replacing its tenant,

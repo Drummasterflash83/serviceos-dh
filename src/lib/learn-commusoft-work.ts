@@ -191,7 +191,11 @@ export async function loadWorkPage(
   connection: string,
   kind: WorkKind,
   after: string | null = null,
+  search?: string,
 ): Promise<{ rows: WorkSource[]; next: string | null }> {
+  if (search !== undefined && (typeof search !== "string" || search.trim().length > 150))
+    throw failure();
+  const query = search?.trim();
   if (
     !uuid(tenant) ||
     !uuid(connection) ||
@@ -201,13 +205,19 @@ export async function loadWorkPage(
     throw failure();
   let result;
   try {
-    result = await db.rpc("learn_commusoft_work_review_page", {
-      p_tenant: tenant,
-      p_connection: connection,
-      p_kind: kind,
-      p_after: after,
-      p_limit: 20,
-    });
+    result = await db.rpc(
+      query === undefined
+        ? "learn_commusoft_work_review_page"
+        : "learn_commusoft_work_review_search",
+      {
+        p_tenant: tenant,
+        p_connection: connection,
+        p_kind: kind,
+        p_after: after,
+        p_limit: 20,
+        ...(query === undefined ? {} : { p_search: query }),
+      },
+    );
   } catch {
     throw failure();
   }
@@ -217,6 +227,7 @@ export async function loadWorkPage(
     !obj(d) ||
     d.tenant_id !== tenant ||
     d.connection_id !== connection ||
+    (query !== undefined && d.search !== query) ||
     d.kind !== kind ||
     !Array.isArray(d.rows) ||
     d.rows.length > 20 ||

@@ -1,0 +1,42 @@
+{
+  "version": "learn-commusoft-review-search-local/1",
+  "checkedAt": "2026-10-10T21:40:56.258656+00:00",
+  "state": "local_candidate_not_deployed",
+  "checks": {
+    "clientTests": 21,
+    "buildPrerequisiteTests": 47,
+    "typecheck": "passed",
+    "appBuild": "passed",
+    "sql": "Isolated PostgreSQL 15: actual source publication fixtures, latest-source filtering, literal search, filtered pagination, tenant/connection/viewer/private-helper denial, unchanged sources and canonical records, migration rollback. Actual SQL customer/job/contact results passed the application readers. Existing projection, replay, rollback and concurrency suites also passed.",
+    "ambiguousSources": "Equal-time conflicting versions and unobserved versions remain unselectable; search cannot select one conflicting payload.",
+    "benchmark": {
+      "environment": "Disposable local PostgreSQL 15; synthetic source pages, not hosted production latency",
+      "additionalJobs": 10000,
+      "matchingRecords": 1,
+      "initialPerIdentityLookupMs": 8452,
+      "finalSetBasedLookupMs": 172
+    }
+  },
+  "scope": [
+    "Server-side search across retained customers, sites, jobs and contacts before result pagination.",
+    "Explicit search, applied-query label and reset-to-first-page behavior; selecting another connection or record type clears the search.",
+    "Existing identity decisions, source records, import checkpoints, canonical publication and scoring behavior unchanged.",
+    "No provider requests, credentials, hosted schema change, operator grant or production deployment."
+  ],
+  "remaining": [
+    "Paired TEST schema/frontend release and hosted acceptance.",
+    "Fresh signed-in visual acceptance.",
+    "Prepared import continuation d764008e still awaits its separate access approval."
+  ],
+  "sourceSha256": {
+    "supabase/migrations/20261101050000_learn_commusoft_review_search.sql": "54dfa149c700244ba5a6427d339cc7cad0c1883953ff3764232b4a4ff5517f40",
+    "scripts/verify/learn-commusoft-review-search.assert.sql": "30dc1d249190eff67e54d3720bd76b0e33f7e0cf4d8b336ad5306ffed6bf1e18",
+    "scripts/verify/learn-commusoft-review-search-scale.assert.sql": "55a9f66f5ae7f8dea3d1bd2a37b97b063bd42c96678f8bd48bd95f9435ad64a3",
+    "src/lib/learn-commusoft-review.ts": "0f5a1b4c2ad4d696a5d4db7e55e407c2bdb347e1020322ecc1fe00d04455c673",
+    "src/lib/learn-commusoft-work.ts": "c105c5a20e56b29a42c246a1fdbd877648b8be3365d354fce07a1fa43072e014",
+    "src/lib/learn-commusoft-source-search.test.ts": "adafd97eee0881bf24bd266356932cb55e2c9981cdf1773f56ab140062a946ae",
+    "src/components/client-portal/learn/LearnCommusoftCustomers.tsx": "f8182971a03c470b4138d1258b38ddf71481b972222b0a995ac09a33115bcbfc",
+    "src/components/client-portal/learn/LearnCommusoftWork.tsx": "ecaab9daa11e56a044ea01e4ed7e9c177748dcd53d4f9b141ca4a8636e1fb12e",
+    "src/components/client-portal/learn/RetainedSourceSearch.tsx": "16e198fdcc459849780ec189bbf3330a5424032155b2c0eda71b5749e7011e38"
+  }
+}
