@@ -1,0 +1,140 @@
+{
+  "version": "learn-governed-import-endpoint-test/1",
+  "state": "synthetic_auth_http_passed",
+  "authorityRehearsal": {
+    "version": "learn-test-import-authority/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86",
+    "observedAt": "2026-10-10T04:32:31.754Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "rehearsed_and_rolled_back",
+    "beforeFingerprint": "09dabd4933f8ddf191c84773f06ae78654fa6aba12b8235ed8678e20fd9055ef",
+    "afterFingerprint": "09dabd4933f8ddf191c84773f06ae78654fa6aba12b8235ed8678e20fd9055ef",
+    "scope": "One service-only import authority helper. No source edits, imports, Edge changes, providers, schedules or production changes."
+  },
+  "authorityInstallation": {
+    "version": "learn-test-import-authority/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86",
+    "observedAt": "2026-10-10T04:33:12.223Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "installed_needs_authenticated_acceptance",
+    "beforeFingerprint": "09dabd4933f8ddf191c84773f06ae78654fa6aba12b8235ed8678e20fd9055ef",
+    "afterFingerprint": "fb73383a0999bb5d5276de188e7816bbb1bc8b9ce8519c9e35c7d3ccdd3d0e84",
+    "scope": "One service-only import authority helper. No source edits, imports, Edge changes, providers, schedules or production changes."
+  },
+  "endpointDeployment": {
+    "version": "learn-test-import-endpoint/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T04:39:07.381Z",
+    "state": "deployed_needs_authenticated_acceptance",
+    "writeAttempted": true,
+    "cliExitStatus": 0,
+    "schemaVerified": true,
+    "otherEndpointsUnchanged": true,
+    "sourceBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+    "files": [
+      "learn-data-import/index.ts",
+      "data-import/handler.ts",
+      "_shared/authz.ts",
+      "_shared/audit.ts",
+      "_shared/simwood.ts",
+      "_shared/imports/profile.ts",
+      "_shared/imports/redact.ts",
+      "_shared/imports/matching.ts",
+      "_shared/imports/job_number.ts",
+      "_shared/imports/row_failure.ts"
+    ],
+    "endpoint": {
+      "id": "c21e3607-5680-4b67-9c51-0567a100f899",
+      "slug": "learn-data-import",
+      "name": "learn-data-import",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791607142178,
+      "updated_at": 1791607142178,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c21e3607-5680-4b67-9c51-0567a100f899_1/source/supabase/functions/learn-data-import/index.ts",
+      "ezbr_sha256": "04a007ce86afaf24ad6eff051b0f33be67f3089ed45f98bd0b9b37714300a842"
+    },
+    "limitations": [
+      "Only the new governed-only LEARN endpoint was submitted; legacy data-import was not deployed or replaced.",
+      "No real file import, provider, secret, schedule or production change. CLI output is withheld.",
+      "Metadata is not signed-in HTTP acceptance. An uncertain deployment must be inspected, never replayed automatically."
+    ]
+  },
+  "acceptance": {
+    "version": "learn-test-import-acceptance/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "9a907925-7eda-42d1-bfa6-653972c5cd29",
+    "observedAt": "2026-10-10T04:42:22.875Z",
+    "state": "passed",
+    "sourceBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+    "checks": [
+      "Actual anonymous, service, viewer and foreign-company access refused; owner sees the three governed profiles.",
+      "Preview preserves canonical rows; changed bytes, active foreign-company View As, suspended company and ops writes refused; owner apply and replay create one customer.",
+      "Actual CSV parser and row RPCs import customer, exact linked site and job in order; durable outcomes/provenance retained, foreign run access and revoked session authority refused."
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "retained": {
+      "people": 1,
+      "sites": 1,
+      "jobs": 1,
+      "imports": 3,
+      "outcomes": 3,
+      "approving_users": 0
+    },
+    "preExistingSourcesPreserved": true,
+    "manifest": "/private/tmp/serviceos-learn-import-9a907925-7eda-42d1-bfa6-653972c5cd29.json",
+    "limitations": [
+      "Synthetic TEST records only; no original file imported, provider call or production change.",
+      "Single-row customer/site/job flow; conflict/retry, large-file and browser acceptance remain separate.",
+      "Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained."
+    ]
+  },
+  "earlierAttempts": [
+    {
+      "runId": "878e2f5b-7e38-4dba-ac45-fc2ade3c5c09",
+      "state": "preflight_refused",
+      "cause": "Snapshot assumed legacy customers table; verified TEST uses people and companies. No fixture identity or import created. Snapshot corrected to actual catalog."
+    },
+    {
+      "runId": "430e6f50-6b80-43cc-aa06-88ee889d9e17",
+      "state": "assertion_corrected_fixtures_retired",
+      "cause": "Internal service identity denied with 401 internal_auth_mismatch, while test required 403. Assertion now permits either denial; all temporary users retired, pre-existing source fingerprints matched, no import created."
+    }
+  ],
+  "validation": {
+    "handlerRequestProfileTestsPassed": 27,
+    "authorityReleaseTestsPassed": 2,
+    "deploymentTestsPassed": 3,
+    "endpointCatalogTestsPassed": 2,
+    "strictEdgeTypecheckPassed": true,
+    "isolatedAuthorityAndConcurrencyAssertionsPassed": true,
+    "rollbackAndReceiptFailurePassed": true,
+    "actualHostedAuthAndCsvParser": true
+  },
+  "sourceHashes": {
+    "supabase/functions/data-import/handler.ts": "678fdfc7644cb852d3be98890c3758ab6b3024149769e5c4bd727289b0e1d99f",
+    "supabase/functions/learn-data-import/index.ts": "62aaff5a945138742fbc6811c48b40ede8fa37be203a4064ad165dbcfcf8ea45",
+    "supabase/migrations/20261031060000_learn_import_actor_authority.sql": "f54e1f0b89c0a11c433a8f3de83f2f86f84c3ebf920271a5c9a03d30c24e023f",
+    "supabase/release/learn-test/023_import_authority.sql": "8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86",
+    "supabase/release/learn-test/023_import_authority.expected.json": "522de8a1c2a5ee1f1b40401a2f781509f3db11bfb4aaac0c9951c748e9b9433d",
+    "supabase/release/learn-test/import_endpoint_v1.expected.json": "190a2efc6946295b96cf85fbbe8ebc9f7928507e15a4e5d487d0fa97fdc72e1c",
+    "scripts/verify/learn-test-import-authority-release.mjs": "2dbedda98cdc67c9ffd2d66cc21d2d48a7b9951c476a3118176f6707a69fbd05",
+    "scripts/verify/learn-test-import-deploy.mjs": "7496deaa2c12f67b1fcdfcc1915d0ea60433f9c51f9214db88d7d165523d0c4f",
+    "scripts/verify/learn-test-import-endpoint-catalog.mjs": "a3d15812b19df64375cc6beb4b1e2c55be522f763a4e0181786fc4a16513b0b9",
+    "scripts/verify/learn-test-import-acceptance.mjs": "b3704d8b3cd08f889e745f191a390e17c0c83e59de44de1652f8b73446e63eb4"
+  },
+  "limitations": [
+    "No original source file imported and no production, provider, schedule or frontend change.",
+    "Hosted acceptance covers a single-row customer/site/job flow, authority checks, checksum and replay. Hosted conflicts, held retries, large files and browser review remain outstanding.",
+    "The local handler harness substitutes Auth/DB I/O and CSV parsing; actual hosted acceptance is separately reported.",
+    "The real Commusoft package still has an unresolved cross-customer exact-site contradiction.",
+    "TEST source fingerprints are not a new production preservation scan or backup/restore proof."
+  ]
+}

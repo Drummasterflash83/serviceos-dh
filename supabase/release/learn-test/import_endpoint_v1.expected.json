@@ -1,0 +1,17 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+  "endpoint": {
+    "id": "c21e3607-5680-4b67-9c51-0567a100f899",
+    "slug": "learn-data-import",
+    "name": "learn-data-import",
+    "status": "ACTIVE",
+    "version": 1,
+    "created_at": 1791607142178,
+    "updated_at": 1791607142178,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c21e3607-5680-4b67-9c51-0567a100f899_1/source/supabase/functions/learn-data-import/index.ts",
+    "ezbr_sha256": "04a007ce86afaf24ad6eff051b0f33be67f3089ed45f98bd0b9b37714300a842"
+  }
+}

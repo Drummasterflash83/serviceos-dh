@@ -290,3 +290,58 @@ performed. The next acceptance gate is actual signed-in governed preview/apply a
 its review surface. The retained Drummonds package still requires ownership
 clarification; installing import machinery is not approval of that package.
 See [local and hosted release evidence](evidence/learn-governed-import-test-release-2026-10-10.json).
+
+## Governed endpoint and atomic import authority — 10 October
+
+Release 023 replaces only the private import-row authority helper. It requires an
+active company and an owner/admin actor outside any active View As context, including
+one targeting a different company. It acquires the existing registry/roster locks in
+the established order and requires READ COMMITTED isolation. Local PostgreSQL tests
+prove role, company and View As changes cannot race an active row operation. Explicit
+and failed-receipt rollback restore the earlier definition and retained fixture rows.
+
+The hosted rollback rehearsal passed at **04:32:31 UTC**; installation verified at
+**04:33:12 UTC**. TEST has **95 tables and 24 receipts**. No original source rows were
+changed by the release. Release SQL SHA-256:
+`8e30b2e65b43de7b39b873b3ee515dd9a44da98a5964d5ae704a66ec8ef2de86`.
+
+The existing `data-import` engine now lives in a shared handler. The legacy entry
+point retains its routes; the new `learn-data-import` facade permits only governed
+customer/site/job profiles and runs. It bounds declared and streamed requests at
+16 MiB, requires a real signed-in company user, refuses View As writes and preserves
+the explicit sealed profile/checksum contract. Read/matcher/save errors produce a
+failure rather than an empty list, invalid-row classification or false success.
+Apply stops on lost authority or missing durable outcomes.
+
+The new endpoint alone was deployed to TEST at **04:39:07 UTC**, version 1, JWT
+verification enabled. All earlier schema checks pass and all other endpoint metadata
+is unchanged. Ten bundled source files have SHA-256:
+`215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04`.
+The TEST UI tools require its exact recorded metadata in addition to release 023.
+The legacy endpoint was not redeployed; no frontend or production deployment ran.
+
+Validation includes 27 handler/request/profile tests, two authority-release tests,
+three deployment tests and two endpoint-catalog tests, plus strict Edge TypeScript
+checking with local remote-module declarations. The local handler harness substitutes
+Auth/DB I/O and the CSV parser; it is not hosted Deno acceptance. The separate actual
+Auth/HTTP acceptance runner retains synthetic records, compares existing TEST source
+fingerprints, and bans/rotates/demotes its temporary identities on completion.
+
+Actual Auth/HTTP acceptance passed at **04:42:22 UTC**. It retained one synthetic
+person customer, one exact-linked site, one job, three imports and three durable
+outcomes. Preview left canonical tables empty; completed replay did not duplicate
+records. Changed files, View As, company suspension, insufficient role, foreign
+company/run access and demotion of an existing session were refused. The actual
+hosted CSV parser and row functions were exercised. Pre-existing communications,
+canonical entities and import evidence had identical fingerprints afterward. All
+three fixture identities were banned, password-rotated and demoted.
+
+Two earlier test attempts are retained in the evidence: one stopped before fixture
+creation because its snapshot assumed a legacy table absent from TEST; the other
+expected HTTP 403 for an internal service request that returned HTTP 401.
+The latter's users were retired and source fingerprints matched. Neither imported
+a row. These were acceptance-tool corrections; no endpoint redeployment was needed.
+
+Hosted conflict/held-retry and large-file behavior, the browser review surface and
+the real package remain outstanding. No production preservation scan ran in this
+increment. See [release and signed-in evidence](evidence/learn-governed-import-endpoint-test-2026-10-10.json).

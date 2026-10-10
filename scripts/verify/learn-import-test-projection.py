@@ -15,7 +15,7 @@ NODE=shutil.which('node') or '/usr/local/bin/node'
 NAME='serviceos-import-test-'+uuid.uuid4().hex[:8]
 IMAGE='public.ecr.aws/supabase/postgres:17.6.1.141'
 DB='postgres'
-if len(sys.argv)!=2:raise SystemExit('Provide a verified release-021 schema-only catalog')
+if len(sys.argv) not in (2,3) or (len(sys.argv)==3 and sys.argv[2]!='--authority'):raise SystemExit('Provide a verified release-021 schema-only catalog and optional --authority')
 catalog=json.loads(Path(sys.argv[1]).read_text())
 assert catalog['projectRef']=='saatxzwxvdvqevbnskxy' and len(catalog['tables'])==91 and len(catalog['readiness']['customMigrationEntries'])==22
 names=['tenants','profiles','view_as_context','people','companies','sites','jobs','data_imports','import_profiles','import_row_provenance','job_number_aliases']
@@ -108,5 +108,42 @@ try:
   'indexes':[dict(x,table=t['name']) for t in snapshot() for x in t['indexes'] if x['name'] in manifest['existingTableIndexes']],
   'functions':functions,'profiles':json.loads(run(import_queries[1]).stdout)}
  (ROOT/'.verification-results/learn-import-expected.json').write_text(json.dumps(expected,indent=2)+'\n')
+ if '--authority' in sys.argv:
+  authority=(ROOT/'supabase/release/learn-test/023_import_authority.sql').read_text()
+  authority_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(hashlib.sha256(authority.encode()).hexdigest())+';'
+  old_function=run("select pg_get_functiondef('public.import_row_preamble(uuid,uuid,uuid,integer,jsonb,jsonb,text)'::regprocedure)").stdout
+  tables_before=snapshot();rows_before=retained()
+  apply(authority_prefix+authority.replace('\ncommit;\n','\nrollback;\n'),'Row authority rollback rehearsal')
+  assert old_function==run("select pg_get_functiondef('public.import_row_preamble(uuid,uuid,uuid,integer,jsonb,jsonb,text)'::regprocedure)").stdout
+  assert snapshot()==tables_before and retained()==rows_before
+  run("alter table of_test_deploy.migrations add constraint fail_authority_receipt check(migration_name<>'learn_import_actor_authority_v1');")
+  failed=run(authority_prefix+authority,False);assert failed.returncode and 'fail_authority_receipt' in failed.stderr
+  assert old_function==run("select pg_get_functiondef('public.import_row_preamble(uuid,uuid,uuid,integer,jsonb,jsonb,text)'::regprocedure)").stdout
+  assert snapshot()==tables_before and retained()==rows_before
+  run('alter table of_test_deploy.migrations drop constraint fail_authority_receipt;')
+  apply(authority_prefix+authority,'Atomic row authority checks installed locally')
+  assert snapshot()==tables_before and retained()==rows_before
+  authority_functions=json.loads(run(import_queries[0]).stdout)
+  authority_expected=[f for f in authority_functions if f['name']=='import_row_preamble']
+  assert len(authority_expected)==1 and authority_expected[0]['serviceExecute'] and not authority_expected[0]['authenticatedExecute'] and not authority_expected[0]['anonExecute']
+  assert [f for f in authority_functions if f['name']!='import_row_preamble']==[f for f in functions if f['name']!='import_row_preamble']
+  (ROOT/'.verification-results/learn-import-authority-expected.json').write_text(json.dumps(authority_expected,indent=2)+'\n')
+  apply((ROOT/'scripts/verify/learn-import-authority.assert.sql').read_text(),'Active/ended/expired preview, suspension, demotion and stale snapshots')
+  # A live row transaction holds the same locks as authority-edit triggers.
+  hold="set application_name='learn-import-authority-hold';begin;select import_row_preamble('88000000-0000-0000-0000-000000000001','88000000-0000-0000-0000-000000000021','88000000-0000-0000-0000-000000000011',4,'{}','{\"source\":\"commusoft\"}','customers');select pg_sleep(3);commit;"
+  holder=subprocess.Popen([DOCKER,'exec','-i',NAME,'psql','-h','127.0.0.1','-U','supabase_admin','-d',DB,'-At','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+  holder.stdin.write(hold);holder.stdin.close()
+  try:
+   for _ in range(50):
+    if run("select exists(select 1 from pg_stat_activity where application_name='learn-import-authority-hold' and wait_event='PgSleep')").stdout.strip()=='t':break
+    time.sleep(.05)
+   else:raise RuntimeError('Authority row transaction was not observed live')
+   for update in ["update profiles set role='viewer' where id='88000000-0000-0000-0000-000000000011'", "update tenants set status='suspended' where id='88000000-0000-0000-0000-000000000001'", "update view_as_context set expires_at=clock_timestamp()+interval '1 hour' where actor_user_id='88000000-0000-0000-0000-000000000011'"]:
+    run("do $$ declare denied boolean:=false;begin begin "+update+";exception when sqlstate 'PT409' then denied:=true;end;assert denied,'authority edit must conflict with a live import row';end $$;")
+   holder.wait(timeout=10);assert holder.returncode==0
+  finally:
+   if holder.poll() is None:holder.terminate();holder.wait(timeout=10)
+   holder.stdout.close();holder.stderr.close()
+  print('Concurrent role, company and View As changes cannot race a live row: PASS',flush=True)
  print(json.dumps({'state':'passed','sourceSha256':sha,'restoredTables':len(tables),'importFunctions':len(manifest['functions']),'addedTables':manifest['tables'],'historicalMarketingEligibilityTested':False,'hostedWrite':False,'limitations':['Auth is a fixture stand-in; actual signed-in Edge/UI acceptance remains.','Only import-related TEST tables and their actual guards restored; not the whole TEST application.','Hosted rollback, exact catalog comparison and source/row preservation remain release gates.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

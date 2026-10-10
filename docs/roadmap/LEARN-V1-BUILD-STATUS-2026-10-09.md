@@ -1039,3 +1039,22 @@ acceptance remains open; marketing eligibility tests were explicitly excluded
 because that subsystem was not enabled. No original file import, provider action,
 Edge deployment or production change ran. The real package's disputed ownership
 link remains unresolved. See [release evidence and next gate](../operations/LEARN-COMMUSOFT-RECOVERY.md#hosted-verification-and-installation).
+
+## Governed import endpoint and signed-in TEST acceptance — 10 October
+
+Release 023 adds atomic active-company/actor/View As protection to the existing
+row helper; TEST now has 95 tables and 24 receipts. The new governed-only import
+endpoint reuses the existing engine and requires explicit customer/site/job
+profiles, bounded requests and sealed preview/checksum contracts. Failed reads,
+matchers or outcome writes cannot report success. All other endpoints and earlier
+schema definitions remain verified.
+
+Actual signed-in TEST acceptance passed for customer → exact site → job, preview
+without canonical changes, replay, checksum, company/role/View As restrictions and
+foreign run access. Three synthetic imports and their rows are retained; temporary
+users were banned, rotated and demoted. Pre-existing source fingerprints matched.
+Thirty-four focused local tests, strict Edge typechecking and isolated SQL authority,
+concurrency and rollback checks pass. No real package, provider, frontend or
+production deployment ran. Hosted conflict/retry, scale and browser review remain
+open, as does the disputed Commusoft site ownership.
+See [implementation and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#governed-endpoint-and-atomic-import-authority--10-october).

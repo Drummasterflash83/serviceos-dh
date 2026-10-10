@@ -8,7 +8,7 @@ import { createContext, runInContext } from 'node:vm';
 import { createHash, webcrypto } from 'node:crypto';
 import ts from 'typescript';
 
-const source = readFileSync(new URL('../supabase/functions/data-import/index.ts', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../supabase/functions/data-import/handler.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   reportDiagnostics: true,
@@ -57,6 +57,7 @@ async function request({ entity = 'jobs', contract, profileDefinition = definiti
     },
   });
   runInContext(compiled.outputText, context);
+  handler = context.exports.handleDataImport;
   const response = await handler(new Request('http://localhost/data-import', {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body ?? { action: 'apply', import_id: importId, csv_text: csv }),
