@@ -14,6 +14,7 @@ import {
 import {
   inputOutboxKey,
   connectionOutboxKey,
+  captureOutboxKey,
   type InputScope,
   type InputLock,
   type RequestStore,
@@ -94,6 +95,8 @@ export async function resolveSavedConnection(
     throw Error("Credentials are accepted only for an explicit connection replacement.");
   return lock(inputOutboxKey(s), async () => {
     if (!allowed()) throw Error("Operator context changed. Reopen this company before continuing.");
+    if (mode === "apply" && store.getItem(captureOutboxKey(s)) !== null)
+      throw Error("Resolve the saved capture request before changing a connection.");
     if (store.getItem(inputOutboxKey(s)) !== null)
       throw Error("Resolve the saved module or import request first.");
     const saved = readSavedConnection(store, s);

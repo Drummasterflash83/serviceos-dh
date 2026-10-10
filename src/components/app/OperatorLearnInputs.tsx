@@ -337,22 +337,11 @@ export function OperatorLearnInputs({
             changes.
           </p>
           <fieldset disabled={disabled} className="space-y-3">
-            <legend className="font-semibold">Module switches</legend>
+            <legend className="font-semibold">Commusoft input switch</legend>
             <p className="text-sm">
               Recorded settings: LEARN {flagLabel(data.flags["learn.enabled"])} · Commusoft{" "}
               {flagLabel(data.flags["learn.inputs.commusoft.enabled"])}
             </p>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={(canWrite === true ? values : data.flags)["learn.enabled"] === true}
-                onChange={(e) => {
-                  setValues((v) => ({ ...v, "learn.enabled": e.target.checked }));
-                  setApproved(false);
-                }}
-              />
-              LEARN input processing
-            </label>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -368,18 +357,29 @@ export function OperatorLearnInputs({
               Commusoft customer and job input
             </label>
             <p className="text-sm">
-              These switches currently govern Commusoft capture. Email, phone and Slack controls are
-              still being connected. Disabling capture preserves retained history.
+              Manage the shared LEARN master switch in LEARN capture settings above. This setting
+              controls Commusoft input; disabling it preserves retained customer and job history.
             </p>
             <button
               className="cp-secondary"
-              disabled={!approved || !reason.trim()}
+              disabled={!approved || !reason.trim() || data.flags["learn.enabled"] === null}
               onClick={() =>
-                submit({ kind: "set_modules", reason: reason.trim(), expected: data.flags, values })
+                data.flags["learn.enabled"] !== null &&
+                submit({
+                  kind: "set_modules",
+                  reason: reason.trim(),
+                  expected: data.flags,
+                  values: { ...values, "learn.enabled": data.flags["learn.enabled"] },
+                })
               }
             >
-              Save module settings
+              Save Commusoft setting
             </button>
+            {data.flags["learn.enabled"] === null && (
+              <p className="text-sm">
+                Review and save the LEARN master setting above before changing Commusoft input.
+              </p>
+            )}
           </fieldset>
           <fieldset disabled={busy || !!pending || !data} className="space-y-3">
             <legend className="font-semibold">Commusoft connection and import</legend>
@@ -533,7 +533,7 @@ export function OperatorLearnInputs({
                   <p className="text-sm">
                     {unfinished
                       ? "This connection has unfinished work. Review its progress below and continue from the saved position when the current job has settled."
-                      : "Enable both switches and complete connection verification before approving an import."}
+                      : "Enable LEARN and the Commusoft input, then complete connection verification before approving an import."}
                   </p>
                 )}
               </>

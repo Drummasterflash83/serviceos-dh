@@ -12,3 +12,6 @@ export function inputOutboxKey(s: InputScope) {
 export function connectionOutboxKey(s: InputScope) {
   return `${inputOutboxKey(s)}:connection`;
 }
+export function captureOutboxKey(s: InputScope) {
+  return `${inputOutboxKey(s)}:capture`;
+}

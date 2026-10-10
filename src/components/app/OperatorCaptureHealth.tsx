@@ -156,8 +156,8 @@ export function OperatorCaptureHealth({
             </button>
           )}
           <p className="text-sm">
-            These are diagnostic reads. Commusoft module controls are below; email, phone and Slack
-            module switches still need to be connected to all of their capture paths.
+            These are diagnostic reads. Capture permission is managed separately in LEARN capture
+            settings. A permitted source still needs a working connection and capture schedule.
           </p>
         </>
       )}

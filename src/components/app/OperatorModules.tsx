@@ -40,6 +40,9 @@ const OperatorDelivery = lazy(() =>
 const OperatorCaptureHealth = lazy(() =>
   import("./OperatorCaptureHealth").then((m) => ({ default: m.OperatorCaptureHealth })),
 );
+const OperatorCaptureControls = lazy(() =>
+  import("./OperatorCaptureControls").then((m) => ({ default: m.OperatorCaptureControls })),
+);
 const OperatorLearnInputs = lazy(() =>
   import("./OperatorLearnInputs").then((module) => ({ default: module.OperatorLearnInputs })),
 );
@@ -70,6 +73,7 @@ function OperatorModuleContent({
 }) {
   const { user } = useAuth();
   const [issueToOpen, setIssueToOpen] = useState<string | undefined>();
+  const [captureRevision, setCaptureRevision] = useState(0);
   function openIssue(issue?: HealthIssue) {
     setIssueToOpen(issue?.id);
     onView("improvements");
@@ -138,13 +142,19 @@ function OperatorModuleContent({
         {user && (
           <Suspense fallback={<p role="status">Opening LEARN controls…</p>}>
             <div className="cp-root op-embedded" style={{ marginBottom: 24 }}>
+              <OperatorCaptureControls
+                key={`controls:${tenantId}:${user.id}`}
+                tenantId={tenantId}
+                actorId={user.id}
+                onRecorded={() => setCaptureRevision((v) => v + 1)}
+              />
               <OperatorCaptureHealth
-                key={`capture:${tenantId}:${user.id}`}
+                key={`capture:${tenantId}:${user.id}:${captureRevision}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />
               <OperatorLearnInputs
-                key={`${tenantId}:${user.id}`}
+                key={`${tenantId}:${user.id}:${captureRevision}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />

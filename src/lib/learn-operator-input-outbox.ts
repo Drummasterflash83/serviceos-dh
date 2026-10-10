@@ -7,6 +7,7 @@ import {
 import {
   inputOutboxKey,
   connectionOutboxKey,
+  captureOutboxKey,
   type InputScope,
   type InputLock,
   type RequestStore as Store,
@@ -60,6 +61,8 @@ export async function resolveSavedInput(
     encoded = JSON.stringify(value);
   return lock(key, async () => {
     if (!allowed()) throw Error("Operator context changed. Reopen this company before continuing.");
+    if (mode === "apply" && store.getItem(captureOutboxKey(s)) !== null)
+      throw Error("Resolve the saved capture request before changing modules or approving an import.");
     if (store.getItem(connectionOutboxKey(s)) !== null)
       throw Error(
         "Resolve the saved connection request before changing modules or approving an import.",

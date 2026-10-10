@@ -1,0 +1,25 @@
+{
+  "version": "learn-operator-capture-controls-local/1",
+  "observedAt": "2026-10-10T16:13:26.584432+00:00",
+  "state": "implemented_local_acceptance_passed",
+  "controls": [
+    "learn.enabled",
+    "learn.inputs.email.enabled",
+    "learn.inputs.phone.enabled",
+    "learn.inputs.slack.enabled"
+  ],
+  "requestOutboxTests": 22,
+  "browserChecks": [
+    "Lost response retains exact request; reload and receipt check clear it without another apply",
+    "Stale revision cannot overwrite settings; explicit cancellation leaves recorded policy unchanged",
+    "Viewer controls are disabled while recorded status remains readable",
+    "Revoked administrator access blocks resolution and retains the request"
+  ],
+  "preview": "preview/learn-capture-controls",
+  "screenshot": "operator-capture-controls-2026-10-10.jpg",
+  "limitations": [
+    "Browser acceptance uses synthetic in-browser RPC responses with network requests blocked by CSP.",
+    "Signed-in hosted frontend acceptance and deployment remain outstanding.",
+    "No hosted feature flag, credential, grant, scheduler or production change."
+  ]
+}

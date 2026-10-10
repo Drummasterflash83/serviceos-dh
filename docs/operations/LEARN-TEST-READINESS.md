@@ -1,5 +1,39 @@
 # Existing TEST environment: verified release gaps
 
+## OpenFolk capture controls — frontend implemented and locally verified, 10 October 2026
+
+The operator Modules screen now exposes the shared LEARN master switch plus
+separate Email, Phone and Slack settings through the release-033 capture-control
+RPCs. The existing Commusoft panel retains its own input switch and import controls;
+it preserves the recorded master setting instead of editing it independently.
+An unset master must be reviewed in the new panel before changing Commusoft input.
+Recorded policy distinguishes permission to capture from actual healthy activity.
+Missing/inherited settings require an explicit choice before the four-setting
+policy is saved, so an unrelated switch cannot silently enable another input.
+
+The client validates tenant, request, revision, complete policy and recorded
+receipt before reporting success. Requests are saved before network access, scoped
+by backend/operator/company and protected by the same browser lock as Commusoft
+changes. Lost responses retain the exact request; checking a recorded receipt
+does not apply it again. Stale revisions require cancellation and a fresh review.
+Pending capture changes block new Commusoft module/import/connection writes;
+receipt checks and cancellation remain available. Every action rechecks current
+administrator access, with server authorization remaining authoritative.
+
+**22 request/outbox tests, frontend TypeScript and the production build pass.**
+The actual component was also exercised in a localhost preview whose CSP blocks
+network requests: lost response and reload recovery, stale-change cancellation,
+read-only operator controls and administrator revocation retaining a saved request.
+Browser testing found and fixed recovery buttons being unnecessarily disabled
+after a failed save despite freshly verified access. See
+[verification evidence](evidence/learn-operator-capture-controls-local-2026-10-10.json)
+and [synthetic screenshot](evidence/operator-capture-controls-2026-10-10.jpg).
+
+**Not yet hosted frontend acceptance:** this checkpoint does not change deployed
+flags, grant operator access, start capture or promote production. Verify a signed-in
+operator on the coordinated TEST frontend/backend before release, including all
+deployed input workers honouring the shared policy and current schedules.
+
 ## Hosted synthetic email recovery — passed, 10 October 2026
 
 At **16:03:26 UTC**, the deployed TEST worker recovered all three mailbox paths:
