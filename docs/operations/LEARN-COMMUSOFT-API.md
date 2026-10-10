@@ -4,7 +4,8 @@
 
 Local source reader, provider-neutral source-record adapter, durable scope binding
 and atomic credential/pacing/source-publication functions, dedicated worker and
-transactional settlement and reviewed customer/card projection are implemented locally. Fifty Commusoft tests and three shared
+transactional settlement, reviewed customer/card projection and a signed-in customer
+review flow are implemented locally. Fifty Commusoft tests and three shared
 HTTP-guard tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
 This is not an installed connector: no provider request, real API credential read, live sync job,
 production migration or frontend release was performed for this increment.
@@ -241,7 +242,8 @@ cannot create a customer. Original source versions and pages stay immutable.
 The caller explicitly classifies a reviewed customer as person or company and
 chooses an existing canonical target or creation. This is not automatic identity
 matching: creating a new customer must be an explicit decision after inspecting
-existing candidates. There is no review screen or automatic bulk type mapping yet.
+existing candidates. The review screen is now wired locally as described below;
+automatic bulk type mapping remains outstanding.
 Existing targets and cards are reused without changing any fields. New customers
 receive typed source names/address/contact fields and unverified provenance; new
 cards retain neutral defaults, with no invented activity, score or marketing consent.
@@ -262,14 +264,48 @@ replay, and rollback after an injected late failure. Minimal fixture prerequisit
 are not a substitute for the installed TEST catalogue or authenticated endpoint/UI
 acceptance. No migration has been installed in hosted TEST or production.
 
+## Signed-in customer review — local
+
+Migration `20261031130000_learn_business_input_review.sql` adds authenticated
+connection/source-page/candidate readers and `learn_commusoft_confirm_customer`.
+The facade derives the actor from `auth.uid()` and delegates to the private writer.
+The writer remains uncallable directly by browser roles and additionally verifies
+the JWT actor for this route. Current tenant owner/admin, View-As, module and
+connection checks apply; readers expose bounded summaries, not raw source payloads
+or provider secrets. Source and candidate lists use bounded cursor pages.
+
+`LearnCommusoftCustomers` is reachable from LEARN's customer-system section. The
+user explicitly selects a connection and retained customer, chooses person/company,
+checks possible existing matches, then chooses an existing target or new customer
+and supplies a reason/confirmation. Changing source, classification or search
+clears the selection/approval. Successful saves refresh the card workspace. A lost
+acknowledgement disables further decisions until the source list is reread; the
+UI does not retry a write automatically or claim it failed to commit.
+
+Candidate discovery currently uses primary canonical names, emails, phones and
+postcodes. Shared contact details/name are clues, not identity proof. Phone matching
+only removes formatting; it does not equate national/international number forms.
+Secondary contact-point discovery, governed bulk classification, durable pending
+review recovery across reloads and correction of existing links remain future work.
+
+Six client contract tests, application typechecking, preview/production builds and
+47 existing prebuild checks pass. Isolated database acceptance uses actual
+`authenticated` role calls and synthetic JWT settings, including source pagination,
+latest-observation reads, candidate discovery, caller-bound saves/replay and access
+denials. The facade rollback restores the original private writer. Browser acceptance
+used a CSP-isolated synthetic preview and verified a confirmed existing-card link,
+lost-acknowledgement reload recovery and viewer restrictions. This is not actual
+hosted Auth/PostgREST or real provider acceptance. The temporary browser/server were
+closed. See [review evidence](evidence/learn-commusoft-review-local-2026-10-10.json).
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Package and verify all four migrations and the worker against the installed
+2. Package and verify all five migrations and the worker against the installed
    TEST schema, including its existing feature flags and queue functions.
 3. Add authorized connection/approval setup and operator progress/recovery controls;
-   wire customer review/duplicate discovery, and project contacts, sites and jobs.
+   verify the customer review flow in hosted TEST, and project contacts, sites and jobs.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -284,6 +320,7 @@ Validation:
 
 ```sh
 node --test supabase/functions/_shared/commusoft/*.test.ts supabase/functions/_shared/slack/slack_worker_http.test.ts
+node --test src/lib/learn-commusoft-review.test.ts
 npx tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions --lib ES2022,DOM supabase/functions/_shared/commusoft/*.ts supabase/functions/_shared/business_inputs/source_record.ts
 python3 scripts/verify/learn-commusoft-permits.py
 python3 scripts/verify/learn-commusoft-permits.py --pages

@@ -1,0 +1,34 @@
+{
+  "version": "learn-commusoft-review-local/1",
+  "observedAt": "2026-10-10T08:55:04Z",
+  "scope": "local synthetic verification only",
+  "clientTests": { "passed": 6, "failed": 0 },
+  "applicationTypecheck": "passed",
+  "productionBuild": "passed, including 47 prebuild tests",
+  "isolatedPreviewBuild": "passed",
+  "isolatedDatabase": {
+    "command": "python3 scripts/verify/learn-commusoft-permits.py --customers",
+    "fullCommusoftMigrationChain": "passed",
+    "sourcePaginationAndLatestObservation": "passed",
+    "existingCandidateSearch": "passed",
+    "authenticatedActorBindingAndReplay": "passed",
+    "viewerAndForeignScopeDenials": "passed",
+    "privateWriterStillInaccessibleToBrowserRole": "passed",
+    "facadeRollbackRestoresWriter": "passed"
+  },
+  "browser": {
+    "environment": "localhost:47874; CSP connect-src none; synthetic RPC fixture",
+    "existingCustomerConfirmation": "saved and linked state visible",
+    "lostAcknowledgement": "decisions disabled; reload reveals committed link",
+    "viewer": "no review controls",
+    "screenshot": "learn-commusoft-review-browser-2026-10-10.png",
+    "temporaryTabAndServerClosed": true
+  },
+  "limitations": [
+    "Hosted Auth/PostgREST and installed TEST catalogue acceptance remain required.",
+    "Browser used synthetic RPC data; SQL used synthetic JWT settings in isolated Postgres.",
+    "Primary-field candidate discovery only; no automatic identity merge or bulk customer-type mapping.",
+    "Pending review drafts are not retained across reloads; source links themselves are durable and idempotent.",
+    "No live provider request, hosted migration or production release."
+  ]
+}

@@ -87,6 +87,13 @@ try:
         if sql("select count(*) from learn_business_input_links where external_id='9';") != '1':
             raise RuntimeError('Concurrent review duplicated identity')
         print('Concurrent customer review: one identity/card and one replay acknowledgement.')
+        sql("create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;")
+        review_migration = (root / 'supabase/migrations/20261031130000_learn_business_input_review.sql').read_text()
+        before = sql("select md5(pg_get_functiondef('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)'::regprocedure));")
+        sql(review_migration.replace('\ncommit;', '\nrollback;'))
+        if sql("select md5(pg_get_functiondef('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)'::regprocedure));") != before:
+            raise RuntimeError('Review facade rollback changed private writer')
+        print(sql(review_migration + '\n' + (root / 'scripts/verify/learn-business-input-review.assert.sql').read_text()))
         raise SystemExit(0)
     if sys.argv[1:] == ['--worker']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))

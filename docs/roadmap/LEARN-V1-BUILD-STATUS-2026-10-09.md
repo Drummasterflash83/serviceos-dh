@@ -1284,3 +1284,20 @@ rollback. The verification container was removed. This is a local private RPC;
 customer review UI/endpoint, candidate discovery/bulk classification, contact/site/
 job projection, source updates/corrections and hosted/live acceptance remain open.
 No real records, source credentials, hosted schema or production release changed.
+
+## Commusoft customer review UI — local, 10 October
+
+The LEARN portal now opens a customer review dialog with retained source pages,
+person/company classification, paged possible-match search, explicit existing/new
+customer choice and reviewed confirmation. Authenticated RPCs derive the actor
+from the session, protect raw records and retain current company/module authority.
+Confirmed saves refresh the cards. An uncertain acknowledgement disables further
+decisions until a reread; no write is automatically retried.
+
+Six client tests, application typechecking, production/isolated preview builds and
+the existing 47 prebuild checks passed. Isolated SQL acceptance passed actual role
+privileges, paged/latest source reads, candidate search, caller-bound confirmation
+and replay, and facade rollback. Synthetic browser acceptance passed existing-card
+linking, lost-response recovery and viewer restrictions. The temporary preview and
+browser tab were closed. Hosted Auth/PostgREST acceptance, real connection setup,
+bulk/secondary-identifier reconciliation and contact/site/job projection remain.
