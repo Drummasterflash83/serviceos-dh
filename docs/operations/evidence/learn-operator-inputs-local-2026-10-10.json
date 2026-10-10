@@ -1,0 +1,29 @@
+{
+  "version": "learn-operator-inputs-local/1",
+  "observedAt": "2026-10-10T10:08:03.556226+00:00",
+  "state": "passed",
+  "scope": "Local SQL and application adapter; no hosted deployment or UI",
+  "checks": [
+    "Actual repository platform grant table and corrected resolver with synthetic supporting tables/Auth claims in isolated PostgreSQL 15.",
+    "Platform view/admin separation, tenant-owner denial, actor binding, View As denial and same-session grant revocation.",
+    "Optimistic module settings; credential existence, connection revision and collection limits before queueing.",
+    "Exact replay, conflicting request refusal, cancellation fence and concurrent apply/cancel with one durable receipt.",
+    "Active/incomplete import retention, matching completed approval checkpoint, retained prior state and injected late-failure rollback.",
+    "Migration rollback leaves no new objects; private table/helpers remain inaccessible.",
+    "Actual SQL metadata response passes the application parser.",
+    "Five client tests and application TypeScript check passed."
+  ],
+  "sourceSha256": {
+    "supabase/migrations/20261031160000_learn_operator_inputs.sql": "58bf52b1bd1ce8ef220c52cdf927571dc7f06cc3a7c95b5a9978dae2b7be7f9b",
+    "src/lib/learn-operator-inputs.ts": "fef860948d3b1dc267cd11b1a10670136bc6c967aa7cc04174bbaec1117eb0cc",
+    "scripts/verify/learn-operator-inputs.py": "15bf9d1729db890a155d88286b4942ad51844a9258193ab1cb72c7c27b5d0201",
+    "scripts/verify/learn-operator-inputs.fixture.sql": "a0d81d4814432c1cf4ecba36ccf216391361488e3795408a6be326bdf782afa0",
+    "scripts/verify/learn-operator-inputs.assert.sql": "cc09aab0ccc3875fa85fc5a83b93e583cc9394456490b6f51f49e8a08971b405"
+  },
+  "limitations": [
+    "No operator screen is wired yet.",
+    "Existing platform-authority dependencies must be inspected and packaged for TEST before hosted operator acceptance.",
+    "No real credential, provider request, successful page ingestion, hosted mutation or production release.",
+    "Incomplete-import recovery and full multi-provider module controls remain open."
+  ]
+}

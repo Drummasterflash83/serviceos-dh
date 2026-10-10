@@ -2,13 +2,16 @@
 
 ## Current state — 10 October 2026
 
-Local source reader, provider-neutral source-record adapter, durable scope binding
-and atomic credential/pacing/source-publication functions, dedicated worker and
-transactional settlement, reviewed customer/card projection and a signed-in customer
-review flow, plus reviewed site/job projection, are implemented locally. Fifty Commusoft tests and three shared
-HTTP-guard tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
-This is not an installed connector: no provider request, real API credential read, live sync job,
-production migration or frontend release was performed for this increment.
+The input schema and dedicated worker are installed in TEST. Customer/site/job
+review has passed signed-in acceptance using synthetic sources. The deployed
+worker has passed HTTP authority checks, interrupted-claim recovery and missing-
+credential/module-disabled handling. Successful real API capture is not established.
+Production and the frontend release are unchanged.
+
+OpenFolk operator switch/import-approval RPCs and their application adapter are
+now implemented and verified locally. They use the existing platform authority
+ledger. The UI, prerequisite-aware TEST release and signed-in operator acceptance
+remain outstanding; these new controls are not yet available in hosted TEST.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
 connection or Commusoft-named project secret. Checked local environment variable
@@ -489,3 +492,49 @@ prove runtime authority/failure handling and interrupted-claim recovery, not a
 successful provider page or complete ingestion. Real Drummonds API access,
 successful page/replay acceptance, operator connection setup, contacts,
 existing-target reconciliation, source updates and production release remain.
+
+## OpenFolk operator input controls — local implementation
+
+Migration `20261031160000_learn_operator_inputs.sql` adds a private immutable
+request ledger, a bounded control-metadata reader and an apply/check/cancel RPC.
+It depends on the existing `platform_authority_grants` ledger and corrected
+`current_user_is_openfolk_operator` resolver, rather than treating client owners
+as platform administrators. TEST does not yet contain these operator prerequisites;
+they require a separate inspected release. No authority is granted by this migration.
+
+Platform viewers can read control metadata; platform administrators can explicitly
+set `learn.enabled` and `learn.inputs.commusoft.enabled`, or approve one bounded
+Commusoft collection traversal. Current actor, effective grant and absence of
+View As are enforced server-side. Module changes compare the observed prior
+values and record their reason and previous state. These two switches do not yet
+control email, phone or Slack workers.
+
+Import approval requires enabled switches, a current verified connection revision,
+an existing tenant-qualified Vault reference, bounded pages/page size, an expiry
+within 24 hours and explicit customer/workaddress scope for contacts. Setup reads
+credential existence only. It atomically binds the existing worker account,
+approval, empty initial cursor, queued job and immutable receipt. Active or
+incomplete imports cannot be overwritten. A completed prior traversal must have
+the matching approval checkpoint; its approval and checkpoint remain in history
+when a later collection is approved. No scheduler is added.
+
+Exact retries return the same receipt. A cancelled unresolved request leaves a
+tombstone so a delayed apply cannot enqueue work. Cancellation is not a command
+to undo an already-recorded approval or stop a queued job; disabling the module
+remains the current way to prevent further source acquisition. Reading a receipt
+or cancellation remains possible with the module disabled, but still requires
+current platform administrator authority.
+
+The metadata reader excludes source payloads, credentials and provider error text.
+The application adapter validates tenant/request identity, collection limits and
+receipts, and distinguishes queued, interrupted, expired, failed and saved-page
+states. Even an exhausted collection is labelled as requiring coverage review.
+
+Isolated PostgreSQL checks use the repository's actual platform grant table and
+resolver with synthetic supporting tables/Auth claims. They cover role/grant
+boundaries, immediate revocation, View As refusal, module changes, source authority,
+idempotence, apply/cancel concurrency, checkpoint preservation, late-failure rollback
+and migration rollback. Actual SQL output also passes the application parser; five
+client tests and application typechecking pass. These are local checks, not hosted
+operator or provider acceptance. Operator UI, connection credential setup/verification,
+incomplete-import recovery controls and successful provider page tests remain open.

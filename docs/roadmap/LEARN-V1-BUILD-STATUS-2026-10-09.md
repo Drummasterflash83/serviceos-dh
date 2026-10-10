@@ -1427,3 +1427,26 @@ Evidence: [deployed worker acceptance](../operations/evidence/learn-commusoft-te
 This closes the initial deployed-runtime and authority/failure checks. Successful
 page ingestion/recovery, real Drummonds API access, operator setup and the remaining
 LEARN V1 requirements are still open. Production and the live frontend are unchanged.
+
+## OpenFolk input approval controls — local, 10 October
+
+The operator server layer now supports explicit LEARN/Commusoft switches and
+bounded collection approvals through the existing platform authority model.
+Tenant ownership alone grants no operator access. Each request retains its actor,
+definition, receipt, reason and prior state. Retry/check/cancel share one durable
+outcome; a cancellation fences a delayed apply. Switch changes require the observed
+previous values, and starting an import requires current connection revision,
+credential binding and enabled modules.
+
+Approval, worker account/cursor and queued job commit together. Active/incomplete
+imports are held for recovery; replacing a completed traversal retains its prior
+approval/checkpoint. The bounded operator reader exposes control state without raw
+source data or credentials. The application adapter validates actual SQL responses
+and uses accurate queued/interrupted/expired/review states.
+
+Isolated PostgreSQL authority, replay/concurrency, preservation and rollback checks,
+five client tests and application typechecking pass. No hosted schema, flags, jobs,
+credentials or provider traffic changed. The TEST project lacks the existing
+platform-authority prerequisites, so those must be inspected and packaged before
+hosted release. The operator UI, connection setup/verification, recovery controls
+and real-source acceptance remain to be completed.
