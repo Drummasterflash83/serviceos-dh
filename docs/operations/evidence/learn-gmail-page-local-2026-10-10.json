@@ -1,0 +1,32 @@
+{
+  "version": "learn-gmail-page-local/1",
+  "observedAt": "2026-10-10T14:32:28.335Z",
+  "state": "local_verified_not_integrated",
+  "tests": 11,
+  "typescript": "passed",
+  "files": [
+    {
+      "path": "supabase/functions/_shared/gmail_capture_page.ts",
+      "sha256": "4522221f9e628243c059c7b3069b1dc543351f2e13b8cd85f28b4d2e2a68c83e"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_capture_page.test.ts",
+      "sha256": "a575389ce403755c7e55d37b237023c9d7ca55132934725cd49cffd92c957f66"
+    }
+  ],
+  "verified": [
+    "Explicit pages retain continuation tokens and distinguish recent labels from historical listing.",
+    "Profile identity and uint64 history IDs are validated without precision loss; expired history does not silently restart.",
+    "Concurrency and per-response/aggregate response limits bound message fetching.",
+    "Malformed or unresolved message fetches prevent all page writes; uncertain storage returns no checkpoint evidence.",
+    "Missing-only capture retains existing messages and provider-reported gone messages do not trigger deletion."
+  ],
+  "limitations": [
+    "Synthetic fetchers and storage ports only; no real Gmail or hosted database calls.",
+    "Not wired into handlers, durable transitions or atomic queue completion.",
+    "Actual storage adapter must preserve newer thread summaries and union participants.",
+    "Existing body/header parser reused; attachment bytes are not captured.",
+    "Oversize pages require operator-visible recovery; database calls are outside the fetch deadline.",
+    "No credentials, hosted records, permissions, schedules or production deployment changed."
+  ]
+}

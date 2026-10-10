@@ -1,5 +1,43 @@
 # Existing TEST environment: verified release gaps
 
+## Gmail page processing — local implementation, 10 October 2026
+
+`gmail_capture_page.ts` reads one explicit recent or historical page and validates
+its continuation token. Recent INBOX and SENT traversals remain separate;
+historical listing has no label filter. Profile identity and decimal uint64
+history IDs are checked without Number conversion. Expired history is surfaced
+for recovery, never silently replaced with a new traversal. The implementation
+follows the documented [message listing](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list)
+and [history listing](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.history/list)
+contracts.
+
+The persistence helper fetches at most four messages concurrently and validates
+the complete page before writing. Missing-only capture keeps existing messages;
+explicit refetch uses the same stored identities. A provider-reported missing
+message is counted without deleting retained data. Storage acknowledgements must
+all succeed before returning page evidence; uncertain writes return no checkpoint
+evidence. Existing shared parsing is reused, including its current body/header
+behavior; attachment bytes are not downloaded.
+
+Requests use a fixed Gmail origin, no redirects and a maximum 15-second fetch
+timeout. Message fetching shares a default 60-second deadline. Responses are
+bounded to 8 MiB individually and 32 MiB across a message page; oversize data is
+refused without advancing progress. These are conservative worker limits, not a
+claim that all Gmail messages fit them. Database calls are outside that fetch
+deadline and still require lease checks in the eventual integration.
+
+**Eleven synthetic local tests and TypeScript checking pass.** Tests cover
+pagination, exact history IDs, expired history, malformed/oversize responses,
+concurrency, preserved existing messages, disappeared source messages, partial
+fetch failure and uncertain storage. See
+[local evidence](evidence/learn-gmail-page-local-2026-10-10.json).
+
+**Not integrated or deployed.** The storage port is tested using injected stores;
+the real adapter must preserve newer thread summaries and union participants
+when old history arrives. Provider continuation validation in the engine,
+lease-aware transitions, atomic queue completion and hosted acceptance remain.
+No real provider requests, database changes, credentials or schedules changed.
+
 ## Email job/attempt recovery — local implementation, 10 October 2026
 
 `20261031234500_learn_email_job_attempts.sql` binds each email queue job to one
