@@ -1,0 +1,658 @@
+{
+  "version": "learn-import-pagination-evidence/1",
+  "observedAt": "2026-10-10T07:29:33.424481+00:00",
+  "deployment": {
+    "version": "learn-test-import-endpoint/3",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T07:24:56.057Z",
+    "state": "deployed_needs_authenticated_acceptance",
+    "writeAttempted": true,
+    "cliExitStatus": 0,
+    "schemaVerified": true,
+    "otherEndpointsUnchanged": true,
+    "sourceBundleSha256": "af2ea667f2220f67e00b6bbbedf94d8b6c348996e4c1225d94a0c654ee74de2b",
+    "files": [
+      "learn-data-import/index.ts",
+      "data-import/handler.ts",
+      "_shared/authz.ts",
+      "_shared/audit.ts",
+      "_shared/simwood.ts",
+      "_shared/imports/profile.ts",
+      "_shared/imports/redact.ts",
+      "_shared/imports/matching.ts",
+      "_shared/imports/job_number.ts",
+      "_shared/imports/row_failure.ts",
+      "_shared/imports/batches.ts"
+    ],
+    "endpoint": {
+      "id": "c21e3607-5680-4b67-9c51-0567a100f899",
+      "slug": "learn-data-import",
+      "name": "learn-data-import",
+      "status": "ACTIVE",
+      "version": 3,
+      "created_at": 1791607142178,
+      "updated_at": 1791617086331,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c21e3607-5680-4b67-9c51-0567a100f899_3/source/supabase/functions/learn-data-import/index.ts",
+      "ezbr_sha256": "08f44653b8cadc1bde8c68ef57440e76d818fb486fd325dd86bf1d54becfe1df"
+    },
+    "limitations": [
+      "Only the governed-only LEARN endpoint was replaced; legacy data-import was not deployed or replaced.",
+      "No real file import, provider, secret, schedule or production change. CLI output is withheld.",
+      "Metadata is not signed-in HTTP acceptance. An uncertain deployment must be inspected, never replayed automatically."
+    ]
+  },
+  "volumeAcceptance": {
+    "version": "learn-test-import-volume/3",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "af2ea667f2220f67e00b6bbbedf94d8b6c348996e4c1225d94a0c654ee74de2b",
+    "runId": "f16e4fa1-8001-44ff-ad71-7c15dc764394",
+    "tenant": "bb02436a-0772-4fc0-9ca3-d36daa02b7ec",
+    "user": "8ad4acc6-ab5b-4b2e-a0c2-8a0c42a89391",
+    "rows": 5000,
+    "created": true,
+    "seeded": true,
+    "retired": true,
+    "phase": "passed",
+    "timings": [
+      {
+        "action": "profiles",
+        "ms": 1133,
+        "status": 200
+      },
+      {
+        "action": "preview",
+        "ms": 5361,
+        "status": 200
+      },
+      {
+        "action": "apply",
+        "ms": 20821,
+        "status": 200
+      },
+      {
+        "action": "apply",
+        "ms": 517,
+        "status": 200
+      },
+      {
+        "action": "row_results",
+        "ms": 456,
+        "status": 200
+      }
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "importId": "64290f3f-8b83-4640-923d-ab466c38305f",
+    "counts": {
+      "people": 5000,
+      "cards": 5000,
+      "links": 5000,
+      "outcomes": 5000,
+      "provenance": 5000,
+      "unexpected_outcomes": 0
+    },
+    "replay": {
+      "already": true,
+      "status": "completed",
+      "created": 5000
+    },
+    "outcomePages": [
+      {
+        "afterRow": 1,
+        "returned": 100,
+        "nextAfterRow": 101
+      },
+      {
+        "afterRow": 101,
+        "returned": 100,
+        "nextAfterRow": 201
+      },
+      {
+        "afterRow": 201,
+        "returned": 100,
+        "nextAfterRow": 301
+      },
+      {
+        "afterRow": 301,
+        "returned": 100,
+        "nextAfterRow": 401
+      },
+      {
+        "afterRow": 401,
+        "returned": 100,
+        "nextAfterRow": 501
+      },
+      {
+        "afterRow": 501,
+        "returned": 100,
+        "nextAfterRow": 601
+      },
+      {
+        "afterRow": 601,
+        "returned": 100,
+        "nextAfterRow": 701
+      },
+      {
+        "afterRow": 701,
+        "returned": 100,
+        "nextAfterRow": 801
+      },
+      {
+        "afterRow": 801,
+        "returned": 100,
+        "nextAfterRow": 901
+      },
+      {
+        "afterRow": 901,
+        "returned": 100,
+        "nextAfterRow": 1001
+      },
+      {
+        "afterRow": 1001,
+        "returned": 100,
+        "nextAfterRow": 1101
+      },
+      {
+        "afterRow": 1101,
+        "returned": 100,
+        "nextAfterRow": 1201
+      },
+      {
+        "afterRow": 1201,
+        "returned": 100,
+        "nextAfterRow": 1301
+      },
+      {
+        "afterRow": 1301,
+        "returned": 100,
+        "nextAfterRow": 1401
+      },
+      {
+        "afterRow": 1401,
+        "returned": 100,
+        "nextAfterRow": 1501
+      },
+      {
+        "afterRow": 1501,
+        "returned": 100,
+        "nextAfterRow": 1601
+      },
+      {
+        "afterRow": 1601,
+        "returned": 100,
+        "nextAfterRow": 1701
+      },
+      {
+        "afterRow": 1701,
+        "returned": 100,
+        "nextAfterRow": 1801
+      },
+      {
+        "afterRow": 1801,
+        "returned": 100,
+        "nextAfterRow": 1901
+      },
+      {
+        "afterRow": 1901,
+        "returned": 100,
+        "nextAfterRow": 2001
+      },
+      {
+        "afterRow": 2001,
+        "returned": 100,
+        "nextAfterRow": 2101
+      },
+      {
+        "afterRow": 2101,
+        "returned": 100,
+        "nextAfterRow": 2201
+      },
+      {
+        "afterRow": 2201,
+        "returned": 100,
+        "nextAfterRow": 2301
+      },
+      {
+        "afterRow": 2301,
+        "returned": 100,
+        "nextAfterRow": 2401
+      },
+      {
+        "afterRow": 2401,
+        "returned": 100,
+        "nextAfterRow": 2501
+      },
+      {
+        "afterRow": 2501,
+        "returned": 100,
+        "nextAfterRow": 2601
+      },
+      {
+        "afterRow": 2601,
+        "returned": 100,
+        "nextAfterRow": 2701
+      },
+      {
+        "afterRow": 2701,
+        "returned": 100,
+        "nextAfterRow": 2801
+      },
+      {
+        "afterRow": 2801,
+        "returned": 100,
+        "nextAfterRow": 2901
+      },
+      {
+        "afterRow": 2901,
+        "returned": 100,
+        "nextAfterRow": 3001
+      },
+      {
+        "afterRow": 3001,
+        "returned": 100,
+        "nextAfterRow": 3101
+      },
+      {
+        "afterRow": 3101,
+        "returned": 100,
+        "nextAfterRow": 3201
+      },
+      {
+        "afterRow": 3201,
+        "returned": 100,
+        "nextAfterRow": 3301
+      },
+      {
+        "afterRow": 3301,
+        "returned": 100,
+        "nextAfterRow": 3401
+      },
+      {
+        "afterRow": 3401,
+        "returned": 100,
+        "nextAfterRow": 3501
+      },
+      {
+        "afterRow": 3501,
+        "returned": 100,
+        "nextAfterRow": 3601
+      },
+      {
+        "afterRow": 3601,
+        "returned": 100,
+        "nextAfterRow": 3701
+      },
+      {
+        "afterRow": 3701,
+        "returned": 100,
+        "nextAfterRow": 3801
+      },
+      {
+        "afterRow": 3801,
+        "returned": 100,
+        "nextAfterRow": 3901
+      },
+      {
+        "afterRow": 3901,
+        "returned": 100,
+        "nextAfterRow": 4001
+      },
+      {
+        "afterRow": 4001,
+        "returned": 100,
+        "nextAfterRow": 4101
+      },
+      {
+        "afterRow": 4101,
+        "returned": 100,
+        "nextAfterRow": 4201
+      },
+      {
+        "afterRow": 4201,
+        "returned": 100,
+        "nextAfterRow": 4301
+      },
+      {
+        "afterRow": 4301,
+        "returned": 100,
+        "nextAfterRow": 4401
+      },
+      {
+        "afterRow": 4401,
+        "returned": 100,
+        "nextAfterRow": 4501
+      },
+      {
+        "afterRow": 4501,
+        "returned": 100,
+        "nextAfterRow": 4601
+      },
+      {
+        "afterRow": 4601,
+        "returned": 100,
+        "nextAfterRow": 4701
+      },
+      {
+        "afterRow": 4701,
+        "returned": 100,
+        "nextAfterRow": 4801
+      },
+      {
+        "afterRow": 4801,
+        "returned": 100,
+        "nextAfterRow": 4901
+      },
+      {
+        "afterRow": 4901,
+        "returned": 100,
+        "nextAfterRow": null
+      }
+    ],
+    "outcomeLedger": {
+      "total": 5000,
+      "pages": 50,
+      "exactRowSequence": true,
+      "emptyEndCursor": true,
+      "previousCursor": true,
+      "emptyFilter": true
+    },
+    "cardPages": [
+      {
+        "page": 0,
+        "returned": 24,
+        "hasMore": true
+      },
+      {
+        "page": 1,
+        "returned": 24,
+        "hasMore": true
+      },
+      {
+        "page": 208,
+        "returned": 8,
+        "hasMore": false
+      }
+    ],
+    "preExistingSourcesPreserved": true,
+    "imports": [
+      {
+        "id": "64290f3f-8b83-4640-923d-ab466c38305f",
+        "status": "completed",
+        "row_count": 5000,
+        "created_records": 5000,
+        "invalid_rows": 0,
+        "conflict_records": 0
+      }
+    ],
+    "observedAt": "2026-10-10T07:26:51.147Z",
+    "manifest": "/private/tmp/serviceos-learn-volume-f16e4fa1-8001-44ff-ad71-7c15dc764394.json",
+    "limitations": [
+      "Synthetic customers only; sites, jobs and provider communication volumes are separate.",
+      "Only the first, second and last card pages are read; every row outcome is read through the real client in bounded pages.",
+      "One request at a time, no automatic mutation retries, and fixture records are retained."
+    ]
+  },
+  "authenticatedAcceptance": {
+    "version": "learn-test-import-acceptance/3",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "06544767-977d-46f5-bf1d-c993c603bf58",
+    "observedAt": "2026-10-10T07:27:58.084Z",
+    "state": "passed",
+    "sourceBundleSha256": "af2ea667f2220f67e00b6bbbedf94d8b6c348996e4c1225d94a0c654ee74de2b",
+    "checks": [
+      "Actual anonymous, service, viewer and foreign-company access refused; owner sees the three governed profiles.",
+      "Preview preserves canonical rows; changed bytes, active foreign-company View As, suspended company and ops writes refused; owner apply and replay create one customer.",
+      "Missing customer holds a job without creating an orphan; importing its customer/site then retrying the exact saved file creates one correctly linked job with attempt 2. Replaying remains idempotent.",
+      "A contradictory exact site is shown before apply, retained as a blocking conflict and never falls back to a matching address. Exact replay preserves it; corrected bytes require a new preview and leave the old outcome intact.",
+      "A separately previewed duplicate upload is flagged and links the existing source identity; canonical counts remain two customers, two sites and three jobs.",
+      "Actual signed-in LEARN card loader shows two imported customers to owner and viewer, hides them from the other company, and retains source links without invented summaries, activity, ownership or scores.",
+      "Actual CSV parser and row RPCs import customer, exact linked site and job in order; durable outcomes/provenance retained, foreign run access and revoked session authority refused."
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "retained": {
+      "people": 2,
+      "sites": 2,
+      "jobs": 3,
+      "imports": 9,
+      "outcomes": 9,
+      "approving_users": 0
+    },
+    "preExistingSourcesPreserved": true,
+    "manifest": "/private/tmp/serviceos-learn-import-06544767-977d-46f5-bf1d-c993c603bf58.json",
+    "limitations": [
+      "Synthetic TEST records only; no original file imported, provider call or production change.",
+      "Small files only; large-file and browser acceptance remain separate. Old conflicts remain retained and open even after a new corrected file succeeds; a governed resolution workflow is still needed.",
+      "Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained."
+    ]
+  },
+  "volumePreservation": {
+    "before": [
+      {
+        "name": "companies",
+        "count": 4,
+        "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+      },
+      {
+        "name": "contact_points",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "customer_cards",
+        "count": 6210,
+        "fingerprint": "52029c94ea90664b5504b5c07d8bcb18"
+      },
+      {
+        "name": "data_imports",
+        "count": 34,
+        "fingerprint": "22e43bd4e7246758823006c346621232"
+      },
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "import_conflicts",
+        "count": 3,
+        "fingerprint": "71c5db1758eb5424dd7d1914c1e37da8"
+      },
+      {
+        "name": "import_entity_links",
+        "count": 6226,
+        "fingerprint": "e4353aa24757d6ba50a8b5260ad4d18b"
+      },
+      {
+        "name": "import_row_provenance",
+        "count": 6229,
+        "fingerprint": "a8a41da20a270f2ccfb92720bfd3971e"
+      },
+      {
+        "name": "import_row_results",
+        "count": 6232,
+        "fingerprint": "2f79652095122b70d3d1a1d6df87d4cb"
+      },
+      {
+        "name": "interactions",
+        "count": 34,
+        "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+      },
+      {
+        "name": "jobs",
+        "count": 14,
+        "fingerprint": "88c9bd0d0be0533a8fe82f9cc08a317b"
+      },
+      {
+        "name": "people",
+        "count": 6213,
+        "fingerprint": "ffca0a12d9b43efe437ac0a8898ad579"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "sites",
+        "count": 7,
+        "fingerprint": "c2ccdcf9c1a8cc87b9265f42b4f084f5"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 18,
+        "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 22,
+        "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+      }
+    ],
+    "after": [
+      {
+        "name": "companies",
+        "count": 4,
+        "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+      },
+      {
+        "name": "contact_points",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "customer_cards",
+        "count": 6210,
+        "fingerprint": "52029c94ea90664b5504b5c07d8bcb18"
+      },
+      {
+        "name": "data_imports",
+        "count": 34,
+        "fingerprint": "22e43bd4e7246758823006c346621232"
+      },
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "import_conflicts",
+        "count": 3,
+        "fingerprint": "71c5db1758eb5424dd7d1914c1e37da8"
+      },
+      {
+        "name": "import_entity_links",
+        "count": 6226,
+        "fingerprint": "e4353aa24757d6ba50a8b5260ad4d18b"
+      },
+      {
+        "name": "import_row_provenance",
+        "count": 6229,
+        "fingerprint": "a8a41da20a270f2ccfb92720bfd3971e"
+      },
+      {
+        "name": "import_row_results",
+        "count": 6232,
+        "fingerprint": "2f79652095122b70d3d1a1d6df87d4cb"
+      },
+      {
+        "name": "interactions",
+        "count": 34,
+        "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+      },
+      {
+        "name": "jobs",
+        "count": 14,
+        "fingerprint": "88c9bd0d0be0533a8fe82f9cc08a317b"
+      },
+      {
+        "name": "people",
+        "count": 6213,
+        "fingerprint": "ffca0a12d9b43efe437ac0a8898ad579"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "sites",
+        "count": 7,
+        "fingerprint": "c2ccdcf9c1a8cc87b9265f42b4f084f5"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 18,
+        "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 22,
+        "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+      }
+    ]
+  },
+  "localChecks": {
+    "handlerAndClientTests": 29,
+    "releaseAndCatalogTests": 8,
+    "strictEdgeTypecheck": "passed",
+    "applicationTypecheck": "passed",
+    "applicationBuild": "passed with prebuild checks",
+    "previewBuild": "passed"
+  },
+  "browser": {
+    "type": "isolated actual component/client with synthetic adapter; not signed-in hosted UI",
+    "fixtureRows": 250,
+    "observedPages": [
+      {
+        "page": 1,
+        "firstRow": 2,
+        "lastRow": 101
+      },
+      {
+        "page": 2,
+        "firstRow": 102,
+        "lastRow": 201
+      },
+      {
+        "page": 3,
+        "firstRow": 202,
+        "lastRow": 251
+      }
+    ],
+    "finalNextDisabled": true,
+    "previousReturnsPageTwo": true,
+    "failedPageClearsOutcomes": true,
+    "reloadAfterFailureReturnsPageOne": true,
+    "screenshot": ".verification-results/learn-import-outcomes-final-page.png"
+  },
+  "remaining": [
+    "Interrupted hosted batch recovery",
+    "Large site/job and mixed-failure imports",
+    "Governed conflict resolution and real Commusoft ownership contradiction",
+    "Legacy customer-card writer race acceptance",
+    "Production/frontend release and broader LEARN acceptance"
+  ]
+}

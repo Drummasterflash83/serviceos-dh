@@ -195,11 +195,32 @@ test("empty responses, row duplicates and unknown outcomes never imply success",
     created_at: at,
   };
   for (const rows of [[row, row], [{ ...row, outcome: "surprise" }], [{ ...row, attempt: 0 }]]) {
-    const h = client(() => ({ data: { success: true, rows, truncated: false }, error: null }));
+    const h = client(() => ({
+      data: {
+        success: true,
+        tenant_id: tenant,
+        import_id: id,
+        after_row: 1,
+        page_size: 100,
+        next_after_row: null,
+        rows,
+        truncated: false,
+      },
+      error: null,
+    }));
     await assert.rejects(() => loadGovernedOutcomes(h.db, tenant, id));
   }
   const good = client(() => ({
-    data: { success: true, rows: [row], truncated: false },
+    data: {
+      success: true,
+      tenant_id: tenant,
+      import_id: id,
+      after_row: 1,
+      page_size: 100,
+      next_after_row: null,
+      rows: [row],
+      truncated: false,
+    },
     error: null,
   }));
   assert.equal((await loadGovernedOutcomes(good.db, tenant, id)).rows[0].outcome, "held");
@@ -219,4 +240,41 @@ test("oversized JSON requests are rejected before transport and completed-invali
     importProgress({ ...run, status: "completed", invalid_rows: 1 }),
     "Finished with 1 invalid rows",
   );
+});
+
+test("outcome pages verify scope, cursor, row order and exact continuation", async () => {
+  const rows = Array.from({ length: 100 }, (_, i) => ({
+    row_number: i + 102,
+    outcome: "created",
+    reason: null,
+    fields: [],
+    attempt: 1,
+    created_at: at,
+  }));
+  const reply = {
+    success: true,
+    tenant_id: tenant,
+    import_id: id,
+    after_row: 101,
+    page_size: 100,
+    rows,
+    truncated: true,
+    next_after_row: 201,
+  };
+  const good = client(() => ({ data: reply, error: null }));
+  assert.equal((await loadGovernedOutcomes(good.db, tenant, id, 101)).next_after_row, 201);
+  for (const change of [
+    { tenant_id: "foreign" },
+    { import_id: tenant },
+    { after_row: 1 },
+    { next_after_row: 200 },
+    { rows: rows.slice(1) },
+    { truncated: false },
+    { rows: [{ ...rows[0], row_number: 101 }, ...rows.slice(1)] },
+  ]) {
+    const h = client(() => ({ data: { ...reply, ...change }, error: null }));
+    await assert.rejects(() => loadGovernedOutcomes(h.db, tenant, id, 101));
+  }
+  for (const cursor of [0, 5002, 1.5, NaN])
+    await assert.rejects(() => loadGovernedOutcomes(good.db, tenant, id, cursor));
 });

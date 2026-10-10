@@ -9,3 +9,7 @@ Serve with the same command replacing `build` with `preview`; loopback port 4787
 The normal page has a saved preview. `?scenario=uncertain` simulates a lost response
 after a committed apply. `?scenario=unavailable` denies reads. `?role=ops` removes
 write controls. Use `SYNTHETIC.csv` only; reload resets fixture state.
+
+`?scenario=pages` exposes 250 completed synthetic outcomes across three pages.
+`?scenario=page-failure` fails reads beyond the first page so reload recovery can be checked.
+The embedded wrapper omits the full application sidebar background.

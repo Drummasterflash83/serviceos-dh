@@ -82,7 +82,7 @@ const ACTION_KEYS: Record<string, string[]> = {
   profiles: ["action", "tenant_id", "source_system", "entity_type"],
   imports: ["action", "tenant_id", "limit"],
   status: ["action", "tenant_id", "import_id"],
-  row_results: ["action", "tenant_id", "import_id", "outcomes"],
+  row_results: ["action", "tenant_id", "import_id", "outcomes", "after_row", "page_size"],
   preview: [
     "action",
     "tenant_id",
@@ -99,7 +99,7 @@ const ACTION_KEYS: Record<string, string[]> = {
 
 export async function handleDataImport(
   req: Request,
-  options: { governedOnly?: boolean; batched?: boolean } = {},
+  options: { governedOnly?: boolean; batched?: boolean; paginatedOutcomes?: boolean } = {},
 ): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return fail("method_not_allowed", "Use POST", 405);
@@ -837,13 +837,20 @@ export async function handleDataImport(
       imp.entity_type === "contacts"
         ? ["created", "updated", "conflict", "invalid", "failed"]
         : ["created", "linked", "updated", "conflict", "held", "invalid", "skipped", "failed"];
+    const paged = options.paginatedOutcomes === true;
+    const after = body.after_row === undefined ? 1 : body.after_row, size = body.page_size === undefined ? 100 : body.page_size;
+    if ((!paged && (body.after_row !== undefined || body.page_size !== undefined)) ||
+        (paged && (!Number.isSafeInteger(after) || (after as number) < 1 || (after as number) > 5001 ||
+          !Number.isSafeInteger(size) || (size as number) < 1 || (size as number) > 200)))
+      return fail("invalid_request", "Invalid row page cursor or size", 400);
     let q = db
       .from(table)
       .select("row_number,outcome,reason,fields,attempt,created_at")
       .eq("tenant_id", tenantId)
       .eq("import_id", body.import_id)
       .order("row_number")
-      .limit(1000);
+      .limit(paged ? (size as number) + 1 : 1000);
+    if (paged) q = q.gt("row_number", after);
     if (body.outcomes !== undefined) {
       if (
         !Array.isArray(body.outcomes) ||
@@ -856,7 +863,10 @@ export async function handleDataImport(
     }
     const { data, error } = await q;
     if (error) return fail("internal", "Could not load row results", 500);
-    return json({ success: true, rows: data ?? [], truncated: (data ?? []).length === 1000 });
+    if (!paged) return json({ success: true, rows: data ?? [], truncated: (data ?? []).length === 1000 });
+    const rows = (data ?? []).slice(0, size as number), more = (data ?? []).length > (size as number);
+    return json({ success: true, tenant_id: tenantId, import_id: imp.id, after_row: after,
+      page_size: size, rows, truncated: more, next_after_row: more ? rows[rows.length - 1].row_number : null });
   }
 
   // ── apply ─────────────────────────────────────────────────────────────────────

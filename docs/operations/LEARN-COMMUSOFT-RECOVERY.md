@@ -589,3 +589,45 @@ contradiction remains unresolved. This benchmark covers valid synthetic customer
 large site/job files, large mixed-failure files, interrupted hosted batch recovery,
 full row-ledger navigation and production/frontend acceptance remain open. See
 [installed batch release and volume evidence](evidence/learn-import-batches-test-release-2026-10-10.json).
+
+## Complete import outcome pagination accepted — 10 October
+
+The governed TEST importer is now endpoint version 3 (07:24 UTC). No SQL migration
+was needed: the exact 95-table/26-receipt schema and other endpoints remain checked
+against the existing release chain. Historical v1/v2 deployers refuse the changed
+source tree. The eleven-file v3 source bundle is pinned to
+`af2ea667f2220f67e00b6bbbedf94d8b6c348996e4c1225d94a0c654ee74de2b`.
+
+`row_results` accepts a CSV row cursor (`after_row`, default 1, integer 1–5001)
+and page size (default 100, integer 1–200). It reads at most page size + 1 rows,
+ordered by CSV row number within the authorized company/import and optional outcome
+filter. Responses echo company, import, cursor and size, with `next_after_row` or
+null at the end. This avoids the former first-1,000-outcome limit. Legacy endpoint
+behavior is preserved and that endpoint was not deployed. Pages are live ledger
+reads rather than a frozen snapshot while an import is processing or retried.
+
+The actual frontend client verifies scope, strictly increasing row numbers and
+continuation shape. The review screen provides Previous/Next controls, shows the
+CSV row range, and resets to page one on reload. A failed page clears its results
+and requires reload; stale responses cannot populate a changed actor/company view.
+The isolated browser preview verified 250 outcomes across three pages, backward
+navigation, disabled final Next, and failed-page reload recovery. Its wrapper now
+uses the embedded layout so a nonexistent sidebar does not obscure the first column.
+
+A fresh signed-in TEST trial imported 5,000 customers: 5.361-second preview,
+20.822-second apply and 0.518-second completed replay. All 5,000 outcomes were then
+read through the real client in 50 pages, exactly CSV rows 2–5001, without duplicates
+or gaps. Final/empty/previous cursors and empty filtered results passed. Exactly
+5,000 people, cards, links, outcomes and provenance records remain; attempts and
+completed replay are unchanged. First/second/final customer-card pages also passed.
+The separate real-Auth suite passed company/role/View As/suspension guards, original
+file binding, customer→site→job recovery, contradiction retention and card visibility.
+Both runs preserved all 18 pre-existing source/card table fingerprints and retired
+their temporary logins while retaining synthetic evidence.
+
+Local verification passed 29 handler/client tests, eight release/catalog tests,
+strict Edge and application typechecks, preview build and full application build
+with its prebuild checks. Production, original source files and providers were not
+changed; the frontend is built locally, not published. Interrupted hosted batches,
+large site/job/mixed-failure acceptance and governed conflict resolution remain open.
+See [pagination release and acceptance evidence](evidence/learn-import-pagination-2026-10-10.json).

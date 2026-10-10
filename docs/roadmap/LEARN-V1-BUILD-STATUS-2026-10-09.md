@@ -1158,3 +1158,17 @@ is next. Large site/job/mixed-failure acceptance, interrupted hosted batch recov
 real-source ownership reconciliation and production/frontend release remain open.
 No original source files, providers or production deployment changed. See
 [batch release evidence](../operations/evidence/learn-import-batches-test-release-2026-10-10.json).
+
+## Complete import outcome navigation accepted — 10 October
+
+TEST importer endpoint v3 now exposes bounded cursor pages for the whole row ledger.
+The real client read all 5,000 outcomes from a fresh import in 50 pages, with exact
+row sequence and no duplicates or gaps. The synthetic browser verified next/back,
+final-page boundary and recovery after a failed page read. Existing source/card
+fingerprints match and both acceptance runs retired temporary credentials.
+
+Application/Edge typechecks and builds pass. Frontend changes remain local. Next:
+interrupted hosted batch recovery, large site/job/mixed-failure acceptance and the
+real package's unresolved ownership conflict. Broader connectors, scoring adapters
+and release requirements remain active. See
+[pagination evidence](../operations/evidence/learn-import-pagination-2026-10-10.json).

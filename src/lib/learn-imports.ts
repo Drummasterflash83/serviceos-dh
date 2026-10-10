@@ -278,16 +278,38 @@ export async function applyGovernedImport(
   await call(db, tenant, { action: "apply", import_id: r.id, csv_text: csv });
   return loadGovernedImport(db, tenant, r.id);
 }
-export async function loadGovernedOutcomes(db: ImportClient, tenant: string, id: string) {
+export const IMPORT_OUTCOME_PAGE_SIZE = 100;
+export async function loadGovernedOutcomes(
+  db: ImportClient,
+  tenant: string,
+  id: string,
+  afterRow = 1,
+) {
   if (!uuid(id)) throw Error("Choose a saved import.");
-  const d = await call(db, tenant, { action: "row_results", import_id: id });
-  if (!Array.isArray(d.rows) || d.rows.length > 1000 || typeof d.truncated !== "boolean")
+  if (!Number.isSafeInteger(afterRow) || afterRow < 1 || afterRow > 5001)
+    throw Error("Invalid row page.");
+  const d = await call(db, tenant, {
+    action: "row_results",
+    import_id: id,
+    after_row: afterRow,
+    page_size: IMPORT_OUTCOME_PAGE_SIZE,
+  });
+  if (
+    d.tenant_id !== tenant ||
+    d.import_id !== id ||
+    d.after_row !== afterRow ||
+    d.page_size !== IMPORT_OUTCOME_PAGE_SIZE ||
+    !Array.isArray(d.rows) ||
+    d.rows.length > IMPORT_OUTCOME_PAGE_SIZE ||
+    typeof d.truncated !== "boolean"
+  )
     throw Error("Row results could not be verified.");
-  let previous = 1;
+  let previous = afterRow;
   for (const r of d.rows) {
     if (
       !count(r.row_number) ||
       r.row_number <= previous ||
+      r.row_number > 5001 ||
       ![
         "created",
         "linked",
@@ -307,7 +329,13 @@ export async function loadGovernedOutcomes(db: ImportClient, tenant: string, id:
       throw Error("Row results could not be verified.");
     previous = r.row_number;
   }
-  return d as { rows: GovernedOutcome[]; truncated: boolean };
+  if (
+    d.truncated
+      ? d.rows.length !== IMPORT_OUTCOME_PAGE_SIZE || d.next_after_row !== previous
+      : d.next_after_row !== null
+  )
+    throw Error("Row page continuation could not be verified.");
+  return d as { rows: GovernedOutcome[]; truncated: boolean; next_after_row: number | null };
 }
 export function importProgress(r: GovernedRun) {
   if (r.status === "completed")

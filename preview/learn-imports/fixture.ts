@@ -9,11 +9,20 @@ export function getSupabaseClient(){return {functions:{async invoke(name:string,
  if(name!=='learn-data-import'||body.tenant_id!==tenant)throw Error('Synthetic scope differs');
  run.file_checksum=await importFileHash(csv);const scenario=new URLSearchParams(location.search).get('scenario');
  if(scenario==='unavailable')return {data:null,error:{message:'Synthetic unavailable'}};
+ if(scenario==='pages'||scenario==='page-failure'){
+  run.status='completed';run.row_count=250;run.valid_rows=250;run.created_records=250;
+  run.completed_at=run.created_at;run.preview={...preview,row_count:250,valid:250,will_create:250};
+ }
  let data:any;
  if(body.action==='profiles')data={profiles:[profile]};
  else if(body.action==='imports')data={imports:[run]};
  else if(body.action==='status')data={import:run};
- else if(body.action==='row_results')data={rows:run.status==='completed'?[{row_number:2,outcome:'created',reason:null,fields:[],attempt:1,created_at:run.created_at}]:[],truncated:false};
+ else if(body.action==='row_results'){
+  if(scenario==='page-failure'&&body.after_row>1)return {data:null,error:{message:'Synthetic page unavailable'}};
+  const all=run.status==='completed'?Array.from({length:run.row_count},(_,i)=>({row_number:i+2,outcome:'created',reason:null,fields:[],attempt:1,created_at:run.created_at})):[];
+  const remaining=all.filter(r=>r.row_number>body.after_row),rows=remaining.slice(0,body.page_size),more=remaining.length>rows.length;
+  data={tenant_id:tenant,import_id:id,after_row:body.after_row,page_size:body.page_size,rows,truncated:more,next_after_row:more?rows.at(-1)!.row_number:null};
+ }
  else if(body.action==='preview'){if(body.csv_text!==csv)return {data:null,error:{message:'Use the synthetic file'}};data={import_id:id,preview};}
  else if(body.action==='apply'){if(body.csv_text!==csv||body.import_id!==id)throw Error('Synthetic file mismatch');run.status='completed';run.created_records=1;run.completed_at=new Date().toISOString();if(scenario==='uncertain')return {data:null,error:{message:'Synthetic response lost after commit'}};data={import:run};}
  else throw Error('Synthetic action unavailable');

@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
 import { readImportBatchesCatalog } from "./learn-import-batches-catalog.mjs";
-import { installedImportBatchesEndpoint } from "./learn-test-import-batches-endpoint-catalog.mjs";
+import { installedImportPaginationEndpoint } from "./learn-test-import-pagination-endpoint-catalog.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readAcceptanceResponse } from "./learn-test-launch-acceptance.mjs";
 const [mode, path] = process.argv.slice(2),
@@ -27,7 +27,7 @@ check(
   "Active marked TEST browser fixture required",
 );
 check(
-  installedImportBatchesEndpoint(
+  installedImportPaginationEndpoint(
     await readImportBatchesCatalog({ allowProjectRef: TEST_PROJECT, token }),
   ),
   "Exact TEST 025 required",

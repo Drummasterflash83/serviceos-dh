@@ -17,15 +17,16 @@ export function harness(options={}){
  const privateError={code:'08006',message:'SYNTHETIC PRIVATE DATABASE DETAIL'};
  const db={
   auth:{getUser:async token=>token==='session'?{data:{user:{id:actor,email:'synthetic@example.invalid'}},error:null}:{data:{user:null},error:privateError}},
-  from(table){let operation='read',selection='',single=false;const filters=[];
-   const query={select(v){selection=v;return query;},eq(...v){filters.push(v);return query;},or(...v){filters.push(['or',...v]);return query;},in(...v){filters.push(['in',...v]);return query;},is(...v){filters.push(['is',...v]);return query;},order(){return query;},limit(){return query;},
+  from(table){let operation='read',selection='',single=false,max=Infinity;const filters=[];
+   const query={select(v){selection=v;return query;},eq(...v){filters.push(v);return query;},or(...v){filters.push(['or',...v]);return query;},in(...v){filters.push(['in',...v]);return query;},is(...v){filters.push(['is',...v]);return query;},order(){return query;},gt(...v){filters.push(['gt',...v]);return query;},limit(n){max=n;return query;},
     update(v){operation='update';writes.push({table,operation,value:v});return query;},insert(v){operation='insert';writes.push({table,operation,value:v});return query;},
     maybeSingle(){single=true;return result();},then(a,b){return result().then(a,b);}};
    async function result(){calls.push({table,operation,selection,filters});if(options.failTable===table&&(options.failOperation??'read')===operation)return {data:null,error:privateError};
     let data=table==='profiles'?{tenant_id:tenant,role:options.role??'owner',email:'synthetic@example.invalid'}:
      table==='tenants'?{status:options.companyStatus??'active'}:table==='view_as_context'?(options.viewAs?{id:'context'}:null):
      table==='import_profiles'?(single?profile:[profile]):table==='data_imports'?(operation==='insert'?{id:importId}:selection==='id,status'?null:single?imp:[imp]):
-     table==='import_row_results'||table==='import_row_provenance'?[]:null;
+     table==='import_row_results'?(options.outcomes??[]):table==='import_row_provenance'?[]:null;
+    if(table==='import_row_results'&&Array.isArray(data)){for(const f of filters){if(f[0]==='gt')data=data.filter(r=>r[f[1]]>f[2]);if(f[0]==='in')data=data.filter(r=>f[2].includes(r[f[1]]));}data=data.slice(0,max);}
     return {data,error:null};}
    return query;
   },

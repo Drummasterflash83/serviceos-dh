@@ -22,7 +22,8 @@ export function LearnFileImports({ tenantId, canEdit }: { tenantId: string; canE
     [profileId, setProfileId] = useState("");
   const [saved, setSaved] = useState<GovernedSavedRun | null>(null),
     [outcomes, setOutcomes] = useState<GovernedOutcome[] | null>(null),
-    [truncated, setTruncated] = useState(false);
+    [nextRow, setNextRow] = useState<number | null>(null),
+    [rowPages, setRowPages] = useState<number[]>([1]);
   const [file, setFile] = useState<{ name: string; text: string; hash: string } | null>(null),
     [approved, setApproved] = useState(false),
     [busy, setBusy] = useState(false),
@@ -81,12 +82,27 @@ export function LearnFileImports({ tenantId, canEdit }: { tenantId: string; canE
     setSaved(r);
     setApproved(false);
     setOutcomes(null);
+    setNextRow(null);
+    setRowPages([1]);
     if (canEdit) {
       const o = await loadGovernedOutcomes(db, tenantId, id);
       if (ticket !== generation.current) return;
       setOutcomes(o.rows);
-      setTruncated(o.truncated);
+      setNextRow(o.next_after_row);
     }
+  }
+  async function turnOutcomePage(pages: number[]) {
+    if (!saved || !canEdit || !ready) return;
+    const id = saved.id;
+    await operation(async (ticket) => {
+      setOutcomes(null);
+      setNextRow(null);
+      const page = await loadGovernedOutcomes(db, tenantId, id, pages[pages.length - 1]);
+      if (ticket !== generation.current) return;
+      setOutcomes(page.rows);
+      setNextRow(page.next_after_row);
+      setRowPages(pages);
+    });
   }
   async function selectRun(id: string) {
     await operation(async (ticket) => {
@@ -348,8 +364,33 @@ export function LearnFileImports({ tenantId, canEdit }: { tenantId: string; canE
                   </table>
                 </div>
               )}
-              {truncated && (
-                <p>Showing at most 1,000 outcomes; this is not the complete row ledger.</p>
+              {outcomes !== null && (
+                <div aria-label="Row outcome pages">
+                  <p>
+                    Page {rowPages.length}
+                    {outcomes.length > 0
+                      ? ` · CSV rows ${outcomes[0].row_number}–${outcomes[outcomes.length - 1].row_number}`
+                      : ""}
+                  </p>
+                  <button
+                    className="cp-secondary"
+                    disabled={busy || !ready || rowPages.length < 2}
+                    onClick={() => void turnOutcomePage(rowPages.slice(0, -1))}
+                  >
+                    Previous outcomes
+                  </button>{" "}
+                  <button
+                    className="cp-secondary"
+                    disabled={busy || !ready || nextRow === null}
+                    onClick={() => nextRow !== null && void turnOutcomePage([...rowPages, nextRow])}
+                  >
+                    Next outcomes
+                  </button>
+                  <p>
+                    Recorded outcomes only. Rows may change while an import is processing or
+                    retried. Reload saved imports to return to the first page.
+                  </p>
+                </div>
               )}
             </>
           )}

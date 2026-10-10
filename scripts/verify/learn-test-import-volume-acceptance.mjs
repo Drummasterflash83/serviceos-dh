@@ -2,11 +2,12 @@
 import {randomUUID,randomBytes} from 'node:crypto';
 import {writeFileSync} from 'node:fs';
 import {createClient} from '@supabase/supabase-js';
+import {loadGovernedOutcomes} from '../../src/lib/learn-imports.ts';
 import {readLearnCards} from '../../src/lib/learn-cards.ts';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
 import {readImportBatchesCatalog} from './learn-import-batches-catalog.mjs';
-import {IMPORT_ENDPOINT_SHA} from './learn-test-import-batches-deploy.mjs';
-import {installedImportBatchesEndpoint} from './learn-test-import-batches-endpoint-catalog.mjs';
+import {IMPORT_ENDPOINT_SHA} from './learn-test-import-pagination-deploy.mjs';
+import {installedImportPaginationEndpoint} from './learn-test-import-pagination-endpoint-catalog.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';
 import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';
 import {readAcceptanceResponse} from './learn-test-launch-acceptance.mjs';
@@ -14,14 +15,14 @@ const check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''
 const args=process.argv.slice(2),rowCount=args.length===2?1200:Number(args[3]);
 check(args[0]==='--accept'&&args[1]==='--existing-cli-login'&&(args.length===2||(args.length===4&&args[2]==='--rows'))&&[1200,5000].includes(rowCount)&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit synthetic TEST volume acceptance required');
 const token=savedCliToken(),base=`https://${TEST_PROJECT}.supabase.co`,management={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
-const catalog=await readImportBatchesCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportBatchesEndpoint(catalog),'Exact TEST import/card release required');
+const catalog=await readImportBatchesCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportPaginationEndpoint(catalog),'Exact TEST import/card release required');
 async function request(url,headers,method='GET',body,timeout=45000){return readAcceptanceResponse(await fetch(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(timeout)}));}
 async function sql(query,readOnly=true){const r=await request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query${readOnly?'/read-only':''}`,management,'POST',{query,...(readOnly?{}:{read_only:false})});check(r.ok,`Volume SQL failed (${r.status})`);return r.data;}
 const auth=await sql(AUTH_CONTRACT_QUERY);check(auth?.length===1&&actionAuthContractMatches(auth[0].contract),'Auth fixture contract differs');
 const keys=await request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/api-keys?reveal=true`,management);check(keys.ok&&Array.isArray(keys.data),'TEST keys unavailable');
 const keyFor=role=>{const a=keys.data.filter(k=>k.name===role);check(a.length===1,'Unique TEST credential required');const v=a[0].api_key,c=JSON.parse(Buffer.from(v.split('.')[1],'base64url').toString());check(c.ref===TEST_PROJECT&&c.role===role,'TEST credential target differs');return v;};
 const anon=keyFor('anon'),service=keyFor('service_role'),admin={apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'};
-const p={version:'learn-test-import-volume/2',projectRef:TEST_PROJECT,sourceBundleSha256:IMPORT_ENDPOINT_SHA,runId:randomUUID(),tenant:randomUUID(),user:randomUUID(),rows:rowCount,created:false,seeded:false,retired:false,phase:'prepared',timings:[],failure:null,cleanupErrors:[]};
+const p={version:'learn-test-import-volume/3',projectRef:TEST_PROJECT,sourceBundleSha256:IMPORT_ENDPOINT_SHA,runId:randomUUID(),tenant:randomUUID(),user:randomUUID(),rows:rowCount,created:false,seeded:false,retired:false,phase:'prepared',timings:[],failure:null,cleanupErrors:[]};
 p.email=`learn-volume-${p.runId}@example.invalid`;
 const manifest=`/private/tmp/serviceos-learn-volume-${p.runId}.json`,save=()=>writeFileSync(manifest,JSON.stringify(p,null,2)+'\n',{mode:0o600});writeFileSync(manifest,JSON.stringify(p,null,2)+'\n',{mode:0o600,flag:'wx'});
 const names=['email_messages','phone_calls','phone_recordings','phone_transcripts','slack_messages','slack_message_versions','interactions','sites','jobs','people','companies','contact_points','data_imports','import_entity_links','import_row_results','import_row_provenance','import_conflicts','customer_cards'];
@@ -41,8 +42,20 @@ try{
  const applied=await edge({action:'apply',import_id:p.importId,csv_text:csv});check(applied.status==='completed'&&applied.created===p.rows&&applied.unprocessed===0,'Large import did not finish every row');
  p.counts=await counts();check(['people','cards','links','outcomes','provenance'].every(k=>p.counts[k]===p.rows)&&p.counts.unexpected_outcomes===0,'Durable large-import counts differ');save();
  const replay=await edge({action:'apply',import_id:p.importId,csv_text:csv});p.replay={already:replay.already,status:replay.import?.status,created:replay.created};save();check(replay.already===true&&replay.import?.status==='completed'&&replay.created===p.rows,'Completed replay response differs');check(JSON.stringify(await counts())===JSON.stringify(p.counts),'Completed replay changed canonical counts');
- const outcomes=await edge({action:'row_results',import_id:p.importId});check(outcomes.rows?.length===1000&&outcomes.truncated===true,'Current bounded row-result contract differs');p.outcomeWindow={returned:outcomes.rows.length,truncated:outcomes.truncated,total:p.counts.outcomes};
  const client=createClient(base,anon,{global:{headers:{Authorization:`Bearer ${session}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ const outcomePages=[],seen=[];let cursor=1;
+ p.phase='outcome_pages';save();
+ for(let pageIndex=0;pageIndex<Math.ceil(p.rows/100);pageIndex++){
+  const page=await loadGovernedOutcomes(client,p.tenant,p.importId,cursor);
+  check(page.rows.every(r=>r.outcome==='created'&&r.attempt===1),'Outcome page contains an unexpected result');
+  seen.push(...page.rows.map(r=>r.row_number));outcomePages.push({afterRow:cursor,returned:page.rows.length,nextAfterRow:page.next_after_row});
+  if(page.next_after_row===null)break;cursor=page.next_after_row;
+ }
+ check(seen.length===p.rows&&seen.every((n,i)=>n===i+2)&&outcomePages.at(-1).nextAfterRow===null,'Complete outcome pagination has gaps, duplicates or missing termination');
+ const beyond=await loadGovernedOutcomes(client,p.tenant,p.importId,5001);check(beyond.rows.length===0&&beyond.next_after_row===null,'End cursor did not return an empty final page');
+ const replayPage=await loadGovernedOutcomes(client,p.tenant,p.importId,101);check(replayPage.rows[0]?.row_number===102&&replayPage.rows.at(-1)?.row_number===201,'Previous/reloaded page cursor differs');
+ const filtered=await edge({action:'row_results',import_id:p.importId,after_row:1,page_size:200,outcomes:['invalid']});check(filtered.rows.length===0&&filtered.next_after_row===null&&!filtered.truncated,'Empty filtered ledger differs');
+ p.outcomePages=outcomePages;p.outcomeLedger={total:seen.length,pages:outcomePages.length,exactRowSequence:true,emptyEndCursor:true,previousCursor:true,emptyFilter:true};save();
  const pages=[];for(const n of [0,1,Math.floor((p.rows-1)/24)])pages.push(await readLearnCards(client,p.tenant,'customer',n));
  check(pages[0].cards.length===24&&pages[1].cards.length===24&&pages[2].cards.length===(p.rows%24||24)&&pages[0].hasMore&&pages[1].hasMore&&!pages[2].hasMore&&new Set(pages.flatMap(x=>x.cards.map(c=>c.id))).size===48+(p.rows%24||24),'Customer card pagination differs');p.cardPages=pages.map(x=>({page:x.page,returned:x.cards.length,hasMore:x.hasMore}));p.phase='passed';save();
 }catch(e){p.failure=e instanceof Error?e.message:'Volume acceptance failed';p.phase='requires_inspection';save();}
@@ -53,5 +66,5 @@ finally{
  try{p.sourceAfter=await sources();check(JSON.stringify(p.sourceBefore)===JSON.stringify(p.sourceAfter),'Pre-existing source/card rows changed');p.preExistingSourcesPreserved=true;p.counts=await counts();p.imports=await sql(`select id,status,row_count,created_records,invalid_rows,conflict_records from data_imports where tenant_id=${q(p.tenant)} order by created_at,id`);const roles=await sql(`select role from profiles where id=${q(p.user)}`);check(!p.created||roles.length===1&&roles[0].role==='viewer','Synthetic approving authority remains');}catch{p.cleanupErrors.push('Retention/preservation requires inspection');}
  p.retired=p.cleanupErrors.length===0;p.observedAt=new Date().toISOString();save();
 }
-const result={...p,sourceBefore:undefined,sourceAfter:undefined,email:undefined,manifest,limitations:['Synthetic customers only; sites, jobs and provider communication volumes are separate.','Only the first, second and last card pages are read; row outcomes still expose a bounded 1000-row window.','One request at a time, no automatic mutation retries, and fixture records are retained.']};
+const result={...p,sourceBefore:undefined,sourceAfter:undefined,email:undefined,manifest,limitations:['Synthetic customers only; sites, jobs and provider communication volumes are separate.','Only the first, second and last card pages are read; every row outcome is read through the real client in bounded pages.','One request at a time, no automatic mutation retries, and fixture records are retained.']};
 console.log(JSON.stringify(result,null,2));if(p.failure||p.cleanupErrors.length)process.exitCode=1;
