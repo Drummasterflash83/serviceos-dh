@@ -1,0 +1,17 @@
+{
+  "version": "learn-review-search-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "3187b15992bc7ecf8aa99563538a35434aa3920b44a7669fb63b000078f3a1bd",
+  "priorFingerprint": "17ded8b89b7fbceae74eceee3d2269e4",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101050000_learn_commusoft_review_search.sql",
+      "sha256": "54dfa149c700244ba5a6427d339cc7cad0c1883953ff3764232b4a4ff5517f40"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-review-search-hosted.assert.sql",
+    "sha256": "9d3eb97ed4ed92a85f46b0ab05a5a946811795b789b423259b5f002526ab0968"
+  },
+  "preservedDataSets": 78
+}
