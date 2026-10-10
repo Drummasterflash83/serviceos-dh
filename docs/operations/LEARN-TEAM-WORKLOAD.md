@@ -3,7 +3,9 @@
 Local implementation verified on 10 October; TEST backend release 048 installed on
 11 October local time (10 October 23:04 UTC). Its exact hosted rollback rehearsal,
 91-dataset preservation and HTTP access-denial checks passed. The matching protected
-frontend deployment and signed-in owner acceptance are pending. Production is unchanged.
+[TEST frontend](https://serviceos-learn-test-azk73jaeg-allkin.vercel.app) is READY from Git
+`54f4acd24568352b4a0960155ee4dedcab7d578b`; TEST binding, Vercel protection and actual browser login
+redirect passed. Signed-in owner acceptance is pending. Production is unchanged.
 [TEST release evidence](evidence/learn-team-workload-test-2026-10-11.json).
 
 ## Meaning and collection
@@ -93,11 +95,9 @@ python3 scripts/verify/learn-team-work-residence.py
 node --test src/lib/learn-work-collection.test.ts src/lib/learn-performance-measurements.test.ts src/lib/learn-performance-reviews.test.ts src/lib/learn-scorecards.test.ts src/lib/learn-cards.test.ts
 ```
 
-The source migration is `20261101080000_learn_team_work_residence.sql`. Next: pin
-an additive release against the current TEST 047 catalog, verify preservation of
-all current source/scoring/assessment datasets and append guards, rehearse rollback,
-install the paired backend/frontend, and complete fresh signed-in owner acceptance.
-Do not deploy the new frontend before the collector exists. The pending Commusoft
+The source migration is `20261101080000_learn_team_work_residence.sql`. Release
+048 was pinned against TEST 047, rehearsed, installed and paired with its frontend.
+Fresh signed-in owner collection/review acceptance remains open. The pending Commusoft
 continuation scope/access and all existing credentials remain unchanged.
 
 ### TEST release package 048 (11 October)
@@ -109,5 +109,6 @@ contract after migration, allowing only the exact append evidence-list extension
 The hosted probe uses real anonymous/authenticated-without-identity/service roles,
 checks collector denial and ledger read/write boundaries, and leaves no identities
 or source fixtures. Six release-runner tests and the disposable SQL integration
-suite (including this exact hosted probe) pass. Hosted rehearsal and installation passed with all 91 datasets unchanged. A matching
-protected frontend and signed-in owner acceptance are still required.
+suite (including this exact hosted probe) pass. Hosted rehearsal and installation
+passed with all 91 datasets unchanged. The matching protected frontend is installed;
+signed-in owner acceptance is still required.

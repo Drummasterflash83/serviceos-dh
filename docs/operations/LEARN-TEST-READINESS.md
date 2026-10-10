@@ -1,23 +1,31 @@
 # Existing TEST environment: verified release gaps
 
-## Team workload calculation — local candidate verified, not deployed
+## Team workload calculation — TEST release 048 and paired frontend installed
 
-The new collector calculates elapsed item-minutes from direct team assignments and
-observed member affiliations. Transfers retain their historical team attribution;
-missing history withholds totals. Forty focused client tests, offline SQL including
-concurrent collection and actual SQL-to-card parsing, app/preview builds and actual
-synthetic browser checks pass. A pinned paired TEST release and signed-in acceptance
-remain required. [Contract, evidence and release limits](LEARN-TEAM-WORKLOAD.md).
+The collector calculates elapsed item-minutes from direct team assignments and
+observed member affiliations, retaining historical team attribution. Missing history
+withholds totals. Hosted rollback rehearsal, installation, all 91 monitored dataset
+fingerprints and four HTTP access denials passed. The exact append evidence-list
+extension is the only change to existing collection dependency definitions/authority.
+Forty focused client tests, offline SQL with concurrent collection and actual
+SQL-to-card parsing, app/preview builds and synthetic browser checks support the
+implementation. The protected frontend is READY from Git
+`54f4acd24568352b4a0960155ee4dedcab7d578b`; binding, protection and actual login redirect pass.
+Signed-in hosted collection/review acceptance and larger-population resumable
+collection remain open; this is not employee productivity or a live pay score.
+The prepared Commusoft continuation still has no grant or requests and awaits its
+separate approval. [Contract and limits](LEARN-TEAM-WORKLOAD.md) ·
+[release evidence](evidence/learn-team-workload-test-2026-10-11.json).
 
-## Team cards and scoring scopes — protected TEST frontend installed
+## Earlier team cards and scoring scopes — protected TEST frontend installed
 
 Separate team cards now read explicit team-assigned work and linked evidence.
 Settings expose the existing individual, team, job and customer policy scopes
 without mixing their revisions. Thirty-one focused tests, four readiness checks,
 app/preview builds and actual synthetic browser scope checks pass. Existing hosted
-TEST columns and scoring contracts were read back; fresh signed-in acceptance and
-team calculation adapters remain pending. No backend migration or source mutation
-is required. The protected TEST frontend is READY from Git `4468eca77953410a6d36490255df362f7d65ad30`
+TEST columns and scoring contracts were read back; fresh signed-in scope and
+collection acceptance remain pending. This earlier card-only release
+required no backend migration or source mutation. The protected TEST frontend is READY from Git `4468eca77953410a6d36490255df362f7d65ad30`
 at 22:45 UTC; Vercel protection and actual same-origin sign-in redirect pass.
 [Implementation and limits](LEARN-TEAM-CARDS.md) ·
 [release evidence](evidence/learn-team-cards-2026-10-10.json).

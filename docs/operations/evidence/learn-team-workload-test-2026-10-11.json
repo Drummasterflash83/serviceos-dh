@@ -80,17 +80,75 @@
     "localSQL": "Exact hosted role probe, member/team history and scope regressions, concurrent same-cell collection and actual SQL-to-client measurement/review/score/proof parsing passed.",
     "signedInHostedOwnerAcceptance": false
   },
-  "frontend": null,
+  "frontend": {
+    "observedAt": "2026-10-10T23:07:03.324Z",
+    "id": "dpl_9w8BJtui7noFZZSebpAnFGKE8j6v",
+    "url": "serviceos-learn-test-azk73jaeg-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "54f4acd24568352b4a0960155ee4dedcab7d578b"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "backendBinding": "saatxzwxvdvqevbnskxy",
+    "protection": {
+      "observedAt": "2026-10-10T23:06:33.493Z",
+      "base": "https://serviceos-learn-test-azk73jaeg-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "browser": {
+      "observedAt": "2026-10-10T23:07:36.270Z",
+      "url": "https://serviceos-learn-test-azk73jaeg-allkin.vercel.app/login?redirect=%2Fclient%3Fsection%3Dlearn",
+      "loginRendered": true,
+      "sameOriginClientRedirect": true,
+      "consoleErrors": 0,
+      "signedInOwnerAcceptance": false,
+      "screenshot": ".verification-results/learn-team-work-test-login-2026-10-11.png"
+    }
+  },
   "scope": [
     "91 datasets preserved, including existing work history and member receipts.",
     "Only the exact team evidence allowlist addition changes the existing performance append definition; all other monitored authority is unchanged.",
     "No identity creation, operator grant, provider request, source capture activation, canonical publication or production change."
   ],
   "remaining": [
-    "Matching protected frontend deployment.",
     "Fresh signed-in hosted owner collection/review acceptance.",
     "Resumable collection for populations above the existing bounded collector limits.",
     "Job-outcome, communication-response and calendar/exclusion adapters.",
     "Pending Commusoft continuation approval remains separate."
-  ]
+  ],
+  "continuation": {
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "state": "prepared",
+    "workerInvocations": 0,
+    "preserved": true,
+    "boundary": {
+      "requests": 0,
+      "active_grants": 0,
+      "banned": 0
+    },
+    "schemaFingerprint": "523d19346fb1de6f8346e14449bf25cf",
+    "scopeChanged": false
+  }
 }
