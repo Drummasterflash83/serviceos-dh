@@ -63,7 +63,26 @@ export async function requireTenantUser(
   // real users is unchanged. The service role already bypasses RLS entirely, so
   // this grants no privilege beyond the existing server trust boundary.
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (serviceKey && token === serviceKey) {
+  // Gateways may translate Authorization for infrastructure credentials. An
+  // internal caller can retain the exact service credential in this dedicated
+  // header; it is never inferred from unverified JWT role claims.
+  const internalKey = req.headers.get("x-serviceos-internal-key");
+  const expectedInternalKey = Deno.env.get("SERVICEOS_INTERNAL_KEY") || serviceKey;
+  const exactInternalKey =
+    !!expectedInternalKey &&
+    !!internalKey &&
+    internalKey.length === expectedInternalKey.length &&
+    [...internalKey].reduce(
+      (diff, char, index) => diff | (char.charCodeAt(0) ^ expectedInternalKey.charCodeAt(index)),
+      0,
+    ) === 0;
+  if (internalKey !== null && !exactInternalKey) {
+    return {
+      ok: false,
+      error: authzError("internal_auth_mismatch", "Internal service authorization failed", 401),
+    };
+  }
+  if (serviceKey && (token === serviceKey || exactInternalKey)) {
     const internalTenant = req.headers.get("x-internal-tenant-id");
     if (!internalTenant) {
       return {

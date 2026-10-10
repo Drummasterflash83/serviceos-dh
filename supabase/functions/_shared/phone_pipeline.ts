@@ -39,12 +39,13 @@ export async function invokeFunction(
 ): Promise<{ status: number; json: Record<string, unknown> | null }> {
   const base = functionsBase();
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!base || !key || !authToken) return { status: 0, json: null };
+  if (!base || !key || !authToken || authToken !== key) return { status: 0, json: null };
 
   const headers: Record<string, string> = {
     "content-type": "application/json",
     Authorization: `Bearer ${authToken}`,
     apikey: key,
+    "x-serviceos-internal-key": Deno.env.get("SERVICEOS_INTERNAL_KEY") || authToken,
   };
   // Carry the tenant on internal hops so the service-role auth path in authz.ts
   // can bind it. Harmless for user-JWT calls (that path ignores this header).

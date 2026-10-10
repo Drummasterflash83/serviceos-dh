@@ -1,0 +1,429 @@
+{
+  "version": "learn-email-runtime-endpoints/2",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "databaseFingerprint": "ec04995ee4e15970619130bb53713dc1",
+  "sourceBundleSha256": "cac3fd10c5bbcbeb140e4df5e6b416511406ad9d6178a9901898aeddf30ea5cc",
+  "endpoints": [
+    {
+      "name": "platform-worker",
+      "verifyJwt": false
+    },
+    {
+      "name": "gmail-sync-messages",
+      "verifyJwt": true
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "verifyJwt": true
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "verifyJwt": true
+    }
+  ],
+  "files": [
+    {
+      "path": "_shared/authz.ts",
+      "sha256": "3e3e6653597b2a1207fc6326048453747ebf8ba4523d3315c1615440027b9a53"
+    },
+    {
+      "path": "_shared/automation_execution_enqueue.ts",
+      "sha256": "667ef0bee766605a5b03983d9c7269304016447bb7ea7ef92f88fcead9e83304"
+    },
+    {
+      "path": "_shared/business_graph.ts",
+      "sha256": "19369ee309837f68053732e6a52d87a4d5c586213b0caa82bad28896c65a8b0d"
+    },
+    {
+      "path": "_shared/connectors/controlled_test.ts",
+      "sha256": "1df4aed4bbc636b84853db043c3a926cdcfdef42dfaeb3cf03a7166d92e7ad3a"
+    },
+    {
+      "path": "_shared/connectors/email_reply_draft.ts",
+      "sha256": "1860cd277743bcc27ef66dcd43c241924581794567f270dc862aa11ecbfeca82"
+    },
+    {
+      "path": "_shared/connectors/index.ts",
+      "sha256": "212c6aa50c44187be6b076a28fb1f9f3bdf406d2dd5cc3acb0469aa1d5650cfb"
+    },
+    {
+      "path": "_shared/connectors/internal_note.ts",
+      "sha256": "436838990e76e3eabb2709fda777be8eebbc2b0ea7416a3b57ce9e2367c3e65e"
+    },
+    {
+      "path": "_shared/connectors/marketing_actions.ts",
+      "sha256": "c68514b8093ddfd038998998aa3a8afb4a05ca1ca7b8f4678fc0e3b6cba444c8"
+    },
+    {
+      "path": "_shared/connectors/marketing_ai_draft.ts",
+      "sha256": "f5c104858726d8ce30051ed816dadc46d29f3a9fc73d74bbecd0a440aecd0f58"
+    },
+    {
+      "path": "_shared/connectors/marketing_email.ts",
+      "sha256": "c30cdc1cedb659c5d9b171ec75066626faf1d505709b02ceb67c8e1956307750"
+    },
+    {
+      "path": "_shared/connectors/resend_transport.ts",
+      "sha256": "fd10d0b0c9eecacae212eb81cacb521be26114026d9264579c9e2e38cb6c663a"
+    },
+    {
+      "path": "_shared/customer_card.ts",
+      "sha256": "4f3250ef6e4b83e7f5e0c572bf9239a8c53264dc661a11deb55b8a1af617f318"
+    },
+    {
+      "path": "_shared/email_capture_engine.ts",
+      "sha256": "eb9d0f2b770a41f19b52354316d5d36ececf40576d9dcf138562285f0b7beebb"
+    },
+    {
+      "path": "_shared/email_capture_handler.ts",
+      "sha256": "e3d5328c67f4d36edb95539c4eb98f6569e7a9176d7f972452cc9c70f2449745"
+    },
+    {
+      "path": "_shared/email_capture_ports.ts",
+      "sha256": "bfd5068555a658da9f5e726fa3d9a9a82a8173b97ae12b5a93f106794e1a0651"
+    },
+    {
+      "path": "_shared/email_enqueue.ts",
+      "sha256": "f326fd3f68ace755c3536f6a9cb97b3ede1dfeef72177bdaec94d357efb88dbf"
+    },
+    {
+      "path": "_shared/email_ingestion_outbox.ts",
+      "sha256": "77c27b83a59a388511fc9d542ddf6eed7f266cd03cc0bcb04916b372399a3f8f"
+    },
+    {
+      "path": "_shared/email_ingestion_protocol.ts",
+      "sha256": "92dbfb9dde92c6d6519db1987b45608373c42310af1fe496d053c2050af249fc"
+    },
+    {
+      "path": "_shared/email_job_attempt.ts",
+      "sha256": "3344da6044bb7eec1f19d41cf5b120769e8a8493dc1f9a8398e48f96e0c4b4cb"
+    },
+    {
+      "path": "_shared/events.ts",
+      "sha256": "28d68d2a0ffb1ffa78e7490d9739146b54882919998ce4e3ca29c200d7bf13a6"
+    },
+    {
+      "path": "_shared/gmail_capture_page.ts",
+      "sha256": "503ff40716b09bbb75d5111332e97ba5a4f303c16befa4e605aa72207eaa7204"
+    },
+    {
+      "path": "_shared/gmail_consent.ts",
+      "sha256": "55e101f7a90811080f3add1421eaf07f26bcddcdfeacd30324fac26ae853a702"
+    },
+    {
+      "path": "_shared/gmail_message.ts",
+      "sha256": "288f30e9de580bc185918b73e3568adbe9e16e1e4ebef8fa982361325864e1b4"
+    },
+    {
+      "path": "_shared/gmail_oauth.ts",
+      "sha256": "d6df51e4ba480f940d606add9235288031249f09ce5d327b2969b09c12ce4f7a"
+    },
+    {
+      "path": "_shared/gmail_page_store.ts",
+      "sha256": "3f8cf0202ffcbe63c0e91e7a68efaabd43d29a2fcbbceaae69a1f15b583dde63"
+    },
+    {
+      "path": "_shared/google_workspace.ts",
+      "sha256": "b5c70c03a91feacf748b80b610c9892ef5c559e9fbb045cd2bb4bab36d094a1b"
+    },
+    {
+      "path": "_shared/identity.ts",
+      "sha256": "db4f6d3c3ce859e014685468d9330e2eb5df0fb4a3e67c567cccb6fb2b9eaf4d"
+    },
+    {
+      "path": "_shared/intelligence/action.ts",
+      "sha256": "d6aaf1d514898311ed341ab664e240f9d5a7d5a41876482e1535ce88680a25f3"
+    },
+    {
+      "path": "_shared/intelligence/authority.ts",
+      "sha256": "171a8cbbcf777b3c2d67b28273d4d8327299c0ea21a72f300f3bfaae2972d0f8"
+    },
+    {
+      "path": "_shared/intelligence/automation_guards.ts",
+      "sha256": "925b661657ad940ac9f9f653e1ea02f2f25144f2d481ba48a0d303543e8972bd"
+    },
+    {
+      "path": "_shared/intelligence/decision.ts",
+      "sha256": "45ef6acbfb49e5c528542546821526366454f4c7d71b74d80cd015a394672776"
+    },
+    {
+      "path": "_shared/intelligence/eligibility.ts",
+      "sha256": "954a7e4388d96178a424ce02be941924bd3761fd5d10fc2206f15fa040e78f6d"
+    },
+    {
+      "path": "_shared/intelligence/learning.ts",
+      "sha256": "cf23f14fd27013a1b5e5446959094d429dfa79df3798b2aac46479fa3f5ffcdc"
+    },
+    {
+      "path": "_shared/intelligence/modes.ts",
+      "sha256": "587e252da1c39f9e432f5707e4c93abb85d5b41dc848787c945587405fdeba84"
+    },
+    {
+      "path": "_shared/intelligence/objective_evaluation.ts",
+      "sha256": "6c57c0c227ca1e31a70db39579ab6fb4e852edfac0bd1b530cdc75dbe444ba0a"
+    },
+    {
+      "path": "_shared/intelligence/objectives.ts",
+      "sha256": "cb75ee51e1084063672791044002e020dd6ee86e1007ecc30aef3b4bb9f0bb2b"
+    },
+    {
+      "path": "_shared/intelligence/policy.ts",
+      "sha256": "f52ea1c0e7d0a05041914afcdcdc98f55c06ca486d026e58d63869d622f17d46"
+    },
+    {
+      "path": "_shared/intelligence/profile.ts",
+      "sha256": "2275697c591d88b94ca87f5c7a5e4599a46b337bced53b71c4c7bd37917d2753"
+    },
+    {
+      "path": "_shared/intelligence/reason_codes.ts",
+      "sha256": "1bf8a4b0ea01ad4accb9064b0d5042515f708143eec5d1b4204576f34a2c3a22"
+    },
+    {
+      "path": "_shared/intelligence/types.ts",
+      "sha256": "f5550176dfbb781ab007762722e3439ae48eb5b90664761a935f9d88aa5214c9"
+    },
+    {
+      "path": "_shared/learn_capture_control.ts",
+      "sha256": "cb57569632bb1255507ac7af55b31ebdb37e992cd7dc0825581df524df4da830"
+    },
+    {
+      "path": "_shared/marketing_ai_prompt.ts",
+      "sha256": "e6444175fff12b00d25a5e96284a415a15e5e5fc4ac0fb2b1cb0f382ed6d5273"
+    },
+    {
+      "path": "_shared/marketing_email.ts",
+      "sha256": "d2452df2955e679b92a66264dbf9b3519b771cfdb63f7c6d48d3879504819ebf"
+    },
+    {
+      "path": "_shared/marketing_meta_adapter.ts",
+      "sha256": "a60dd3ee0b6162b9372bfde7c7f0e6d24f3ce3987a24c122a4a309c3de1a107e"
+    },
+    {
+      "path": "_shared/marketing_meta_fixtures.ts",
+      "sha256": "0dd7f12fa06a719ed92d83a888af0b12cc640f392b0c10950f2b68fbad94dea6"
+    },
+    {
+      "path": "_shared/marketing_provider_adapter_contract.ts",
+      "sha256": "fbfe9a487004c741655af3f128b373b5c6500ba17781a822ecda64c39726eac8"
+    },
+    {
+      "path": "_shared/marketing_provider_connections.ts",
+      "sha256": "155ad03dd0180c8683d68f2e7072b4350bd84356a21882b35408ff6ba95597cb"
+    },
+    {
+      "path": "_shared/marketing_test_provider.ts",
+      "sha256": "8ffeb0a4eef16ec3060d77bffd8931746ee7822ecd5f37118c2a2fb02cda0580"
+    },
+    {
+      "path": "_shared/marketing_tracking.ts",
+      "sha256": "87908cfc34a4f3b33027683666825bdfa0f38e39c89f0cedfb7b2154f13519d8"
+    },
+    {
+      "path": "_shared/objective_evaluation_enqueue.ts",
+      "sha256": "070cf3983f1770128051e2605200b1d1bd90c096b51eeef15e0379517cad756c"
+    },
+    {
+      "path": "_shared/observation_ingest.ts",
+      "sha256": "92d1799abf2946406f8635bbac4c59b5272255e56bf6069eea3689cbf1622f5a"
+    },
+    {
+      "path": "_shared/openai.ts",
+      "sha256": "3ff0b700e1260f84b73527cddff8b976ab15734843190f328ab06519456593f3"
+    },
+    {
+      "path": "_shared/phone_pipeline.ts",
+      "sha256": "f6b14338ed55a7d2688b45f097bbaa7064e6ec5545d348160012ee99674a6442"
+    },
+    {
+      "path": "_shared/platform_jobs.ts",
+      "sha256": "6c499709a650a3bb9a3fdec197606d4316fd46d58f2b5396dc3678bdf6561c53"
+    },
+    {
+      "path": "_shared/platform_queue.ts",
+      "sha256": "7937adbd8931779bbd673932cfafba6de1f13735b0e6501ee18256688df38d54"
+    },
+    {
+      "path": "_shared/recommendations.ts",
+      "sha256": "35bb427a49cffd7245207b59c4624d3a24f27eedec7452a837dc57a7f614b6b4"
+    },
+    {
+      "path": "_shared/reply_draft.ts",
+      "sha256": "430680765bca686b4f4243edbc7b3a58e9627bd4a97dc5469eae15c845ad53dc"
+    },
+    {
+      "path": "_shared/response_assistant.ts",
+      "sha256": "3e65d35842da8d2aba9aaabf3e9d4acda078dfa7ec905a3522a1004c3611d865"
+    },
+    {
+      "path": "_shared/response_context.ts",
+      "sha256": "81f8840e2c208fc27502b3f2ad498eea26892ba87fea7c8b33bdd917cf867323"
+    },
+    {
+      "path": "_shared/response_draft.ts",
+      "sha256": "bb28b3b3f1dc0d626c358835f4b8dd65cf370edd06bcea99f2b1b8971526168c"
+    },
+    {
+      "path": "_shared/response_proposal.ts",
+      "sha256": "ddbe5156384530cc8a32a942e81f905160b85d77138eba395c185e479e44f239"
+    },
+    {
+      "path": "_shared/response_refinement.ts",
+      "sha256": "a4a61ebfa764268f1d6f101b69abb07401a2a4ce0abd6c639cfd144923ee8ce1"
+    },
+    {
+      "path": "_shared/review_approval.ts",
+      "sha256": "98aab1671d63706818ea330bef8d3d074a013d348b398def7f6fc204bb3ce372"
+    },
+    {
+      "path": "_shared/simwood.ts",
+      "sha256": "16d0bedfe131d3fbd8a58c8535bf1632732eaa2cf50666a467334a8899cc6fb6"
+    },
+    {
+      "path": "_shared/slack/slack_history_batch.ts",
+      "sha256": "1e4bf056e5d319c30445da1f1cf4bc7fbdb6a35684f382a330ab859bc9486702"
+    },
+    {
+      "path": "_shared/slack/slack_history_binding.ts",
+      "sha256": "2b0ac80f18b78a8b4ac6a53201e7e24ab383a28913deac68c1a3e393d948c18f"
+    },
+    {
+      "path": "_shared/slack/slack_history_errors.ts",
+      "sha256": "3afd89649418a8ac8ec0f9e6f57288358673c3e09faf29968a8bbc8b1c63a630"
+    },
+    {
+      "path": "_shared/slack/slack_history_persist.ts",
+      "sha256": "81b4dcd5a2efe728b403cfd2d2fa36b18d64569b0cbacb034ff809f808038f65"
+    },
+    {
+      "path": "_shared/slack/slack_history_request.ts",
+      "sha256": "8c5cd970ed1cc6627b4477851386900cb8032c2cc3ce6c2c749d88588df991d9"
+    },
+    {
+      "path": "_shared/slack/slack_history_server.ts",
+      "sha256": "0060d2ca8c3ed1c3261a8eaaed39a16aa623230f6053e6207b5a54899ca45b88"
+    },
+    {
+      "path": "_shared/slack/slack_history.ts",
+      "sha256": "652ef20610f864207bd627b556c946c79c29e5d365f991b80ba4efdf279f32af"
+    },
+    {
+      "path": "_shared/slack/slack_thread_history.ts",
+      "sha256": "999e7c34266200ca8c349fe787268b1e511a9099ca9630c6321cdae0b5f5f531"
+    },
+    {
+      "path": "_shared/system_health.ts",
+      "sha256": "47148b60ee7d6b8b7e479874bf0def586e35046547d4a85d4fb8a12ab0b2763c"
+    },
+    {
+      "path": "_shared/transcription-errors.ts",
+      "sha256": "4864d0281b7536dbc0b4a084cfc26c9f2fd1312b6f461bf6a944ca69ab6d5364"
+    },
+    {
+      "path": "_shared/worker_contract.ts",
+      "sha256": "5043f37b8e070ca6b968e125ea1d047c7505db0c00a65ae7ce3c414294a9f4ab"
+    },
+    {
+      "path": "_shared/worker_handlers/automation_execute.ts",
+      "sha256": "5998a9495d773efc01185d49eb54610d5630a79172b34c61f82b120613e3596b"
+    },
+    {
+      "path": "_shared/worker_handlers/business_graph_sync.ts",
+      "sha256": "15041e9a35e3a3bb0e44a517485ffc5fbab983b4561e0cd91c947f7226290e9f"
+    },
+    {
+      "path": "_shared/worker_handlers/customer_card_sync.ts",
+      "sha256": "c4666bafa5103994bbe3800cb7f75d0ec66c7c625a2015693b304c55ec34589c"
+    },
+    {
+      "path": "_shared/worker_handlers/email_sync.ts",
+      "sha256": "8777b979ab2019345f8a017f769856d6d9bc8ea457c74ee3d43d068fae782b00"
+    },
+    {
+      "path": "_shared/worker_handlers/identity_resolve.ts",
+      "sha256": "a2285cab4bdce759f6a0c4f45bf402867c89128e148b0b7ea1119e91f69a7727"
+    },
+    {
+      "path": "_shared/worker_handlers/index.ts",
+      "sha256": "07736c7d3550435c6450130311f856ad527861152c9f98e14d12d416b3acce2d"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_evaluate.ts",
+      "sha256": "5ac699573c49347d5e87149b67ba7cceb104b3c8482eb9720538a4178a4871d5"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_ingest.ts",
+      "sha256": "06ade8c07e32b25dc76d9f204b101cd0010688ef323b4740a53aa0314f14ba94"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_observe.ts",
+      "sha256": "92888719bc16e09856fbadcd5e230022cd14ee779522d6d0e90142771273122d"
+    },
+    {
+      "path": "_shared/worker_handlers/intelligence_review_resolve.ts",
+      "sha256": "d0a55ed2148e44062c2507a327611181a9f59f5df7608fca7cb5b2f7bee2b4cd"
+    },
+    {
+      "path": "_shared/worker_handlers/interactions_sync.ts",
+      "sha256": "66cff90ff241332c353e8e69151cb10d66f983f5ed483406406666a7282770da"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_ad_lead.ts",
+      "sha256": "6b1e4311c0591ea51ba6a47156d813df491a1f1124c47f5bd5d0db8524bbe16b"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_broadcast_dispatch.ts",
+      "sha256": "639a3e497ecc54fe18ee652a5093e7165ea79317a6b9646878f7398cdd38b810"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_delivery_sync.ts",
+      "sha256": "c60090e88abe8de926d35e424316e196f4a091fcc90412b3449ac5febd18a0df"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_provider_connect.ts",
+      "sha256": "9e2b0ef9d407927324372de596e4bd16153bf1fdd9242778bee30dc21e89a23c"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_provider_sync.ts",
+      "sha256": "345b13b7fa91f01ae5a5958e17142bf7ff8683740f28c0f6b4e6996768b320da"
+    },
+    {
+      "path": "_shared/worker_handlers/marketing_sequence_advance.ts",
+      "sha256": "059474bdadfd211c96ffa7e3b5c0732d73f0da4d026afe62aafa98aa231126c1"
+    },
+    {
+      "path": "_shared/worker_handlers/objective_evaluate.ts",
+      "sha256": "74d3d7156c359d940b61ad39a01faa124dfa1ad9e42fcd95474523600b290d56"
+    },
+    {
+      "path": "_shared/worker_handlers/phone_process_pending.ts",
+      "sha256": "db5bb2c556c9b79a1c41a41ca216273445a7cb12a9e2458b0bbf4f346c3b2792"
+    },
+    {
+      "path": "_shared/worker_handlers/recommendation_sync.ts",
+      "sha256": "d59d17a21888b9a373057b8238f275e02740ada113ac16673bd97c90c06a87bf"
+    },
+    {
+      "path": "_shared/worker_handlers/slack_history.ts",
+      "sha256": "cc323858be18f22ceb1f289719f4e85dff728754b822eb43bc6d371de6661882"
+    },
+    {
+      "path": "gmail-sync-messages/index.ts",
+      "sha256": "e1a044913e8c9016e9a12e3e2cdbdbd851c3393f1d267baf85218c1274eca88b"
+    },
+    {
+      "path": "gmail-workspace-backfill-messages/index.ts",
+      "sha256": "0ca979ca096e8efdeab6f3dd0cc958b616bf16a0b17127415650bcec715b6b8a"
+    },
+    {
+      "path": "gmail-workspace-sync-messages/index.ts",
+      "sha256": "7cf565077eff3fce0a775a0d1dc57bc0c8f45014cb89c5a796bd7fced4e92129"
+    },
+    {
+      "path": "platform-worker/index.ts",
+      "sha256": "04b33bf15c88bbacb239c79cf9b9cbb0e024d167a1f02c8462fb2d25e358667c"
+    }
+  ],
+  "external": [
+    "https://esm.sh/@supabase/supabase-js@2.45.4"
+  ]
+}

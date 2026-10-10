@@ -1,5 +1,44 @@
 # Existing TEST environment: verified release gaps
 
+## Email runtime endpoints — TEST boundary checks passed, 10 October 2026
+
+The generic `platform-worker` and the three manual Gmail/Workspace endpoints are
+active in TEST at **version 4**. Their complete 100-file dependency bundle has SHA
+`e736ecc82eaac1bd394b98ec6560490679c36834a668767af0fbf317fc91065b`.
+The manual endpoints retain gateway JWT verification; the cross-tenant worker
+checks its schedule secret or exact server credential itself. No unverified JWT
+role claim confers authority. Internal mailbox requests still require an explicit
+tenant, and request-body tenant mismatches are rejected.
+
+Hosted comparisons against the runtime's built-in service credential initially
+failed. TEST now has an explicit `SERVICEOS_INTERNAL_KEY` binding that reuses its
+existing service credential. Its value was passed through CLI stdin and verified
+by digest, without writing it to reports, files or arguments. Other secret values
+and endpoint code were preserved; the secret refresh advanced endpoint versions
+before the four target endpoints were deployed again. Earlier bundle manifests
+v1/v2 record these intermediate attempts; **v3 is the accepted boundary bundle**.
+Shared internal callers require the runtime service credential before attaching
+the configured binding, preventing a user token from being upgraded into server
+authority by that helper.
+
+At **15:52:38 UTC**, all 15 hosted HTTP checks passed: unauthorized worker requests
+were denied; the authorized worker completed an empty queue selection; and each
+mailbox endpoint rejected missing authorization, missing internal tenant and
+foreign-tenant requests, while returning the expected capture-paused response.
+The schema fingerprint remained `ec04995ee4e15970619130bb53713dc1`, and all
+**52 existing dataset fingerprints** were preserved. Local verification passed
+25 phone/capture regressions, 22 worker/email request/UI tests, nine deployment
+and credential-binding tests, and one internal-invocation test. Shared-module
+TypeScript passed using local Deno/Supabase ambient declarations.
+See [deployment evidence](evidence/learn-email-runtime-endpoints-2026-10-10.json)
+and [HTTP evidence](evidence/learn-email-runtime-http-2026-10-10.json).
+
+**Still required:** positive hosted queue/page/recovery acceptance, signed-in
+tenant-user and frontend acceptance, verified Google mailbox authority, and
+scheduler configuration. No Google provider credentials or schedules were added,
+no real provider request was made, and production was not changed. Boundary
+checks and an empty worker response do not establish live mailbox capture.
+
 ## Email runtime database — installed in TEST, 10 October 2026
 
 Release **033** (`learn_email_runtime_v1`, SHA
@@ -29,8 +68,8 @@ behavior, while this hosted rehearsal establishes compatibility with actual TEST
 See [hosted evidence](evidence/learn-email-runtime-hosted-2026-10-10.json) and the
 checked SQL/manifest/prerequisite/expected files in `supabase/release/learn-test/033_email_runtime.*`.
 
-**Still required:** deploy the matching generic worker/shared modules and three
-manual email endpoints, provide the TEST frontend with the queued-response UI,
+**Update:** matching worker/shared modules and manual endpoints are deployed as
+recorded above. Still required: provide the TEST frontend with the queued-response UI,
 verify real authenticated request and recovery paths, and verify mailbox authority
 and scheduling before starting capture. The fresh audit found no email endpoints
 or generic worker, no active queue jobs, and no `cron.job` catalog in TEST. Continuous
@@ -74,7 +113,7 @@ passes TypeScript with local Deno/Supabase ambient declarations; no Deno runtime
 deployment check is claimed. See
 [local evidence](evidence/learn-email-enqueue-local-2026-10-10.json).
 
-**Database installed by release 033 above; endpoints/UI acceptance outstanding.**
+**Database installed by release 033; endpoints deployed above; positive capture/UI acceptance outstanding.**
 The coordinated email runtime release includes:
 capture-control prerequisites, outbox/job binding/page storage/failure/recovery/
 enqueue migrations, the generic worker and its shared modules, all three manual

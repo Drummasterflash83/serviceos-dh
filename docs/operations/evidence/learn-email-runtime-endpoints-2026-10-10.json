@@ -1,0 +1,59 @@
+{
+  "version": "learn-email-runtime-endpoints/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T15:52:38.057Z",
+  "state": "deployed_boundary_verified",
+  "sourceBundleSha256": "e736ecc82eaac1bd394b98ec6560490679c36834a668767af0fbf317fc91065b",
+  "dependencyFiles": 100,
+  "databaseFingerprint": "ec04995ee4e15970619130bb53713dc1",
+  "endpoints": [
+    {
+      "name": "gmail-sync-messages",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "471a62101bc8e61999a10911b9e98c3269a84570ebc827901667551d244c8f03"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "cfaed66a2d8596715b1adabede308877a84da5a805fdf7140eb95c812d4a7814"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "a88aadd4060883e7011d922a04f78afb60a5007f8da56a77cd1734b4f2b56bf9"
+    },
+    {
+      "name": "platform-worker",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "7553aa8a2a13ecbe2240018d29c5a1aa46f4bf4fd0772c40b76f62cc2539336f"
+    }
+  ],
+  "binding": {
+    "name": "SERVICEOS_INTERNAL_KEY",
+    "observedAt": "2026-10-10T15:51:08.692Z",
+    "state": "binding_verified",
+    "existingCredentialReused": true,
+    "otherSecretsUnchanged": true,
+    "endpointsPreserved": true
+  },
+  "preservedDataSets": 52,
+  "httpChecks": 15,
+  "tests": {
+    "phoneAndCapture": 25,
+    "workerAndEmailRequests": 22,
+    "deploymentAndBinding": 9,
+    "internalInvocation": 1
+  },
+  "limitations": [
+    "Boundary and empty-worker acceptance only; positive hosted page/recovery and signed-in frontend acceptance remain outstanding.",
+    "No real provider capture, Google credential setup, scheduling or production deployment."
+  ]
+}

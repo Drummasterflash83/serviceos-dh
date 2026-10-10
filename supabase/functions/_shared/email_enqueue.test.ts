@@ -124,6 +124,57 @@ test("invalid options and unexpected fields are rejected before queue access", a
     assert.equal(f.calls.length, 0);
   }
 });
+test("gateway-translated internal requests require the exact dedicated key and tenant", async () => {
+  for (const [headers, status] of [
+    [
+      {
+        Authorization: "Bearer translated",
+        "x-serviceos-internal-key": "synthetic-service",
+        "x-internal-tenant-id": tenant,
+      },
+      202,
+    ],
+    [{ Authorization: "Bearer translated", "x-serviceos-internal-key": "synthetic-service" }, 403],
+    [
+      {
+        Authorization: "Bearer user",
+        "x-serviceos-internal-key": "wrong",
+        "x-internal-tenant-id": tenant,
+      },
+      401,
+    ],
+  ] as const) {
+    const f = fixture();
+    const response = await handleEmailEnqueue(
+      request(undefined, headers),
+      f.db as never,
+      "email.gmail_sync",
+    );
+    assert.equal(response.status, status);
+    assert.equal(f.calls.length, status === 202 ? 1 : 0);
+  }
+});
+test("explicit internal binding remains distinct from the runtime service key", async () => {
+  const previous = globalThis.Deno.env.get;
+  globalThis.Deno.env.get = (name: string) =>
+    name === "SERVICEOS_INTERNAL_KEY" ? "synthetic-stable-key" : "synthetic-service";
+  try {
+    const f = fixture();
+    const result = await handleEmailEnqueue(
+      request(undefined, {
+        Authorization: "Bearer translated",
+        "x-internal-tenant-id": tenant,
+        "x-serviceos-internal-key": "synthetic-stable-key",
+      }),
+      f.db as never,
+      "email.gmail_sync",
+    );
+    assert.equal(result.status, 202);
+    assert.equal(f.calls.length, 1);
+  } finally {
+    globalThis.Deno.env.get = previous;
+  }
+});
 test("known policy conflicts are actionable while unknown replies remain uncertain without retries or private details", async () => {
   for (const message of [
     "learn_capture_paused",

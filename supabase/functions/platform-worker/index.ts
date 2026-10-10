@@ -3,6 +3,7 @@ import {
   captureSourceForJob,
   deferCaptureJob,
 } from "../_shared/learn_capture_control.ts";
+import { getBearerToken } from "../_shared/authz.ts";
 // ServiceOS — Edge Function: platform-worker (Async Worker Queue v1)
 //
 // The generic queue worker. Invoked on a 1-minute cron (secret-gated), it:
@@ -22,8 +23,8 @@ import {
 // its 5s timeout. The response carries the outcome when processing finishes in
 // time; otherwise the outcome lands in platform_jobs and the Operations Centre.
 //
-// Auth: shared secret `x-schedule-secret` == WORKER_SECRET. NOT a user session,
-// NOT tenant-bound — the queue is cross-tenant infrastructure. Service-role only.
+// Auth: existing schedule secret OR the exact configured service-role bearer.
+// User JWT claims are never authority here. The queue is cross-tenant infrastructure.
 //
 // Request body: { batch_size?: number, job_types?: string[] }
 // Runtime: Supabase Edge Functions (Deno). Deploy with verify_jwt=false.
@@ -78,11 +79,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method !== "POST") return fail("method_not_allowed", "Use POST", 405);
 
   const expected = Deno.env.get("WORKER_SECRET");
-  if (!expected) return fail("config_error", "WORKER_SECRET is not configured", 500);
   const provided = req.headers.get("x-schedule-secret") ?? "";
-  if (!safeEqual(provided, expected)) return fail("forbidden", "Invalid or missing secret", 403);
-
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const bearer = getBearerToken(req);
+  const scheduleAuthorized = !!expected && safeEqual(provided, expected);
+  const internalKey = req.headers.get("x-serviceos-internal-key");
+  const expectedInternalKey = Deno.env.get("SERVICEOS_INTERNAL_KEY") || serviceKey;
+  const serviceAuthorized =
+    !!serviceKey &&
+    ((!!bearer && safeEqual(bearer, serviceKey)) ||
+      (!!internalKey && !!expectedInternalKey && safeEqual(internalKey, expectedInternalKey)));
+  if (!scheduleAuthorized && !serviceAuthorized)
+    return fail("forbidden", "Invalid or missing worker authorization", 403);
+
   const admin = createSupabaseAdmin();
   if (!serviceKey || !admin) return fail("config_error", "Service role is not configured", 500);
 

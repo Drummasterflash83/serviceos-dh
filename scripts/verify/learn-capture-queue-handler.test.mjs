@@ -13,6 +13,9 @@ async function run({
   deferError = false,
   jobType = "email.mailbox_discovery",
   queueOutcome,
+  scheduleSecret = "synthetic-schedule",
+  internalSecret,
+  headers = { "x-schedule-secret": "synthetic-schedule", "content-type": "application/json" },
 } = {}) {
   const calls = [],
     writes = [],
@@ -90,7 +93,8 @@ async function run({
           ({
             SUPABASE_URL: "https://synthetic.invalid",
             SUPABASE_SERVICE_ROLE_KEY: "synthetic-service",
-            WORKER_SECRET: "synthetic-schedule",
+            WORKER_SECRET: scheduleSecret,
+            SERVICEOS_INTERNAL_KEY: internalSecret,
           })[k],
       },
       serve: (f) => {
@@ -159,12 +163,72 @@ async function run({
   const response = await handler(
     new Request("https://synthetic.invalid/worker", {
       method: "POST",
-      headers: { "x-schedule-secret": "synthetic-schedule", "content-type": "application/json" },
+      headers,
       body: "{}",
     }),
   );
-  return { result: await response.json(), calls, writes, health, work, workContext };
+  return {
+    status: response.status,
+    result: await response.json(),
+    calls,
+    writes,
+    health,
+    work,
+    workContext,
+  };
 }
+test("exact service bearer can trigger the worker without a configured schedule secret", async () => {
+  const r = await run({
+    scheduleSecret: null,
+    headers: { Authorization: "Bearer synthetic-service" },
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.work, 1);
+});
+test("dedicated exact service key survives gateway bearer translation", async () => {
+  const r = await run({
+    scheduleSecret: null,
+    headers: {
+      Authorization: "Bearer translated-service",
+      "x-serviceos-internal-key": "synthetic-service",
+    },
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.work, 1);
+  const refused = await run({
+    scheduleSecret: null,
+    headers: { Authorization: "Bearer translated-service", "x-serviceos-internal-key": "wrong" },
+  });
+  assert.equal(refused.status, 403);
+  assert.equal(refused.calls.length, 0);
+});
+test("explicit internal binding can differ from the runtime service credential", async () => {
+  const r = await run({
+    scheduleSecret: null,
+    internalSecret: "synthetic-stable-key",
+    headers: {
+      Authorization: "Bearer translated",
+      "x-serviceos-internal-key": "synthetic-stable-key",
+    },
+  });
+  assert.equal(r.status, 200);
+  assert.equal(r.work, 1);
+});
+test("absent, unrelated and forged service claims cannot claim jobs or write health", async () => {
+  for (const headers of [
+    {},
+    { Authorization: "Bearer synthetic-anon" },
+    { Authorization: "Bearer e30.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.fake" },
+    { "x-schedule-secret": "wrong" },
+  ]) {
+    const r = await run({ scheduleSecret: null, headers });
+    assert.equal(r.status, 403);
+    assert.equal(r.work, 0);
+    assert.equal(r.calls.length, 0);
+    assert.equal(r.writes.length, 0);
+    assert.equal(r.health.length, 0);
+  }
+});
 test("pause after claim returns the lease without dispatch, failed capture or healthy capture telemetry", async () => {
   const r = await run({ allowed: false });
   assert.equal(r.work, 0);

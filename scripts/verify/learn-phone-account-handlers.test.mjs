@@ -46,6 +46,13 @@ async function harness(
   let handler;
   const db = {
     async rpc(name, args) {
+      if (name === "learn_email_enqueue") {
+        assert.equal(captureAllowed, false);
+        return {
+          data: null,
+          error: { message: captureError ? "PRIVATE_DIAGNOSTIC" : "learn_capture_paused" },
+        };
+      }
       assert.equal(name, "learn_capture_admission");
       return {
         data: captureError
@@ -227,7 +234,11 @@ async function harness(
             "content-type": "application/json",
             "x-schedule-secret": "synthetic-schedule",
           },
-          body: JSON.stringify({ tenant_id: tenant, recording_id: id(5), ...body }),
+          body: JSON.stringify({
+            tenant_id: tenant,
+            ...(name.startsWith("gmail-") ? {} : { recording_id: id(5) }),
+            ...body,
+          }),
         }),
       ),
   };
@@ -322,7 +333,9 @@ for (const name of [
       assert.equal(r.status, captureError ? 503 : 409);
       assert.equal(
         (await r.json()).error.code,
-        captureError ? "learn_capture_unavailable" : "learn_capture_paused",
+        captureError
+          ? name.startsWith("gmail-") ? "queue_unconfirmed" : "learn_capture_unavailable"
+          : "learn_capture_paused",
       );
       assert.equal(h.requests.length, 0);
       assert.equal(h.writes.length, 0);

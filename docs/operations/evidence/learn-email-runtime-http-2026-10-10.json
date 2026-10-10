@@ -1,0 +1,99 @@
+{
+  "version": "learn-email-runtime-http/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T15:52:38.057Z",
+  "state": "boundary_checks_passed",
+  "checks": [
+    {
+      "name": "platform-worker",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "name": "platform-worker",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "name": "platform-worker",
+      "status": 200,
+      "code": null
+    },
+    {
+      "name": "gmail-sync-messages",
+      "status": 401,
+      "code": null
+    },
+    {
+      "name": "gmail-sync-messages",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "name": "gmail-sync-messages",
+      "status": 409,
+      "code": "learn_capture_paused"
+    },
+    {
+      "name": "gmail-sync-messages",
+      "status": 403,
+      "code": "tenant_mismatch"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "status": 401,
+      "code": null
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "status": 409,
+      "code": "learn_capture_paused"
+    },
+    {
+      "name": "gmail-workspace-sync-messages",
+      "status": 403,
+      "code": "tenant_mismatch"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "status": 401,
+      "code": null
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "status": 409,
+      "code": "learn_capture_paused"
+    },
+    {
+      "name": "gmail-workspace-backfill-messages",
+      "status": 403,
+      "code": "tenant_mismatch"
+    }
+  ],
+  "emptyWorker": {
+    "success": true,
+    "claimed": 0,
+    "succeeded": 0,
+    "waiting": 0,
+    "unconfirmed": 0,
+    "retrying": 0,
+    "dead_lettered": 0,
+    "failed": 0,
+    "duration_ms": 923
+  },
+  "preservedDataSets": 52,
+  "limitations": [
+    "No signed-in tenant-user session or provider capture tested; existing credentials remain in memory only.",
+    "No source records, credentials, secrets, schedules or production changes."
+  ]
+}
