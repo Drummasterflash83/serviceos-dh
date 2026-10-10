@@ -1215,3 +1215,19 @@ plus strict typechecking pass. Tests include revocation during reads and permit
 deferral failures. The credential/quota database port is still required, so this
 handler remains unregistered and cannot start a production sync. No flag, provider
 credential, TEST schema or source data was changed.
+
+## Commusoft credential and quota database boundary — local, 10 October
+
+The atomic credential/permit RPCs and server bridge are now implemented locally.
+Acquisition locks and rechecks current authority, resolves only the exact
+tenant-qualified Vault key and reserves a shared credential quota. One permit per
+job attempt and a five-second send window prevent duplicate acquisition and delayed
+request bursts. Rate-limit deferrals extend the shared gate even after a late
+response outlives its original job/connection authority.
+
+Thirty-four synthetic TypeScript tests and strict checks pass. Disposable Postgres
+verification passed scope/grant/Vault-name denials, duplicate refusal, shared-key
+pacing across tenants, monotonic deferral, competing workers and migration rollback.
+The container was removed. No hosted schema, actual Vault credential, provider,
+flag or production source was changed. Durable source publication/checkpoints and
+worker settlement remain the next integration work before TEST release.

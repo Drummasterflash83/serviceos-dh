@@ -288,3 +288,33 @@ test("unavailable authority read cannot hold the connector past its deadline", a
   );
   assert.equal(f.calls.length, 0);
 });
+
+test("delayed authority reads cannot use an expired quota reservation", async () => {
+  const f = fixture();
+  let time = now;
+  f.ports.stillAuthorized = async () => {
+    time += 6000;
+    return true;
+  };
+  await assert.rejects(
+    readCommusoftPage(request, key, { ...f.ports, clock: () => time, sendBefore: now + 5000 }),
+    errorCode("authority_unavailable"),
+  );
+  assert.equal(f.calls.length, 0);
+});
+
+test("send deadline does not discard a response solely because the provider took longer", async () => {
+  const f = fixture();
+  let time = now;
+  const fetcher = f.ports.fetcher;
+  f.ports.fetcher = async (...args) => {
+    time += 6000;
+    return fetcher(...args);
+  };
+  const page = await readCommusoftPage(request, key, {
+    ...f.ports,
+    clock: () => time,
+    sendBefore: now + 5000,
+  });
+  assert.equal(page.records.length, 2);
+});

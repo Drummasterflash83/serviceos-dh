@@ -1,0 +1,28 @@
+{
+  "version": "learn-commusoft-permits-local/1",
+  "observedAt": "2026-10-10T08:09:18Z",
+  "scope": "local synthetic verification only",
+  "nodeTests": { "passed": 34, "failed": 0 },
+  "strictTypecheck": "passed",
+  "isolatedPostgres": {
+    "image": "postgres:15",
+    "network": "none",
+    "hostMounts": false,
+    "publishedPorts": false,
+    "authorityAndGrantAssertions": "passed",
+    "duplicateAcquisition": "refused",
+    "permitBinding": "exact approval, request and checkpoint retained without key",
+    "sameKeyAcrossTenants": "shared gate",
+    "lateDeferral": "cannot shorten delay",
+    "concurrentWorkers": ["ready", "wait"],
+    "concurrentPermits": 1,
+    "rollbackRehearsal": "no permit objects retained",
+    "containerRemoved": true
+  },
+  "limitations": [
+    "Minimal synthetic schema and Vault fixture; hosted compatibility remains unverified.",
+    "No real provider request or credential read, no TEST or production migration.",
+    "Source persistence, atomic checkpoint publication and worker settlement remain required.",
+    "No connector setup, feature flags, schedules or worker registration enabled."
+  ]
+}

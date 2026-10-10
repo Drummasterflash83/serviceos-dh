@@ -110,7 +110,7 @@ function fixture() {
     clock: () => now,
     acquire: async (_: any, __: any): Promise<any> => {
       acquisitions++;
-      return { state: "ready", apiKey: "synthetic-key", permitId: id(8) };
+      return { state: "ready", apiKey: "synthetic-key", permitId: id(8), sendBefore: now + 5000 };
     },
     defer: async (permit: string, retry: number) => {
       deferrals.push([permit, retry]);

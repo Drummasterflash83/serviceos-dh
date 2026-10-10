@@ -208,6 +208,8 @@ export async function readCommusoftPage(
     clock?: () => number;
     signal?: AbortSignal;
     timeoutMs?: number;
+    /** Atomic quota permit's latest send time; checked after authority reads. */
+    sendBefore?: number;
   },
 ): Promise<CommusoftPage> {
   // Snapshot caller-owned request before any asynchronous authority check.
@@ -244,6 +246,11 @@ export async function readCommusoftPage(
   };
   try {
     await authorized();
+    if (
+      ports.sendBefore !== undefined &&
+      (!Number.isSafeInteger(ports.sendBefore) || (ports.clock ?? Date.now)() >= ports.sendBefore)
+    )
+      fail("authority_unavailable");
     const response = await (ports.fetcher ?? fetch)(url, {
       method: "GET",
       redirect: "error",

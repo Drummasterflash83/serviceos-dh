@@ -2,10 +2,10 @@
 
 ## Current state — 10 October 2026
 
-Local source reader, provider-neutral source-record adapter and durable scope
-binding are implemented. Twenty-eight synthetic tests and strict standalone
-TypeScript checks pass. This is not
-an installed connector: no provider request, API credential read, sync job,
+Local source reader, provider-neutral source-record adapter, durable scope binding
+and atomic credential/pacing functions are implemented. Thirty-four synthetic
+tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
+This is not an installed connector: no provider request, real API credential read, sync job,
 production migration or frontend release was performed for this increment.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
@@ -96,9 +96,10 @@ write these through authorized server controls; no such setup action is wired ye
 acquisition and around the provider read. Its mandatory credential/permit port
 must atomically recheck that scope, reserve shared quota and resolve the exact
 Vault reference. Throttled/exhausted-quota responses require a durable shared
-deferral acknowledgement. That database port is **not implemented yet**: there
-is no fallback to general secret lookup, registered handler, enqueue action or
-automatic provider activity. Tests inject synthetic permits and HTTP responses.
+deferral acknowledgement. `permit_server.ts` now implements that port through
+two service-only RPCs. There is no fallback to general secret lookup, registered
+handler, enqueue action or automatic provider activity. The migration remains
+local and unapplied to TEST or production.
 
 The SQL implementation must repeat these checks under locks. Current metadata
 reads are not a transaction; they cannot alone authorize a source/checkpoint write.
@@ -106,15 +107,46 @@ Binding tests cover suspension, missing/disabled flags, stale or expired leases,
 wrong tenants/accounts, revoked/unverified credentials, changed connection
 revisions/approvals/cursors, terminal windows, waiting permits and failed deferrals.
 
+## Atomic credential acquisition and shared pacing — local
+
+Migration `20261031090000_learn_commusoft_page_permits.sql` rechecks current
+tenant/flags/job/claim/account/connector/approval/checkpoint/connection under locks.
+Only the exact Vault reference with the existing tenant-qualified broker name can
+release a key. Each job attempt can acquire only one permit; an uncertain response
+cannot be retried inline. Queue-attempt recovery still needs the publication and
+settlement implementation. The permit retains the validated approval, checkpoint,
+request and connection binding (without the key) for the future atomic page writer.
+
+The private pacing table keys quota by a SHA-256 fingerprint of the credential,
+so the same key stored in different tenant Vault entries shares one gate. Neither
+the key nor its fingerprint appears in the customer UI or shared source records.
+RLS is enabled and direct table privileges are revoked, including from service_role.
+Only service-only functions can acquire permits or extend delays.
+
+Reservations are spaced by 1.25 seconds and must be used within five seconds.
+The reader checks the deadline immediately before fetch, after authority reads;
+a slow response is still accepted if authority remains current. The short send
+window prevents delayed workers accumulating permits for a burst. Other users of
+the same provider key are outside this reservation system, so provider 429/reset
+headers remain authoritative. Their minimum delay is applied to the shared gate
+through the exact acquired permit, even after the originating job is cancelled or
+its connection is revoked. Deferral can only extend the gate.
+
+The isolated PostgreSQL runner passed authority/substitution denials, actual
+service-role execution, denied browser/table grants, exact Vault name binding,
+duplicate-acquisition refusal, shared quota across two tenants using one key,
+non-decreasing late deferral, two competing workers (one ready, one waiting), and
+rollback without retained objects. It uses synthetic minimal schema contracts and
+a fixture Vault table; it does not verify hosted schema/Vault compatibility.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Implement the atomic credential/permit port for the stored scope and worker
-   binding; revalidate authority transactionally when committing source data.
-3. Persist raw revisions, canonical mappings and checkpoints atomically; reserve
-   quota across all workers using the same credential. The transport alone does
-   not enforce the per-key shared quota.
+2. Package and verify the credential/permit migration against the installed TEST
+   schema. Revalidate authority transactionally when committing source data.
+3. Persist raw revisions, canonical mappings and checkpoints atomically; add
+   durable worker settlement, safe retries and continuation through the shared gate.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -130,6 +162,7 @@ Validation:
 ```sh
 node --test supabase/functions/_shared/commusoft/*.test.ts
 npx tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions --lib ES2022,DOM supabase/functions/_shared/commusoft/*.ts supabase/functions/_shared/business_inputs/source_record.ts
+python3 scripts/verify/learn-commusoft-permits.py
 ```
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They

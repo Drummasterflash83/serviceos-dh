@@ -6,14 +6,17 @@ import type { CommusoftPage } from "./read_page.ts";
 /** Credential-owning database port. The implementation must atomically revalidate
  * the exact approval/checkpoint/claim, reserve shared per-key quota and resolve
  * the tenant-qualified Vault reference. No general credential-broker fallback.
- * This port is not yet wired to a production RPC or registered worker.
+ * The local permit_server bridge implements this port using scoped RPCs. Its
+ * migration is not deployed and the source worker is not registered yet.
  */
 export interface CommusoftPagePermitPorts {
   acquire: (
     scope: StoredCommusoftScope,
     claim: { claimedBy: string; attemptCount: number },
   ) => Promise<
-    { state: "ready"; apiKey: string; permitId: string } | { state: "wait"; retryAt: number } | null
+    | { state: "ready"; apiKey: string; permitId: string; sendBefore: number }
+    | { state: "wait"; retryAt: number }
+    | null
   >;
   // Must extend a shared credential gate, including when authority changed after
   // the request. The exact acquired permit binds the update; no secret argument.
@@ -56,6 +59,8 @@ export async function readApprovedCommusoftPage(
   }
   if (
     permit.state !== "ready" ||
+    !Number.isSafeInteger(permit.sendBefore) ||
+    permit.sendBefore <= clock() ||
     typeof permit.permitId !== "string" ||
     !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(permit.permitId)
   ) {
@@ -76,6 +81,7 @@ export async function readApprovedCommusoftPage(
       clock,
       fetcher: ports.fetcher,
       signal: ctx.signal,
+      sendBefore: permit.sendBefore,
     });
   } catch (error) {
     if (error instanceof CommusoftReadError && error.retryAt !== null) await defer(error.retryAt);
