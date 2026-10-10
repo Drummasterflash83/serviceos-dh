@@ -18,9 +18,24 @@ This remains TEST acceptance of infrastructure and idle boundaries. Real Slack
 workspace capture, populated signed-in hosted controls and provider end-to-end
 acceptance remain outstanding. Coverage is replies to observed parents, not all
 historical threads or unseen roots. No production or access-grant changes occurred.
-Frontend deployment is recorded separately. The earlier operator login remains
-retired. [Release evidence](evidence/learn-slack-auto-threads-hosted-2026-10-10.json).
+The matching frontend is now deployed as described below. The earlier operator
+login remains retired. [Release evidence](evidence/learn-slack-auto-threads-hosted-2026-10-10.json).
 
+
+## Matching protected TEST frontend — 10 October, 18:28 UTC
+
+The [updated TEST candidate](https://serviceos-learn-test-cguo401ro-allkin.vercel.app)
+is READY from Git commit `5f722bbec318824b818273c54c3251ee08be759a`.
+It includes separate thread controls, durable request recovery, scoped thread
+progress and clearer unavailable/expired capture status. Configuration was checked
+against the TEST project and anonymous key in memory. Vercel protection still
+redirects unauthenticated requests on the homepage, login and LEARN paths.
+
+Browser verification passed homepage rendering and sign-in navigation on the TEST
+origin with no console errors. No application login or new authority grant was
+created. Populated signed-in controls and real provider capture remain pending;
+local component verification used synthetic RPC responses. Production unchanged.
+[Frontend evidence](evidence/learn-hosted-test-frontend-threads-2026-10-10.json).
 
 ## Private build estimate — TEST release 037 installed
 
