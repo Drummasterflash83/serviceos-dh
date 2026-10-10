@@ -157,3 +157,8 @@ when reads are available. If actual candidate notifications exist, inspect a
 specifically scoped authorised sample to verify message identity, sender
 authentication, mailbox identity and audio retrieval. Do not infer a usable
 voicemail-to-email connector from a subject match or attachment flag.
+
+A follow-up [preservation-reader improvement](LEARN-SOURCE-PRESERVATION.md) removes
+redundant page counts and adds matching double scans. Its small count-free live pilot
+also timed out, so this does not resolve the candidate-discovery or live-availability
+gap above. No further full source scan was started after that pilot failed.

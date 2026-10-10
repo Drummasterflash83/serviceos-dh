@@ -1,0 +1,36 @@
+{
+  "version": "learn-source-preservation-reader-verification/1",
+  "recordedAt": "2026-10-10T03:14:19.161602+00:00",
+  "localChecks": {
+    "passed": 18,
+    "command": "node --test scripts/verify/learn-preservation.test.mjs scripts/verify/learn-voicemail-email-audit.test.mjs",
+    "scope": "Synthetic read-only HTTP fixtures, inventory comparisons, resource bounds and privacy."
+  },
+  "sourceHashes": {
+    "scripts/verify/learn-preservation.mjs": "38716cd4a43b6663e6b8253f7f6ea39c84a531cf33d0acd426c3353a79e8e1a6",
+    "scripts/verify/learn-preservation.test.mjs": "2b2332d10e15bef24ce58c6829c292d104c7f6ac272eeae301af3e91377ea4da"
+  },
+  "liveMetadataProbe": {
+    "state": "timeout",
+    "stage": "initial catalog statistics query",
+    "statisticsOrPlansAvailable": false
+  },
+  "liveKeysetPilot": {
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "cutoff": "2026-10-10T03:12:21.418Z",
+    "observedAt": "2026-10-10T03:12:41.425Z",
+    "elapsedMilliseconds": 20007,
+    "kind": "timeout",
+    "verifiedPage": false,
+    "scope": "One read-only ID-only keyset page, limit 100, without an exact count. No source contents returned in this report. Not a full inventory or preservation proof."
+  },
+  "fullDoubleScanStarted": false,
+  "outcome": "Local reader verified; live source availability and fresh full preservation remain unverified.",
+  "hostedWrites": false,
+  "limitations": [
+    "No source contents or audio were downloaded.",
+    "No database setting, query session, role, schedule, credential or provider was changed.",
+    "No claim is made that redundant counts caused the live failures or that removing them restores availability."
+  ]
+}

@@ -933,3 +933,18 @@ and the existing zero voicemail/job counts were verified. The earlier successful
 source inventory. Source-read availability needs investigation before another live
 voicemail audit or a claim of fresh preservation. See
 [diagnostic contract, evidence and limits](../operations/LEARN-VOICEMAIL-DISCOVERY.md#existing-email-notification-discovery--10-october).
+
+## Bounded preservation scans without global counts — 10 October
+
+The source reader now omits redundant exact counts from page reads and supports
+an explicit double-keyset mode. Two fully exhausted scans must agree on every ID,
+recording pointer and transcript state. Short server pages cannot masquerade as
+completion; global request/response budgets and safe failure metadata keep partial
+results unverified. Eighteen focused checks pass, including same-count replacement,
+short-page caps, drift and budget exhaustion. Earlier baseline manifests still work.
+
+Live availability is not resolved: a catalog probe and a 100-row ID-only email page
+without a count timed out. A full new scan was not started, and no production
+setting/session/data changed. The prior complete preservation inventory remains
+current evidence; fresh large-source verification is open. TEST remains release 020.
+See [reader contract and evidence](../operations/LEARN-SOURCE-PRESERVATION.md).
