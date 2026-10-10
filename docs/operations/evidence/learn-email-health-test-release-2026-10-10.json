@@ -1,0 +1,66 @@
+{
+  "version": "learn-email-health-test-release-evidence/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "4878e07309ac54650aee5d0e25b0a714e030edd23358e4b9c5b44e2e164d573c",
+  "rehearsal": {
+    "version": "learn-test-email-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "4878e07309ac54650aee5d0e25b0a714e030edd23358e4b9c5b44e2e164d573c",
+    "observedAt": "2026-10-10T13:29:32.286Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "beforeFingerprint": "3d3321e1efbf8b4c4406853cf20b4f90c9a0f5d5ba4b3ce5efed5af7d385e47b",
+    "afterFingerprint": "3d3321e1efbf8b4c4406853cf20b4f90c9a0f5d5ba4b3ce5efed5af7d385e47b",
+    "preExistingSourcesPreserved": true,
+    "priorCatalogPreserved": true,
+    "state": "rehearsed_and_rolled_back"
+  },
+  "installation": {
+    "version": "learn-test-email-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "4878e07309ac54650aee5d0e25b0a714e030edd23358e4b9c5b44e2e164d573c",
+    "observedAt": "2026-10-10T13:30:45.545Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "beforeFingerprint": "3d3321e1efbf8b4c4406853cf20b4f90c9a0f5d5ba4b3ce5efed5af7d385e47b",
+    "afterFingerprint": "6e18004c2b67910592c5a76e4b47b4bf49e4a025c3373b3e2d2570d18b044ee7",
+    "preExistingSourcesPreserved": true,
+    "priorCatalogPreserved": true,
+    "state": "installed_needs_authenticated_acceptance"
+  },
+  "preservedDatasets": 44,
+  "tableCount": 110,
+  "releaseReceipts": 33,
+  "changes": {
+    "functions": 1,
+    "newIndexes": 1,
+    "newTables": 0,
+    "newAccounts": 0,
+    "newCredentials": 0,
+    "providerRequests": 0,
+    "productionChanges": 0
+  },
+  "local": {
+    "postgresVersion": 17,
+    "actualDependentTables": 36,
+    "actualFunctionDefinitions": 57,
+    "actualPoliciesTriggersAndPrivileges": true,
+    "nonSuperuserOwner": true,
+    "rollback": true,
+    "failedReceiptRollback": true,
+    "duplicateReleaseRefused": true,
+    "ingestionGuardPreserved": true,
+    "mailboxAndProviderPathIsolation": true,
+    "privateErrorRedaction": true,
+    "viewAsDenied": true,
+    "applicationParser": true,
+    "releaseRunnerTests": 5,
+    "parserTests": 3,
+    "contactApprovalTests": 3
+  },
+  "limitations": [
+    "Hosted installation/schema and preservation confirmed; authenticated hosted UI acceptance remains required.",
+    "Recent successful runs are operational evidence, not proof of complete mailbox coverage.",
+    "No production release or capture worker changes."
+  ]
+}

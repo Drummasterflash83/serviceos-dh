@@ -35,8 +35,12 @@ import {
 } from "../../src/lib/learn-commusoft-review.ts";
 import { loadWorkPage, resolveWorkDraft } from "../../src/lib/learn-commusoft-work.ts";
 import { readLearnCards } from "../../src/lib/learn-cards.ts";
-import { readCaptureCatalog } from "./learn-capture-health-catalog.mjs";
-import { installedCapture, captureFingerprint } from "./learn-test-capture-health-release.mjs";
+import { readEmailHealthCatalog } from "./learn-email-health-catalog.mjs";
+import { installedCapture } from "./learn-test-capture-health-release.mjs";
+import {
+  installedEmailHealth,
+  emailHealthFingerprint,
+} from "./learn-test-email-health-release.mjs";
 import { installedResume } from "./learn-test-commusoft-resume-release.mjs";
 import { installedContacts } from "./learn-test-commusoft-contacts-release.mjs";
 import {
@@ -70,11 +74,15 @@ export async function acceptCommusoftIngestion({
     );
     return fetcher(url, { ...options, redirect: "error" });
   };
-  const readRuntime = includeContacts ? readCaptureCatalog : readOperatorInputsCatalog,
+  const readRuntime = includeContacts ? readEmailHealthCatalog : readOperatorInputsCatalog,
     installedRuntime = includeContacts
-      ? (c) => installedCapture(c) || installedResume(c) || installedContacts(c)
+      ? (c) =>
+          installedEmailHealth(c) ||
+          installedCapture(c) ||
+          installedResume(c) ||
+          installedContacts(c)
       : installedOperatorInputs,
-    runtimeFingerprint = includeContacts ? captureFingerprint : operatorInputFingerprint;
+    runtimeFingerprint = includeContacts ? emailHealthFingerprint : operatorInputFingerprint;
   const pre = await readRuntime({ allowProjectRef, token, fetcher: network });
   check(installedRuntime(pre), "Exact installed ingestion/review TEST contract required");
   const management = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };

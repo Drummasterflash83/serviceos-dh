@@ -1,0 +1,18 @@
+{
+  "version": "learn-email-health-package/1",
+  "sha256": "4878e07309ac54650aee5d0e25b0a714e030edd23358e4b9c5b44e2e164d573c",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031220000_learn_email_capture_evidence.sql",
+      "sha256": "a9ee85ea529dc169e2af7a28be1cb481e1d881d6649eba918270675c2f8fe8ec"
+    }
+  ],
+  "functions": [],
+  "changedFunctions": [
+    "learn_operator_capture_health"
+  ],
+  "tables": [],
+  "changedTables": [
+    "email_sync_runs"
+  ]
+}

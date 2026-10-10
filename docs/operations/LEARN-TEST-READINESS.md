@@ -30,7 +30,7 @@ execution was exercised for saved-page recovery while capture was disabled. This
 does not verify Drummonds' real Commusoft API credentials, response coverage or
 production readiness. No production changes or real Commusoft requests occurred.
 
-## Email capture evidence correction — local, 10 October 2026
+## Email capture evidence correction — TEST backend, 10 October 2026
 
 Read-only production checks at approximately 13:10–13:15 UTC found that all 30
 inspected email accounts lacked `last_incremental_success_at`. Recent Workspace
@@ -42,15 +42,33 @@ the newer account-success field. Its version and deployment hash were reconfirme
 at 13:14:47 UTC. Deployed shared helpers differ from this checkout; reconcile those
 versions before changing capture guards or deploying replacements.
 
-The local follow-up migration `20261031220000_learn_email_capture_evidence.sql`
+The follow-up migration `20261031220000_learn_email_capture_evidence.sql`
 adds mailbox-specific terminal sync-run evidence to the operator health reader.
 It matches company, mailbox and OAuth/Workspace capture path, excludes scheduler
 heartbeats and historical backfill, rejects incomplete success records, and keeps
 raw errors and private metadata out of the response. Existing release 031 is
 unchanged. Local Postgres checks pass for rollback, company/mailbox separation,
 failure and recovery, provider-path separation, redaction and the application
-response parser. This follow-up has **not** been installed in TEST or production;
-actual-schema rehearsal and a separately verified release remain required.
+response parser. Release 032 was installed in TEST and confirmed at **13:30:45 UTC**,
+following a hosted rollback rehearsal at **13:29:32 UTC**. Both operations retained
+all 44 checked datasets, including email sync history and encrypted Vault records.
+The release adds one lookup index and changes one health reader; it creates no
+tables, users, credentials, capture jobs or schedules. The TEST ledger now has 33
+receipts. The prior schema is preserved apart from those exact changes. See
+[release evidence](evidence/learn-email-health-test-release-2026-10-10.json).
+Authenticated hosted UI acceptance is still required; neither this correction nor
+the operator capture panel has been released to production.
+
+Release package 032 now has an isolated PG17 rehearsal of the 36 actual dependent
+TEST tables, their indexes, policies, triggers and privileges, and 57 function
+definitions. This includes both email-ingestion guards. Synthetic terminal run
+updates use the existing protocol-owner privileges; the guard still refuses a
+terminal update by an ordinary database owner. The new reader runs as the actual
+non-superuser owner and retains its authenticated operator-only access. Exact
+schema comparisons show one changed reader and one added index; all test source
+rows are preserved. Rollback, receipt failure, duplicate release refusal, mailbox
+and provider-path isolation, private-error exclusion, View As denial and the actual
+application parser pass. No Auth account or hosted source fixture was created.
 
 Recent run results do not prove full mailbox coverage or preservation of every
 email. No production account, worker, schedule or source record was changed.
