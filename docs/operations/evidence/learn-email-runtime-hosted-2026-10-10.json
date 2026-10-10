@@ -1,0 +1,78 @@
+{
+  "version": "learn-email-runtime-hosted/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+  "observedAt": "2026-10-10T15:33:58.521Z",
+  "state": "installed_needs_runtime_acceptance",
+  "rehearsal": {
+    "version": "learn-email-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "mode": "rehearse",
+    "sourceSha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+    "observedAt": "2026-10-10T15:33:30.349Z",
+    "state": "rehearsed_and_rolled_back",
+    "writeAttempted": true,
+    "priorFingerprint": "d795a3420ec0f7a44b66238311b58e5a",
+    "expectedFingerprint": "ec04995ee4e15970619130bb53713dc1",
+    "preservedDataSets": 52
+  },
+  "installation": {
+    "version": "learn-email-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "mode": "apply",
+    "sourceSha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+    "observedAt": "2026-10-10T15:33:58.521Z",
+    "state": "installed_needs_runtime_acceptance",
+    "writeAttempted": true,
+    "priorFingerprint": "d795a3420ec0f7a44b66238311b58e5a",
+    "expectedFingerprint": "ec04995ee4e15970619130bb53713dc1",
+    "preservedDataSets": 52
+  },
+  "releaseToolTests": 7,
+  "files": [
+    {
+      "path": "scripts/verify/learn-email-runtime-catalog.mjs",
+      "sha256": "5c6860c755b53b828b15936d3882e000ce1e2286989038ecf5c9a09836be0069"
+    },
+    {
+      "path": "scripts/verify/learn-email-runtime-package.mjs",
+      "sha256": "61ff9fb707451769d0fdad63bea06f8c43e035eb2547edc1c16d60f84612e30c"
+    },
+    {
+      "path": "scripts/verify/learn-test-email-runtime-release.mjs",
+      "sha256": "d25dcc2014959c5b195e234e611a66c13cb7411b948e6392753fd86b2603c95b"
+    },
+    {
+      "path": "scripts/verify/learn-test-email-runtime-hosted.mjs",
+      "sha256": "19d22d648aaa5fa2faa0cfca714481d064082558083b9bb4f9bbd0f8087d5d7b"
+    },
+    {
+      "path": "scripts/verify/learn-test-email-runtime-release.test.mjs",
+      "sha256": "d6dab8020d7c7e3c3a7ab0c03845924498e6789519eb469629cd0b801fe11423"
+    }
+  ],
+  "verified": [
+    "Hosted rehearsal completed and exact pre-release catalog/source fingerprints were restored by rollback.",
+    "Installed catalog matches the rehearsed result exactly; release ledger advanced from 33 to 34 entries.",
+    "All 52 existing dataset fingerprints match before and after the transaction and independent reads.",
+    "New email tables enforce RLS and exclude client access; durable mutation APIs are service-only.",
+    "Phone selector prerequisites use a service-only security-invoker view; no phone processing or provider requests were activated."
+  ],
+  "limitations": [
+    "Only database release installed. The matching generic worker, email endpoints and frontend still require deployment and authenticated end-to-end acceptance.",
+    "Fresh TEST audit found no email endpoints/generic worker, active queue jobs or cron.job catalog; continuous capture remains unconfigured.",
+    "Preservation fingerprints are not a full backup/restore proof or proof of production completeness.",
+    "Existing TEST fixtures remain synthetic; real Drummonds mailbox credentials and provider capture were not exercised.",
+    "No production changes, new logins, operator access grants, provider requests or schedule activation."
+  ],
+  "readOnlyConfirmation": {
+    "version": "learn-email-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+    "mode": "apply",
+    "observedAt": "2026-10-10T15:35:28.626Z",
+    "state": "installed_needs_runtime_acceptance",
+    "writeAttempted": false,
+    "preservedDataSets": 52
+  }
+}

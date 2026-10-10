@@ -1,0 +1,46 @@
+{
+  "version": "learn-email-runtime-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100",
+  "priorFingerprint": "d795a3420ec0f7a44b66238311b58e5a",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260711120000_phone_pipeline_selection.sql",
+      "sha256": "d6931e2d25b7c76be02be959c145b0b4433fc7019e69297283a26346e2d9c70e"
+    },
+    {
+      "path": "supabase/migrations/20261024100000_phone_retry_fairness.sql",
+      "sha256": "6169455040c65424a86eaecfa0365a106731ed0fab549776d25be70e53db4e3b"
+    },
+    {
+      "path": "supabase/migrations/20261031230000_learn_capture_controls.sql",
+      "sha256": "51265e71ef999ecbf27673220ea04ef6cc1711fd81cc1848bb74513a10c73067"
+    },
+    {
+      "path": "supabase/migrations/20261031233000_learn_email_transition_outbox.sql",
+      "sha256": "8ba449af5bbd7334c683ca37780fe307c9f36228678f83ed2c7eb07901716e2a"
+    },
+    {
+      "path": "supabase/migrations/20261031234500_learn_email_job_attempts.sql",
+      "sha256": "fae443075e7f1ff3d5a4ca3add9908fefb8a3e36bc126106ba3714d4defbc4cf"
+    },
+    {
+      "path": "supabase/migrations/20261031235500_learn_email_page_store.sql",
+      "sha256": "021c1c4e7f83cf80a5cba8f7ddb685d06d20446c2bed3be2597d95439765c799"
+    },
+    {
+      "path": "supabase/migrations/20261031235900_learn_email_job_failure.sql",
+      "sha256": "7cc57cf900f017a0dbf5c17899bad746f2d8ea7334d665271c5c2564b16148cb"
+    },
+    {
+      "path": "supabase/migrations/20261101000500_learn_email_paused_recovery.sql",
+      "sha256": "9b5cc76035d17889fc2a01ea10c091478e7b69711c94c2770f870c249f9c6ebb"
+    },
+    {
+      "path": "supabase/migrations/20261101001500_learn_email_enqueue.sql",
+      "sha256": "7fb1ffa5955a20b03963416c49dc1cf4264c5b662cce9c2ffb9fc134c42b114e"
+    }
+  ],
+  "preservedDataSets": 52,
+  "phoneScope": "Only the existing pipeline-state view plus retry selector dependencies; no phone capture endpoint or schedule activation."
+}

@@ -1,5 +1,42 @@
 # Existing TEST environment: verified release gaps
 
+## Email runtime database — installed in TEST, 10 October 2026
+
+Release **033** (`learn_email_runtime_v1`, SHA
+`7f6f701b3a7e38915bd43be895cddbc15b56eed468361b41b16ca4a26e13c100`)
+was rehearsed against hosted TEST and rolled back, then its installation was confirmed at
+**15:33:58 UTC**. Both operations independently verified the resulting catalog
+and **52 existing dataset fingerprints**. TEST now has 34 release-ledger entries.
+No retained source rows, feature flags, access grants, credentials or schedules
+were changed. This is a schema installation, not completed email capture acceptance.
+
+The package installs the previously documented capture controls, durable email
+outbox, queue/attempt binding, atomic page persistence, terminal failure settlement,
+paused recovery and manual enqueue RPC. It also supplies the missing phone
+pipeline-state view and retry-selection dependencies needed by the shared controls.
+That view uses invoker security and is readable only by the service role; it does
+not install a phone pipeline endpoint or activate processing. The new email tables
+have RLS and no client access. Email mutation/recovery functions are service-only;
+the two operator-control functions use the existing OpenFolk authorization checks.
+
+The release transaction checks an exact fingerprint of relevant function
+definitions, table contracts, policies, grants and the ledger before making changes.
+It compares source fingerprints within the transaction and aborts on a mismatch.
+The release tool retains its journal before submission, sends once, and provides
+read-only confirmation for uncertain results. **Seven release-tool tests pass**;
+the earlier 56-result database suite and seven request/UI tests establish local
+behavior, while this hosted rehearsal establishes compatibility with actual TEST.
+See [hosted evidence](evidence/learn-email-runtime-hosted-2026-10-10.json) and the
+checked SQL/manifest/prerequisite/expected files in `supabase/release/learn-test/033_email_runtime.*`.
+
+**Still required:** deploy the matching generic worker/shared modules and three
+manual email endpoints, provide the TEST frontend with the queued-response UI,
+verify real authenticated request and recovery paths, and verify mailbox authority
+and scheduling before starting capture. The fresh audit found no email endpoints
+or generic worker, no active queue jobs, and no `cron.job` catalog in TEST. Continuous
+capture is therefore not configured. Existing released Slack/Commusoft/Simwood
+endpoints remain separate. No production deployment or real provider request occurred.
+
 ## Manual email queue submissions — local implementation, 10 October 2026
 
 The Gmail, Workspace sync and Workspace backfill endpoints now use the shared
@@ -37,7 +74,8 @@ passes TypeScript with local Deno/Supabase ambient declarations; no Deno runtime
 deployment check is claimed. See
 [local evidence](evidence/learn-email-enqueue-local-2026-10-10.json).
 
-**Not deployed.** Next is coordinated hosted TEST installation and acceptance:
+**Database installed by release 033 above; endpoints/UI acceptance outstanding.**
+The coordinated email runtime release includes:
 capture-control prerequisites, outbox/job binding/page storage/failure/recovery/
 enqueue migrations, the generic worker and its shared modules, all three manual
 endpoints, and matching frontend must be treated as one release. Old clients
