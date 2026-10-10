@@ -1,7 +1,7 @@
 {
   "version": "learn-commusoft-contact-traversal-test/1",
   "observedAt": "2026-10-10T20:33:48.715407+00:00",
-  "state": "test_schema_and_runtime_verified_frontend_pending",
+  "state": "test_schema_runtime_frontend_released_hosted_import_pending",
   "projectRef": "saatxzwxvdvqevbnskxy",
   "schemaRehearsal": {
     "version": "learn-contact-traversal/1",
@@ -249,5 +249,48 @@
     "Hosted service-path assertions use synthetic preseeded permits under rollback; successful credential acquisition and operator approval were verified separately in disposable PostgreSQL.",
     "No production changes, real credentials, logins, authority grants, import schedules or retained synthetic target rows created.",
     "First hosted rehearsal had a probe syntax error; subsequent catalog and data reads confirmed rollback. Corrected probe passed locally and in hosted rehearsal before installation."
-  ]
+  ],
+  "frontend": {
+    "deployment": {
+      "observedAt": "2026-10-10T20:38:22.780Z",
+      "id": "dpl_DR6cj574x1Q8GAivKhZQP843Gkmt",
+      "url": "serviceos-learn-test-co4c837m5-allkin.vercel.app",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "readyState": "READY",
+      "target": "staging",
+      "gitSource": {
+        "type": "github",
+        "repoId": 1285975013,
+        "ref": "codex/learn-v1-test",
+        "sha": "767582d0c4aaea2585079f02f956a8fd753b7a78"
+      },
+      "framework": "tanstack-start",
+      "nodeVersion": "24.x"
+    },
+    "protection": {
+      "observedAt": "2026-10-10T20:39:04.236Z",
+      "base": "https://serviceos-learn-test-co4c837m5-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "backendRef": "saatxzwxvdvqevbnskxy",
+    "environmentBindingChecked": true,
+    "signedInAcceptance": "pending",
+    "visualAcceptance": "unconfirmed: browser connection timed out; deployment and HTTP protection verified independently"
+  }
 }

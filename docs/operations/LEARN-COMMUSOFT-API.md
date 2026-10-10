@@ -16,8 +16,10 @@ verified package was installed.
 
 The hosted probe uses synthetic preseeded permits to exercise publication and
 settlement. It creates no login, operator grant or Vault credential and does not
-prove signed-in approval or a real provider request from Edge. Those remain next,
-along with the protected TEST frontend update. Production remains unchanged.
+prove signed-in approval or a real provider request from Edge. Those remain next. The protected TEST frontend is READY from Git commit
+`767582d0c4aaea2585079f02f956a8fd753b7a78`; homepage, login and client routes
+retain Vercel protection. Fresh browser visual acceptance is unconfirmed because
+the browser connection timed out. Production remains unchanged.
 [Release evidence](evidence/learn-commusoft-contact-traversal-test-2026-10-10.json).
 
 ## Earlier local validation — now deployed to TEST as release 042
@@ -49,7 +51,7 @@ operator output passes the application parser.
 [Evidence](evidence/learn-commusoft-contact-traversal-local-2026-10-10.json).
 
 **Subsequently deployed:** the TEST schema and runtime are verified as recorded above.
-The frontend update, signed-in setup and a real hosted import remain pending. No
+The frontend release is now READY; signed-in setup and a real hosted import remain pending. No
 external requests or hosted mutations occurred during this candidate verification.
 Empty target sets are refused explicitly; old unscoped contact approvals require
 review rather than automatic reinterpretation. New properties need a later
