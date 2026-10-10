@@ -167,6 +167,8 @@ try:
                 assert sql(contract).split('|')[1:]==before.split('|')[1:],'Lifecycle grants/owner changed'
                 print(sql((root/'scripts/verify/learn-commusoft-job-lifecycle.assert.sql').read_text()))
                 print('Job lifecycle migration rollback and unchanged grants/ownership passed.')
+                sql((root/'scripts/verify/learn-commusoft-mapping-hosted.assert.sql').read_text())
+                print('Mapping release hosted denial probe passed locally.')
 
             def contact_race(_):
                 return sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select learn_commusoft_confirm_contact(fixture_id(1),fixture_work_version('propertyContacts','510'),null,'Concurrent contact review')->>'already';")

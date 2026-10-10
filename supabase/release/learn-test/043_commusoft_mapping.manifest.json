@@ -1,0 +1,21 @@
+{
+  "version": "learn-commusoft-mapping-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "d712f8432c2dd9dabe3f66a316e8ec66f2cd1250a690faceb67e5970f99fa598",
+  "priorFingerprint": "da73fc753a5441dc5332cf38ef16ecc9",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101030000_learn_customer_candidate_endpoints.sql",
+      "sha256": "057d45a14c878f31b4b573a1ddb0d1cb8b621c0050900039e6a3e5bbe8270b89"
+    },
+    {
+      "path": "supabase/migrations/20261101040000_learn_commusoft_job_lifecycle.sql",
+      "sha256": "4ceaa51b0941bac69a446b4061c7b7ea11e0130fa74f4c9e67023e1c5158e510"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-commusoft-mapping-hosted.assert.sql",
+    "sha256": "778f89f1f14cd53e419105f88e01df59963e1354315996b51d7a5cd8d98d6041"
+  },
+  "preservedDataSets": 78
+}
