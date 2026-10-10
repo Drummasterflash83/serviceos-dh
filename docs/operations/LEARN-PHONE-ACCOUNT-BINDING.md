@@ -153,3 +153,25 @@ Evidence: [deployment](evidence/learn-test-phone-deploy-2026-10-10.json),
 [permission installation](evidence/learn-test-phone-access-installed-2026-10-10.json),
 [signed-in acceptance](evidence/learn-test-phone-acceptance-2026-10-10.json), and
 [final readback](evidence/learn-test-phone-final-2026-10-10.json).
+
+## Phone page controls — TEST v4, 10 October 18:33 UTC
+
+Call and recording sync now revalidate the pinned provider account and OpenFolk
+Phone switch before each bounded page, after its response before saving, and
+before reporting completion or launching follow-on processing. Disabling or
+replacing the account/connector stops the run; a matching provider customer on a
+new registry row does not inherit the old run. Saved earlier pages remain intact,
+the interrupted window is incomplete, and the scheduler retains its cursor.
+
+Both TEST sync endpoints are now version 4 with JWT verification. No phone
+credentials, channels, schedules or access grants were added. Thirty-five actual
+handler tests and ten account/completeness tests pass, plus strict handler
+TypeScript and eight deployment tests. Sixteen tests pass against downloaded
+published handlers; eight actual HTTP cases verify JWT denial, method handling
+and the archived fixture's paused path. All 70 monitored TEST datasets remain
+unchanged. Production is unchanged.
+
+This is per-page read-time revalidation, not an atomic publication fence: a
+concurrent change between the last check and its database write remains possible.
+Concurrent new-recording processing and real provider end-to-end capture still
+need separate verification. [Release evidence](evidence/learn-phone-page-guards-hosted-2026-10-10.json).

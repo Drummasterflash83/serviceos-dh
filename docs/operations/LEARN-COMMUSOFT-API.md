@@ -943,3 +943,12 @@ keys are created by an account administrator under Settings / Private applicatio
 and sent as `x-api-key`. The endpoint-generated Bearer example still conflicts
 with that guide; real account verification must resolve it without silently trying
 alternate authentication modes. No real key was requested or read in this slice.
+
+## Support handoff — 10 October 2026
+
+Chris confirmed he sent the prepared API-v2 403/access-enablement enquiry to
+Commusoft support from his Drummonds email. Codex did not send an in-app support
+message. Support's response is pending; do not send a duplicate or retry the same
+failed provider request without new evidence. The draft identifies client 19136,
+application 49, its two read scopes, the exact bounded properties request and
+16:22 UTC failure. No API key or customer record was included in the draft.

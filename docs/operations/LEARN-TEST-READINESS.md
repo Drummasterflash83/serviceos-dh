@@ -1,5 +1,20 @@
 # Existing TEST environment: verified release gaps
 
+## Phone per-page controls — TEST v4, 10 October 18:33 UTC
+
+The call and recording sync endpoints now check the Phone switch and pinned
+account between pages and before saving responses/completing the window. The
+published handlers pass 16 synthetic-port tests; eight real HTTP checks pass for
+denials and the retired fixture's paused path. All 70 monitored TEST datasets
+remain unchanged. No new credentials, access, provider calls or schedules.
+[Evidence and remaining atomic-publication gap](LEARN-PHONE-ACCOUNT-BINDING.md).
+
+Fresh production **read-only** discovery at 18:30 UTC confirmed the baseline
+records/pointers remain present: 18,501 emails, 4,328 calls and 2,882 recordings.
+No voicemail-subject candidates were found among retained emails; provider
+voicemail access is still unverified. [Audit](LEARN-VOICEMAIL-DISCOVERY.md).
+
+
 ## Observed Slack threads — TEST release 038 and worker v8 installed
 
 Release **038** installed opt-in ongoing replies for observed Slack parents at

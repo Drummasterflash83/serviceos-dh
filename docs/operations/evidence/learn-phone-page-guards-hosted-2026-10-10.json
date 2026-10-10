@@ -1,0 +1,221 @@
+{
+  "observedAt": "2026-10-10T18:36:21.060Z",
+  "state": "test_deployed_readback_and_paused_http_verified",
+  "deployment": {
+    "version": "learn-phone-page-guards-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "0259b59652f40ada10317612172f31fc99400afa6bd82186216d10d3a2c4d611",
+    "observedAt": "2026-10-10T18:33:52.629Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "simwood-sync-calls",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "simwood-sync-recordings",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "46b816e2-13d0-4d7c-924a-a40698c0277e",
+        "slug": "simwood-sync-calls",
+        "name": "simwood-sync-calls",
+        "status": "ACTIVE",
+        "version": 4,
+        "created_at": 1791593397096,
+        "updated_at": 1791657230657,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_46b816e2-13d0-4d7c-924a-a40698c0277e_4/source/supabase/functions/simwood-sync-calls/index.ts",
+        "ezbr_sha256": "d6c1760ea54588b0a7375f94bf64ecd640e0731ef36c721c0b4fba037c938e39"
+      },
+      {
+        "id": "0d980de4-9f6f-489c-8b29-103da9342a42",
+        "slug": "simwood-sync-recordings",
+        "name": "simwood-sync-recordings",
+        "status": "ACTIVE",
+        "version": 4,
+        "created_at": 1791593399666,
+        "updated_at": 1791657232028,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_0d980de4-9f6f-489c-8b29-103da9342a42_4/source/supabase/functions/simwood-sync-recordings/index.ts",
+        "ezbr_sha256": "87b428a12bf789844a4c617915aac1c35195c6c0f7084419b14bd85c53214e7e"
+      }
+    ],
+    "dependencyFiles": 9
+  },
+  "http": {
+    "version": "learn-phone-page-guards-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T18:35:35.597Z",
+    "state": "denials_and_paused_path_verified",
+    "checks": [
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "missing JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "anonymous caller",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "retired fixture capture paused",
+        "status": 409,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "missing JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "anonymous caller",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "retired fixture capture paused",
+        "status": 409,
+        "passed": true
+      }
+    ],
+    "preservedDataSets": 70,
+    "providerRequests": 0,
+    "usersOrGrantsCreated": 0
+  },
+  "localTests": {
+    "actualHandlers": 35,
+    "pureAccountAndCompleteness": 10,
+    "deployment": 8,
+    "strictHandlerTypescript": "passed"
+  },
+  "publishedRuntime": {
+    "files": [
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/phone-capture-guard.ts",
+        "sha256": "90cd674b6ebf79b65061a30a0491c776b8ca5ee706c22fb2b1dcb4286645a861",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/phone-sync-completeness.ts",
+        "sha256": "9ac638ae4bea430cca6ae59fe019d91f299b116279b24c2a7ee88f9d9c224b68",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/simwood-account.ts",
+        "sha256": "b7c6e13caa9671245eee553cff106ef41d6bac49d2b4248b7b87225d7ea11703",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "path": "index.ts",
+        "sha256": "b97458c5f1382eb2538d5da25769f05a4636a59f383da64d0c50be03b5382567",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/phone-capture-guard.ts",
+        "sha256": "90cd674b6ebf79b65061a30a0491c776b8ca5ee706c22fb2b1dcb4286645a861",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/phone-sync-completeness.ts",
+        "sha256": "9ac638ae4bea430cca6ae59fe019d91f299b116279b24c2a7ee88f9d9c224b68",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/phone_pipeline.ts",
+        "sha256": "950b2d95bcb4a20bab8e23709d4568b7fe0de9f3f36ae5d86855cb76208e93fe",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/simwood-account.ts",
+        "sha256": "b7c6e13caa9671245eee553cff106ef41d6bac49d2b4248b7b87225d7ea11703",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "path": "index.ts",
+        "sha256": "c2cdaa5c0ecf7eb733128f69d0c441bcefea53948d25eb6df5c8ce66b7c3baad",
+        "matchesOriginalTypescript": false
+      }
+    ],
+    "testsPassed": 16,
+    "method": "Actual downloaded handlers and dependencies run in Node VM using synthetic database/provider ports. CLI entrypoint import layout is resolved by the test harness without modifying runtime source."
+  },
+  "limitations": [
+    "Only two TEST sync endpoints changed; no provider credentials or schedules activated.",
+    "No real phone provider requests, audio downloads, transcription or production changes.",
+    "Read-time checks bound each page and detect changes before saving; an atomic database fence is still needed to close the final check-to-write race.",
+    "The existing direct upsert and new-recording processing protocol remains; exact-once processing across concurrent syncs is not proven.",
+    "Paused HTTP checks use the archived fixture with no reactivated login or grant; real active-company end-to-end ingestion remains unverified."
+  ]
+}

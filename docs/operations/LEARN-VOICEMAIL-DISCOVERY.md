@@ -169,3 +169,24 @@ metadata returned `ACTIVE_HEALTHY`, but one bounded read-only database identity
 query returned HTTP 544. This does not identify a cause or prove lost records.
 No further source scan or provider request was started. See
 [availability evidence](evidence/learn-live-input-availability-2026-10-10.json).
+
+## Successful live recheck — 10 October, 18:30 UTC
+
+The tenant identity read and bounded subject audit responded successfully. At
+18:30:20 UTC, 18,501 stored emails contained **zero** subjects matching voicemail,
+voice mail or voice-mail. The six-request audit completed without read failures.
+This rules out those subject candidates only; it does not prove the provider has
+no voicemail or that other subject formats/body-only notifications are absent.
+No message bodies, audio or provider resources were retrieved.
+
+The following preservation inventory completed two matching keyset scans with
+149 requests and no read errors. It found 18,501 emails, 4,328 calls, 2,882
+recordings/transcripts, 22,841 interactions and 3,159 cards. All original baseline
+IDs and recording pointers remained present, and all 2,882 pointers matched stored
+objects. There are still zero captured voicemails and six failed transcripts.
+This supersedes the earlier availability uncertainty for this observation, but
+is not a backup, restore proof, full-row content audit or playable-audio check.
+
+Evidence: [subject audit](evidence/learn-voicemail-email-audit-2026-10-10-recheck.json)
+and [preservation comparison](evidence/learn-preservation-voicemail-email-2026-10-10-recheck.json).
+The supported provider message/audio feed remains the required next step.

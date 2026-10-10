@@ -1,3 +1,4 @@
+import { phoneCaptureGuard } from "../_shared/phone-capture-guard.ts";
 import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-sync-recordings (Phase Phone-2)
@@ -205,6 +206,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const account = await resolveSimwoodAccount(supabase, tenantId, body.provider_customer_id);
   if (!account.ok) return await finishFailed(account.code, account.message, account.httpStatus, 0);
   const customerId = account.customerId;
+  const captureCurrent = phoneCaptureGuard(supabase, tenantId, account);
 
   // --- credentials ---------------------------------------------------------
   const creds = getSimwoodCredentials();
@@ -222,6 +224,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const newRecordingIds: string[] = [];
 
   for (let page = 1; page <= HARD_PAGE_CAP; page++) {
+    const beforePage = await captureCurrent();
+    if (!beforePage.allowed)
+      return await finishFailed(
+        beforePage.code,
+        beforePage.message,
+        beforePage.httpStatus,
+        processed,
+        {
+          pages_fetched: pagesFetched,
+          window_complete: false,
+        },
+      );
     const qs = new URLSearchParams({
       startedAfter: from,
       startedBefore: to,
@@ -242,6 +256,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
     pagesFetched++;
+    const beforeSave = await captureCurrent();
+    if (!beforeSave.allowed)
+      return await finishFailed(
+        beforeSave.code,
+        beforeSave.message,
+        beforeSave.httpStatus,
+        processed,
+        {
+          pages_fetched: pagesFetched,
+          window_complete: false,
+        },
+      );
 
     const items = providerPageItems(result.data);
     if (!items)
@@ -352,6 +378,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       linkedCallsMatched = null;
     }
   }
+
+  const beforeCompletion = await captureCurrent();
+  if (!beforeCompletion.allowed)
+    return await finishFailed(
+      beforeCompletion.code,
+      beforeCompletion.message,
+      beforeCompletion.httpStatus,
+      processed,
+      {
+        pages_fetched: pagesFetched,
+        window_complete: false,
+      },
+    );
 
   // --- auto-process newly inserted recordings (background, isolated) -------
   const toTrigger = newRecordingIds.slice(0, MAX_AUTO_PIPELINE);

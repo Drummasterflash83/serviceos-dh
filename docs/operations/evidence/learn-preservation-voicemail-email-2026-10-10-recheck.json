@@ -1,0 +1,162 @@
+{
+  "version": "learn-preservation/2",
+  "project_ref": "tgbnakbxwcqjeimygroz",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "cutoff": "2026-10-10T18:30:24.602Z",
+  "observed_at": "2026-10-10T18:30:41.482Z",
+  "scan_mode": "double_keyset",
+  "request_budget": 400,
+  "requests": 149,
+  "read_errors": [],
+  "sources": {
+    "email_messages": {
+      "complete": true,
+      "count": 18501
+    },
+    "phone_calls": {
+      "complete": true,
+      "count": 4328
+    },
+    "phone_recordings": {
+      "complete": true,
+      "count": 2882
+    },
+    "phone_transcripts": {
+      "complete": true,
+      "count": 2882
+    },
+    "interactions": {
+      "complete": true,
+      "count": 22841
+    },
+    "customer_cards": {
+      "complete": true,
+      "count": 3159
+    },
+    "jobs": {
+      "complete": true,
+      "count": 0
+    },
+    "team_members": {
+      "complete": true,
+      "count": 8
+    },
+    "receptionist_voicemails": {
+      "complete": true,
+      "count": 0
+    },
+    "email_accounts": {
+      "complete": true,
+      "count": 30
+    },
+    "tenant_connectors": {
+      "complete": true,
+      "count": 3
+    }
+  },
+  "transcript_statuses": {
+    "completed": 2876,
+    "failed": 6
+  },
+  "storage": {
+    "complete": true,
+    "objects": 2888,
+    "recordings_matched": 2882,
+    "recordings_missing": 0,
+    "recordings_unverified": 0
+  },
+  "limitations": [
+    "Not a transactionally consistent database snapshot or a backup.",
+    "Storage metadata confirms object presence and size, not playable audio.",
+    "A changed row set needs investigation; a higher total alone cannot prove preservation.",
+    "Matching keyset passes compare IDs, transcript statuses and recording pointers, not every source column; they cannot exclude all concurrent changes."
+  ],
+  "comparison": {
+    "sources": {
+      "email_messages": {
+        "status": "preserved",
+        "prior_count": 18407,
+        "current_count": 18501,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "phone_calls": {
+        "status": "preserved",
+        "prior_count": 4320,
+        "current_count": 4328,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "phone_recordings": {
+        "status": "preserved",
+        "prior_count": 2880,
+        "current_count": 2882,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "phone_transcripts": {
+        "status": "preserved",
+        "prior_count": 2880,
+        "current_count": 2882,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "interactions": {
+        "status": "preserved",
+        "prior_count": 22738,
+        "current_count": 22841,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "customer_cards": {
+        "status": "preserved",
+        "prior_count": 3148,
+        "current_count": 3159,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "jobs": {
+        "status": "preserved",
+        "prior_count": 0,
+        "current_count": 0,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "team_members": {
+        "status": "preserved",
+        "prior_count": 8,
+        "current_count": 8,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "receptionist_voicemails": {
+        "status": "preserved",
+        "prior_count": 0,
+        "current_count": 0,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "email_accounts": {
+        "status": "preserved",
+        "prior_count": 30,
+        "current_count": 30,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "tenant_connectors": {
+        "status": "preserved",
+        "prior_count": 3,
+        "current_count": 3,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      }
+    },
+    "storage": {
+      "missing_objects": 0,
+      "changed_objects": 0,
+      "status": "preserved"
+    },
+    "complete": true,
+    "comparison_state": "preserved"
+  }
+}

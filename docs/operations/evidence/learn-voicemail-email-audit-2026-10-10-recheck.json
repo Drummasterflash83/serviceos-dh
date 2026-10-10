@@ -1,0 +1,32 @@
+{
+  "version": "learn-voicemail-email-audit/1",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "tenantId": "00000000-0000-0000-0000-000000000001",
+  "cutoff": "2026-10-10T18:30:20.849Z",
+  "observedAt": "2026-10-10T18:30:24.599Z",
+  "status": "complete_for_subject_query",
+  "storedEmailsAtCutoff": 18501,
+  "subjectQueryComplete": true,
+  "expectedSubjectMatches": 0,
+  "observedSubjectMatches": 0,
+  "directions": {
+    "inbound": 0,
+    "outbound": 0,
+    "unknown": 0
+  },
+  "withAttachmentHint": 0,
+  "withAttachmentMetadata": 0,
+  "withAudioMetadata": 0,
+  "withAudioPointer": 0,
+  "requests": 6,
+  "readFailures": [],
+  "limitations": [
+    "Subject matches are candidates, not verified voicemail messages or evidence of Birchills origin.",
+    "Only subjects containing voicemail, voice mail or voice-mail are matched; other subjects, bodies and unimported mail are outside coverage.",
+    "An attachment hint is not retained attachment metadata; a storage pointer is not downloaded or playable audio.",
+    "Existing imported metadata does not establish sender authentication, mailbox ownership, provider message identity or notification delivery.",
+    "Stable counts are not a transactionally consistent snapshot and cannot detect all concurrent edits.",
+    "Read-only: no provider request, email-body or audio download, import, transcription, notification or access change."
+  ],
+  "candidateDetails": "Private references retained in ignored verification output."
+}

@@ -34,6 +34,8 @@ async function harness(
     captureAllowed = true,
     captureError = false,
     childResponses = {},
+    providerPage,
+    onSourceWrite,
     pauseWriteError = false,
     pauseWriteMissing = false,
     pauseWriteThrow = false,
@@ -61,7 +63,7 @@ async function harness(
               version: "learn-capture-admission/1",
               tenant_id: args.p_tenant,
               source: args.p_source,
-              allowed: captureAllowed,
+              allowed: typeof captureAllowed === "function" ? captureAllowed() : captureAllowed,
               checked_at: new Date().toISOString(),
             },
         error: captureError ? { message: "PRIVATE_DIAGNOSTIC" } : null,
@@ -71,6 +73,7 @@ async function harness(
       let op = "read";
       const filters = [];
       let patch;
+      let many = false;
       const result = () => {
         const pauseWrite = patch?.status === "paused" || patch?.result?.capture_waiting;
         const faultApplies = table === pauseWriteTarget;
@@ -93,14 +96,16 @@ async function harness(
                   ? { data: { id: id(4) }, error: null }
                   : table === "phone_recordings" && op === "read"
                     ? {
-                        data: {
-                          id: id(5),
-                          provider: "simwood",
-                          provider_recording_id: "recording_1",
-                          recording_uri: stored,
-                          storage_path: alreadyStored ? "retained.wav" : null,
-                          started_at: "2026-01-01T00:00:00Z",
-                        },
+                        data: many
+                          ? []
+                          : {
+                              id: id(5),
+                              provider: "simwood",
+                              provider_recording_id: "recording_1",
+                              recording_uri: stored,
+                              storage_path: alreadyStored ? "retained.wav" : null,
+                              started_at: "2026-01-01T00:00:00Z",
+                            },
                         error: null,
                       }
                     : { data: [], error: null };
@@ -112,7 +117,10 @@ async function harness(
           return q;
         },
         limit: () => q,
-        in: () => q,
+        in: () => {
+          many = true;
+          return q;
+        },
         insert(v) {
           op = "insert";
           writes.push({ table, op, v, filters });
@@ -127,6 +135,7 @@ async function harness(
         upsert(v) {
           op = "upsert";
           writes.push({ table, op, v });
+          onSourceWrite?.(table, v);
           return q;
         },
         single: async () => result(),
@@ -187,7 +196,7 @@ async function harness(
         return new Response(new Uint8Array([1, 2, 3]), {
           headers: { "content-type": "audio/wav" },
         });
-      return Response.json({ items: [] });
+      return Response.json(providerPage ? await providerPage(String(url)) : { items: [] });
     },
   });
   const cache = new Map();
@@ -214,11 +223,25 @@ async function harness(
         return cache.get(key);
       }
       if (!spec.startsWith(".")) throw Error("Unexpected external dependency");
-      return load(resolve(dirname(parent.identifier), spec));
+      // CLI download places each endpoint's shared files under functions/ while
+      // its entrypoint retains original ../_shared imports. Resolve this layout
+      // without changing any downloaded runtime source.
+      const downloadedEntry =
+        process.env.PHONE_HANDLER_READBACK_ROOT && parent.identifier === entry;
+      return load(
+        downloadedEntry && spec.startsWith("../_shared/")
+          ? resolve(dirname(parent.identifier), "functions", spec.slice(3))
+          : resolve(dirname(parent.identifier), spec),
+      );
     });
     return mod;
   }
-  const mod = await load(resolve(`supabase/functions/${name}/index.ts`));
+  const readback = process.env.PHONE_HANDLER_READBACK_ROOT;
+  const entry =
+    readback && ["simwood-sync-calls", "simwood-sync-recordings"].includes(name)
+      ? resolve(readback, name, "index.ts")
+      : resolve(`supabase/functions/${name}/index.ts`);
+  const mod = await load(entry);
   await mod.evaluate();
   return {
     requests,
@@ -334,7 +357,9 @@ for (const name of [
       assert.equal(
         (await r.json()).error.code,
         captureError
-          ? name.startsWith("gmail-") ? "queue_unconfirmed" : "learn_capture_unavailable"
+          ? name.startsWith("gmail-")
+            ? "queue_unconfirmed"
+            : "learn_capture_unavailable"
           : "learn_capture_paused",
       );
       assert.equal(h.requests.length, 0);
@@ -486,3 +511,104 @@ test("unconfirmed phone pause writes stay unresolved and never report settled wa
         );
       }
 });
+
+for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
+  const source = name === "simwood-sync-calls" ? "phone_calls" : "phone_recordings";
+  const items = (n) =>
+    Array.from({ length: n }, (_, i) => ({ callId: `call_${i}`, id: `recording_${i}` }));
+  test(`${name} discards a fetched page when capture is paused while provider responds`, async () => {
+    let allowed = true;
+    const h = await harness(name, {
+      captureAllowed: () => allowed,
+      providerPage: () => {
+        allowed = false;
+        return { items: items(1) };
+      },
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 409);
+    assert.equal((await r.json()).error.code, "learn_capture_paused");
+    assert.equal(h.requests.length, 1);
+    assert.ok(!h.writes.some((w) => w.table === source));
+    assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.v.status === "success"));
+  });
+  test(`${name} retains a completed page but stops before fetching the next after a pause`, async () => {
+    let allowed = true;
+    const h = await harness(name, {
+      captureAllowed: () => allowed,
+      providerPage: () => ({ items: items(200) }),
+      onSourceWrite: () => {
+        allowed = false;
+      },
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 409);
+    assert.equal((await r.json()).error.code, "learn_capture_paused");
+    assert.equal(h.requests.length, 1);
+    assert.equal(h.writes.filter((w) => w.table === source && w.op === "upsert").length, 1);
+    const final = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
+    assert.equal(final.v.records_processed, 200);
+    assert.equal(final.v.metadata.window_complete, false);
+    assert.ok(!h.writes.some((w) => w.op === "delete" || w.table === "connector_accounts"));
+  });
+  test(`${name} withholds completion and follow-on processing if paused after the final page`, async () => {
+    let allowed = true;
+    const h = await harness(name, {
+      captureAllowed: () => allowed,
+      providerPage: () => ({ items: items(1) }),
+      onSourceWrite: () => {
+        allowed = false;
+      },
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 409);
+    assert.equal((await r.json()).error.code, "learn_capture_paused");
+    assert.equal(h.requests.length, 1);
+    assert.equal(h.writes.filter((w) => w.table === source && w.op === "upsert").length, 1);
+    assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.v.status === "success"));
+    assert.ok(!h.requests.some((r) => r.url.includes("phone-process-pipeline")));
+  });
+  test(`${name} refuses disabled, rebound or replaced provider accounts before publishing`, async () => {
+    for (const change of [
+      (a) => (a.connector.enabled = false),
+      (a) => (a.customer = "8000"),
+      (a) => (a.id = id(20)),
+      (a) => {
+        a.tenant_connector_id = id(30);
+        a.connector.id = id(30);
+      },
+    ]) {
+      const a = account();
+      const h = await harness(name, {
+        accounts: [a],
+        providerPage: () => {
+          change(a);
+          return { items: items(1) };
+        },
+      });
+      const r = await h.run({});
+      assert.equal(r.status, 409);
+      assert.ok(
+        ["phone_account_unavailable", "phone_account_changed"].includes(
+          (await r.json()).error.code,
+        ),
+      );
+      assert.equal(h.requests.length, 1);
+      assert.ok(!h.writes.some((w) => w.table === source));
+    }
+  });
+  test(`${name} does not report a completed empty window when the operator pauses`, async () => {
+    let allowed = true;
+    const h = await harness(name, {
+      captureAllowed: () => allowed,
+      providerPage: () => {
+        allowed = false;
+        return { items: [] };
+      },
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 409);
+    assert.equal((await r.json()).error.code, "learn_capture_paused");
+    assert.ok(!h.writes.some((w) => w.v.status === "success"));
+  });
+}
