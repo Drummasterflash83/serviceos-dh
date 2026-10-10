@@ -38,6 +38,39 @@ There were two provider GETs total, no database/provider mutations, no hosted
 credential binding and no import or schedule. Real contacts scope and complete
 customer/site/job coverage remain unverified.
 
+## Account-access escalation prepared — 10 October 2026
+
+A fresh read-only browser review confirmed the same private application, empty API
+log and two scopes (`crm.properties.read`, `jobs.jobs.read`). No settings or keys
+were changed and no new API request was made. The official private-app guide still
+specifies the same UK base and `x-api-key`. The generic resource-page Bearer example
+remains inconsistent with that specific guide and is not evidence to change modes.
+
+A concrete in-app support message has been presented to Chris for permission to
+send. **It has not been sent.** The question is account/API availability, not a
+request to debug our architecture; Commusoft's [support policy](https://developer.commusoft.com/support-and-technical-support-1985398m0)
+says technical support is available to partners rather than private-app developers.
+Prepared message:
+
+> Client 19136, private app “OpenFolk — Drummonds read-only”: GET
+> `https://app.commusoft.co.uk/api/v2/properties?limit=1` with the existing `x-api-key`
+> returned HTML HTTP 403 on 10 October at 16:22 UTC. The app has
+> `crm.properties.read` and `jobs.jobs.read`, but its API log is empty. Please confirm
+> API v2 access is enabled and whether an account or network restriction is rejecting
+> requests before logging.
+
+No API key, customer record, raw provider body or request header value is included.
+Do not send without Chris's direct authorization. This is a live-access dependency;
+it does not block unrelated LEARN implementation.
+
+The bounded diagnostic now classifies the first response's content type as JSON,
+HTML, other or unknown and suggests the next operator check. This avoids a second
+provider call merely to classify an HTML denial. It does not diagnose the key as
+invalid from a non-JSON 401/403. Four tests pass, including stopping after one denied
+read, journal-before-request, format-specific guidance and excluding body/header
+values from the report. The changed diagnostic has not been run against Commusoft;
+the retained historical evidence still records exactly two provider GETs.
+
 ## Current state — 10 October 2026
 
 The input schema, dedicated worker and OpenFolk switch/import-approval RPCs are

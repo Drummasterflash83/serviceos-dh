@@ -48,3 +48,24 @@ test('failed journal prevents provider access', async () => {
   }));
   assert.equal(calls, 0);
 });
+
+test('first denied response classifies format without another call or disclosure of headers/body', async () => {
+  for (const [status, type, format, next] of [
+    [403, 'text/html; charset=UTF-8', 'html', 'confirm_account_and_access_layer_with_provider'],
+    [401, 'text/html', 'html', 'confirm_account_and_access_layer_with_provider'],
+    [403, 'application/json', 'json', 'confirm_resource_read_scope_and_account_access'],
+    [401, 'application/problem+json', 'json', 'confirm_existing_key_status_and_environment'],
+    [403, 'PRIVATE_INVALID_MIME', 'other', 'confirm_account_and_access_layer_with_provider'],
+  ]) {
+    let calls = 0;
+    const result = await inspectExistingApp('synthetic-test-key', {
+      recordAttempt: async () => {},
+      fetcher: async () => { calls++; return new Response('PRIVATE PROVIDER CONTENT', {
+        status, headers: { 'content-type': type, 'x-request-id': 'PRIVATE REQUEST ID', 'server': 'PRIVATE SERVER' },
+      }); },
+    });
+    assert.equal(calls, 1); assert.equal(result[0].responseFormat, format);
+    assert.equal(result[0].nextCheck, next);
+    assert.ok(!JSON.stringify(result).includes('PRIVATE'));
+  }
+});

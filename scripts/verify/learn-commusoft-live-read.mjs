@@ -11,12 +11,28 @@ const root = new URL('../../.verification-results/', import.meta.url);
 const keyFile = new URL('commusoft-existing-private-key', root);
 const journal = new URL('commusoft-live-read-journal.json', root);
 
+// Keep a small classification, never response headers, error bodies or request IDs.
+// An HTML denial cannot establish that the API key itself was evaluated.
+export function responseFormat(headers) {
+  const mime = (headers.get('content-type') ?? '').split(';', 1)[0].trim().toLowerCase();
+  if (mime === 'application/json' || /^application\/[a-z0-9.+-]+\+json$/.test(mime)) return 'json';
+  if (mime === 'text/html' || mime === 'application/xhtml+xml') return 'html';
+  return mime ? 'other' : 'unknown';
+}
+function nextCheck(status, format) {
+  if ([401, 403].includes(status) && format !== 'json') return 'confirm_account_and_access_layer_with_provider';
+  if (status === 401) return 'confirm_existing_key_status_and_environment';
+  if (status === 403) return 'confirm_resource_read_scope_and_account_access';
+  if (status === 429) return 'respect_provider_retry_time';
+  return null;
+}
+
 export async function inspectExistingApp(apiKey, { fetcher = fetch, recordAttempt, clock = Date.now } = {}) {
   if (typeof recordAttempt !== 'function') throw new Error('Attempt journal required');
   const checks = [];
   for (const resource of ['properties', 'jobs']) {
     await recordAttempt(resource);
-    const check = { resource, method: 'GET', limit: 1, httpStatus: null };
+    const check = { resource, method: 'GET', limit: 1, httpStatus: null, responseFormat: 'unknown' };
     try {
       const page = await readCommusoftPage({ region: 'uk', resource, limit: 1, after: null }, apiKey, {
         // Direct user-authorized diagnostic only; never use as a worker permit.
@@ -25,6 +41,7 @@ export async function inspectExistingApp(apiKey, { fetcher = fetch, recordAttemp
         fetcher: async (url, options) => {
           const response = await fetcher(url, options);
           check.httpStatus = response.status;
+          check.responseFormat = responseFormat(response.headers);
           return response;
         },
       });
@@ -32,7 +49,7 @@ export async function inspectExistingApp(apiKey, { fetcher = fetch, recordAttemp
         hasMore: !page.collectionExhausted, quota: page.quota });
       if (page.quota.retryAt !== null) break;
     } catch (error) {
-      checks.push({ ...check, state: 'failed', code: error instanceof CommusoftReadError ? error.code : 'diagnostic_failed',
+      checks.push({ ...check, state: 'failed', nextCheck: nextCheck(check.httpStatus, check.responseFormat), code: error instanceof CommusoftReadError ? error.code : 'diagnostic_failed',
         retryAt: error instanceof CommusoftReadError ? error.retryAt : null });
       break;
     }
