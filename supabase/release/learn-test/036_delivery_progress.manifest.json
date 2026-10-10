@@ -1,0 +1,25 @@
+{
+  "version": "learn-delivery-progress-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "0eb27023d25178b07500b9cc9af344069bbc07e65703d10bfb241acd3e484955",
+  "priorFingerprint": "9978d14cf4500b3074f02426ccab0e0e",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260821120000_openfolk_control_plane.sql",
+      "sha256": "7e1d75242c2168550c7e608f1ff027a767cfbbab1111a67b9dd56016edc0bc8f"
+    },
+    {
+      "path": "supabase/migrations/20261018120000_client_invoices.sql",
+      "sha256": "80686c562e8dd70e4433c8140556500366ea550e478130a7d088bc01265ca650"
+    },
+    {
+      "path": "supabase/migrations/20261021120000_operator_delivery_editors.sql",
+      "sha256": "061e651cec93bad988273f018170f4037dd918f03f9404133f34efee2497bd6c"
+    },
+    {
+      "path": "supabase/migrations/20261101004000_delivery_audit_retention.sql",
+      "sha256": "4f9f940daa7cfe6fbd88d83bb79e78a60d69799b60ab5b845f31aad70d033afd"
+    }
+  ],
+  "preservedDataSets": 67
+}

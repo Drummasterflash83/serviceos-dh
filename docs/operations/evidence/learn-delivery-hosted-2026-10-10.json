@@ -1,0 +1,73 @@
+{
+  "observedAt": "2026-10-10T17:53:41.818Z",
+  "state": "installed_with_denial_checks_positive_hosted_acceptance_pending",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "local": {
+    "version": "learn-delivery-local/1",
+    "state": "passed",
+    "checks": [
+      "Only the operator publishes; portal members read their own progress and cannot access raw audit history.",
+      "Versioned edits retain actor, reason and before/after evidence; stale revisions refuse overwrite.",
+      "Invalid content and missing programmes cannot publish or append misleading audit receipts.",
+      "Active client preview blocks publication; expired preview restores normal operator editing.",
+      "Injected audit failure rolls back publication and its version change together.",
+      "Concurrent first publications serialize: one version and one audit receipt, with the other refused.",
+      "Audit update, delete and truncate fail, including table-owner and service paths.",
+      "Expired platform grant removes cross-client reads and publishing authority."
+    ],
+    "limitations": [
+      "Disposable PostgreSQL with synthetic Auth/tenant/grant prerequisites and actual observed operator predicate. No hosted identity created; hosted and browser acceptance remain separate."
+    ]
+  },
+  "rehearsal": {
+    "version": "learn-delivery-progress/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "0eb27023d25178b07500b9cc9af344069bbc07e65703d10bfb241acd3e484955",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T17:52:38.036Z",
+    "priorFingerprint": "9978d14cf4500b3074f02426ccab0e0e",
+    "expectedFingerprint": "298867086a94e3203a05dd9cdc344596",
+    "afterFingerprint": "9978d14cf4500b3074f02426ccab0e0e",
+    "preservedDataSets": 67,
+    "receipt": {
+      "fingerprint": "298867086a94e3203a05dd9cdc344596",
+      "tables": 3,
+      "functions": 2
+    }
+  },
+  "installation": {
+    "version": "learn-delivery-progress/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "0eb27023d25178b07500b9cc9af344069bbc07e65703d10bfb241acd3e484955",
+    "mode": "apply",
+    "state": "installed_needs_signed_in_acceptance",
+    "observedAt": "2026-10-10T17:53:02.102Z",
+    "priorFingerprint": "9978d14cf4500b3074f02426ccab0e0e",
+    "expectedFingerprint": "298867086a94e3203a05dd9cdc344596",
+    "afterFingerprint": "298867086a94e3203a05dd9cdc344596",
+    "preservedDataSets": 67,
+    "receipt": {
+      "fingerprint": "298867086a94e3203a05dd9cdc344596",
+      "tables": 3,
+      "functions": 2
+    }
+  },
+  "hostedChecks": {
+    "marker": "learn-delivery-hosted/1",
+    "unassigned_publication_denied": true,
+    "no_raw_browser_write": true,
+    "audit_retention_present": true,
+    "no_publication": true
+  },
+  "finalPreservation": {
+    "datasets": 67,
+    "unchanged": true
+  },
+  "limits": [
+    "No hosted Auth account or permission grant was created.",
+    "No client progress record or audit entry was published.",
+    "Positive signed-in hosted/browser publication remains unverified.",
+    "No invoices, payments, storage buckets, notification sends, provider calls or production changes."
+  ]
+}

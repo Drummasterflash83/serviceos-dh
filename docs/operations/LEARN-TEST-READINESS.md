@@ -1,5 +1,38 @@
 # Existing TEST environment: verified release gaps
 
+## Delivery progress and audit — TEST release 036 installed
+
+The hosted controller's delivery error was traced to two absent dependencies:
+`client_delivery_updates` and the shared `controlplane_change_log`. Release **036**
+restored the existing delivery read model and publication RPC, plus the audit
+foundation, at **17:53:02 UTC on 10 October 2026**. It selected only those definitions
+from the original migrations; invoice tables, payment actions and storage were not
+installed. An additive retention migration blocks audit update, delete and truncate,
+including privileged service paths. Only active platform admins can publish; client
+preview is read-only, and portal members can read their company's published update.
+
+Eight isolated PostgreSQL scenarios passed: tenant isolation, operator authority,
+version conflicts, validation, client preview, audit-failure rollback, concurrent
+first publication, retention and expired access (related cases grouped by scenario).
+Five release-tool tests pass. The hosted rollback rehearsal restored the original
+catalog; installation and final independent read-back matched the expected catalog.
+All **67** monitored datasets stayed unchanged. Hosted SQL denied unassigned-user
+publication and confirmed no direct browser writes or service truncation authority.
+The restored tables remain empty; no users or platform grants were created.
+
+**Still unverified:** positive signed-in hosted publication and client rendering.
+The earlier operator TEST login remains retired. The frontend implementation is
+already in the hosted candidate, but this backend installation alone is not a
+successful browser acceptance. Build estimates, care and invoice dependencies
+remain separate work. Production is unchanged.
+
+[Release and preservation evidence](evidence/learn-delivery-hosted-2026-10-10.json).
+The exact package checksum is
+`0eb27023d25178b07500b9cc9af344069bbc07e65703d10bfb241acd3e484955`;
+post-release delivery catalog is `298867086a94e3203a05dd9cdc344596` (37 ledger entries).
+Older release/session tools retain their previous schema pins and must not be
+replayed against this new state without review.
+
 ## Slack worker v7 — deployed and read back, 10 October 2026
 
 The dedicated TEST worker now retains valid broadcast replies and includes the
@@ -56,7 +89,8 @@ sign-out returned to the login screen. All **64** monitored datasets outside the
 explicit fixture exclusions retained their original counts and fingerprints.
 The temporary password was removed from the private plan.
 
-**Outstanding:** delivery editing failed to load, the directory's build estimate
+**At this acceptance checkpoint:** delivery editing failed to load (its missing
+backend is now restored by release 036 above), the directory's build estimate
 was unavailable, and this viewer-role fixture could not read the client launch
 evidence summary. The TEST metadata endpoint has an owner/admin-only mode; this
 run does not establish complete client-role acceptance. No portal programme or
