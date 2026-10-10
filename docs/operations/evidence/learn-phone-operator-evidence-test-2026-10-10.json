@@ -1,0 +1,118 @@
+{
+  "version": "learn-phone-operator-evidence-test/1",
+  "checkedAt": "2026-10-10T21:25:25.356099+00:00",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "044_phone_operator_evidence",
+  "state": "installed_with_rollback_service_probe_and_http_denial_checks",
+  "packageCommit": "43e75b6d83aba9cf5d8cc410e8394cbaa60d9979",
+  "rehearsal": {
+    "version": "learn-phone-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T21:23:41.967Z",
+    "priorFingerprint": "c3f304e4d18046f74600cd28e51f24c8",
+    "expectedFingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+    "afterFingerprint": "c3f304e4d18046f74600cd28e51f24c8",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+      "functions": 4
+    }
+  },
+  "application": {
+    "version": "learn-phone-health/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T21:24:29.971Z",
+    "priorFingerprint": "c3f304e4d18046f74600cd28e51f24c8",
+    "expectedFingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+    "afterFingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+      "functions": 4
+    }
+  },
+  "http": {
+    "checkedAt": "2026-10-10T21:24:35.911Z",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "function": "learn_operator_capture_health",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "function": "learn_phone_account_evidence",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "function": "learn_phone_processing_evidence",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_operator_capture_health",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_phone_account_evidence",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_phone_processing_evidence",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "preservationAfterHttp": {
+    "checkedAt": "2026-10-10T21:24:52.850Z",
+    "fingerprint": "9ee01e0acbf88bba5667ca80c429ea19",
+    "preserved": true,
+    "datasets": 78,
+    "ledger": 45
+  },
+  "verification": {
+    "releaseTests": 5,
+    "clientModelTests": 7,
+    "localPostgres": "Operator authority, tenant/account isolation, exact receipt/job/window/completion agreement, redaction, exact stage/retry counts, pause behavior, migration rollback and application parsing passed.",
+    "publicationRegression": "Actual publication/import/settlement and concurrent pause/replay checks passed; the exact hosted probe also passed locally.",
+    "hostedPositiveProbe": "Actual service-role publication, import completion and schedule settlement produce confirmed private evidence and one transcription-pending recording. Deliberately mismatched windows cannot appear confirmed. The entire synthetic fixture is rolled back.",
+    "authority": "Existing function owners and grants preserved. Both helper functions deny execution to anon, authenticated and service_role. The existing authenticated operator wrapper retains its operator guard.",
+    "sourcePreservation": "All 78 monitored datasets retain fingerprints during rehearsal, application and after HTTP checks, including real Drummonds Commusoft source records and paused checkpoint."
+  },
+  "frontend": {
+    "url": "https://serviceos-learn-test-7axttf8tx-allkin.vercel.app",
+    "gitCommit": "ba40dccf8dd81aed504e409dd6ba67a3f1012bb2",
+    "redeployed": false,
+    "reason": "This existing frontend already contains the compatible Phone evidence UI; this release changes the TEST backend only.",
+    "freshVisualAcceptance": false
+  },
+  "scope": [
+    "No new login, operator grant, credential, real provider request or paid processing.",
+    "No scheduler activation or production change.",
+    "No source record deletion or canonical publication."
+  ],
+  "remaining": [
+    "Fresh signed-in operator/visual acceptance.",
+    "Configured and authorized real Phone scheduled capture and processing acceptance.",
+    "Voicemail coverage and complete provider-history coverage.",
+    "Remaining Commusoft jobs and contacts traversal, canonical review, cards and scoring acceptance.",
+    "Production promotion."
+  ]
+}

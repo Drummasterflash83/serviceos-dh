@@ -442,3 +442,31 @@ Runtime bundle SHA-256: `2f1240af960444e7266ffc54ed880c32f6252b7c9ed658356e2786a
 Full Phone catalog: `dff384a353e7dfa581173586a0d7cbe5` (42 ledger entries).
 Runtime catalog: `f27bc878a6d07993fb40647b44d5a72d`.
 [Release evidence](evidence/learn-phone-settlement-release-2026-10-10.json).
+
+
+## Phone operator evidence — TEST release 044 installed at 21:24 UTC
+
+OpenFolk can now distinguish receipt-confirmed scheduled Phone capture from
+company-wide recording processing. Confirmation requires agreement between the
+account, job, import window, settlement receipt and completion time. A timestamp
+alone cannot claim successful capture. Pending downloads, transcription, analysis,
+review holds, retry delays and provider waits have separate counts.
+
+The exact hosted rollback rehearsal and installation passed. A synthetic probe
+uses the actual service-role publication, import completion and scheduler settlement
+path, checks the resulting evidence and deliberately mismatched windows, then
+rolls every fixture record back. Existing operator grants and ownership are retained;
+the two evidence helpers remain private. Six actual HTTP checks confirm anonymous
+and service-role denial. All **78 monitored datasets** retain their fingerprints,
+including the real Commusoft records and paused checkpoint. Five release tests,
+seven client-model tests and the local operator/publication/concurrency suites pass.
+
+The existing protected TEST frontend already contains this evidence UI, so no new
+frontend deployment was needed. Fresh signed-in operator and visual acceptance
+remain pending. This release creates no login, access grant, provider request or
+paid processing, and does not configure or activate a Phone schedule. Production
+is unchanged. It does not establish complete Phone/voicemail coverage.
+[Release evidence](evidence/learn-phone-operator-evidence-test-2026-10-10.json).
+
+Package SHA-256: `2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3`.
+Catalog after installation: `9ee01e0acbf88bba5667ca80c429ea19` (45 ledger entries).

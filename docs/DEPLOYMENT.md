@@ -61,8 +61,10 @@ matching explanations and the specific unresolved-timezone review hold.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
 login and client routes pass. Fresh visual acceptance is unconfirmed because the
 browser connection timed out. Signed-in hosted control acceptance remains pending;
-a successful build is not that acceptance. The Phone evidence panel has a compatible
-fallback, but its separate SQL evidence migration is not installed yet.
+a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
+on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
+visual acceptance and real scheduled capture remain pending. See the
+[Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
 See [deployment evidence](operations/evidence/learn-commusoft-mapping-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because

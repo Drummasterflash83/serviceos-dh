@@ -1,5 +1,29 @@
 # Existing TEST environment: verified release gaps
 
+## Phone operator evidence — TEST release 044 installed at 21:24 UTC
+
+OpenFolk can now distinguish receipt-confirmed scheduled Phone capture from
+company-wide recording processing. Confirmation requires agreement between the
+account, job, import window, settlement receipt and completion time. A timestamp
+alone cannot claim successful capture. Pending downloads, transcription, analysis,
+review holds, retry delays and provider waits have separate counts.
+
+The exact hosted rollback rehearsal and installation passed. A synthetic probe
+uses the actual service-role publication, import completion and scheduler settlement
+path, checks the resulting evidence and deliberately mismatched windows, then
+rolls every fixture record back. Existing operator grants and ownership are retained;
+the two evidence helpers remain private. Six actual HTTP checks confirm anonymous
+and service-role denial. All **78 monitored datasets** retain their fingerprints,
+including the real Commusoft records and paused checkpoint. Five release tests,
+seven client-model tests and the local operator/publication/concurrency suites pass.
+
+The existing protected TEST frontend already contains this evidence UI, so no new
+frontend deployment was needed. Fresh signed-in operator and visual acceptance
+remain pending. This release creates no login, access grant, provider request or
+paid processing, and does not configure or activate a Phone schedule. Production
+is unchanged. It does not establish complete Phone/voicemail coverage.
+[Release evidence](evidence/learn-phone-operator-evidence-test-2026-10-10.json).
+
 ## Commusoft review fixes — TEST release 043 installed at 21:12 UTC
 
 Customer discovery across additional contact endpoints and the actual v2.1 job
@@ -94,7 +118,7 @@ runtime release, not a real hosted import or signed-in operator workflow.
 [TEST release evidence](evidence/learn-commusoft-auth-test-release-2026-10-10.json).
 [Investigation and evidence](LEARN-COMMUSOFT-API.md#request-configuration-corrected--properties-and-jobs-verified-10-october-2000-utc).
 
-## Phone operator evidence — local candidate, deployment pending
+## Earlier Phone operator evidence candidate — now installed in TEST release 044
 
 The controller candidate now separates receipt-confirmed scheduled imports from
 company-wide recording processing counts. Account timestamps alone cannot produce
@@ -106,9 +130,9 @@ The actual SQL migration passes rollback, source isolation, operator-only author
 receipt mismatch, job/lease, pause and exact stage/retry-count checks in disposable
 PostgreSQL. Every returned page passes the application parser. Seven model tests,
 strict app TypeScript, the app build and synthetic preview build pass. The existing
-Phone publication/recovery/settlement regression suite also passes. The migration is **not deployed**. The protected frontend includes its compatible
-UI fallback; confirmed Phone evidence still requires the reviewed backend release
-and a fresh visual check. [Evidence](evidence/learn-phone-operator-evidence-local-2026-10-10.json).
+Phone publication/recovery/settlement regression suite also passes. This dated local candidate was subsequently installed in TEST release 044, as
+recorded above. The protected frontend includes its compatible UI; a fresh signed-in
+visual check is still required. [Evidence](evidence/learn-phone-operator-evidence-local-2026-10-10.json).
 
 
 ## Phone import/scheduler settlement — TEST release 041 and runtime deployed
