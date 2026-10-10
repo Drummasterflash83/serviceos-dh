@@ -42,6 +42,29 @@ Cloudflare-flavoured.
 
 ## Preview deployments
 
+### Isolated LEARN TEST project (10 October 2026)
+
+**serviceos-learn-test** (`prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs`, Allkin) is separate
+from the production project above. Its preview-only public configuration targets
+Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
+hostnames, and no custom domain or automatic Git linkage was added.
+
+The current verified staging candidate is
+[serviceos-learn-test-boyeohqpc-allkin.vercel.app](https://serviceos-learn-test-boyeohqpc-allkin.vercel.app),
+built remotely from GitHub commit `86b5402206aa72a858aae4b2a5882c7cf30b32ca`.
+Use explicit API `target: "staging"`: the first deployment of a fresh project can
+be classified as production when target is omitted. Its default hostname and
+intermediate deployments are not the accepted TEST candidate. Preview homepage
+login stays on the current origin; production keeps the canonical login URL.
+
+Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
+`vercel.json` disables that branch. Verify and deploy a pinned Git commit explicitly.
+Do not apply the production Supabase settings in the sections below to this TEST
+project. Full signed-in acceptance still requires the TEST operator backend and
+account dependencies recorded in [TEST readiness](operations/LEARN-TEST-READINESS.md).
+
+### Production-project previews
+
 - Every branch push produces a **Preview** deployment. Pushes to a non-production branch
   (e.g. `serviceos-backend-foundation`) only ever produce Preview, never Production.
 - A preview can also be created from the working tree with `vercel deploy` (remote build).

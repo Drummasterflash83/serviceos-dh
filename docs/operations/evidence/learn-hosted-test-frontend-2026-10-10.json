@@ -1,0 +1,140 @@
+{
+  "version": "learn-hosted-test-frontend/1",
+  "state": "protected_frontend_verified_needs_signed_in_acceptance",
+  "project": {
+    "observedAt": "2026-10-10T16:25:54.964Z",
+    "name": "serviceos-learn-test",
+    "team": "team_PGUQWiaAZZkMTCM9nSHahIpG",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "state": "created_verified_no_deployment",
+    "gitLinked": false,
+    "customDomains": [],
+    "environmentNames": [
+      "VITE_SUPABASE_URL",
+      "VITE_SUPABASE_ANON_KEY"
+    ],
+    "protection": "all_except_custom_domains",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "returnedIdMatches": true,
+    "accountMatches": true,
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "deployment": {
+    "observedAt": "2026-10-10T16:32:21.019Z",
+    "id": "dpl_Ws1hPB9bqMrJ46Pfr4ppsPjFemAN",
+    "url": "serviceos-learn-test-boyeohqpc-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "86b5402206aa72a858aae4b2a5882c7cf30b32ca"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "configuration": {
+    "observedAt": "2026-10-10T16:32:19.286Z",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "backendRef": "saatxzwxvdvqevbnskxy",
+    "configuredUrlMatches": true,
+    "clientKeyRefMatches": true,
+    "clientKeyRole": "anon",
+    "environmentNames": [
+      {
+        "key": "VITE_SUPABASE_URL",
+        "target": [
+          "preview"
+        ],
+        "type": "encrypted"
+      },
+      {
+        "key": "VITE_SUPABASE_ANON_KEY",
+        "target": [
+          "preview"
+        ],
+        "type": "encrypted"
+      }
+    ],
+    "noServerSecrets": true
+  },
+  "protection": {
+    "observedAt": "2026-10-10T16:32:55.065Z",
+    "base": "https://serviceos-learn-test-boyeohqpc-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "redirectHost": "vercel.com"
+      },
+      {
+        "path": "/openfolk",
+        "status": 302,
+        "redirectHost": "vercel.com"
+      }
+    ],
+    "passed": true
+  },
+  "browserChecks": {
+    "homepageRenders": true,
+    "loginStaysOnTestOrigin": true,
+    "operatorRouteRedirectsToSignIn": true,
+    "signedInAcceptance": false,
+    "screenshot": "learn-hosted-test-login-2026-10-10.png"
+  },
+  "localChecks": {
+    "typeScript": "passed",
+    "vercelPreviewBuild": "passed",
+    "homepageTests": 6
+  },
+  "backendPrerequisites": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "tables": [],
+    "observedAt": "2026-10-10T16:28:20.11312+00:00",
+    "operatorAccountPresent": false,
+    "controlPlaneEndpointPresent": false,
+    "endpointNames": [
+      "gmail-sync-messages",
+      "gmail-workspace-backfill-messages",
+      "gmail-workspace-sync-messages",
+      "learn-commusoft-verify",
+      "learn-commusoft-worker",
+      "learn-data-import",
+      "learn-launch-status",
+      "learn-slack-worker",
+      "platform-worker",
+      "simwood-download-recording",
+      "simwood-sync-calls",
+      "simwood-sync-recordings",
+      "simwood-test-connection",
+      "work-transition"
+    ],
+    "queriedHealthTables": [
+      "receptionist_workspaces",
+      "client_programmes",
+      "receptionist_feedback",
+      "client_notification_outbox"
+    ]
+  },
+  "intermediateDeployments": [
+    {
+      "id": "dpl_AFvr5njNt4hpPUqpBo413zKt3NRr",
+      "state": "superseded",
+      "reason": "First project deployment was classified as production despite omitted target; only preview configuration had been supplied. Not accepted as the TEST candidate."
+    },
+    {
+      "id": "dpl_A3yBVsr7xt3nbXCLH5kQ9BEZezrL",
+      "state": "superseded",
+      "reason": "Explicit staging build rendered, but homepage linked to live login; replaced by isolated-navigation candidate."
+    }
+  ],
+  "limitations": [
+    "No TEST operator account created, no grants changed, no positive signed-in acceptance.",
+    "TEST is missing openfolk-control-plane and the four queried shared operator health tables. Capture-control RPC installation is established separately by release 033, not by this limited query.",
+    "No production project, domain, backend, source record, provider credential or schedule changed.",
+    "Git automatic deployment is disabled for the backup branch; this preview was manually built by Vercel from a pinned GitHub commit."
+  ]
+}

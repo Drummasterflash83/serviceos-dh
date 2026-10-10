@@ -1,5 +1,46 @@
 # Existing TEST environment: verified release gaps
 
+## Protected TEST frontend — deployed and navigation verified, 10 October 2026
+
+The separate Allkin Vercel project **serviceos-learn-test**
+(`prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs`) now serves a protected staging build from GitHub
+commit `86b5402206aa72a858aae4b2a5882c7cf30b32ca`:
+[TEST candidate](https://serviceos-learn-test-boyeohqpc-allkin.vercel.app).
+Vercel reported READY at **16:32:21 UTC**. The existing production Vercel project,
+custom domains and production backend were not changed.
+
+The two preview-only environment values were independently read back in memory:
+the URL points to `saatxzwxvdvqevbnskxy`, and the existing client key has that TEST
+reference and the `anon` role. No server/provider secret is configured in this
+frontend project. Anonymous HTTP requests to `/` and `/openfolk` redirect to
+Vercel authentication. In the existing Vercel-authenticated Chrome session, the
+homepage renders and `/openfolk` redirects to application sign-in.
+
+Browser acceptance found the shared homepage linking preview users to the live
+login. The static page and React route now use the same environment-aware link:
+preview navigation remains on its current origin, while production retains its
+canonical login. TypeScript, a Vercel-targeted preview build and six homepage
+checks pass; the corrected hosted link was clicked and confirmed on TEST.
+See [deployment evidence](evidence/learn-hosted-test-frontend-2026-10-10.json)
+and [sign-in screenshot](evidence/learn-hosted-test-login-2026-10-10.png).
+
+**Still required before signed-in operator acceptance:** TEST has no
+`chris@openfolk.ai` account, no `openfolk-control-plane` endpoint, and none of the
+four shared health tables queried by `useOperatorHealth`: `receptionist_workspaces`,
+`client_programmes`, `receptionist_feedback`, `client_notification_outbox`.
+Complete the relevant existing control-plane dependencies with preservation and
+authorization checks before claiming that the full hosted operator workspace works.
+No new login or grant was created. Release-033 capture RPCs and the earlier
+synthetic worker acceptance remain separate established evidence.
+
+Deployment notes: the first deployment in a new Vercel project was classified as
+production when `target` was omitted, so it was not accepted. Explicit
+`target: "staging"` selects the preview configuration. The first staging candidate
+was superseded to correct the live login link. Use the candidate above; do not
+present the default project hostname or either intermediate deployment as ready.
+The project has no Git webhook linkage, and backup-branch automatic deployments
+remain disabled; deployment is a deliberate pinned-commit API operation.
+
 ## Real Commusoft access — existing application found, read denied, 10 October 2026
 
 The existing private application **OpenFolk — Drummonds read-only** has visible
