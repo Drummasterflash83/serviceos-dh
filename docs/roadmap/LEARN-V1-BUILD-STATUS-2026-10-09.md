@@ -1318,3 +1318,33 @@ ownership, separate connection identity, unchanged existing jobs, retained held
 history and late-failure rollback. Verification containers were removed. Work
 review/batch UI, contacts, source updates/corrections and hosted/live acceptance
 remain outstanding. No provider traffic, production data or deployment changed.
+
+## Commusoft work batches and browser recovery — local, 10 October
+
+The LEARN portal now includes paged site/job review, explicit selection and review
+reason, and per-record linked/held results. The server accepts at most 50 records
+per batch and commits row projections with an immutable receipt. An exact retry
+returns that receipt. Cancellation and application serialize to one retained
+outcome, including when a delayed original request arrives after cancellation.
+Current company/actor authority is required; module disablement still permits
+reading or cancelling the caller's saved request.
+
+The browser saves each request before submission, scoped to backend, company and
+actor, with cross-tab locking. Lost responses retain the request across reload;
+checking a receipt never silently reapplies it. New approvals remain disabled until
+the saved request is resolved. Raw provider payloads are not placed in browser
+recovery storage. Existing CSV identities still require explicit reconciliation;
+this initial batch UI holds them rather than selecting an existing target.
+
+Thirteen customer/work client tests, application typechecking, the production
+build (47 prebuild tests) and isolated preview build passed. Disposable Postgres
+checks passed reviewed source-to-canonical projection, pagination, mixed outcomes,
+actor/scope denial, exact replay, apply/cancel concurrency, disabled-module recovery,
+late-failure rollback and migration rollback. Synthetic browser verification passed
+lost acknowledgement, actual page reload, recovered linked/held results and viewer
+restrictions. The preview and temporary browser tab were closed.
+
+This is local implementation, not a hosted release or real Commusoft sync. Hosted
+Auth/PostgREST acceptance, real API access, operator connection setup, contacts,
+existing-target reconciliation and governed source updates remain open. See
+[batch verification evidence](../operations/evidence/learn-commusoft-work-batches-local-2026-10-10.json).

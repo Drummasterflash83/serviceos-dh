@@ -1,0 +1,55 @@
+{
+  "version": "learn-commusoft-work-batches-local/1",
+  "observedAt": "2026-10-10T09:23:47Z",
+  "scope": "local synthetic checks; no hosted or provider operation",
+  "checks": {
+    "clientTests": {
+      "command": "node --test src/lib/learn-commusoft-work.test.ts src/lib/learn-commusoft-review.test.ts",
+      "passed": 13
+    },
+    "applicationTypecheck": "passed",
+    "productionBuild": "passed; 47 prebuild tests",
+    "isolatedPreviewBuild": "passed",
+    "database": {
+      "command": "python3 scripts/verify/learn-commusoft-permits.py --batches",
+      "image": "postgres:15",
+      "network": "none",
+      "hostMounts": false,
+      "publishedPorts": false,
+      "passed": [
+        "paginated source summaries",
+        "reviewed customer/site/job projection",
+        "mixed held/linked batch",
+        "exact receipt replay",
+        "changed request denial",
+        "expected actor denial",
+        "cross-connection denial",
+        "late apply after cancellation",
+        "module-disabled receipt/recovery",
+        "viewer denial",
+        "transaction rollback after receipt failure",
+        "concurrent apply/cancel consistent receipt and canonical state",
+        "migration rollback"
+      ]
+    },
+    "browser": {
+      "fixture": "preview/learn-commusoft",
+      "externalNetwork": "disabled by CSP",
+      "passed": [
+        "saved request after simulated lost response",
+        "saved request restored after page reload",
+        "check result recovers one linked and one held record",
+        "viewer cannot access controls"
+      ],
+      "screenshot": "learn-commusoft-work-batches-browser-2026-10-10.png",
+      "temporaryTabClosed": true,
+      "temporaryPreviewStopped": true
+    }
+  },
+  "limitations": [
+    "No actual Auth/PostgREST or live provider acceptance.",
+    "Initial work batch UI holds existing-target conflicts for future reconciliation.",
+    "Contact projection and governed source updates are incomplete.",
+    "No deployment, credentials, production data or schedules changed."
+  ]
+}

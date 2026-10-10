@@ -373,3 +373,29 @@ python3 scripts/verify/learn-commusoft-permits.py --work
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They
 do not establish Drummonds account access, deployed storage or live functionality.
+
+## Work batch review and recovery — local, 10 October
+
+`20261031150000_learn_business_input_work_batches.sql` adds bounded authenticated
+site/job source summaries and reviewed batch confirmation (1–50 items). A private
+immutable batch receipt shares the transaction with canonical rows, links and
+attempts. Exact request replay returns the saved result; changed requests conflict.
+An explicit cancellation records the same request identity and fences delayed
+application. Competing apply/cancel transactions return the same winning outcome.
+The writer verifies the expected signed-in actor and current company authority.
+Saved-result reads and cancellation remain possible after module disablement.
+
+The portal's **Review Commusoft sites and jobs** dialog displays 20 source identities
+per page, their customer relationship and held reasons. Review customers first,
+then sites, then jobs. Its recovery draft is persisted before the first RPC and
+uses a Web Lock scoped to backend/company/actor. Receipt reads do not initiate
+application. Failed reads, invalid receipts or lost responses retain the draft;
+reopening the dialog restores it. Same-request retry and server cancellation are
+explicit actions. A verified result refreshes cards and requires reloading the
+review before another batch.
+
+The initial UI submits `target_id: null`: legacy imported identity collisions stay
+held until a subsequent explicit target-reconciliation workflow. It neither
+updates existing rows nor guesses ownership. Contacts and governed source updates
+are still outstanding. The migration/UI are local only and require hosted catalogue,
+Auth/PostgREST and real-source acceptance before use with Drummonds.

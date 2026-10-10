@@ -9,6 +9,7 @@ import {LearnCards} from './LearnCards';
 import {LearnSlackSetup} from './LearnSlackSetup';
 import {LearnFileImports} from './LearnFileImports';
 import {LearnCommusoftCustomers} from './LearnCommusoftCustomers';
+import {LearnCommusoftWork} from './LearnCommusoftWork';
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle} from '@/components/ui/dialog';
 
 export function LearnLaunchPortal({tenantId}:{tenantId:string}){
@@ -16,6 +17,7 @@ export function LearnLaunchPortal({tenantId}:{tenantId:string}){
  const [slackSetup,setSlackSetup]=useState(false);
  const [fileImports,setFileImports]=useState(false);
  const [commusoftReview,setCommusoftReview]=useState(false);
+ const [commusoftWork,setCommusoftWork]=useState(false);
  const [cardRevision,setCardRevision]=useState(0);
  const revision=useRef(0),scope=useRef('');scope.current=`${user?.id??''}:${tenantId}`;
  const canConnect=!!user&&profile?.tenant_id===tenantId&&['owner','admin','ops'].includes(profile.role);
@@ -41,7 +43,8 @@ export function LearnLaunchPortal({tenantId}:{tenantId:string}){
   {active&&<p role="status" className="lr-notice">Observed {when(active.observed_at)} · valid until {when(active.valid_until)}. Refresh rereads stored evidence; it does not start a connector sync.</p>}
   <section className="lr-counts" aria-label="Stored source counts">{[{name:'Emails',value:active?.counts.email.record_count,Icon:Mail},{name:'Calls',value:active?.counts.phone.record_count,Icon:Phone},{name:'Recordings',value:active?.recordings.record_count,Icon:Files},{name:'Slack messages',value:null,Icon:MessagesSquare}].map(c=><article className="lr-count" key={c.name}><div className="lr-count-label">{c.name}<c.Icon size={17}/></div><strong className={typeof c.value==='number'?'':'lr-unknown'}>{display(c.value)}</strong><small>Accessible stored rows · source coverage unverified</small></article>)}</section>
   <LearnCards key={cardRevision} tenantId={tenantId}/>
-  <section className="cp-card"><h2>Customer and job systems</h2><p>Review customers retained from your connected business system before linking their cards.</p><button className="cp-secondary" onClick={()=>setCommusoftReview(true)}>Review Commusoft customers</button></section>
+  <section className="cp-card"><h2>Customer and job systems</h2><p>Review customers retained from your connected business system before linking their cards.</p><button className="cp-secondary" onClick={()=>setCommusoftReview(true)}>Review Commusoft customers</button> <button className="cp-secondary" onClick={()=>setCommusoftWork(true)}>Review Commusoft sites and jobs</button></section>
+  <Dialog open={commusoftWork} onOpenChange={setCommusoftWork}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Commusoft site and job review</DialogTitle><DialogDescription>Review customer relationships and recover saved batches.</DialogDescription></DialogHeader>{commusoftWork&&<LearnCommusoftWork onSaved={()=>setCardRevision(v=>v+1)} key={`${user?.id}:${tenantId}:${profile?.role}`} actorId={user?.id??''} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
   <Dialog open={commusoftReview} onOpenChange={setCommusoftReview}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Commusoft customer review</DialogTitle><DialogDescription>Inspect retained source details and confirm the appropriate customer identity.</DialogDescription></DialogHeader>{commusoftReview&&<LearnCommusoftCustomers onSaved={()=>setCardRevision(v=>v+1)} key={`${user?.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>
   <section className="cp-card"><h2>Customer, site and job files</h2><p>Review prepared source files and retained import results.</p><button className="cp-secondary" onClick={()=>setFileImports(true)}>Review file imports</button></section>
   <Dialog open={fileImports} onOpenChange={setFileImports}><DialogContent overlayClassName="z-[90]" className="cp-dialog z-[91] max-h-[90vh] overflow-y-auto sm:max-w-4xl"><DialogHeader><DialogTitle>Customer, site and job imports</DialogTitle><DialogDescription>Preview a prepared CSV, inspect its mapping and approve the saved import.</DialogDescription></DialogHeader>{fileImports&&<LearnFileImports key={`${user?.id}:${tenantId}:${profile?.role}`} tenantId={tenantId} canEdit={!!user&&profile?.tenant_id===tenantId&&['owner','admin'].includes(profile.role)}/>}</DialogContent></Dialog>

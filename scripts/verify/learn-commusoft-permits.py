@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-permits-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers'], ['--work']):
-    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers|--work]')
+if sys.argv[1:] not in ([], ['--pages'], ['--worker'], ['--customers'], ['--work'], ['--batches']):
+    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker|--customers|--work|--batches]')
 
 
 def sql(text):
@@ -45,7 +45,7 @@ try:
         'supabase/migrations/20261031090000_learn_commusoft_page_permits.sql',
         'scripts/verify/learn-commusoft-permits.assert.sql',
     ]
-    if sys.argv[1:] in (['--customers'], ['--work']):
+    if sys.argv[1:] in (['--customers'], ['--work'], ['--batches']):
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
         sql((root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text())
         sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())
@@ -94,7 +94,7 @@ try:
         if sql("select md5(pg_get_functiondef('public.learn_commusoft_review_customer(uuid,uuid,uuid,text,uuid,text)'::regprocedure));") != before:
             raise RuntimeError('Review facade rollback changed private writer')
         print(sql(review_migration + '\n' + (root / 'scripts/verify/learn-business-input-review.assert.sql').read_text()))
-        if sys.argv[1:] == ['--work']:
+        if sys.argv[1:] in (['--work'], ['--batches']):
             schema = (root / 'supabase/migrations/20260814120000_universal_imports_and_jobs.sql').read_text()
             start, end = 'create table if not exists sites (', '-- ── Job-number aliases'
             if schema.count(start) != 1 or schema.count(end) != 1:
@@ -114,6 +114,24 @@ try:
             if sorted(results) != ['false', 'true'] or sql("select count(*) from jobs where external_id='111';") != '1':
                 raise RuntimeError('Concurrent work projection duplicated or lost identity')
             print('Concurrent job projection: one canonical job and one exact replay acknowledgement.')
+            if sys.argv[1:] == ['--batches']:
+                migration = (root / 'supabase/migrations/20261031150000_learn_business_input_work_batches.sql').read_text()
+                sql(migration.replace('\ncommit;', '\nrollback;'))
+                if sql("select to_regclass('public.learn_business_input_projection_batches') is null;") != 't':
+                    raise RuntimeError('Batch rollback retained receipt table')
+                print(sql(migration + '\n' + (root / 'scripts/verify/learn-business-input-work-batches.assert.sql').read_text()))
+
+                def batch_race(cancel):
+                    return sql("set request.jwt.claim.role='authenticated'; set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080'; set role authenticated; select learn_commusoft_work_batch(fixture_id(1),fixture_id(95),fixture_id(5),'job',jsonb_build_array(jsonb_build_object('version_id',fixture_work_version('jobs','205'),'target_id',null)),'Synthetic race'," + ('true' if cancel else 'false') + ")->>'state';")
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                    results = list(pool.map(batch_race, [False, True]))
+                if results not in (['recorded', 'recorded'], ['cancelled', 'cancelled']):
+                    raise RuntimeError(f'Batch race returned inconsistent receipts: {results}')
+                expected_jobs = '1' if results[0] == 'recorded' else '0'
+                if sql("select count(*) from jobs where external_id='205';") != expected_jobs:
+                    raise RuntimeError('Batch race receipt disagrees with canonical state')
+                print('Concurrent apply/cancel: both callers receive the same retained outcome; canonical state matches.')
         raise SystemExit(0)
     if sys.argv[1:] == ['--worker']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
