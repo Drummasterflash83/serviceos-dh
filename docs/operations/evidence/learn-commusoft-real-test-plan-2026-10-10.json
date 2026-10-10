@@ -1,0 +1,28 @@
+{
+  "version": "commusoft-real-test-session/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d",
+  "tenant": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+  "email": "learn-drummonds-ef5a92ff@example.invalid",
+  "durationMinutes": 30,
+  "maxProviderRequests": 401,
+  "state": "prepared",
+  "createdAt": "2026-10-10T20:44:56.176Z",
+  "restrictions": [
+    "One hosted read-only verification plus at most 400 worker invocations: properties 200 pages, jobs 100 pages, customer contacts 50 pages, work-address contacts 50 pages; 100 records per page. No provider writes or schedule.",
+    "Existing Drummonds private-app credential copied to TEST Vault through the authenticated setup RPC.",
+    "New temporary operator can administer all TEST clients; actions restricted to the new Drummonds TEST tenant.",
+    "Retain TEST tenant, encrypted credential, imported source records and receipts. Pause capture, end grant and ban temporary login. No production changes. Import completeness is not assumed when a budget or time limit is reached."
+  ],
+  "readOnlyPreflight": {
+    "passed": true,
+    "preservedDataSets": 78,
+    "schema": "195ca207f0d8a7a95b0fb30580e093fd",
+    "runtimeVersion": 4,
+    "existingDrummondsTestTenant": false,
+    "activeOperatorGrants": 0,
+    "activeCommusoftJobs": 0
+  },
+  "localGuardTestsPassed": 8,
+  "executed": false
+}

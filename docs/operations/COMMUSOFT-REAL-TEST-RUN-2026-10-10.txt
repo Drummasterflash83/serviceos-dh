@@ -1,0 +1,22 @@
+Prepared Drummonds hosted TEST run — awaiting explicit operator-access approval
+
+Run: ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d
+Destination: Supabase TEST saatxzwxvdvqevbnskxy
+Tenant: Drummonds — Commusoft TEST (f8c114fa-fee7-4983-8970-f6e7f5fd3129)
+Temporary login: learn-drummonds-ef5a92ff@example.invalid
+
+Scope
+Create one TEST tenant and one temporary login with a 30-minute OpenFolk admin grant. This permission can administer all TEST clients; this run changes only the new Drummonds TEST tenant. Existing production and synthetic test tenants are not the import destination.
+
+Reuse the existing Drummonds private-app credential (client 19136) by storing it encrypted in TEST Vault through the normal signed-in setup RPC. Do not rotate the key or change Commusoft scopes. Verify it through the deployed Edge endpoint, using one read-only request.
+
+If verification succeeds, enable LEARN and its Commusoft input for that tenant through the normal operator RPC. Start sequential source traversals: properties up to 200 pages, jobs up to 100 pages, customer contacts up to 50 pages, work-address contacts up to 50 pages, at most 100 records per page. Enforce a total maximum of 400 worker invocations plus the single verification request. Requests use existing quota controls; waiting/failed invocations also consume the local invocation allowance. No provider writes or schedule.
+
+Each traversal must satisfy the existing backend requirements before the next begins. Contacts require a completed property traversal. A budget/time stop preserves the checkpoint and is not proof of complete coverage. This run establishes hosted source capture; canonical publication, reconciliation and production promotion remain separate acceptance steps.
+
+Retain the TEST tenant, encrypted key, captured source records and receipts for continued development. At the end, disable that tenant's capture flags, end the exact operator grant, and ban the temporary login. Existing data in 78 monitored datasets is fingerprinted before and after, excluding only this new run's approved rows. Secrets and customer records are excluded from Git and public reports.
+
+Execution and recovery
+scripts/verify/learn-commusoft-real-test-session.mjs has separate prepare, activate, connect, verify, enable, start-properties, start-jobs, start-customer-contacts, start-workaddress-contacts, worker-step, status and retire phases. Every privileged phase requires the exact approved run ID. Requests are journalled before submission. An uncertain mutation is inspected using check-connection, check-verification, check-input or check-worker; it is never blindly replayed. No existing login is reactivated.
+
+Read-only preparation passed against the current schema and both v4 endpoints. Eight local tests cover destination/limit guards, approval binding, uncertain-result replay refusal, worker budgets, retirement identity and redaction. No remote write or real provider request has been made by this prepared run.
