@@ -1,3 +1,4 @@
+import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-sync-calls (Phase Phone-1)
 //
 // Ingests Simwood/Sipcentric call history (CDRs) into the phone_calls table.
@@ -11,7 +12,7 @@
 // Request body:
 //   {
 //     "tenant_id": "uuid",                 // required
-//     "provider_customer_id": "string?",   // optional; discovered if omitted
+//     "provider_customer_id": "string?",   // optional; unique registered account if omitted
 //     "from": "ISO date?",                 // optional; defaults to now-24h
 //     "to": "ISO date?",                   // optional; defaults to now
 //     "direction": "inbound|outbound?",    // optional
@@ -24,7 +25,6 @@
 
 import {
   createSupabaseAdmin,
-  discoverCustomerId,
   failResponse,
   getSimwoodCredentials,
   isUuid,
@@ -103,10 +103,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   // --- DB client (required: we must be able to log + upsert) ---------------
-  const supabase = createSupabaseAdmin();
-  if (!supabase) {
+  const configuredClient = createSupabaseAdmin();
+  if (!configuredClient) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+  const supabase = configuredClient;
 
   // --- authz: bind tenant server-side (sync ⇒ owner/admin/ops) -------------
   const auth = await requireTenantUser(req, supabase, ["owner", "admin", "ops"]);
@@ -196,20 +197,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
+  // Shared credentials may expose more than one company. The registry is authoritative.
+  const account = await resolveSimwoodAccount(supabase, tenantId, body.provider_customer_id);
+  if (!account.ok) return await finishFailed(account.code, account.message, account.httpStatus, 0);
+  const customerId = account.customerId;
+
   // --- credentials ---------------------------------------------------------
   const creds = getSimwoodCredentials();
   if (!creds) {
     return await finishFailed("config_error", "Simwood credentials are not configured", 500, 0);
-  }
-
-  // --- resolve customer id -------------------------------------------------
-  let customerId = suppliedCustomerId;
-  if (!customerId) {
-    const discovered = await discoverCustomerId(creds);
-    if (!discovered.ok) {
-      return await finishFailed(discovered.code, discovered.message, discovered.httpStatus, 0);
-    }
-    customerId = discovered.customerId;
   }
 
   // --- page through calls and upsert --------------------------------------

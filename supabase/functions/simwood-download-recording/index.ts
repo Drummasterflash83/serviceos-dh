@@ -1,3 +1,8 @@
+import {
+  resolveSimwoodAccount,
+  boundSimwoodRecordingUrl,
+  simwoodRecordingCustomer,
+} from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-download-recording (Phase Phone-3)
 //
 // Downloads a single recording's WAV audio from Simwood/Sipcentric (server-side
@@ -19,14 +24,11 @@
 
 import {
   createSupabaseAdmin,
-  discoverCustomerId,
   failResponse,
   getSimwoodCredentials,
   isUuid,
   jsonResponse,
   PROVIDER,
-  resolveSimwoodUrl,
-  SIMWOOD_API_BASE,
   simwoodGetBinary,
   corsHeaders,
 } from "../_shared/simwood.ts";
@@ -99,10 +101,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const force = body.force === true;
 
   // --- DB client (required: we must be able to log + read + write) ---------
-  const supabase = createSupabaseAdmin();
-  if (!supabase) {
+  const configuredClient = createSupabaseAdmin();
+  if (!configuredClient) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+  const supabase = configuredClient;
 
   // --- authz: bind tenant server-side (force ⇒ owner/admin only) -----------
   const auth = await requireTenantUser(
@@ -192,12 +195,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  // --- credentials ---------------------------------------------------------
-  const creds = getSimwoodCredentials();
-  if (!creds) {
-    return await finishFailed("config_error", "Simwood credentials are not configured", 500);
-  }
-
   // --- load the recording row ---------------------------------------------
   const { data: recording, error: recErr } = await supabase
     .from("phone_recordings")
@@ -215,6 +212,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return await finishFailed("not_found", "Recording not found for this tenant", 404);
   }
 
+  if (recording.provider !== PROVIDER)
+    return await finishFailed(
+      "invalid_recording",
+      "Recording belongs to a different phone provider",
+      422,
+    );
   const providerRecordingId = recording.provider_recording_id as string | null;
   if (!providerRecordingId) {
     // Unfetchable forever (non-retryable per platform_queue.ts).
@@ -253,20 +256,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  // --- resolve the download URL (host-locked) -----------------------------
-  let downloadUrl = resolveSimwoodUrl(recording.recording_uri);
-  if (!downloadUrl) {
-    // Fall back to constructing the canonical path from the customer + id.
-    const discovered = await discoverCustomerId(creds);
-    if (!discovered.ok) {
-      return await finishFailed(discovered.code, discovered.message, discovered.httpStatus, {
-        provider_recording_id: providerRecordingId,
-      });
-    }
-    downloadUrl = resolveSimwoodUrl(
-      `${SIMWOOD_API_BASE}/customers/${encodeURIComponent(discovered.customerId)}/recordings/${encodeURIComponent(providerRecordingId)}`,
-    );
-  }
+  // Bind downloads to the tenant's registered account, never the first shared account.
+  const account = await resolveSimwoodAccount(
+    supabase,
+    tenantId,
+    simwoodRecordingCustomer(providerRecordingId, recording.recording_uri),
+  );
+  if (!account.ok) return await finishFailed(account.code, account.message, account.httpStatus);
+  const downloadUrl = boundSimwoodRecordingUrl(
+    account.customerId,
+    providerRecordingId,
+    recording.recording_uri,
+  );
   if (!downloadUrl) {
     return await finishFailed(
       "invalid_recording_uri",
@@ -276,6 +277,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         provider_recording_id: providerRecordingId,
       },
     );
+  }
+
+  // --- credentials ---------------------------------------------------------
+  const creds = getSimwoodCredentials();
+  if (!creds) {
+    return await finishFailed("config_error", "Simwood credentials are not configured", 500);
   }
 
   // --- download the WAV (server-side only) --------------------------------
@@ -298,7 +305,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // --- store in the private bucket ----------------------------------------
   const { error: uploadErr } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .upload(storagePath, new Blob([audio.bytes], { type: "audio/wav" }), {
+    .upload(storagePath, new Blob([audio.bytes.slice().buffer], { type: "audio/wav" }), {
       contentType: "audio/wav",
       upsert: true,
     });

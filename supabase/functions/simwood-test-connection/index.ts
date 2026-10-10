@@ -1,3 +1,4 @@
+import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-test-connection (Phase Phone-0)
 //
 // Verifies that the configured Simwood/Sipcentric credentials can reach the
@@ -10,7 +11,7 @@
 // Behaviour:
 //   * POST { tenant_id: uuid }
 //   * Reads SIMWOOD_USERNAME / SIMWOOD_PASSWORD from secrets (Basic Auth).
-//   * Calls GET https://pbx.sipcentric.com/api/v1/customers.
+//   * Reads only the company’s registered provider account.
 //   * Returns { ok, data:{ provider, customers:[{id,name,type}], customerCount } }.
 //   * Logs the outcome to phone_sync_runs AND audit_logs.
 //   * Handles invalid input, missing config, auth failure, rate limiting and
@@ -58,11 +59,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   } catch {
     return fail("invalid_json", "Request body must be valid JSON", 400);
   }
-  // Optional: when supplied, verify a specific account (/customers/{id});
-  // otherwise fall back to the /customers collection for discovery.
   const rawCustomerId = (parsed as { provider_customer_id?: unknown } | null)?.provider_customer_id;
-  const providerCustomerId =
-    typeof rawCustomerId === "string" && rawCustomerId.trim() !== "" ? rawCustomerId.trim() : null;
 
   // --- environment ---------------------------------------------------------
   const username = Deno.env.get("SIMWOOD_USERNAME");
@@ -84,6 +81,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const account = await resolveSimwoodAccount(supabase, tenantId, rawCustomerId);
+  if (!account.ok) return fail(account.code, account.message, account.httpStatus);
+  const providerCustomerId = account.customerId;
 
   // Best-effort logging to phone_sync_runs + audit_logs. Never throws.
   async function logOutcome(
@@ -127,13 +127,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // --- call provider -------------------------------------------------------
   const authHeader = "Basic " + btoa(`${username}:${password}`);
-  const path = providerCustomerId
-    ? `/customers/${encodeURIComponent(providerCustomerId)}`
-    : "/customers";
+  const path = `/customers/${encodeURIComponent(providerCustomerId)}`;
   let resp: Response;
   try {
     resp = await fetch(`${SIMWOOD_API_BASE}${path}`, {
       method: "GET",
+      redirect: "error",
+      signal: AbortSignal.timeout(20000),
       headers: { Authorization: authHeader, Accept: "application/json" },
     });
   } catch (cause) {
@@ -183,6 +183,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
         ? (payload as unknown[])
         : [payload];
 
+  if (
+    rows.length !== 1 ||
+    !rows[0] ||
+    typeof rows[0] !== "object" ||
+    String(
+      (rows[0] as Record<string, unknown>).id ?? (rows[0] as Record<string, unknown>).customerId,
+    ) !== providerCustomerId
+  ) {
+    await logOutcome("failed", 0, "Account response mismatch", { reason: "account_scope" });
+    return fail(
+      "phone_account_mismatch",
+      "Provider account response did not match this company.",
+      502,
+    );
+  }
   const customers = rows
     .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === "object")
     .map((c) => ({

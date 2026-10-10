@@ -1,0 +1,29 @@
+{
+  "version": "learn-phone-account-binding-local/1",
+  "date": "2026-10-10",
+  "result": "passed",
+  "changes": [
+    "Use the company connector/account registry for call and recording sync and connection tests.",
+    "Bind downloads to the registered account and exact recording; missing URLs require an unambiguous registered account.",
+    "Remove provider-wide first-customer discovery fallback.",
+    "Refuse redirects and bound provider request duration.",
+    "Already-stored recording short circuit no longer requires provider credentials."
+  ],
+  "verification": {
+    "pureAndCompletenessTests": 10,
+    "actualHandlerTestsWithSyntheticPorts": 10,
+    "strictTypecheck": "passed for four handlers and imported helpers using the pinned SDK declaration shim",
+    "actualReadOnlyResolver": "learn-phone-account-read-2026-10-10.json",
+    "storedUrlSample": "learn-phone-url-binding-sample-2026-10-10.json",
+    "preservation": "learn-preservation-phone-binding-2026-10-10.json"
+  },
+  "limitations": [
+    "Local implementation only; no Edge deployment or hosted Auth/handler acceptance.",
+    "Actual account resolver check used existing service credentials for a read, not ordinary-user RLS acceptance.",
+    "Provider transport in handler tests was mocked; no real provider API, voicemail resource, audio download or paid processing was invoked.",
+    "Registry check is a read-time binding, not an atomic lease or per-page publication fence against concurrent reconfiguration.",
+    "The existing shared provider credential remains. Separate tenant credential provisioning and source reconciliation are still required.",
+    "URL compatibility sample covers 25 latest recording metadata rows, not every historical pointer.",
+    "No guarantee of live capture completeness, backup recoverability or audio playability."
+  ]
+}

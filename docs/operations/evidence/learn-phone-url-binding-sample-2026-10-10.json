@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-10T00:46:17.931Z",
+  "samples": 25,
+  "acceptedByLocalBinding": 25,
+  "providerRequests": 0,
+  "limitations": [
+    "Latest 25 metadata rows only; no audio fetched and no full URL-inventory claim."
+  ]
+}

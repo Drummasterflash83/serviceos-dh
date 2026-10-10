@@ -101,6 +101,8 @@ export async function simwoodGet(
   try {
     resp = await fetch(`${SIMWOOD_API_BASE}${path}`, {
       method: "GET",
+      redirect: "error",
+      signal: AbortSignal.timeout(60000),
       headers: { Authorization: basicAuthHeader(creds), Accept: "application/json" },
     });
   } catch (cause) {
@@ -152,28 +154,6 @@ export async function simwoodGet(
   }
 }
 
-/** Resolve the account/customer id via GET /customers (used when not supplied). */
-export async function discoverCustomerId(
-  creds: SimwoodCredentials,
-): Promise<
-  | { ok: true; customerId: string }
-  | { ok: false; code: string; message: string; httpStatus: number }
-> {
-  const result = await simwoodGet("/customers", creds);
-  if (!result.ok) return result;
-  const first = extractItems(result.data)[0];
-  const id = first?.id ?? first?.customerId;
-  if (id === undefined || id === null || id === "") {
-    return {
-      ok: false,
-      code: "no_customer",
-      message: "No Simwood customer found for these credentials",
-      httpStatus: 502,
-    };
-  }
-  return { ok: true, customerId: String(id) };
-}
-
 /**
  * Resolve a recording uri/path to an absolute Simwood URL, or null if it does
  * not point at the Simwood host. This is an SSRF guard: we send Basic-Auth
@@ -219,6 +199,8 @@ export async function simwoodGetBinary(
   try {
     resp = await fetch(url, {
       method: "GET",
+      redirect: "error",
+      signal: AbortSignal.timeout(60000),
       headers: { Authorization: basicAuthHeader(creds), Accept: accept },
     });
   } catch (cause) {

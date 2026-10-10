@@ -734,3 +734,20 @@ Synthetic browser acceptance verified lost-response reload/retry, partial batche
 per-item rejection and viewer restrictions. No hosted state or production source
 changed. Signed-in hosted acceptance of these forms remains; browser-local storage
 does not provide cross-device recovery. See [evidence and remaining scope](../operations/LEARN-SLACK-INGESTION.md#durable-initial-channel-and-thread-approvals--local-10-october).
+
+## Phone preservation and company account binding — local, 10 October
+
+A renewed production read-only comparison found every baseline ID and recording
+pointer retained, with no missing/changed inventoried storage objects. Current
+counts: 18,456 emails, 4,324 calls and 2,882 recording/transcript rows. Six transcripts
+remain failed; jobs and voicemail rows are still zero. This proves preservation
+within the inventory's scope, not complete capture, playable audio or backup recovery.
+
+Phone sync, connection tests and downloads now use registered company accounts
+instead of accepting arbitrary accounts or discovering the first shared provider
+customer. Existing stored audio can return without live provider credentials.
+The actual read-only resolver matched Drummonds' active registry; 25 sampled URL
+shapes passed the new guard. Twenty local tests and strict handler typechecking
+passed. No provider request, hosted deployment or production mutation occurred.
+Read-time binding still needs concurrent-publication fencing and hosted acceptance.
+See [implementation, preservation evidence and release limits](../operations/LEARN-PHONE-ACCOUNT-BINDING.md).
