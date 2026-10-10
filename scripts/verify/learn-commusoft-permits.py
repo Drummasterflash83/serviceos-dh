@@ -189,6 +189,8 @@ try:
                     assert sql("select md5(string_agg(pg_get_functiondef(oid)||coalesce(proacl::text,'')||proowner::text,'' order by oid)) from pg_proc where pronamespace='public'::regnamespace and prokind='f';")==before
                     sql(migration)
                     print(sql((root/'scripts/verify/learn-commusoft-job-details.assert.sql').read_text()))
+                    sql('begin;'+(root/'scripts/verify/learn-job-details-hosted.assert.sql').read_text()+'rollback;')
+                    print('PASS: exact hosted job-detail date and denial probe')
                     result=sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select learn_commusoft_job_details(fixture_id(1),fixture_id(5),fixture_work_version('jobs','955'));")
                     js="import {parseCommusoftJobDetails} from './src/lib/learn-commusoft-job-details.ts';import{readFileSync}from'node:fs';const d=JSON.parse(readFileSync(0,'utf8'));parseCommusoftJobDetails(d,d.tenant_id,d.connection_id,d.version_id,d.external_id);console.log('PASS: actual SQL retained-job detail passes application parser');"
                     subprocess.run(['node','--input-type=module','-e',js],input=result,text=True,cwd=root,check=True)

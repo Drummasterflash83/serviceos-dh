@@ -1,0 +1,17 @@
+{
+  "version": "learn-job-details-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "a707572ce30caafd402109c8055b4d7fe1d5f722cf0011a25100869f8e9c75a9",
+  "priorFingerprint": "f380f1bcfc60dd0da7bd99f8822d969d",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101070000_learn_commusoft_job_details.sql",
+      "sha256": "a8a64f632653a989a737d84211e8d06cd09c60f8a8f38c0cc504b281a185ba30"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-job-details-hosted.assert.sql",
+    "sha256": "cb43754435032522bc52310760d8032a7893cbfd9cfb72d8e8453294fcb2e301"
+  },
+  "preservedDataSets": 88
+}
