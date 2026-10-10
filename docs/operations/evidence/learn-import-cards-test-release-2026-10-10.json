@@ -1,0 +1,527 @@
+{
+  "version": "learn-import-cards-test-release/1",
+  "state": "installed_and_signed_in_card_reads_passed",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "rehearsal": {
+    "version": "learn-test-import-cards/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5",
+    "observedAt": "2026-10-10T06:36:50.039Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "rehearsed_and_rolled_back",
+    "beforeFingerprint": "aa8671af12d1e2e5d250caf519e4f201bde2a990730a99b59c73215a1a702441",
+    "afterFingerprint": "aa8671af12d1e2e5d250caf519e4f201bde2a990730a99b59c73215a1a702441",
+    "scope": "Two card identity indexes, three private functions and one import-link trigger. No backfill, existing-card edits, imports, Edge changes, providers, schedules or production changes."
+  },
+  "installation": {
+    "version": "learn-test-import-cards/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5",
+    "observedAt": "2026-10-10T06:37:47.304Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "installed_needs_authenticated_acceptance",
+    "beforeFingerprint": "aa8671af12d1e2e5d250caf519e4f201bde2a990730a99b59c73215a1a702441",
+    "afterFingerprint": "2f1a21b2de93bc44469f151ce9b56c90262b377fb697cf5da6c897d9f0be4f55",
+    "scope": "Two card identity indexes, three private functions and one import-link trigger. No backfill, existing-card edits, imports, Edge changes, providers, schedules or production changes."
+  },
+  "preservation": {
+    "rehearse": {
+      "observedAt": "2026-10-10T06:36:50.177Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "preserved": true,
+      "before": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "sites",
+          "count": 3,
+          "fingerprint": "22d5dfd094025bf9cf007e194777bab5"
+        },
+        {
+          "name": "jobs",
+          "count": 8,
+          "fingerprint": "f9fdba631348def028038157e05e705b"
+        },
+        {
+          "name": "people",
+          "count": 8,
+          "fingerprint": "6d795b60f219d689ffdec406b4389822"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "contact_points",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "data_imports",
+          "count": 13,
+          "fingerprint": "859cd92e331acdb783f80a0a34b7da87"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 11,
+          "fingerprint": "c5b892f3acc779f7cc5d5909b26b9d30"
+        },
+        {
+          "name": "import_row_results",
+          "count": 13,
+          "fingerprint": "145f195156a81c539eeb08dcfd667a8f"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 12,
+          "fingerprint": "3c46d4c0a61ccc062363183ceaa6ca24"
+        },
+        {
+          "name": "import_conflicts",
+          "count": 1,
+          "fingerprint": "e4f5fd5b23f793e52639626939e72e24"
+        },
+        {
+          "name": "customer_cards",
+          "count": 4,
+          "fingerprint": "8e17a5ebbd7181008d41f7e2a0d9e200"
+        }
+      ],
+      "after": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "sites",
+          "count": 3,
+          "fingerprint": "22d5dfd094025bf9cf007e194777bab5"
+        },
+        {
+          "name": "jobs",
+          "count": 8,
+          "fingerprint": "f9fdba631348def028038157e05e705b"
+        },
+        {
+          "name": "people",
+          "count": 8,
+          "fingerprint": "6d795b60f219d689ffdec406b4389822"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "contact_points",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "data_imports",
+          "count": 13,
+          "fingerprint": "859cd92e331acdb783f80a0a34b7da87"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 11,
+          "fingerprint": "c5b892f3acc779f7cc5d5909b26b9d30"
+        },
+        {
+          "name": "import_row_results",
+          "count": 13,
+          "fingerprint": "145f195156a81c539eeb08dcfd667a8f"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 12,
+          "fingerprint": "3c46d4c0a61ccc062363183ceaa6ca24"
+        },
+        {
+          "name": "import_conflicts",
+          "count": 1,
+          "fingerprint": "e4f5fd5b23f793e52639626939e72e24"
+        },
+        {
+          "name": "customer_cards",
+          "count": 4,
+          "fingerprint": "8e17a5ebbd7181008d41f7e2a0d9e200"
+        }
+      ]
+    },
+    "apply": {
+      "observedAt": "2026-10-10T06:37:47.433Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "preserved": true,
+      "before": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "sites",
+          "count": 3,
+          "fingerprint": "22d5dfd094025bf9cf007e194777bab5"
+        },
+        {
+          "name": "jobs",
+          "count": 8,
+          "fingerprint": "f9fdba631348def028038157e05e705b"
+        },
+        {
+          "name": "people",
+          "count": 8,
+          "fingerprint": "6d795b60f219d689ffdec406b4389822"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "contact_points",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "data_imports",
+          "count": 13,
+          "fingerprint": "859cd92e331acdb783f80a0a34b7da87"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 11,
+          "fingerprint": "c5b892f3acc779f7cc5d5909b26b9d30"
+        },
+        {
+          "name": "import_row_results",
+          "count": 13,
+          "fingerprint": "145f195156a81c539eeb08dcfd667a8f"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 12,
+          "fingerprint": "3c46d4c0a61ccc062363183ceaa6ca24"
+        },
+        {
+          "name": "import_conflicts",
+          "count": 1,
+          "fingerprint": "e4f5fd5b23f793e52639626939e72e24"
+        },
+        {
+          "name": "customer_cards",
+          "count": 4,
+          "fingerprint": "8e17a5ebbd7181008d41f7e2a0d9e200"
+        }
+      ],
+      "after": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "sites",
+          "count": 3,
+          "fingerprint": "22d5dfd094025bf9cf007e194777bab5"
+        },
+        {
+          "name": "jobs",
+          "count": 8,
+          "fingerprint": "f9fdba631348def028038157e05e705b"
+        },
+        {
+          "name": "people",
+          "count": 8,
+          "fingerprint": "6d795b60f219d689ffdec406b4389822"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "contact_points",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "data_imports",
+          "count": 13,
+          "fingerprint": "859cd92e331acdb783f80a0a34b7da87"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 11,
+          "fingerprint": "c5b892f3acc779f7cc5d5909b26b9d30"
+        },
+        {
+          "name": "import_row_results",
+          "count": 13,
+          "fingerprint": "145f195156a81c539eeb08dcfd667a8f"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 12,
+          "fingerprint": "3c46d4c0a61ccc062363183ceaa6ca24"
+        },
+        {
+          "name": "import_conflicts",
+          "count": 1,
+          "fingerprint": "e4f5fd5b23f793e52639626939e72e24"
+        },
+        {
+          "name": "customer_cards",
+          "count": 4,
+          "fingerprint": "8e17a5ebbd7181008d41f7e2a0d9e200"
+        }
+      ]
+    }
+  },
+  "syntheticRepair": {
+    "version": "learn-test-import-card-repair/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "57fa75ab-3fd5-4dac-8e80-680c8307bf9f",
+    "tenant": "1780d00f-28e7-4138-bc8b-b761e643f0ed",
+    "observedAt": "2026-10-10T06:38:35.469Z",
+    "state": "passed",
+    "failure": null,
+    "result": [
+      {
+        "result": {
+          "version": "learn-import-cards/1",
+          "processed": 1,
+          "tenant_id": "1780d00f-28e7-4138-bc8b-b761e643f0ed",
+          "next_cursor": null
+        }
+      }
+    ],
+    "preExistingRowsPreserved": true,
+    "createdCards": 1,
+    "linkedCards": 1
+  },
+  "signedInAcceptance": {
+    "version": "learn-test-import-acceptance/3",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "a8cf982a-57bc-45ac-a2df-9e2c05ae2633",
+    "observedAt": "2026-10-10T06:39:26.381Z",
+    "state": "passed",
+    "sourceBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+    "checks": [
+      "Actual anonymous, service, viewer and foreign-company access refused; owner sees the three governed profiles.",
+      "Preview preserves canonical rows; changed bytes, active foreign-company View As, suspended company and ops writes refused; owner apply and replay create one customer.",
+      "Missing customer holds a job without creating an orphan; importing its customer/site then retrying the exact saved file creates one correctly linked job with attempt 2. Replaying remains idempotent.",
+      "A contradictory exact site is shown before apply, retained as a blocking conflict and never falls back to a matching address. Exact replay preserves it; corrected bytes require a new preview and leave the old outcome intact.",
+      "A separately previewed duplicate upload is flagged and links the existing source identity; canonical counts remain two customers, two sites and three jobs.",
+      "Actual signed-in LEARN card loader shows two imported customers to owner and viewer, hides them from the other company, and retains source links without invented summaries, activity, ownership or scores.",
+      "Actual CSV parser and row RPCs import customer, exact linked site and job in order; durable outcomes/provenance retained, foreign run access and revoked session authority refused."
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "retained": {
+      "people": 2,
+      "sites": 2,
+      "jobs": 3,
+      "imports": 9,
+      "outcomes": 9,
+      "approving_users": 0
+    },
+    "preExistingSourcesPreserved": true,
+    "manifest": "/private/tmp/serviceos-learn-import-a8cf982a-57bc-45ac-a2df-9e2c05ae2633.json",
+    "limitations": [
+      "Synthetic TEST records only; no original file imported, provider call or production change.",
+      "Small files only; large-file and browser acceptance remain separate. Old conflicts remain retained and open even after a new corrected file succeeds; a governed resolution workflow is still needed.",
+      "Temporary logins are banned, passwords rotated and roles demoted; synthetic records and evidence retained."
+    ]
+  },
+  "finalCatalog": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T06:40:15.512Z",
+    "state": "verified",
+    "fingerprint": "8f349f49dc5df761dc385bc172bff6e932b22ecaa003ab9b3a34cf68fca9bd4e",
+    "tables": 95,
+    "receipts": 25,
+    "cardState": {
+      "indexes": [
+        {
+          "live": true,
+          "name": "learn_customer_card_company_uk",
+          "ready": true,
+          "valid": true,
+          "unique": true
+        },
+        {
+          "live": true,
+          "name": "learn_customer_card_person_uk",
+          "ready": true,
+          "valid": true,
+          "unique": true
+        }
+      ],
+      "triggers": [
+        {
+          "name": "learn_import_customer_card_after_link",
+          "table": "import_entity_links",
+          "enabled": "O"
+        }
+      ]
+    }
+  },
+  "local": {
+    "exactReleaseRollback": true,
+    "forcedReceiptFailureRolledBack": true,
+    "historicalImportRegressions": true,
+    "duplicateHistoryRefused": true,
+    "sourceAndProtectedCardsPreserved": true,
+    "concurrentServiceProjectionReusedCard": true,
+    "authStandIn": true,
+    "containerRemoved": true,
+    "releaseVerifierTestsPassed": 2,
+    "priorReleaseChainTestsPassed": 7
+  },
+  "sourceHashes": {
+    "supabase/migrations/20261031070000_learn_import_customer_cards.sql": "d89ea66c1cca55433cf6c1e0ca6889848b2bb8175152190216136fa952e7cd49",
+    "supabase/release/learn-test/024_import_customer_cards.sql": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5",
+    "supabase/release/learn-test/024_import_customer_cards.expected.json": "c140b2343a63f05b54007b0357bd10d42e4aecf04b7c2bd5f42f0f09628c7605",
+    "scripts/verify/learn-import-cards-catalog.mjs": "e40344e9437c757adf694a1bb57d9680c9146e30057d465eb28520d0106ecf5c",
+    "scripts/verify/learn-test-import-cards-release.mjs": "4f2883d1142c70789f466e913715b396ffe94f637450ef4010f08725b7ec791c",
+    "scripts/verify/learn-import-test-projection.py": "95242871f879af437dc0c50c7aa2b7564ba88d88d304bc1305b1b23aacc070d4",
+    "scripts/verify/learn-import-cards-acceptance.mjs": "72672a21dae041df6c77562cac64cdf5c41c814015ba28b6f63f504b655a6479",
+    "scripts/verify/learn-test-import-cards-reconcile-fixture.mjs": "87e4418e5d64aad79e79e3fb7c59a82fc862456c047ad82168236e0b09915760"
+  },
+  "limitations": [
+    "Synthetic TEST only. No production, provider, real package, frontend or Edge deployment changed.",
+    "Signed-in acceptance uses the actual LEARN card loader over authenticated Supabase REST; visual browser card rendering after this release remains unverified.",
+    "Catalog verification was strengthened after installation to check trigger enabled state and index validity/readiness. Its final fingerprint includes this extra metadata and differs from the installation report fingerprint algorithm. SQL release bytes are unchanged.",
+    "Existing duplicate card identities block installation; no history is merged or deleted. Unique indexes affect legacy writers and person-deletion SET NULL transitions; legacy interaction-worker race acceptance remains open.",
+    "Real Commusoft package site/customer ownership contradiction, large-file runtime, pagination and governed conflict resolution remain open."
+  ]
+}

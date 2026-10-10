@@ -160,18 +160,39 @@ try:
    holder.stdout.close();holder.stderr.close()
   print('Concurrent role, company and View As changes cannot race a live row: PASS',flush=True)
  if '--cards' in sys.argv:
-  cards=(ROOT/'supabase/migrations/20261031070000_learn_import_customer_cards.sql').read_text()
+  cards=(ROOT/'supabase/release/learn-test/024_import_customer_cards.sql').read_text()
+  card_sha=hashlib.sha256(cards.encode()).hexdigest()
+  card_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(card_sha)+';'
+  card_query=node("import {IMPORT_CARD_FUNCTION_QUERY} from './scripts/verify/learn-import-cards-catalog.mjs';process.stdout.write(IMPORT_CARD_FUNCTION_QUERY);")
+  card_state_query=node("import {IMPORT_CARD_STATE_QUERY} from './scripts/verify/learn-import-cards-catalog.mjs';process.stdout.write(IMPORT_CARD_STATE_QUERY);")
+  def card_functions():return json.loads(run(card_query).stdout)
+  def receipts():return run('select jsonb_agg(to_jsonb(m) order by migration_name) from of_test_deploy.migrations m').stdout
+  original_receipts=receipts()
+  assert card_functions()==[]
   apply("insert into import_entity_links(id,tenant_id,source_system,entity_kind,external_id,entity_table,entity_id,link_strategy) values('99000000-0000-0000-0000-000000000003','99000000-0000-0000-0000-000000000001','commusoft','customer','retained-before-card-projection','people','99000000-0000-0000-0000-000000000002','email');",'Pre-existing imported identity without a card')
   apply("insert into customer_cards(id,tenant_id,person_id) values('99000000-0000-0000-0000-000000000004','99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000002'),('99000000-0000-0000-0000-000000000005','99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000002');",'Synthetic duplicate legacy cards')
   duplicate_tables=snapshot();duplicate_rows=retained()
-  duplicate=run('set role postgres;'+cards,False);assert duplicate.returncode and 'learn_customer_card_person_uk' in duplicate.stderr
+  duplicate=run(card_prefix+cards,False);assert duplicate.returncode and 'learn_customer_card_person_uk' in duplicate.stderr
   assert snapshot()==duplicate_tables and retained()==duplicate_rows,'duplicate preflight must preserve history'
   run("delete from customer_cards where id in ('99000000-0000-0000-0000-000000000004','99000000-0000-0000-0000-000000000005');")
   print('Duplicate legacy card identities refuse migration without modifying rows: PASS',flush=True)
   cards_tables=snapshot();cards_rows=retained()
-  apply('set role postgres;'+cards.replace('\ncommit;','\nrollback;'),'Customer card projection rollback')
+  apply(card_prefix+cards.replace('\ncommit;','\nrollback;'),'Customer card projection rollback')
   assert snapshot()==cards_tables and retained()==cards_rows
-  apply('set role postgres;'+cards,'Customer card projection installed as non-superuser owner')
+  assert card_functions()==[] and receipts()==original_receipts
+  run("alter table of_test_deploy.migrations add constraint fail_card_receipt check(migration_name<>'learn_import_customer_cards_v1');")
+  failed=run(card_prefix+cards,False);assert failed.returncode and 'fail_card_receipt' in failed.stderr
+  assert snapshot()==cards_tables and retained()==cards_rows and card_functions()==[] and receipts()==original_receipts
+  run('alter table of_test_deploy.migrations drop constraint fail_card_receipt;')
+  print('Failed card receipt restores indexes, trigger, functions and rows: PASS',flush=True)
+  apply(card_prefix+cards,'Customer card projection installed as non-superuser owner')
+  cf=card_functions()
+  assert len(cf)==3 and all(f['owner']=='postgres' and not f['securityDefiner'] and not f['authenticatedExecute'] and not f['anonExecute'] and f['serviceExecute'] for f in cf)
+  card_expected={'sourceSha256':card_sha,'functions':cf,'state':json.loads(run(card_state_query).stdout),
+   'indexes':[dict(x,table=t['name']) for t in snapshot() for x in t['indexes'] if x['name'] in ['learn_customer_card_person_uk','learn_customer_card_company_uk']],
+   'triggers':[dict(x,table=t['name']) for t in snapshot() for x in t['triggers'] if x['name']=='learn_import_customer_card_after_link']}
+  assert len(card_expected['indexes'])==2 and len(card_expected['triggers'])==1
+  (ROOT/'.verification-results/learn-import-cards-expected.json').write_text(json.dumps(card_expected,indent=2)+'\n')
   assert retained()==cards_rows,'migration cannot backfill or change existing source rows'
   apply((ROOT/'scripts/verify/learn-import-cards.assert.sql').read_text(),'Imported customer projection, protected cards, bounded repair and tenant boundaries')
   apply(regression,'Historical governed row suite with card projection enabled')

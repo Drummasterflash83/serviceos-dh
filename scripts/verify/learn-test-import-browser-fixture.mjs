@@ -1,12 +1,12 @@
 /** Retained TEST browser import evidence around the existing signed-in UI fixture. */
 import {readFileSync,writeFileSync} from 'node:fs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {readGovernedImportCatalog} from './learn-governed-import-catalog.mjs';
-import {installedImportEndpoint} from './learn-test-import-endpoint-catalog.mjs';
+import {readImportCardsCatalog} from './learn-import-cards-catalog.mjs';
+import {installedImportCards} from './learn-test-import-cards-release.mjs';
 const [mode,path]=process.argv.slice(2),check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''")}'`;
 check(['prepare','inspect'].includes(mode)&&path?.startsWith('/private/tmp/serviceos-learn-ui-')&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST browser fixture command required');
 const plan=JSON.parse(readFileSync(path,'utf8'));check(plan.version==='learn-test-ui-fixture/1'&&plan.projectRef===TEST_PROJECT&&/^[a-f0-9-]{36}$/.test(plan.tenant)&&/^[a-f0-9-]{36}$/.test(plan.runId),'UI fixture manifest differs');
-const token=savedCliToken(),catalog=await readGovernedImportCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportEndpoint(catalog),'Exact TEST import endpoint and schema required');
+const token=savedCliToken(),catalog=await readImportCardsCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportCards(catalog),'Exact TEST import endpoint and schema required');
 async function sql(query){const r=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query/read-only`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({query}),redirect:'error',signal:AbortSignal.timeout(30000)});check(r.ok,`Fixture read failed (${r.status})`);return r.json();}
 const marked=await sql(`select id from tenants where id=${q(plan.tenant)} and metadata->>'learn_ui_run'=${q(plan.runId)} and metadata->>'synthetic'='true'`);check(marked.length===1,'Synthetic company marker differs');
 const names=['email_messages','phone_calls','phone_recordings','phone_transcripts','slack_messages','slack_message_versions','interactions','sites','jobs','people','companies','contact_points','data_imports','import_entity_links','import_row_results','import_row_provenance','import_conflicts'];

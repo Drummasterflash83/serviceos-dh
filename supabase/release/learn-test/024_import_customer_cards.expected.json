@@ -1,0 +1,89 @@
+{
+  "sourceSha256": "8c89ff5faca8443ad45b8d16a3aa32eeb69b4dbbe2184d668cec48df9fe0f4b5",
+  "functions": [
+    {
+      "name": "learn_import_customer_card",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_link uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_customer_card(p_tenant uuid, p_link uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare l import_entity_links%rowtype;card uuid;label text;\nbegin\n if current_setting('transaction_isolation')<>'read committed' then\n  raise exception 'Card projection requires a fresh snapshot' using errcode='22023';\n end if;\n if p_tenant is null or p_link is null then\n  raise exception 'Company and source link required' using errcode='22023';\n end if;\n perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));\n perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant::text,0));\n -- Existing approved identity projection only: this does not approve/import a\n -- file, infer a contact match, or create a person/company from supplied values.\n select * into l from import_entity_links where id=p_link and tenant_id=p_tenant;\n if not found or l.entity_kind<>'customer' or l.entity_table not in ('people','companies') then\n  raise exception 'Imported customer link unavailable in company' using errcode='22023';\n end if;\n if not exists(select 1 from tenants where id=p_tenant and status='active') then\n  raise exception 'Company access unavailable' using errcode='42501';\n end if;\n if l.entity_table='people' then\n  select display_name into label from people where id=l.entity_id and tenant_id=p_tenant;\n  if not found then raise exception 'Customer identity unavailable in company' using errcode='23503';end if;\n  insert into customer_cards(tenant_id,person_id,title,metadata)\n   values(p_tenant,l.entity_id,coalesce(nullif(btrim(label),''),'Imported customer'),\n    jsonb_build_object('learn_import_identity',jsonb_build_object('link_id',l.id,'import_id',l.import_id,'source_system',l.source_system)))\n   on conflict(tenant_id,person_id) where person_id is not null do nothing\n   returning id into card;\n  if card is null then select id into card from customer_cards where tenant_id=p_tenant and person_id=l.entity_id;end if;\n else\n  select name into label from companies where id=l.entity_id and tenant_id=p_tenant;\n  if not found then raise exception 'Customer identity unavailable in company' using errcode='23503';end if;\n  insert into customer_cards(tenant_id,company_id,title,metadata)\n   values(p_tenant,l.entity_id,coalesce(nullif(btrim(label),''),'Imported customer'),\n    jsonb_build_object('learn_import_identity',jsonb_build_object('link_id',l.id,'import_id',l.import_id,'source_system',l.source_system)))\n   on conflict(tenant_id,company_id) where person_id is null and company_id is not null do nothing\n   returning id into card;\n  if card is null then select id into card from customer_cards where tenant_id=p_tenant and company_id=l.entity_id and person_id is null;end if;\n end if;\n if card is null then raise exception 'Card changed during projection; retry' using errcode='40001';end if;\n return card;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_import_customer_card_after_link",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_customer_card_after_link()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n if new.entity_kind='customer' then perform learn_import_customer_card(new.tenant_id,new.id);end if;\n return new;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_import_customer_cards_reconcile",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_after uuid, p_limit integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_customer_cards_reconcile(p_tenant uuid, p_after uuid DEFAULT NULL::uuid, p_limit integer DEFAULT 100)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare l record;last_id uuid;seen integer:=0;more boolean;\nbegin\n if p_tenant is null or p_limit is null or p_limit<1 or p_limit>200 then\n  raise exception 'Company and page size 1..200 required' using errcode='22023';\n end if;\n if not exists(select 1 from tenants where id=p_tenant and status='active') then\n  raise exception 'Company access unavailable' using errcode='42501';\n end if;\n for l in select id from import_entity_links where tenant_id=p_tenant and entity_kind='customer'\n  and (p_after is null or id>p_after) order by id limit p_limit loop\n  perform learn_import_customer_card(p_tenant,l.id);last_id:=l.id;seen:=seen+1;\n end loop;\n select exists(select 1 from import_entity_links where tenant_id=p_tenant and entity_kind='customer' and id>last_id) into more;\n return jsonb_build_object('version','learn-import-cards/1','tenant_id',p_tenant,'processed',seen,'next_cursor',case when more then last_id end);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "state": {
+    "indexes": [
+      {
+        "live": true,
+        "name": "learn_customer_card_company_uk",
+        "ready": true,
+        "valid": true,
+        "unique": true
+      },
+      {
+        "live": true,
+        "name": "learn_customer_card_person_uk",
+        "ready": true,
+        "valid": true,
+        "unique": true
+      }
+    ],
+    "triggers": [
+      {
+        "name": "learn_import_customer_card_after_link",
+        "table": "import_entity_links",
+        "enabled": "O"
+      }
+    ]
+  },
+  "indexes": [
+    {
+      "name": "learn_customer_card_company_uk",
+      "definition": "CREATE UNIQUE INDEX learn_customer_card_company_uk ON public.customer_cards USING btree (tenant_id, company_id) WHERE ((person_id IS NULL) AND (company_id IS NOT NULL))",
+      "table": "customer_cards"
+    },
+    {
+      "name": "learn_customer_card_person_uk",
+      "definition": "CREATE UNIQUE INDEX learn_customer_card_person_uk ON public.customer_cards USING btree (tenant_id, person_id) WHERE (person_id IS NOT NULL)",
+      "table": "customer_cards"
+    }
+  ],
+  "triggers": [
+    {
+      "name": "learn_import_customer_card_after_link",
+      "function": "learn_import_customer_card_after_link",
+      "definition": "CREATE TRIGGER learn_import_customer_card_after_link AFTER INSERT ON public.import_entity_links FOR EACH ROW EXECUTE FUNCTION learn_import_customer_card_after_link()",
+      "table": "import_entity_links"
+    }
+  ]
+}

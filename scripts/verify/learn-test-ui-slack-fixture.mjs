@@ -2,8 +2,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
-import { readGovernedImportCatalog } from "./learn-governed-import-catalog.mjs";
-import { installedImportEndpoint } from "./learn-test-import-endpoint-catalog.mjs";
+import { readImportCardsCatalog } from "./learn-import-cards-catalog.mjs";
+import { installedImportCards } from "./learn-test-import-cards-release.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readAcceptanceResponse } from "./learn-test-launch-acceptance.mjs";
 const [mode, path] = process.argv.slice(2),
@@ -27,10 +27,10 @@ check(
   "Active marked TEST browser fixture required",
 );
 check(
-  installedImportEndpoint(
-    await readGovernedImportCatalog({ allowProjectRef: TEST_PROJECT, token }),
+  installedImportCards(
+    await readImportCardsCatalog({ allowProjectRef: TEST_PROJECT, token }),
   ),
-  "Exact TEST 021 required",
+  "Exact TEST 024 required",
 );
 check(
   (

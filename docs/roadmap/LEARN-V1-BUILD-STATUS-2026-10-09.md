@@ -1101,3 +1101,20 @@ preservation, pagination, historical import and concurrency checks. TEST was rea
 only for aggregate preflight and service grants; the candidate is not installed.
 Hosted rehearsal/release, synthetic repair, card visibility and legacy writer race
 acceptance remain next. See [candidate and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#customer-card-projection-candidate--10-october).
+
+## Imported customer cards installed and signed-in reads verified — 10 October
+
+TEST release 024 now projects approved imported customer identities into the
+existing card store. Hosted rollback and installation preserved all 18 monitored
+source/card tables. Explicit repair added the missing card for the earlier
+synthetic browser import without changing its retained evidence or any existing
+card. A new real-Auth/Edge run confirmed two imported customers are visible through
+LEARN's actual card loader to company owner/viewer and hidden from another company.
+Temporary accounts were retired; all synthetic evidence was retained.
+
+The exact catalog now checks enabled trigger state and valid unique indexes as
+well as function definitions, grants and all prior releases. TEST has 95 tables
+and 25 receipts. Visual post-import card rendering, legacy writer race acceptance,
+large-file behavior, conflict resolution and the real package ownership issue
+remain open. Production/frontend deployment and provider traffic are unchanged.
+See [installed release evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#customer-card-projection-installed-and-read-in-test--10-october).

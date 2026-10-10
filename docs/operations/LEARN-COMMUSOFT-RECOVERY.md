@@ -451,3 +451,39 @@ The owned container was removed. No hosted migration or repair ran; signed-in ca
 visibility and larger-file performance remain open. Next is the pinned TEST release,
 hosted rollback rehearsal, explicit synthetic repair and actual card read acceptance.
 See [local evidence](evidence/learn-import-card-projection-local-2026-10-10.json).
+
+## Customer-card projection installed and read in TEST — 10 October
+
+Release `024_import_customer_cards.sql` is installed in TEST: 95 tables and 25
+receipts, with the existing import endpoint unchanged. The exact wrapper passed a
+fresh hosted rollback at 06:36 UTC and installation at 06:37 UTC. All 18 monitored
+source/card table row fingerprints stayed identical across each operation; the
+migration itself performed no backfill. Local replay also forced a receipt failure
+and verified that all indexes, functions, trigger definitions and retained rows
+rolled back. The three private functions, trigger and two unique indexes are pinned
+by actual PostgreSQL metadata. The final reader additionally verifies the trigger
+is enabled and both indexes are valid, ready, live and unique, preserving the exact
+checks for all earlier releases and endpoints.
+
+Explicit bounded service-role repair created one missing customer card for the
+retired synthetic browser import from the earlier test. Its one person, source
+link, outcome and provenance remain retained; all pre-existing source rows and
+cards were unchanged. No retired login was reactivated. The repair tool saves its
+baseline before attempting the write, refuses a repeated audit path and reports
+uncertain outcomes for inspection rather than retrying.
+
+A fresh actual-Auth/Edge acceptance run then imported two customers, two sites and
+three jobs through nine retained imports/outcomes. The same `readLearnCards`
+function used by LEARN read both customer cards through owner and viewer sessions;
+another company's session saw none. Card titles came from canonical people and
+metadata retained the import identity. No activity, summary, ownership, confidence
+or numeric priority score was invented. Existing-source and existing-card
+fingerprints matched, all three temporary logins were banned/password-rotated and
+roles demoted, and all fixture rows were retained.
+
+The ordinary TEST UI/server/import tools now require release 024's exact catalog.
+Visual browser rendering of these newly projected cards still needs a separate
+check. Larger-file performance, governed conflict resolution, legacy interaction
+writer race acceptance, and the real package ownership contradiction remain open.
+No production/provider/frontend change ran. See
+[release, preservation and authenticated evidence](evidence/learn-import-cards-test-release-2026-10-10.json).
