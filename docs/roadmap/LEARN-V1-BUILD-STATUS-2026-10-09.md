@@ -813,3 +813,18 @@ This resolves the hosted reader gap above. Source links were seeded, so provider
 capture/projection, real-source user acceptance, actual browser rendering and
 production deployment remain. No score or pay action was created. See
 [release evidence and limitations](../operations/LEARN-CARD-COMMUNICATIONS.md#test-release-and-actual-signed-in-acceptance--10-october).
+
+## Numerical card corrections — local, 10 October
+
+Owners/admins can correct or withhold a current measurement with a recorded reason.
+The original value, evidence, counts and reviews remain intact; the replacement
+needs separate confirmation. Original source timing survives repeated corrections,
+so editing a number cannot refresh stale evidence. No payroll action is introduced.
+
+The isolated database suite passed atomic failure, concurrent correction, authority,
+retry, review revision and preservation checks. Thirty-eight client/scoring tests,
+both TypeScript checks and the preview build passed. The actual browser component
+retained 80 → 90 → withheld synthetic history and required independent review before
+a draft score appeared. This is local implementation only; TEST stays release 017.
+Pinned hosted rehearsal, actual Auth/PostgREST acceptance and production release are
+still required. See [contract, evidence and limits](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#numerical-corrections--local-implementation-10-october).

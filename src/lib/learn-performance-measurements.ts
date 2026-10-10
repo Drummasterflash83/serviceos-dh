@@ -1,3 +1,7 @@
+import {
+  attachPerformanceCorrections,
+  type PerformanceCorrection,
+} from "./learn-performance-corrections.ts";
 /** Read the complete correction history for one exact assessment cell set.
  * Uses the signed-in client/RLS; never a service credential. Exact count prevents
  * a server row cap from silently presenting old or incomplete correction history.
@@ -13,6 +17,7 @@ import {
 import { loadPerformanceReviews, type PerformanceReview } from "./learn-performance-reviews.ts";
 export type ReviewedPerformanceMeasurement = PerformanceMeasurement & {
   reviews: PerformanceReview[];
+  correction?: PerformanceCorrection;
 };
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
@@ -31,7 +36,7 @@ const sources = new Set([
 const evidence = (v: any): boolean =>
   Array.isArray(v) && v.length > 0 && v.every((r) => r && sources.has(r.table) && uuid(r.id));
 const columns =
-  "id,tenant_id,subject_kind,subject_id,policy_id,policy_revision,metric_key,value,unit,window_start,window_end,measured_at,source,source_through,sample_count,covered_count,eligible_count,review_state,evidence,exclusions,supersedes,group_ids";
+  "id,tenant_id,subject_kind,subject_id,policy_id,policy_revision,metric_key,value,unit,window_start,window_end,measured_at,source,source_through,sample_count,covered_count,eligible_count,review_state,evidence,exclusions,supersedes,group_ids,correction_request_id:request_payload->>manualCorrectionId";
 export async function loadPerformanceMeasurements(
   db: LearnReadClient,
   policy: ScorecardPolicy,
@@ -63,6 +68,7 @@ export async function loadPerformanceMeasurements(
   if (error || !Array.isArray(data) || !integer(count) || count > 500 || data.length !== count)
     throw Error("Complete measurement history could not be read. No score has been calculated.");
   const ids = new Set<string>();
+  const correctionMarkers = new Map<string, string>();
   const measurements: PerformanceMeasurement[] = data.map((r: any) => {
     if (
       !r ||
@@ -112,6 +118,10 @@ export async function loadPerformanceMeasurements(
       throw Error(
         "Measurement history failed scope or evidence validation. No score has been calculated.",
       );
+    if (r.correction_request_id != null) {
+      if (r.correction_request_id !== r.id) throw Error("Correction request identity differs");
+      correctionMarkers.set(r.id, r.correction_request_id);
+    }
     ids.add(r.id);
     return {
       id: r.id,
@@ -135,12 +145,18 @@ export async function loadPerformanceMeasurements(
       ...(r.supersedes ? { supersedes: r.supersedes } : {}),
     };
   });
+  const corrected = await attachPerformanceCorrections(
+    db,
+    policy.tenantId,
+    measurements,
+    correctionMarkers,
+  );
   const histories = await loadPerformanceReviews(
     db,
     policy.tenantId,
     measurements.map((m) => m.id),
   );
-  return measurements.map((m) => {
+  return corrected.map((m) => {
     const reviews = histories.get(m.id) ?? [];
     // Human decisions are separate facts. They never change observedAt, sourceThrough,
     // values, counts or the source correction chain. No ledger = no confirmation.

@@ -57,6 +57,7 @@ function db(
   count: number | null = data.length,
   error: any = null,
   reviews: any[] = [],
+  corrections: any[] = [],
 ) {
   const filters: any[] = [];
   let selection: any;
@@ -75,7 +76,8 @@ function db(
   };
   return {
     from: (table: string) => {
-      if (table === "learn_performance_reviews") {
+      if (["learn_performance_reviews", "learn_performance_corrections"].includes(table)) {
+        const records = table === "learn_performance_reviews" ? reviews : corrections;
         const r: any = {
           select: () => r,
           eq: () => r,
@@ -83,7 +85,7 @@ function db(
           order: () => r,
           limit: () => r,
           then: (resolve: any) =>
-            Promise.resolve({ data: reviews, count: reviews.length, error: null }).then(resolve),
+            Promise.resolve({ data: records, count: records.length, error: null }).then(resolve),
         };
         return r;
       }
@@ -237,4 +239,58 @@ test("human review never refreshes source evidence and a later dispute withholds
     period,
   );
   assert.equal(unsigned[0].review, "inferred");
+});
+
+test("manual correction metadata is read before separate review; old source stays stale", async () => {
+  const corrected = {
+    ...row,
+    id: id(5),
+    value: 20,
+    supersedes: row.id,
+    measured_at: "2026-02-01T00:00:00Z",
+    correction_request_id: id(5),
+  };
+  const correction = {
+    id: id(5),
+    tenant_id: id(1),
+    predecessor_id: row.id,
+    previous_value: 30,
+    corrected_value: 20,
+    source_observed_at: row.measured_at,
+    expected_review_revision: 0,
+    corrected_by: id(60),
+    reason: "Arithmetic correction",
+    created_at: corrected.measured_at,
+  };
+  const review = {
+    id: id(50),
+    tenant_id: id(1),
+    measurement_id: id(5),
+    revision: 1,
+    decision: "confirmed",
+    reviewed_by: id(60),
+    reason: "Checked",
+    created_at: "2026-02-01T01:00:00Z",
+  };
+  const records = await loadPerformanceMeasurements(
+    db([row, corrected], 2, null, [review], [correction]),
+    policy,
+    subject,
+    period,
+  );
+  assert.equal(records[1].sourceObservedAt, row.measured_at);
+  assert.equal(records[1].review, "confirmed");
+  const score = evaluateScorecard(
+    policy,
+    subject,
+    period,
+    records,
+    Date.parse("2026-02-01T02:00:00Z"),
+  );
+  assert.equal(score.previewScore, null);
+  assert.ok(score.metrics[0].reasons.includes("Measurement freshness is not established"));
+  await assert.rejects(
+    loadPerformanceMeasurements(db([row, corrected]), policy, subject, period),
+    /correction history/,
+  );
 });

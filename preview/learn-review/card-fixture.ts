@@ -59,7 +59,23 @@ export function publishedPeriodFixture(args:any){
  const row=rows.at(-1);if(!row)return {data:null,error:null};
  return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
 }
+const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}];
+const performanceCorrections:any[]=[];
 const performanceReviews:any[]=[];
+export function correctPerformanceFixture(args:any){
+ const rows=(new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
+ const prior=performanceCorrections.find(r=>r.id===args.p_request);
+ if(prior)return {data:{measurementId:prior.id,predecessorId:prior.predecessor_id,reused:true},error:null};
+ const parent=rows.find(r=>r.id===args.p_measurement);
+ const revision=performanceReviews.filter(r=>r.measurement_id===args.p_measurement).length;
+ if(!parent||rows.some(r=>r.supersedes===parent.id)||revision!==args.p_expected_review_revision)return {data:null,error:{code:"PT409"}};
+ const observed=new Date().toISOString();
+ const earlier=performanceCorrections.find(r=>r.id===parent.id);
+ rows.push({...parent,id:args.p_request,value:args.p_value,supersedes:parent.id,measured_at:observed,review_state:"inferred",correction_request_id:args.p_request});
+ performanceCorrections.push({id:args.p_request,tenant_id,predecessor_id:parent.id,previous_value:parent.value,corrected_value:args.p_value,
+ source_observed_at:earlier?.source_observed_at??parent.measured_at,expected_review_revision:revision,corrected_by:id(40),reason:args.p_reason,created_at:observed});
+ return {data:{measurementId:args.p_request,predecessorId:parent.id,reused:false},error:null};
+}
 export function reviewPerformanceFixture(args:any){
  const prior=performanceReviews.find(r=>r.id===args.p_request_id);
  if(prior)return {data:{reviewId:prior.id,measurementId:prior.measurement_id,revision:prior.revision,decision:prior.decision,reused:true},error:null};
@@ -98,8 +114,9 @@ function records(): Record<string, any[]> {
     operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:selectedPolicy()}] : [],
     learn_scorecard_publications: publicationFixtureRows(),
     learn_work_measurement_runs: handoffRuns,
-    measurements: (new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? [{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)}],exclusions:[],supersedes:null,group_ids:[]}] : [],
+    measurements: (new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? performanceRows : [],
     learn_performance_reviews: performanceReviews,
+    learn_performance_corrections: performanceCorrections,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [
       row(3, {

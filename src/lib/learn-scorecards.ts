@@ -49,6 +49,8 @@ export interface PerformanceMeasurement {
   coveredCount: number;
   eligibleCount: number | null;
   observedAt: string;
+  /** Human numerical corrections retain the original source-observation freshness. */
+  sourceObservedAt?: string;
   sourceThrough: string | null;
   sourceSystem: string;
   review: "confirmed" | "inferred" | "disputed";
@@ -261,7 +263,9 @@ export function evaluateScorecard(
       if (
         !Number.isFinite(stamp(m.observedAt)) ||
         stamp(m.observedAt) > now ||
-        now - stamp(m.observedAt) > rule.maxAgeHours * 3600000
+        !Number.isFinite(stamp(m.sourceObservedAt ?? m.observedAt)) ||
+        stamp(m.sourceObservedAt ?? m.observedAt) > stamp(m.observedAt) ||
+        now - stamp(m.sourceObservedAt ?? m.observedAt) > rule.maxAgeHours * 3600000
       )
         reasons.push("Measurement freshness is not established");
       if (

@@ -242,3 +242,17 @@ test("group-specific rules cannot rate people outside the selected team", () => 
   const member = { ...subject, groupIds: [id(70)] };
   assert.equal(evaluateScorecard(p, member, period, measurements(), now).score, 78);
 });
+
+test("a recently corrected and confirmed number cannot refresh stale source evidence", () => {
+ const m = measurements();
+ m[0].sourceObservedAt = "2026-10-08T00:00:00Z";
+ const result = run(policy(), m);
+ assert.equal(result.score, null);
+ assert.ok(result.metrics[0].reasons.includes("Measurement freshness is not established"));
+ for (const invalid of ["invalid", "2026-10-09T11:30:00Z"]) {
+  m[0].sourceObservedAt = invalid;
+  assert.equal(run(policy(), m).score, null);
+ }
+ m[0].sourceObservedAt = "2026-10-09T10:00:00Z";
+ assert.equal(run(policy(), m).score, 78);
+});

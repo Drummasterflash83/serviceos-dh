@@ -110,7 +110,7 @@ immutable source captures, and recording metadata is not audio playback.
 
 The recorded-work-handoff adapter now calls the append RPC transactionally and is connected to the card collection flow. Communications/job outcome adapters remain incomplete. The remaining end-to-end
 work includes verified source event and assignment histories, calculation adapters,
-numerical correction workflow, saved assessment runs under published rules, agreed calendars and
+hosted numerical correction acceptance, saved assessment runs under published rules, agreed calendars and
 exclusions and team aggregation.
 No real person's score or reward is established by these tests.
 
@@ -169,3 +169,60 @@ remains local. Neither reconstructs missing old membership. See [membership hist
 the observed-time semantics, verification and remaining source-adapter dependencies.
 
 See [the connected recorded-handoff adapter](LEARN-WORK-HANDOFF-MEASUREMENTS.md) for its exact population, limits and verification.
+
+## Numerical corrections — local implementation, 10 October
+
+The card now supports owner/admin corrections of the current numerical observation,
+including explicit withholding (`NULL`). A required reason and actor are retained
+in the immutable `learn_performance_corrections` ledger. The original measurement
+and its review history remain intact. Correction changes neither the evidence,
+counts, exclusions, unit, source coverage watermark nor assessment scope. It creates
+a new inferred measurement; confirmation is a separate review action. That review
+may currently be made by the same authorised manager; this is not a two-person
+approval system and does not change pay.
+
+`learn_performance_correct` binds the actual profile to the company, rejects active
+View-As and checks the expected review revision while locking the predecessor.
+Only one successor can be recorded. Request identity is immutable and exact retries
+return the existing receipt. Ledger insertion and measurement append are atomic.
+The ledger denies direct writes, updates, deletion and truncation. No email, call,
+recording, interaction or work-source rows are changed by this migration or RPC.
+
+Manual corrections retain the original source observation timestamp through the
+entire manual correction chain. The new measurement time records the correction;
+it cannot refresh stale evidence. The client reads only the manual-correction marker
+from the original request JSON, requires complete ledger history, validates retained
+scope and source facts against each predecessor, then applies the separate review
+ledger. The scorer uses the original source time for freshness. Missing, malformed
+or inconsistent correction history withholds the assessment.
+
+The form freezes a submitted request for same-page retry after an uncertain reply.
+Pending correction requests are not durably saved in browser storage. After a full
+reload, reread the server history; the database's single-successor rule prevents a
+second correction of an already-replaced observation. Cross-device receipt recovery
+is not provided by this form.
+
+Verification on 10 October:
+
+- Isolated PostgreSQL 15 using the deployed append/review function bodies and minimal
+  synthetic dependencies passed authority, View-As, revision, retry, preservation,
+  immutable-ledger, failed-write rollback and two-session competing-correction checks.
+- 38 focused client, review, scorer, publication and collector tests passed; both
+  application and preview TypeScript checks, application build and synthetic preview build passed.
+- The actual card component in the local browser retained an original 80, appended
+  an inferred 90, withheld scoring until separate confirmation, then showed a 90/100
+  draft simulation. A second correction withheld the value while retaining both
+  predecessors and the confirmed review. The original source time stayed unchanged.
+- All browser records were synthetic and in memory. This does not establish hosted
+  Auth/PostgREST acceptance, provider capture, real employee scoring or payroll.
+
+SQL results: [local evidence](evidence/learn-performance-corrections-local-2026-10-10.json).
+Run `python3 scripts/verify/learn-performance-corrections.py` for the isolated checks.
+The additive source migration is `20261031020000_learn_performance_corrections.sql`.
+It has **not** been applied to TEST or production. TEST remains release 017.
+Before release, pin and rehearse the migration against the current TEST catalog,
+verify actual signed-in correction/read/review flows and source preservation, then
+release the application with the required database contract. Saved assessments,
+real source adapters, historical team attribution and reward review remain separate
+work. Historical group membership acceptance for numerical corrections is not yet
+established by the minimal SQL fixture.

@@ -1,3 +1,7 @@
+import {
+  correctPerformanceMeasurement,
+  type CorrectionRequest,
+} from "@/lib/learn-performance-corrections";
 import { assessmentPeriod, assessmentTimeField } from "@/lib/learn-assessment-period";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -50,9 +54,7 @@ export function LearnPerformanceCard(props: Props) {
 }
 function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
   const nowField = assessmentTimeField();
-  const [from, setFrom] = useState(() =>
-      assessmentTimeField(Date.now() - 7 * 86400000),
-    ),
+  const [from, setFrom] = useState(() => assessmentTimeField(Date.now() - 7 * 86400000)),
     [until, setUntil] = useState(nowField);
   const [ruleMode, setRuleMode] = useState<"draft" | "published">("draft");
   const [query, setQuery] = useState({ from, until, revision: 0 });
@@ -135,7 +137,14 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
       >
         <label>
           From (UTC, inclusive)
-          <input type="datetime-local" step="1" value={from} onInput={(e) => setFrom(e.currentTarget.value)} onChange={(e) => setFrom(e.target.value)} required />
+          <input
+            type="datetime-local"
+            step="1"
+            value={from}
+            onInput={(e) => setFrom(e.currentTarget.value)}
+            onChange={(e) => setFrom(e.target.value)}
+            required
+          />
         </label>
         <label>
           Until (UTC, exclusive)
@@ -149,7 +158,11 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
             required
           />
         </label>
-        <button className="cp-secondary" type="button" onClick={() => setUntil(assessmentTimeField())}>
+        <button
+          className="cp-secondary"
+          type="button"
+          onClick={() => setUntil(assessmentTimeField())}
+        >
           Through now
         </button>
         <button className="cp-secondary" disabled={loading} type="submit">
@@ -225,8 +238,8 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
                       {number(m.value)} {m.unit} · {m.review}
                     </summary>
                     <p>
-                      Source observed {date(m.observedAt)} · source coverage through{" "}
-                      {m.sourceThrough ? date(m.sourceThrough) : "unknown"}.
+                      Source observed {date(m.sourceObservedAt ?? m.observedAt)} · source coverage
+                      through {m.sourceThrough ? date(m.sourceThrough) : "unknown"}.
                     </p>
                     <p>
                       {m.sampleCount} samples · {m.coveredCount} of {m.eligibleCount ?? "unknown"}{" "}
@@ -252,6 +265,20 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
                         Measurement: {m.id}
                         {m.supersedes ? ` · corrects ${m.supersedes}` : ""}
                       </p>
+                      {m.correction && (
+                        <div>
+                          <p>
+                            Value corrected from {number(m.correction.previous_value)} to{" "}
+                            {number(m.correction.corrected_value)} {m.unit} ·{" "}
+                            {date(m.correction.created_at)}
+                          </p>
+                          <p>{m.correction.reason}</p>
+                          <small>
+                            Corrected by: {m.correction.corrected_by}. Original source timing and
+                            evidence retained.
+                          </small>
+                        </div>
+                      )}
                       {!m.reviews.length && <p>No human review recorded.</p>}
                       <ol>
                         {m.reviews.map((r) => (
@@ -264,12 +291,15 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
                       </ol>
                     </details>
                     {!replaced.has(m.id) && canReview && (
-                      <ReviewForm
-                        key={`${m.id}:${m.reviews.length}:${query.revision}`}
-                        tenantId={tenantId}
-                        measurement={m}
-                        onRecorded={refresh}
-                      />
+                      <div>
+                        <CorrectionForm tenantId={tenantId} measurement={m} onRecorded={refresh} />
+                        <ReviewForm
+                          key={`${m.id}:${m.reviews.length}:${query.revision}`}
+                          tenantId={tenantId}
+                          measurement={m}
+                          onRecorded={refresh}
+                        />
+                      </div>
                     )}
                   </details>
                 ))}
@@ -279,6 +309,95 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
         </>
       )}
     </div>
+  );
+}
+function CorrectionForm({
+  tenantId,
+  measurement,
+  onRecorded,
+}: {
+  tenantId: string;
+  measurement: ReviewedPerformanceMeasurement;
+  onRecorded: () => void;
+}) {
+  const [value, setValue] = useState(measurement.value === null ? "" : String(measurement.value));
+  const [withheld, setWithheld] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [frozen, setFrozen] = useState(false);
+  const [message, setMessage] = useState("");
+  const pending = useRef<CorrectionRequest | null>(null);
+  const corrected = withheld ? null : value.trim() ? Number(value) : NaN;
+  const valid =
+    (corrected === null || Number.isFinite(corrected)) &&
+    corrected !== measurement.value &&
+    !!reason.trim();
+  async function submit() {
+    if (busy || (!pending.current && !valid)) return;
+    pending.current ??= {
+      tenantId,
+      measurementId: measurement.id,
+      requestId: crypto.randomUUID(),
+      expectedReviewRevision: measurement.reviews.at(-1)?.revision ?? 0,
+      value: corrected,
+      reason,
+    };
+    setFrozen(true);
+    setBusy(true);
+    setMessage("");
+    try {
+      await correctPerformanceMeasurement(getSupabaseClient(), pending.current);
+      onRecorded();
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Correction could not be confirmed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <details className="lp-review">
+      <summary>Correct or withhold this value</summary>
+      <p>
+        The original value, source evidence, coverage and timing stay in the history. The new value
+        needs a separate evidence review before it can support a score.
+      </p>
+      <label>
+        Corrected value ({measurement.unit})
+        <input
+          type="number"
+          step="any"
+          value={value}
+          disabled={frozen || withheld}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      </label>
+      <label className="lp-check">
+        <input
+          type="checkbox"
+          checked={withheld}
+          disabled={frozen}
+          onChange={(e) => setWithheld(e.target.checked)}
+        />
+        Withhold this value (not assessed)
+      </label>
+      <label>
+        Correction reason
+        <textarea
+          maxLength={1000}
+          value={reason}
+          disabled={frozen}
+          onChange={(e) => setReason(e.target.value)}
+        />
+      </label>
+      <button
+        className="cp-secondary"
+        disabled={busy || (!frozen && !valid)}
+        onClick={() => void submit()}
+      >
+        {busy ? "Recording correction…" : frozen ? "Retry same correction" : "Record correction"}
+      </button>
+      {message && <p role="status">{message}</p>}
+    </details>
   );
 }
 function ReviewForm({

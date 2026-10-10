@@ -86,3 +86,11 @@ in-memory fixtures only; reloading resets them. Use it to review reason requirem
 proposal confirmation and forms. Person-hub/Command Centre navigation is described
 in the fixture rather than loading live data; those routes remain wired in the real
 operator application. This preview does not establish database/audit persistence.
+
+Numerical correction fixture (10 October): `&performance=1` also supports the actual
+correction form. Select a seven-day UTC interval ending at today's 00:00 UTC to match
+the fixture. Correcting the inferred 80 retains it and creates a new inferred value;
+separate confirmation enables a draft simulation. Explicit withholding creates a
+new unassessed observation. Correction metadata and original source timing remain
+visible. These measurements, correction receipts and reviews live only in memory
+and reset on a full browser reload; no database or provider is contacted.

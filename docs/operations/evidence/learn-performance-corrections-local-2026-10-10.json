@@ -1,0 +1,38 @@
+{
+  "state": "passed",
+  "checks": [
+    "Retained original values/reviews, exact retry and changed-identity/stale/fork denial.",
+    "New observation stays inferred; independent review; correction-of-correction retains source freshness.",
+    "NULL withholding, coverage/evidence preservation, role/tenant/View-As denial and immutable correction ledger.",
+    "Failed ledger append rolls back measurement; two real database sessions retain exactly one correction."
+  ],
+  "limitations": [
+    "Offline synthetic dependencies with actual deployed append/review bodies; no hosted Auth, full-schema or historical group-membership acceptance."
+  ],
+  "observedAt": "2026-10-10T01:47:17.193171+00:00",
+  "clientTests": {
+    "passed": 38,
+    "failed": 0
+  },
+  "typechecks": [
+    "application passed",
+    "preview passed"
+  ],
+  "previewBuild": "passed",
+  "browser": {
+    "source": "actual component; local synthetic fixture",
+    "checks": [
+      "80 retained when corrected to inferred 90; score withheld",
+      "separate review enables 90/100 draft simulation",
+      "withholding retains original and confirmed predecessor; score unassessed",
+      "source timestamp unchanged through both corrections"
+    ],
+    "hostedAcceptance": false
+  },
+  "deployment": {
+    "test": "unchanged release 017",
+    "production": "no changes"
+  },
+  "applicationBuild": "passed",
+  "temporaryResources": "Preview server stopped; preview tab closed; no correction-test containers remain"
+}

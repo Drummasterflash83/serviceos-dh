@@ -82,6 +82,9 @@
       ],
       "@/lib/learn-slack-import-outbox": [
         "../../src/lib/learn-slack-import-outbox.ts"
+      ],
+      "@/lib/learn-performance-corrections": [
+        "../../src/lib/learn-performance-corrections.ts"
       ]
     },
     "allowImportingTsExtensions": true,
