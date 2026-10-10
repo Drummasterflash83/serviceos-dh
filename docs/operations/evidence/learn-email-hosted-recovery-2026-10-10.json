@@ -1,0 +1,238 @@
+{
+  "version": "learn-email-hosted-recovery/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T16:03:26.381Z",
+  "state": "synthetic_recovery_verified",
+  "runId": "22aca77d-bc2d-4fa7-b080-8e7bf328c384",
+  "tenantId": "2b7ae297-5faf-4e49-919c-6cfee4efa5ff",
+  "retired": true,
+  "writeAttempted": true,
+  "preservedDataSets": 56,
+  "recovery": {
+    "worker": {
+      "success": true,
+      "claimed": 3,
+      "succeeded": 3,
+      "waiting": 0,
+      "unconfirmed": 0,
+      "retrying": 0,
+      "dead_lettered": 0,
+      "failed": 0,
+      "duration_ms": 1657
+    },
+    "resumedSavedPages": true,
+    "syntheticProviderCalls": null,
+    "evidence": {
+      "jobs": [
+        {
+          "id": "471bc420-1fef-46fa-9052-e8f45d565e0e",
+          "result": {
+            "ingestion": {
+              "stream": "recent",
+              "success": true,
+              "sync_run_id": "1e003c27-c8a7-4340-864a-7475f24612f0",
+              "retry_action": "none",
+              "email_account_id": "61a5cd9f-1169-4579-9aa4-5b52cd300ef9",
+              "coverage_complete": null,
+              "records_processed": 1,
+              "threads_processed": null,
+              "historical_receipt": true,
+              "checkpoint_certainty": "confirmed",
+              "persistence_certainty": "confirmed",
+              "invocation_records_processed": 0
+            },
+            "sync_run_id": "1e003c27-c8a7-4340-864a-7475f24612f0"
+          },
+          "status": "succeeded",
+          "job_type": "email.gmail_sync",
+          "attempt_count": 2
+        },
+        {
+          "id": "66fc4d11-46f8-48aa-b4b5-b19167440427",
+          "result": {
+            "ingestion": {
+              "stream": "historical",
+              "success": true,
+              "sync_run_id": "b5a1ff29-94e3-47c2-ae9e-b3c8193f2f9d",
+              "retry_action": "none",
+              "email_account_id": "24ec40c0-2a65-48a0-a35d-128c48be2134",
+              "coverage_complete": null,
+              "records_processed": 1,
+              "threads_processed": null,
+              "historical_receipt": true,
+              "checkpoint_certainty": "confirmed",
+              "persistence_certainty": "confirmed",
+              "invocation_records_processed": 0
+            },
+            "sync_run_id": "b5a1ff29-94e3-47c2-ae9e-b3c8193f2f9d"
+          },
+          "status": "succeeded",
+          "job_type": "email.workspace_backfill",
+          "attempt_count": 2
+        },
+        {
+          "id": "fcfd638c-f905-4440-aafe-4071ee024400",
+          "result": {
+            "ingestion": {
+              "stream": "recent",
+              "success": true,
+              "sync_run_id": "ad56d7f4-47a4-41a4-8cb0-263ce60f224a",
+              "retry_action": "none",
+              "email_account_id": "384cb047-d60a-4a87-be58-466fe1fcc5c7",
+              "coverage_complete": null,
+              "records_processed": 1,
+              "threads_processed": null,
+              "historical_receipt": true,
+              "checkpoint_certainty": "confirmed",
+              "persistence_certainty": "confirmed",
+              "invocation_records_processed": 0
+            },
+            "sync_run_id": "ad56d7f4-47a4-41a4-8cb0-263ce60f224a"
+          },
+          "status": "succeeded",
+          "job_type": "email.workspace_sync",
+          "attempt_count": 2
+        }
+      ],
+      "runs": [
+        {
+          "id": "1e003c27-c8a7-4340-864a-7475f24612f0",
+          "status": "success",
+          "records_processed": 1
+        },
+        {
+          "id": "ad56d7f4-47a4-41a4-8cb0-263ce60f224a",
+          "status": "success",
+          "records_processed": 1
+        },
+        {
+          "id": "b5a1ff29-94e3-47c2-ae9e-b3c8193f2f9d",
+          "status": "success",
+          "records_processed": 1
+        }
+      ],
+      "pending": 0,
+      "threads": 3,
+      "accounts": [
+        {
+          "id": "24ec40c0-2a65-48a0-a35d-128c48be2134",
+          "status": "active_dwd",
+          "history_id": null,
+          "backfill_page_token": "synthetic-saved-page",
+          "backfill_total_fetched": 1
+        },
+        {
+          "id": "384cb047-d60a-4a87-be58-466fe1fcc5c7",
+          "status": "active_dwd",
+          "history_id": null,
+          "backfill_page_token": null,
+          "backfill_total_fetched": 0
+        },
+        {
+          "id": "61a5cd9f-1169-4579-9aa4-5b52cd300ef9",
+          "status": "active",
+          "history_id": null,
+          "backfill_page_token": null,
+          "backfill_total_fetched": 0
+        }
+      ],
+      "messages": 3,
+      "profiles": 0,
+      "checkpoints": [
+        {
+          "state": "ready",
+          "stream": "historical",
+          "continuation": null,
+          "email_account_id": "24ec40c0-2a65-48a0-a35d-128c48be2134"
+        },
+        {
+          "state": "ready",
+          "stream": "recent",
+          "continuation": {
+            "mode": "reconcile",
+            "phase": "initialized",
+            "query": null,
+            "labels": [
+              "INBOX",
+              "SENT"
+            ],
+            "version": 2,
+            "page_size": 25,
+            "captured_at": "2026-10-10T16:01:08.149Z",
+            "fetch_policy": "missing_only",
+            "labels_state": {
+              "SENT": {
+                "complete": false,
+                "next_page_token": null
+              },
+              "INBOX": {
+                "complete": false,
+                "next_page_token": "synthetic-saved-page"
+              }
+            },
+            "origin_history_id": null,
+            "captured_history_id": "100"
+          },
+          "email_account_id": "384cb047-d60a-4a87-be58-466fe1fcc5c7"
+        },
+        {
+          "state": "ready",
+          "stream": "recent",
+          "continuation": {
+            "mode": "reconcile",
+            "phase": "initialized",
+            "query": null,
+            "labels": [
+              "INBOX",
+              "SENT"
+            ],
+            "version": 2,
+            "page_size": 25,
+            "captured_at": "2026-10-10T16:01:07.624Z",
+            "fetch_policy": "missing_only",
+            "labels_state": {
+              "SENT": {
+                "complete": false,
+                "next_page_token": null
+              },
+              "INBOX": {
+                "complete": false,
+                "next_page_token": "synthetic-saved-page"
+              }
+            },
+            "origin_history_id": null,
+            "captured_history_id": "100"
+          },
+          "email_account_id": "61a5cd9f-1169-4579-9aa4-5b52cd300ef9"
+        }
+      ],
+      "tenant_status": "archived",
+      "capture_allowed": false
+    }
+  },
+  "limitations": [
+    "Mailbox pages came from in-memory synthetic provider responses; real Google authorization/capture is not established.",
+    "The deployed worker recovered saved pages while paused; no new provider work, signed-in user acceptance or scheduling was tested.",
+    "No login, operator grant, OAuth/Vault credential, production change or retained-source deletion."
+  ],
+  "retirement": {
+    "observedAt": "2026-10-10T16:04:19.281Z",
+    "tenantStatus": "archived",
+    "captureAllowed": false,
+    "accounts": [
+      {
+        "id": "24ec40c0-2a65-48a0-a35d-128c48be2134",
+        "status": "disabled"
+      },
+      {
+        "id": "384cb047-d60a-4a87-be58-466fe1fcc5c7",
+        "status": "disabled"
+      },
+      {
+        "id": "61a5cd9f-1169-4579-9aa4-5b52cd300ef9",
+        "status": "disabled"
+      }
+    ],
+    "profiles": 0
+  }
+}

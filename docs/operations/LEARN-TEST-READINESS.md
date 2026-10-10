@@ -1,5 +1,39 @@
 # Existing TEST environment: verified release gaps
 
+## Hosted synthetic email recovery — passed, 10 October 2026
+
+At **16:03:26 UTC**, the deployed TEST worker recovered all three mailbox paths:
+Gmail OAuth, Workspace recent sync and Workspace historical import. Manual endpoint
+requests first returned validated 202 queue receipts; matching requests reused
+their jobs and conflicting page-size requests returned 409. The actual local
+capture engine then stored one synthetic message/thread per mailbox in hosted
+TEST and was deliberately interrupted after saving the checkpoint request but
+before applying it. Provider responses were supplied entirely in memory.
+
+An initial read-only audit query attempted to call a worker-only function and was
+denied. The fixture retired safely, and independent read-only checks confirmed
+three stored pages and three pending requests. After correcting that query, the
+test continued from those same pages without importing again. The synthetic
+tenant stayed archived and all capture flags stayed false; only the synthetic
+mailbox statuses needed to settle the saved protocol requests were temporarily
+restored. The deployed worker reclaimed the expired leases and completed all
+three jobs, with **zero pending requests, three messages, three threads, no extra
+jobs, and zero newly processed records attributed to recovery**. Each original
+run retained its one-record evidence and saved continuation; recent-mail cursors
+did not advance prematurely.
+
+All **56 pre-existing dataset fingerprints** were unchanged, including the four
+new runtime tables added to this preservation check. The runtime schema also
+matched its pinned fingerprint. All synthetic mailboxes were disabled again and
+the tenant remains archived; no login, profile, operator grant, OAuth/Vault
+credential, schedule or production change was introduced. Three verification-tool
+tests cover fixture scoping, provider isolation and rejection of false recovery
+success. See [hosted recovery evidence](evidence/learn-email-hosted-recovery-2026-10-10.json).
+
+**Still required:** real Google authority/capture, continuous scheduling and
+signed-in tenant-user/frontend acceptance. This verifies deployed recovery of
+saved synthetic pages, not a real provider connection or complete traversal.
+
 ## Email runtime endpoints — TEST boundary checks passed, 10 October 2026
 
 The generic `platform-worker` and the three manual Gmail/Workspace endpoints are
@@ -33,8 +67,8 @@ TypeScript passed using local Deno/Supabase ambient declarations.
 See [deployment evidence](evidence/learn-email-runtime-endpoints-2026-10-10.json)
 and [HTTP evidence](evidence/learn-email-runtime-http-2026-10-10.json).
 
-**Still required:** positive hosted queue/page/recovery acceptance, signed-in
-tenant-user and frontend acceptance, verified Google mailbox authority, and
+**Update:** synthetic hosted queue/page/recovery acceptance passed above. Still
+required: signed-in tenant-user and frontend acceptance, verified Google mailbox authority, and
 scheduler configuration. No Google provider credentials or schedules were added,
 no real provider request was made, and production was not changed. Boundary
 checks and an empty worker response do not establish live mailbox capture.
