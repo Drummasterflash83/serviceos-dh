@@ -1022,3 +1022,20 @@ of reconstructing the wrong link. All 27 focused tests pass, and the actual reta
 source trace confirms that refusal without rewriting any of the 4,000 package jobs.
 No import, deployment, production read or source mutation occurred in this increment.
 See [trace, compatibility requirements and historical environment distinction](../operations/LEARN-COMMUSOFT-RECOVERY.md#ownership-contradiction-traced-and-preparation-guarded--10-october).
+
+## Governed import foundation installed in TEST — 10 October
+
+Release 022 is installed after an acknowledged hosted rollback rehearsal and exact
+post-install schema/configuration checks. TEST now has 95 tables and 23 receipts.
+The existing customer/site/job importer has its missing contact endpoint and
+tenant-key dependencies, four additive tables, 25 private server functions and
+three prepared import profiles. Existing source tables and earlier release checks
+are preserved; the TEST UI tools now require this verified release.
+
+An isolated current-TEST projection passed deployment, rollback, failed receipt,
+retained canonical row, historical import and exact-site assertions. Three release
+tool tests and two preceding thread-release tests pass. Auth/Edge/UI import
+acceptance remains open; marketing eligibility tests were explicitly excluded
+because that subsystem was not enabled. No original file import, provider action,
+Edge deployment or production change ran. The real package's disputed ownership
+link remains unresolved. See [release evidence and next gate](../operations/LEARN-COMMUSOFT-RECOVERY.md#hosted-verification-and-installation).

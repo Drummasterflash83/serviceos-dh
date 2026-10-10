@@ -2,8 +2,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
-import { readThreadRecoveryCatalog } from "./learn-slack-thread-recovery-catalog.mjs";
-import { installedThreadRecovery } from "./learn-test-thread-recovery-release.mjs";
+import { readGovernedImportCatalog } from "./learn-governed-import-catalog.mjs";
+import { installedImports } from "./learn-test-import-release.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readAcceptanceResponse } from "./learn-test-launch-acceptance.mjs";
 const [mode, path] = process.argv.slice(2),
@@ -27,8 +27,8 @@ check(
   "Active marked TEST browser fixture required",
 );
 check(
-  installedThreadRecovery(
-    await readThreadRecoveryCatalog({ allowProjectRef: TEST_PROJECT, token }),
+  installedImports(
+    await readGovernedImportCatalog({ allowProjectRef: TEST_PROJECT, token }),
   ),
   "Exact TEST 021 required",
 );

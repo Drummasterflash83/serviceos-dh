@@ -2,14 +2,14 @@
 import {randomUUID,randomBytes} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {installedThreadRecovery} from './learn-test-thread-recovery-release.mjs';
-import {readThreadRecoveryCatalog} from './learn-slack-thread-recovery-catalog.mjs';
+import {installedImports} from './learn-test-import-release.mjs';
+import {readGovernedImportCatalog} from './learn-governed-import-catalog.mjs';
 import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';
 const [mode,path]=process.argv.slice(2),check=(ok,s)=>{if(!ok)throw Error(s);};
 check(['create','retire','inspect'].includes(mode)&&path?.startsWith('/private/tmp/serviceos-learn-ui-')&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST fixture command and manifest required');
-const token=savedCliToken(),catalog=await readThreadRecoveryCatalog({allowProjectRef:TEST_PROJECT,token});
-check(installedThreadRecovery(catalog),'Exact installed TEST schema required');
+const token=savedCliToken(),catalog=await readGovernedImportCatalog({allowProjectRef:TEST_PROJECT,token});
+check(installedImports(catalog),'Exact installed TEST schema required');
 const base=`https://${TEST_PROJECT}.supabase.co`,management={Authorization:`Bearer ${token}`,'Content-Type':'application/json'},q=s=>`'${String(s).replaceAll("'","''")}'`;
 async function request(url,headers,method='GET',body){const r=await fetch(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(30000)});const data=await r.json();check(r.ok,`TEST fixture request failed (HTTP ${r.status})`);return data;}
 const sql=(query,readOnly=false)=>request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query${readOnly?'/read-only':''}`,management,'POST',{query,...(readOnly?{}:{read_only:false})});

@@ -1,0 +1,87 @@
+{
+  "version": "learn-governed-import-test-release/1",
+  "state": "installed_needs_authenticated_acceptance",
+  "prerequisite": {
+    "release": "021",
+    "tables": 91,
+    "receipts": 22,
+    "fingerprint": "d43c705d217934f0d69506425b703b7734b9a49f1ac32e912bbdd66166b2f042"
+  },
+  "rehearsal": {
+    "version": "learn-test-governed-imports/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+    "observedAt": "2026-10-10T04:17:21.014Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "rehearsed_and_rolled_back",
+    "beforeFingerprint": "ccdb6859be0c583e817e4d6e7e34223c18cc24d3c743919af6d8d11436ceef2d",
+    "afterFingerprint": "ccdb6859be0c583e817e4d6e7e34223c18cc24d3c743919af6d8d11436ceef2d",
+    "scope": "Four additive tables, two parent indexes, 25 functions and three platform import profiles. No import started, source rows edited, provider traffic, Edge changes, schedules or production changes."
+  },
+  "installation": {
+    "version": "learn-test-governed-imports/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+    "observedAt": "2026-10-10T04:18:20.942Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "installed_needs_authenticated_acceptance",
+    "beforeFingerprint": "ccdb6859be0c583e817e4d6e7e34223c18cc24d3c743919af6d8d11436ceef2d",
+    "afterFingerprint": "09dabd4933f8ddf191c84773f06ae78654fa6aba12b8235ed8678e20fd9055ef",
+    "scope": "Four additive tables, two parent indexes, 25 functions and three platform import profiles. No import started, source rows edited, provider traffic, Edge changes, schedules or production changes."
+  },
+  "installed": {
+    "tables": 95,
+    "receipts": 23,
+    "importFunctions": 25,
+    "platformProfilesAdded": 3,
+    "originalSourceImports": 0,
+    "edgeDeployments": 0,
+    "providerRequests": 0,
+    "productionChanges": 0
+  },
+  "validation": {
+    "releaseToolTestsPassed": 3,
+    "precedingThreadReleaseTestsPassed": 2,
+    "isolatedPostgres": "17.6.1.141",
+    "projectedTables": 11,
+    "actualRecordedConstraintsPoliciesAndTriggers": true,
+    "nonSuperuserDeploymentPassed": true,
+    "explicitRollbackPassed": true,
+    "receiptFailureRollbackPassed": true,
+    "retainedSyntheticCanonicalRowsUnchanged": true,
+    "historicalImportSectionsExercised": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "marketingEligibilityAssertionsExcluded": true,
+    "exactSiteAndMultiplePhoneSupplementPassed": true,
+    "compositeEndpointOwnershipAndPrivilegesPassed": true,
+    "sourceCheckerSyntaxPassed": true
+  },
+  "sourceHashes": {
+    "scripts/verify/learn-import-bundle.mjs": "25d427c4c3d2429203209973780f6af119646a9d64a37ac65d48559cbfd5c155",
+    "scripts/verify/learn-governed-import-catalog.mjs": "fcf5ae17d5ce60ffacd5c9dcac540cb504b8efe98a1acdc87ceadfd39facaa41",
+    "scripts/verify/learn-test-import-release.mjs": "d36ce392fb22a019d8d1cfca6edd9728ed090a1a0684dde395606a91c4522ffb",
+    "scripts/verify/learn-test-import-release.test.mjs": "acee1c209fcc803ad8cd595926977b45182769f6f9f27abf4eaab87fdae7cc86",
+    "scripts/verify/learn-import-test-projection.py": "4a686d3034806376728327f638ee7318c3dc3722ab07b03d45fc17b5ccf53e46",
+    "scripts/verify/learn-import-test-projection.assert.sql": "70fdff62f8cb0515c21d723d156f646426cc1de6127d6b67e383891963804154",
+    "supabase/release/learn-test/022_governed_imports.sql": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+    "supabase/release/learn-test/022_governed_imports.expected.json": "a4fceaf193cf5609884a0aa8971f243dd635d74f76e5731eb2aa0b63c4e6243f"
+  },
+  "limitations": [
+    "Auth is a stand-in in the isolated projection; actual Auth/Edge/UI preview and apply remain unverified.",
+    "The projection restores only import-related TEST tables; hosted rehearsal and exact catalog checks separately verify compatibility.",
+    "Marketing eligibility/suppression machinery is not installed or mocked; corresponding historical assertions are explicitly excluded.",
+    "No full source preservation scan was attempted in this increment; installation does not edit source rows.",
+    "The retained real package still has one unresolved site-customer contradiction and remains refused by its validator."
+  ]
+}

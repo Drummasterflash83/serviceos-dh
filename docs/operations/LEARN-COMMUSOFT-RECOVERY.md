@@ -210,3 +210,83 @@ must not be confused with the zero jobs observed in the currently inspected
 production project. Later site-identity evidence, incidents, acquisition contracts
 and repair history remain candidates for selective recovery, not proof that they
 are installed in current TEST or production.
+
+## Governed import TEST candidate — 10 October
+
+A fresh read verified TEST release 021: 91 tables, 22 receipts and fingerprint
+`d43c705d217934f0d69506425b703b7734b9a49f1ac32e912bbdd66166b2f042`.
+The recovered import functions are absent. The earlier old-schema integration test
+therefore did not establish deployability into current TEST.
+
+Candidate release `022_governed_imports.sql` adds four tables (`contact_points`,
+`import_entity_links`, `import_conflicts`, `import_row_results`), two parent
+uniqueness indexes, 25 functions and three governed platform profiles. It recovers
+the historical contact endpoint primitive/normalizer without enabling marketing
+permission or sending machinery. Contact endpoints additionally require the same
+tenant as their person through a composite foreign key. All import functions,
+including trigger helpers, have explicit server-only execute grants. Clients can
+read tenant-scoped contact endpoints, identity links and conflicts; the row ledger
+remains private.
+
+`scripts/verify/learn-import-bundle.mjs` generates the candidate deterministically
+and records each historical source checksum. The four previously recovered import
+migrations are included unchanged. Prerequisites are narrow extracts from the
+historical marketing foundation/projection. The TEST transaction requires release
+021, refuses colliding objects or prepared profiles, and records its receipt
+atomically. Installation creates configuration only; it does not apply a file.
+
+The new isolated runner reads the verified schema-only catalog, restoring eleven
+import-related tables with their actual constraints, indexes, policies and
+triggers, including the foundation and work-authority guards. It creates a fresh,
+network-isolated PostgreSQL 17 container and removes it afterward. No existing
+container or hosted database is used by that runner. Checks passed for:
+
+- Deployment under a non-superuser owner, explicit rollback and receipt-failure
+  rollback with unchanged pre-existing definitions and synthetic canonical rows.
+- Only the intended parent indexes augment pre-existing table metadata; the three
+  new profiles are the only pre-existing-table rows added by installation.
+- Historical identity, replay, ledger, held/conflicting rows and tenant boundaries,
+  plus multiple phone numbers, exact site resolution, timestamp preservation and
+  no engineer assignment from a name alone.
+- Composite endpoint ownership, tenant-scoped endpoint reads and private helpers.
+
+Auth is a fixture stand-in; profiles are inserted explicitly in the historical
+fixture. Marketing eligibility/suppression assertions are explicitly excluded
+because that subsystem is absent from TEST. No mocked eligibility function was
+installed to make them pass. These results do not prove actual signed-in Edge/UI
+acceptance, hosted compatibility, live provider capture or a real package import.
+
+Reproduce the local candidate check using a freshly verified 021 catalog:
+
+```sh
+node scripts/verify/learn-import-bundle.mjs --write
+python3 scripts/verify/learn-import-test-projection.py .verification-results/learn-import-prerequisite-catalog.json
+node --test scripts/verify/learn-test-import-release.test.mjs
+```
+
+The pinned release tool compares expected table/function/profile definitions,
+retains all previous release checks, requires a fresh matching hosted rollback
+rehearsal before apply, and inspects an uncertain write without replaying it.
+The real package's disputed site remains unresolved and no source package is
+altered by preparing this release.
+
+### Hosted verification and installation
+
+At **04:17:21 UTC**, the hosted rollback rehearsal was acknowledged and left
+identical before/after import-catalog fingerprints. At **04:18:20 UTC**, installation
+was acknowledged and the complete expected import schema/configuration matched.
+Removing only this release's additions reproduces the prior schema fingerprint.
+TEST now contains **95 tables and 23 receipts**. Source SQL SHA-256:
+`0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d`.
+
+All three import release-tool tests pass, including source/config drift, existing
+profiles, wrong targets, expired rehearsals and uncertain writes without replay.
+The two preceding thread-release tests also passed. The ordinary TEST UI server,
+fixture and Slack fixture now require release 022; their imported release checks
+continue to validate all preceding releases.
+
+No real import, Edge deployment, provider call, schedule or production change was
+performed. The next acceptance gate is actual signed-in governed preview/apply and
+its review surface. The retained Drummonds package still requires ownership
+clarification; installing import machinery is not approval of that package.
+See [local and hosted release evidence](evidence/learn-governed-import-test-release-2026-10-10.json).

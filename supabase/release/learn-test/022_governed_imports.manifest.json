@@ -1,0 +1,54 @@
+{
+  "version": "learn-governed-imports-bundle/1",
+  "sha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+  "sources": {
+    "20260828120000_marketing_foundation.sql": "9360cdae42c5483ca95e177d57adb205e3a9815aecc1ad2b7bf71e7e96da1628",
+    "20260829120000_marketing_contacts_projection.sql": "88fa76ed6bb9bdf0cdbc6467eb3eec04699ddabab261733910022805657480e5",
+    "20260912120000_commusoft_governed_import.sql": "e0147060ae2f3ed4bbb6806b1d90484027c924f1daa4aeb8bdfa8c76576332f9",
+    "20260929120000_contact_point_primary_fix.sql": "5725c71ec95c462118127545fe9acada09d5f25b5d5676847b6935f30c1835db",
+    "20260930120000_exact_job_site_resolution.sql": "85df31a8f0ba2d968e54a4c780e964f3aa77e8d29b821c063ab4a3b4a624abb7",
+    "20261029170000_learn_import_boundaries.sql": "907aa6713a567417ecbcfe0e6e4e6a6b41cfe95d7ba511bf222b671cec96b3fb"
+  },
+  "functions": [
+    "import_customer_row",
+    "import_entity_links_guard",
+    "import_job_row",
+    "import_match_customer",
+    "import_match_job",
+    "import_match_site",
+    "import_normalize_address",
+    "import_normalize_phone_uk",
+    "import_normalize_postcode",
+    "import_person_contact_points",
+    "import_resolve_customer",
+    "import_resolve_job_site",
+    "import_resolve_job_site_exact",
+    "import_resolve_job_site_v2",
+    "import_row_outcome",
+    "import_row_preamble",
+    "import_row_prior",
+    "import_row_results_guard",
+    "import_run_finalize",
+    "import_site_row",
+    "import_validate_customer_row",
+    "import_validate_job_row",
+    "import_validate_row_shape",
+    "import_validate_site_row",
+    "marketing_normalize_endpoint"
+  ],
+  "tables": [
+    "contact_points",
+    "import_entity_links",
+    "import_conflicts",
+    "import_row_results"
+  ],
+  "existingTableIndexes": [
+    "data_imports_tenant_id_uk",
+    "people_tenant_id_uk"
+  ],
+  "limitations": [
+    "TEST dependency recovery only. Existing hosted data and original migrations are not rewritten.",
+    "Only the historical endpoint primitive/normalizer is recovered from marketing; no marketing permission or sending machinery is enabled.",
+    "Deployment and actual Auth/Edge/UI acceptance remain separate gates."
+  ]
+}

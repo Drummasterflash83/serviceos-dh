@@ -1,0 +1,1249 @@
+{
+  "sourceSha256": "0294ba3ef802b53ad158ee98570a79dc713840496bb45d53a4263d3f26ecea9d",
+  "tables": [
+    {
+      "rls": true,
+      "name": "contact_points",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "person_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "channel",
+          "type": "text",
+          "default": "'email'::text",
+          "notNull": true
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "normalized_value",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "is_primary",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "verification_state",
+          "type": "text",
+          "default": "'unverified'::text",
+          "notNull": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'system'::text",
+          "notNull": true
+        },
+        {
+          "name": "source_record_ref",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "last_observed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "contact_points_endpoint_idx",
+          "definition": "CREATE INDEX contact_points_endpoint_idx ON public.contact_points USING btree (tenant_id, channel, normalized_value)"
+        },
+        {
+          "name": "contact_points_person_idx",
+          "definition": "CREATE INDEX contact_points_person_idx ON public.contact_points USING btree (tenant_id, person_id)"
+        },
+        {
+          "name": "contact_points_person_value_uk",
+          "definition": "CREATE UNIQUE INDEX contact_points_person_value_uk ON public.contact_points USING btree (tenant_id, person_id, channel, normalized_value)"
+        },
+        {
+          "name": "contact_points_pkey",
+          "definition": "CREATE UNIQUE INDEX contact_points_pkey ON public.contact_points USING btree (id)"
+        },
+        {
+          "name": "contact_points_primary_uk",
+          "definition": "CREATE UNIQUE INDEX contact_points_primary_uk ON public.contact_points USING btree (tenant_id, person_id, channel) WHERE is_primary"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "contact_points_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "contact_points_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER contact_points_set_updated_at BEFORE UPDATE ON public.contact_points FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "contact_points_channel_check",
+          "definition": "CHECK ((channel = ANY (ARRAY['email'::text, 'phone'::text, 'sms'::text, 'whatsapp'::text, 'social'::text, 'other'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "contact_points_person_id_fkey",
+          "definition": "FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "contact_points_person_tenant_fk",
+          "definition": "FOREIGN KEY (tenant_id, person_id) REFERENCES people(tenant_id, id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "p",
+          "name": "contact_points_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "contact_points_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "c",
+          "name": "contact_points_verification_state_check",
+          "definition": "CHECK ((verification_state = ANY (ARRAY['unverified'::text, 'verified'::text, 'invalid'::text])))"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "import_conflicts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "import_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "conflict_type",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "blocking",
+          "type": "boolean",
+          "default": "true",
+          "notNull": true
+        },
+        {
+          "name": "identifiers",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "candidates",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "truncated",
+          "type": "boolean",
+          "default": "false",
+          "notNull": true
+        },
+        {
+          "name": "detail",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'open'::text",
+          "notNull": true
+        },
+        {
+          "name": "resolution",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resolved_by",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "import_conflicts_open_uk",
+          "definition": "CREATE UNIQUE INDEX import_conflicts_open_uk ON public.import_conflicts USING btree (tenant_id, source_system, entity_kind, external_id, conflict_type) WHERE (status = 'open'::text)"
+        },
+        {
+          "name": "import_conflicts_pkey",
+          "definition": "CREATE UNIQUE INDEX import_conflicts_pkey ON public.import_conflicts USING btree (id)"
+        },
+        {
+          "name": "import_conflicts_status_idx",
+          "definition": "CREATE INDEX import_conflicts_status_idx ON public.import_conflicts USING btree (tenant_id, status, entity_kind)"
+        },
+        {
+          "name": "import_conflicts_tenant_id_uk",
+          "definition": "CREATE UNIQUE INDEX import_conflicts_tenant_id_uk ON public.import_conflicts USING btree (tenant_id, id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "import_conflicts_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "import_conflicts_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER import_conflicts_set_updated_at BEFORE UPDATE ON public.import_conflicts FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "ic_import_fk",
+          "definition": "FOREIGN KEY (tenant_id, import_id) REFERENCES data_imports(tenant_id, id) ON DELETE SET NULL (import_id)"
+        },
+        {
+          "kind": "c",
+          "name": "import_conflicts_conflict_type_check",
+          "definition": "CHECK ((conflict_type = ANY (ARRAY['ambiguous_channel'::text, 'channel_disagreement'::text, 'multiple_candidates'::text, 'company_person_overlap'::text, 'site_ambiguous'::text, 'site_exact_unresolvable'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "import_conflicts_entity_kind_check",
+          "definition": "CHECK ((entity_kind = ANY (ARRAY['customer'::text, 'site'::text, 'job'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "import_conflicts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "import_conflicts_status_check",
+          "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'resolved'::text, 'dismissed'::text])))"
+        },
+        {
+          "kind": "f",
+          "name": "import_conflicts_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "import_entity_links",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_system",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_table",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "link_strategy",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "evidence",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "notNull": true
+        },
+        {
+          "name": "import_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "import_entity_links_entity_idx",
+          "definition": "CREATE INDEX import_entity_links_entity_idx ON public.import_entity_links USING btree (tenant_id, entity_table, entity_id)"
+        },
+        {
+          "name": "import_entity_links_pkey",
+          "definition": "CREATE UNIQUE INDEX import_entity_links_pkey ON public.import_entity_links USING btree (id)"
+        },
+        {
+          "name": "import_entity_links_tenant_id_source_system_entity_kind_ext_key",
+          "definition": "CREATE UNIQUE INDEX import_entity_links_tenant_id_source_system_entity_kind_ext_key ON public.import_entity_links USING btree (tenant_id, source_system, entity_kind, external_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "import_entity_links_select_tenant",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(tenant_id = current_tenant_id())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "import_entity_links_guard",
+          "function": "import_entity_links_guard",
+          "definition": "CREATE TRIGGER import_entity_links_guard BEFORE INSERT OR UPDATE ON public.import_entity_links FOR EACH ROW EXECUTE FUNCTION import_entity_links_guard()"
+        },
+        {
+          "name": "import_entity_links_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER import_entity_links_set_updated_at BEFORE UPDATE ON public.import_entity_links FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "iel_import_fk",
+          "definition": "FOREIGN KEY (tenant_id, import_id) REFERENCES data_imports(tenant_id, id) ON DELETE SET NULL (import_id)"
+        },
+        {
+          "kind": "c",
+          "name": "iel_kind_table_check",
+          "definition": "CHECK ((((entity_kind = 'customer'::text) AND (entity_table = ANY (ARRAY['people'::text, 'companies'::text]))) OR ((entity_kind = 'site'::text) AND (entity_table = 'sites'::text)) OR ((entity_kind = 'job'::text) AND (entity_table = 'jobs'::text))))"
+        },
+        {
+          "kind": "c",
+          "name": "import_entity_links_entity_kind_check",
+          "definition": "CHECK ((entity_kind = ANY (ARRAY['customer'::text, 'site'::text, 'job'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "import_entity_links_entity_table_check",
+          "definition": "CHECK ((entity_table = ANY (ARRAY['people'::text, 'companies'::text, 'sites'::text, 'jobs'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "import_entity_links_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "import_entity_links_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "u",
+          "name": "import_entity_links_tenant_id_source_system_entity_kind_ext_key",
+          "definition": "UNIQUE (tenant_id, source_system, entity_kind, external_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "import_row_results",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "import_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "row_number",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "fields",
+          "type": "text[]",
+          "default": "'{}'::text[]",
+          "notNull": true
+        },
+        {
+          "name": "entity_table",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "conflict_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "attempt",
+          "type": "integer",
+          "default": "1",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "import_row_results_idx",
+          "definition": "CREATE INDEX import_row_results_idx ON public.import_row_results USING btree (tenant_id, import_id, outcome)"
+        },
+        {
+          "name": "import_row_results_pkey",
+          "definition": "CREATE UNIQUE INDEX import_row_results_pkey ON public.import_row_results USING btree (id)"
+        },
+        {
+          "name": "import_row_results_tenant_id_import_id_row_number_key",
+          "definition": "CREATE UNIQUE INDEX import_row_results_tenant_id_import_id_row_number_key ON public.import_row_results USING btree (tenant_id, import_id, row_number)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "import_row_results_guard",
+          "function": "import_row_results_guard",
+          "definition": "CREATE TRIGGER import_row_results_guard BEFORE INSERT OR UPDATE ON public.import_row_results FOR EACH ROW EXECUTE FUNCTION import_row_results_guard()"
+        },
+        {
+          "name": "import_row_results_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER import_row_results_set_updated_at BEFORE UPDATE ON public.import_row_results FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "c",
+          "name": "import_row_results_entity_table_check",
+          "definition": "CHECK ((entity_table = ANY (ARRAY['people'::text, 'companies'::text, 'sites'::text, 'jobs'::text])))"
+        },
+        {
+          "kind": "c",
+          "name": "import_row_results_outcome_check",
+          "definition": "CHECK ((outcome = ANY (ARRAY['created'::text, 'linked'::text, 'updated'::text, 'conflict'::text, 'held'::text, 'invalid'::text, 'skipped'::text, 'failed'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "import_row_results_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "c",
+          "name": "import_row_results_row_number_check",
+          "definition": "CHECK ((row_number > 0))"
+        },
+        {
+          "kind": "f",
+          "name": "import_row_results_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "u",
+          "name": "import_row_results_tenant_id_import_id_row_number_key",
+          "definition": "UNIQUE (tenant_id, import_id, row_number)"
+        },
+        {
+          "kind": "f",
+          "name": "irr_conflict_fk",
+          "definition": "FOREIGN KEY (tenant_id, conflict_id) REFERENCES import_conflicts(tenant_id, id) ON DELETE SET NULL (conflict_id)"
+        },
+        {
+          "kind": "c",
+          "name": "irr_entity_shape",
+          "definition": "CHECK ((((entity_id IS NULL) AND (entity_table IS NULL)) OR ((entity_id IS NOT NULL) AND (entity_table IS NOT NULL))))"
+        },
+        {
+          "kind": "f",
+          "name": "irr_import_fk",
+          "definition": "FOREIGN KEY (tenant_id, import_id) REFERENCES data_imports(tenant_id, id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "indexes": [
+    {
+      "name": "data_imports_tenant_id_uk",
+      "definition": "CREATE UNIQUE INDEX data_imports_tenant_id_uk ON public.data_imports USING btree (tenant_id, id)",
+      "table": "data_imports"
+    },
+    {
+      "name": "people_tenant_id_uk",
+      "definition": "CREATE UNIQUE INDEX people_tenant_id_uk ON public.people USING btree (tenant_id, id)",
+      "table": "people"
+    }
+  ],
+  "functions": [
+    {
+      "name": "import_customer_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_customer_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_source text;\n  v_short jsonb;\n  v_attempt int;\n  v_invalid jsonb;\n  v_res jsonb;\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_kind text := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');\n  v_email text := marketing_normalize_endpoint('email', p_record ->> 'primary_email');\n  v_phone text := import_normalize_phone_uk(p_record ->> 'primary_phone');\n  v_phone2 text := import_normalize_phone_uk(p_record ->> 'secondary_phone');\n  v_lock_keys text[] := array[]::text[];\n  v_lk text;\n  v_display text;\n  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);\n  v_meta jsonb;\n  v_import_meta jsonb;\n  v_conflict_id uuid;\n  v_person uuid;\n  v_company uuid;\n  v_p people%rowtype;\n  v_writable jsonb := '{}'::jsonb;\n  v_field_conflicts text[] := array[]::text[];\n  v_entity_table text;\n  v_entity_id uuid;\n  v_outcome text;\n  v_strategy text;\n  v_confidence numeric;\nbegin\n  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,\n                               p_record, p_options, 'customers');\n  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';\n  select o_short, o_attempt into v_short, v_attempt\n    from import_row_prior(p_tenant, p_import, p_row_number);\n  if v_short is not null then return v_short; end if;\n\n  v_invalid := import_validate_customer_row(p_tenant, v_source, p_record);\n  if v_invalid is not null then\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n    values (p_tenant, p_import, p_row_number, 'invalid',\n            v_invalid ->> 'reason',\n            coalesce((select array_agg(e) from jsonb_array_elements_text(\n                        v_invalid -> 'fields') e), '{}'::text[]),\n            v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');\n  end if;\n\n  -- identity locks: SAME key format as the marketing manual-create/import\n  -- paths (customers share the People identity space), deterministic order\n  if v_email is not null then v_lock_keys := array_append(v_lock_keys, 'email|' || v_email); end if;\n  if v_phone is not null then v_lock_keys := array_append(v_lock_keys, 'phone|' || v_phone); end if;\n  if v_phone2 is not null then v_lock_keys := array_append(v_lock_keys, 'phone|' || v_phone2); end if;\n  v_lock_keys := array_append(v_lock_keys, 'ext|' || v_source || '|' || v_ext);\n  for v_lk in select distinct u from unnest(v_lock_keys) t(u) order by u loop\n    perform pg_advisory_xact_lock(hashtextextended(p_tenant::text || '|' || v_lk, 42));\n  end loop;\n\n  v_res := import_resolve_customer(p_tenant, v_source, p_record);\n\n  v_display := nullif(trim(coalesce(p_record ->> 'display_name', '')), '');\n  if v_display is null then\n    v_display := nullif(trim(concat_ws(' ',\n      nullif(trim(coalesce(p_record ->> 'first_name', '')), ''),\n      nullif(trim(coalesce(p_record ->> 'last_name', '')), ''))), '');\n  end if;\n  v_import_meta := jsonb_strip_nulls(jsonb_build_object(\n    'source', v_source,\n    'external_id', v_ext,\n    'record_kind', v_kind,\n    'active', v_active,\n    'title', nullif(trim(coalesce(p_record ->> 'title', '')), ''),\n    'company_name', nullif(trim(coalesce(p_record ->> 'company_name', '')), '')));\n  v_meta := jsonb_build_object('import', v_import_meta);\n  if p_record ->> 'metadata_json' is not null then\n    v_meta := v_meta || jsonb_build_object('source_payload',\n      (p_record ->> 'metadata_json')::jsonb);\n  end if;\n\n  -- \u2500\u2500 ambiguous / conflicting channel evidence: ONE durable blocking\n  --    conflict, ZERO canonical mutation \u2500\u2500\n  if v_res ->> 'decision' in ('ambiguous', 'conflicting') then\n    insert into import_conflicts\n      (tenant_id, import_id, source_system, entity_kind, external_id,\n       conflict_type, blocking, identifiers, candidates, truncated, detail)\n    values (p_tenant, p_import, v_source, 'customer', v_ext,\n            case when v_res ->> 'decision' = 'ambiguous'\n                 then 'ambiguous_channel' else 'channel_disagreement' end,\n            true,\n            coalesce(v_res -> 'evidence', '[]'::jsonb),\n            coalesce((select jsonb_agg(jsonb_build_object(\n                        'entity_table', 'people', 'entity_id', c))\n                      from jsonb_array_elements_text(v_res -> 'candidate_union') c),\n                     '[]'::jsonb),\n            coalesce((v_res ->> 'truncated')::boolean, false),\n            jsonb_build_object('row_number', p_row_number))\n    on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)\n      where status = 'open'\n    do update set identifiers = excluded.identifiers,\n                  candidates = excluded.candidates,\n                  truncated = excluded.truncated,\n                  import_id = excluded.import_id\n    returning id into v_conflict_id;\n    insert into import_row_provenance\n      (tenant_id, import_id, entity_table, entity_id, source_system,\n       source_row_number, external_id, imported_fields, match_strategy,\n       confidence, action, conflicts)\n    values (p_tenant, p_import, 'import_conflicts', v_conflict_id, v_source,\n            p_row_number, v_ext,\n            array(select jsonb_object_keys(p_record)),\n            v_res ->> 'decision', 0.5, 'conflict',\n            coalesce(v_res -> 'evidence', '[]'::jsonb));\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, conflict_id, attempt)\n    values (p_tenant, p_import, p_row_number, 'conflict',\n            case when v_res ->> 'decision' = 'ambiguous'\n              then 'a contact channel matches several existing people'\n              else 'email and phone point to different existing people' end,\n            v_conflict_id, v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          conflict_id = excluded.conflict_id, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'conflict', 'conflict_id', v_conflict_id);\n  end if;\n\n  -- \u2500\u2500 already linked (idempotent rerun of the same source row) \u2500\u2500\n  if v_res ->> 'decision' = 'linked' then\n    v_entity_table := v_res ->> 'entity_table';\n    v_entity_id := (v_res ->> 'entity_id')::uuid;\n    v_outcome := 'linked';\n    v_strategy := 'external_id';\n    v_confidence := 1.0;\n\n  -- \u2500\u2500 exactly ONE existing person on strong channel evidence: link, fill\n  --    blanks only, never overwrite, never touch verified/created_source \u2500\u2500\n  elsif v_res ->> 'decision' = 'matched' then\n    v_person := (v_res ->> 'entity_id')::uuid;\n    select * into v_p from people where id = v_person and tenant_id = p_tenant\n      for update;\n    if not found then\n      raise exception 'matched person vanished \u2014 retry' using errcode = '40001';\n    end if;\n    v_writable := '{}'::jsonb;\n    if v_p.display_name is null and v_display is not null then\n      v_writable := v_writable || jsonb_build_object('display_name', v_display); end if;\n    if v_p.first_name is null and nullif(trim(coalesce(p_record ->> 'first_name', '')), '') is not null then\n      v_writable := v_writable || jsonb_build_object('first_name', trim(p_record ->> 'first_name')); end if;\n    if v_p.last_name is null and nullif(trim(coalesce(p_record ->> 'last_name', '')), '') is not null then\n      v_writable := v_writable || jsonb_build_object('last_name', trim(p_record ->> 'last_name')); end if;\n    if v_p.primary_email is null and p_record ->> 'primary_email' is not null then\n      v_writable := v_writable || jsonb_build_object('primary_email', p_record ->> 'primary_email'); end if;\n    if v_p.primary_phone is null and p_record ->> 'primary_phone' is not null then\n      v_writable := v_writable || jsonb_build_object('primary_phone', p_record ->> 'primary_phone'); end if;\n    if v_p.address_text is null and nullif(trim(coalesce(p_record ->> 'address_text', '')), '') is not null then\n      v_writable := v_writable || jsonb_build_object('address_text', trim(p_record ->> 'address_text')); end if;\n    if v_p.postcode is null and p_record ->> 'postcode' is not null then\n      v_writable := v_writable || jsonb_build_object('postcode', p_record ->> 'postcode'); end if;\n    -- differing non-blank values are recorded, never overwritten\n    if v_p.display_name is not null and v_display is not null\n       and v_p.display_name <> v_display then\n      v_field_conflicts := array_append(v_field_conflicts, 'display_name'); end if;\n    if v_p.primary_email is not null and p_record ->> 'primary_email' is not null\n       and marketing_normalize_endpoint('email', v_p.primary_email) is distinct from v_email then\n      v_field_conflicts := array_append(v_field_conflicts, 'primary_email'); end if;\n    if v_p.primary_phone is not null and p_record ->> 'primary_phone' is not null\n       and import_normalize_phone_uk(v_p.primary_phone) is distinct from v_phone then\n      v_field_conflicts := array_append(v_field_conflicts, 'primary_phone'); end if;\n    if v_p.postcode is not null and p_record ->> 'postcode' is not null\n       and import_normalize_postcode(v_p.postcode) is distinct from import_normalize_postcode(p_record ->> 'postcode') then\n      v_field_conflicts := array_append(v_field_conflicts, 'postcode'); end if;\n    update people set\n      display_name = coalesce(v_writable ->> 'display_name', display_name),\n      first_name = coalesce(v_writable ->> 'first_name', first_name),\n      last_name = coalesce(v_writable ->> 'last_name', last_name),\n      primary_email = coalesce(v_writable ->> 'primary_email', primary_email),\n      primary_phone = coalesce(v_writable ->> 'primary_phone', primary_phone),\n      address_text = coalesce(v_writable ->> 'address_text', address_text),\n      postcode = coalesce(v_writable ->> 'postcode', postcode),\n      metadata = coalesce(metadata, '{}'::jsonb) || v_meta\n    where id = v_person;\n    v_entity_table := 'people';\n    v_entity_id := v_person;\n    v_outcome := 'linked';\n    v_strategy := v_res ->> 'strategy';\n    v_confidence := (v_res ->> 'confidence')::numeric;\n\n  -- \u2500\u2500 new company customer: canonical company, NEVER a named individual \u2500\u2500\n  elsif v_res ->> 'decision' = 'new_company' then\n    insert into companies (tenant_id, name, phone, address_text, postcode,\n                           verified, created_source, metadata)\n    values (p_tenant, trim(p_record ->> 'company_name'),\n            p_record ->> 'primary_phone',\n            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),\n            p_record ->> 'postcode',\n            false, 'import:' || v_source,\n            v_meta || jsonb_build_object('import',\n              v_import_meta || jsonb_strip_nulls(jsonb_build_object(\n                'primary_email', p_record ->> 'primary_email'))))\n    returning id into v_company;\n    -- channels matching existing interaction-created PEOPLE are review\n    -- evidence beside the applied row \u2014 never an automatic association\n    if jsonb_array_length(coalesce(v_res -> 'person_overlap', '[]'::jsonb)) > 0 then\n      insert into import_conflicts\n        (tenant_id, import_id, source_system, entity_kind, external_id,\n         conflict_type, blocking, identifiers, candidates, truncated, detail)\n      values (p_tenant, p_import, v_source, 'customer', v_ext,\n              'company_person_overlap', false,\n              coalesce(v_res -> 'evidence', '[]'::jsonb),\n              coalesce((select jsonb_agg(jsonb_build_object(\n                          'entity_table', 'people', 'entity_id', c))\n                        from jsonb_array_elements_text(v_res -> 'person_overlap') c),\n                       '[]'::jsonb),\n              coalesce((v_res ->> 'truncated')::boolean, false),\n              jsonb_build_object('row_number', p_row_number,\n                                 'company_id', v_company))\n      on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)\n        where status = 'open'\n      do update set identifiers = excluded.identifiers,\n                    candidates = excluded.candidates,\n                    truncated = excluded.truncated,\n                    import_id = excluded.import_id,\n                    detail = excluded.detail\n      returning id into v_conflict_id;\n    end if;\n    v_entity_table := 'companies';\n    v_entity_id := v_company;\n    v_outcome := 'created';\n    v_strategy := 'created';\n    v_confidence := 1.0;\n\n  -- \u2500\u2500 new person customer \u2500\u2500\n  else\n    insert into people (tenant_id, display_name, first_name, last_name,\n                        primary_email, primary_phone, address_text, postcode,\n                        verified, created_source, metadata)\n    values (p_tenant, v_display,\n            nullif(trim(coalesce(p_record ->> 'first_name', '')), ''),\n            nullif(trim(coalesce(p_record ->> 'last_name', '')), ''),\n            p_record ->> 'primary_email',\n            p_record ->> 'primary_phone',\n            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),\n            p_record ->> 'postcode',\n            false, 'import:customers:' || v_source, v_meta)\n    returning id into v_person;\n    v_entity_table := 'people';\n    v_entity_id := v_person;\n    v_outcome := 'created';\n    v_strategy := 'created';\n    v_confidence := 1.0;\n  end if;\n\n  -- contact points for PERSON customers: unverified import endpoints, written\n  -- through the corrected helper (11N Defect B). This remains the ONLY\n  -- marketing-adjacent write \u2014 no preference, no suppression, no permission\n  -- record: eligibility stays 'unknown'.\n  if v_entity_table = 'people' then\n    perform import_person_contact_points(p_tenant, v_entity_id, p_record);\n  end if;\n\n  -- authoritative external-identity link (idempotent for ever after)\n  if v_res ->> 'decision' <> 'linked' then\n    insert into import_entity_links\n      (tenant_id, source_system, entity_kind, external_id, entity_table,\n       entity_id, link_strategy, confidence, evidence, import_id)\n    values (p_tenant, v_source, 'customer', v_ext, v_entity_table, v_entity_id,\n            case when v_outcome = 'created' then 'created' else v_strategy end,\n            v_confidence,\n            jsonb_build_object('matched_on', coalesce(v_res -> 'matched_on', '[]'::jsonb)),\n            p_import)\n    on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;\n  end if;\n\n  insert into import_row_provenance\n    (tenant_id, import_id, entity_table, entity_id, source_system,\n     source_row_number, external_id, imported_fields, match_strategy,\n     confidence, action, conflicts)\n  values (p_tenant, p_import, v_entity_table, v_entity_id, v_source,\n          p_row_number, v_ext,\n          array(select jsonb_object_keys(p_record)),\n          v_strategy, v_confidence,\n          case when v_outcome = 'created' then 'created' else 'linked' end,\n          coalesce((select jsonb_agg(jsonb_build_object('field', f))\n                    from unnest(v_field_conflicts) f), '[]'::jsonb));\n  insert into import_row_results\n    (tenant_id, import_id, row_number, outcome, reason, fields,\n     entity_table, entity_id, conflict_id, attempt)\n  values (p_tenant, p_import, p_row_number, v_outcome,\n          case when array_length(v_field_conflicts, 1) > 0\n            then 'linked with differing fields recorded (never overwritten)'\n            else null end,\n          coalesce(v_field_conflicts, '{}'::text[]),\n          v_entity_table, v_entity_id, v_conflict_id, v_attempt)\n  on conflict (tenant_id, import_id, row_number) do update\n    set outcome = excluded.outcome, reason = excluded.reason,\n        fields = excluded.fields, entity_table = excluded.entity_table,\n        entity_id = excluded.entity_id, conflict_id = excluded.conflict_id,\n        attempt = excluded.attempt;\n  return jsonb_build_object('action', v_outcome,\n    'entity_table', v_entity_table, 'entity_id', v_entity_id,\n    'strategy', v_strategy, 'field_conflicts', to_jsonb(v_field_conflicts));\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_entity_links_guard",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_entity_links_guard()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_ok boolean;\nbegin\n  if tg_op = 'INSERT' then\n    -- the linked entity must exist and belong to the SAME tenant (the\n    -- entity_table vocabulary is CHECK-bounded, so %I is safe here)\n    execute format(\n      'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',\n      new.entity_table) into v_ok using new.entity_id, new.tenant_id;\n    if not v_ok then\n      raise exception 'import link target %/% does not exist in tenant',\n        new.entity_table, new.entity_id\n        using errcode = 'integrity_constraint_violation';\n    end if;\n    return new;\n  end if;\n  -- UPDATE: links are immutable. The ONLY legal update is the FK-driven\n  -- import_id set-null with every other column identical.\n  if new.id = old.id and new.tenant_id = old.tenant_id\n     and new.source_system = old.source_system\n     and new.entity_kind = old.entity_kind\n     and new.external_id = old.external_id\n     and new.entity_table = old.entity_table\n     and new.entity_id = old.entity_id\n     and new.link_strategy = old.link_strategy\n     and new.confidence is not distinct from old.confidence\n     and new.evidence = old.evidence\n     and new.created_at = old.created_at\n     and new.import_id is null and old.import_id is not null then\n    return new;\n  end if;\n  raise exception 'import entity links are immutable';\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_job_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_job_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_source text;\n  v_short jsonb;\n  v_attempt int;\n  v_invalid jsonb;\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_cust_ext text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');\n  v_link import_entity_links%rowtype;\n  v_job jobs%rowtype;\n  v_job_id uuid;\n  v_outcome text;\n  v_status text := trim(coalesce(p_record ->> 'status', ''));\n  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);\n  v_site jsonb;\n  v_site_id uuid;\n  v_conflict_id uuid;\n  v_meta jsonb;\n  v_hold_reason text;\n  v_jn text;\nbegin\n  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,\n                               p_record, p_options, 'jobs');\n  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';\n  select o_short, o_attempt into v_short, v_attempt\n    from import_row_prior(p_tenant, p_import, p_row_number);\n  if v_short is not null then return v_short; end if;\n\n  v_invalid := import_validate_job_row(p_tenant, v_source, p_record);\n  if v_invalid is not null then\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n    values (p_tenant, p_import, p_row_number, 'invalid',\n            v_invalid ->> 'reason',\n            coalesce((select array_agg(e) from jsonb_array_elements_text(\n                        v_invalid -> 'fields') e), '{}'::text[]),\n            v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');\n  end if;\n\n  perform pg_advisory_xact_lock(hashtextextended(\n    p_tenant::text || '|ext|' || v_source || '|job|' || v_ext, 42));\n\n  -- the customer relationship is REQUIRED \u2014 an orphan job is held, never\n  -- created against nothing and never cross-tenant\n  select * into v_link from import_entity_links l\n   where l.tenant_id = p_tenant and l.source_system = v_source\n     and l.entity_kind = 'customer' and l.external_id = v_cust_ext;\n  if not found then\n    if exists (select 1 from import_conflicts c\n                where c.tenant_id = p_tenant and c.source_system = v_source\n                  and c.entity_kind = 'customer' and c.external_id = v_cust_ext\n                  and c.blocking and c.status = 'open') then\n      v_hold_reason := 'customer_conflict_open';\n    else\n      v_hold_reason := 'customer_not_imported';\n    end if;\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n    values (p_tenant, p_import, p_row_number, 'held', v_hold_reason,\n            array['customer_external_id'], v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'held', 'reason', v_hold_reason);\n  end if;\n\n  -- deterministic site resolution (never a guess). 11P: an EXACT\n  -- site_external_id is tried FIRST and, if present, is the ONLY path \u2014 a\n  -- contradictory exact reference never silently degrades to address matching.\n  v_site := import_resolve_job_site_v2(p_tenant, v_source,\n    v_link.entity_table, v_link.entity_id,\n    p_record ->> 'site_external_id',\n    p_record ->> 'site_postcode', p_record ->> 'site_address_text');\n  if v_site ->> 'outcome' = 'error' then\n    -- FAIL CLOSED: a BLOCKING durable conflict and NO canonical Job. The package\n    -- contract refuses such a package outright, so reaching here means the\n    -- package was not contract-verified \u2014 that is a person's decision, never a\n    -- guess, and certainly never an address fallback.\n    insert into import_conflicts\n      (tenant_id, import_id, source_system, entity_kind, external_id,\n       conflict_type, blocking, identifiers, candidates, truncated, detail)\n    values (p_tenant, p_import, v_source, 'job', v_ext,\n            'site_exact_unresolvable', true,\n            jsonb_build_array(jsonb_build_object(\n              'channel', 'external_id', 'label', 'site_external_id')),\n            '[]'::jsonb, false,\n            jsonb_build_object('row_number', p_row_number,\n                               'reason', v_site ->> 'reason'))\n    on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)\n      where status = 'open'\n    do update set import_id = excluded.import_id, detail = excluded.detail\n    returning id into v_conflict_id;\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, conflict_id, attempt)\n    values (p_tenant, p_import, p_row_number, 'conflict', v_site ->> 'reason',\n            array['site_external_id'], v_conflict_id, v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, conflict_id = excluded.conflict_id,\n          attempt = excluded.attempt;\n    return jsonb_build_object('action', 'conflict', 'conflict_id', v_conflict_id,\n      'reason', v_site ->> 'reason');\n  end if;\n  if v_site ->> 'outcome' = 'resolved' then\n    v_site_id := (v_site ->> 'site_id')::uuid;\n  elsif v_site ->> 'outcome' = 'ambiguous' then\n    insert into import_conflicts\n      (tenant_id, import_id, source_system, entity_kind, external_id,\n       conflict_type, blocking, identifiers, candidates, truncated, detail)\n    values (p_tenant, p_import, v_source, 'job', v_ext,\n            'site_ambiguous', false,\n            jsonb_build_array(jsonb_build_object(\n              'channel', 'address',\n              'label', 'site_address',\n              'value', import_normalize_address(p_record ->> 'site_address_text'),\n              'postcode', import_normalize_postcode(p_record ->> 'site_postcode'))),\n            coalesce((select jsonb_agg(jsonb_build_object(\n                        'entity_table', 'sites', 'entity_id', c))\n                      from jsonb_array_elements_text(v_site -> 'candidate_site_ids') c),\n                     '[]'::jsonb),\n            coalesce((v_site ->> 'truncated')::boolean, false),\n            jsonb_build_object('row_number', p_row_number,\n                               'reason', v_site ->> 'reason'))\n    on conflict (tenant_id, source_system, entity_kind, external_id, conflict_type)\n      where status = 'open'\n    do update set identifiers = excluded.identifiers,\n                  candidates = excluded.candidates,\n                  truncated = excluded.truncated,\n                  import_id = excluded.import_id,\n                  detail = excluded.detail\n    returning id into v_conflict_id;\n  end if;\n\n  v_meta := jsonb_build_object('import', jsonb_strip_nulls(jsonb_build_object(\n    'source', v_source, 'external_id', v_ext,\n    'customer_external_id', v_cust_ext, 'active', v_active,\n    'engineer_name', nullif(trim(coalesce(p_record ->> 'engineer', '')), ''),\n    'quoted_value_pennies', (p_record -> 'quoted_value_pennies'),\n    'site_resolution', jsonb_build_object(\n      'outcome', v_site ->> 'outcome',\n      'strategy', v_site ->> 'strategy',\n      'reason', v_site ->> 'reason'),\n    'site_address_text', nullif(trim(coalesce(p_record ->> 'site_address_text', '')), ''),\n    'site_postcode', p_record ->> 'site_postcode')));\n  if p_record ->> 'metadata_json' is not null then\n    v_meta := v_meta || jsonb_build_object('source_payload',\n      (p_record ->> 'metadata_json')::jsonb);\n  end if;\n\n  select * into v_job from jobs j\n   where j.tenant_id = p_tenant and j.source_system = v_source\n     and j.external_id = v_ext;\n  if found then\n    update jobs set\n      site_id = coalesce(jobs.site_id, v_site_id),\n      metadata = coalesce(jobs.metadata, '{}'::jsonb) || v_meta\n    where id = v_job.id;\n    v_job_id := v_job.id;\n    v_outcome := 'linked';\n  else\n    insert into jobs (tenant_id, source_system, external_id, job_number,\n                      customer_person_id, customer_company_id, site_id,\n                      title, description, status, active,\n                      value_pennies, created_date, completed_date,\n                      created_source, verified, metadata)\n    values (p_tenant, v_source, v_ext,\n            nullif(trim(coalesce(p_record ->> 'job_number', '')), ''),\n            case when v_link.entity_table = 'people' then v_link.entity_id end,\n            case when v_link.entity_table = 'companies' then v_link.entity_id end,\n            v_site_id,\n            nullif(trim(coalesce(p_record ->> 'title', '')), ''),\n            nullif(trim(coalesce(p_record ->> 'description', '')), ''),\n            v_status, v_active,\n            (p_record ->> 'value_pennies')::bigint,\n            (nullif(trim(coalesce(p_record ->> 'created_date', '')), ''))::timestamptz,\n            (nullif(trim(coalesce(p_record ->> 'completed_date', '')), ''))::timestamptz,\n            'import:' || v_source, false, v_meta)\n    returning id into v_job_id;\n    v_outcome := 'created';\n  end if;\n\n  v_jn := regexp_replace(coalesce(p_record ->> 'job_number', ''), '[^0-9]', '', 'g');\n  if v_jn <> '' then\n    insert into job_number_aliases (tenant_id, job_id, alias, normalized, source)\n    values (p_tenant, v_job_id, p_record ->> 'job_number', v_jn, 'import')\n    on conflict (tenant_id, normalized) do nothing;\n  end if;\n\n  insert into import_entity_links\n    (tenant_id, source_system, entity_kind, external_id, entity_table,\n     entity_id, link_strategy, confidence, evidence, import_id)\n  values (p_tenant, v_source, 'job', v_ext, 'jobs', v_job_id,\n          case when v_outcome = 'created' then 'created' else 'external_id' end,\n          1.0, jsonb_build_object('customer_external_id', v_cust_ext), p_import)\n  on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;\n\n  insert into import_row_provenance\n    (tenant_id, import_id, entity_table, entity_id, source_system,\n     source_row_number, external_id, imported_fields, match_strategy,\n     confidence, action, conflicts)\n  values (p_tenant, p_import, 'jobs', v_job_id, v_source, p_row_number, v_ext,\n          array(select jsonb_object_keys(p_record)),\n          case when v_outcome = 'created' then 'created' else 'external_id' end,\n          1.0,\n          case when v_outcome = 'created' then 'created' else 'linked' end,\n          jsonb_build_array(jsonb_build_object('site_resolution', v_site))\n    );\n  insert into import_row_results\n    (tenant_id, import_id, row_number, outcome, reason, fields,\n     entity_table, entity_id, conflict_id, attempt)\n  values (p_tenant, p_import, p_row_number, v_outcome,\n          'site: ' || coalesce(v_site ->> 'strategy', v_site ->> 'reason',\n                               v_site ->> 'outcome'),\n          case when v_site_id is not null then array['site_linked']\n               when v_site ->> 'outcome' = 'ambiguous' then array['site_ambiguous']\n               else array['site_unlinked'] end,\n          'jobs', v_job_id, v_conflict_id, v_attempt)\n  on conflict (tenant_id, import_id, row_number) do update\n    set outcome = excluded.outcome, reason = excluded.reason,\n        fields = excluded.fields, entity_table = excluded.entity_table,\n        entity_id = excluded.entity_id, conflict_id = excluded.conflict_id,\n        attempt = excluded.attempt;\n  return jsonb_build_object('action', v_outcome, 'entity_table', 'jobs',\n    'entity_id', v_job_id, 'site_outcome', v_site ->> 'outcome');\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_match_customer",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_match_customer(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_invalid jsonb;\n  v_res jsonb;\nbegin\n  v_invalid := import_validate_customer_row(p_tenant, p_source, p_record);\n  if v_invalid is not null then\n    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',\n      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);\n  end if;\n  v_res := import_resolve_customer(p_tenant, p_source, p_record);\n  if v_res ->> 'decision' = 'linked' then\n    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',\n      'confidence', 1.0, 'candidates', 1);\n  elsif v_res ->> 'decision' = 'matched' then\n    return jsonb_build_object('action', 'matched',\n      'strategy', v_res ->> 'strategy',\n      'confidence', (v_res ->> 'confidence')::numeric, 'candidates', 1);\n  elsif v_res ->> 'decision' in ('ambiguous', 'conflicting') then\n    return jsonb_build_object('action', 'probable', 'strategy', v_res ->> 'decision',\n      'confidence', 0.5,\n      'candidates', jsonb_array_length(v_res -> 'candidate_union'));\n  end if;\n  return jsonb_build_object('action', 'new', 'strategy', v_res ->> 'decision',\n    'confidence', 1.0, 'candidates', 0);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_match_job",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_match_job(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_invalid jsonb;\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_cust text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');\n  v_link import_entity_links%rowtype;\n  v_site jsonb;\nbegin\n  v_invalid := import_validate_job_row(p_tenant, p_source, p_record);\n  if v_invalid is not null then\n    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',\n      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);\n  end if;\n  if exists (select 1 from import_entity_links l\n              where l.tenant_id = p_tenant and l.source_system = p_source\n                and l.entity_kind = 'job' and l.external_id = v_ext) then\n    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',\n      'confidence', 1.0, 'candidates', 1);\n  end if;\n  select * into v_link from import_entity_links l\n   where l.tenant_id = p_tenant and l.source_system = p_source\n     and l.entity_kind = 'customer' and l.external_id = v_cust;\n  if not found then\n    return jsonb_build_object('action', 'held', 'strategy', 'customer_not_imported',\n      'confidence', 0, 'candidates', 0);\n  end if;\n  -- 11P: EXACT site evidence first. A contradictory exact reference is a\n  -- conflict the preview must SHOW, not a create the operator discovers later.\n  v_site := import_resolve_job_site_v2(p_tenant, p_source,\n    v_link.entity_table, v_link.entity_id,\n    p_record ->> 'site_external_id',\n    p_record ->> 'site_postcode', p_record ->> 'site_address_text');\n  if v_site ->> 'outcome' = 'error' then\n    return jsonb_build_object('action', 'probable', 'strategy', 'site_exact_unresolvable',\n      'confidence', 0, 'candidates', 0,\n      'site_outcome', 'error', 'site_reason', v_site ->> 'reason');\n  end if;\n  return jsonb_build_object('action', 'new', 'strategy', 'created',\n    'confidence', 1.0, 'candidates', 0,\n    'site_outcome', v_site ->> 'outcome',\n    'site_strategy', v_site ->> 'strategy');\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_match_site",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_match_site(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_invalid jsonb;\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_cust text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');\nbegin\n  v_invalid := import_validate_site_row(p_tenant, p_source, p_record);\n  if v_invalid is not null then\n    return jsonb_build_object('action', 'invalid', 'strategy', 'invalid',\n      'confidence', 0, 'reason', v_invalid ->> 'reason', 'candidates', 0);\n  end if;\n  if exists (select 1 from import_entity_links l\n              where l.tenant_id = p_tenant and l.source_system = p_source\n                and l.entity_kind = 'site' and l.external_id = v_ext) then\n    return jsonb_build_object('action', 'matched', 'strategy', 'external_id',\n      'confidence', 1.0, 'candidates', 1);\n  end if;\n  if not exists (select 1 from import_entity_links l\n                  where l.tenant_id = p_tenant and l.source_system = p_source\n                    and l.entity_kind = 'customer' and l.external_id = v_cust) then\n    return jsonb_build_object('action', 'held', 'strategy', 'customer_not_imported',\n      'confidence', 0, 'candidates', 0);\n  end if;\n  return jsonb_build_object('action', 'new', 'strategy', 'created',\n    'confidence', 1.0, 'candidates', 0);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_normalize_address",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_value text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_normalize_address(p_value text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select nullif(trim(regexp_replace(\n    regexp_replace(lower(coalesce(p_value, '')), '[^a-z0-9 ]+', ' ', 'g'),\n    '\\s+', ' ', 'g')), '');\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_normalize_phone_uk",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_value text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_normalize_phone_uk(p_value text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\ndeclare\n  v text := trim(coalesce(p_value, ''));\n  v_plus boolean;\n  d text;\nbegin\n  if v = '' then return null; end if;\n  v_plus := left(v, 1) = '+';\n  d := regexp_replace(v, '[^0-9]', '', 'g');\n  if d = '' then return null; end if;\n  -- international-access form FIRST: 0044\u2026 \u2192 44\u2026 (before the leading-0 rule)\n  if d like '0044%' then d := '44' || substr(d, 5); end if;\n  if v_plus then return '+' || d; end if;\n  if d like '0%' then return '+44' || substr(d, 2); end if;\n  if d like '44%' then return '+' || d; end if;\n  return d;  -- unknown format \u2192 digits only (still comparable)\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_normalize_postcode",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_value text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_normalize_postcode(p_value text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select nullif(upper(regexp_replace(coalesce(p_value, ''), '\\s+', '', 'g')), '');\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_person_contact_points",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_person uuid, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_person_contact_points(p_tenant uuid, p_person uuid, p_record jsonb)\n RETURNS void\n LANGUAGE sql\nAS $function$\n  with candidate as (\n    -- deterministic rank: the explicitly primary source field always wins\n    select * from (values\n      ('email'::text, p_record ->> 'primary_email', 1),\n      ('phone'::text, p_record ->> 'primary_phone', 1),\n      ('phone'::text, p_record ->> 'secondary_phone', 2)\n    ) as c (channel, raw, rank)\n  ),\n  normalised as (\n    select c.channel, c.raw, c.rank,\n           marketing_normalize_endpoint(c.channel, c.raw) as norm\n      from candidate c\n     where marketing_normalize_endpoint(c.channel, c.raw) is not null\n  ),\n  -- two source fields normalising to ONE endpoint converge to a single row,\n  -- keeping the stronger rank (and, at equal rank, a stable raw ordering)\n  deduped as (\n    select distinct on (channel, norm) channel, raw, norm, rank\n      from normalised\n     order by channel, norm, rank, raw\n  ),\n  -- an existing primary for this person+channel is authoritative and is NEVER\n  -- demoted by an import\n  ranked as (\n    select d.*,\n           row_number() over (partition by d.channel order by d.rank, d.norm) as chan_rank,\n           exists (select 1 from contact_points cpp\n                    where cpp.tenant_id = p_tenant\n                      and cpp.person_id = p_person\n                      and cpp.channel = d.channel\n                      and cpp.is_primary) as channel_has_primary\n      from deduped d\n  )\n  insert into contact_points\n    (tenant_id, person_id, channel, value, normalized_value, is_primary,\n     verification_state, source, last_observed_at)\n  select p_tenant, p_person, r.channel, r.raw, r.norm,\n         (r.chan_rank = 1 and not r.channel_has_primary),\n         'unverified', 'import', now()\n    from ranked r\n  on conflict (tenant_id, person_id, channel, normalized_value) do update\n    set last_observed_at = now();\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_resolve_customer",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_resolve_customer(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_kind text := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');\n  v_link import_entity_links%rowtype;\n  v_channels text[];\n  v_labels text[];\n  v_vals text[];\n  v_ids uuid[];\n  v_i int;\n  v_evidence jsonb := '[]'::jsonb;\n  v_ambiguous boolean := false;\n  v_matched uuid[] := array[]::uuid[];\n  v_matched_channels text[] := array[]::text[];\n  v_union uuid[] := array[]::uuid[];\n  v_supplied int := 0;\n  v_strategy text;\n  v_confidence numeric;\nbegin\n  if p_tenant is null or p_source is null then\n    raise exception 'tenant and source required' using errcode = '22023';\n  end if;\n  if v_ext is null then\n    raise exception 'external id required' using errcode = '22023';\n  end if;\n\n  -- authoritative external-identity map first\n  select * into v_link from import_entity_links l\n   where l.tenant_id = p_tenant and l.source_system = p_source\n     and l.entity_kind = 'customer' and l.external_id = v_ext;\n  if found then\n    return jsonb_build_object('decision', 'linked',\n      'entity_table', v_link.entity_table, 'entity_id', v_link.entity_id,\n      'strategy', 'external_id', 'confidence', 1.0);\n  end if;\n\n  -- channel evidence, each channel resolved independently. People already\n  -- linked to a DIFFERENT external id of the SAME source are NEVER candidates:\n  -- two Commusoft accounts sharing an email/phone (landlord/tenant, spouses)\n  -- are two distinct customers \u2014 a shared channel must never merge them.\n  v_channels := array['email', 'phone', 'phone'];\n  v_labels := array['primary_email', 'primary_phone', 'secondary_phone'];\n  v_vals := array[\n    marketing_normalize_endpoint('email', p_record ->> 'primary_email'),\n    import_normalize_phone_uk(p_record ->> 'primary_phone'),\n    import_normalize_phone_uk(p_record ->> 'secondary_phone')];\n  for v_i in 1..3 loop\n    continue when v_vals[v_i] is null;\n    v_supplied := v_supplied + 1;\n    if v_channels[v_i] = 'email' then\n      select array_agg(x.pid order by x.pid) into v_ids from (\n        select pp.id as pid from people pp\n         where pp.tenant_id = p_tenant\n           and marketing_normalize_endpoint('email', pp.primary_email) = v_vals[v_i]\n           and not exists (select 1 from contact_points cpx\n                            where cpx.tenant_id = p_tenant and cpx.person_id = pp.id\n                              and cpx.channel = 'email'\n                              and cpx.normalized_value = v_vals[v_i]\n                              and cpx.verification_state = 'invalid')\n        union\n        select cp.person_id from contact_points cp\n          join people pj on pj.id = cp.person_id and pj.tenant_id = p_tenant\n         where cp.tenant_id = p_tenant and cp.channel = 'email'\n           and cp.normalized_value = v_vals[v_i]\n           and cp.verification_state <> 'invalid') x\n       where not exists (select 1 from import_entity_links il\n                          where il.tenant_id = p_tenant\n                            and il.source_system = p_source\n                            and il.entity_kind = 'customer'\n                            and il.entity_table = 'people'\n                            and il.entity_id = x.pid\n                            and il.external_id <> v_ext);\n    else\n      -- BOTH sides are canonicalised to the +44 form, so 0\u2026/44\u2026/+44\u2026/0044\u2026\n      -- written forms of the same number always converge\n      select array_agg(x.pid order by x.pid) into v_ids from (\n        select pp.id as pid from people pp\n         where pp.tenant_id = p_tenant\n           and import_normalize_phone_uk(pp.primary_phone) = v_vals[v_i]\n           and not exists (select 1 from contact_points cpx\n                            where cpx.tenant_id = p_tenant and cpx.person_id = pp.id\n                              and cpx.channel = 'phone'\n                              and import_normalize_phone_uk(cpx.normalized_value) = v_vals[v_i]\n                              and cpx.verification_state = 'invalid')\n        union\n        select cp.person_id from contact_points cp\n          join people pj on pj.id = cp.person_id and pj.tenant_id = p_tenant\n         where cp.tenant_id = p_tenant and cp.channel = 'phone'\n           and import_normalize_phone_uk(cp.normalized_value) = v_vals[v_i]\n           and cp.verification_state <> 'invalid') x\n       where not exists (select 1 from import_entity_links il\n                          where il.tenant_id = p_tenant\n                            and il.source_system = p_source\n                            and il.entity_kind = 'customer'\n                            and il.entity_table = 'people'\n                            and il.entity_id = x.pid\n                            and il.external_id <> v_ext);\n    end if;\n    v_evidence := v_evidence || jsonb_build_array(jsonb_build_object(\n      'channel', v_channels[v_i], 'label', v_labels[v_i], 'value', v_vals[v_i],\n      'candidate_person_ids', to_jsonb(coalesce(v_ids[1:25], '{}'::uuid[])),\n      'truncated', coalesce(array_length(v_ids, 1), 0) > 25));\n    if coalesce(array_length(v_ids, 1), 0) > 1 then\n      v_ambiguous := true;\n      v_union := v_union || v_ids[1:25];\n    elsif coalesce(array_length(v_ids, 1), 0) = 1 then\n      if not (v_ids[1] = any (v_matched)) then\n        v_matched := array_append(v_matched, v_ids[1]);\n      end if;\n      v_matched_channels := array_append(v_matched_channels, v_labels[v_i]);\n      v_union := v_union || v_ids;\n    end if;\n  end loop;\n  select array_agg(u order by u) into v_union\n    from (select distinct unnest(v_union) as u) s;\n\n  -- company customers: canonical company, channels reported as overlap only\n  if v_kind = 'company_contact' then\n    return jsonb_build_object('decision', 'new_company',\n      'strategy', 'created', 'confidence', 1.0,\n      'evidence', v_evidence,\n      'person_overlap', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),\n      'truncated', coalesce(array_length(v_union, 1), 0) > 25,\n      'supplied_identifiers', v_supplied);\n  end if;\n\n  if v_ambiguous then\n    return jsonb_build_object('decision', 'ambiguous',\n      'evidence', v_evidence,\n      'candidate_union', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),\n      'truncated', coalesce(array_length(v_union, 1), 0) > 25,\n      'supplied_identifiers', v_supplied);\n  end if;\n  if coalesce(array_length(v_matched, 1), 0) > 1 then\n    return jsonb_build_object('decision', 'conflicting',\n      'evidence', v_evidence,\n      'candidate_union', to_jsonb(coalesce(v_union[1:25], '{}'::uuid[])),\n      'truncated', coalesce(array_length(v_union, 1), 0) > 25,\n      'supplied_identifiers', v_supplied);\n  end if;\n  if coalesce(array_length(v_matched, 1), 0) = 1 then\n    if exists (select 1 from unnest(v_matched_channels) c where c = 'primary_email') then\n      if array_length(v_matched_channels, 1) > 1 then\n        v_strategy := 'email+phone'; v_confidence := 0.97;\n      else\n        v_strategy := 'email'; v_confidence := 0.95;\n      end if;\n    else\n      v_strategy := 'phone'; v_confidence := 0.92;\n    end if;\n    return jsonb_build_object('decision', 'matched',\n      'entity_table', 'people', 'entity_id', v_matched[1],\n      'strategy', v_strategy, 'confidence', v_confidence,\n      'matched_on', to_jsonb(v_matched_channels),\n      'evidence', v_evidence, 'supplied_identifiers', v_supplied);\n  end if;\n  return jsonb_build_object('decision', 'new_person',\n    'strategy', 'created', 'confidence', 1.0,\n    'evidence', v_evidence, 'supplied_identifiers', v_supplied);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_resolve_job_site",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_postcode text, p_address text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_resolve_job_site(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_postcode text, p_address text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_pc text := import_normalize_postcode(p_postcode);\n  v_addr text := import_normalize_address(p_address);\n  v_ids uuid[];\n  v_n int;\nbegin\n  if p_cust_table is null or p_cust_id is null then\n    return jsonb_build_object('outcome', 'none', 'reason', 'customer_unresolved');\n  end if;\n  select array_agg(s.id order by s.id) into v_ids from sites s\n   where s.tenant_id = p_tenant and s.source_system = p_source\n     and ((p_cust_table = 'people' and s.person_id = p_cust_id)\n       or (p_cust_table = 'companies' and s.company_id = p_cust_id));\n  v_n := coalesce(array_length(v_ids, 1), 0);\n  if v_n = 0 then\n    return jsonb_build_object('outcome', 'none', 'reason', 'customer_has_no_imported_sites');\n  end if;\n  if v_pc is not null then\n    select array_agg(s.id order by s.id) into v_ids from sites s\n     where s.id = any (v_ids)\n       and import_normalize_postcode(s.postcode) = v_pc;\n    v_n := coalesce(array_length(v_ids, 1), 0);\n    if v_n = 0 then\n      return jsonb_build_object('outcome', 'none', 'reason', 'no_site_at_postcode');\n    end if;\n    if v_n = 1 then\n      return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],\n        'strategy', 'postcode_unique');\n    end if;\n    -- several sites share the postcode \u2192 the address must decide, exactly\n    select array_agg(s.id order by s.id) into v_ids from sites s\n     where s.id = any (v_ids)\n       and import_normalize_address(s.address_text) is not distinct from v_addr\n       and v_addr is not null;\n    v_n := coalesce(array_length(v_ids, 1), 0);\n    if v_n = 1 then\n      return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],\n        'strategy', 'postcode_and_address');\n    end if;\n    if v_n > 1 then\n      return jsonb_build_object('outcome', 'ambiguous',\n        'candidate_site_ids', to_jsonb(v_ids[1:25]),\n        'truncated', v_n > 25, 'reason', 'several_sites_share_postcode_and_address');\n    end if;\n    return jsonb_build_object('outcome', 'none', 'reason', 'address_does_not_match_any_postcode_site');\n  end if;\n  -- no postcode on the job: canonical address equality must be unique\n  if v_addr is null then\n    return jsonb_build_object('outcome', 'none', 'reason', 'no_address_evidence');\n  end if;\n  select array_agg(s.id order by s.id) into v_ids from sites s\n   where s.id = any (v_ids)\n     and import_normalize_address(s.address_text) = v_addr;\n  v_n := coalesce(array_length(v_ids, 1), 0);\n  if v_n = 1 then\n    return jsonb_build_object('outcome', 'resolved', 'site_id', v_ids[1],\n      'strategy', 'address_unique');\n  end if;\n  if v_n > 1 then\n    return jsonb_build_object('outcome', 'ambiguous',\n      'candidate_site_ids', to_jsonb(v_ids[1:25]),\n      'truncated', v_n > 25, 'reason', 'several_sites_share_address');\n  end if;\n  return jsonb_build_object('outcome', 'none', 'reason', 'no_site_matches_address');\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_resolve_job_site_exact",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_resolve_job_site_exact(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_ref text := nullif(trim(coalesce(p_site_external_id, '')), '');\n  v_link import_entity_links%rowtype;\n  v_site sites%rowtype;\n  v_owner uuid;\nbegin\n  if v_ref is null then\n    return jsonb_build_object('outcome', 'absent');\n  end if;\n  if p_cust_table is null or p_cust_id is null then\n    return jsonb_build_object('outcome', 'error', 'reason', 'customer_unresolved');\n  end if;\n\n  -- The immutable identity map is the ONLY way an external id becomes an entity.\n  select * into v_link from import_entity_links l\n   where l.tenant_id = p_tenant and l.source_system = p_source\n     and l.entity_kind = 'site' and l.external_id = v_ref;\n  if not found then\n    return jsonb_build_object('outcome', 'error',\n      'reason', 'exact_site_reference_not_imported');\n  end if;\n  if v_link.entity_table <> 'sites' then\n    return jsonb_build_object('outcome', 'error',\n      'reason', 'exact_site_reference_points_at_unexpected_table');\n  end if;\n\n  select * into v_site from sites s\n   where s.id = v_link.entity_id and s.tenant_id = p_tenant;\n  if not found then\n    return jsonb_build_object('outcome', 'error',\n      'reason', 'exact_site_missing_in_tenant');\n  end if;\n\n  -- An exact link may NEVER cross customers: that would attach one customer's\n  -- job to another customer's address.\n  v_owner := case when p_cust_table = 'people' then v_site.person_id\n                  when p_cust_table = 'companies' then v_site.company_id\n                  else null end;\n  if v_owner is null or v_owner <> p_cust_id then\n    return jsonb_build_object('outcome', 'error',\n      'reason', 'exact_site_belongs_to_a_different_customer');\n  end if;\n\n  return jsonb_build_object('outcome', 'resolved', 'site_id', v_site.id,\n    'strategy', 'exact_external_id');\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_resolve_job_site_v2",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text, p_postcode text, p_address text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_resolve_job_site_v2(p_tenant uuid, p_source text, p_cust_table text, p_cust_id uuid, p_site_external_id text, p_postcode text, p_address text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_exact jsonb;\nbegin\n  v_exact := import_resolve_job_site_exact(p_tenant, p_source, p_cust_table,\n                                           p_cust_id, p_site_external_id);\n  -- Present but contradictory \u2192 error, and NO fallback. Present and good \u2192\n  -- exact wins over any weaker postcode/address agreement.\n  if v_exact ->> 'outcome' <> 'absent' then\n    return v_exact;\n  end if;\n  return import_resolve_job_site(p_tenant, p_source, p_cust_table, p_cust_id,\n                                 p_postcode, p_address);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_row_outcome",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_row_number integer, p_outcome text, p_reason text, p_fields text[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_row_outcome(p_tenant uuid, p_import uuid, p_row_number integer, p_outcome text, p_reason text, p_fields text[] DEFAULT '{}'::text[])\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_prior import_row_results%rowtype;\n  v_attempt int := 1;\nbegin\n  if p_tenant is null or p_import is null or p_row_number is null then\n    raise exception 'tenant, import and row number required' using errcode = '22023';\n  end if;\n  if p_outcome not in ('invalid', 'failed') then\n    raise exception 'recorder outcome must be invalid or failed' using errcode = '22023';\n  end if;\n  select * into v_imp from data_imports\n   where id = p_import and tenant_id = p_tenant;\n  if not found then\n    raise exception 'import not found for tenant' using errcode = 'P0002';\n  end if;\n  if p_row_number < 2 or p_row_number > v_imp.row_count + 1 then\n    raise exception 'row number is outside the sealed import' using errcode = '22023';\n  end if;\n  perform pg_advisory_xact_lock(hashtextextended(\n    p_tenant::text || '|import|' || p_import::text || '|' || p_row_number, 42));\n  select * into v_prior from import_row_results r\n   where r.tenant_id = p_tenant and r.import_id = p_import\n     and r.row_number = p_row_number;\n  if found then\n    if v_prior.outcome not in ('failed', 'held') then\n      return jsonb_build_object('already', true, 'outcome', v_prior.outcome);\n    end if;\n    v_attempt := v_prior.attempt + 1;\n  end if;\n  insert into import_row_results\n    (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n  values (p_tenant, p_import, p_row_number, p_outcome, p_reason,\n          coalesce(p_fields, '{}'::text[]), v_attempt)\n  on conflict (tenant_id, import_id, row_number) do update\n    set outcome = excluded.outcome, reason = excluded.reason,\n        fields = excluded.fields, attempt = excluded.attempt,\n        entity_table = null, entity_id = null, conflict_id = null;\n  return jsonb_build_object('already', false, 'outcome', p_outcome);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_row_preamble",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb, p_entity text",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_row_preamble(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb, p_entity text)\n RETURNS data_imports\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_actor_tenant uuid;\n  v_actor_role text;\n  v_sealed jsonb;\nbegin\n  if p_tenant is null or p_import is null or p_actor is null or p_row_number is null then\n    raise exception 'tenant, import, actor and row number required' using errcode = '22023';\n  end if;\n  if p_record is null or jsonb_typeof(p_record) <> 'object'\n     or p_options is null or jsonb_typeof(p_options) <> 'object' then\n    raise exception 'record and options must be objects' using errcode = '22023';\n  end if;\n  select tenant_id, role into v_actor_tenant, v_actor_role\n    from profiles where id = p_actor;\n  if not found or v_actor_tenant is distinct from p_tenant then\n    raise exception 'actor must be a profile of the target tenant'\n      using errcode = 'integrity_constraint_violation';\n  end if;\n  if coalesce(v_actor_role, '') not in ('owner', 'admin') then\n    raise exception 'actor lacks import authority (owner/admin required)'\n      using errcode = '42501';\n  end if;\n  select * into v_imp from data_imports\n   where id = p_import and tenant_id = p_tenant;\n  if not found then\n    raise exception 'import not found for tenant' using errcode = 'P0002';\n  end if;\n  if v_imp.entity_type <> p_entity then\n    raise exception 'import is not a % import', p_entity using errcode = '22023';\n  end if;\n  if v_imp.status not in ('previewed', 'importing', 'failed', 'needs_review') then\n    raise exception 'import status % does not allow row apply', v_imp.status\n      using errcode = '22023';\n  end if;\n  if p_row_number < 2 or p_row_number > v_imp.row_count + 1 then\n    raise exception 'row number is outside the sealed import' using errcode = '22023';\n  end if;\n  v_sealed := v_imp.preview -> 'sealed';\n  if v_sealed is null or jsonb_typeof(v_sealed) is distinct from 'object'\n     or jsonb_typeof(v_sealed -> 'import_options') is distinct from 'object' then\n    raise exception 'import has no sealed contract \u2014 a new preview is required'\n      using errcode = '22023';\n  end if;\n  if p_options is distinct from v_sealed -> 'import_options' then\n    raise exception 'options do not match the sealed import contract'\n      using errcode = '22023';\n  end if;\n  return v_imp;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_row_prior",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_row_number integer, OUT o_short jsonb, OUT o_attempt integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_row_prior(p_tenant uuid, p_import uuid, p_row_number integer, OUT o_short jsonb, OUT o_attempt integer)\n RETURNS record\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_prior import_row_results%rowtype;\n  v_prov import_row_provenance%rowtype;\nbegin\n  o_attempt := 1;\n  o_short := null;\n  perform pg_advisory_xact_lock(hashtextextended(\n    p_tenant::text || '|import|' || p_import::text || '|' || p_row_number, 42));\n  select * into v_prior from import_row_results r\n   where r.tenant_id = p_tenant and r.import_id = p_import\n     and r.row_number = p_row_number;\n  if found then\n    if v_prior.outcome in ('created', 'linked', 'updated', 'conflict', 'invalid', 'skipped') then\n      o_short := jsonb_build_object('action', 'already_applied',\n                                    'prior_outcome', v_prior.outcome);\n      return;\n    end if;\n    o_attempt := v_prior.attempt + 1;\n  end if;\n  -- defence in depth: provenance for this (import,row) with a missing/stuck\n  -- ledger row is REPAIRED deterministically, mirroring the marketing ledger\n  select pr.* into v_prov from import_row_provenance pr\n   where pr.tenant_id = p_tenant and pr.import_id = p_import\n     and pr.source_row_number = p_row_number\n   order by pr.imported_at limit 1;\n  if found then\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason,\n       entity_table, entity_id, conflict_id, attempt)\n    values (p_tenant, p_import, p_row_number,\n            case v_prov.action\n              when 'created' then 'created'\n              when 'linked' then 'linked'\n              when 'updated' then 'updated'\n              else 'conflict' end,\n            'ledger reconstructed from provenance',\n            case when v_prov.entity_table in ('people', 'companies', 'sites', 'jobs')\n                 then v_prov.entity_table end,\n            case when v_prov.entity_table in ('people', 'companies', 'sites', 'jobs')\n                 then v_prov.entity_id end,\n            case when v_prov.entity_table = 'import_conflicts'\n                 then v_prov.entity_id end,\n            o_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          entity_table = excluded.entity_table, entity_id = excluded.entity_id,\n          conflict_id = excluded.conflict_id, attempt = excluded.attempt;\n    o_short := jsonb_build_object('action', 'already_applied',\n      'prior_outcome', case v_prov.action\n        when 'created' then 'created'\n        when 'linked' then 'linked'\n        when 'updated' then 'updated'\n        else 'conflict' end,\n      'repaired', true);\n  end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_row_results_guard",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_row_results_guard()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_ok boolean;\nbegin\n  if tg_op = 'INSERT' then\n    if new.entity_id is not null then\n      execute format(\n        'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',\n        new.entity_table) into v_ok using new.entity_id, new.tenant_id;\n      if not v_ok then\n        raise exception 'row result entity %/% does not exist in tenant',\n          new.entity_table, new.entity_id\n          using errcode = 'integrity_constraint_violation';\n      end if;\n    end if;\n    return new;\n  end if;\n  if new.id is distinct from old.id\n     or new.tenant_id is distinct from old.tenant_id\n     or new.import_id is distinct from old.import_id\n     or new.row_number is distinct from old.row_number\n     or new.created_at is distinct from old.created_at then\n    raise exception 'import row result identity/lineage is immutable (id, tenant, import, row, created_at)';\n  end if;\n  -- genuine FK-driven conflict set-null (legal for every outcome)\n  if new.outcome = old.outcome\n     and new.reason is not distinct from old.reason\n     and new.fields = old.fields\n     and new.attempt = old.attempt\n     and new.entity_table is not distinct from old.entity_table\n     and new.entity_id is not distinct from old.entity_id\n     and new.conflict_id is null and old.conflict_id is not null then\n    return new;\n  end if;\n  if old.outcome in ('failed', 'held') then\n    if new.attempt is distinct from old.attempt + 1 then\n      raise exception 'a failed/held-row retry must increment attempt by exactly one';\n    end if;\n    if new.entity_id is not null then\n      execute format(\n        'select exists (select 1 from %I e where e.id = $1 and e.tenant_id = $2)',\n        new.entity_table) into v_ok using new.entity_id, new.tenant_id;\n      if not v_ok then\n        raise exception 'row result entity %/% does not exist in tenant',\n          new.entity_table, new.entity_id\n          using errcode = 'integrity_constraint_violation';\n      end if;\n    end if;\n    return new;\n  end if;\n  raise exception 'terminal import row outcomes are immutable (only failed/held rows may transition)';\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_run_finalize",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_run_finalize(p_tenant uuid, p_import uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_created int; v_linked int; v_updated int; v_conflict int; v_held int;\n  v_invalid int; v_skipped int; v_failed int; v_counted int;\n  v_status text;\nbegin\n  if p_tenant is null or p_import is null then\n    raise exception 'tenant and import required' using errcode = '22023';\n  end if;\n  select * into v_imp from data_imports\n   where id = p_import and tenant_id = p_tenant\n   for update;\n  if not found then\n    raise exception 'import not found for tenant' using errcode = 'P0002';\n  end if;\n  select\n    count(*) filter (where outcome = 'created'),\n    count(*) filter (where outcome = 'linked'),\n    count(*) filter (where outcome = 'updated'),\n    count(*) filter (where outcome = 'conflict'),\n    count(*) filter (where outcome = 'held'),\n    count(*) filter (where outcome = 'invalid'),\n    count(*) filter (where outcome = 'skipped'),\n    count(*) filter (where outcome = 'failed'),\n    count(*)\n  into v_created, v_linked, v_updated, v_conflict, v_held, v_invalid,\n       v_skipped, v_failed, v_counted\n  from import_row_results r\n  where r.tenant_id = p_tenant and r.import_id = p_import;\n\n  if v_failed > 0 then\n    v_status := 'failed';\n  elsif v_counted < v_imp.row_count then\n    v_status := 'importing';\n  elsif v_held > 0 or v_conflict > 0 then\n    v_status := 'needs_review';\n  else\n    v_status := 'completed';\n  end if;\n\n  update data_imports set\n    status = v_status,\n    created_records = v_created,\n    updated_records = v_linked + v_updated,\n    conflict_records = v_conflict,\n    skipped_records = v_skipped + v_held,\n    invalid_rows = v_invalid,\n    failure = case when v_status = 'failed'\n                   then v_failed || ' row(s) failed \u2014 retry the import'\n                   else null end,\n    completed_at = case when v_status in ('completed', 'needs_review')\n                        then coalesce(completed_at, now()) end\n  where id = p_import\n  returning * into v_imp;\n\n  return jsonb_build_object(\n    'status', v_status,\n    'created', v_created, 'linked', v_linked, 'updated', v_updated,\n    'conflicts', v_conflict, 'held', v_held, 'invalid', v_invalid,\n    'skipped', v_skipped, 'failed', v_failed,\n    'unprocessed', greatest(v_imp.row_count - v_counted, 0),\n    'import', to_jsonb(v_imp));\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_site_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_site_row(p_tenant uuid, p_import uuid, p_actor uuid, p_row_number integer, p_record jsonb, p_options jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n  v_imp data_imports%rowtype;\n  v_source text;\n  v_short jsonb;\n  v_attempt int;\n  v_invalid jsonb;\n  v_ext text := nullif(trim(coalesce(p_record ->> 'external_id', '')), '');\n  v_cust_ext text := nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '');\n  v_link import_entity_links%rowtype;\n  v_site sites%rowtype;\n  v_site_id uuid;\n  v_outcome text;\n  v_active boolean := coalesce((p_record ->> 'active')::boolean, true);\n  v_meta jsonb;\n  v_hold_reason text;\nbegin\n  v_imp := import_row_preamble(p_tenant, p_import, p_actor, p_row_number,\n                               p_record, p_options, 'sites');\n  v_source := v_imp.preview -> 'sealed' ->> 'provenance_source';\n  select o_short, o_attempt into v_short, v_attempt\n    from import_row_prior(p_tenant, p_import, p_row_number);\n  if v_short is not null then return v_short; end if;\n\n  v_invalid := import_validate_site_row(p_tenant, v_source, p_record);\n  if v_invalid is not null then\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n    values (p_tenant, p_import, p_row_number, 'invalid',\n            v_invalid ->> 'reason',\n            coalesce((select array_agg(e) from jsonb_array_elements_text(\n                        v_invalid -> 'fields') e), '{}'::text[]),\n            v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'invalid', 'reason', v_invalid ->> 'reason');\n  end if;\n\n  perform pg_advisory_xact_lock(hashtextextended(\n    p_tenant::text || '|ext|' || v_source || '|site|' || v_ext, 42));\n\n  -- the customer relationship is REQUIRED and never guessed\n  select * into v_link from import_entity_links l\n   where l.tenant_id = p_tenant and l.source_system = v_source\n     and l.entity_kind = 'customer' and l.external_id = v_cust_ext;\n  if not found then\n    if exists (select 1 from import_conflicts c\n                where c.tenant_id = p_tenant and c.source_system = v_source\n                  and c.entity_kind = 'customer' and c.external_id = v_cust_ext\n                  and c.blocking and c.status = 'open') then\n      v_hold_reason := 'customer_conflict_open';\n    else\n      v_hold_reason := 'customer_not_imported';\n    end if;\n    insert into import_row_results\n      (tenant_id, import_id, row_number, outcome, reason, fields, attempt)\n    values (p_tenant, p_import, p_row_number, 'held', v_hold_reason,\n            array['customer_external_id'], v_attempt)\n    on conflict (tenant_id, import_id, row_number) do update\n      set outcome = excluded.outcome, reason = excluded.reason,\n          fields = excluded.fields, attempt = excluded.attempt;\n    return jsonb_build_object('action', 'held', 'reason', v_hold_reason);\n  end if;\n\n  v_meta := jsonb_build_object('import', jsonb_strip_nulls(jsonb_build_object(\n    'source', v_source, 'external_id', v_ext,\n    'customer_external_id', v_cust_ext, 'active', v_active,\n    'primary_email', p_record ->> 'primary_email',\n    'primary_phone', p_record ->> 'primary_phone')));\n  if p_record ->> 'metadata_json' is not null then\n    v_meta := v_meta || jsonb_build_object('source_payload',\n      (p_record ->> 'metadata_json')::jsonb);\n  end if;\n\n  select * into v_site from sites s\n   where s.tenant_id = p_tenant and s.source_system = v_source\n     and s.external_id = v_ext;\n  if found then\n    update sites set\n      label = coalesce(sites.label, nullif(trim(coalesce(p_record ->> 'label', '')), '')),\n      address_text = coalesce(sites.address_text, nullif(trim(coalesce(p_record ->> 'address_text', '')), '')),\n      postcode = coalesce(sites.postcode, p_record ->> 'postcode'),\n      metadata = coalesce(sites.metadata, '{}'::jsonb) || v_meta\n    where id = v_site.id;\n    v_site_id := v_site.id;\n    v_outcome := 'linked';\n  else\n    insert into sites (tenant_id, source_system, external_id, person_id,\n                       company_id, label, address_text, postcode,\n                       created_source, verified, metadata)\n    values (p_tenant, v_source, v_ext,\n            case when v_link.entity_table = 'people' then v_link.entity_id end,\n            case when v_link.entity_table = 'companies' then v_link.entity_id end,\n            nullif(trim(coalesce(p_record ->> 'label', '')), ''),\n            nullif(trim(coalesce(p_record ->> 'address_text', '')), ''),\n            p_record ->> 'postcode',\n            'import:' || v_source, false, v_meta)\n    returning id into v_site_id;\n    v_outcome := 'created';\n  end if;\n\n  insert into import_entity_links\n    (tenant_id, source_system, entity_kind, external_id, entity_table,\n     entity_id, link_strategy, confidence, evidence, import_id)\n  values (p_tenant, v_source, 'site', v_ext, 'sites', v_site_id,\n          case when v_outcome = 'created' then 'created' else 'external_id' end,\n          1.0, jsonb_build_object('customer_external_id', v_cust_ext), p_import)\n  on conflict (tenant_id, source_system, entity_kind, external_id) do nothing;\n\n  insert into import_row_provenance\n    (tenant_id, import_id, entity_table, entity_id, source_system,\n     source_row_number, external_id, imported_fields, match_strategy,\n     confidence, action, conflicts)\n  values (p_tenant, p_import, 'sites', v_site_id, v_source, p_row_number,\n          v_ext, array(select jsonb_object_keys(p_record)),\n          case when v_outcome = 'created' then 'created' else 'external_id' end,\n          1.0,\n          case when v_outcome = 'created' then 'created' else 'linked' end,\n          '[]'::jsonb);\n  insert into import_row_results\n    (tenant_id, import_id, row_number, outcome, entity_table, entity_id, attempt)\n  values (p_tenant, p_import, p_row_number, v_outcome, 'sites', v_site_id, v_attempt)\n  on conflict (tenant_id, import_id, row_number) do update\n    set outcome = excluded.outcome, reason = null, fields = '{}'::text[],\n        entity_table = excluded.entity_table, entity_id = excluded.entity_id,\n        attempt = excluded.attempt;\n  return jsonb_build_object('action', v_outcome, 'entity_table', 'sites',\n                            'entity_id', v_site_id);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_validate_customer_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_validate_customer_row(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_kind text;\n  v_fields text[] := array[]::text[];\nbegin\n  if p_tenant is null then\n    raise exception 'tenant required' using errcode = '22023';\n  end if;\n  perform import_validate_row_shape(p_record,\n    array['source_system','external_id','record_kind','display_name','title',\n          'first_name','last_name','company_name','primary_phone',\n          'secondary_phone','primary_email','address_text','postcode',\n          'active','metadata_json'],\n    array['active'], array[]::text[]);\n  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then\n    return jsonb_build_object('reason', 'missing external id',\n                              'fields', array['external_id']);\n  end if;\n  if p_record ->> 'source_system' is not null\n     and p_record ->> 'source_system' <> p_source then\n    return jsonb_build_object('reason', 'row source_system does not match the import source',\n                              'fields', array['source_system']);\n  end if;\n  v_kind := nullif(trim(coalesce(p_record ->> 'record_kind', '')), '');\n  if v_kind is null or v_kind not in ('person', 'company_contact') then\n    return jsonb_build_object('reason', 'record_kind must be person or company_contact',\n                              'fields', array['record_kind']);\n  end if;\n  if v_kind = 'company_contact'\n     and nullif(trim(coalesce(p_record ->> 'company_name', '')), '') is null then\n    return jsonb_build_object('reason', 'a company customer requires a company name',\n                              'fields', array['company_name']);\n  end if;\n  if v_kind = 'person'\n     and nullif(trim(coalesce(p_record ->> 'display_name', '')), '') is null\n     and nullif(trim(coalesce(p_record ->> 'first_name', '')), '') is null\n     and nullif(trim(coalesce(p_record ->> 'last_name', '')), '') is null then\n    return jsonb_build_object('reason', 'a person customer requires a name',\n                              'fields', array['display_name']);\n  end if;\n  if p_record ->> 'metadata_json' is not null then\n    begin\n      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then\n        v_fields := array['metadata_json'];\n      end if;\n    exception when others then\n      v_fields := array['metadata_json'];\n    end;\n    if array_length(v_fields, 1) > 0 then\n      return jsonb_build_object('reason', 'metadata_json is not a JSON object',\n                                'fields', v_fields);\n    end if;\n  end if;\n  return null;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_validate_job_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_validate_job_row(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\ndeclare\n  v_status text;\n  v_d text;\n  v_ts timestamptz;\n  v_key text;\nbegin\n  if p_tenant is null then\n    raise exception 'tenant required' using errcode = '22023';\n  end if;\n  perform import_validate_row_shape(p_record,\n    array['source_system','external_id','job_number','customer_external_id',\n          'site_external_id','site_address_text','site_postcode','title',\n          'description','status','active','created_date','completed_date',\n          'value_pennies','quoted_value_pennies','engineer','metadata_json'],\n    array['active'], array['value_pennies','quoted_value_pennies']);\n  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then\n    return jsonb_build_object('reason', 'missing external id',\n                              'fields', array['external_id']);\n  end if;\n  if nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '') is null then\n    return jsonb_build_object('reason', 'missing customer external id',\n                              'fields', array['customer_external_id']);\n  end if;\n  if p_record ->> 'source_system' is not null\n     and p_record ->> 'source_system' <> p_source then\n    return jsonb_build_object('reason', 'row source_system does not match the import source',\n                              'fields', array['source_system']);\n  end if;\n  v_status := nullif(trim(coalesce(p_record ->> 'status', '')), '');\n  if v_status is null or v_status not in ('open', 'completed', 'aborted') then\n    return jsonb_build_object('reason', 'status must be open, completed or aborted',\n                              'fields', array['status']);\n  end if;\n  foreach v_key in array array['created_date', 'completed_date'] loop\n    v_d := nullif(trim(coalesce(p_record ->> v_key, '')), '');\n    if v_d is not null then\n      begin\n        v_ts := v_d::timestamptz;\n      exception when others then\n        return jsonb_build_object('reason', v_key || ' is not a valid timestamp',\n                                  'fields', array[v_key]);\n      end;\n    end if;\n  end loop;\n  foreach v_key in array array['value_pennies', 'quoted_value_pennies'] loop\n    if p_record -> v_key is not null and jsonb_typeof(p_record -> v_key) = 'number' then\n      if (p_record ->> v_key)::numeric <> floor((p_record ->> v_key)::numeric) then\n        return jsonb_build_object('reason', v_key || ' must be integer pennies',\n                                  'fields', array[v_key]);\n      end if;\n    end if;\n  end loop;\n  if p_record ->> 'metadata_json' is not null then\n    begin\n      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then\n        return jsonb_build_object('reason', 'metadata_json is not a JSON object',\n                                  'fields', array['metadata_json']);\n      end if;\n    exception when others then\n      return jsonb_build_object('reason', 'metadata_json is not a JSON object',\n                                'fields', array['metadata_json']);\n    end;\n  end if;\n  return null;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_validate_row_shape",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_record jsonb, p_allowed text[], p_bool_keys text[], p_num_keys text[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_validate_row_shape(p_record jsonb, p_allowed text[], p_bool_keys text[], p_num_keys text[])\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\ndeclare\n  v_key text;\n  v_type text;\nbegin\n  if p_record is null or jsonb_typeof(p_record) <> 'object' then\n    raise exception 'record must be an object' using errcode = '22023';\n  end if;\n  for v_key in select jsonb_object_keys(p_record) loop\n    if not (v_key = any (p_allowed)) then\n      raise exception 'unknown record key %', v_key using errcode = '22023';\n    end if;\n    v_type := jsonb_typeof(p_record -> v_key);\n    if v_type = 'null' then\n      continue;\n    elsif v_key = any (p_bool_keys) then\n      if v_type <> 'boolean' then\n        raise exception 'record value % must be a boolean', v_key using errcode = '22023';\n      end if;\n    elsif v_key = any (p_num_keys) then\n      if v_type <> 'number' then\n        raise exception 'record value % must be a number', v_key using errcode = '22023';\n      end if;\n    else\n      if v_type <> 'string' then\n        raise exception 'record value % must be a string', v_key using errcode = '22023';\n      end if;\n      if length(p_record ->> v_key) > 4000 then\n        raise exception 'record value % is too long', v_key using errcode = '22023';\n      end if;\n    end if;\n  end loop;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "import_validate_site_row",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_tenant uuid, p_source text, p_record jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.import_validate_site_row(p_tenant uuid, p_source text, p_record jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\nAS $function$\nbegin\n  if p_tenant is null then\n    raise exception 'tenant required' using errcode = '22023';\n  end if;\n  perform import_validate_row_shape(p_record,\n    array['source_system','external_id','customer_external_id','label',\n          'address_text','postcode','primary_phone','primary_email',\n          'active','metadata_json'],\n    array['active'], array[]::text[]);\n  if nullif(trim(coalesce(p_record ->> 'external_id', '')), '') is null then\n    return jsonb_build_object('reason', 'missing external id',\n                              'fields', array['external_id']);\n  end if;\n  if nullif(trim(coalesce(p_record ->> 'customer_external_id', '')), '') is null then\n    return jsonb_build_object('reason', 'missing customer external id',\n                              'fields', array['customer_external_id']);\n  end if;\n  if p_record ->> 'source_system' is not null\n     and p_record ->> 'source_system' <> p_source then\n    return jsonb_build_object('reason', 'row source_system does not match the import source',\n                              'fields', array['source_system']);\n  end if;\n  if p_record ->> 'metadata_json' is not null then\n    begin\n      if jsonb_typeof((p_record ->> 'metadata_json')::jsonb) <> 'object' then\n        return jsonb_build_object('reason', 'metadata_json is not a JSON object',\n                                  'fields', array['metadata_json']);\n      end if;\n    exception when others then\n      return jsonb_build_object('reason', 'metadata_json is not a JSON object',\n                                'fields', array['metadata_json']);\n    end;\n  end if;\n  return null;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "marketing_normalize_endpoint",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_channel text, p_value text",
+      "definition": "CREATE OR REPLACE FUNCTION public.marketing_normalize_endpoint(p_channel text, p_value text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\ndeclare\n  v text := trim(coalesce(p_value, ''));\nbegin\n  if v = '' then return null; end if;\n  if p_channel = 'email' then\n    v := lower(v);\n    if v !~ '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$' then return null; end if;\n    return v;\n  elsif p_channel in ('phone', 'sms', 'whatsapp') then\n    v := regexp_replace(v, '[^0-9+]', '', 'g');\n    -- keep only a single LEADING plus\n    v := left(v, 1) || regexp_replace(substr(v, 2), '\\+', '', 'g');\n    if v !~ '^\\+?[0-9]{7,15}$' then return null; end if;\n    return v;\n  else\n    return lower(v);\n  end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "profiles": [
+    {
+      "name": "Commusoft Prepared Customers",
+      "active": true,
+      "version": 1,
+      "tenant_id": null,
+      "definition": {
+        "columns": [
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "source_system"
+          },
+          {
+            "type": "text",
+            "aliases": [
+              "customer account number"
+            ],
+            "required": true,
+            "canonical": "external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "required": true,
+            "canonical": "record_kind"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "display_name"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "title"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "first_name"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "last_name"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "company_name"
+          },
+          {
+            "type": "phone",
+            "aliases": [],
+            "canonical": "primary_phone"
+          },
+          {
+            "type": "phone",
+            "aliases": [],
+            "canonical": "secondary_phone"
+          },
+          {
+            "type": "email",
+            "aliases": [],
+            "canonical": "primary_email"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "address_text"
+          },
+          {
+            "type": "postcode",
+            "aliases": [],
+            "canonical": "postcode"
+          },
+          {
+            "type": "bool",
+            "aliases": [],
+            "canonical": "active"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "metadata_json"
+          }
+        ],
+        "governed": true
+      },
+      "entity_type": "customers",
+      "source_system": "commusoft"
+    },
+    {
+      "name": "Commusoft Prepared Jobs",
+      "active": true,
+      "version": 1,
+      "tenant_id": null,
+      "definition": {
+        "columns": [
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "source_system"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "required": true,
+            "canonical": "external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "job_number"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "required": true,
+            "canonical": "customer_external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "site_external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "site_address_text"
+          },
+          {
+            "type": "postcode",
+            "aliases": [],
+            "canonical": "site_postcode"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "title"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "description"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "required": true,
+            "canonical": "status"
+          },
+          {
+            "type": "bool",
+            "aliases": [],
+            "canonical": "active"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "created_date"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "completed_date"
+          },
+          {
+            "type": "number",
+            "aliases": [],
+            "canonical": "value_pennies"
+          },
+          {
+            "type": "number",
+            "aliases": [],
+            "canonical": "quoted_value_pennies"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "engineer"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "metadata_json"
+          }
+        ],
+        "governed": true
+      },
+      "entity_type": "jobs",
+      "source_system": "commusoft"
+    },
+    {
+      "name": "Commusoft Prepared Sites",
+      "active": true,
+      "version": 1,
+      "tenant_id": null,
+      "definition": {
+        "columns": [
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "source_system"
+          },
+          {
+            "type": "text",
+            "aliases": [
+              "workaddress account number"
+            ],
+            "required": true,
+            "canonical": "external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "required": true,
+            "canonical": "customer_external_id"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "label"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "address_text"
+          },
+          {
+            "type": "postcode",
+            "aliases": [],
+            "canonical": "postcode"
+          },
+          {
+            "type": "phone",
+            "aliases": [],
+            "canonical": "primary_phone"
+          },
+          {
+            "type": "email",
+            "aliases": [],
+            "canonical": "primary_email"
+          },
+          {
+            "type": "bool",
+            "aliases": [],
+            "canonical": "active"
+          },
+          {
+            "type": "text",
+            "aliases": [],
+            "canonical": "metadata_json"
+          }
+        ],
+        "governed": true
+      },
+      "entity_type": "sites",
+      "source_system": "commusoft"
+    }
+  ]
+}
