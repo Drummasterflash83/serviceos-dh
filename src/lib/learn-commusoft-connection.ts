@@ -36,6 +36,33 @@ const object = (v: unknown): v is Record<string, any> =>
 const uuid = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v);
 const date = (v: unknown) => typeof v === "string" && Number.isFinite(Date.parse(v));
+const setupFailures: Record<string, { code: string; message: string }> = {
+  learn_connection_credential_missing: {
+    code: "55000",
+    message:
+      "No stored Commusoft credential was found for this client. Cancel this saved request, then choose a new credential and save the connection.",
+  },
+  learn_connection_import_active: {
+    code: "55000",
+    message:
+      "An import is active. Keep this request saved and resolve the import before changing its connection.",
+  },
+  learn_connection_revision_changed: {
+    code: "PT409",
+    message:
+      "The connection changed after this request was prepared. Cancel this saved request, refresh status and review the current connection.",
+  },
+  learn_connection_binding_changed: {
+    code: "PT409",
+    message:
+      "The stored credential binding needs operator review. Cancel this saved request and review the connection before replacing a credential.",
+  },
+  learn_connection_source_identity_changed: {
+    code: "PT409",
+    message:
+      "This request would change the retained source account or region. Cancel it and use a reviewed source migration instead of credential maintenance.",
+  },
+};
 export function validateCommusoftSetup(r: unknown): asserts r is CommusoftSetupRequest {
   if (
     !object(r) ||
@@ -80,6 +107,8 @@ export async function resolveCommusoftSetup(
     throw Error(
       "Enter a credential only when applying a replacement; do not include it in a saved request.",
     );
+  let failureMessage =
+    "Connection setup was not confirmed. Keep the request reference and check its result before trying again. The credential has not been saved in recovery storage.";
   try {
     const { data, error } = await db.rpc("learn_commusoft_configure", {
       p_tenant: request.tenantId,
@@ -89,6 +118,14 @@ export async function resolveCommusoftSetup(
       p_mode: mode,
       p_api_key: apiKey ?? null,
     });
+    if (
+      object(error) &&
+      typeof error.message === "string" &&
+      Object.hasOwn(setupFailures, error.message)
+    ) {
+      const known = setupFailures[error.message];
+      if (error.code === known.code) failureMessage = known.message;
+    }
     if (
       error ||
       !object(data) ||
@@ -119,8 +156,6 @@ export async function resolveCommusoftSetup(
     return { tenant_id: data.tenant_id, request_id: data.request_id, state: data.state };
   } catch {
     // Database/transport errors may include request context. Never forward them.
-    throw Error(
-      "Connection setup was not confirmed. Keep the request reference and check its result before trying again. The credential has not been saved in recovery storage.",
-    );
+    throw Error(failureMessage);
   }
 }

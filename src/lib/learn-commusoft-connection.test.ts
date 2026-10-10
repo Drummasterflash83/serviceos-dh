@@ -151,3 +151,49 @@ test("reusing stored keys sends no secret and cancellation remains explicit", as
     "cancelled",
   );
 });
+test("known setup conflicts give safe recovery directions; arbitrary error prose stays private", async () => {
+  await assert.rejects(
+    resolveCommusoftSetup(
+      {
+        rpc: async () => ({
+          data: null,
+          error: {
+            code: "55000",
+            message: "learn_connection_credential_missing",
+            details: "SYNTHETIC_SECRET",
+          },
+        }),
+      },
+      request,
+      "check",
+    ),
+    (e) =>
+      e instanceof Error &&
+      e.message.includes("No stored Commusoft credential") &&
+      !e.message.includes("SYNTHETIC_SECRET"),
+  );
+  await assert.rejects(
+    resolveCommusoftSetup(
+      {
+        rpc: async () => ({
+          data: null,
+          error: { code: "PT409", message: "learn_connection_revision_changed" },
+        }),
+      },
+      request,
+      "check",
+    ),
+    /Cancel this saved request/,
+  );
+  await assert.rejects(
+    resolveCommusoftSetup(
+      { rpc: async () => ({ data: null, error: { code: "55000", message: "SYNTHETIC_SECRET" } }) },
+      request,
+      "check",
+    ),
+    (e) =>
+      e instanceof Error &&
+      !e.message.includes("SYNTHETIC_SECRET") &&
+      e.message.includes("not confirmed"),
+  );
+});

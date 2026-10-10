@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
+import type { ConnectionControlClient } from "@/lib/learn-commusoft-connection-outbox";
+import { connectionOutboxKey } from "@/lib/learn-operator-request-scope";
 import "@/styles/operator-learn-inputs.css";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
@@ -7,7 +10,6 @@ import {
   readOperatorInputWriteAccess,
   type InputFlags,
   type InputOverview,
-  type OperatorInputClient,
   type OperatorInputDefinition,
 } from "@/lib/learn-operator-inputs";
 import {
@@ -26,7 +28,7 @@ export function OperatorLearnInputs({
 }: {
   tenantId: string;
   actorId: string;
-  client?: OperatorInputClient;
+  client?: ConnectionControlClient;
   backend?: string;
 }) {
   const scope = { tenantId, actorId, backend };
@@ -36,6 +38,7 @@ export function OperatorLearnInputs({
     [storageReady, setStorageReady] = useState(false),
     [notice, setNotice] = useState("");
   const [canWrite, setCanWrite] = useState<boolean | null>(null);
+  const [connectionBlocked, setConnectionBlocked] = useState(true);
   const [values, setValues] = useState<InputFlags>({
     "learn.enabled": false,
     "learn.inputs.commusoft.enabled": false,
@@ -119,7 +122,11 @@ export function OperatorLearnInputs({
     restore();
     void operation(refresh);
     const changed = (event: StorageEvent) => {
-      if (event.key === null || event.key === inputOutboxKey(scope)) {
+      if (
+        event.key === null ||
+        event.key === inputOutboxKey(scope) ||
+        event.key === connectionOutboxKey(scope)
+      ) {
         restore();
         setApproved(false);
       }
@@ -185,6 +192,7 @@ export function OperatorLearnInputs({
       !approved ||
       !data ||
       pending ||
+      connectionBlocked ||
       busy ||
       !storageReady ||
       !reason.trim()
@@ -208,7 +216,8 @@ export function OperatorLearnInputs({
     ["uk", "us"].includes(selected.region ?? "") &&
     data?.flags["learn.enabled"] === true &&
     data.flags["learn.inputs.commusoft.enabled"] === true;
-  const disabled = canWrite !== true || busy || !!pending || !data || !storageReady;
+  const disabled =
+    canWrite !== true || busy || !!pending || connectionBlocked || !data || !storageReady;
   const stamp = (value: string | null) =>
     value ? new Date(value).toLocaleString("en-GB") : "Not verified";
   const flagLabel = (value: boolean | null) =>
@@ -295,6 +304,19 @@ export function OperatorLearnInputs({
           </div>
         </div>
       )}
+      <OperatorCommusoftConnection
+        tenantId={tenantId}
+        actorId={actorId}
+        backend={backend}
+        client={client}
+        connection={selected ?? null}
+        statusReady={!!data}
+        canWrite={canWrite}
+        blocked={busy || !!pending}
+        onBlockingChange={setConnectionBlocked}
+        onAccessChange={setCanWrite}
+        onChanged={() => refresh(generation.current)}
+      />
       {data && (
         <>
           <p className="text-xs text-muted-foreground">

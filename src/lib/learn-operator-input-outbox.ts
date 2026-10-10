@@ -4,18 +4,16 @@ import {
   type OperatorInputClient,
   type OperatorInputRequest,
 } from "./learn-operator-inputs.ts";
-export type InputScope = { backend: string; actorId: string; tenantId: string };
-type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
-export type InputLock = <T>(key: string, operation: () => Promise<T>) => Promise<T>;
+import {
+  inputOutboxKey,
+  connectionOutboxKey,
+  type InputScope,
+  type InputLock,
+  type RequestStore as Store,
+} from "./learn-operator-request-scope.ts";
+export { inputOutboxKey };
+export type { InputScope, InputLock };
 export type SavedInputRequest = { version: 1; backend: string; request: OperatorInputRequest };
-export function inputOutboxKey(s: InputScope) {
-  if (
-    !/^https:\/\/[^/?#]+$/.test(s.backend) ||
-    ![s.actorId, s.tenantId].every((v) => /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(v))
-  )
-    throw Error("A signed-in operator, company and backend are required.");
-  return `serviceos:operator-input:1:${encodeURIComponent(s.backend)}:${s.actorId}:${s.tenantId}`;
-}
 function checked(s: InputScope, value: SavedInputRequest): SavedInputRequest {
   inputOutboxKey(s);
   if (
@@ -62,6 +60,10 @@ export async function resolveSavedInput(
     encoded = JSON.stringify(value);
   return lock(key, async () => {
     if (!allowed()) throw Error("Operator context changed. Reopen this company before continuing.");
+    if (store.getItem(connectionOutboxKey(s)) !== null)
+      throw Error(
+        "Resolve the saved connection request before changing modules or approving an import.",
+      );
     const saved = readSavedInput(store, s);
     if (saved && JSON.stringify(saved) !== encoded)
       throw Error("Another request is saved. Resolve it before making a new change.");

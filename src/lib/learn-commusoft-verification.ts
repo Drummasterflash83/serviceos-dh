@@ -14,7 +14,7 @@ export type VerificationClient = OperatorInputClient & {
   functions: {
     invoke: (
       name: string,
-      options: { body: unknown },
+      options: { body: Record<string, unknown> },
     ) => PromiseLike<{ data: unknown; error: unknown }>;
   };
 };

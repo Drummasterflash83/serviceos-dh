@@ -1644,3 +1644,42 @@ change or production deployment occurred. Next is the operator setup/recovery UI
 then exact TEST packaging and signed-in acceptance of configuration and verification.
 Real Drummonds API access remains unconfirmed. Evidence:
 [local verification](../operations/evidence/learn-commusoft-verification-local-2026-10-10.json).
+
+## OpenFolk connection setup and recovery screen — local, 10 October
+
+OpenFolk's LEARN controls now include Commusoft account setup, reuse/replacement
+of the tenant's stored credential, and a separate explicit bounded access check.
+The existing account/region cannot be edited as credential maintenance. Saving
+clears previous verification and never starts an import. Missing stored keys,
+stale configuration and active-import conflicts have safe operator recovery
+instructions; raw server prose is not displayed.
+
+A connection outbox saves only validated request metadata before transmission.
+Replacement keys remain transient and password inputs are cleared on submission,
+context changes and lost administrator access. Lost setup replies can be recovered
+without entering the key again. A genuinely unrecorded replacement needs the key
+re-entered explicitly. Request scope includes backend, operator and company, and
+connection actions use the same browser lock as module/import actions. An
+unresolved request of either type blocks new work of the other type across tabs.
+Running/expired verification requests are retained, never silently restarted.
+
+Synthetic browser acceptance passed initial setup, successful verification, lost
+setup reply plus real reload, viewer access with retained recovery, restored admin
+receipt recovery, lost verification reply plus reload, running-check cancellation,
+failed credentials, missing stored-key recovery and revocation immediately before
+save. The transient password input was confirmed empty after revocation. Status
+remained unverified on failed access, and no import was started. The preview blocks
+outbound connections. No console errors were observed at final inspection.
+
+Thirty-three adapter/outbox/HTTP regression tests, application typechecking, the
+production build (47 prebuild checks) and isolated preview build passed. Screenshots
+and evidence are retained in
+[connection UI acceptance](../operations/evidence/learn-commusoft-connection-ui-2026-10-10.json).
+The temporary preview tab/server were closed. The user's existing preview and
+production were unchanged.
+
+Next: inspect hosted TEST broker prerequisites, package setup and verification,
+rehearse against the exact catalog, then install and perform signed-in acceptance.
+This screen has only synthetic browser acceptance; the new RPCs and endpoint are
+not yet hosted. Real Drummonds Commusoft access/coverage, incomplete import recovery,
+contacts/reconciliation/source updates and the wider LEARN V1 requirements remain.

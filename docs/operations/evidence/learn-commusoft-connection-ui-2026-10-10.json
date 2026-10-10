@@ -1,0 +1,38 @@
+{
+  "version": "learn-commusoft-connection-ui-local/1",
+  "observedAt": "2026-10-10T11:22:11.763910+00:00",
+  "state": "passed",
+  "checks": [
+    "33 connection/setup/outbox/operator/HTTP regression tests passed; application TypeScript check and production/isolated-preview builds passed (47 prebuild checks).",
+    "Only validated non-secret request metadata is stored. Lost setup reply recovers by receipt without resending the key; unrecorded replacement requires explicit re-entry.",
+    "Actor/backend/company scope validation and shared browser locking coordinate connection requests with module/import requests. Unknown storage is retained and changes paused.",
+    "Approved/running/expired verification remains saved. Explicit retry of running/expired work does not call the execution endpoint.",
+    "Synthetic browser: initial connection and access check, setup lost reply/reload, viewer-disabled recovery then restored-admin receipt check, verification lost reply/reload, running cancellation, failed credential and missing stored key recovery.",
+    "Synthetic browser: revoked permission immediately before setup refused submission and cleared the transient password field. Final console error inspection was empty."
+  ],
+  "screenshots": [
+    "learn-commusoft-connection-ui-2026-10-10.png",
+    "learn-commusoft-connection-ui-screen-2026-10-10.png"
+  ],
+  "sourceSha256": {
+    "src/components/app/OperatorCommusoftConnection.tsx": "81b6897cb76c35bea836863142c62a4d3f679eeee64a5d12ae2cf6cc3dfc709c",
+    "src/components/app/OperatorLearnInputs.tsx": "89bd23f603d00a874ae91e2ac7b89778996cdd1e45e17b81f4a434b2330e0f04",
+    "src/lib/learn-commusoft-connection-outbox.ts": "e5c8599126db9899aec6c7902285415cde78b1282f00a8019a8250b4865a3de9",
+    "src/lib/learn-commusoft-connection-outbox.test.ts": "22d1db46971214cdde8d78233a4b392492dcbb5e429116dcd339aab07720bdb1",
+    "src/lib/learn-operator-request-scope.ts": "a63b014426b0436a2aa014a62cd4a16b73fab28cd930124a3bf19a5fdb482278",
+    "src/lib/learn-operator-input-outbox.ts": "bf3ff87141b87e8e7f25bf97adb532341bb8181a1eb52cc5181c2ddd2e4b5abb",
+    "src/lib/learn-commusoft-connection.ts": "14cb76cae9f3160295c2b3d5890d067fc9ae28a2c15409e8763327606913952b",
+    "src/lib/learn-commusoft-connection.test.ts": "55e3ba58b27e077bb1b58a60599a30da260abde70970af0dbfee95d726e2b059",
+    "src/lib/learn-commusoft-verification.ts": "e7389351d4e035007ac96ca831c6e7765677d87417cea864cea4552aa5d0cd56",
+    "preview/learn-operator-inputs/main.tsx": "b9c115fabb4ce215538168f7ed430fc032c01d62668eff38b559f1169b8c8678",
+    "docs/operations/evidence/learn-commusoft-connection-ui-2026-10-10.png": "21298f8e2fbda51e5d7b9b54114c06d05bda30237225e185e7ad829998fcbabe",
+    "docs/operations/evidence/learn-commusoft-connection-ui-screen-2026-10-10.png": "e846483be3f66b5456012b52e2bc40e605165b4ec7406996061d069ff570974a"
+  },
+  "limitations": [
+    "Browser used simulated receipts and metadata with connect-src none. These checks do not prove hosted RPC/Edge/Auth compatibility or real Commusoft access.",
+    "No real credentials, communications, provider settings, hosted database objects or production deployment changed.",
+    "Configuration/verification TEST packaging, encrypted Vault compatibility and signed-in hosted acceptance remain. The screen is not released to the live frontend.",
+    "Persistent last-check diagnostics/history browsing and incomplete-import recovery are still broader operator-console work; this screen shows current connection metadata and the result of the request being resolved."
+  ],
+  "cleanup": "Temporary IAB tab 6 closed; local preview server on 127.0.0.1:47894 stopped. User preview at 127.0.0.1:47871 untouched."
+}
