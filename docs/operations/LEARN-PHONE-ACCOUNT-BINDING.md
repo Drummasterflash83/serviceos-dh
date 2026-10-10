@@ -366,3 +366,40 @@ release. The database proves retained pages and matching scope/counts; provider
 exhaustion is still calculated by the trusted handler. This is not evidence of
 real provider coverage, paid processing, signed-in acceptance or production readiness.
 [Local evidence](evidence/learn-phone-import-completion-local-2026-10-10.json).
+
+
+## Scheduler settlement — locally verified, not deployed
+
+The scheduler now requires a newly created, confirmed job claim and parent run
+before dispatch. Duplicate active jobs are skipped; claim loss stops subsequent
+work. Claims expire after five minutes and renew only while the same attempt is
+still owned. The database rechecks ownership and lease at settlement.
+
+`learn_phone_settle_schedule` confirms the completed child runs and immutable
+import receipts match the company, account, provider customer, input kind,
+window and expected unfiltered scope. Saved page receipts supply record counts.
+The account's original `updated_at` revision must still match: an intervening
+configuration change or competing settlement prevents stale success/failure
+writes. A window cannot skip the existing cursor or move it backwards.
+
+Run status, job status, merged account cursor, connector health and an immutable
+settlement receipt commit in one transaction. Paused/failed outcomes keep the
+cursor. One account's success cannot make the connector healthy while another
+active account has no successful import or has an unresolved error. An unknown
+acknowledgement never triggers fallback success/failure/status writes. Exact
+receipt replay is read-only, including after a later pause.
+
+All **56 actual-handler tests** and strict TypeScript checks pass. The actual SQL
+suite in networkless PostgreSQL 15 covers whole-transaction rollback, retained
+cursor fields, successful/paused/failed outcomes, stale account revisions,
+replaced/expired job claims, missing child completion receipts, old or changed
+child scopes, cross-tenant/wrong-kind denial, cursor gaps, multiaccount health,
+private immutable receipts, and real concurrent settlement/pause/replay ordering.
+It also reruns the preceding publication, recovery and import completion checks.
+
+**Not deployed.** The import completion and scheduler candidates need a combined
+TEST schema/runtime release and hosted acceptance. Late controller changes, lost
+claims and unknown acknowledgements leave retained evidence for reconciliation;
+there is no claim that these runs automatically reconcile yet. No real provider,
+paid processing, signed-in acceptance or production readiness is established.
+[Local scheduler evidence](evidence/learn-phone-schedule-settlement-local-2026-10-10.json).

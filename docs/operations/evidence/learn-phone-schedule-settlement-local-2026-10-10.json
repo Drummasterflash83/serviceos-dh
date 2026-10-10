@@ -1,0 +1,84 @@
+{
+  "observedAt": "2026-10-10T19:28:13.981192+00:00",
+  "state": "locally_verified_not_deployed",
+  "scope": "Atomic scheduler settlement on top of the locally verified Phone import completion candidate.",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101009000_learn_phone_schedule_settlement.sql",
+      "sha256": "90db0cb4756dc11964d4c01c8e9ee741bb81d140b9007fcb6cf3449281d86be9"
+    },
+    {
+      "path": "supabase/functions/_shared/phone-schedule-settlement.ts",
+      "sha256": "fd734e982a7d191fc2d995193cdc2f19d298a287f5a81ae1ca6d4b63b3ae8b55"
+    },
+    {
+      "path": "supabase/functions/phone-scheduled-sync/index.ts",
+      "sha256": "bdeff30bb931eb3b9722aec27d35ce64b19e771418865ad7e64298a9065417f6"
+    },
+    {
+      "path": "scripts/verify/learn-phone-schedule.assert.sql",
+      "sha256": "bebb76a9158b3fef2c4e7a595af413a2e05cab1f09ec5fe52b9c8649291ade4a"
+    },
+    {
+      "path": "scripts/verify/learn-phone-publication-local.py",
+      "sha256": "777e79aa4f2ca61545ddfaef8c4bfa767a7ddb666db39887767b8b7627efc4fa"
+    },
+    {
+      "path": "scripts/verify/learn-phone-account-handlers.test.mjs",
+      "sha256": "8ce2a061b8131ded4baca50876a50076852505b34296588dc0c08cbb9a157b76"
+    }
+  ],
+  "localPostgres": {
+    "observedAt": "2026-10-10T19:26:27Z",
+    "state": "passed",
+    "scope": "Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.",
+    "checks": [
+      "migration rollback",
+      "exact replay and conflicting definitions",
+      "tenant/run/page validation",
+      "recording storage retention and new-recording classification",
+      "pause/account denial",
+      "atomic rollback on receipt failure",
+      "page bounds and browser/service privileges",
+      "immutable receipts",
+      "concurrent pause-first and publication-first",
+      "concurrent account disable",
+      "concurrent insertion returns exactly one new recording ID",
+      "interrupted publication remains recoverable through existing backlog selector",
+      "per-recording retry holds preserve history and pause visibility",
+      "stored stage progression and tenant isolation",
+      "atomic import completion and rollback",
+      "completion scope, page totals, empty window and immutable replay",
+      "concurrent completion pause-first, completion-first, account disable and exact replay",
+      "atomic scheduler cursor, run, job and connector health settlement",
+      "durable child completion/window/filter verification and cursor merge",
+      "stale account, lost owner and expired lease denial",
+      "paused/failed outcomes keep cursor; multiaccount health remains truthful",
+      "concurrent scheduler CAS, pause-first and exact replay"
+    ],
+    "limits": [
+      "No hosted deployment, real provider, application UI or complete source-pipeline acceptance.",
+      "Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture."
+    ]
+  },
+  "handlerTests": {
+    "passed": 56,
+    "command": "node --experimental-vm-modules --test scripts/verify/learn-phone-account-handlers.test.mjs",
+    "scope": "Actual Edge handlers and shared helper code with synthetic database/provider ports.",
+    "newCoverage": [
+      "duplicate/missing job, unconfirmed claim/run and lost heartbeat prevent subsequent provider work",
+      "malformed/future cursor and missing account revision prevent dispatch",
+      "HTTP status, strict success, exact window/customer, run ID and count validation",
+      "unknown/mismatched settlement produces no success, failure or cursor fallback writes",
+      "pause/provider-error combinations settle through the single transaction"
+    ]
+  },
+  "typecheck": "Strict TypeScript passed for the scheduler, both sync endpoints and their local dependency closure.",
+  "limits": [
+    "New import-completion and scheduler migrations/runtime are not deployed to TEST or production.",
+    "A lost/replaced job claim, stale account revision or late controller pause can leave a run awaiting reconciliation; it cannot advance the cursor or claim settled waiting.",
+    "No provider exhaustion proof beyond the trusted sync handler; no real provider, paid processing, signed-in user or production acceptance.",
+    "Per-recording processing concurrency and broad reconciliation remain separate work.",
+    "Unrelated cursor fields are preserved; account revision comparison deliberately rejects any intervening account update."
+  ]
+}

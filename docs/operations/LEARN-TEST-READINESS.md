@@ -1,5 +1,20 @@
 # Existing TEST environment: verified release gaps
 
+## Phone scheduler settlement — locally verified; hosted release pending
+
+The candidate now settles the run, owned job, merged cursor and connector health
+in one transaction using durable child-import evidence. Account revision checks
+reject stale competing runs; paused/failed imports keep their cursor, and one
+successful account cannot hide another active account's warning. Unknown results
+remain unconfirmed without fallback status writes.
+
+Fifty-six actual-handler tests, strict TypeScript and real local PostgreSQL
+transaction/concurrency tests pass. Both this and the preceding import-completion
+candidate are **not deployed**. Next: prepare/rehearse their combined additive TEST
+release and verify its published runtime. Automatic reconciliation of all unknown
+outcomes, real provider acceptance and production promotion remain outstanding.
+[Details](LEARN-PHONE-ACCOUNT-BINDING.md#scheduler-settlement--locally-verified-not-deployed).
+
 ## Phone import completion — verified locally; combined TEST release pending
 
 The call and recording handlers now require an atomic completion receipt before

@@ -15,7 +15,7 @@ import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ENABLED Simwood account in `connector_accounts` (joined via `tenant_connectors`)
 // and syncs each from its durable cursor (`sync_cursor.last_synced_until`) with a
 // safety overlap. If a cron tick is missed, the cursor simply stays put, so the
-// next run backfills the gap — no calls are permanently skipped. First-ever run
+// next run retries from that saved point. First-ever run
 // for an account (no cursor) defaults to the last 24 hours.
 //
 // Auth: NOT a user session. A shared secret header `x-schedule-secret` must match
@@ -31,12 +31,13 @@ import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { createSupabaseAdmin, PROVIDER } from "../_shared/simwood.ts";
 import { invokeFunction } from "../_shared/phone_pipeline.ts";
 import { includeLocalCalls } from "../_shared/phone-sync-completeness.ts";
+import { createPlatformJob } from "../_shared/platform_jobs.ts";
 import {
-  completePlatformJob,
-  createPlatformJob,
-  failPlatformJob,
-  startPlatformJob,
-} from "../_shared/platform_jobs.ts";
+  ownPhoneSchedule,
+  phoneChildResult,
+  phoneRunId,
+  settlePhoneSchedule,
+} from "../_shared/phone-schedule-settlement.ts";
 
 const CONNECTOR_ID = "simwood";
 // Safety overlap re-synced on every run so a call landing on a window boundary is
@@ -71,25 +72,10 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/** Pull a numeric records_processed out of a child function's JSON response. */
-function recordsOf(jsonBody: Record<string, unknown> | null): number {
-  const v = jsonBody?.records_processed;
-  return typeof v === "number" && Number.isFinite(v) ? v : 0;
-}
-
-function syncRunIdOf(jsonBody: Record<string, unknown> | null): string | null {
-  const v = jsonBody?.sync_run_id;
-  return typeof v === "string" ? v : null;
-}
-
-function errorCodeOf(jsonBody: Record<string, unknown> | null, status: number): string {
-  const err = (jsonBody?.error ?? {}) as { code?: unknown };
-  return typeof err.code === "string" ? err.code : `http_${status || "network"}`;
-}
-
 interface AccountRow {
   id: string;
   tenant_id: string;
+  updated_at: string;
   account_key: string;
   settings: Record<string, unknown> | null;
   sync_cursor: Record<string, unknown> | null;
@@ -100,15 +86,26 @@ interface AccountRow {
 function customerIdOf(row: AccountRow): string {
   const fromSettings = row.settings?.provider_customer_id;
   return typeof fromSettings === "string" && fromSettings.trim() !== ""
-    ? fromSettings
+    ? fromSettings.trim()
     : row.account_key;
 }
 
 /** Compute the [from, to] sync window from the account's durable cursor. */
-function windowFor(row: AccountRow, nowMs: number): { from: string; to: string } {
+function windowFor(row: AccountRow, nowMs: number): { from: string; to: string } | null {
+  if (
+    row.sync_cursor != null &&
+    (typeof row.sync_cursor !== "object" || Array.isArray(row.sync_cursor))
+  )
+    return null;
   const cursorRaw = row.sync_cursor?.last_synced_until;
   const cursor = typeof cursorRaw === "string" ? cursorRaw : (row.last_successful_sync_at ?? null);
   const cursorMs = cursor ? Date.parse(cursor) : NaN;
+  if (
+    (cursorRaw !== undefined && cursorRaw !== null && typeof cursorRaw !== "string") ||
+    (cursor !== null &&
+      (typeof cursor !== "string" || !Number.isFinite(cursorMs) || cursorMs > nowMs))
+  )
+    return null;
   const fromMs = Number.isFinite(cursorMs)
     ? cursorMs - OVERLAP_MINUTES * 60 * 1000
     : nowMs - DEFAULT_LOOKBACK_HOURS * 60 * 60 * 1000;
@@ -154,8 +151,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   for (const connector of connectorRows) {
     const { data: accounts, error: acctErr } = await supabase
       .from("connector_accounts")
-      .select("id, tenant_id, account_key, settings, sync_cursor, last_successful_sync_at")
+      .select(
+        "id, tenant_id, updated_at, account_key, settings, sync_cursor, last_successful_sync_at",
+      )
       .eq("tenant_connector_id", connector.id)
+      .eq("tenant_id", connector.tenant_id)
       .eq("status", "active");
     if (acctErr) {
       results.push({ tenant_connector_id: connector.id, ok: false, error: "accounts_read_failed" });
@@ -171,19 +171,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
 
       const customerId = customerIdOf(account);
-      const { from, to } = windowFor(account, nowMs);
-
-      const baseMetadata: Record<string, unknown> = {
-        connector_account_id: account.id,
-        provider_customer_id: customerId,
-        from,
-        to,
-        overlap_minutes: OVERLAP_MINUTES,
-      };
-
-      // Durable platform job (supplements phone_sync_runs). Best-effort: a
-      // duplicate active job for this account this minute → don't double-track,
-      // but always run the (idempotent) sync. No secrets in the payload.
+      const window = windowFor(account, nowMs);
+      if (
+        !window ||
+        account.tenant_id !== connector.tenant_id ||
+        !Number.isFinite(Date.parse(account.updated_at))
+      ) {
+        results.push({ tenant_id: tenantId, ok: false, error: "phone_schedule_scope_invalid" });
+        continue;
+      }
+      const { from, to } = window;
       const created = await createPlatformJob(supabase, {
         tenantId,
         connectorId: "simwood",
@@ -192,181 +189,126 @@ Deno.serve(async (req: Request): Promise<Response> => {
         jobKey: `phone.scheduled_sync:${account.id}:${to.slice(0, 16)}`,
         payload: { provider_customer_id: customerId, from, to },
       });
-      const jobId = created.duplicate ? null : created.id;
-      if (jobId) await startPlatformJob(supabase, jobId);
-
-      // Open a scheduled_sync run so every tick is auditable even on mid-run failure.
-      const { data: runRow } = await supabase
-        .from("phone_sync_runs")
-        .insert({
+      if (created.duplicate || !phoneRunId(created.id)) {
+        results.push({
           tenant_id: tenantId,
-          provider: PROVIDER,
-          sync_type: "scheduled_sync",
-          status: "running",
-          metadata: baseMetadata,
-        })
-        .select("id")
-        .single();
-      const syncRunId = (runRow?.id as string | undefined) ?? null;
-
-      const childBody = {
-        tenant_id: tenantId,
+          ok: false,
+          ...(created.duplicate
+            ? { waiting: "active_run" }
+            : { error: "phone_schedule_job_unconfirmed" }),
+        });
+        continue;
+      }
+      const job = { tenantId, jobId: created.id, owner: `phone-schedule:${crypto.randomUUID()}` };
+      if (!(await ownPhoneSchedule(supabase, job, true))) {
+        results.push({ tenant_id: tenantId, ok: false, error: "phone_schedule_job_unconfirmed" });
+        continue;
+      }
+      const includeLocal = includeLocalCalls(account.settings);
+      const baseMetadata = {
+        connector_account_id: account.id,
+        tenant_connector_id: connector.id,
         provider_customer_id: customerId,
+        account_updated_at: account.updated_at,
+        include_local: includeLocal,
         from,
         to,
+        overlap_minutes: OVERLAP_MINUTES,
+        job_id: job.jobId,
+        job_owner: job.owner,
       };
-
-      // Calls — invoke the existing idempotent function (service-role internal).
+      let syncRunId: string | null = null;
+      try {
+        const { data, error } = await supabase
+          .from("phone_sync_runs")
+          .insert({
+            tenant_id: tenantId,
+            provider: PROVIDER,
+            sync_type: "scheduled_sync",
+            status: "running",
+            metadata: baseMetadata,
+          })
+          .select("id")
+          .single();
+        if (!error && phoneRunId(data?.id)) syncRunId = data.id;
+      } catch {
+        /* Unknown creation must not start untracked provider requests. */
+      }
+      if (!syncRunId) {
+        results.push({
+          tenant_id: tenantId,
+          ok: false,
+          error: "phone_schedule_run_unconfirmed",
+          job_id: job.jobId,
+        });
+        continue;
+      }
+      const childBody = { tenant_id: tenantId, provider_customer_id: customerId, from, to };
+      if (!(await ownPhoneSchedule(supabase, job))) {
+        results.push({
+          tenant_id: tenantId,
+          ok: false,
+          error: "phone_schedule_job_unconfirmed",
+          sync_run_id: syncRunId,
+        });
+        continue;
+      }
       const callsRes = await invokeFunction(
         "simwood-sync-calls",
-        {
-          ...childBody,
-          include_local: includeLocalCalls(account.settings),
-        },
+        { ...childBody, include_local: includeLocal },
         serviceKey,
       );
-      const callsOk = Boolean(callsRes.json?.success);
-      const callsProcessed = recordsOf(callsRes.json);
-
-      // Recordings — also auto-triggers Phase-5A enrichment for NEW recordings.
+      if (!(await ownPhoneSchedule(supabase, job))) {
+        results.push({
+          tenant_id: tenantId,
+          ok: false,
+          error: "phone_schedule_job_unconfirmed",
+          sync_run_id: syncRunId,
+        });
+        continue;
+      }
       const recRes = await invokeFunction("simwood-sync-recordings", childBody, serviceKey);
-      const recOk = Boolean(recRes.json?.success);
-      const recProcessed = recordsOf(recRes.json);
-
+      const calls = phoneChildResult(callsRes, { from, to, customerId });
+      const recordings = phoneChildResult(recRes, { from, to, customerId });
       const errors: Record<string, string> = {};
-      if (!callsOk) errors.calls = errorCodeOf(callsRes.json, callsRes.status);
-      if (!recOk) errors.recordings = errorCodeOf(recRes.json, recRes.status);
-      const overallOk = callsOk && recOk;
-      const waiting =
-        !overallOk &&
-        Object.values(errors).every((code) =>
-          ["learn_capture_paused", "learn_capture_unavailable"].includes(code),
-        );
-
-      const metadata = {
-        ...baseMetadata,
-        calls_sync_run_id: syncRunIdOf(callsRes.json),
-        recordings_sync_run_id: syncRunIdOf(recRes.json),
-        calls_processed: callsProcessed,
-        recordings_processed: recProcessed,
-        ...(Object.keys(errors).length > 0 ? { errors } : {}),
-      };
-
-      let waitingRecorded = !waiting;
-      if (syncRunId) {
-        const patch = {
-          status: overallOk ? "success" : waiting ? "paused" : "failed",
-          completed_at: new Date().toISOString(),
-          records_processed: callsProcessed + recProcessed,
-          error_message: overallOk || waiting ? null : JSON.stringify(errors),
-          metadata,
-        };
-        if (waiting) {
-          try {
-            const saved = await supabase
-              .from("phone_sync_runs")
-              .update(patch)
-              .eq("id", syncRunId)
-              .eq("tenant_id", tenantId)
-              .eq("status", "running")
-              .select("id")
-              .maybeSingle();
-            waitingRecorded = !saved.error && saved.data?.id === syncRunId;
-          } catch {
-            /* Retain unknown outcomes for operator verification. */
-          }
-        } else {
-          await supabase.from("phone_sync_runs").update(patch).eq("id", syncRunId);
-        }
-      }
-
-      // Advance the durable cursor ONLY on full success, so a missed/failed run
-      // is retried from the same point next tick (no permanently skipped calls).
-      if (overallOk) {
-        await supabase
-          .from("connector_accounts")
-          .update({
-            sync_cursor: { last_synced_until: to },
-            last_successful_sync_at: to,
-            last_error: null,
-          })
-          .eq("id", account.id);
-        await supabase
-          .from("tenant_connectors")
-          .update({
-            last_successful_sync_at: to,
-            health_status: "healthy",
-            last_error: null,
-          })
-          .eq("id", connector.id);
-      } else if (!waiting) {
-        const errText = JSON.stringify(errors);
-        await supabase
-          .from("connector_accounts")
-          .update({ last_failed_sync_at: new Date().toISOString(), last_error: errText })
-          .eq("id", account.id);
-        await supabase
-          .from("tenant_connectors")
-          .update({
-            last_failed_sync_at: new Date().toISOString(),
-            health_status: "warning",
-            last_error: errText,
-          })
-          .eq("id", connector.id);
-      }
-
-      if (jobId) {
-        if (overallOk) {
-          await completePlatformJob(supabase, jobId, {
-            recordsProcessed: callsProcessed + recProcessed,
-            result: { calls_processed: callsProcessed, recordings_processed: recProcessed },
-          });
-        } else if (waiting) {
-          try {
-            const saved = await supabase
-              .from("platform_jobs")
-              .update({
-                status: "cancelled",
-                completed_at: new Date().toISOString(),
-                lease_expires_at: null,
-                result: {
-                  capture_waiting: true,
-                  calls_processed: callsProcessed,
-                  recordings_processed: recProcessed,
-                },
-              })
-              .eq("id", jobId)
-              .eq("tenant_id", tenantId)
-              .eq("status", "running")
-              .select("id")
-              .maybeSingle();
-            waitingRecorded = waitingRecorded && !saved.error && saved.data?.id === jobId;
-          } catch {
-            waitingRecorded = false;
-          }
-        } else {
-          await failPlatformJob(supabase, jobId, JSON.stringify(errors), {
-            calls_processed: callsProcessed,
-            recordings_processed: recProcessed,
-          });
-        }
-      }
-
+      if (!calls.success) errors.calls = calls.code;
+      if (!recordings.success) errors.recordings = recordings.code;
+      const outcome =
+        Object.keys(errors).length === 0
+          ? "success"
+          : Object.values(errors).every((code) =>
+                ["learn_capture_paused", "learn_capture_unavailable"].includes(code),
+              )
+            ? "paused"
+            : "failed";
+      const settled = await settlePhoneSchedule(supabase, {
+        ...job,
+        runId: syncRunId,
+        accountId: account.id,
+        connectorId: connector.id,
+        customerId,
+        from,
+        to,
+        callsRunId: calls.runId,
+        recordingsRunId: recordings.runId,
+        outcome,
+        errors,
+      });
       results.push({
         tenant_id: tenantId,
         provider_customer_id: customerId,
-        ok: overallOk,
-        ...(waiting
-          ? waitingRecorded
-            ? { waiting: "capture_control" }
-            : { error: "learn_capture_wait_unconfirmed" }
-          : {}),
-        calls_processed: callsProcessed,
-        recordings_processed: recProcessed,
         sync_run_id: syncRunId,
         from,
         to,
-        ...(Object.keys(errors).length > 0 ? { errors } : {}),
+        ok: settled.ok && outcome === "success",
+        ...(settled.ok
+          ? {
+              calls_processed: settled.callsProcessed,
+              recordings_processed: settled.recordingsProcessed,
+              ...(outcome === "paused" ? { waiting: "capture_control" } : {}),
+            }
+          : { error: settled.code }),
+        ...(Object.keys(errors).length ? { errors } : {}),
       });
     }
   }
