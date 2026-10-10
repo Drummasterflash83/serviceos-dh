@@ -1,5 +1,16 @@
 # Existing TEST environment: verified release gaps
 
+## Commusoft continuation — prepared, awaiting new access approval
+
+The existing Drummonds job checkpoint can continue without replacing its tenant,
+connection or encrypted key. Run `d764008e` is prepared and passes read-only hosted
+preflight plus 28 focused checks. It permits up to 500 further job pages, then
+2,000 customer-contact and 1,500 work-address-contact pages, within 4,000 provider
+requests and a new 60-minute temporary operator session. Existing source rows are
+included in the 78-dataset preservation baseline. No new access or capture has
+been activated. The earlier session remains retired.
+[Prepared scope and execution](COMMUSOFT-CONTINUATION-2026-10-10.md).
+
 ## Phone operator evidence — TEST release 044 installed at 21:24 UTC
 
 OpenFolk can now distinguish receipt-confirmed scheduled Phone capture from

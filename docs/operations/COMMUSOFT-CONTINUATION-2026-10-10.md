@@ -1,0 +1,67 @@
+# Drummonds TEST continuation — prepared, not activated
+
+Run `d764008e-8c8f-4837-999a-8d38b5e6e2d5` is prepared against TEST
+`saatxzwxvdvqevbnskxy`. Read-only preparation passed at 21:30 UTC, 10 October.
+No new user, grant, provider request, queue job or database write has occurred.
+The original approved run remains retired; its private journal is not changed.
+
+## Scope for approval
+
+Reuse Drummonds TEST tenant `f8c114fa-fee7-4983-8970-f6e7f5fd3129`, its verified
+Commusoft connection and existing encrypted Vault credential. Continue the original
+job approval from its exact retained 100-page checkpoint. Allow at most **500
+additional job pages**, then **2,000 customer-contact pages** and **1,500 work-address
+contact pages**, with 100 records per page. Contacts are queried per property; a
+page can contain no contacts. A complete jobs traversal is required before customer
+contacts start, and customer contacts must finish before work-address contacts start.
+
+A new synthetic login, `learn-continuation-d764008e@example.invalid`, would receive
+a **60-minute OpenFolk admin grant**, which can administer all TEST clients. The
+runner restricts operations to this existing Drummonds tenant. The run permits no
+more than **4,000 read-only provider requests** and stops dispatch at least two
+minutes before grant expiry. Time or page limits can leave collection coverage
+incomplete; they never imply success. No provider writes, canonical publication,
+payroll, schedule or production changes are included.
+
+Afterward, pause capture, end the exact new grant, rotate the temporary password
+and ban that login. Retain sources, page receipts, the checkpoint and the encrypted
+credential. New approval is required for this new operator access; the earlier
+approval and retired identity are not reused.
+
+## Preservation and verification
+
+The frozen baseline covers 78 TEST datasets. It preserves all earlier tenants,
+provider connections, Vault bindings, canonical jobs/cards, communication sources,
+and the existing Drummonds source pages, versions and observations. Only the exact
+mutable account/controller rows, new session identity/grant, credential pacing gate
+and new import appends are excluded. Retained contact plans are selected through
+their original input-request timestamps. New-source append allowances do not exclude
+old Drummonds source history.
+
+Twenty-eight focused tests pass across continuation, the retired-session boundary
+and application continuation parsing. Cases include changed scope, incorrect
+approval, uncertain activation/worker responses, exhausted limits, expired authority,
+foreign jobs, exact checkpoint preservation, collection sequencing and cleanup
+identity mismatch. The generated continuation and contact definitions pass the
+actual application validator. Hosted read-only preflight confirms release 044,
+worker/verification v4 with JWT checks, the existing verified credential binding,
+two paused flags, no active Commusoft jobs or OpenFolk admin grants, and the retained
+incomplete jobs checkpoint. This does not claim a positive hosted continuation run.
+
+## Execution and recovery
+
+Use `scripts/verify/learn-commusoft-continuation-session.mjs` with the explicit TEST
+allowlist. The private journal is `.verification-results/commusoft-continuation-session.json`;
+never print it or commit it. Do not repeat `prepare`, overwrite this journal, unban
+the retired identity, or reset the original import checkpoint.
+
+After approval, run `activate`, `enable`, `resume-jobs`, then bounded `worker-step`
+phases. Start each contact collection only after the preceding traversal is complete.
+Every mutating phase requires `--approved-run d764008e-8c8f-4837-999a-8d38b5e6e2d5`.
+An uncertain input uses `check-input`; an uncertain worker uses `check-worker` and
+must retain its handle until a terminal database outcome is confirmed. Unknown
+activation requires read-only inspection, never replay. `retire` removes the exact
+grant and pauses capture even after access expiry, then checks the identity before
+banning it. `status` verifies preservation without reopening access.
+
+[Prepared evidence](evidence/learn-commusoft-continuation-prepared-2026-10-10.json).

@@ -1,0 +1,59 @@
+{
+  "version": "commusoft-continuation-session/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+  "state": "prepared",
+  "tenant": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+  "connection": "59484382-d380-4362-b031-19db133e6d3a",
+  "account": "b0609b8b-8a12-4dc2-afdc-0e0f28a29079",
+  "email": "learn-continuation-d764008e@example.invalid",
+  "durationMinutes": 60,
+  "maxProviderRequests": 4000,
+  "limits": {
+    "additionalJobPages": 500,
+    "customerContactPages": 2000,
+    "workaddressContactPages": 1500
+  },
+  "expiresAt": null,
+  "workerInvocations": 0,
+  "preserved": null,
+  "startingJobPages": 100,
+  "boundary": null,
+  "inputs": {},
+  "checkedAt": "2026-10-10 21:30:28.288255+00",
+  "preservationDatasets": 78,
+  "testsPassed": 28,
+  "scope": [
+    "Reuse existing Drummonds TEST tenant, connection and encrypted key; do not reopen the retired run.",
+    "Separate 60-minute temporary OpenFolk admin grant; it can administer all TEST clients, with this runner restricted to Drummonds.",
+    "At most 4000 read-only provider request permits; 500 further job pages, 2000 customer-contact pages, 1500 work-address-contact pages, up to 100 records per page.",
+    "No provider writes, canonical publication, production changes or schedule.",
+    "Retain imported records; pause capture, end grant and ban the new temporary login after the run."
+  ],
+  "retainedTestBaselineCounts": [
+    {
+      "name": "public.jobs",
+      "count": 23
+    },
+    {
+      "name": "public.learn_business_input_observations",
+      "count": 12435
+    },
+    {
+      "name": "public.learn_business_input_pages",
+      "count": 137
+    },
+    {
+      "name": "public.learn_business_input_versions",
+      "count": 12435
+    },
+    {
+      "name": "public.learn_commusoft_contact_targets",
+      "count": 0
+    },
+    {
+      "name": "vault.secrets",
+      "count": 4
+    }
+  ]
+}
