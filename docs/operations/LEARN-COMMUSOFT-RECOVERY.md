@@ -487,3 +487,28 @@ check. Larger-file performance, governed conflict resolution, legacy interaction
 writer race acceptance, and the real package ownership contradiction remain open.
 No production/provider/frontend change ran. See
 [release, preservation and authenticated evidence](evidence/learn-import-cards-test-release-2026-10-10.json).
+
+## Browser customer-card acceptance — 10 October
+
+The repaired import-only customer was visibly listed in the real TEST-backed app
+and opened as a card. A fresh synthetic owner then selected the governed customer
+profile and original CSV, inspected the sealed mapping, approved the saved preview
+and applied it. Browser observation was interrupted immediately after submission;
+no second apply was sent. Inspection confirmed one completed import, one person,
+one source link, one outcome, one provenance row and one customer card. A fresh
+page displayed that customer and opened its evidence detail successfully.
+
+The performance panel explicitly reported that no scoring rules were configured
+for this scope and kept published-assessment saving disabled. It did not manufacture
+a score, finding, communication history or pay change. The earlier repaired card
+was viewed through a demoted viewer session and correctly withheld owner/admin
+communications. That observation also confirms existing JWTs can retain viewer read
+access after Auth ban/password rotation until sign-out/expiry; retirement removes
+write authority, not instant JWT validity. The prior viewer was explicitly signed
+out before the fresh owner test.
+
+The fresh fixture is retired: login banned, password rotated, profile demoted and
+memberships ended. All rows remain retained; 17 pre-existing source-table fingerprints
+matched. The local server was stopped, owned browser tabs closed and the temporary
+plaintext password removed. Screenshot and database evidence are recorded in
+[browser acceptance](evidence/learn-import-cards-browser-2026-10-10.json).

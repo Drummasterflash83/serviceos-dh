@@ -1118,3 +1118,13 @@ and 25 receipts. Visual post-import card rendering, legacy writer race acceptanc
 large-file behavior, conflict resolution and the real package ownership issue
 remain open. Production/frontend deployment and provider traffic are unchanged.
 See [installed release evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#customer-card-projection-installed-and-read-in-test--10-october).
+
+## Browser customer-card acceptance passed — 10 October
+
+Both repaired and newly imported synthetic customers are now verified visually in
+the real TEST-backed LEARN card list/detail. Fresh preview/mapping review/approval
+and apply survived a browser interruption, with one durable customer/card and a
+successful page reopen. The performance panel kept the unconfigured scope
+unassessed. Fixture access is retired and all evidence retained. Import-volume
+acceptance is next; the real Commusoft ownership conflict remains unresolved.
+See [browser evidence](../operations/evidence/learn-import-cards-browser-2026-10-10.json).

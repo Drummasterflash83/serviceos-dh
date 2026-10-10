@@ -1,0 +1,63 @@
+{
+  "version": "learn-import-cards-browser/1",
+  "state": "passed",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "db110f68-dea3-4b34-8602-da9d4785b374",
+  "tenant": "11919a6f-bd6a-4917-82b5-22808327c284",
+  "databaseInspection": {
+    "version": "learn-import-browser-inspection/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "db110f68-dea3-4b34-8602-da9d4785b374",
+    "observedAt": "2026-10-10T06:48:58.637Z",
+    "state": "passed",
+    "preExistingSourcesPreserved": true,
+    "imports": [
+      {
+        "id": "8ee8385d-e1f6-4d58-a049-05ea54453164",
+        "status": "completed",
+        "row_count": 1,
+        "created_records": 1,
+        "updated_records": 0,
+        "invalid_rows": 0,
+        "conflict_records": 0
+      }
+    ],
+    "counts": {
+      "people": 1,
+      "links": 1,
+      "outcomes": 1,
+      "provenance": 1,
+      "customer_cards": 1
+    },
+    "accessRevoked": true,
+    "limitations": [
+      "Database inspection supplements actual UI observations; it does not prove UI behavior by itself.",
+      "Synthetic single customer only; no original package or provider traffic."
+    ]
+  },
+  "browserChecks": [
+    "Previously repaired import-only customer was visibly listed and its card opened through the prior demoted viewer session; communications correctly required owner/admin. That session was signed out.",
+    "Fresh synthetic owner signed in, selected governed customer profile and CSV, reviewed the saved mapping, explicitly approved and applied one customer.",
+    "Browser was interrupted after submission; no duplicate apply was sent. Database confirmed completion and a new page opened successfully.",
+    "New page visibly listed SYNTHETIC Browser Customer, and its evidence detail opened without invented findings or communication history.",
+    "Expanded performance panel reported no rules for this scope; save remained disabled and no score or pay change was made."
+  ],
+  "cleanup": {
+    "temporaryLoginBannedAndPasswordRotated": true,
+    "profileDemoted": true,
+    "ownedServerStopped": true,
+    "ownedTabsClosed": true,
+    "plaintextSyntheticPasswordRemoved": true,
+    "fixturesRetained": true
+  },
+  "screenshots": {
+    "learn-repaired-card-browser.png": "8c2e07d827e36ea29ba96529c62cc138f570fb6cf6c50b50393313121f5ebb72",
+    "learn-imported-card-list-browser.png": "a6848c3e62dd0c216df76493828e61421f3750ee34538179afdf4b2a8016eaae",
+    "learn-imported-card-score-browser.png": "b1a1aedc1645c033da226fc1d5ce213c261ac7caaf40684ede468eb0981cbe7f"
+  },
+  "limitations": [
+    "Synthetic TEST browser only; no original package, provider call or production deployment.",
+    "The apply response was interrupted, so durable database state and a reopened browser establish completion rather than an observed completion toast.",
+    "The preceding retired session retained viewer read access until sign-out; password rotation/ban does not by itself invalidate already-issued JWTs. Write authority had been demoted and was not restored."
+  ]
+}
