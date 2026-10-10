@@ -73,6 +73,12 @@
       ],
       "@/lib/learn-slack-threads": [
         "../../src/lib/learn-slack-threads.ts"
+      ],
+      "@/lib/learn-slack-history-recovery": [
+        "../../src/lib/learn-slack-history-recovery.ts"
+      ],
+      "@/lib/learn-slack-recovery-outbox": [
+        "../../src/lib/learn-slack-recovery-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,

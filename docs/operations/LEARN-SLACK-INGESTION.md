@@ -590,3 +590,47 @@ durable browser outbox, thread recovery, live Slack access and continuous/multi-
 capture remain outstanding. No production write, real Slack fetch, frontend
 deployment, credential change or schedule occurred. This completes the recovery
 backend release milestone, not Slack ingestion or LEARN V1.
+
+## Channel recovery screen and saved approvals — local, 10 October
+
+Slack imports now opens a **Progress & recovery** view. It lists retained channels,
+reads the current approved window and queue state, and distinguishes current-approval
+page counts from cumulative history or coverage. Owners/admins can review continue
+or restart with a fresh budget and reason. Restart explains that it reads the same
+window again and retains existing evidence. Queued, completed and unavailable
+windows show progress without an inactive approval form; viewers have read-only
+progress. Read failures remain unavailable rather than becoming empty results.
+
+Before calling the recovery RPC, the client saves the exact reviewed request in
+browser local storage, scoped by backend URL, signed-in actor and company. One
+unresolved recovery is retained per such scope. A Web Lock serializes same-browser
+tabs; a different pending request cannot be overwritten. Storage write/readback
+must succeed before sending, and authority/panel lifetime are rechecked after the
+lock and before submission. No automatic submission occurs on reload.
+
+Reloading or reopening restores the saved window/action/reason and offers an exact
+retry. Progress refresh does not clear it. Only a matching confirmed receipt removes
+it automatically. Uncertain and permission-denied outcomes retain the request;
+explicit stale/invalid/unavailable responses offer a user action to clear that
+rejected review and refresh. Malformed stored data blocks new recovery rather than
+being silently discarded. Storage contains approval metadata/reason, not message
+content, raw provider cursors or credentials. It is browser-local, not a server
+outbox: clearing browser data or moving devices does not preserve the request.
+
+Twenty-four focused tests passed, covering durable replay, scope separation,
+storage failure, competing requests, malformed records, revoked authority and the
+existing Slack clients. Application and synthetic-preview typechecks and the
+preview build passed; the build retains its existing large-chunk warning. Browser
+acceptance verified lost response → full reload → retained review → exact retry,
+refresh without clearing, restart, stale review reset, viewer restrictions, complete
+windows and failed reads. Same-browser lock contention was exercised in unit tests,
+not an actual two-tab browser race.
+
+See [local screen evidence](evidence/learn-slack-recovery-ui-local-2026-10-10.json)
+and [synthetic screenshot](evidence/learn-slack-recovery-ui-2026-10-10.png).
+The preview tab/server were closed after verification. TEST remains release 014;
+the backend's actual Auth/RPC/worker acceptance is recorded above. This new screen
+has not yet been accepted through a signed-in TEST browser or deployed to Vercel.
+Durable requests apply only to channel recovery; initial channel and thread approval
+forms still use in-memory pending state. Live provider access, thread recovery,
+continuous/multi-window capture and broader LEARN V1 remain incomplete.

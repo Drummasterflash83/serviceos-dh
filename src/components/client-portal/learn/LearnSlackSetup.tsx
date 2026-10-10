@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { LearnSlackRecovery } from "./LearnSlackRecovery";
 import { LearnSlackThreads } from "./LearnSlackThreads";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -13,8 +14,16 @@ const local = (ms: number) => {
   const d = new Date(ms);
   return new Date(ms - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 };
-export function LearnSlackSetup({ tenantId, canEdit }: { tenantId: string; canEdit: boolean }) {
-  const [view, setView] = useState<"channel" | "threads">("channel");
+export function LearnSlackSetup({
+  tenantId,
+  actorId,
+  canEdit,
+}: {
+  tenantId: string;
+  actorId: string;
+  canEdit: boolean;
+}) {
+  const [view, setView] = useState<"channel" | "threads" | "recovery">("recovery");
   const [connections, setConnections] = useState<SlackConnectionOption[] | null>(null),
     [loading, setLoading] = useState(true),
     [notice, setNotice] = useState("");
@@ -99,7 +108,17 @@ export function LearnSlackSetup({ tenantId, canEdit }: { tenantId: string; canEd
   }
   return (
     <div className="space-y-4">
-      <div role="group" aria-label="Slack import type" className="flex gap-2">
+      <div role="group" aria-label="Slack import type" className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          id="slack-recovery-tab"
+          aria-pressed={view === "recovery"}
+          aria-controls="slack-recovery-panel"
+          className={view === "recovery" ? "cp-primary" : "cp-secondary"}
+          onClick={() => setView("recovery")}
+        >
+          Progress &amp; recovery
+        </button>
         <button
           type="button"
           id="slack-channel-tab"
@@ -120,6 +139,19 @@ export function LearnSlackSetup({ tenantId, canEdit }: { tenantId: string; canEd
         >
           Thread replies
         </button>
+      </div>
+      <div
+        id="slack-recovery-panel"
+        role="region"
+        aria-labelledby="slack-recovery-tab"
+        hidden={view !== "recovery"}
+      >
+        <LearnSlackRecovery
+          key={`${actorId}:${tenantId}`}
+          tenantId={tenantId}
+          actorId={actorId}
+          canEdit={canEdit}
+        />
       </div>
       <div
         id="slack-channel-panel"

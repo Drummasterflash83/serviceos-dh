@@ -1,0 +1,68 @@
+{
+  "version": "learn-slack-recovery-ui-local/1",
+  "observedAt": "2026-10-10T00:20:25.698510+00:00",
+  "state": "passed_synthetic_browser_and_client_verification",
+  "sources": [
+    {
+      "path": "src/components/client-portal/learn/LearnSlackRecovery.tsx",
+      "sha256": "05988fcd5c2e5acd741d4dc1402aa8fabf7645359aebc6d1a3fec7341f32a5c3"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnSlackSetup.tsx",
+      "sha256": "591f04ccb1f070006931f105dca028660274bbc531c7c228cb9456bf528840d5"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnLaunchPortal.tsx",
+      "sha256": "58e772f09dd3d8c27801a216035956cea2d9eb15007761416f1b42e31c636b58"
+    },
+    {
+      "path": "src/lib/learn-slack-history-recovery.ts",
+      "sha256": "a0ced7e116a0550f1a82c1c3cdbb416b9b06ef5400763a7c249adb10c814abab"
+    },
+    {
+      "path": "src/lib/learn-slack-recovery-outbox.ts",
+      "sha256": "220f09452f0f681273cc69912f9a67f00ab28f6059a63ddf1eaf316bd97351dc"
+    },
+    {
+      "path": "src/lib/learn-slack-recovery-outbox.test.ts",
+      "sha256": "8538b34ec38531ddd3e1fb149ad8f1e9c7303d0fb882c23769946352737a5ff5"
+    },
+    {
+      "path": "preview/learn-review/slack-recovery-fixture.ts",
+      "sha256": "792ab52980b5e70792e007cff999fd7715f235d09f03c81f2f41b616c6734e90"
+    }
+  ],
+  "checks": [
+    "Retained channel progress distinguishes approval-specific pages, bounded window and latest queue state.",
+    "Continue/restart requires current owner/admin; viewer, active/completed/unavailable progress has no new recovery form.",
+    "Persist exact request before RPC; storage failure/readback mismatch sends nothing.",
+    "Saved request is scoped to backend/actor/company; reload/reopen restores it and refresh does not discard it.",
+    "Same-browser lock serializes writes; another unresolved request cannot replace the current one. Malformed or foreign saved records block submission.",
+    "Lost response retains request; matching confirmed receipt resolves it; permission denial does not erase it.",
+    "Panel closure/authority loss before send retains saved unsent request; clearing a rejected review cannot erase a replacement.",
+    "24 focused Node tests pass, including existing Slack setup/thread clients.",
+    "Application and synthetic-preview TypeScript checks pass; preview build passes with existing large-chunk warning."
+  ],
+  "browser": {
+    "surface": "Codex in-app browser, loopback synthetic preview on port 47875",
+    "scenarios": [
+      "uncertain approval response, full page reload, reopen, progress refresh, exact retry confirmed prior receipt",
+      "reviewed restart queues same window and reports restarted lineage",
+      "stale review rejection followed by explicit clear/refresh",
+      "viewer can read retained progress but cannot approve",
+      "complete window shows bounded coverage without approval form",
+      "failed read is unavailable with no approval form"
+    ],
+    "screenshot": "learn-slack-recovery-ui-2026-10-10.png",
+    "temporaryTabClosed": true,
+    "temporaryServerStopped": true
+  },
+  "limitations": [
+    "Synthetic browser acceptance only; actual signed-in TEST browser acceptance and Vercel deployment remain. Backend release 014 previously passed hosted Auth/RPC/worker acceptance.",
+    "Outbox is local to this browser and actor/company/backend; clearing browser storage or moving devices loses it. One unresolved recovery per scope. No cross-device server outbox.",
+    "Cross-tab exclusion was unit-tested with a serialized lock port, not an actual two-tab browser race.",
+    "Web Locks and writable local storage are required for recovery submission.",
+    "Initial channel and thread approval forms still use memory-only pending requests.",
+    "No hosted schema, real provider request, credential or production-data change in this UI step; full LEARN V1 remains incomplete."
+  ]
+}

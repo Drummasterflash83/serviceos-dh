@@ -688,3 +688,19 @@ fetch, credential or schedule changed. Recovery UI, durable pending approvals,
 thread recovery and continuous/multi-window capture remain, alongside the broader
 LEARN V1 scope. See
 [release 014 evidence and limits](../operations/LEARN-SLACK-INGESTION.md#current-test-state--channel-recovery-release-014-10-october).
+
+## Channel recovery screen and durable local review — 10 October
+
+Added retained-channel progress and owner/admin continue/restart controls. The
+review shows its exact bounded window, current-approval page budget and preservation
+behavior. Recovery saves its request before sending and restores it after reopening
+or reload; refresh keeps it, exact retry resolves it, and browser locks prevent
+another tab replacing unresolved work. Missing storage/lock support blocks submission.
+
+Twenty-four focused tests, both application/preview typechecks and the preview build
+passed. Synthetic browser checks verified lost-response recovery across reload,
+restart, rejected-review reset, viewer restrictions, completed windows and failed
+reads. No hosted schema, production data, provider or credential changed. TEST remains
+release 014. Actual signed-in TEST browser acceptance and frontend deployment remain;
+the durable review is browser-local and currently covers channel recovery only.
+See [screen evidence and remaining limits](../operations/LEARN-SLACK-INGESTION.md#channel-recovery-screen-and-saved-approvals--local-10-october).

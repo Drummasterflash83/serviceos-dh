@@ -1,5 +1,16 @@
 # Local LEARN design review
 
+10 October channel recovery: Slack imports now opens **Progress & recovery**.
+The actual component reads the channel window, approval-specific page count and
+queue status, with continue/restart review and a saved pending request. Recovery
+requests persist in browser local storage, scoped to backend, signed-in user and
+company. Synthetic recovery receipts/state persist in session storage so
+`&recovery=uncertain` can simulate a committed approval with a lost response across
+a full reload. Retry resolves the same receipt. `stale`, `viewer`, `complete`,
+`disabled` and `error` cover rejection, read-only authority, completion and unavailable
+states. These are local fixtures; no provider or hosted database is contacted.
+Older setup/thread forms still retain their pending requests only in memory.
+
 9 October card increment: `?launch=1` now mounts the actual current company-card
 and scoring-settings components with synthetic canonical records. Office/engineer
 filtering and source evidence drill-down are available. `&cards=empty` and

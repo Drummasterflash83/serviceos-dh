@@ -189,7 +189,7 @@ export async function loadSlackHistoryState(
   };
 }
 
-export async function resumeSlackHistory(db: SlackThreadClient, r: SlackHistoryRecoveryRequest) {
+export function validateSlackHistoryRecoveryRequest(r: SlackHistoryRecoveryRequest) {
   if (
     !uuid(r.requestId) ||
     !uuid(r.tenantId) ||
@@ -205,6 +205,10 @@ export async function resumeSlackHistory(db: SlackThreadClient, r: SlackHistoryR
       "invalid",
       "Review a stored channel, choose continue or restart, a page limit from 1 to 10 and a reason.",
     );
+}
+
+export async function resumeSlackHistory(db: SlackThreadClient, r: SlackHistoryRecoveryRequest) {
+  validateSlackHistoryRecoveryRequest(r);
   const uncertain = () =>
     new SlackHistoryRecoveryError(
       "uncertain",
