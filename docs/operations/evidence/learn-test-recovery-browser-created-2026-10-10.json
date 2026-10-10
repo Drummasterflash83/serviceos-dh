@@ -1,0 +1,53 @@
+{
+  "version": "learn-test-recovery-browser-observation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "1702278b-d865-4732-9e36-f39552a0f370",
+  "email": "learn-recovery-browser-1702278b-d865-4732-9e36-f39552a0f370@example.invalid",
+  "tenant": "b4fc2391-2cbc-4243-97c8-c494767acb26",
+  "mode": "create",
+  "retired": false,
+  "observedAt": "2026-10-10T00:24:04.750Z",
+  "channels": [
+    {
+      "account_id": "9eb8cf9b-436a-4335-b80f-b6c20f7bc8b5",
+      "account_key": "T29C03DC9BF02496E9B13D66864CEE0F3:CCONTINUE",
+      "approval_id": "b5d816a1-d413-4da1-b9c1-bd178b346afd",
+      "approved_by": "a71ea803-f048-46a9-a333-92e2f65194e2",
+      "mode": null,
+      "page_limit": 1,
+      "reason": "Synthetic browser recovery preparation",
+      "previous_approval": null,
+      "status": "succeeded",
+      "pages": 1,
+      "continued_cursor": true,
+      "restarted_cursor": false,
+      "previous_cursor_retained": null,
+      "window_unchanged": true
+    },
+    {
+      "account_id": "3d660347-98c0-401f-9f7c-179ec793e6c2",
+      "account_key": "T29C03DC9BF02496E9B13D66864CEE0F3:CRESTART",
+      "approval_id": "f494924b-bf45-472d-9380-07a5b4f5b753",
+      "approved_by": "a71ea803-f048-46a9-a333-92e2f65194e2",
+      "mode": null,
+      "page_limit": 1,
+      "reason": "Synthetic browser recovery preparation",
+      "previous_approval": null,
+      "status": "succeeded",
+      "pages": 1,
+      "continued_cursor": true,
+      "restarted_cursor": false,
+      "previous_cursor_retained": null,
+      "window_unchanged": true
+    }
+  ],
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 2,
+    "active_jobs": 0,
+    "active_connections": 1,
+    "approving_users": 1
+  }
+}

@@ -634,3 +634,38 @@ has not yet been accepted through a signed-in TEST browser or deployed to Vercel
 Durable requests apply only to channel recovery; initial channel and thread approval
 forms still use in-memory pending state. Live provider access, thread recovery,
 continuous/multi-window capture and broader LEARN V1 remain incomplete.
+
+
+## Channel recovery screen — signed-in TEST acceptance, 10 October
+
+The actual application now passed normal browser sign-in against hosted TEST
+release 014. A fresh synthetic owner approved continuation with two pages and
+restart with three pages for separate retained channels. Both receipts and progress
+views showed the original January 1–2 window. Full reload and reopening retained
+the queued continuation without another approval or unresolved-request banner.
+Read-only database inspection matched the browser choices, reasons, actor, budgets
+and predecessor approvals. Continue retained its cursor; restart cleared its new
+cursor; both predecessor checkpoints remained intact.
+
+The fixture retained two messages, two versions and two interactions throughout,
+with four approvals after the two browser actions. Its recovery jobs were then
+cancelled, connections disabled, owner role revoked and login banned/password
+rotated. The browser showed disabled channels and no approval access after reload;
+explicit sign-out returned to the login page. The tab and owned loopback server were
+closed. Existing access-token reads are not claimed to be immediately revoked.
+
+The reproducible helper is `scripts/verify/learn-test-recovery-browser-fixture.mjs`.
+It requires the exact TEST release and explicit project guard; temporary fixture
+passwords arrive on stdin, and existing CLI/API credentials remain in memory.
+Create uses an exclusive manifest under `/private/tmp`, `verify` compares browser
+approvals, and `retire` preserves source evidence. Do not reactivate this fixture.
+
+See [signed-in browser evidence](evidence/learn-test-recovery-browser-2026-10-10.json)
+and [actual TEST screenshot](evidence/learn-test-recovery-browser-2026-10-10.png).
+This closes the actual-browser acceptance gap noted in the preceding milestone.
+Lost-response recovery remains covered by the separate synthetic preview; no real
+two-tab race or live Slack fetch was performed here. The browser-created jobs were
+cancelled before worker execution. TEST schema/runtime are unchanged; no production
+mutation, provider credential change, scheduler or frontend deployment occurred.
+Live capture, thread recovery, continuous/multi-window capture and the remaining
+LEARN V1 work are still outstanding.

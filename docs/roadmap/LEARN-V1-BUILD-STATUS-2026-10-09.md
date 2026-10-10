@@ -704,3 +704,17 @@ reads. No hosted schema, production data, provider or credential changed. TEST r
 release 014. Actual signed-in TEST browser acceptance and frontend deployment remain;
 the durable review is browser-local and currently covers channel recovery only.
 See [screen evidence and remaining limits](../operations/LEARN-SLACK-INGESTION.md#channel-recovery-screen-and-saved-approvals--local-10-october).
+
+
+## Channel recovery accepted through the actual TEST browser — 10 October
+
+Normal sign-in and the actual application successfully approved continuation and
+restart against release 014. Stored records matched both reviewed budgets, reasons,
+actor and original windows; predecessor checkpoints and source records remained.
+Reloading retained queued progress without creating another approval. The fixture
+was retired with its evidence intact, zero active jobs/connections/approvers, and
+successful browser sign-out. The test tab and owned local server were closed.
+
+This resolves the signed-in browser gap above. No production change, real provider
+capture or frontend deployment occurred. Durable requests remain browser-local and
+limited to channel recovery. See [acceptance and limitations](../operations/LEARN-SLACK-INGESTION.md#channel-recovery-screen--signed-in-test-acceptance-10-october).

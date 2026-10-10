@@ -1,0 +1,79 @@
+{
+  "version": "learn-test-recovery-browser-acceptance/1",
+  "date": "2026-10-10",
+  "result": "passed",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "1702278b-d865-4732-9e36-f39552a0f370",
+  "tenant": "b4fc2391-2cbc-4243-97c8-c494767acb26",
+  "environment": {
+    "frontend": "actual application served on loopback port 47872",
+    "backend": "hosted TEST release 014",
+    "workerRuntime": 4,
+    "authentication": "normal browser sign-in with temporary synthetic owner"
+  },
+  "observations": [
+    "Selected retained CCONTINUE channel and approved continuation with a two-page budget and an explicit reason.",
+    "Browser receipt and refreshed progress showed queued continuation, zero of two pages, and the original January 1\u20132 window.",
+    "Full page reload and reopening recovered queued progress without a pending-review banner or another approval.",
+    "Selected CRESTART and approved restart of the same window with a three-page budget and an explicit reason.",
+    "Browser receipt and progress showed queued restart, zero of three pages, and the same original window.",
+    "Read-only stored-record inspection matched both browser choices, actor, budgets, predecessor approvals and original windows.",
+    "Continuation preserved its saved cursor. Restart cleared the new cursor. Both predecessor cursors remain retained.",
+    "After retirement and reload, both channel options showed disabled and the panel stated only an owner/admin can approve recovery.",
+    "Explicit sign-out returned to the login page. The agent-created tab and owned loopback server were closed."
+  ],
+  "retainedBefore": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 2,
+    "active_jobs": 0,
+    "active_connections": 1,
+    "approving_users": 1
+  },
+  "retainedAfterApprovals": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 4,
+    "active_jobs": 2,
+    "active_connections": 1,
+    "approving_users": 1
+  },
+  "retainedAfterRetirement": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 4,
+    "active_jobs": 0,
+    "active_connections": 0,
+    "approving_users": 0
+  },
+  "cleanup": {
+    "jobsCancelled": true,
+    "connectionsDisabled": true,
+    "ownerRoleRevoked": true,
+    "loginBanned": true,
+    "temporaryPasswordRotated": true,
+    "browserSignedOut": true,
+    "browserTabClosed": true,
+    "ownedServerStopped": true,
+    "sourceEvidenceDeleted": false
+  },
+  "evidence": {
+    "created": "learn-test-recovery-browser-created-2026-10-10.json",
+    "approved": "learn-test-recovery-browser-approved-2026-10-10.json",
+    "retired": "learn-test-recovery-browser-retired-2026-10-10.json"
+  },
+  "screenshot": "learn-test-recovery-browser-2026-10-10.png",
+  "limitations": [
+    "Synthetic company and messages only; no real Slack credential, provider fetch, production mutation, schedule or frontend deployment.",
+    "The two browser-created recovery jobs were cancelled after verification; no worker was started for them.",
+    "Lost-response recovery was exercised in the previous synthetic preview, not forced during this hosted browser check.",
+    "This run did not exercise a real two-tab browser race; lock contention and database competition have separate evidence.",
+    "Retirement blocks new login and approval authority; it does not claim immediate revocation of every previously issued access-token read.",
+    "This run checked fixture source counts; pre-existing TEST source fingerprints were checked during the separate release-014 acceptance.",
+    "Durable recovery requests remain browser-local. Initial channel/thread approval forms still hold pending requests in memory.",
+    "No LEARN V1 or complete Slack ingestion claim."
+  ]
+}

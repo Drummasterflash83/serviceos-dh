@@ -61,3 +61,14 @@ Still outstanding: separately hosted TEST frontend, full staff/cover work-action
 browser flows, Slack/voicemail/Commusoft live connections, business-calendar and
 delay exclusions, team aggregation, saved assessments and reviewed reward rules.
 LEARN V1 remains active and incomplete.
+
+
+## Slack recovery browser acceptance — 10 October
+
+The actual app and normal TEST sign-in verified continue/restart approvals,
+retained source evidence, original-window budgets and progress across reload.
+Read-only stored records matched the UI. A fresh synthetic fixture was retired
+without deleting its evidence; the browser signed out and its tab/server closed.
+See [the detailed acceptance record](LEARN-SLACK-INGESTION.md#channel-recovery-screen--signed-in-test-acceptance-10-october)
+and [structured evidence](evidence/learn-test-recovery-browser-2026-10-10.json).
+This does not establish live Slack ingestion or a deployed TEST frontend.
