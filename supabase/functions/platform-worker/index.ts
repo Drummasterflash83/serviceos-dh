@@ -1,3 +1,4 @@
+import { settlePhoneJob } from "../_shared/phone-recovery-job.ts";
 import {
   captureAdmission,
   captureSourceForJob,
@@ -164,6 +165,39 @@ Deno.serve(async (req: Request): Promise<Response> => {
         payload,
         claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
       });
+      if (jobType === "phone.process_pending") {
+        const outcome = await settlePhoneJob(
+          admin,
+          {
+            tenantId,
+            jobId: id,
+            claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
+          },
+          r,
+          maxAttempts,
+        );
+        if (outcome === "unconfirmed") counts.unconfirmed += 1;
+        else if (outcome === "succeeded") counts.succeeded += 1;
+        else if (outcome === "retrying") counts.retrying += 1;
+        else counts.dead_lettered += 1;
+        if (component && outcome !== "unconfirmed")
+          await recordHealthCheck(admin, {
+            tenantId,
+            component,
+            status:
+              outcome === "succeeded"
+                ? Number(r.result?.capture_waiting ?? 0) > 0 ||
+                  r.result?.reason === "awaiting_retry_or_review"
+                  ? "degraded"
+                  : "healthy"
+                : outcome === "retrying"
+                  ? "degraded"
+                  : "failed",
+            ...(r.error ? { error: r.error.message } : {}),
+            metadata: { job_type: jobType, outcome, records: r.recordsProcessed ?? 0 },
+          });
+        return;
+      }
       if (r.queueOutcome) {
         const q = r.queueOutcome;
         if (

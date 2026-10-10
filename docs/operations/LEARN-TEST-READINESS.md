@@ -1,5 +1,23 @@
 # Existing TEST environment: verified release gaps
 
+## Phone recovery metadata — TEST release 040 installed
+
+A real hosted recovery test found that service-role access to transcript/insight
+status references was missing. Release **040**, installed at **19:01 UTC, 10 October**,
+adds only the five required reference/status SELECT columns. No content or write
+permissions were added. Hosted rollback tests now prove recovery after interrupted
+imports, review holds without lost history and company isolation. All **74**
+monitored datasets remain unchanged, and no synthetic source rows remain.
+
+The existing backlog selector is the recovery inventory; this work reuses it.
+Local manual/worker changes now confirm job ownership and settlement, refuse
+untracked/duplicate manual batches and preserve failed outcomes. Those runtime
+changes pass 59 actual-handler tests plus nine lifecycle tests but are **not yet
+hosted**. Per-recording concurrency, complete real-provider processing and final
+run/cursor settlement remain unfinished. No production or schedule changes.
+[Details](LEARN-PHONE-ACCOUNT-BINDING.md#recovery-selector--test-release-040-runtime-safeguards-local).
+
+
 ## Phone atomic page publication — TEST release 039, sync v5
 
 The additive schema installed at **18:49 UTC, 10 October** after a rollback

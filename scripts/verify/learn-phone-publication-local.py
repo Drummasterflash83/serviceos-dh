@@ -25,6 +25,9 @@ try:
  sql(source('scripts/verify/learn-phone-publication.fixture.sql'))
  original=source('supabase/migrations/20260701120000_phone_input_foundation.sql')
  sql(original[original.index('create table if not exists phone_calls ('):original.index('-- phone_transcripts')].rsplit('-- ---------------------------------------------------------------------------',1)[0])
+ sql(original[original.index('create table if not exists phone_transcripts ('):original.index('-- phone_sync_runs')].rsplit('-- ---------------------------------------------------------------------------',1)[0])
+ selection=source('supabase/migrations/20260711120000_phone_pipeline_selection.sql')
+ sql(selection[selection.index('create or replace view phone_recording_pipeline_state'):selection.index('-- phone_select_pending')].rsplit('-- ---------------------------------------------------------------------------',1)[0])
  sql(original[original.index('create table if not exists phone_sync_runs ('):original.index('alter table phone_sync_runs enable row level security;')]+ 'alter table phone_sync_runs enable row level security;')
  registry=source('supabase/migrations/20260708120000_platform_connector_config.sql')
  sql(registry[registry.index('create table if not exists tenant_connectors ('):registry.index('-- Tenant-scoped SELECT')].rsplit('-- ---------------------------------------------------------------------------',1)[0])
@@ -61,7 +64,11 @@ try:
  assert sorted(results)==['0','1'],results
  assert sql("select count(*) from phone_recordings where provider_recording_id='concurrent'")=='1'
  print('PASS: real concurrent pause-first, publication-first, account-disable and one-new-recording ordering',flush=True)
- report={'observedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'state':'passed','scope':'Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.','checks':['migration rollback','exact replay and conflicting definitions','tenant/run/page validation','recording storage retention and new-recording classification','pause/account denial','atomic rollback on receipt failure','page bounds and browser/service privileges','immutable receipts','concurrent pause-first and publication-first','concurrent account disable','concurrent insertion returns exactly one new recording ID'],'limits':['No hosted deployment, real provider, application UI or complete source-pipeline acceptance.','Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture.']}
+ sql(source('supabase/migrations/20261024100000_phone_retry_fairness.sql'))
+ sql('grant select on phone_recordings,phone_sync_runs,phone_recording_pipeline_state to service_role;')
+ sql(source('supabase/migrations/20261101007000_learn_phone_recovery_metadata_access.sql'))
+ print(sql(source('scripts/verify/learn-phone-recovery.assert.sql')),flush=True)
+ report={'observedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'state':'passed','scope':'Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.','checks':['migration rollback','exact replay and conflicting definitions','tenant/run/page validation','recording storage retention and new-recording classification','pause/account denial','atomic rollback on receipt failure','page bounds and browser/service privileges','immutable receipts','concurrent pause-first and publication-first','concurrent account disable','concurrent insertion returns exactly one new recording ID','interrupted publication remains recoverable through existing backlog selector','per-recording retry holds preserve history and pause visibility','stored stage progression and tenant isolation'],'limits':['No hosted deployment, real provider, application UI or complete source-pipeline acceptance.','Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture.']}
  (root/'.verification-results/phone-publication-local.json').write_text(json.dumps(report,indent=2)+'\n')
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

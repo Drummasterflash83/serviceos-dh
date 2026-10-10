@@ -16,12 +16,12 @@ import {
   jsonResponse,
 } from "../_shared/simwood.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
+import { createPlatformJob } from "../_shared/platform_jobs.ts";
 import {
-  completePlatformJob,
-  createPlatformJob,
-  failPlatformJob,
-  startPlatformJob,
-} from "../_shared/platform_jobs.ts";
+  claimManualPhoneJob,
+  settlePhoneJob,
+  phoneJobUnconfirmed,
+} from "../_shared/phone-recovery-job.ts";
 import { handlePhoneProcessPending } from "../_shared/worker_handlers/phone_process_pending.ts";
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -54,26 +54,48 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: { limit: typeof body.limit === "number" ? body.limit : null },
     createdBy: auth.ctx.userId !== "service" ? auth.ctx.userId : null,
   });
-  const jobId = job.duplicate ? null : job.id;
-  if (jobId) await startPlatformJob(supabase, jobId);
+  if (job.duplicate)
+    return failResponse(
+      "phone_processing_active",
+      "Phone processing is already queued or running. Its progress is available in Operations.",
+      409,
+    );
+  if (!job.id)
+    return failResponse(
+      "phone_job_unconfirmed",
+      "Phone processing could not be queued. No processing was started by this request.",
+      503,
+    );
+  const owner = await claimManualPhoneJob(
+    supabase,
+    tenantId,
+    job.id,
+    `phone-manual:${crypto.randomUUID()}`,
+  );
+  if (!owner) {
+    const error = phoneJobUnconfirmed().error!;
+    return failResponse(error.code, error.message, 503);
+  }
+  const jobId = owner.jobId;
 
   const res = await handlePhoneProcessPending({
     supabaseAdmin: supabase,
     tenantId,
     jobId,
+    claim: owner.claim,
     payload: body as Record<string, unknown>,
   });
 
-  if (res.result) {
-    if (jobId) {
-      await completePlatformJob(supabase, jobId, {
-        recordsProcessed: res.recordsProcessed ?? 0,
-        result: res.result,
-      });
-    }
-    return jsonResponse({ success: res.success, ...res.result });
+  const outcome = await settlePhoneJob(supabase, owner, res);
+  if (outcome === "unconfirmed") {
+    const error = phoneJobUnconfirmed().error!;
+    return failResponse(error.code, error.message, 503, { job_id: jobId });
   }
-  const message = res.error?.message ?? "process-pending failed";
-  if (jobId) await failPlatformJob(supabase, jobId, message);
-  return failResponse(res.error?.code ?? "process_error", message, 500);
+  if (res.result) return jsonResponse({ success: res.success, ...res.result, job_id: jobId });
+  return failResponse(
+    res.error?.code ?? "process_error",
+    res.error?.message ?? "Phone processing did not complete.",
+    503,
+    { job_id: jobId },
+  );
 });

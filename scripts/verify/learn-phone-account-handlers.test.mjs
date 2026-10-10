@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import vm from "node:vm";
+import { webcrypto } from "node:crypto";
 import ts from "typescript";
 const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`,
   tenant = id(1);
@@ -37,6 +38,10 @@ async function harness(
     providerPage,
     onSourceWrite,
     publicationResponse,
+    recoveryJobCreate,
+    recoveryClaimMissing = false,
+    recoverySettleMissing = false,
+    pendingRows = [],
     pauseWriteError = false,
     pauseWriteMissing = false,
     pauseWriteThrow = false,
@@ -49,6 +54,7 @@ async function harness(
   let handler;
   const db = {
     async rpc(name, args) {
+      if (name === "phone_select_pending") return { data: pendingRows, error: null };
       if (name === "learn_phone_publish_page") {
         writes.push({ table: name, op: "rpc", v: args });
         if (publicationResponse) return publicationResponse(args);
@@ -94,6 +100,23 @@ async function harness(
       let patch;
       let many = false;
       const result = () => {
+        if (table === "phone_recording_pipeline_state")
+          return { data: [], count: pendingRows.length, error: null };
+        if (table === "platform_jobs" && op === "insert" && recoveryJobCreate)
+          return {
+            data: null,
+            error: {
+              code: recoveryJobCreate === "duplicate" ? "23505" : "XX000",
+              message: "PRIVATE",
+            },
+          };
+        if (table === "platform_jobs" && op === "read") return { data: { id: id(7) }, error: null };
+        if (table === "platform_jobs" && op === "update" && !patch?.result?.capture_waiting) {
+          const missing =
+            (patch.status === "running" && recoveryClaimMissing) ||
+            (["succeeded", "failed"].includes(patch.status) && recoverySettleMissing);
+          return { data: missing ? null : { id: id(7) }, error: null };
+        }
         const pauseWrite = patch?.status === "paused" || patch?.result?.capture_waiting;
         const faultApplies = table === pauseWriteTarget;
         if (pauseWrite && faultApplies && pauseWriteThrow) throw Error("PRIVATE_TRANSPORT_DETAIL");
@@ -135,6 +158,7 @@ async function harness(
           filters.push([name, value]);
           return q;
         },
+        gt: () => q,
         limit: () => q,
         in: () => {
           many = true;
@@ -192,6 +216,7 @@ async function harness(
     TextDecoder,
     Date,
     console,
+    crypto: webcrypto,
     btoa,
     atob,
     setTimeout,
@@ -747,4 +772,47 @@ test("recording follow-on processing uses only database-confirmed new recording 
   assert.equal(input.recording_id, id(8));
   assert.equal(input.tenant_id, tenant);
   assert.equal(input.force, false);
+});
+
+test("manual recovery refuses duplicate, failed creation and lost claim before any pipeline request", async () => {
+  for (const opts of [
+    { recoveryJobCreate: "duplicate" },
+    { recoveryJobCreate: "error" },
+    { recoveryClaimMissing: true },
+  ]) {
+    const h = await harness("phone-process-pending", opts);
+    const r = await h.run({});
+    assert.equal(r.status, opts.recoveryJobCreate === "duplicate" ? 409 : 503);
+    assert.equal(h.requests.length, 0);
+    assert.ok(!h.writes.some((w) => w.v.status === "succeeded"));
+  }
+});
+test("manual recovery persists partial failure as failed and missing settlement as unconfirmed", async () => {
+  const opts = {
+    pendingRows: [{ id: id(5), tenant_id: tenant, stage: "transcribe" }],
+    childResponses: {
+      "phone-process-pipeline": {
+        status: 503,
+        body: {
+          success: false,
+          error: { code: "provider_timeout", message: "Unavailable" },
+          failed_step: "transcribe",
+        },
+      },
+    },
+  };
+  const h = await harness("phone-process-pending", opts);
+  const r = await h.run({});
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).success, false);
+  assert.ok(
+    h.writes.some(
+      (w) => w.table === "platform_jobs" && w.v.status === "failed" && w.v.result.failed === 1,
+    ),
+  );
+  assert.ok(!h.writes.some((w) => w.v.status === "succeeded"));
+  const lost = await harness("phone-process-pending", { recoverySettleMissing: true });
+  const response = await lost.run({});
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error.code, "phone_job_unconfirmed");
 });

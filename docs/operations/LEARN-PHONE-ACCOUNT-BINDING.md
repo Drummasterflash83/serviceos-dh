@@ -252,3 +252,46 @@ interrupted/uncertain run, confirmed final run/cursor persistence, and real
 provider-to-client acceptance. These tests prove atomic metadata publication,
 not exactly-once audio/transcription or a complete live Phone service. Production
 is unchanged. [Hosted evidence](evidence/learn-phone-publication-hosted-2026-10-10.json).
+
+
+## Recovery selector — TEST release 040; runtime safeguards local
+
+The existing database-backed recovery selector is the durable inventory of
+unfinished recordings. It can find a recording even when its import loses its
+response or never starts background processing; a new outbox is not required
+just to retain that work. A hosted synthetic test exposed a missing TEST
+prerequisite: service-role selection failed with `42501` on `phone_transcripts`.
+
+Release **040** installed at **19:01:22 UTC on 10 October**, after a rollback
+rehearsal. It grants only five service-role SELECT columns: tenant/recording/status
+on transcripts and tenant/recording on insights. Independent permission comparison
+confirms those exact changes; transcript text, insight content and source write
+permissions remain unchanged. No browser grants or identities were added.
+
+Real TEST SQL now proves interrupted-import recovery, per-recording review holds,
+retention of failed-attempt history, backlog visibility, company isolation and
+existing page/receipt invariants. All synthetic rows were rolled back; all **74**
+monitored datasets retain their fingerprints. The new publication receipt table
+remains empty. Local PostgreSQL also exercises stage progression from download
+through transcript/insight completion without deleting prior failures or audio.
+
+The local recovery runtime now refuses duplicate/manual untracked work, confirms
+its queued-to-running claim, checks the job's company/type/owner/attempt/unexpired
+lease before work and after each child, and conditionally settles the same claim.
+Failed partial batches retain failed/retrying status. Unknown acknowledgements
+remain unconfirmed; no generic worker completion overwrites them. Selection and
+backlog errors cannot become an empty successful batch, and child success must
+match the recording, HTTP success and completed stages. Capture pauses retain
+visible waiting work; existing stored audio can still be processed.
+
+**Runtime status:** not deployed yet. Fifty-nine actual endpoint/worker VM tests,
+nine recovery lifecycle tests, five release tests, and targeted strict TypeScript
+checks pass. Hosted acceptance of these runtime changes is still needed. Batch
+ownership is not a per-recording claim: direct/manual/background pipeline requests
+can still race, and a child can outlive a lost lease. Complete provider acceptance,
+final import/cursor settlement, processing authorization and production promotion
+remain outstanding.
+
+Package: `1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4`.
+Current Phone catalog: `dddd1851fbb564cd1f1252d8b1874d79` (41 ledger entries).
+[Recovery evidence](evidence/learn-phone-recovery-2026-10-10.json).

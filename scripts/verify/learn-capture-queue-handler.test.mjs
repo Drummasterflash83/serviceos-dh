@@ -13,6 +13,8 @@ async function run({
   deferError = false,
   jobType = "email.mailbox_discovery",
   queueOutcome,
+  phoneResult,
+  phoneSettlementMissing = false,
   scheduleSecret = "synthetic-schedule",
   internalSecret,
   headers = { "x-schedule-secret": "synthetic-schedule", "content-type": "application/json" },
@@ -69,6 +71,11 @@ async function run({
         },
         eq: () => q,
         lt: () => q,
+        gt: () => q,
+        maybeSingle: async () => ({
+          data: phoneSettlementMissing ? null : { id: "job" },
+          error: null,
+        }),
         select: () => q,
         then: (yes, no) => Promise.resolve({ data: [], error: null }).then(yes, no),
       };
@@ -124,6 +131,7 @@ async function run({
         getWorkerHandler: () => async (context) => {
           workContext = context;
           work++;
+          if (phoneResult) return phoneResult;
           return childPaused
             ? {
                 success: false,
@@ -327,4 +335,44 @@ test("an email engine pause still defers its owned lease without failure account
   assert.equal(r.result.waiting, 1);
   assert.equal(r.result.unconfirmed, 0);
   assert.equal(r.health.length, 0);
+});
+
+test("Phone worker uses confirmed ownership-scoped settlement for success, retry and unknown results", async () => {
+  for (const [phoneResult, phoneSettlementMissing, expected] of [
+    [{ success: true, recordsProcessed: 1 }, false, "succeeded"],
+    [
+      {
+        success: false,
+        result: { failed: 1 },
+        error: { code: "provider_timeout", message: "Unavailable", retryable: true },
+      },
+      false,
+      "retrying",
+    ],
+    [{ success: true }, true, "unconfirmed"],
+    [
+      {
+        success: false,
+        error: { code: "phone_job_unconfirmed", message: "Unconfirmed", retryable: false },
+      },
+      false,
+      "unconfirmed",
+    ],
+  ]) {
+    const r = await run({ jobType: "phone.process_pending", phoneResult, phoneSettlementMissing });
+    assert.equal(r.result[expected], 1);
+    if (expected === "retrying")
+      assert.ok(r.writes.some((w) => w.status === "retrying" && w.result?.failed === 1));
+    if (expected === "unconfirmed") assert.equal(r.health.length, 0);
+  }
+});
+
+test("a completed Phone recovery check with paused capture does not report healthy processing", async () => {
+  const r = await run({
+    jobType: "phone.process_pending",
+    phoneResult: { success: true, result: { capture_waiting: 1, reason: "capture_waiting" } },
+  });
+  assert.equal(r.result.succeeded, 1);
+  assert.equal(r.health.length, 1);
+  assert.equal(r.health[0].status, "degraded");
 });

@@ -54,3 +54,13 @@ Rollback: restore the previous `phone_select_pending` definition from migration
 are additive and can remain unused. Restoring the old selector also restores the
 poison-record retry risk; normally prefer pausing that one processing job over
 silently accepting repeated failed calls. Do not change call routing.
+
+
+## LEARN follow-up, 10 October
+
+The existing selector is retained and now has hosted TEST proof that it finds
+recordings whose import lost completion, and keeps review-held items visible with
+failure/audio history intact. TEST release 040 fixed its missing service-only
+metadata reads. Local manual/worker safeguards add confirmed batch ownership and
+settlement; they are not yet deployed and do not provide per-recording claims.
+See [current LEARN recovery status](LEARN-PHONE-ACCOUNT-BINDING.md#recovery-selector--test-release-040-runtime-safeguards-local).

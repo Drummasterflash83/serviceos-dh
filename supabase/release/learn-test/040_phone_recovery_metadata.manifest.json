@@ -1,0 +1,13 @@
+{
+  "version": "learn-phone-recovery-metadata-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4",
+  "priorFingerprint": "0fb6d70902c76e37549ef65c157b8be9",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101007000_learn_phone_recovery_metadata_access.sql",
+      "sha256": "a2c40bc1233a681bb5d158e05938fe65dca66c73b646b50f077274607a70401f"
+    }
+  ],
+  "preservedDataSets": 74
+}

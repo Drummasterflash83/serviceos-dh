@@ -1,0 +1,118 @@
+{
+  "observedAt": "2026-10-10T19:03:03.049021+00:00",
+  "state": "test_recovery_metadata_fixed_runtime_changes_local",
+  "finding": {
+    "status": 400,
+    "sqlstate": "42501",
+    "cause": "Service role could not read phone_transcripts status references required by the existing security-invoker backlog view; insights references were also missing."
+  },
+  "schema": {
+    "rehearsal": {
+      "version": "learn-phone-recovery-metadata/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4",
+      "mode": "rehearse",
+      "state": "rehearsed_rolled_back",
+      "observedAt": "2026-10-10T19:00:54.474Z",
+      "priorFingerprint": "0fb6d70902c76e37549ef65c157b8be9",
+      "expectedFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+      "afterFingerprint": "0fb6d70902c76e37549ef65c157b8be9",
+      "preservedDataSets": 74,
+      "receipt": {
+        "fingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+        "tables": 8,
+        "functions": 5
+      }
+    },
+    "installation": {
+      "version": "learn-phone-recovery-metadata/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4",
+      "mode": "apply",
+      "state": "installed_needs_hosted_acceptance",
+      "observedAt": "2026-10-10T19:01:22.235Z",
+      "priorFingerprint": "0fb6d70902c76e37549ef65c157b8be9",
+      "expectedFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+      "afterFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+      "preservedDataSets": 74,
+      "receipt": {
+        "fingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+        "tables": 8,
+        "functions": 5
+      }
+    },
+    "permissions": {
+      "observedAt": "2026-10-10T19:02:09.818Z",
+      "state": "exact_five_metadata_columns_verified",
+      "changed": [
+        "phone_transcripts.tenant_id",
+        "phone_transcripts.recording_id",
+        "phone_transcripts.status",
+        "phone_ai_insights.tenant_id",
+        "phone_ai_insights.recording_id"
+      ],
+      "transcriptTextReadable": false,
+      "insightContentReadable": false
+    },
+    "acceptance": {
+      "observedAt": "2026-10-10T19:01:42.971Z",
+      "fingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+      "preservedDataSets": 74,
+      "checks": [
+        {
+          "marker": "learn-phone-recovery-hosted/1",
+          "interrupted_import_recovery": true,
+          "review_hold_preserves_backlog": true,
+          "retained_failure_history": true,
+          "service_publication": true,
+          "browser_denial": true,
+          "replay_and_sequence": true,
+          "pause_and_account_checks": true,
+          "recording_pointer_retained": true,
+          "page_rollback": true,
+          "immutable_receipts": true
+        }
+      ],
+      "retainedSyntheticPages": 0,
+      "scope": "Real TEST service-role recovery selection and retry hold checks; synthetic rows rolled back. New recovery handlers remain local; no provider or HTTP positive-path acceptance."
+    }
+  },
+  "localVerification": {
+    "actualHandlerAndWorkerTests": 59,
+    "recoveryJobTests": 9,
+    "releaseTests": 5,
+    "strictTypecheck": "phone-process-pending and both sync handlers passed",
+    "database": {
+      "observedAt": "2026-10-10T19:01:25Z",
+      "state": "passed",
+      "scope": "Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.",
+      "checks": [
+        "migration rollback",
+        "exact replay and conflicting definitions",
+        "tenant/run/page validation",
+        "recording storage retention and new-recording classification",
+        "pause/account denial",
+        "atomic rollback on receipt failure",
+        "page bounds and browser/service privileges",
+        "immutable receipts",
+        "concurrent pause-first and publication-first",
+        "concurrent account disable",
+        "concurrent insertion returns exactly one new recording ID",
+        "interrupted publication remains recoverable through existing backlog selector",
+        "per-recording retry holds preserve history and pause visibility",
+        "stored stage progression and tenant isolation"
+      ],
+      "limits": [
+        "No hosted deployment, real provider, application UI or complete source-pipeline acceptance.",
+        "Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture."
+      ]
+    }
+  },
+  "limits": [
+    "New manual/worker recovery runtime changes are local only; no endpoint changed in this checkpoint.",
+    "Positive hosted recovery SQL uses synthetic fixtures in a rolled-back transaction, not real provider ingestion or paid processing.",
+    "The existing unfinished-recording view is durable recovery inventory; no second outbox is introduced.",
+    "Batch ownership does not serialize direct per-recording manual/background pipeline calls. A child may outlive an expired lease; no exactly-once provider/transcription guarantee.",
+    "Final import run/cursor persistence remains separate work. Production and schedules unchanged."
+  ]
+}
