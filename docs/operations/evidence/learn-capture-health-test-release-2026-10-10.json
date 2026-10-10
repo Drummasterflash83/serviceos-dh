@@ -1,0 +1,41 @@
+{
+  "status": "installed_needs_authenticated_acceptance",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "180d21a3befd7c97a14d7221a285873060466a9d376afb334d253a08000362c3",
+  "confirmedAt": "2026-10-10T13:04:28.351Z",
+  "release": "031_capture_health",
+  "functionsAdded": 1,
+  "functionsChanged": 0,
+  "tablesAdded": 0,
+  "rollbackRehearsal": "rehearsed_and_rolled_back",
+  "priorCatalogPreserved": true,
+  "preExistingSourcesPreserved": true,
+  "datasetsChecked": 43,
+  "localRehearsal": {
+    "postgres": "17",
+    "exactDependentTables": 35,
+    "existingFunctions": 55,
+    "actualOwner": "postgres (non-superuser, BYPASSRLS)",
+    "checks": [
+      "actual table constraints, indexes, RLS, triggers and grants",
+      "existing email-ingestion guard",
+      "platform viewer permitted; tenant owner and revoked grant denied",
+      "View As denied with otherwise valid grant",
+      "source redaction and tenant isolation",
+      "DWD classification and Slack checkpoint matching",
+      "pagination and application parser",
+      "transaction rollback, receipt failure rollback, duplicate install refusal"
+    ]
+  },
+  "releaseTestsPassed": 5,
+  "newAccounts": 0,
+  "newCredentials": 0,
+  "sourceJobsQueued": 0,
+  "frontendReleased": false,
+  "productionChanged": false,
+  "authenticatedHostedAcceptance": "outstanding",
+  "notes": [
+    "One preflight was rate-limited before any write journal or migration; after backoff the single migration was acknowledged and confirmed.",
+    "The prior pending contact acceptance plan is unchanged; no account/grant acceptance was executed."
+  ]
+}

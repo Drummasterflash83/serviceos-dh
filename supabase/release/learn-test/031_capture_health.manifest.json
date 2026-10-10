@@ -1,0 +1,15 @@
+{
+  "version": "learn-capture-health-package/1",
+  "sha256": "180d21a3befd7c97a14d7221a285873060466a9d376afb334d253a08000362c3",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031210000_learn_operator_capture_health.sql",
+      "sha256": "33c93527c055d0951a041e9b035ef2a1778f273356c5ad7c0439e57c5fab397c"
+    }
+  ],
+  "functions": [
+    "learn_operator_capture_health"
+  ],
+  "changedFunctions": [],
+  "tables": []
+}

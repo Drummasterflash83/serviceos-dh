@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## OpenFolk capture diagnostics — local checkpoint, 10 October 2026
+## OpenFolk capture diagnostics — TEST backend, 10 October 2026
 
 The operator Modules view now includes a tenant-scoped email, phone and Slack
 capture panel. It reads a new metadata-only RPC, using existing platform authority;
@@ -12,11 +12,20 @@ Slack completion requires the latest successful history job to match the retaine
 scope/page checkpoint and records only the approved channel window; thread and
 continuous capture remain separate checks. Failed refreshes clear old results.
 
-This is **local implementation only**. The RPC has not been installed in TEST or
-production, and the frontend is unreleased. The isolated PG15 fixture exercises the
-actual new SQL and authority helpers with synthetic supporting tables, not the full
-hosted schema. Deployment requires an exact-schema rehearsal and authenticated
-hosted read verification. No source records, workers, schedules, flags or credentials
+Release 031 is installed in TEST and confirmed at **13:04:28 UTC**. It adds one
+read-only function, no tables or existing-function changes, and takes the release
+ledger to 32 receipts. Hosted rollback and installation retained all 43 checked
+datasets, including email account metadata and encrypted Vault rows. No new account,
+credential, provider request or capture job was created. The first install preflight
+was rate-limited before a write journal existed; only the subsequent attempt
+submitted a migration. See [TEST release evidence](evidence/learn-capture-health-test-release-2026-10-10.json).
+
+The isolated PG15 fixture is supplemented by a PG17 rehearsal reproducing the
+35 actual dependent TEST tables, policies, triggers, grants and 55 helper functions,
+including the existing email-ingestion protocol guard. The new function passes
+with the actual non-superuser owner. Rollback, deployment-receipt failure and
+duplicate-install refusal pass. Authenticated hosted read verification remains
+required; this feature has not been released in the frontend or production. No source records, workers, schedules, flags or credentials
 were changed. Email/phone/Slack pause controls still need every capture entry point
 to honour the operator's module decisions before those controls can be released.
 
