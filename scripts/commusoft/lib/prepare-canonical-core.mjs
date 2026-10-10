@@ -31,7 +31,7 @@
 //   - a job's site_external_id is EITHER empty (address/postcode evidence only —
 //     the v1/v2 invariant for FY-derived rows) OR, for 11K-reconstructed
 //     current-window jobs, an EXACT work-address account on which every
-//     corroborating source agrees and which resolves within the package;
+//     corroborating source agrees and which belongs to the job's customer;
 //   - job_number always equals external_id (recorded invariant).
 
 // ── Phase 11N: GOVERNED PROFILE TYPES + field-scoped value normalisation ────
@@ -693,6 +693,22 @@ export const GAP_CATEGORIES = [
   "conflict_or_duplicate",
 ];
 
+/** Build ownership evidence without allowing duplicate site IDs to overwrite it.
+ * Identifiers and source rows deliberately never appear in errors. */
+export function indexSiteCustomers(sites) {
+  const owners = new Map();
+  for (const site of sites) {
+    const id = site.external_id;
+    const owner = site.customer_external_id;
+    if (typeof id !== "string" || !/^\d+$/.test(id) ||
+        typeof owner !== "string" || !/^\d+$/.test(owner))
+      throw new Error("site ownership evidence requires exact site and customer identifiers");
+    if (owners.has(id)) throw new Error("duplicate site ownership evidence requires review");
+    owners.set(id, owner);
+  }
+  return owners;
+}
+
 /** Classify every unmatched financial Job id into EXACTLY ONE category and
  *  reconstruct category-1 Jobs. Returns aggregates + records — the CALLER must
  *  never print identifiers or row content. */
@@ -700,10 +716,15 @@ export function classifyCurrentWindowGap({
   unmatchedIds,
   profitWindow, // parse shape of the current-window profit export
   customerIds, // Set — package customers
-  siteIds, // Set — package sites
+  siteCustomers, // Map — exact package site ID → customer ID; never an existence-only Set
   corroboration, // Map from buildCorroboration
   windowLabel,
 }) {
+  if (!(siteCustomers instanceof Map))
+    throw new Error("site ownership evidence is required; existence-only site IDs are insufficient");
+  // Validate even caller-supplied maps before reconstructing anything.
+  indexSiteCustomers([...siteCustomers].map(([external_id, customer_external_id]) =>
+    ({ external_id, customer_external_id })));
   const get = requireColumns(
     profitWindow.header,
     ["Job date", "Customer Account Number", "Job description", "Job number", "Job is complete"],
@@ -721,6 +742,7 @@ export function classifyCurrentWindowGap({
     by_source_type: {},
     site_exact: 0,
     customer_conflicts: 0,
+    site_customer_conflicts: 0,
     duplicate_rows: 0,
   };
   const reconstructable = [];
@@ -764,11 +786,17 @@ export function classifyCurrentWindowGap({
       continue;
     }
     // Exact site: every corroborating source agrees on ONE work-address account
-    // that resolves within the package. Anything else stays address-evidence only.
+    // that belongs to this customer in the package. An ownership contradiction
+    // must remain a conflict, never a silently blanked site or address fallback.
     let siteId = "";
     if (cor && cor.workAddresses.size === 1) {
       const wa = [...cor.workAddresses][0];
-      if (siteIds.has(wa)) {
+      if (siteCustomers.has(wa)) {
+        if (siteCustomers.get(wa) !== customer) {
+          counts.conflict_or_duplicate++;
+          provenance.site_customer_conflicts++;
+          continue;
+        }
         siteId = wa;
         provenance.site_exact++;
       }

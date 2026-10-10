@@ -164,3 +164,49 @@ Next: reconcile the disputed link from authoritative source records without
 guessing, trace diary identities/timestamps, and finish the governed import's TEST
 release and ordinary-user preview/apply path. Package consistency is not a live
 Commusoft connection or scoring acceptance.
+
+## Ownership contradiction traced and preparation guarded — 10 October
+
+The offline trace verifies the package manifest/output hashes and all five sealed
+supporting source files. Exactly one row in the sealed May–August diary names the
+disputed job, its job customer and the disputed site. None of the other four
+supporting exports names that job. The current-window job export also passes its
+manifest hash check. This explains where the prepared reference came from; it
+does not settle which source is correct. The prepared site master associates that
+site with a different customer. No address/name inference or automatic repair was
+made, and the package remains refused by the full validator.
+
+The recovered preparation core previously tested only site existence. It now
+requires an exact site-to-customer map and classifies mismatched ownership as
+`conflict_or_duplicate`, with a separate `site_customer_conflicts` count. It emits
+no reconstructed row for that conflict. Duplicate site-master IDs are rejected
+before creating the map. Existence-only callers fail explicitly; any subsequently
+recovered preparation CLI must pass `siteCustomers: indexSiteCustomers(sites)`.
+The separate historical checkout and its CLI are unchanged.
+
+Five new synthetic regressions cover aligned ownership, conflicting ownership,
+missing/malformed ownership evidence, duplicate site IDs and existing unresolved
+reference behavior. All 27 focused preparation/package/import tests pass. Running
+the real sealed evidence through the guarded core classifies the one disputed
+job as a conflict with zero reconstructed rows. This was an in-memory analysis:
+all original 4,000 package job rows, other source files and hosted data remain
+untouched. No revised package was generated or imported.
+
+Reproduce the aggregate-only, read-only trace:
+
+```sh
+node scripts/commusoft/trace-site-ownership.mjs '/Users/chrisdrummond/Documents/DH Works/prepared_packages/commusoft_canonical_v4' '/Users/chrisdrummond/Documents/DH Works/source_data/v2/commusoft' '/Users/chrisdrummond/Documents/DH Works/source_data/commusoft/profit_by_job_2026-05-01_to_2026-08-04.json'
+node --test scripts/commusoft/prepare-site-ownership.test.mjs scripts/commusoft/package-contract.test.mjs scripts/import-pure.test.mjs scripts/learn-import-contract.test.mjs
+```
+
+See [retained aggregate trace](evidence/learn-commusoft-ownership-trace-2026-10-10.json).
+Other diary windows were not silently incorporated. The site master retains its
+`locally_sealed_recovered_export` provenance. Authoritative ownership clarification
+is still needed before resolving this job; unrelated import recovery can continue.
+
+Historical Phase 11O/11T records in the old checkout also describe 4,000 imported
+jobs and later site-link repairs in its earlier local environment. Those records
+must not be confused with the zero jobs observed in the currently inspected
+production project. Later site-identity evidence, incidents, acquisition contracts
+and repair history remain candidates for selective recovery, not proof that they
+are installed in current TEST or production.

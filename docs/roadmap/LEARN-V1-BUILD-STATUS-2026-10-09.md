@@ -1011,3 +1011,14 @@ Production reads remain unverified: REST identity failed, while management repor
 an active project but returned HTTP 544 for a bounded database identity query.
 No new source scan ran and no missing data is inferred. Independent local input
 recovery continued; the overall goal remains active.
+
+## Commusoft ownership guard and source trace — 10 October
+
+The contradictory package link was traced to one row in the sealed diary export;
+the other four sealed supporting exports contain no row for that job. The source
+conflict remains unresolved. Preparation now requires site customer ownership,
+rejects duplicate ownership masters and classifies a mismatch for review instead
+of reconstructing the wrong link. All 27 focused tests pass, and the actual retained
+source trace confirms that refusal without rewriting any of the 4,000 package jobs.
+No import, deployment, production read or source mutation occurred in this increment.
+See [trace, compatibility requirements and historical environment distinction](../operations/LEARN-COMMUSOFT-RECOVERY.md#ownership-contradiction-traced-and-preparation-guarded--10-october).
