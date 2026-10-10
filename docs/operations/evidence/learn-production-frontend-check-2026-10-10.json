@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-10T18:39:52.536Z",
+  "projectId": "prj_XEuCp5gnEireW5WynUgkRp9QNiXa",
+  "productionBranch": "main",
+  "deploymentId": "dpl_DXueDsax146gdtyFoniXRaW3dzMM",
+  "url": "serviceos-l1ekbfjv0-allkin.vercel.app",
+  "readyState": "READY",
+  "createdAt": 1790942351008,
+  "createdAtUtc": "2026-10-02T11:59:11.008000+00:00",
+  "gitCommit": "13b554368cda86dfb0a4014d4187b548a8b9de02",
+  "method": "Read-only Vercel production project metadata through existing CLI login.",
+  "limits": [
+    "Confirms current frontend deployment predates LEARN TEST work; not a fresh visual or backend audit.",
+    "Local preview at port 47871 had no listening process during this check, so the observed logo difference was not independently reproduced."
+  ]
+}

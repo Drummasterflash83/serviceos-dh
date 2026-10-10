@@ -27,3 +27,11 @@
   not the production branch; `vercel.json` disables its automatic Git deployments.
   Keep real credentials and private runtime manifests excluded. Do not rewrite
   published history. Production promotion remains a separate verified release.
+
+## Build-progress reports (Chris, 10 October 2026)
+
+Use clear headings with short bullet points: Working and verified, Needs finishing,
+and Blocked externally. Distinguish TEST verification from live provider/production
+acceptance. This preference concerns build-progress reports, not a requested
+redesign of the Slack panel. Review Drummonds branding against the live workspace
+before promotion; local synthetic tenants are not evidence of live branding changes.
