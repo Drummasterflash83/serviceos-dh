@@ -1,5 +1,16 @@
 # Existing TEST environment: verified release gaps
 
+## Retained job detail — verified local candidate, not deployed
+
+Owners can inspect a captured Commusoft job's source fields and dates while its
+canonical linking remains held. Unzoned dates are labelled and never converted to
+an assumed instant. Nineteen client tests, isolated database authority/preservation
+checks, SQL-to-client parsing and actual synthetic browser retry/detail/scope checks
+passed. The exact TEST package and hosted acceptance are the next steps. This
+candidate makes no provider requests and does not alter the pending import approval.
+[Implementation and verification](LEARN-COMMUSOFT-JOB-DETAILS.md).
+
+
 ## Assessment history — protected TEST frontend installed
 
 Saved assessment history now loads beyond the first 20 records, retaining exact

@@ -1,3 +1,4 @@
+import { LearnCommusoftJobDetails } from "./LearnCommusoftJobDetails";
 import { RetainedSourceSearch } from "./RetainedSourceSearch";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
@@ -374,6 +375,15 @@ export function LearnCommusoftWork({
                     {r.property_reference && ` · Property ${r.property_reference}`}
                     {r.source_status && ` · ${r.source_status}`}
                   </p>
+                  {kind === "job" && r.version_id && (
+                    <LearnCommusoftJobDetails
+                      key={`${tenantId}:${connection}:${r.version_id}`}
+                      tenant={tenantId}
+                      connection={connection}
+                      version={r.version_id}
+                      external={r.external_id}
+                    />
+                  )}
                   {r.contact && (
                     <div className="space-y-2">
                       <p>

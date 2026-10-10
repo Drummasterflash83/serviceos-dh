@@ -1,0 +1,51 @@
+{
+  "version": "learn-commusoft-job-details-local/1",
+  "observedAt": "2026-10-10T22:31:22.458911+00:00",
+  "state": "local_verified_not_deployed",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101070000_learn_commusoft_job_details.sql",
+      "sha256": "a8a64f632653a989a737d84211e8d06cd09c60f8a8f38c0cc504b281a185ba30"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-job-details.assert.sql",
+      "sha256": "1662b64f4bd2a0b3daa583af4467bd2e0d4c68f2073cf1788285dff757592d51"
+    }
+  ],
+  "verification": {
+    "clientTests": 19,
+    "appPrebuildChecks": 47,
+    "appTypecheckAndBuild": true,
+    "previewTypecheckAndBuild": true,
+    "isolatedPostgreSQL": "passed",
+    "sqlToProductionClientParser": "passed",
+    "checks": [
+      "Exact company/connection/version scope, wrong collection and never-observed denial.",
+      "Private helper and anonymous/service denial; viewer, module-disable and same-session role revocation denied.",
+      "UTC microsecond preservation; unzoned values retained as text; invalid and missing dates distinct.",
+      "Unicode excerpt flag, excluded raw/contact/private fields, stale/ambiguous source marking.",
+      "Source, canonical job, link and projection-attempt fingerprints unchanged; held jobs remain unpublished.",
+      "Malformed completed/closed parent objects remain invalid even when their scalar value resembles a valid date."
+    ],
+    "browser": [
+      "Denied read offers retry.",
+      "Retry shows retained fields and separate zoned, unzoned, absent and invalid dates.",
+      "Changing record type clears job detail."
+    ],
+    "signedInHostedOwnerAcceptance": false
+  },
+  "screenshot": {
+    "path": ".verification-results/learn-job-details-2026-10-10.png",
+    "sha256": "2b6458b71d4335186d5e897679d1b191bb37077910f5793b38c9b9bd86a0766e",
+    "scope": "Local synthetic job only"
+  },
+  "remaining": [
+    "Exact TEST catalog rehearsal, backend/frontend deployment and signed-in acceptance.",
+    "Provider completion timezone and missing property relationships.",
+    "Existing pending import continuation approval."
+  ],
+  "scope": [
+    "No hosted schema or data changes, provider requests, canonical publication, new credentials or operator access.",
+    "No production changes or employee score/pay action."
+  ]
+}

@@ -109,6 +109,9 @@
       ],
       "@/lib/learn-slack-recurring": [
         "../../src/lib/learn-slack-recurring.ts"
+      ],
+      "@/lib/learn-commusoft-job-details": [
+        "../../src/lib/learn-commusoft-job-details.ts"
       ]
     },
     "allowImportingTsExtensions": true,
