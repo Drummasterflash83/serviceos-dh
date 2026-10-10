@@ -201,16 +201,18 @@ export function assessmentRequest(
     reason: reason.trim(),
   };
 }
-export async function saveAssessment(
-  db: {
-    rpc(
-      name: string,
-      args: Record<string, unknown>,
-    ): PromiseLike<{ data: any; error: { code?: string } | null }>;
-  },
-  r: SaveAssessmentRequest,
-) {
+export type AssessmentClient = {
+  rpc(
+    name: string,
+    args: Record<string, unknown>,
+  ): PromiseLike<{
+    data: any;
+    error: { code?: string } | null;
+  }>;
+};
+export function validateAssessmentRequest(r: SaveAssessmentRequest) {
   if (
+    !r ||
     !uuid(r.tenantId) ||
     !uuid(r.requestId) ||
     !uuid(r.publicationId) ||
@@ -221,16 +223,19 @@ export async function saveAssessment(
     !(stamp(r.period?.end) > stamp(r.period.start)) ||
     !Array.isArray(r.expected) ||
     r.expected.length > 500 ||
-    new Set(r.expected.map((e) => e.id)).size !== r.expected.length ||
+    new Set(r.expected.map((e) => e?.id)).size !== r.expected.length ||
     r.expected.some(
-      (e) => !uuid(e.id) || !Number.isSafeInteger(e.reviewRevision) || e.reviewRevision < 0,
+      (e) => !e || !uuid(e.id) || !Number.isSafeInteger(e.reviewRevision) || e.reviewRevision < 0,
     ) ||
     typeof r.reason !== "string" ||
     !r.reason.trim() ||
     r.reason.length > 1000
   )
     throw Error("A valid published assessment and reason are required");
-  const { data, error } = await db.rpc("learn_assessment_save", {
+}
+export function assessmentArguments(r: SaveAssessmentRequest) {
+  validateAssessmentRequest(r);
+  return {
     p_tenant: r.tenantId,
     p_request: r.requestId,
     p_publication: r.publicationId,
@@ -241,7 +246,10 @@ export async function saveAssessment(
     p_end: new Date(r.period.end).toISOString(),
     p_expected: r.expected,
     p_reason: r.reason.trim(),
-  });
+  };
+}
+export async function saveAssessment(db: AssessmentClient, r: SaveAssessmentRequest) {
+  const { data, error } = await db.rpc("learn_assessment_save", assessmentArguments(r));
   if (error)
     throw Error(
       ["PT409", "40001"].includes(error.code ?? "")

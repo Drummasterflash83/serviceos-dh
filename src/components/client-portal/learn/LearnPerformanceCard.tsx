@@ -34,6 +34,7 @@ const number = (n: number | null) =>
     : new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(n);
 type Props = {
   tenantId: string;
+  actorId: string;
   kind: ScoreSubject["kind"];
   id: string;
   groupId: string | null;
@@ -53,7 +54,7 @@ export function LearnPerformanceCard(props: Props) {
     </details>
   );
 }
-function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
+function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) {
   const nowField = assessmentTimeField();
   const [from, setFrom] = useState(() => assessmentTimeField(Date.now() - 7 * 86400000)),
     [until, setUntil] = useState(nowField);
@@ -172,8 +173,10 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
       </form>
       {message && <p role="status">{message}</p>}
       <LearnAssessmentHistory
-        key={`${tenantId}:${kind}:${id}`}
+        key={`${actorId}:${tenantId}:${kind}:${id}`}
         tenantId={tenantId}
+        actorId={actorId}
+        canReview={canReview}
         subject={{ kind, id, groupIds: groupId ? [groupId] : [] }}
         current={
           current

@@ -1,5 +1,20 @@
 # Existing TEST environment: verified release gaps
 
+## Assessment save recovery — local candidate, not deployed
+
+Interrupted saves now retain their exact request across card close/reload, with
+check, retry and cancellation controls. The server cancellation record prevents a
+late save from appearing after cancellation; an already completed assessment is
+retained. Nineteen client tests, isolated SQL save/cancel races, app/preview builds
+and actual synthetic browser recovery passed. TEST's installed save body matches
+the verifier baseline, but the new migration and frontend are not yet deployed.
+See [implementation and acceptance limits](LEARN-ASSESSMENT-RECOVERY.md).
+
+The Commusoft continuation still awaits its existing approval. No provider calls,
+new operator access, capture activation or production writes occurred in this
+assessment increment.
+
+
 ## Retained-record search — TEST release 045 installed at 21:44 UTC
 
 Server-side customer/site/job/contact search is installed in TEST and the matching

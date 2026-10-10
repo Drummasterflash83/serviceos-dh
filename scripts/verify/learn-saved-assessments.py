@@ -1,5 +1,5 @@
 """Isolated saved-assessment SQL checks. Synthetic dependencies; no hosted access."""
-import concurrent.futures,json,shutil,subprocess,time,uuid
+import concurrent.futures,json,shutil,subprocess,time,uuid,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2];DOCKER=shutil.which('docker') or '/usr/local/bin/docker';NAME='serviceos-saved-assessments-'+uuid.uuid4().hex[:8]
 def run(sql,check=True):
@@ -37,6 +37,43 @@ try:
  run(group[a:b])
  run((ROOT/'supabase/migrations/20261031040000_learn_saved_assessments.sql').read_text())
  run((ROOT/'scripts/verify/learn-saved-assessments.assert.sql').read_text())
+ recovery_checks=[]
+ if '--recovery' in sys.argv:
+  migration=(ROOT/'supabase/migrations/20261101060000_learn_assessment_recovery.sql').read_text()
+  catalog="select jsonb_build_object('definition',pg_get_functiondef(oid),'owner',proowner,'acl',proacl) from pg_proc where oid='learn_assessment_save(uuid,uuid,uuid,text,uuid,uuid,timestamptz,timestamptz,jsonb,text)'::regprocedure;"
+  before=run(catalog).stdout
+  run(migration.replace('commit;','rollback;'))
+  assert run(catalog).stdout==before
+  assert run("select to_regclass('learn_assessment_cancellations') is null;").stdout.strip()=='t'
+  run(migration)
+  after=json.loads(run(catalog).stdout)
+  old=json.loads(before)
+  assert (after['owner'],after['acl'])==(old['owner'],old['acl'])
+  run((ROOT/'scripts/verify/learn-assessment-recovery.assert.sql').read_text())
+  recovery_checks+=['Recovery migration rolls back without changing the original save definition; apply preserves owner and ACL.', 'Pending, retained and cancelled outcomes, actor/company/role/preview boundaries, immutable cancellation and delayed-save refusal verified.']
+  auth="set role authenticated;set test.actor='00000000-0000-4000-8000-000000000030';"
+  heads=json.dumps([{'id':'00000000-0000-4000-8000-000000000008','reviewRevision':0},{'id':'00000000-0000-4000-8000-000000000009','reviewRevision':3}])
+  for first in ['save','cancel']:
+   request='00000000-0000-4000-8000-00000000008'+('2' if first=='save' else '3')
+   calls={'save':f"select test_save_assessment('{request}','{heads}');",'cancel':f"select test_resolve_assessment('{request}',true);"}
+   with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+    a=pool.submit(run,auth+f"set application_name='assessment-recovery-first';begin;"+calls[first]+"select pg_sleep(2);commit;",False)
+    for _ in range(100):
+     if run("select count(*) from pg_stat_activity where application_name='assessment-recovery-first' and wait_event='PgSleep';").stdout.strip()=='1':break
+     time.sleep(.01)
+    else:raise AssertionError('First transaction did not acquire its request lock')
+    b=pool.submit(run,auth+"set application_name='assessment-recovery-second';"+calls['cancel' if first=='save' else 'save'],False)
+    for _ in range(60):
+     if run("select count(*) from pg_stat_activity where application_name='assessment-recovery-second' and wait_event='advisory';").stdout.strip()=='1':break
+     time.sleep(.01)
+    else:raise AssertionError('Competing request did not wait on the same advisory lock')
+    ar,br=a.result(),b.result()
+    assert ar.returncode==0,ar.stderr
+    assert (br.returncode==0) if first=='save' else ('Assessment request cancelled' in br.stderr),br.stderr
+   counts=run(f"select (select count(*) from learn_assessments where id='{request}')::text||':'||(select count(*) from learn_assessment_cancellations where id='{request}')::text;").stdout.strip()
+   assert counts==('1:0' if first=='save' else '0:1'),counts
+  recovery_checks+=['Concurrent save/cancel observed waiting on the same live PostgreSQL advisory lock in both orderings; exactly one terminal outcome, no deletion.']
+
  def race(i):return run("set role authenticated;set test.actor='00000000-0000-4000-8000-000000000030';select learn_assessment_save('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000075','00000000-0000-4000-8000-000000000060','member','00000000-0000-4000-8000-000000000003',null,'2026-01-01','2026-01-02','[{\"id\":\"00000000-0000-4000-8000-000000000008\",\"reviewRevision\":0},{\"id\":\"00000000-0000-4000-8000-000000000009\",\"reviewRevision\":3}]','Concurrent same request');",False)
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(race,[0,1]))
  assert all(r.returncode==0 for r in results),[r.stderr for r in results]
@@ -48,5 +85,5 @@ try:
  assert run("select count(*) from first_assessment f join learn_assessments a using(id) where to_jsonb(f)=to_jsonb(a);").stdout.strip()=='1'
  rows=json.loads(run("select jsonb_agg(to_jsonb(a) order by id) from learn_assessments a;").stdout.strip())
  (ROOT/'.verification-results/learn-saved-assessments-rows.json').write_text(json.dumps(rows,indent=2)+'\n')
- print(json.dumps({'state':'passed','checks':['Server-owned canonical snapshots retain published policy, original measurements and complete review/correction ledgers.','Changed request, stale evidence, wrong publication, future period, foreign subject, role/company/View-As and raw writes denied.','A later review creates a new snapshot without changing the first. Exact retry and simultaneous same-request saves retain one record.','Snapshot rewrite/delete/truncate and injected insert failure denied; prior source measurements and reviews retained.'],'limitations':['Isolated PostgreSQL and synthetic dependencies with actual published-policy reader; not hosted Auth, production or provider acceptance.']},indent=2))
+ print(json.dumps({'state':'passed','checks':['Server-owned canonical snapshots retain published policy, original measurements and complete review/correction ledgers.','Changed request, stale evidence, wrong publication, future period, foreign subject, role/company/View-As and raw writes denied.','A later review creates a new snapshot without changing the first. Exact retry and simultaneous same-request saves retain one record.','Snapshot rewrite/delete/truncate and injected insert failure denied; prior source measurements and reviews retained.'],'recoveryChecks':recovery_checks,'limitations':['Isolated PostgreSQL and synthetic dependencies with actual published-policy reader; not hosted Auth, production or provider acceptance.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

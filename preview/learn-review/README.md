@@ -112,3 +112,14 @@ reply; retry returns the same receipt. Confirm evidence between saves to inspect
 an earlier unassessed result beside the later 80/100 result. Fixtures disappear on
 reload and never write to a database. The final UI provides a bordered reason field,
 selected history item and a scrollable retained-metric table.
+
+
+10 October assessment recovery supersedes the older in-memory-only statement:
+synthetic assessment receipts and cancellation records now survive a full reload
+in this tab through session storage. The real card component saves its request in
+local storage scoped to synthetic backend, account, company and card. Use
+`&performance=1&publication=historical&assessments=uncertain` for a lost response
+following a recorded save, or `assessments=pending` to inspect status and cancel an
+uncompleted request. Earlier retained assessments remain in history. These checks
+exercise actual UI/client code with synthetic results only, not hosted authority
+or database behavior. The separate isolated SQL verifier covers save/cancel races.

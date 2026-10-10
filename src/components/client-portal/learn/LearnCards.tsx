@@ -39,12 +39,21 @@ export function LearnCards({ tenantId }: { tenantId: string }) {
     <CardWorkspace
       key={`${user.id}:${tenantId}`}
       tenantId={tenantId}
+      actorId={user.id}
       canEdit={["owner", "admin"].includes(profile.role)}
     />
   );
 }
 
-function CardWorkspace({ tenantId, canEdit }: { tenantId: string; canEdit: boolean }) {
+function CardWorkspace({
+  tenantId,
+  actorId,
+  canEdit,
+}: {
+  tenantId: string;
+  actorId: string;
+  canEdit: boolean;
+}) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [kind, setKind] = useState<LearnCardKind>("customer");
   const [group, setGroup] = useState("");
@@ -228,6 +237,7 @@ function CardWorkspace({ tenantId, canEdit }: { tenantId: string; canEdit: boole
             <CardDetail
               key={`${kind}:${selected}:${group}`}
               tenantId={tenantId}
+              actorId={actorId}
               kind={kind}
               id={selected}
               groupId={kind === "member" ? group || null : null}
@@ -272,12 +282,14 @@ function CardWorkspace({ tenantId, canEdit }: { tenantId: string; canEdit: boole
 
 function CardDetail({
   tenantId,
+  actorId,
   kind,
   id,
   groupId,
   canReview,
 }: {
   tenantId: string;
+  actorId: string;
   kind: LearnCardKind;
   id: string;
   groupId: string | null;
@@ -346,6 +358,7 @@ function CardDetail({
           )}
           <LearnPerformanceCard
             tenantId={tenantId}
+            actorId={actorId}
             kind={kind}
             id={id}
             groupId={groupId}

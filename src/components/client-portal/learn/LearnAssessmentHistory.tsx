@@ -1,14 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   assessmentRequest,
   loadAssessmentHistory,
   loadSavedAssessment,
-  saveAssessment,
   type AssessmentSummary,
   type SavedAssessment,
-  type SaveAssessmentRequest,
 } from "@/lib/learn-assessments";
+import {
+  assessmentOutboxKey,
+  prepareAssessmentDraft,
+  readAssessmentDraft,
+  recoverAssessmentDraft,
+  type AssessmentDraft,
+} from "@/lib/learn-assessment-outbox";
+import type { RecoveryLock } from "@/lib/learn-slack-recovery-outbox";
+const lock: RecoveryLock = async (key, task) => {
+  if (!navigator.locks) throw Error("Use a browser that supports saved-request coordination.");
+  return navigator.locks.request(key, task);
+};
 import type { ReviewedPerformanceMeasurement } from "@/lib/learn-performance-measurements";
 import type { ScorecardPolicy, ScoreSubject, ScorePeriod } from "@/lib/learn-scorecards";
 const date = (s: string) => new Date(s).toLocaleString("en-GB", { timeZone: "UTC" }) + " UTC";
@@ -18,10 +28,14 @@ const number = (v: number | null) =>
     : new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(v);
 export function LearnAssessmentHistory({
   tenantId,
+  actorId,
+  canReview,
   subject,
   current,
 }: {
   tenantId: string;
+  actorId: string;
+  canReview: boolean;
   subject: ScoreSubject;
   current: {
     policy: ScorecardPolicy;
@@ -33,8 +47,41 @@ export function LearnAssessmentHistory({
     [message, setMessage] = useState(""),
     [saving, setSaving] = useState(false),
     [revision, setRevision] = useState(0);
-  const pending = useRef<SaveAssessmentRequest | null>(null),
-    busy = useRef(false);
+  const scope = { backend: supabaseConfig.url.replace(/\/$/, ""), tenantId, actorId, subject };
+  const [pending, setPending] = useState<AssessmentDraft | null>(null),
+    [storageReady, setStorageReady] = useState(false);
+  const busy = useRef(false),
+    live = useRef(false),
+    editable = useRef(canReview);
+  editable.current = canReview;
+  function restore() {
+    try {
+      const draft = readAssessmentDraft(localStorage, scope);
+      setPending(draft);
+      if (draft) setReason(draft.request.reason);
+      setStorageReady(true);
+    } catch (e) {
+      setStorageReady(false);
+      setMessage(e instanceof Error ? e.message : "Saved requests are unavailable.");
+    }
+  }
+  useEffect(() => {
+    live.current = true;
+    restore();
+    const changed = (event: StorageEvent) => {
+      if (event.key === null || event.key === assessmentOutboxKey(scope)) {
+        restore();
+        setMessage(
+          "Saved assessment details changed in another tab. Review them before continuing.",
+        );
+      }
+    };
+    window.addEventListener("storage", changed);
+    return () => {
+      live.current = false;
+      window.removeEventListener("storage", changed);
+    };
+  }, [tenantId, actorId, subject.kind, subject.id]);
   const [history, setHistory] = useState<AssessmentSummary[]>([]),
     [total, setTotal] = useState(0),
     [historyMessage, setHistoryMessage] = useState("Reading saved assessments…");
@@ -83,40 +130,60 @@ export function LearnAssessmentHistory({
       active = false;
     };
   }, [tenantId, subject.kind, subject.id, selected]);
-  async function save() {
-    if (busy.current) return;
+  async function recover(action: "save" | "check" | "cancel") {
+    if (busy.current || !storageReady || !canReview) return;
     busy.current = true;
     setSaving(true);
     setMessage("");
     try {
-      if (!pending.current) {
-        if (!current) throw Error("Load published rules and evidence first");
-        pending.current = assessmentRequest(
-          current.policy,
-          subject,
-          current.period,
-          current.rows,
-          reason,
-          crypto.randomUUID(),
+      if (!pending && (action !== "save" || !current))
+        throw Error("Load published rules and evidence first");
+      const draft =
+        pending ??
+        prepareAssessmentDraft(
+          scope,
+          assessmentRequest(
+            current!.policy,
+            subject,
+            current!.period,
+            current!.rows,
+            reason,
+            crypto.randomUUID(),
+          ),
         );
-      }
-      const receipt = await saveAssessment(getSupabaseClient(), pending.current);
-      pending.current = null;
-      setReason("");
-      setMessage(
-        receipt.reused
-          ? "Earlier save recovered. No duplicate was created."
-          : "Assessment retained with its rules, evidence and review decisions.",
+      const receipt = await recoverAssessmentDraft(
+        getSupabaseClient(),
+        localStorage,
+        lock,
+        scope,
+        draft,
+        action,
+        () => live.current && editable.current,
       );
-      setSelected(receipt.assessmentId);
-      setRevision((r) => r + 1);
+      if (!live.current) return;
+      if (receipt.state === "pending") {
+        setMessage(
+          "No completed save was found. Retry this request, or cancel it before starting another.",
+        );
+      } else {
+        setReason("");
+        setMessage(
+          receipt.state === "recorded"
+            ? "Assessment confirmed with its retained rules, evidence and review decisions."
+            : "Unfinished save cancelled. Reload the rules and evidence before a new assessment.",
+        );
+        if (receipt.state === "recorded") setSelected(receipt.assessmentId);
+        setRevision((r) => r + 1);
+      }
     } catch (e) {
-      const text = e instanceof Error ? e.message : "Assessment save was not confirmed";
-      setMessage(text);
-      if (text.startsWith("Evidence or rules changed.")) pending.current = null;
+      if (live.current)
+        setMessage(e instanceof Error ? e.message : "Assessment save was not confirmed");
     } finally {
       busy.current = false;
-      setSaving(false);
+      if (live.current) {
+        restore();
+        setSaving(false);
+      }
     }
   }
   return (
@@ -131,34 +198,56 @@ export function LearnAssessmentHistory({
         <textarea
           value={reason}
           maxLength={1000}
-          disabled={saving || !!pending.current}
+          disabled={saving || !!pending}
           onChange={(e) => setReason(e.target.value)}
         />
       </label>
-      {pending.current && (
+      {pending && (
         <p>
-          Retry is fixed to {date(pending.current.period.start)} –{" "}
-          {date(pending.current.period.end)} and the original reason. Keep this card open until the
-          save is confirmed.
+          Retry is fixed to {date(pending.request.period.start)} –{" "}
+          {date(pending.request.period.end)} and the original reason. This browser keeps the request
+          if you close or refresh this card. Check its status, retry it, or cancel the unfinished
+          save. A completed assessment stays retained.
         </p>
       )}
       <button
         className="cp-secondary"
         type="button"
-        onClick={() => void save()}
+        onClick={() => void recover("save")}
         disabled={
           saving ||
-          (!pending.current &&
-            (!current || current.policy.status !== "published" || !reason.trim()))
+          !storageReady ||
+          !canReview ||
+          (!pending && (!current || current.policy.status !== "published" || !reason.trim()))
         }
       >
-        {saving
-          ? "Saving…"
-          : pending.current
-            ? "Retry same assessment save"
-            : "Save published assessment"}
+        {saving ? "Saving…" : pending ? "Retry same assessment save" : "Save published assessment"}
       </button>
-      {current?.policy.status !== "published" && !pending.current && (
+      {pending && (
+        <>
+          <button
+            type="button"
+            className="cp-secondary"
+            disabled={saving || !storageReady || !canReview}
+            onClick={() => void recover("check")}
+          >
+            Check saved request
+          </button>
+          <button
+            type="button"
+            className="cp-secondary"
+            disabled={saving || !storageReady || !canReview}
+            onClick={() => void recover("cancel")}
+          >
+            Cancel unfinished save
+          </button>
+        </>
+      )}
+      <p>
+        Unconfirmed requests are kept for your account in this browser. Keep its data until the
+        outcome is confirmed; recovery details are not shared across devices.
+      </p>
+      {current?.policy.status !== "published" && !pending && (
         <p>Load published rules for the selected dates to save an assessment.</p>
       )}
       {message && <p role="status">{message}</p>}

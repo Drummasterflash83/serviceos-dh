@@ -61,7 +61,19 @@ export function publishedPeriodFixture(args:any){
  return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
 }
 const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)},{table:"email_messages",id:id(18)},{table:"phone_calls",id:id(19)},{table:"phone_recordings",id:id(21)}],exclusions:[],supersedes:null,group_ids:[]}];
-const assessmentRows:any[]=[];
+const assessmentFixtureKey = 'serviceos:synthetic:assessments:2';
+const assessmentFixture = JSON.parse(sessionStorage.getItem(assessmentFixtureKey) ?? '{"rows":[],"cancelled":{}}');
+const assessmentRows:any[]=assessmentFixture.rows;
+const cancelledAssessments:Record<string,string>=assessmentFixture.cancelled;
+const persistAssessments=()=>sessionStorage.setItem(assessmentFixtureKey,JSON.stringify({rows:assessmentRows,cancelled:cancelledAssessments}));
+const assessmentIdentity=(args:any)=>JSON.stringify(Object.fromEntries(['p_tenant','p_request','p_publication','p_kind','p_subject','p_group','p_start','p_end','p_expected','p_reason'].map(k=>[k,args[k]])));
+export function resolveAssessmentFixture(args:any){
+ const identity=assessmentIdentity(args),prior=assessmentRows.find(r=>r.id===args.p_request),cancelled=cancelledAssessments[args.p_request];
+ if ((prior&&prior.request!==identity)||(cancelled&&cancelled!==identity))return {data:null,error:{code:'PT409'}};
+ if (!prior&&args.p_cancel) {cancelledAssessments[args.p_request]=identity;persistAssessments();}
+ return {data:{state:prior?'recorded':cancelledAssessments[args.p_request]?'cancelled':'pending',assessmentId:args.p_request,
+ tenantId:tenant_id,actorId:'22222222-2222-4222-8222-222222222222',...(prior?{recordedAt:prior.recorded_at}:{})},error:null};
+}
 const performanceCorrections:any[]=[];
 const performanceReviews:any[]=[];
 export function correctPerformanceFixture(args:any){
@@ -293,8 +305,10 @@ export async function sourceFixture(args:any){
 }
 
 export function saveAssessmentFixture(args:any){
+ if(cancelledAssessments[args.p_request])return {data:null,error:{code:'PT409'}};
+ if(new URLSearchParams(location.search).get('assessments')==='pending')return {data:null,error:{code:'network'}};
  const prior=assessmentRows.find(r=>r.id===args.p_request);
- if(prior)return {data:{assessmentId:prior.id,recordedAt:prior.recorded_at,reused:true},error:null};
+ if(prior)return prior.request!==assessmentIdentity(args)?{data:null,error:{code:'PT409'}}:{data:{assessmentId:prior.id,recordedAt:prior.recorded_at,reused:true},error:null};
  const policy=publishedPeriodFixture(args).data;
  if(!policy||policy.publication.id!==args.p_publication)return {data:null,error:{code:"PT409"}};
  const available=(new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
@@ -303,8 +317,9 @@ export function saveAssessmentFixture(args:any){
  const expected=measurements.map(m=>({id:m.id,reviewRevision:reviews.filter(r=>r.measurement_id===m.id).length})).sort((a,b)=>a.id.localeCompare(b.id));
  if(JSON.stringify(expected)!==JSON.stringify(args.p_expected))return {data:null,error:{code:"PT409"}};
  const at=new Date().toISOString();
- assessmentRows.unshift({id:args.p_request,tenant_id,publication_id:args.p_publication,subject_kind:args.p_kind,subject_id:args.p_subject,window_start:args.p_start,window_end:args.p_end,recorded_at:at,recorded_by:id(40),reason:args.p_reason,
+ assessmentRows.unshift({request:assessmentIdentity(args),id:args.p_request,tenant_id,publication_id:args.p_publication,subject_kind:args.p_kind,subject_id:args.p_subject,window_start:args.p_start,window_end:args.p_end,recorded_at:at,recorded_by:"22222222-2222-4222-8222-222222222222",reason:args.p_reason,
  snapshot:structuredClone({version:"learn-assessment/1",engine:"learn-scorecards/1",policy,subject:{kind:args.p_kind,id:args.p_subject,groupIds:args.p_group?[args.p_group]:[]},period:{start:args.p_start,end:args.p_end},assessedAt:at,measurements,reviews,corrections})});
+ persistAssessments();
  if(new URLSearchParams(location.search).get("assessments")==="uncertain")return {data:null,error:{code:"network"}};
  return {data:{assessmentId:args.p_request,recordedAt:at,reused:false},error:null};
 }

@@ -97,6 +97,18 @@
       ],
       "@/lib/learn-imports": [
         "../../src/lib/learn-imports.ts"
+      ],
+      "@/lib/learn-assessment-outbox": [
+        "../../src/lib/learn-assessment-outbox.ts"
+      ],
+      "@/lib/learn-commusoft-review": [
+        "../../src/lib/learn-commusoft-review.ts"
+      ],
+      "@/lib/learn-commusoft-work": [
+        "../../src/lib/learn-commusoft-work.ts"
+      ],
+      "@/lib/learn-slack-recurring": [
+        "../../src/lib/learn-slack-recurring.ts"
       ]
     },
     "allowImportingTsExtensions": true,

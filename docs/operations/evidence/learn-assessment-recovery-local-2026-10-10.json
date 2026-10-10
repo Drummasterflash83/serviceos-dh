@@ -1,0 +1,76 @@
+{
+  "version": "learn-assessment-recovery-local/1",
+  "date": "2026-10-10",
+  "state": "local_verified_hosted_pending",
+  "clientTests": 19,
+  "appPrebuildChecks": 47,
+  "sqlChecks": [
+    "original retained-assessment regression suite",
+    "migration rollback and original save owner/ACL preserved",
+    "actor/company/role/View-As and missing-session refusal",
+    "immutable cancellation and delayed-save refusal",
+    "save-first and cancel-first concurrency observed on the same live advisory lock; exactly one terminal row"
+  ],
+  "browserChecks": [
+    "lost response followed by full reload restored original period and reason",
+    "status check recovered one retained assessment",
+    "separate pending request stayed unresolved on check and cleared only after confirmed cancellation",
+    "earlier retained assessment remained in history; absent evidence stayed unassessed"
+  ],
+  "hostedPrerequisites": {
+    "observedAt": "2026-10-10T22:00:39.283Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "priorSaveBodyMatchesLocalFixture": true,
+    "saveDefinitionSha256": "adae79d9b7e479bfc217d260998ab2b61f87678934abe197cd28a6a5a055efd1",
+    "recoveryAbsent": true,
+    "ledgerCount": 46,
+    "readOnly": true
+  },
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101060000_learn_assessment_recovery.sql",
+      "sha256": "cf9afb35113bb7db565a6ec6618621511d3398df0963ddba72623d24f5e066f0"
+    },
+    {
+      "path": "src/lib/learn-assessment-outbox.ts",
+      "sha256": "067c88685a5a5cfeb22f23d5ffbe7b97f0d66abc0b5019f26ba796d80704978e"
+    },
+    {
+      "path": "src/lib/learn-assessment-outbox.test.ts",
+      "sha256": "c5e803d8ff66ee64267b31b7ddaa3daac8cce0f45b613a7b565095ae47816159"
+    },
+    {
+      "path": "src/lib/learn-assessments.ts",
+      "sha256": "7eaf4742a01f26a58ce4f73a7f678dfcde39be9aa1968e4ad1a8638ae8c9561e"
+    },
+    {
+      "path": "src/components/client-portal/learn/LearnAssessmentHistory.tsx",
+      "sha256": "8888cf418fc657e980a6a24c7d59b3ace48e0e093c4b25058eb2b0ea7132016d"
+    },
+    {
+      "path": "scripts/verify/learn-assessment-recovery.assert.sql",
+      "sha256": "d399fb1a2bfcedb66ade45781843dc122c91c3ad1f9beb7a28d878f68e1cb60a"
+    },
+    {
+      "path": "scripts/verify/learn-saved-assessments.py",
+      "sha256": "4d6d45f550586c98faa69b501ee2cef2186568dc8e75dcc6a31d16bf149c3852"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": ".verification-results/learn-assessment-recovered-2026-10-10.png",
+      "sha256": "38f0f72c99b4000b870efb0be6eb99fa1deaec3a2fdb99642acdbcf7af2ac686",
+      "scope": "local synthetic; ignored artifact"
+    },
+    {
+      "path": ".verification-results/learn-assessment-cancelled-2026-10-10.png",
+      "sha256": "dee50029486e756c2345a7b1bf74dff82ae000b160d791cfa41ca205ee91e11f",
+      "scope": "local synthetic; ignored artifact"
+    }
+  ],
+  "limits": [
+    "No hosted recovery deployment or signed-in hosted recovery acceptance.",
+    "No production write or provider request.",
+    "Browser recovery is same-device only; saved assessment history still shows the latest 20."
+  ]
+}
