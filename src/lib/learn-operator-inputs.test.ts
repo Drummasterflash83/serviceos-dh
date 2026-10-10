@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   inputAccountStatus,
   readOperatorInputs,
+  readOperatorInputWriteAccess,
   resolveOperatorInput,
   validateInputRequest,
   type InputAccount,
@@ -21,6 +22,34 @@ const request: OperatorInputRequest = {
     values: enabled,
   },
 };
+test("write access requires a verified admin result; unavailable access remains unknown", async () => {
+  for (const [data, error, expected] of [
+    [true, null, true],
+    [false, null, false],
+    ["true", null, null],
+    [null, null, null],
+    [true, { code: "denied" }, null],
+  ] as const) {
+    assert.equal(
+      await readOperatorInputWriteAccess({
+        rpc: async (name, args) => {
+          assert.equal(name, "current_user_is_openfolk_operator");
+          assert.deepEqual(args, { required_permission: "platform.controlplane.admin" });
+          return { data, error };
+        },
+      }),
+      expected,
+    );
+  }
+  assert.equal(
+    await readOperatorInputWriteAccess({
+      rpc: async () => {
+        throw Error("offline");
+      },
+    }),
+    null,
+  );
+});
 test("operator receipts bind actor/company/request and compare values independent of key order", async () => {
   let calls = 0;
   const db = {

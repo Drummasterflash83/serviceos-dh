@@ -1,0 +1,30 @@
+{
+  "version": "learn-operator-inputs-viewer/1",
+  "observedAt": "2026-10-10T10:41:02.431708+00:00",
+  "state": "passed",
+  "checks": [
+    "Viewer can read status and inspect connection selection while mutation and receipt controls are disabled.",
+    "An unavailable permission check retains readable status but prevents changes.",
+    "Revocation before save is caught by a fresh permission check before request submission.",
+    "Read-only switches display recorded settings instead of abandoned unsaved edits.",
+    "A simulated lost reply retains the request across reload into viewer access. Restoring access and checking its receipt recovers the recorded change.",
+    "Twelve adapter/outbox tests, application typecheck, production build with 47 prebuild checks and isolated preview build pass.",
+    "Browser error log was empty after the scenarios."
+  ],
+  "sourceSha256": {
+    "src/components/app/OperatorLearnInputs.tsx": "9737b6cbe4fa154411def87e232f3929c0bd65aa7baf44d6ebce81792f34bac9",
+    "src/lib/learn-operator-inputs.ts": "470046bb505923b2eb81a396fc86c760eae1e80698e3cc37c0269cfc1d6d0d79",
+    "src/lib/learn-operator-inputs.test.ts": "71e17fe56d7c7a5d757ec8c5c96853179dabfd4c7d7350c58f39e67dc1d5b276",
+    "preview/learn-operator-inputs/main.tsx": "323236433a383ccf7c4de1d4d215a40e2e2d3dc25104921f1254f05ebad87636"
+  },
+  "screenshots": [
+    "learn-operator-inputs-viewer-2026-10-10.png",
+    "learn-operator-inputs-viewer-screen-2026-10-10.png"
+  ],
+  "limitations": [
+    "Browser fixture uses synthetic local receipts and permission responses with network disabled. Hosted authority was verified separately in the previous checkpoint.",
+    "UI permission checks are hints; current server authority continues to enforce every RPC.",
+    "No hosted schema, production frontend, credentials or provider traffic changed."
+  ],
+  "cleanup": "Temporary browser tab closed and preview server stopped; user preview on port 47871 untouched."
+}

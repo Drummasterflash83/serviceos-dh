@@ -1522,3 +1522,25 @@ needs an explicit read-only presentation for platform viewers: the server denies
 their writes, but the current local UI still presents mutation controls. Connection
 setup, incomplete-import recovery, broader module controls and production release
 remain open.
+
+## Operator viewer controls and retained requests — 10 October
+
+The local operator screen now verifies the existing platform administrator
+permission separately from its status read. Viewers retain status/connection
+inspection while module, approval and saved-request actions are disabled. An
+unavailable permission check remains unknown and pauses changes without hiding a
+successful status read. Every attempted action rechecks administrator access;
+server authority remains the final enforcement boundary.
+
+Saved requests survive lost replies, reload and changed access. Browser acceptance
+confirmed a request retained under viewer access, then recovered by reading its
+receipt after administrator access was restored. Revocation immediately before
+save prevents submission. Read-only switches show recorded values, and an explicit
+recorded-settings line distinguishes unconfigured switches from off values.
+
+Twelve adapter/outbox tests, application typechecking, production build (47
+prebuild checks) and the isolated preview build passed. Browser scenarios covered
+viewer access, unavailable permission verification, revocation before save and
+recovery after access restoration; no browser console errors were recorded.
+The temporary tab/server were closed; production and hosted TEST were unchanged.
+See [viewer evidence](../operations/evidence/learn-operator-inputs-viewer-2026-10-10.json).

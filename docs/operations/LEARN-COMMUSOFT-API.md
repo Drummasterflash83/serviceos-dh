@@ -614,6 +614,13 @@ the connection revoked. An independent read-only check confirms retirement and
 zero fixture jobs. Evidence:
 `evidence/learn-operator-inputs-test-acceptance-2026-10-10.json`.
 
-The next UI correction is to present platform viewers with read-only controls,
-matching the server permissions. Successful import approval/page acceptance,
-connection setup, incomplete-import recovery and Drummonds API access remain open.
+The local UI now presents platform viewers with read-only controls and readable
+status. Unknown permission checks pause changes; each action rechecks the existing
+administrator resolver. Saved requests remain retained when access changes and
+become recoverable after access is restored. Browser acceptance covered revocation
+before save and lost-reply recovery across reload into viewer access. Read-only
+switches show recorded values, including explicit unconfigured status. Evidence:
+`evidence/learn-operator-inputs-viewer-2026-10-10.json`.
+
+Successful import approval/page acceptance, connection setup, incomplete-import
+recovery and Drummonds API access remain open.

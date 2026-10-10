@@ -4,6 +4,7 @@ import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
 import {
   inputAccountStatus,
   readOperatorInputs,
+  readOperatorInputWriteAccess,
   type InputFlags,
   type InputOverview,
   type OperatorInputClient,
@@ -34,6 +35,7 @@ export function OperatorLearnInputs({
   const [busy, setBusy] = useState(false),
     [storageReady, setStorageReady] = useState(false),
     [notice, setNotice] = useState("");
+  const [canWrite, setCanWrite] = useState<boolean | null>(null);
   const [values, setValues] = useState<InputFlags>({
     "learn.enabled": false,
     "learn.inputs.commusoft.enabled": false,
@@ -63,8 +65,13 @@ export function OperatorLearnInputs({
     }
   }
   async function refresh(ticket: number) {
-    const d = await readOperatorInputs(db(), tenantId);
+    setCanWrite(null);
+    const [d, permission] = await Promise.all([
+      readOperatorInputs(db(), tenantId),
+      readOperatorInputWriteAccess(db()),
+    ]);
     if (!current(ticket)) return;
+    setCanWrite(permission);
     setData(d);
     setValues({
       "learn.enabled": d.flags["learn.enabled"] === true,
@@ -86,6 +93,7 @@ export function OperatorLearnInputs({
     } catch (e) {
       if (current(ticket)) {
         setData(null);
+        setCanWrite(null);
         setNotice(
           e instanceof Error
             ? e.message
@@ -104,6 +112,7 @@ export function OperatorLearnInputs({
     working.current = false;
     setBusy(false);
     setData(null);
+    setCanWrite(null);
     setPending(null);
     setReason("");
     setApproved(false);
@@ -122,7 +131,17 @@ export function OperatorLearnInputs({
     };
   }, [tenantId, actorId, backend, client]);
   async function resolve(input: SavedInputRequest, mode: "apply" | "check" | "cancel") {
+    if (canWrite !== true) return;
     await operation(async (ticket) => {
+      const permission = await readOperatorInputWriteAccess(db());
+      if (!current(ticket)) return;
+      setCanWrite(permission);
+      if (permission !== true) {
+        setNotice(
+          "Administrator access could not be confirmed. Any saved request has been retained.",
+        );
+        return;
+      }
       const lock: InputLock = async (key, task) => {
         if (!navigator.locks)
           throw Error(
@@ -149,6 +168,7 @@ export function OperatorLearnInputs({
         } catch {
           if (current(ticket)) {
             setData(null);
+            setCanWrite(null);
             setNotice(
               `${message} Current status could not be refreshed. Refresh before making another change.`,
             );
@@ -160,7 +180,16 @@ export function OperatorLearnInputs({
     });
   }
   function submit(definition: OperatorInputDefinition) {
-    if (!approved || !data || pending || busy || !storageReady || !reason.trim()) return;
+    if (
+      canWrite !== true ||
+      !approved ||
+      !data ||
+      pending ||
+      busy ||
+      !storageReady ||
+      !reason.trim()
+    )
+      return;
     void resolve(
       {
         version: 1,
@@ -179,9 +208,11 @@ export function OperatorLearnInputs({
     ["uk", "us"].includes(selected.region ?? "") &&
     data?.flags["learn.enabled"] === true &&
     data.flags["learn.inputs.commusoft.enabled"] === true;
-  const disabled = busy || !!pending || !data || !storageReady;
+  const disabled = canWrite !== true || busy || !!pending || !data || !storageReady;
   const stamp = (value: string | null) =>
     value ? new Date(value).toLocaleString("en-GB") : "Not verified";
+  const flagLabel = (value: boolean | null) =>
+    value === null ? "Not configured" : value ? "On" : "Off";
   return (
     <section className="cp-card op-learn-inputs space-y-5" aria-labelledby="operator-learn-heading">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -201,6 +232,13 @@ export function OperatorLearnInputs({
       {notice && (
         <p role="status" className="rounded-lg border p-3">
           {notice}
+        </p>
+      )}
+      {data && canWrite !== true && (
+        <p className="rounded-lg border p-3" role="status">
+          {canWrite === false
+            ? "Read-only access. You can review input status; an OpenFolk administrator is required to change settings or approve imports."
+            : "Administrator access could not be verified. Input status is available; changes are paused until access can be checked."}
         </p>
       )}
       {!storageReady && (
@@ -225,24 +263,31 @@ export function OperatorLearnInputs({
             Check the recorded result before making another change. Cancelling prevents an
             unresolved request from applying; it does not undo a recorded approval.
           </p>
+          {canWrite !== true && (
+            <p className="text-sm">
+              {canWrite === false
+                ? "This request is retained. Restore administrator access for this operator, then refresh status to check its result."
+                : "This request is retained. Refresh status to verify this operator’s administrator access before checking its result."}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <button
               className="cp-secondary"
-              disabled={busy || !storageReady}
+              disabled={canWrite !== true || busy || !storageReady}
               onClick={() => void resolve(pending, "check")}
             >
               Check saved result
             </button>
             <button
               className="cp-secondary"
-              disabled={busy || !storageReady}
+              disabled={canWrite !== true || busy || !storageReady}
               onClick={() => void resolve(pending, "apply")}
             >
               Retry saved request
             </button>
             <button
               className="cp-secondary"
-              disabled={busy || !storageReady}
+              disabled={canWrite !== true || busy || !storageReady}
               onClick={() => void resolve(pending, "cancel")}
             >
               Cancel unresolved request
@@ -258,10 +303,14 @@ export function OperatorLearnInputs({
           </p>
           <fieldset disabled={disabled} className="space-y-3">
             <legend className="font-semibold">Module switches</legend>
+            <p className="text-sm">
+              Recorded settings: LEARN {flagLabel(data.flags["learn.enabled"])} · Commusoft{" "}
+              {flagLabel(data.flags["learn.inputs.commusoft.enabled"])}
+            </p>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={values["learn.enabled"] === true}
+                checked={(canWrite === true ? values : data.flags)["learn.enabled"] === true}
                 onChange={(e) => {
                   setValues((v) => ({ ...v, "learn.enabled": e.target.checked }));
                   setApproved(false);
@@ -272,7 +321,10 @@ export function OperatorLearnInputs({
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={values["learn.inputs.commusoft.enabled"] === true}
+                checked={
+                  (canWrite === true ? values : data.flags)["learn.inputs.commusoft.enabled"] ===
+                  true
+                }
                 onChange={(e) => {
                   setValues((v) => ({ ...v, "learn.inputs.commusoft.enabled": e.target.checked }));
                   setApproved(false);
@@ -294,8 +346,8 @@ export function OperatorLearnInputs({
               Save module settings
             </button>
           </fieldset>
-          <fieldset disabled={disabled} className="space-y-3">
-            <legend className="font-semibold">Approve a Commusoft import</legend>
+          <fieldset disabled={busy || !!pending || !data} className="space-y-3">
+            <legend className="font-semibold">Commusoft connection and import</legend>
             {!data.connections.length ? (
               <p>
                 No Commusoft connection has been recorded for this client. API access and a verified
@@ -329,7 +381,11 @@ export function OperatorLearnInputs({
                     ? "Connection revoked"
                     : `Verification: ${stamp(selected?.verified_at ?? null)}`}
                 </p>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <fieldset
+                  disabled={disabled}
+                  className="grid gap-3 sm:grid-cols-2"
+                  aria-label="Import limits"
+                >
                   <label>
                     Collection
                     <select
@@ -388,7 +444,7 @@ export function OperatorLearnInputs({
                       }}
                     />
                   </label>
-                </div>
+                </fieldset>
                 <p className="text-sm">
                   The worker reads one collection within these limits. An incomplete earlier import
                   must be reviewed before a new one can start. Contact capture does not yet create
@@ -403,6 +459,7 @@ export function OperatorLearnInputs({
                 <button
                   className="cp-primary"
                   disabled={
+                    disabled ||
                     !canStart ||
                     !approved ||
                     !reason.trim() ||

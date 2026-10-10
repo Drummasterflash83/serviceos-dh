@@ -52,9 +52,18 @@ const state: InputOverview = {
 const key = "synthetic-operator-receipts:1",
   stateKey = "synthetic-operator-state:1";
 let refreshFailed = false;
+let writeAllowed = scenario !== "viewer";
 const client: OperatorInputClient = {
   rpc: async (name, args) => {
     if (scenario === "unavailable") return { data: null, error: { code: "42883" } };
+    if (name === "current_user_is_openfolk_operator") {
+      if (scenario === "permission_unavailable")
+        return { data: null, error: { code: "synthetic_unavailable" } };
+      return {
+        data: writeAllowed,
+        error: null,
+      };
+    }
     if (name === "learn_operator_inputs") {
       if (refreshFailed) return { data: null, error: { code: "synthetic_refresh_failure" } };
       const stored = localStorage.getItem(stateKey);
@@ -111,6 +120,22 @@ createRoot(document.getElementById("root")!).render(
       <p style={{ padding: "1rem" }} role="status">
         Synthetic OpenFolk preview · network disabled · no hosted changes
       </p>
+      <div style={{ display: "flex", gap: "1rem", padding: "1rem" }}>
+        <button
+          onClick={() => {
+            writeAllowed = false;
+          }}
+        >
+          Revoke synthetic administrator access
+        </button>
+        <button
+          onClick={() => {
+            writeAllowed = true;
+          }}
+        >
+          Restore synthetic administrator access
+        </button>
+      </div>
       <OperatorLearnInputs
         tenantId={tenant}
         actorId={actor}

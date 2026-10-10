@@ -77,6 +77,19 @@ export type InputOverview = {
 export interface OperatorInputClient {
   rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
 }
+/** UI permission hint only. Every operation still requires current server authority. */
+export async function readOperatorInputWriteAccess(
+  db: OperatorInputClient,
+): Promise<boolean | null> {
+  try {
+    const { data, error } = await db.rpc("current_user_is_openfolk_operator", {
+      required_permission: "platform.controlplane.admin",
+    });
+    return !error && typeof data === "boolean" ? data : null;
+  } catch {
+    return null;
+  }
+}
 const object = (v: unknown): v is Record<string, any> =>
   !!v && typeof v === "object" && !Array.isArray(v);
 const uuid = (v: unknown): v is string =>
