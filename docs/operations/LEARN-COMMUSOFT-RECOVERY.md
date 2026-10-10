@@ -413,3 +413,41 @@ existing card IDs/locked fields and avoid manufacturing interaction activity, he
 or performance scores. The real package remains refused for its unresolved site
 ownership contradiction. Large-file behavior remains untested in the hosted runtime.
 See [signed-in evidence and retained finding](evidence/learn-import-hosted-browser-2026-10-10.json).
+
+## Customer-card projection candidate — 10 October
+
+Migration `20261031070000_learn_import_customer_cards.sql` connects new governed
+customer links to the existing `customer_cards` store. It reuses a person's card
+or the company's own card and never updates an existing card, including archived
+cards and protected fields. New cards receive the canonical display name and an
+import-link metadata reference; activity, summary, ownership, confidence and numeric
+priority score remain unset. A named person's card may still refer to their company;
+it is distinct from a company-only card. Existing default grey/medium card fields
+remain defaults, not derived health or performance assessments.
+
+Three private invoker functions provide identity projection, the after-link trigger
+and explicit repair in pages of at most 200 existing customer links. Installation
+does not run repair or change source rows. Shared registry/roster locks use the
+existing authority lock order. Two partial unique indexes prevent concurrent writers
+from splitting a canonical customer's card history. Existing duplicate identities
+refuse installation; nothing is merged or deleted. These indexes also apply to
+legacy writers and can refuse a person-deletion SET NULL transition that would
+collide with an existing company-only card. Identity reconciliation must handle that
+explicitly; legacy interaction-worker race behavior still requires acceptance.
+
+Verified TEST preflight found four cards, four imported customer links and no
+duplicate person/company-only groups. Individual service table privileges were
+captured because the old local projection's all-DML boolean did not reproduce
+read-only service access to tenants/profiles. `--cards` now restores those verified
+privileges and all twelve relevant table definitions, guards and policies. The Auth
+stand-in creates only missing profiles, allowing the historical suite to run again
+after the new trigger is installed.
+
+The disposable local PostgreSQL run passed rollback, duplicate-history refusal,
+protected-card/source preservation, actual service-role insertion, company-scoped
+authenticated reads, private-function denial, suspended-company refusal, bounded
+repair, historical row regressions and concurrent service projection to one card.
+The owned container was removed. No hosted migration or repair ran; signed-in card
+visibility and larger-file performance remain open. Next is the pinned TEST release,
+hosted rollback rehearsal, explicit synthetic repair and actual card read acceptance.
+See [local evidence](evidence/learn-import-card-projection-local-2026-10-10.json).

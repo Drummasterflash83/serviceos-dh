@@ -1,6 +1,6 @@
 """Exercise the exact import release against current TEST schema metadata.
 
-No connection to a hosted DB or any existing container. Eleven relevant tables,
+No connection to a hosted DB or any existing container. Eleven relevant tables (twelve with --cards),
 all their recorded constraints/indexes/policies/triggers and actual referenced
 helpers are restored in a new network-isolated PG17 container. auth.users/uid are
 explicit fixture stand-ins; Auth, Edge, marketing eligibility and UI acceptance
@@ -15,12 +15,24 @@ NODE=shutil.which('node') or '/usr/local/bin/node'
 NAME='serviceos-import-test-'+uuid.uuid4().hex[:8]
 IMAGE='public.ecr.aws/supabase/postgres:17.6.1.141'
 DB='postgres'
-if len(sys.argv) not in (2,3) or (len(sys.argv)==3 and sys.argv[2]!='--authority'):raise SystemExit('Provide a verified release-021 schema-only catalog and optional --authority')
+if len(sys.argv) not in (2,3) or (len(sys.argv)==3 and sys.argv[2] not in ('--authority','--cards')):raise SystemExit('Provide a verified release-021 schema-only catalog and optional --authority or --cards')
 catalog=json.loads(Path(sys.argv[1]).read_text())
 assert catalog['projectRef']=='saatxzwxvdvqevbnskxy' and len(catalog['tables'])==91 and len(catalog['readiness']['customMigrationEntries'])==22
 names=['tenants','profiles','view_as_context','people','companies','sites','jobs','data_imports','import_profiles','import_row_provenance','job_number_aliases']
+if '--cards' in sys.argv:names.append('customer_cards')
 tables=[t for t in catalog['tables'] if t['name'] in names]
 assert len(tables)==len(names)
+service_grants=None
+if '--cards' in sys.argv:
+ grant_snapshot=json.loads((ROOT/'docs/operations/evidence/learn-import-projection-grants-2026-10-10.json').read_text())
+ assert grant_snapshot['projectRef']==catalog['projectRef'] and grant_snapshot['verifiedRelease']=='023+import-endpoint-v1'
+ service_grants={g['name']:g['privileges'] for g in grant_snapshot['grants']}
+ assert set(service_grants)==set(names)
+ for t in tables:
+  assert set(service_grants[t['name']])=={'SELECT','INSERT','UPDATE','DELETE'}
+  assert all(type(v) is bool for v in service_grants[t['name']].values())
+  assert all(service_grants[t['name']].values())==t['serviceDml']
+
 q=lambda s:"'"+str(s).replace("'","''")+"'"
 i=lambda s:'"'+s.replace('"','""')+'"'
 release=(ROOT/'supabase/release/learn-test/022_governed_imports.sql').read_text()
@@ -65,7 +77,9 @@ try:
   if t['rls']:sql+=['alter table '+i(t['name'])+' enable row level security;']
   if t['forceRls']:sql+=['alter table '+i(t['name'])+' force row level security;']
   if t['authenticatedSelect']:sql+=['grant select on '+i(t['name'])+' to authenticated;']
-  if t['serviceDml']:sql+=['grant select,insert,update,delete on '+i(t['name'])+' to service_role;']
+  if service_grants:
+   sql += ['grant '+priv+' on '+i(t['name'])+' to service_role;' for priv,enabled in service_grants[t['name']].items() if enabled]
+  elif t['serviceDml']:sql+=['grant select,insert,update,delete on '+i(t['name'])+' to service_role;']
   for p in t['policies']:sql+=['create policy '+i(p['name'])+' on '+i(t['name'])+' as '+p['permissive']+' for '+p['command']+' to '+','.join(i(r) for r in p['roles'])+(' using('+p['using']+')' if p['using'] else '')+(' with check('+p['check']+')' if p['check'] else '')+';']
   for tr in t['triggers']:
    assert tr['function'] in [f['name'] for f in helpers],tr['function']
@@ -93,7 +107,7 @@ try:
  regression=(ROOT/'supabase/tests/commusoft_import.test.sql').read_text()
  marker="update profiles set role='owner',"
  pos=regression.index(marker)
- regression=regression[:pos]+"insert into profiles(id,email) select id,email from auth.users;\n"+regression[pos:]
+ regression=regression[:pos]+"insert into profiles(id,email) select u.id,u.email from auth.users u where not exists(select 1 from profiles p where p.id=u.id);\n"+regression[pos:]
  eligibility="  assert marketing_endpoint_eligibility('aaaa0000-0000-0000-0000-0000000000a1', v_pid, 'email') = 'unknown',\n    '2b: imported endpoint must resolve to the safe unknown state';"
  assert regression.count(eligibility)==1;regression=regression.replace(eligibility,'-- Eligibility resolver is not installed in this TEST foundation; not asserted here.')
  start=regression.index('-- ── (9) MARKETING SAFETY');end=regression.index('-- ── (10) RLS + privilege boundaries')
@@ -108,7 +122,7 @@ try:
   'indexes':[dict(x,table=t['name']) for t in snapshot() for x in t['indexes'] if x['name'] in manifest['existingTableIndexes']],
   'functions':functions,'profiles':json.loads(run(import_queries[1]).stdout)}
  (ROOT/'.verification-results/learn-import-expected.json').write_text(json.dumps(expected,indent=2)+'\n')
- if '--authority' in sys.argv:
+ if '--authority' in sys.argv or '--cards' in sys.argv:
   authority=(ROOT/'supabase/release/learn-test/023_import_authority.sql').read_text()
   authority_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(hashlib.sha256(authority.encode()).hexdigest())+';'
   old_function=run("select pg_get_functiondef('public.import_row_preamble(uuid,uuid,uuid,integer,jsonb,jsonb,text)'::regprocedure)").stdout
@@ -145,5 +159,39 @@ try:
    if holder.poll() is None:holder.terminate();holder.wait(timeout=10)
    holder.stdout.close();holder.stderr.close()
   print('Concurrent role, company and View As changes cannot race a live row: PASS',flush=True)
+ if '--cards' in sys.argv:
+  cards=(ROOT/'supabase/migrations/20261031070000_learn_import_customer_cards.sql').read_text()
+  apply("insert into import_entity_links(id,tenant_id,source_system,entity_kind,external_id,entity_table,entity_id,link_strategy) values('99000000-0000-0000-0000-000000000003','99000000-0000-0000-0000-000000000001','commusoft','customer','retained-before-card-projection','people','99000000-0000-0000-0000-000000000002','email');",'Pre-existing imported identity without a card')
+  apply("insert into customer_cards(id,tenant_id,person_id) values('99000000-0000-0000-0000-000000000004','99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000002'),('99000000-0000-0000-0000-000000000005','99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000002');",'Synthetic duplicate legacy cards')
+  duplicate_tables=snapshot();duplicate_rows=retained()
+  duplicate=run('set role postgres;'+cards,False);assert duplicate.returncode and 'learn_customer_card_person_uk' in duplicate.stderr
+  assert snapshot()==duplicate_tables and retained()==duplicate_rows,'duplicate preflight must preserve history'
+  run("delete from customer_cards where id in ('99000000-0000-0000-0000-000000000004','99000000-0000-0000-0000-000000000005');")
+  print('Duplicate legacy card identities refuse migration without modifying rows: PASS',flush=True)
+  cards_tables=snapshot();cards_rows=retained()
+  apply('set role postgres;'+cards.replace('\ncommit;','\nrollback;'),'Customer card projection rollback')
+  assert snapshot()==cards_tables and retained()==cards_rows
+  apply('set role postgres;'+cards,'Customer card projection installed as non-superuser owner')
+  assert retained()==cards_rows,'migration cannot backfill or change existing source rows'
+  apply((ROOT/'scripts/verify/learn-import-cards.assert.sql').read_text(),'Imported customer projection, protected cards, bounded repair and tenant boundaries')
+  apply(regression,'Historical governed row suite with card projection enabled')
+  hold="set role service_role;set application_name='learn-import-card-hold';begin;select learn_import_customer_card('99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000003');select pg_sleep(3);commit;"
+  holder=subprocess.Popen([DOCKER,'exec','-i',NAME,'psql','-h','127.0.0.1','-U','supabase_admin','-d',DB,'-At','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+  holder.stdin.write(hold);holder.stdin.close()
+  try:
+   for _ in range(60):
+    if run("select exists(select 1 from pg_stat_activity where application_name='learn-import-card-hold' and wait_event='PgSleep')").stdout.strip()=='t':break
+    time.sleep(.05)
+   else:raise RuntimeError('Card projection transaction was not observed live')
+   second=run("set role service_role;select learn_import_customer_card('99000000-0000-0000-0000-000000000001','99000000-0000-0000-0000-000000000003');").stdout
+   holder.wait(timeout=10);assert holder.returncode==0,holder.stderr.read()
+   first=holder.stdout.read()
+   assert re.findall(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}',first)==re.findall(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}',second)
+   assert run("select count(*)=1 from customer_cards where person_id='99000000-0000-0000-0000-000000000002'").stdout.strip()=='t'
+  finally:
+   if holder.poll() is None:holder.terminate();holder.wait(timeout=10)
+   holder.stdout.close();holder.stderr.close()
+  print('Concurrent service projections reuse one card identity: PASS',flush=True)
+
  print(json.dumps({'state':'passed','sourceSha256':sha,'restoredTables':len(tables),'importFunctions':len(manifest['functions']),'addedTables':manifest['tables'],'historicalMarketingEligibilityTested':False,'hostedWrite':False,'limitations':['Auth is a fixture stand-in; actual signed-in Edge/UI acceptance remains.','Only import-related TEST tables and their actual guards restored; not the whole TEST application.','Hosted rollback, exact catalog comparison and source/row preservation remain release gates.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

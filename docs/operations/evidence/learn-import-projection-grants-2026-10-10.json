@@ -1,0 +1,115 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T06:26:09.187Z",
+  "verifiedRelease": "023+import-endpoint-v1",
+  "grants": [
+    {
+      "name": "companies",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "customer_cards",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "data_imports",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "import_profiles",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "import_row_provenance",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "job_number_aliases",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "jobs",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "people",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "profiles",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": true,
+        "UPDATE": false
+      }
+    },
+    {
+      "name": "sites",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    },
+    {
+      "name": "tenants",
+      "privileges": {
+        "DELETE": false,
+        "INSERT": false,
+        "SELECT": true,
+        "UPDATE": false
+      }
+    },
+    {
+      "name": "view_as_context",
+      "privileges": {
+        "DELETE": true,
+        "INSERT": true,
+        "SELECT": true,
+        "UPDATE": true
+      }
+    }
+  ]
+}

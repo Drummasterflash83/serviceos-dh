@@ -1,0 +1,58 @@
+{
+  "version": "learn-import-card-projection-local/1",
+  "state": "local_candidate_passed_not_hosted",
+  "scope": {
+    "newFunctions": 3,
+    "newIndexes": 2,
+    "newTriggers": 1,
+    "newTables": 0,
+    "migrationBackfill": false,
+    "hostedWrites": false
+  },
+  "hostedReadOnlyPreflight": {
+    "verifiedRelease": "023+import-endpoint-v1",
+    "cards": 4,
+    "duplicatePersonGroups": 0,
+    "duplicateCompanyOnlyGroups": 0,
+    "importedCustomerLinks": 4,
+    "servicePrivilegesCapturedAt": "2026-10-10T06:26:09.187Z"
+  },
+  "local": {
+    "database": "Disposable network-isolated PostgreSQL 17.6.1.141",
+    "restoredTables": 12,
+    "authStandIn": true,
+    "actualRecordedConstraintsPoliciesTriggers": true,
+    "individualServiceTableGrantsRestored": true,
+    "checks": [
+      "Migration under non-superuser owner",
+      "Explicit rollback restores earlier definitions and rows",
+      "Migration does not backfill or change source rows",
+      "Duplicate pre-existing person cards refuse migration with every row retained",
+      "Imported person/company links create existing-store cards",
+      "Existing archived/protected card remains byte-for-byte unchanged",
+      "No new interaction activity, summary, confidence, owner or numeric priority score",
+      "Named person card remains separate from company-only card",
+      "Source aliases reuse same canonical card",
+      "Bounded repair pagination and replay reuse card identities",
+      "Foreign-company helper requests and suspended companies refused",
+      "Authenticated reads remain company-scoped; private repair execution denied",
+      "Historical governed import assertions pass with card trigger enabled",
+      "Two concurrent service projections return same card ID"
+    ],
+    "containerRemoved": true
+  },
+  "sourceHashes": {
+    "supabase/migrations/20261031070000_learn_import_customer_cards.sql": "d89ea66c1cca55433cf6c1e0ca6889848b2bb8175152190216136fa952e7cd49",
+    "scripts/verify/learn-import-cards.assert.sql": "08ceb58cf8b96023045e89c7d135551b23c68539348b734d97a84d48af747bbd",
+    "scripts/verify/learn-import-test-projection.py": "d3ab17a31319e15ec87f78058acb0c068fbcd4a6a1a964a2bb306b47a9071128",
+    "docs/operations/evidence/learn-import-projection-grants-2026-10-10.json": "8c1821be1d8228b4d90452e662d94169abdc44848dd1697e9e9b0143e54788cb"
+  },
+  "limitations": [
+    "No hosted installation, repair or new-card browser acceptance yet.",
+    "Two partial unique indexes affect all future card writers. Existing duplicate identities stop installation; no merge or deletion is attempted.",
+    "Company-only uniqueness can refuse a person-deletion SET NULL transition if it would create a duplicate company-only card. Such identity changes require explicit reconciliation.",
+    "Auth is a fixture stand-in locally; marketing eligibility assertions remain excluded because that subsystem is absent.",
+    "Legacy interaction-worker race behavior under uniqueness still needs acceptance; a losing raw insert is refused rather than creating another card.",
+    "Larger import performance, pagination and the real source ownership contradiction remain open."
+  ]
+}

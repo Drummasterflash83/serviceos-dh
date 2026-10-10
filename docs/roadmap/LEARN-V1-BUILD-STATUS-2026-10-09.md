@@ -1087,3 +1087,17 @@ identities, while LEARN lists the existing customer-card projection. Connecting
 these without invented activity or scoring is now a verified integration requirement.
 Hosted large-file tests and the real package ownership conflict also remain open.
 See [browser evidence and next requirement](../operations/LEARN-COMMUSOFT-RECOVERY.md#actual-signed-in-browser-import-and-customer-card-gap--10-october).
+
+## Imported customer → existing card projection prepared — 10 October
+
+A local migration now creates/reuses the existing customer card when a governed
+customer identity is linked. Existing card IDs, archived state and protected fields
+remain untouched; new cards carry no invented activity or numeric score. Bounded
+private repair supports earlier imported identities. Partial unique indexes reject
+duplicate history and prevent concurrent card creation.
+
+The exact twelve-table local projection passed service-role, RLS, rollback,
+preservation, pagination, historical import and concurrency checks. TEST was read
+only for aggregate preflight and service grants; the candidate is not installed.
+Hosted rehearsal/release, synthetic repair, card visibility and legacy writer race
+acceptance remain next. See [candidate and evidence](../operations/LEARN-COMMUSOFT-RECOVERY.md#customer-card-projection-candidate--10-october).
