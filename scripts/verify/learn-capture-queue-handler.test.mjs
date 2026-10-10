@@ -109,6 +109,9 @@ async function run({
       },
     },
   });
+  const entry = process.env.WORKER_HANDLER_READBACK_ROOT
+    ? resolve(process.env.WORKER_HANDLER_READBACK_ROOT, "platform-worker/index.ts")
+    : resolve("supabase/functions/platform-worker/index.ts");
   const cache = new Map();
   const synthetic = (key, exports) => {
     if (!cache.has(key))
@@ -162,12 +165,18 @@ async function run({
       spec === "https://esm.sh/@supabase/supabase-js@2.45.4"
         ? synthetic("supabase", { createClient: () => db })
         : spec.startsWith(".")
-          ? load(resolve(dirname(parent.identifier), spec))
+          ? load(
+              process.env.WORKER_HANDLER_READBACK_ROOT &&
+                parent.identifier === entry &&
+                spec.startsWith("../_shared/")
+                ? resolve(dirname(parent.identifier), "functions", spec.slice(3))
+                : resolve(dirname(parent.identifier), spec),
+            )
           : Promise.reject(Error("Unexpected dependency")),
     );
     return m;
   }
-  await (await load(resolve("supabase/functions/platform-worker/index.ts"))).evaluate();
+  await (await load(entry)).evaluate();
   const response = await handler(
     new Request("https://synthetic.invalid/worker", {
       method: "POST",

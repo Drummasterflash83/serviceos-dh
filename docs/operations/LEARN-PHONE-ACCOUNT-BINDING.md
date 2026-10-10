@@ -295,3 +295,40 @@ remain outstanding.
 Package: `1d124044e33984ec4a1ab109fe29e0dc7b73ebaf236a29c8a96804900b0f21b4`.
 Current Phone catalog: `dddd1851fbb564cd1f1252d8b1874d79` (41 ledger entries).
 [Recovery evidence](evidence/learn-phone-recovery-2026-10-10.json).
+
+
+## Recovery runtime — TEST worker v5 and manual endpoint v1
+
+At **19:06 UTC on 10 October**, TEST `platform-worker` was replaced from v4 to
+**v5** and `phone-process-pending` was installed as **v1**. The manual endpoint
+requires JWT verification; the cross-tenant worker retains its exact internal
+service/schedule-secret gate. No scheduler or real provider credential was added.
+The preceding local-only runtime status is superseded by this release.
+
+The reviewed dependency package contains 98 source files and is pinned to the
+release-040 schema. Comparison with the prior published worker found the expected
+Phone changes plus the recurring Slack authority/timestamp checks already verified
+for the dedicated Slack worker in release 038. The other reported differences
+were formatting/brace structure or type-only imports. Nine deployment tests and
+28 focused shared Phone/Slack tests pass.
+
+Eight hosted HTTP checks pass: unauthenticated/anonymous refusals, method handling,
+authorized idle worker with zero claimed jobs, and one positive **empty** manual
+recovery run in the existing retired synthetic company. Its returned job ID matches
+a durable succeeded row with one attempt, zero processed recordings and no remaining
+lease. Exactly one synthetic job (`54b3e666-3ba5-46ec-bd1c-0a58c71a8ac1`) is retained
+as evidence. All 74 pre-existing dataset fingerprints match after excluding only
+that new row; no source communication, stored object or grant changed.
+
+Downloaded published code passes 15 actual-worker control-flow tests, two manual
+endpoint test groups and nine lifecycle/recovery-handler tests using synthetic
+ports. These cover duplicate/manual claim failures, owned settlement, retry/failure
+outcomes, unknown acknowledgements, paused health and the existing email worker
+paths. This is not positive acceptance of real recordings, paid processing or a
+signed-in browser flow. Per-recording claims and final import/cursor settlement
+remain outstanding; production is unchanged.
+
+Bundle SHA-256: `ba30442581d897ece5658d2b9f2ddb844034641df6d3bf7eb2805aeb47d1f672`.
+Runtime catalog: `20303a1bf930ea5d60896b16d7c8c42f`; full Phone catalog remains
+`dddd1851fbb564cd1f1252d8b1874d79`.
+[Published runtime evidence](evidence/learn-phone-recovery-runtime-2026-10-10.json).

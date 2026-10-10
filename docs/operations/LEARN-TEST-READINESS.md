@@ -1,5 +1,20 @@
 # Existing TEST environment: verified release gaps
 
+## Phone recovery runtime — TEST worker v5, manual endpoint v1
+
+Both are deployed at **19:06 UTC, 10 October**. Eight actual HTTP checks pass,
+including an authorized idle worker and a positive empty recovery run whose
+succeeded job was independently read back. One zero-record synthetic job remains
+in the retired fixture company; all **74 pre-existing datasets** are preserved.
+No login, grant, credential, provider request or schedule was created.
+
+The downloaded runtime passes 26 relevant tests (15 worker, two manual test groups,
+nine lifecycle/recovery checks). Nine deployment tests and 28 shared Phone/Slack
+tests pass. Real recording processing, signed-in acceptance, per-recording
+concurrency and final import/cursor settlement still require work. Production is
+unchanged. [Details](LEARN-PHONE-ACCOUNT-BINDING.md#recovery-runtime--test-worker-v5-and-manual-endpoint-v1).
+
+
 ## Phone recovery metadata — TEST release 040 installed
 
 A real hosted recovery test found that service-role access to transcript/insight

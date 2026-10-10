@@ -282,7 +282,8 @@ async function harness(
   }
   const readback = process.env.PHONE_HANDLER_READBACK_ROOT;
   const entry =
-    readback && ["simwood-sync-calls", "simwood-sync-recordings"].includes(name)
+    readback &&
+    ["simwood-sync-calls", "simwood-sync-recordings", "phone-process-pending"].includes(name)
       ? resolve(readback, name, "index.ts")
       : resolve(`supabase/functions/${name}/index.ts`);
   const mod = await load(entry);

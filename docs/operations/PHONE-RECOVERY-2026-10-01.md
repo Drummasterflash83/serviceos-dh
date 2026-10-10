@@ -64,3 +64,9 @@ failure/audio history intact. TEST release 040 fixed its missing service-only
 metadata reads. Local manual/worker safeguards add confirmed batch ownership and
 settlement; they are not yet deployed and do not provide per-recording claims.
 See [current LEARN recovery status](LEARN-PHONE-ACCOUNT-BINDING.md#recovery-selector--test-release-040-runtime-safeguards-local).
+
+
+At 19:06 UTC the TEST worker/manual runtime safeguards were deployed and accepted
+for authentication, idle work and an empty synthetic recovery lifecycle. The
+published runtime passed 26 relevant synthetic-port tests. Real recording and
+per-recording claim acceptance remain separate. See the current LEARN status above.

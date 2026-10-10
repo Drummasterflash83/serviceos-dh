@@ -1,0 +1,767 @@
+{
+  "observedAt": "2026-10-10T19:09:31.008Z",
+  "state": "test_recovery_runtime_deployed_and_empty_lifecycle_verified",
+  "deployment": {
+    "version": "learn-phone-recovery-runtime-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "ba30442581d897ece5658d2b9f2ddb844034641df6d3bf7eb2805aeb47d1f672",
+    "observedAt": "2026-10-10T19:06:49.523Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "platform-worker",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "phone-process-pending",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "71a485e4-cd77-464c-a722-dd398a6b0f07",
+        "slug": "phone-process-pending",
+        "name": "phone-process-pending",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1791659208913,
+        "updated_at": 1791659208913,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_71a485e4-cd77-464c-a722-dd398a6b0f07_1/source/supabase/functions/phone-process-pending/index.ts",
+        "ezbr_sha256": "4028f3510357a9cb56bfd662552f2aabc3413105f980d6ef667637870b195c79"
+      },
+      {
+        "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+        "slug": "platform-worker",
+        "name": "platform-worker",
+        "status": "ACTIVE",
+        "version": 5,
+        "created_at": 1791646885331,
+        "updated_at": 1791659207645,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_e7abc6aa-7341-4cbc-9a54-ea1c9c907503_5/source/supabase/functions/platform-worker/index.ts",
+        "ezbr_sha256": "121ac18b80434b6d28f9925890bd7101d37768d6ba84516589e6a2c0bc044b34"
+      }
+    ],
+    "dependencyFiles": 98
+  },
+  "http": {
+    "version": "learn-phone-recovery-runtime-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T19:07:59.164Z",
+    "state": "denials_idle_and_empty_recovery_verified",
+    "checks": [
+      {
+        "endpoint": "phone-process-pending",
+        "name": "missing JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "missing authority",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "anonymous denied",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "platform-worker",
+        "name": "authorized idle queue",
+        "status": 200,
+        "claimed": 0,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "name": "confirmed empty recovery lifecycle",
+        "status": 200,
+        "jobId": "54b3e666-3ba5-46ec-bd1c-0a58c71a8ac1",
+        "processed": 0,
+        "passed": true
+      }
+    ],
+    "preservedPreExistingDataSets": 74,
+    "retainedSyntheticJobs": 1,
+    "providerRequests": 0,
+    "usersOrGrantsCreated": 0
+  },
+  "review": {
+    "changed": [
+      "_shared/slack/slack_history_binding.ts",
+      "_shared/slack/slack_history.ts",
+      "_shared/slack/slack_thread_history.ts",
+      "_shared/worker_handlers/intelligence_ingest.ts",
+      "_shared/worker_handlers/phone_process_pending.ts",
+      "platform-worker/index.ts"
+    ],
+    "added": [
+      "_shared/intelligence/reason_codes.ts",
+      "_shared/intelligence/types.ts",
+      "_shared/phone-recovery-job.ts",
+      "_shared/worker_contract.ts"
+    ],
+    "sameCount": 86,
+    "method": "Compare transpiled syntax trees excluding comments, source positions, punctuation and redundant parenthesis nodes. Runtime-relevant identifier/literal text, operators, declaration kind and child structure are retained. This is a review aid, not formal equivalence proof.",
+    "assessment": "Phone handler/worker changes plus recurring Slack authority and timestamp validation already accepted in release 038. Other reported differences were formatting/brace structure; added type-only dependencies do not execute. 28 focused shared tests passed."
+  },
+  "tests": {
+    "releaseAndDeployment": 9,
+    "sharedPhoneAndSlack": 28,
+    "publishedWorker": 15,
+    "publishedManualEndpoint": 2,
+    "publishedLifecycleAndRecoveryHandler": 9
+  },
+  "publishedRuntime": {
+    "files": [
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/automation_execution_enqueue.ts",
+        "sha256": "b4da186ded10f7df5fa7427e98fff0b798c49458ab1f6d96d9f77a5c093e6eb4",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/business_graph.ts",
+        "sha256": "13102ff19bd9a8ffa80e8624459c991108f0301237ba919b62b9fb6dc5659e75",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/controlled_test.ts",
+        "sha256": "03e79d175f52a566b16c249b4265b42b02a7f02179b9f3c068fcc48909a5b167",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/email_reply_draft.ts",
+        "sha256": "d69e9eb2c819381953bf6e60ec8211fce7b0e5d7cebe034b6083cf7f33b35f6e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/index.ts",
+        "sha256": "5ae299925e1cb0e7cd7e14b34665cb50a1e737bc3020751faf9318ccd381f22d",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/internal_note.ts",
+        "sha256": "8d6d3f248eafba501704587519b89705b06f0a0b28b3b4eff5edd8cd07e1e9aa",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/marketing_actions.ts",
+        "sha256": "e20a9392dd57a6831161bba405026b5ffef556d6308fede14e82608401ac340b",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/marketing_ai_draft.ts",
+        "sha256": "d3935b4fa0b2d9518d6e81e1f43eabbe6b1959ae2513eb35ebb29c2984107e1c",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/marketing_email.ts",
+        "sha256": "e5e1bec85c6557c8a9b371aac542a26a8d01b410c65eb16f79a473ea9046b667",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/connectors/resend_transport.ts",
+        "sha256": "ac3d86db6f7fe718fe3005af9f0d746da72b6c4086f0440dfcc1352aaad6b74c",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/customer_card.ts",
+        "sha256": "0388d63d4a9e93609e6316b8096f83d0b9e9c64d4bbb51120df9124633e26168",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_capture_engine.ts",
+        "sha256": "fcbf01259b31038e0e08578086132745aaa9c4b1938b7a0b8cca887059ed907c",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_capture_handler.ts",
+        "sha256": "da8d1e74dc0ab2e7c4470e3a94fde6c84ddc8d52bf09c063395c6fafcb0dcc7c",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_capture_ports.ts",
+        "sha256": "1f9cf588176efccd135b9337f04773b36036b35e79e43425ef9cf0b54f5b362a",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_ingestion_outbox.ts",
+        "sha256": "8daeff2a1006acd4c3b5ec214fa1c148e5601fa2790b5762a7b466bc7c035c36",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_ingestion_protocol.ts",
+        "sha256": "e79d7972785d7892a5812abca43c07c0051c3f83fe81b2f4d2b6ee1775b25371",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/email_job_attempt.ts",
+        "sha256": "7c97767a1e773a695d02ceb88409a77289fdd2462d0c36bc604cf906abe1fbda",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/events.ts",
+        "sha256": "57ca9560af1cd15c39465beed5c9a8be37dc04df7df36ae7774fc019fb3cac69",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/gmail_capture_page.ts",
+        "sha256": "a428efa5ba6077c841624267b3fa5b261522ed884f276fee385ea5ccbe87d173",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/gmail_consent.ts",
+        "sha256": "57916a42b48397719ce3e3d679c0b4a176c25b825d97142ce4c61a5b3c640dba",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/gmail_message.ts",
+        "sha256": "6916c5f159c74d41fd6a172df575518f6b529d0b58111042e4645cccc20bef24",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/gmail_oauth.ts",
+        "sha256": "24283fbc20f6e19dd4cf22d816daa7d9dffd8675e819a3732a08dafe37ff76ec",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/gmail_page_store.ts",
+        "sha256": "d46b7d5b1aab9666120f7ca60e42a608b9f22e7c7b9d8803d3f824da5f7c09f3",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/google_workspace.ts",
+        "sha256": "c15531212393c8ebdac8704e6b18ddbdea6d5f66a54daed16e4ab39abcfe3129",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/identity.ts",
+        "sha256": "45661af2b08c09b967c5548432786aa8bb1d4c86a972ec7ed949f3990e13e762",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/action.ts",
+        "sha256": "8c1e00aa8dd0f1ac6e102a25a96bbccf5c140a6aa7668029fdb80c48c1baed45",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/authority.ts",
+        "sha256": "fcd214073d3dc75e74377276e2a5e094f956498cd11a88538818c7fe4ee448e0",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/automation_guards.ts",
+        "sha256": "22a1066f177d00adeb01346bdd69c8278f9ec64bea92621bec241e73a1fb8c46",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/decision.ts",
+        "sha256": "11c734c131f0fc528102c77414907d73b00dbee06c6e2b1c8b4c2b8015a2fc3a",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/eligibility.ts",
+        "sha256": "80b7e1a2c6224d2c5870102c8249af52735281cbd9c92e171f655ec83a801ae1",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/learning.ts",
+        "sha256": "b44646f58503ce852bfa84f76ee7f8fb718663309f2fab93c2a37fce0bf33f2e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/modes.ts",
+        "sha256": "9d9d1cf9938419ab97d469bdb7b3195adff58058b2dab2f065312e3aa159f7b7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/objective_evaluation.ts",
+        "sha256": "3caa04c8244fe1e24fb2383aa5b37b0fed3fa463c06e9a45a865c0d309e4db61",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/objectives.ts",
+        "sha256": "f06b3fe8ef92693a76b3811fd7b863678484e181107edc7f8ad4083d2a5cac54",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/policy.ts",
+        "sha256": "dcdb162b3acec2d5ad62601167d9af71a4607ced65b48ad404497f2e3c6de0a4",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/intelligence/profile.ts",
+        "sha256": "b21652c8c9a572e43d40bb1a0e84dac3c2c9dfe8d7d01c121471178db8085bb2",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_ai_prompt.ts",
+        "sha256": "1cf26dc526a1f8bf3c5e679cd32b6ce2ce3381542af72e4cee3103e8507e829f",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_email.ts",
+        "sha256": "7a84533d55c222b068077a6e69db5c87fb2eabfab8604d2dae01c9e551788daa",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_meta_adapter.ts",
+        "sha256": "70cd2575ff8647c14f525df3d8b691cca96842b564d696101eed8cbbc96c360d",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_meta_fixtures.ts",
+        "sha256": "23ddbbbbfe093ac343249c4cc2bbaf87be3dd7f61363a506c8e99aa3d10934c6",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_provider_adapter_contract.ts",
+        "sha256": "1b2f0f096de516704162d91b85336860b25869ce8dd3bf6d3fa8afa2b9953e88",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_provider_connections.ts",
+        "sha256": "64800c3c53b9b8b31e1a67f90d59025605a5cab6ce04109c7bc8eb3796d6cfd6",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_test_provider.ts",
+        "sha256": "d581d8033a016733519a6a762db83cdb86142b340c35bf0644daffe40b19f616",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/marketing_tracking.ts",
+        "sha256": "4a2a40dfbf7e87d47e3d74f975ddc5472d83358311b076f8a2d0670bce1572e5",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/objective_evaluation_enqueue.ts",
+        "sha256": "66b0c5c04d1baf6698e93059f37718de870fbd5c36bc518446c29c9ac91d9a5f",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/observation_ingest.ts",
+        "sha256": "2554d15a7a053045c5e75bca6cff3c7be2ceb99f8a3a36d928c6bdfde07b0a9f",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/openai.ts",
+        "sha256": "3be2cba0c55ca3857edc7d3f290343ea3f5aba3a85fa488541d4e4a91b0cb5b1",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/phone-recovery-job.ts",
+        "sha256": "26c66cbd6f81f412e957f01ae588bdcedbc255fb55ca35a8eb9525e5d8519dd7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/phone_pipeline.ts",
+        "sha256": "950b2d95bcb4a20bab8e23709d4568b7fe0de9f3f36ae5d86855cb76208e93fe",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/platform_queue.ts",
+        "sha256": "0185de56a0eccbb350cb9881d0e4642e1e0be8801a83c2ce2bd4288580faaaad",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/recommendations.ts",
+        "sha256": "a43cd9bd9a099a8ddc55b8b1d81a89152b4894adccbe72a133e2d4fd83d5b212",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/reply_draft.ts",
+        "sha256": "f9900540865fc93e88259d971922ccc4ce46c246e80dac390fb376e34a44ca93",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/response_assistant.ts",
+        "sha256": "86bcb2c51e52920dbd495acd7d25fe3cf08801a58ca17e12cd65a48c5429b55e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/response_context.ts",
+        "sha256": "7a1136fc102a7aca42af77004e4be6e5299e4c8fe677e637094371620bf1313e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/response_draft.ts",
+        "sha256": "9c57c96c2ad8924dc2bce08d1932cac0d761875a0416689c2aa456872ebec9fc",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/response_proposal.ts",
+        "sha256": "a7a5ba813e1ebe6df73b78213787537c0d731c722221237c97ffd6c392b63326",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/response_refinement.ts",
+        "sha256": "14dc5e80b03ec9d0fbf500922f233f842a231228ae4c9061f74af99baf0823d4",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/review_approval.ts",
+        "sha256": "ae4e77b9f522cc82f2e57702fec6029465375db31ac1436faef71c7da4693161",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history.ts",
+        "sha256": "e656808cc6ace17987f383c95f069dd759dde52f94650e576203b03a24047f2f",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_batch.ts",
+        "sha256": "33ecef4eed9624b27a37d9131bae0c19d6f136c762359e90f7c1ca951cbc9fb8",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_binding.ts",
+        "sha256": "3c59debc16e1246a37aecfc15ba500950805e2570ef3264c0900efc6e0d0a3a2",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_errors.ts",
+        "sha256": "c7c4d744067ae29b728ccfbc89c8c1940d3072dd822030a09b5f3041e5ed7f1a",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_persist.ts",
+        "sha256": "11a880029b7f388e659c131b8ba707e79fb8e8cdf18f11056801f87cfc9a89cd",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_request.ts",
+        "sha256": "432e427693d8b9806a2b89691b1de17b7eec51eaa9a104c7cd94d8163cf299d9",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_history_server.ts",
+        "sha256": "c3cbf1801e5829e2bd761cf44f15007c4292b81162059afe30ca026f79d205a1",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/slack/slack_thread_history.ts",
+        "sha256": "e7b4cc45fbf87974a566fda0380b166a0e8e6e98137974aeb276a2adac500faa",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/system_health.ts",
+        "sha256": "1cf99193586771ff462a2b615836c9bec7f237618c502b5ad5a7e614ca3cd549",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/transcription-errors.ts",
+        "sha256": "17885b34cea5c4e8d912767b14e41ffe29b486e8192e04202446d8a6cfa06eae",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/automation_execute.ts",
+        "sha256": "9e29fb8d3aed7e3521f1296c3142c49d74703b68e39bebbb76c8885669c6fb31",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/business_graph_sync.ts",
+        "sha256": "f257361f4f87c1c4ba72d48c0148c8d0f5b4498c95cf4a144f86ec096ef4f696",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/customer_card_sync.ts",
+        "sha256": "17f02e7ee6b665849900e9d93d5dde0f22f4e2d7c7a03e93928f89376db61d8d",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/email_sync.ts",
+        "sha256": "d5c22e46f82bec755e4ac4a03c4f3de9c8115d013c8057c5cfc537f001341a4e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/identity_resolve.ts",
+        "sha256": "c80855d4985804662b5ccdc00f505c031c37b0a5e634257a055e4cf2cd77ba1b",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/index.ts",
+        "sha256": "078cb07ceacb72fbe5d1056a71ad64e4333a5a16e61bab8d208fbac2f00fd37e",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/intelligence_evaluate.ts",
+        "sha256": "17b3e5e9e07cf0079fecb0c9c0d1b97580f87d99cecc8f075c09841383efc39c",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/intelligence_ingest.ts",
+        "sha256": "cc0ba3955e01eee831db5687354e734d3c08f946eca8522caef354d020f73026",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/intelligence_observe.ts",
+        "sha256": "03819b5faabb897a6fd41a4089f4f708cb1e98eb4d0dcb30d90fd47f99ffabf0",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/intelligence_review_resolve.ts",
+        "sha256": "f5c736f47983730dcb065634f5665f477543d3698231bc2a405c4ae0a751c85d",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/interactions_sync.ts",
+        "sha256": "7a292f166a76c2ad9f6de1df60bab097d825c88001b74db8fe5728c64a92f212",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_ad_lead.ts",
+        "sha256": "7d5ce2603166d1dcfe97d1e065f74b511dfe7e3987e94347cc7f981a3a884501",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_broadcast_dispatch.ts",
+        "sha256": "7848999e514aa7e82544e31a0f3671edacc5b276917a4469b5d25cbbbe9f42a4",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_delivery_sync.ts",
+        "sha256": "c40c5ccc93f9199687aad3d815c1162d881723e5759817cdf1080e956f9d69c4",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_provider_connect.ts",
+        "sha256": "8c4454bf648b5d3232d7fb83f0817e51d884d842f0255fcb034a09c1fe6208a1",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_provider_sync.ts",
+        "sha256": "c205cc301031273550c68d1126c722fac14c2853764b94468dfc460317c88c9d",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/marketing_sequence_advance.ts",
+        "sha256": "b6ae2074dd76c94a22363b5252d13efd3993655df7919c66116b1fd43dac9c42",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/objective_evaluate.ts",
+        "sha256": "84bd0a865026fcfb49b9b34e6acd5761b34aa85469a9b60bf31f787c415c4b64",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/phone_process_pending.ts",
+        "sha256": "c8d7fd5ae2f82a7dd27d3b95ea38df25a0beb9830c85e53bb370dc87cca28e09",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/recommendation_sync.ts",
+        "sha256": "254e6fdb5db6eac5bb86a226743c323184df42f86ba4f1fce4178da5eaa35cad",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "functions/_shared/worker_handlers/slack_history.ts",
+        "sha256": "cdce69211582ee7f7f08625e2312875a2afd2a946d6d18039571da7e29383b84",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "platform-worker",
+        "path": "index.ts",
+        "sha256": "4f2c89506a4826818810f2b15db668a8c4cc1a76c45245accdd0597932bda23b",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/phone-recovery-job.ts",
+        "sha256": "26c66cbd6f81f412e957f01ae588bdcedbc255fb55ca35a8eb9525e5d8519dd7",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/phone_pipeline.ts",
+        "sha256": "950b2d95bcb4a20bab8e23709d4568b7fe0de9f3f36ae5d86855cb76208e93fe",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/platform_jobs.ts",
+        "sha256": "b69b963f1d26988c265218bfd7e2129bb4300719ff196fe33ff3f53835246793",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/platform_queue.ts",
+        "sha256": "0185de56a0eccbb350cb9881d0e4642e1e0be8801a83c2ce2bd4288580faaaad",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "functions/_shared/worker_handlers/phone_process_pending.ts",
+        "sha256": "c8d7fd5ae2f82a7dd27d3b95ea38df25a0beb9830c85e53bb370dc87cca28e09",
+        "matchesOriginalTypescript": false
+      },
+      {
+        "endpoint": "phone-process-pending",
+        "path": "index.ts",
+        "sha256": "fef3983dc876356be00bfaec091e51a606ab855a0e4a8497019ee1124014b655",
+        "matchesOriginalTypescript": false
+      }
+    ],
+    "method": "Downloaded runtime tested with synthetic database/provider ports. Only entrypoint import layout is mapped by VM harness; runtime source is not rewritten. Lifecycle test file is copied alongside downloaded modules, excluded from runtime hashes."
+  },
+  "limits": [
+    "No production deployment, credentials, user grants, provider calls or schedules changed.",
+    "Positive HTTP acceptance covers an empty archived synthetic company; one succeeded zero-record job is retained.",
+    "74 pre-existing datasets retain their fingerprints after excluding only that known new synthetic job.",
+    "No real recording download/transcription/analysis or positive signed-in browser acceptance.",
+    "Batch ownership does not serialize direct per-recording pipeline calls; expired in-flight children still require separate fencing.",
+    "Final import completion and cursor persistence remain separate work."
+  ]
+}
