@@ -248,3 +248,12 @@ export function readDraftFixture(args:any){
  const value=drafts[0]?.value??(new URLSearchParams(location.search).has("performance")?selectedPolicy():null);
  return {data:value&&value.tenantId===args.p_tenant&&value.subjectKind===args.p_kind&&(value.groupId??null)===(args.p_group??null)?value:null,error:null};
 }
+
+export async function communicationFixture(args:any) {
+ const query=cardFixture("interactions");
+ if(!query||args.p_tenant!==tenant_id||new URLSearchParams(location.search).has("viewer"))return {data:null,error:{code:"42501"}};
+ const result=await query.select().eq("tenant_id",args.p_tenant);
+ const fields="id,tenant_id,source_connector_id,source_type,source_table,source_id,occurred_at,subject,summary,body_preview,status,related_person_id,related_company_id,related_job_id".split(",");
+ const rows=(result.data??[]).filter((r:any)=>!["deleted","removed"].includes(r.status)&&(args.p_ids?.includes(r.id)||(args.p_person&&r.related_person_id===args.p_person)||(args.p_company&&r.related_company_id===args.p_company)||(args.p_job&&r.related_job_id===args.p_job))).slice(0,51).map((r:any)=>Object.fromEntries(fields.map(k=>[k,r[k]??null])));
+ return {data:{version:"learn-card-communications/1",tenant_id,rows},error:null};
+}

@@ -1,0 +1,22 @@
+{
+  "state": "passed",
+  "checks": [
+    "Non-superuser migration and rollback including role ownership transfer passed.",
+    "51-row sentinel, deterministic ordering, deletion filtering, excerpts and field allowlist passed.",
+    "Owner/admin success, viewer/ops/operator/anonymous/service denial, same-session revocation and cross-company isolation passed.",
+    "Invalid/unbounded scopes denied; source rows unchanged; temporary deployer SET/INHERIT privileges removed (PostgreSQL retains creator ADMIN ownership)."
+  ],
+  "limitations": [
+    "Offline recorded source columns; synthetic Auth UID/profile and source fixtures, not hosted Auth or full existing policy projection."
+  ],
+  "observedAt": "2026-10-10T01:08:12.360159+00:00",
+  "migration": "20261031010000_learn_card_communications.sql",
+  "migrationSha256": "d5954f5e1a86ae587d6b87641686ce6135f9472fc7957b0d85af095942984687",
+  "clientTestsPassed": 12,
+  "applicationTypecheck": "passed",
+  "previewTypecheck": "passed",
+  "previewBuild": "passed_with_existing_warnings",
+  "actualSqlResponseAcceptedByClient": true,
+  "hostedDeployment": false,
+  "productionMutation": false
+}

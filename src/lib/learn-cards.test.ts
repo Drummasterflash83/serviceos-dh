@@ -25,6 +25,16 @@ function database(data: Record<string, any[]>, failures: string[] = []) {
   const calls: { table: string; tenant?: string }[] = [];
   return {
     calls,
+    async rpc(name: string, args: Record<string, any>) {
+      assert.equal(name, "learn_card_communications_read");
+      calls.push({ table: name, tenant: args.p_tenant });
+      const selected = (data.interactions ?? []).filter(r => r.tenant_id === args.p_tenant &&
+        !["deleted", "removed"].includes(r.status) && (args.p_ids?.includes(r.id) ||
+        (args.p_person && r.related_person_id === args.p_person) || (args.p_company && r.related_company_id === args.p_company) ||
+        (args.p_job && r.related_job_id === args.p_job))).slice(0, 51).map(({updated_at, ...r}) => r);
+      return failures.includes("interactions") ? { data: null, error: { message: "private provider error" } } :
+        { data: { version: "learn-card-communications/1", tenant_id: args.p_tenant, rows: selected }, error: null };
+    },
     from(table: string) {
       const call = { table, tenant: undefined as string | undefined };
       calls.push(call);

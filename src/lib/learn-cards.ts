@@ -1,3 +1,4 @@
+import { readCardCommunications, type LearnCommunicationClient, type CommunicationScope } from "./learn-card-communications.ts";
 /** Read-only views of existing canonical records. The caller supplies the user's
  * RLS client; never a service-role client. No new card store or intelligence queue. */
 export type LearnCardKind = "customer" | "job" | "member";
@@ -20,8 +21,6 @@ const columns = {
   member:
     "id,tenant_id,display_name,formal_role,org_unit_id,profile_id,confirmed_at,effective_to,updated_at",
 } as const;
-const interactionColumns =
-  "id,tenant_id,source_connector_id,source_type,source_table,source_id,occurred_at,subject,summary,body_preview,status,related_person_id,related_company_id,related_job_id";
 const findingColumns =
   "id,tenant_id,object_type,subject,status,deadline,responsible_ref,accountable_ref,waiting_on_ref,confidence,source_interactions,source_entities,attributes,created_at,updated_at";
 
@@ -253,7 +252,7 @@ export function projectLearnDetail(input: {
 /** Bounded drill-down. A failure in one evidence source remains visible while the
  * other reads can still be useful. Never substitute a failed read with a success zero. */
 export async function readLearnCardDetail(
-  db: LearnReadClient,
+  db: LearnReadClient & LearnCommunicationClient,
   tenant: string,
   kind: LearnCardKind,
   id: string,
@@ -275,8 +274,10 @@ export async function readLearnCardDetail(
       return [];
     }
   }
-  const interactionsQuery = () =>
-    db.from("interactions").select(interactionColumns).eq("tenant_id", tenant);
+  async function communications(label: string, selection: CommunicationScope) {
+    try { return await readCardCommunications(db, tenant, selection); }
+    catch { gaps.push(label); return []; }
+  }
   const findingsQuery = () =>
     db.from("intelligence_objects").select(findingColumns).eq("tenant_id", tenant);
   let direct: Row[] = [],
@@ -310,21 +311,12 @@ export async function readLearnCardDetail(
       "Timeline covers evidence linked to owned work; it does not establish all of this person's communications.",
     );
   } else {
-    const filters: string[] = [];
-    if (kind === "job") filters.push(`related_job_id.eq.${id}`);
-    if (kind === "customer" && uuid(record.company_id))
-      filters.push(`related_company_id.eq.${record.company_id}`);
-    if (kind === "customer" && uuid(record.person_id))
-      filters.push(`related_person_id.eq.${record.person_id}`);
-    if (filters.length)
-      direct = await optional(
-        "Linked communications could not be read.",
-        interactionsQuery()
-          .or(filters.join(","))
-          .order("occurred_at", { ascending: false })
-          .order("id", { ascending: true })
-          .limit(DETAIL_LIMIT + 1),
-      );
+    const selection: CommunicationScope = kind === "job" ? { job: id } : {
+      ...(uuid(record.company_id) ? { company: record.company_id } : {}),
+      ...(uuid(record.person_id) ? { person: record.person_id } : {}),
+    };
+    if (Object.keys(selection).length)
+      direct = await communications("Linked communications could not be read. Company owner/admin access is required.", selection);
     else gaps.push("This customer has no canonical person or company link yet.");
     const graphFilters = [`and(source_table.eq.${tables[kind]},source_id.eq.${id})`];
     if (kind === "customer" && uuid(record.company_id))
@@ -378,9 +370,9 @@ export async function readLearnCardDetail(
   const directIds = new Set(direct.slice(0, DETAIL_LIMIT).map((r) => r.id));
   const missing = linkedIds.filter((id) => !directIds.has(id));
   const extra = missing.length
-    ? await optional(
-        "Some supporting evidence could not be read.",
-        interactionsQuery().in("id", missing.slice(0, DETAIL_LIMIT)).limit(DETAIL_LIMIT),
+    ? await communications(
+        "Some supporting evidence could not be read. Company owner/admin access is required.",
+        { ids: missing.slice(0, DETAIL_LIMIT) },
       )
     : [];
   const memberRefs = [

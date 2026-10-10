@@ -773,3 +773,21 @@ No real provider credentials, production mutations, audio uploads, paid processi
 or schedules were involved. The cached reference test is not playable-audio proof.
 Live capture, voicemail, source reconciliation, concurrent publication fencing and
 production deployment remain. See [TEST evidence and limits](../operations/LEARN-PHONE-ACCOUNT-BINDING.md#test-deployment-and-signed-in-acceptance--10-october).
+
+
+## Restricted card communication reader — local, 10 October
+
+Customer/job/member timelines now request bounded communication excerpts through
+an owner/admin RPC instead of querying TEST's closed raw interaction table. A
+restricted role and RLS bind the read to the actual company; the client validates
+returned identities, links, fields and bounds. Raw metadata and processing fields
+are excluded, long excerpts are visibly shortened, and access failures remain gaps.
+No source record or provider connection changes, and no performance figure is made.
+
+Twelve client/card tests, both TypeScript checks and the preview build passed.
+Disposable PostgreSQL checks verified real role/RLS behavior, migration rollback,
+same-session revocation, tenant isolation, raw-table denial and unchanged source
+fingerprints. The actual SQL response passed the application reader. This is local
+only: TEST remains release 015. A pinned TEST release, hosted rollback and signed-in
+card acceptance are next; real-source and production acceptance remain. See
+[reader contract and release gates](../operations/LEARN-CARD-COMMUNICATIONS.md).
