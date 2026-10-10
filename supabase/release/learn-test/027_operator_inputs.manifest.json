@@ -1,0 +1,30 @@
+{
+  "version": "learn-operator-inputs-package/1",
+  "sha256": "f8954339b1c5e9d86391160882f6d30081bcf53b1247e6e05d3a79866e3ed6d2",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260821120000_openfolk_control_plane.sql",
+      "sha256": "7e1d75242c2168550c7e608f1ff027a767cfbbab1111a67b9dd56016edc0bc8f"
+    },
+    {
+      "path": "supabase/migrations/20260822120000_platform_authority_decoupled_from_role.sql",
+      "sha256": "8fac2589634515ecfdf1b04bd6229314b93d106e90118091e5f89db493ad2d55"
+    },
+    {
+      "path": "supabase/migrations/20261031160000_learn_operator_inputs.sql",
+      "sha256": "58bf52b1bd1ce8ef220c52cdf927571dc7f06cc3a7c95b5a9978dae2b7be7f9b"
+    }
+  ],
+  "tables": [
+    "platform_authority_grants",
+    "learn_operator_input_requests"
+  ],
+  "functions": [
+    "current_user_is_openfolk_operator",
+    "learn_operator_input_immutable",
+    "learn_operator_input_access",
+    "learn_operator_input_flags",
+    "learn_operator_input_request",
+    "learn_operator_inputs"
+  ]
+}

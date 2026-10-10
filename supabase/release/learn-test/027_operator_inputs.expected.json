@@ -1,0 +1,453 @@
+{
+  "sourceSha256": "f8954339b1c5e9d86391160882f6d30081bcf53b1247e6e05d3a79866e3ed6d2",
+  "tables": [
+    {
+      "rls": true,
+      "name": "learn_operator_input_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "definition",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "receipt",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "previous_state",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_operator_input_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_operator_input_requests_pkey ON public.learn_operator_input_requests USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_operator_input_immutable",
+          "function": "learn_operator_input_immutable",
+          "definition": "CREATE TRIGGER learn_operator_input_immutable BEFORE DELETE OR UPDATE ON public.learn_operator_input_requests FOR EACH ROW EXECUTE FUNCTION learn_operator_input_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_operator_input_requests_actor_id_fkey",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_operator_input_requests_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_operator_input_requests_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "platform_authority_grants",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "profile_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "permission",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "effective_to",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "granted_by",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "default": "'openfolk'::text",
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "pag_active_uk",
+          "definition": "CREATE UNIQUE INDEX pag_active_uk ON public.platform_authority_grants USING btree (profile_id, permission) WHERE (effective_to IS NULL)"
+        },
+        {
+          "name": "pag_profile",
+          "definition": "CREATE INDEX pag_profile ON public.platform_authority_grants USING btree (profile_id)"
+        },
+        {
+          "name": "platform_authority_grants_pkey",
+          "definition": "CREATE UNIQUE INDEX platform_authority_grants_pkey ON public.platform_authority_grants USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "platform_authority_grants_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "current_user_is_openfolk_operator()",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "pag_set_updated_at",
+          "function": "set_updated_at",
+          "definition": "CREATE TRIGGER pag_set_updated_at BEFORE UPDATE ON public.platform_authority_grants FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": true,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "platform_authority_grants_permission_fkey",
+          "definition": "FOREIGN KEY (permission) REFERENCES authority_permissions(permission)"
+        },
+        {
+          "kind": "p",
+          "name": "platform_authority_grants_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "platform_authority_grants_profile_id_fkey",
+          "definition": "FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "current_user_is_openfolk_operator",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "arguments": "required_permission text",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_user_is_openfolk_operator(required_permission text DEFAULT 'platform.controlplane.view'::text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  -- Authenticated + existing profile (the join to profiles enforces both: a null\n  -- auth.uid() matches no row) + an ACTIVE grant of the required permission.\n  select exists (\n    select 1\n    from public.profiles p\n    join public.platform_authority_grants g on g.profile_id = p.id\n    where p.id = auth.uid()\n      and (\n        g.permission = required_permission\n        or (required_permission = 'platform.controlplane.view'\n            and g.permission = 'platform.controlplane.admin')\n      )\n      and coalesce(g.effective_from, '-infinity'::timestamptz) <= now()\n      and coalesce(g.effective_to,   'infinity'::timestamptz)  >  now()\n  );\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_operator_input_access",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_actor uuid, p_write boolean",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_operator_input_access(p_tenant uuid, p_actor uuid, p_write boolean)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare required_grant text:=case when p_write then 'platform.controlplane.admin' else 'platform.controlplane.view' end;\nbegin\n if current_setting('transaction_isolation')<>'read committed' then raise exception 'learn_operator_snapshot_invalid' using errcode='22023';end if;\n if auth.role() is distinct from 'authenticated' or auth.uid() is null or p_actor is distinct from auth.uid()\n  or p_tenant is null or p_write is null then raise exception 'learn_operator_forbidden' using errcode='42501';end if;\n perform 1 from public.profiles where id=auth.uid() for share;\n if not found then raise exception 'learn_operator_forbidden' using errcode='42501';end if;\n -- Retain the existing effective-dated authority model and fence revocation until\n -- this operation finishes. Platform access does not grant raw tenant data access.\n perform 1 from public.platform_authority_grants g where g.profile_id=auth.uid()\n  and (g.permission=required_grant or\n    (required_grant='platform.controlplane.view' and g.permission='platform.controlplane.admin'))\n  and coalesce(effective_from,'-infinity')<=clock_timestamp()\n  and coalesce(effective_to,'infinity')>clock_timestamp() for share;\n if not found or not public.current_user_is_openfolk_operator(required_grant) then\n  raise exception 'learn_operator_forbidden' using errcode='42501';end if;\n if exists(select 1 from public.view_as_context where actor_user_id=auth.uid() and ended_at is null\n  and (expires_at is null or expires_at>clock_timestamp())) then raise exception 'learn_operator_preview_forbidden' using errcode='42501';end if;\n perform 1 from public.tenants where id=p_tenant for share;\n if not found then raise exception 'learn_operator_tenant_unavailable' using errcode='42501';end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_operator_input_flags",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_operator_input_flags(p_tenant uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n select jsonb_build_object('learn.enabled',(select value from public.feature_flags where tenant_id=p_tenant and flag='learn.enabled'),\n  'learn.inputs.commusoft.enabled',(select value from public.feature_flags where tenant_id=p_tenant and flag='learn.inputs.commusoft.enabled'));\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_operator_input_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_operator_input_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$begin\n raise exception 'learn_operator_history_immutable' using errcode='55000';\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_operator_input_request",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_operator_input_request(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text DEFAULT 'apply'::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare prior public.learn_operator_input_requests%rowtype;c public.provider_connections%rowtype;\n tc public.tenant_connectors%rowtype;a public.connector_accounts%rowtype;\n receipt jsonb;previous jsonb;scope jsonb;flags jsonb;kind text;reason text;k text;\n connection_id uuid;revision timestamptz;expiry timestamptz;resource text;contact_type text;\n pages integer;page_size integer;aid uuid;jid uuid:=gen_random_uuid();\nbegin\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n if p_request is null or p_mode is null or p_mode not in ('apply','check','cancel')\n  or jsonb_typeof(p_definition) is distinct from 'object' or octet_length(p_definition::text)>10000 then\n  raise exception 'learn_operator_request_invalid' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-request:'||p_request::text,0));\n select * into prior from public.learn_operator_input_requests where id=p_request;\n if found then\n  if prior.tenant_id<>p_tenant or prior.actor_id<>p_actor or prior.definition<>p_definition then\n   raise exception 'learn_operator_request_conflict' using errcode='PT409';end if;\n  return prior.receipt;\n end if;\n if p_mode='check' then return jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','pending');end if;\n if p_mode='cancel' then\n  receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','cancelled');\n  insert into public.learn_operator_input_requests(id,tenant_id,actor_id,definition,receipt)\n   values(p_request,p_tenant,p_actor,p_definition,receipt);\n  return receipt;\n end if;\n kind:=p_definition->>'kind';reason:=p_definition->>'reason';\n if jsonb_typeof(p_definition->'reason') is distinct from 'string' or length(btrim(reason)) not between 1 and 1000\n  or kind is null or kind not in ('set_modules','start_commusoft') then raise exception 'learn_operator_definition_invalid' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-setup:'||p_tenant::text,0));\n if kind='set_modules' then\n  if (select count(*) from jsonb_object_keys(p_definition))<>4\n   or jsonb_typeof(p_definition->'expected') is distinct from 'object'\n   or jsonb_typeof(p_definition->'values') is distinct from 'object'\n   or (select count(*) from jsonb_object_keys(p_definition->'values'))<>2\n   or jsonb_typeof(p_definition->'values'->'learn.enabled') is distinct from 'boolean'\n   or jsonb_typeof(p_definition->'values'->'learn.inputs.commusoft.enabled') is distinct from 'boolean' then\n   raise exception 'learn_operator_flags_invalid' using errcode='22023';end if;\n  perform 1 from public.feature_flags where tenant_id=p_tenant and flag in ('learn.enabled','learn.inputs.commusoft.enabled') order by flag for update;\n  flags:=public.learn_operator_input_flags(p_tenant);\n  if flags is distinct from p_definition->'expected' then raise exception 'learn_operator_flags_changed' using errcode='PT409';end if;\n  previous:=flags;\n  foreach k in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n   update public.feature_flags set value=p_definition->'values'->k where tenant_id=p_tenant and flag=k;\n   if not found then insert into public.feature_flags(tenant_id,flag,value) values(p_tenant,k,p_definition->'values'->k);end if;\n  end loop;\n  receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','recorded','kind',kind,'flags',p_definition->'values');\n else\n  if not p_definition ?& array['kind','reason','connection_id','revision','resource','max_pages','page_size','expires_at']\n   or (p_definition-array['kind','reason','connection_id','revision','resource','contact_type','max_pages','page_size','expires_at'])<>'{}'::jsonb\n   or jsonb_typeof(p_definition->'connection_id') is distinct from 'string'\n   or p_definition->>'connection_id'!~'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'\n   or jsonb_typeof(p_definition->'max_pages') is distinct from 'number' or p_definition->>'max_pages'!~'^[0-9]{1,5}$'\n   or jsonb_typeof(p_definition->'page_size') is distinct from 'number' or p_definition->>'page_size'!~'^[0-9]{1,3}$'\n   or jsonb_typeof(p_definition->'revision') is distinct from 'string'\n   or jsonb_typeof(p_definition->'expires_at') is distinct from 'string' then raise exception 'learn_operator_import_invalid' using errcode='22023';end if;\n  connection_id:=(p_definition->>'connection_id')::uuid;revision:=(p_definition->>'revision')::timestamptz;\n  expiry:=(p_definition->>'expires_at')::timestamptz;resource:=p_definition->>'resource';contact_type:=p_definition->>'contact_type';\n  pages:=(p_definition->>'max_pages')::integer;page_size:=(p_definition->>'page_size')::integer;\n  if not isfinite(revision) or not isfinite(expiry) or expiry<=clock_timestamp() or expiry>clock_timestamp()+interval '24 hours'\n   or pages not between 1 and 10000 or page_size not between 1 and 100 or resource is null or resource not in ('properties','propertyContacts','jobs')\n   or (resource='propertyContacts' and (contact_type is null or contact_type not in ('customer','workaddress')))\n   or (resource<>'propertyContacts' and p_definition ? 'contact_type') then raise exception 'learn_operator_import_invalid' using errcode='22023';end if;\n  perform 1 from public.tenants where id=p_tenant and status='active';\n  if not found then raise exception 'learn_operator_tenant_inactive' using errcode='55000';end if;\n  foreach k in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n   perform 1 from public.feature_flags where tenant_id=p_tenant and flag=k and value='true'::jsonb for share;\n   if not found then raise exception 'learn_operator_module_disabled' using errcode='55000';end if;\n  end loop;\n  select * into c from public.provider_connections where id=connection_id and tenant_id=p_tenant for share;\n  if not found or c.provider is distinct from 'commusoft' or c.status is distinct from 'configured' or c.auth_mode is distinct from 'private_api_key'\n   or c.revoked_at is not null or c.verified_at is null or c.verified_at>clock_timestamp() or c.updated_at is distinct from revision\n   or coalesce(c.non_secret_config->>'region','') not in ('uk','us')\n   or length(btrim(coalesce(c.non_secret_config->>'account_key',''))) not between 1 and 2000\n   or not coalesce('api_key'=any(c.configured_fields),false)\n   or coalesce(c.secret_refs->>'api_key','')!~'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$' then\n   raise exception 'learn_operator_connection_changed' using errcode='PT409';end if;\n  -- Existence only: the setup surface never selects a secret value. The worker\n  -- still revalidates the tenant-qualified secret and all authority at acquisition.\n  perform 1 from vault.secrets where id=(c.secret_refs->>'api_key')::uuid and name='provider_secret:'||p_tenant::text||':commusoft:api_key';\n  if not found then raise exception 'learn_operator_credential_missing' using errcode='55000';end if;\n  select * into tc from public.tenant_connectors where tenant_id=p_tenant and connector_id='commusoft' for update;\n  if not found then\n   insert into public.tenant_connectors(tenant_id,connector_id,provider,category,status,enabled)\n    values(p_tenant,'commusoft','commusoft','business_input','active',true) returning * into tc;\n  elsif tc.provider is distinct from 'commusoft' or tc.enabled is distinct from true or tc.status is distinct from 'active' then\n   raise exception 'learn_operator_connector_disabled' using errcode='55000';\n  end if;\n  select * into a from public.connector_accounts where tenant_id=p_tenant and tenant_connector_id=tc.id and account_key=c.non_secret_config->>'account_key' for update;\n  if found then\n   if a.status is distinct from 'active' or exists(select 1 from public.platform_jobs where tenant_id=p_tenant and job_type='commusoft.source_sync'\n    and payload->>'connector_account_id'=a.id::text and status in ('queued','running','retrying')) then\n    raise exception 'learn_operator_import_active' using errcode='55000';end if;\n   if a.settings ? 'commusoft_import' and (a.sync_cursor->'complete' is distinct from 'true'::jsonb\n    or a.sync_cursor->>'approvalId' is distinct from a.settings->'commusoft_import'->>'approvalId') then\n    raise exception 'learn_operator_import_incomplete' using errcode='55000';end if;\n   if a.settings ? 'commusoft_import' and a.settings->'commusoft_import'->>'connectionId' is distinct from c.id::text then\n    raise exception 'learn_operator_account_connection_changed' using errcode='PT409';end if;\n   previous:=jsonb_build_object('approval',a.settings->'commusoft_import','checkpoint',a.sync_cursor);aid:=a.id;\n  else\n   insert into public.connector_accounts(tenant_id,tenant_connector_id,account_key,display_name,status)\n    values(p_tenant,tc.id,c.non_secret_config->>'account_key','Commusoft','active') returning id into aid;\n  end if;\n  scope:=jsonb_build_object('approved',true,'approvalId',p_request,'connectionId',c.id,'consentReference','learn-operator-input:'||p_request::text,\n   'expiresAt',expiry,'maxPages',pages,'pageSize',page_size,'resource',resource)\n   ||case when resource='propertyContacts' then jsonb_build_object('contactType',contact_type) else '{}'::jsonb end;\n  update public.connector_accounts set settings=settings||jsonb_build_object('commusoft_import',scope),sync_cursor='{}' where id=aid;\n  insert into public.platform_jobs(id,tenant_id,connector_id,module_id,job_type,job_key,status,max_attempts,available_at,payload,created_by)\n   values(jid,p_tenant,'commusoft','learn','commusoft.source_sync','commusoft.source:'||aid::text||':'||p_request::text,'queued',5,clock_timestamp(),jsonb_build_object('connector_account_id',aid),p_actor);\n  receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','recorded','kind',kind,'account_id',aid,'job_id',jid);\n end if;\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n insert into public.learn_operator_input_requests(id,tenant_id,actor_id,definition,receipt,previous_state)\n  values(p_request,p_tenant,p_actor,p_definition,receipt,previous);\n return receipt;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_operator_inputs",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_operator_inputs(p_tenant uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare connections jsonb;accounts jsonb;begin\n perform public.learn_operator_input_access(p_tenant,auth.uid(),false);\n select coalesce(jsonb_agg(x.row order by x.id),'[]') into connections from (\n  select c.id,jsonb_build_object('id',c.id,'status',c.status,'revision',c.updated_at,'verified_at',c.verified_at,'revoked',c.revoked_at is not null,\n   'account_key',left(c.non_secret_config->>'account_key',2000),'region',c.non_secret_config->>'region',\n   'credential_bound',exists(select 1 from vault.secrets s where s.id::text=c.secret_refs->>'api_key' and s.name='provider_secret:'||p_tenant::text||':commusoft:api_key')) as row\n  from public.provider_connections c where c.tenant_id=p_tenant and c.provider='commusoft' order by c.id limit 21\n ) x;\n if jsonb_array_length(connections)>20 then raise exception 'learn_operator_connection_limit' using errcode='54000';end if;\n select coalesce(jsonb_agg(x.row order by x.id),'[]') into accounts from (\n  select a.id,jsonb_build_object('id',a.id,'status',a.status,'connector_enabled',tc.enabled and tc.status='active',\n   'connection_id',a.settings->'commusoft_import'->>'connectionId','resource',a.settings->'commusoft_import'->>'resource',\n   'approval_id',a.settings->'commusoft_import'->>'approvalId','expires_at',a.settings->'commusoft_import'->>'expiresAt',\n   'max_pages',a.settings->'commusoft_import'->'maxPages','checkpoint',jsonb_build_object('approvalId',a.sync_cursor->'approvalId','pages',a.sync_cursor->'pages','after',a.sync_cursor->'after','complete',a.sync_cursor->'complete'),\n   'latest_job',(select jsonb_build_object('id',j.id,'status',j.status,'error_code',\n    case when j.error_code~'^commusoft_[a-z_]{1,80}$' then j.error_code when j.error_code is not null then 'commusoft_worker_failed' end,\n    'attempt_count',j.attempt_count,'available_at',j.available_at,'lease_expires_at',j.lease_expires_at,'completed_at',j.completed_at,\n    'stop_reason',case when j.result->>'stop_reason' in ('collection_exhausted','page_budget_exhausted','next_page','authorisation_changed') then j.result->>'stop_reason' end)\n    from public.platform_jobs j where j.tenant_id=p_tenant and j.job_type='commusoft.source_sync' and j.payload->>'connector_account_id'=a.id::text order by j.created_at desc,j.id desc limit 1)) as row\n  from public.connector_accounts a join public.tenant_connectors tc on tc.id=a.tenant_connector_id and tc.tenant_id=a.tenant_id\n  where a.tenant_id=p_tenant and tc.connector_id='commusoft' and tc.provider='commusoft' order by a.id limit 21\n ) x;\n if jsonb_array_length(accounts)>20 then raise exception 'learn_operator_account_limit' using errcode='54000';end if;\n return jsonb_build_object('tenant_id',p_tenant,'checked_at',clock_timestamp(),'flags',public.learn_operator_input_flags(p_tenant),'connections',connections,'accounts',accounts);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ],
+  "grants": [
+    {
+      "role": "authenticated",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_operator_input_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_authority_grants",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    }
+  ],
+  "permissions": [
+    {
+      "category": "platform",
+      "permission": "platform.controlplane.admin",
+      "description": "OpenFolk operator: administer the Control Plane"
+    },
+    {
+      "category": "platform",
+      "permission": "platform.controlplane.view",
+      "description": "OpenFolk operator: read the Control Plane"
+    }
+  ]
+}

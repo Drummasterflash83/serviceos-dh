@@ -1,0 +1,1422 @@
+{
+  "functions": [
+    {
+      "name": "current_tenant_id",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_tenant_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select tenant_id from public.profiles where id = auth.uid()\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "current_user_role",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.current_user_role()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select role from public.profiles where id = auth.uid()\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "is_openfolk",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_openfolk()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\n  select coalesce((select role = 'openfolk' from public.profiles where id = auth.uid()), false);\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_foundation_reference_guard",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_foundation_reference_guard()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j jsonb:=to_jsonb(new); tenant uuid; parent_tenant uuid; fk record; rows_found bigint;\nbegin\n if tg_table_name='org_unit_members' then\n  if tg_op='UPDATE' and (old.org_unit_id is distinct from new.org_unit_id or old.user_id is distinct from new.user_id) then\n   raise exception 'Organisation membership identity is immutable' using errcode='23514';end if;\n  select tenant_id into tenant from public.org_units where id=new.org_unit_id;\n  if tenant is null then raise exception 'Organisation unit is missing' using errcode='23503';end if;\n else\n  tenant:=(j->>'tenant_id')::uuid;\n  if tg_op='UPDATE' and ((to_jsonb(old)->>'tenant_id') is distinct from (j->>'tenant_id')\n    or (to_jsonb(old)->>'id') is distinct from (j->>'id')) then\n   raise exception 'Foundation tenant and identity are immutable' using errcode='23514';end if;\n  if tenant is not null and not exists(select 1 from public.tenants where id=tenant) then\n   raise exception 'Tenant is missing' using errcode='23503';end if;\n end if;\n for fk in select sn.nspname as schema_name,pc.relname as table_name,sa.attname as child_column,pa.attname as parent_column\n  from pg_constraint k join pg_class pc on pc.oid=k.confrelid join pg_namespace sn on sn.oid=pc.relnamespace\n  join pg_attribute sa on sa.attrelid=k.conrelid and sa.attnum=k.conkey[1]\n  join pg_attribute pa on pa.attrelid=k.confrelid and pa.attnum=k.confkey[1]\n  where k.conrelid=tg_relid and k.contype='f' and cardinality(k.conkey)=1 and cardinality(k.confkey)=1\n   and exists(select 1 from pg_attribute a where a.attrelid=k.confrelid and a.attname='tenant_id' and not a.attisdropped)\n loop\n  if j->>fk.child_column is null then continue;end if;\n  execute format('select tenant_id from %I.%I where %I=$1::uuid',fk.schema_name,fk.table_name,fk.parent_column)\n   into parent_tenant using j->>fk.child_column;\n  get diagnostics rows_found=row_count;\n  if rows_found<>1 then raise exception 'Referenced foundation record is missing' using errcode='23503';end if;\n  if not (fk.schema_name='public' and fk.table_name in ('config_versions','import_profiles') and parent_tenant is null)\n    and parent_tenant is distinct from tenant then\n   raise exception 'Referenced foundation record belongs to another tenant' using errcode='23514';end if;\n end loop;\n return new;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_import_batch_authority",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_actor uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_batch_authority(p_tenant uuid, p_actor uuid)\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n if current_setting('transaction_isolation')<>'read committed' then\n  raise exception 'Import batch requires a fresh snapshot' using errcode='22023';\n end if;\n if p_tenant is null or p_actor is null then\n  raise exception 'Company and actor required' using errcode='22023';\n end if;\n perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));\n perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant::text,0));\n if not exists(select 1 from profiles where id=p_actor and tenant_id=p_tenant and role in ('owner','admin'))\n  or not exists(select 1 from tenants where id=p_tenant and status='active')\n  or exists(select 1 from view_as_context where actor_user_id=p_actor and ended_at is null and (expires_at is null or expires_at>clock_timestamp())) then\n  raise exception 'Current company import authority required' using errcode='42501';\n end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_scorecard_revision_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_scorecard_revision_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nbegin\n if tg_op='TRUNCATE' then\n   if exists(select 1 from config_versions where artifact_kind='learn_scorecard') then\n     raise exception 'Retain scorecard revisions; append a new draft' using errcode='55000'; end if;\n   return null;\n end if;\n if (tg_table_name='config_versions' and (to_jsonb(old)->>'artifact_kind'='learn_scorecard'\n      or (tg_op='UPDATE' and to_jsonb(new)->>'artifact_kind'='learn_scorecard')))\n   or (tg_table_name='operating_profile_entries' and (to_jsonb(old)->>'namespace'='learn_scorecards'\n      or (tg_op='UPDATE' and to_jsonb(new)->>'namespace'='learn_scorecards'))) then\n   raise exception 'Scorecard revisions are immutable; append a new draft' using errcode='55000';\n end if;\n return case when tg_op='DELETE' then old else new end;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_work_authority_input_lock",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_authority_input_lock()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n old_row jsonb;new_row jsonb;tenant_ids uuid[]:='{}';actor_id uuid;actor_tenant uuid;t uuid;\nbegin\n if tg_op<>'INSERT' then old_row:=to_jsonb(old); end if;\n if tg_op<>'DELETE' then new_row:=to_jsonb(new); end if;\n if tg_table_name='tenants' then\n  tenant_ids:=array[(old_row->>'id')::uuid,(new_row->>'id')::uuid];\n else\n  tenant_ids:=array[(old_row->>'tenant_id')::uuid,(new_row->>'tenant_id')::uuid];\n end if;\n if tg_table_name='view_as_context' then\n  -- Preview checks follow the real actor, even in legacy cross-tenant contexts.\n  for actor_id in select distinct x from unnest(array[(old_row->>'actor_user_id')::uuid,(new_row->>'actor_user_id')::uuid]) x where x is not null loop\n   select tenant_id into actor_tenant from profiles where id=actor_id;\n   if not found and actor_id=(new_row->>'actor_user_id')::uuid\n       and new_row->>'ended_at' is null\n       and (new_row->>'expires_at' is null or (new_row->>'expires_at')::timestamptz>clock_timestamp()) then\n    raise exception 'An active preview requires an existing actor profile' using errcode='22023';\n   end if;\n   tenant_ids:=array_append(tenant_ids,actor_tenant);\n  end loop;\n end if;\n for t in select distinct x from unnest(tenant_ids) x where x is not null order by x loop\n  if not pg_try_advisory_xact_lock(hashtextextended('learn-roster:'||t::text,0)) then\n   raise exception 'Work or authority is changing; refresh and retry this change' using errcode='PT409';\n  end if;\n end loop;\n if tg_op='DELETE' then return old; else return new; end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_work_registry_input_lock",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_work_registry_input_lock()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n if not pg_try_advisory_xact_lock(hashtextextended('learn-work-registry',0)) then\n  raise exception 'Work is using this registry; retry the configuration change' using errcode='PT409';\n end if;\n return null;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "set_updated_at",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n  new.updated_at = now();\n  return new;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "slack_version_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.slack_version_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin raise exception 'Slack source versions are immutable' using errcode='55000'; end $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "grants": [
+    {
+      "role": "authenticated",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_card_communication_reader",
+      "table": "profiles",
+      "column": "id",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_card_communication_reader",
+      "table": "profiles",
+      "column": "role",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_card_communication_reader",
+      "table": "profiles",
+      "column": "tenant_id",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_launch_metadata_reader",
+      "table": "profiles",
+      "column": "id",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_launch_metadata_reader",
+      "table": "profiles",
+      "column": "role",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "learn_launch_metadata_reader",
+      "table": "profiles",
+      "column": "tenant_id",
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "authority_permissions",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "companies",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "config_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "connector_accounts",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "customer_cards",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "people",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "platform_jobs",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "profiles",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "provider_connections",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "sites",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "tenant_connectors",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "tenants",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "table": "view_as_context",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    }
+  ],
+  "authority": {
+    "permissions": [],
+    "deployment_owner": "supabase_read_only_user",
+    "vault_metadata_columns": [
+      {
+        "type": "uuid",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "column": "name"
+      }
+    ]
+  }
+}

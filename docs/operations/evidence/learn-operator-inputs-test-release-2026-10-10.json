@@ -1,0 +1,35 @@
+{
+  "version": "learn-operator-inputs-test-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "f8954339b1c5e9d86391160882f6d30081bcf53b1247e6e05d3a79866e3ed6d2",
+  "observedAt": "2026-10-10T10:30:21.320Z",
+  "writeAttempted": false,
+  "state": "installed_needs_authenticated_acceptance",
+  "schemaVerified": true,
+  "priorCatalogPreserved": true,
+  "preExistingSourcesPreserved": true,
+  "newState": {
+    "operator_grants": 0,
+    "operator_requests": 0
+  },
+  "checks": [
+    "Exact PG17 baseline rehearsal passed installation, rollback, injected receipt failure and duplicate-install refusal.",
+    "Hosted rollback preserved existing records before one acknowledged installation.",
+    "Fresh read-only confirmation verifies the six functions, two tables, grants, permission entries, receipt and prior schema contracts.",
+    "Existing records across all 20 source/canonical/connector/queue tables retain identical fingerprints.",
+    "Release regression tests reject drift in both permission-registry metadata copies; two tests pass."
+  ],
+  "verificationCorrection": "The first installed read-back required inspection because the verifier did not restore the second permission-registry metadata copy. Both copies are now checked before restoring the prior catalog; no migration resubmission occurred.",
+  "limitations": [
+    "Signed-in operator Auth/PostgREST acceptance remains pending.",
+    "No operator grant, module switch, connection, credential, import request, job, endpoint or schedule was created by this release.",
+    "No production changes or provider requests."
+  ],
+  "verificationSourceSha256": {
+    "scripts/verify/learn-operator-inputs-catalog.mjs": "22ca3b8374d3cf33274dc9fb303419a740b292e89399a7e42786f805fb2378bc",
+    "scripts/verify/learn-operator-inputs-test-projection.py": "71ec4b48bb13adf917743f02d25b21c0ec43ffe509a37ca475df624184ef7042",
+    "scripts/verify/learn-test-operator-inputs-release.mjs": "0c855112cbbddfea5dd6084f4f4881e7134d16e54c9c3aaa2eeb99bea7a64432",
+    "scripts/verify/learn-test-operator-inputs-release.test.mjs": "8c20015e71e6c64f99d49218f4c1a987c169a821eeb909fd97918e3db51b6ec6",
+    "scripts/verify/learn-test-operator-inputs-hosted.mjs": "7e9c6679aeb3cdc2567cc4e52841a75c6fd122a48645f6c546aac83b712c149d"
+  }
+}

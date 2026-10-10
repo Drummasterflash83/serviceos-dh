@@ -1468,3 +1468,26 @@ simulated receipts are not hosted TEST or real provider evidence. The new screen
 still needs the operator prerequisites/RPCs released and signed-in verification
 against TEST. Credential setup, incomplete-import recovery and broader module
 controls remain open. No production or hosted source data changed.
+
+## OpenFolk operator controls installed in hosted TEST — 10 October
+
+Release 027 installs the existing platform-authority prerequisites and the new
+operator input controls: two tables, six functions and two permission vocabulary
+entries. A fresh read-only confirmation at 10:30 UTC verifies the complete package
+and prior catalog, with 106 tables and 28 deployment receipts. It confirms zero
+operator grants and zero operator requests. No module values, connections,
+credentials, jobs, endpoints or schedules were changed by installation.
+
+The exact package passed a disposable PG17 rehearsal, rollback and injected-failure
+checks. Hosted rollback and installation retained identical fingerprints across 20
+existing source, canonical, connector and queue tables. The first installed
+verification required inspection because the checker restored only one of two
+permission-registry metadata copies. Both are now checked and restored when
+comparing the prior catalog. Fresh confirmation passes without resubmitting the
+migration. Release regression tests pass, including drift in either copy.
+
+Next is real signed-in operator acceptance through Auth/PostgREST. The UI remains
+locally verified; connection setup, recovery of incomplete imports, broader module
+controls and actual Drummonds Commusoft access remain unfinished. Production and
+the live frontend are unchanged. See
+[release evidence](../operations/evidence/learn-operator-inputs-test-release-2026-10-10.json).

@@ -500,8 +500,8 @@ Migration `20261031160000_learn_operator_inputs.sql` adds a private immutable
 request ledger, a bounded control-metadata reader and an apply/check/cancel RPC.
 It depends on the existing `platform_authority_grants` ledger and corrected
 `current_user_is_openfolk_operator` resolver, rather than treating client owners
-as platform administrators. TEST does not yet contain these operator prerequisites;
-they require a separate inspected release. No authority is granted by this migration.
+as platform administrators. Release 027 now contains these operator prerequisites
+in TEST (see the hosted release below). No authority is granted by installation.
 
 Platform viewers can read control metadata; platform administrators can explicitly
 set `learn.enabled` and `learn.inputs.commusoft.enabled`, or approve one bounded
@@ -566,3 +566,28 @@ controls. Eleven adapter/outbox tests, application typechecking, application bui
 and isolated preview build pass. These checks do not replace hosted operator
 authorization or real provider acceptance. Screenshot:
 `evidence/learn-operator-inputs-browser-2026-10-10.png`.
+
+## Operator schema released to TEST — 10 October
+
+`027_operator_inputs.sql` combines inspected excerpts of the existing platform
+authority migrations with the operator input migration. Its manifest pins those
+sources; prerequisites and expected metadata pin the complete relevant contracts.
+The disposable PG17 projection reproduces observed tables/helpers/privileges and
+tests rollback, injected receipt failure, installation and duplicate refusal.
+
+Hosted rollback and one acknowledged installation preserved all 20 monitored
+source/canonical/connector/queue tables. Fresh read-only confirmation verifies
+106 tables, 28 receipts, exact new definitions/grants, the prior catalog, zero
+operator grants and zero operator requests. An initial checker omission involving
+the second permission-registry metadata copy was corrected without rerunning SQL.
+Both copies now have independent drift coverage.
+
+The hosted runner's `--confirm --existing-cli-login` mode only reads the database
+and compares it with the saved baseline and acknowledged installation. It requires
+`LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy`. Do not use `--apply` to recover
+an uncertain response. Evidence:
+`evidence/learn-operator-inputs-test-release-2026-10-10.json`.
+
+Signed-in operator acceptance is still required. No actual operator has been
+granted access, and no connection, credential, import, scheduler, frontend or
+production deployment was added by this release.
