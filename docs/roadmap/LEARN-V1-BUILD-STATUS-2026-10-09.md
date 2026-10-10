@@ -1491,3 +1491,34 @@ locally verified; connection setup, recovery of incomplete imports, broader modu
 controls and actual Drummonds Commusoft access remain unfinished. Production and
 the live frontend are unchanged. See
 [release evidence](../operations/evidence/learn-operator-inputs-test-release-2026-10-10.json).
+
+## OpenFolk signed-in controls accepted in TEST — 10 October
+
+Real Auth/PostgREST acceptance now passes for operator control reads, module
+changes and request recovery. Four synthetic logins exercised platform admin,
+platform view, client owner and a second administrator. Platform grants permit
+cross-client control metadata while leaving tenant company records isolated;
+client ownership alone gives no operator access. Raw request history remains
+inaccessible through API roles.
+
+An actual module change with a deliberately lost reply was recovered by the
+application outbox using a receipt read, without resubmission. Exact replay,
+conflicting definition/client/actor, stale settings, cancellation followed by late
+apply, disabled-module receipt recovery, View As denial, immediate revocation and
+future-effective grants all passed. Missing Vault binding refused approval without
+creating an account, job or retained source page. Four immutable synthetic requests
+remain as evidence.
+
+Existing records across 25 checked tables retained identical fingerprints; schema
+and endpoint contracts were unchanged. All four fixture logins were banned and
+passwords rotated, profiles demoted, grants ended, switches disabled and the
+connection revoked. A separate read-only check confirmed retirement and zero
+fixture jobs. See
+[signed-in evidence](../operations/evidence/learn-operator-inputs-test-acceptance-2026-10-10.json).
+
+This proves the operator authority and module/request paths. A successful import
+approval/page flow and real Commusoft access remain outstanding. The screen also
+needs an explicit read-only presentation for platform viewers: the server denies
+their writes, but the current local UI still presents mutation controls. Connection
+setup, incomplete-import recovery, broader module controls and production release
+remain open.

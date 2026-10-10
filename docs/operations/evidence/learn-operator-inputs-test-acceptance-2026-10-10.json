@@ -1,0 +1,52 @@
+{
+  "version": "learn-operator-inputs-test-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "bb4078e4-a2b7-47d6-90bc-5ff142e3c2ad",
+  "observedAt": "2026-10-10T10:34:47.258Z",
+  "state": "passed",
+  "stage": "passed",
+  "checks": [
+    "Real platform admin/view grants authorize cross-client control metadata without widening tenant-data access; client owner, anonymous and service sessions cannot use operator RPCs; private request history remains inaccessible.",
+    "Actual module save with simulated lost acknowledgement recovers through the application outbox using only a receipt read. Exact replay is stable; changed definition, tenant, actor and stale settings are rejected.",
+    "A nonexistent Vault binding prevents an approval without creating work. Cancellation fences delayed apply; disabling Commusoft stops new approval while retaining receipt access and cancellation.",
+    "View As blocks operator reads and receipt access. Revocation and future-effective grants are enforced immediately against the existing signed-in JWT."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "requests": 4,
+    "jobs": 0,
+    "accounts": 0,
+    "source_pages": 0
+  },
+  "retiredLogins": 4,
+  "preExistingSourcesPreserved": true,
+  "retirement": {
+    "grants": 0,
+    "enabled_flags": 0,
+    "active_connections": 0
+  },
+  "limitations": [
+    "Synthetic identities and records only; original records preserved and synthetic histories retained.",
+    "No provider credential, provider call, successful import approval, worker job or production change.",
+    "Real Auth/PostgREST and application adapters/outbox exercised; browser rendering was verified separately."
+  ],
+  "retirementConfirmation": {
+    "observedAt": "2026-10-10T10:35:17.655Z",
+    "runId": "bb4078e4-a2b7-47d6-90bc-5ff142e3c2ad",
+    "readOnly": true,
+    "verified": true,
+    "counts": {
+      "banned_logins": 4,
+      "demoted_profiles": 4,
+      "active_grants": 0,
+      "enabled_flags": 0,
+      "worker_jobs": 0,
+      "revoked_connections": 1
+    }
+  },
+  "sourceSha256": {
+    "scripts/verify/learn-test-operator-inputs-acceptance.mjs": "f406086aa156fd3e9921fddc5f9db51b7ee4043f27f9acb2cd66716596f79462"
+  },
+  "preflightCorrection": "An earlier run stopped before fixture creation because observation rows require their tenant filter through the parent page. The runner was corrected; the completed run used new synthetic identities."
+}

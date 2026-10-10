@@ -591,3 +591,29 @@ an uncertain response. Evidence:
 Signed-in operator acceptance is still required. No actual operator has been
 granted access, and no connection, credential, import, scheduler, frontend or
 production deployment was added by this release.
+
+## Signed-in operator acceptance — 10 October
+
+`learn-test-operator-inputs-acceptance.mjs` now exercises real TEST Auth/PostgREST
+with four synthetic identities. It validates the installed catalog and Auth
+contract before fixture creation, reuses the existing TEST credentials only in
+memory, and records its fixture plan privately before mutation.
+
+Verified paths include platform admin/view versus client-owner authority, tenant
+data isolation, private request history denial, actual switch changes, outbox
+recovery after a lost acknowledgement, exact replay and conflicting request
+rejection. A deliberately nonexistent Vault reference refuses an approval before
+creating work. Cancellation fences delayed apply; module disablement preserves
+receipt access; View As, revoked and future-effective grants deny access with
+existing JWTs. No real provider credential or request was used.
+
+All pre-existing records across 25 monitored tables and schema/runtime contracts
+were preserved. Four immutable synthetic requests remain. Fixture logins were
+banned/passwords rotated, grants ended, profiles demoted, switches disabled and
+the connection revoked. An independent read-only check confirms retirement and
+zero fixture jobs. Evidence:
+`evidence/learn-operator-inputs-test-acceptance-2026-10-10.json`.
+
+The next UI correction is to present platform viewers with read-only controls,
+matching the server permissions. Successful import approval/page acceptance,
+connection setup, incomplete-import recovery and Drummonds API access remain open.
