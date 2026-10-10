@@ -9,13 +9,13 @@ import { OpenFolkHome } from "../src/components/OpenFolkHome";
  * All private paths retain their existing app, auth and server handling.
  * The source component and stylesheet are shared, so the two versions cannot drift.
  */
-export function publicHome(): Plugin {
+export function publicHome(environment?: string): Plugin {
   return {
     name: "openfolk-static-home",
     apply: "build",
     configResolved(config) {
       const css = readFileSync(resolve(config.root, "src/styles/openfolk-home.css"), "utf8");
-      const markup = renderToStaticMarkup(createElement(OpenFolkHome));
+      const markup = renderToStaticMarkup(createElement(OpenFolkHome, { environment }));
       const html = `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">

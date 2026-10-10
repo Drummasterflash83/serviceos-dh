@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
+import { publicHomeLoginHref } from "../src/lib/public-home-login.ts";
 
 const html = readFileSync(new URL("../.vercel/output/static/index.html", import.meta.url), "utf8");
 const config = JSON.parse(readFileSync(new URL("../.vercel/output/config.json", import.meta.url)));
@@ -14,8 +15,20 @@ test("public homepage is complete HTML with one working, non-scripted login link
   assert.match(html, /color:#203F70[^>]*>open<\/span>/);
   assert.match(html, /color:#CC8625[^>]*>folk<\/span>/);
   assert.equal((html.match(/<a /g) || []).length, 1);
-  assert.match(html, /href="https:\/\/app\.openfolk\.ai\/login\?redirect=%2Fclient"/);
+  const login = publicHomeLoginHref(process.env.PUBLIC_HOME_BUILD_ENV ?? "production");
+  assert.ok(html.includes(`href="${login}"`));
   assert.match(html, /Client Login/);
+});
+
+test("preview and development links stay on their current origin", () => {
+  for (const environment of ["preview", "development", "local", undefined]) {
+    const currentOrigin = "https://serviceos-learn-test.example.invalid";
+    const login = new URL(publicHomeLoginHref(environment), currentOrigin);
+    assert.equal(login.origin, currentOrigin);
+    assert.equal(login.pathname, "/login");
+    assert.equal(login.searchParams.get("redirect"), "/client");
+  }
+  assert.equal(new URL(publicHomeLoginHref("production")).origin, "https://app.openfolk.ai");
 });
 
 test("no hydration, app assets, external fonts, provider calls or private data", () => {
