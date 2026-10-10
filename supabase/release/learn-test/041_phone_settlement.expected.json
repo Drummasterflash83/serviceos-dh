@@ -1,0 +1,17 @@
+{
+  "version": "learn-phone-settlement/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85",
+  "mode": "apply",
+  "state": "installed_needs_hosted_acceptance",
+  "observedAt": "2026-10-10T19:33:17.515Z",
+  "priorFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+  "expectedFingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+  "afterFingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+  "preservedDataSets": 75,
+  "receipt": {
+    "fingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+    "tables": 10,
+    "functions": 7
+  }
+}

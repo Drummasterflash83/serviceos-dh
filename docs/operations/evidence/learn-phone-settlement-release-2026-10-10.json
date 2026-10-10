@@ -1,0 +1,371 @@
+{
+  "observedAt": "2026-10-10T19:40:11.616567+00:00",
+  "state": "test_schema_runtime_and_scoped_acceptance_verified",
+  "release": {
+    "version": "learn-phone-settlement/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T19:33:17.515Z",
+    "priorFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+    "expectedFingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+    "afterFingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+    "preservedDataSets": 75,
+    "receipt": {
+      "fingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+      "tables": 10,
+      "functions": 7
+    }
+  },
+  "rehearsal": {
+    "version": "learn-phone-settlement/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T19:32:41.622Z",
+    "priorFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+    "expectedFingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+    "afterFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+    "preservedDataSets": 75,
+    "receipt": {
+      "fingerprint": "dff384a353e7dfa581173586a0d7cbe5",
+      "tables": 10,
+      "functions": 7
+    }
+  },
+  "deployment": {
+    "version": "learn-phone-settlement-runtime-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "2f1240af960444e7266ffc54ed880c32f6252b7c9ed658356e2786a402f7869e",
+    "observedAt": "2026-10-10T19:36:08.068Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "simwood-sync-calls",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "simwood-sync-recordings",
+        "cliExitStatus": 0
+      },
+      {
+        "name": "phone-scheduled-sync",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "864ce202-d5a3-43aa-8e7a-52428891d695",
+        "slug": "phone-scheduled-sync",
+        "name": "phone-scheduled-sync",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1791660967359,
+        "updated_at": 1791660967359,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_864ce202-d5a3-43aa-8e7a-52428891d695_1/source/supabase/functions/phone-scheduled-sync/index.ts",
+        "ezbr_sha256": "5edd50721e802aec39a50f85c80146aa5bfa6a37d1340f7d7285b77b5ccc4964"
+      },
+      {
+        "id": "46b816e2-13d0-4d7c-924a-a40698c0277e",
+        "slug": "simwood-sync-calls",
+        "name": "simwood-sync-calls",
+        "status": "ACTIVE",
+        "version": 6,
+        "created_at": 1791593397096,
+        "updated_at": 1791660965104,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_46b816e2-13d0-4d7c-924a-a40698c0277e_6/source/supabase/functions/simwood-sync-calls/index.ts",
+        "ezbr_sha256": "b08f50d037c8924183e207fc6dec0e1a4e235218bee4b5e29a728abe3622be5c"
+      },
+      {
+        "id": "0d980de4-9f6f-489c-8b29-103da9342a42",
+        "slug": "simwood-sync-recordings",
+        "name": "simwood-sync-recordings",
+        "status": "ACTIVE",
+        "version": 6,
+        "created_at": 1791593399666,
+        "updated_at": 1791660966420,
+        "verify_jwt": true,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_0d980de4-9f6f-489c-8b29-103da9342a42_6/source/supabase/functions/simwood-sync-recordings/index.ts",
+        "ezbr_sha256": "f4381e965ef0f6173001a63b5e8f4b7bb6cb0dce2598be27cc3b5e83dca66c7c"
+      }
+    ],
+    "dependencyFiles": 14,
+    "phonePreservedDataSets": 75
+  },
+  "http": {
+    "version": "learn-phone-settlement-hosted/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T19:37:39.609Z",
+    "state": "denials_paused_path_and_disabled_scheduler_verified",
+    "checks": [
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "missing JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "retired fixture capture paused",
+        "status": 409,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-calls",
+        "name": "zero-duration range refused",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "missing JWT",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "retired fixture capture paused",
+        "status": 409,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-sync-recordings",
+        "name": "zero-duration range refused",
+        "status": 400,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-scheduled-sync",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-scheduled-sync",
+        "name": "unconfigured scheduler refuses missing authority",
+        "status": 500,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-scheduled-sync",
+        "name": "unconfigured scheduler refuses anonymous caller",
+        "status": 500,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-scheduled-sync",
+        "name": "unconfigured scheduler refuses arbitrary secret",
+        "status": 500,
+        "passed": true
+      },
+      {
+        "endpoint": "learn_phone_complete_import",
+        "name": "anonymous RPC denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "learn_phone_complete_import",
+        "name": "service RPC missing run denied",
+        "status": 409,
+        "passed": true
+      },
+      {
+        "endpoint": "learn_phone_settle_schedule",
+        "name": "anonymous RPC denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "learn_phone_settle_schedule",
+        "name": "service RPC missing run denied",
+        "status": 409,
+        "passed": true
+      }
+    ],
+    "preservedDataSets": 75,
+    "providerRequests": 0,
+    "usersOrGrantsCreated": 0,
+    "scheduleConfigured": false,
+    "limits": [
+      "Positive synthetic import/scheduler acceptance is the separate hosted SQL savepoint probe.",
+      "No real provider, paid processing, configured scheduler dispatch, signed-in browser or production acceptance."
+    ]
+  },
+  "hostedSql": {
+    "execution": "Synthetic service-path assertions inside a savepoint during both rehearsal and install; fixture changes rolled back before full dataset preservation comparison.",
+    "checks": [
+      "successful call/recording completion and exact/conflicting replay",
+      "browser-role refusal and tenant isolation",
+      "owned scheduler success with matching child evidence and merged cursor",
+      "stale account revision, replaced job owner, unsuccessful child and final capture pause refusals",
+      "paused/failed scheduler outcomes retain cursor and settle job/run coherently",
+      "stored audio pointer retained",
+      "private immutable completion/settlement receipts"
+    ],
+    "existingDataSetsPreserved": 75,
+    "newCompletionAndSettlementTablesEmptyAfterward": true
+  },
+  "readbackTests": {
+    "passed": 39,
+    "command": "PHONE_HANDLER_READBACK_ROOT=.verification-results/phone-settlement-runtime-readback/supabase/functions node --experimental-vm-modules --test --test-name-pattern 'simwood-sync|phone[- ]schedul|unconfirmed phone pause' scripts/verify/learn-phone-account-handlers.test.mjs",
+    "scope": "Published import and scheduler handlers and downloaded dependencies, with synthetic DB/provider ports. The compound pause test also exercises the unchanged local pipeline handler.",
+    "files": [
+      {
+        "path": "phone-scheduled-sync/functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7"
+      },
+      {
+        "path": "phone-scheduled-sync/functions/_shared/phone-schedule-settlement.ts",
+        "sha256": "d0267cb1004acc1e648dc917731e53791b65110e7088396f9f00c21f18e5118a"
+      },
+      {
+        "path": "phone-scheduled-sync/functions/_shared/phone-sync-completeness.ts",
+        "sha256": "9ac638ae4bea430cca6ae59fe019d91f299b116279b24c2a7ee88f9d9c224b68"
+      },
+      {
+        "path": "phone-scheduled-sync/functions/_shared/phone_pipeline.ts",
+        "sha256": "950b2d95bcb4a20bab8e23709d4568b7fe0de9f3f36ae5d86855cb76208e93fe"
+      },
+      {
+        "path": "phone-scheduled-sync/functions/_shared/platform_jobs.ts",
+        "sha256": "b69b963f1d26988c265218bfd7e2129bb4300719ff196fe33ff3f53835246793"
+      },
+      {
+        "path": "phone-scheduled-sync/functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57"
+      },
+      {
+        "path": "phone-scheduled-sync/index.ts",
+        "sha256": "331bfd45d7e4cb2f6896900f39cd3398eeebe6d94e2bab84f6779c062e5e3155"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/phone-capture-guard.ts",
+        "sha256": "90cd674b6ebf79b65061a30a0491c776b8ca5ee706c22fb2b1dcb4286645a861"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/phone-import-completion.ts",
+        "sha256": "a86a1cfcd43ddc03848a2d0c8402f95a55d4155aadcbf3051f138fd47729554f"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/phone-page-publication.ts",
+        "sha256": "e5048bc93f4fd1eaaefa3da57227f18c4f6253e748ff882821e2712a32f85fe8"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/phone-sync-completeness.ts",
+        "sha256": "9ac638ae4bea430cca6ae59fe019d91f299b116279b24c2a7ee88f9d9c224b68"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/simwood-account.ts",
+        "sha256": "b7c6e13caa9671245eee553cff106ef41d6bac49d2b4248b7b87225d7ea11703"
+      },
+      {
+        "path": "simwood-sync-calls/functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57"
+      },
+      {
+        "path": "simwood-sync-calls/index.ts",
+        "sha256": "ca11152a94d500ebf00827f1e5bfebe88b7189a4bee78dd4979d9fa7d4663dc9"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/authz.ts",
+        "sha256": "788c10b56574a1b81d47f78a6ba1363c4c3696c4acc98249ed0cdbea81846767"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/learn_capture_control.ts",
+        "sha256": "1362817c9adeb98e6dc9fd43afff79e70c585c5ef7d5775514448dea187e61f7"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/phone-capture-guard.ts",
+        "sha256": "90cd674b6ebf79b65061a30a0491c776b8ca5ee706c22fb2b1dcb4286645a861"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/phone-import-completion.ts",
+        "sha256": "a86a1cfcd43ddc03848a2d0c8402f95a55d4155aadcbf3051f138fd47729554f"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/phone-page-publication.ts",
+        "sha256": "e5048bc93f4fd1eaaefa3da57227f18c4f6253e748ff882821e2712a32f85fe8"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/phone-sync-completeness.ts",
+        "sha256": "9ac638ae4bea430cca6ae59fe019d91f299b116279b24c2a7ee88f9d9c224b68"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/phone_pipeline.ts",
+        "sha256": "950b2d95bcb4a20bab8e23709d4568b7fe0de9f3f36ae5d86855cb76208e93fe"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/simwood-account.ts",
+        "sha256": "b7c6e13caa9671245eee553cff106ef41d6bac49d2b4248b7b87225d7ea11703"
+      },
+      {
+        "path": "simwood-sync-recordings/functions/_shared/simwood.ts",
+        "sha256": "2a18474ca7bda3fa2b5b5f07a5c6512eb1221f248550f4f7f97d45801e14cc57"
+      },
+      {
+        "path": "simwood-sync-recordings/index.ts",
+        "sha256": "89fb8f240d3ffd67b068b5c012fe3a802916890cb5cb2bdf1176bc9af9e224b0"
+      }
+    ]
+  },
+  "releaseToolTests": 15,
+  "runtimeCatalog": "f27bc878a6d07993fb40647b44d5a72d",
+  "fullPhoneCatalog": "dff384a353e7dfa581173586a0d7cbe5",
+  "schedule": {
+    "activePhoneSchedulesBeforeDeployment": 0,
+    "secretPresent": false,
+    "activated": false
+  },
+  "limits": [
+    "No provider credential, user, login, access grant or schedule created.",
+    "No production operation or real provider request.",
+    "Scheduler is deployed but deliberately unconfigured; HTTP POST returns config_error, and no authorized scheduled HTTP dispatch is claimed.",
+    "Positive import/scheduler evidence is hosted service-role SQL; HTTP tests cover denials/paused/configuration paths.",
+    "Actual provider-to-client capture, paid processing, signed-in acceptance, per-recording concurrency and automatic reconciliation remain incomplete."
+  ],
+  "localHandlerTests": 56,
+  "artifactIntegrity": "The SQL package is retained byte-for-byte as rehearsed and installed, including inherited whitespace in catalog expressions; all other staged files pass git diff --check."
+}

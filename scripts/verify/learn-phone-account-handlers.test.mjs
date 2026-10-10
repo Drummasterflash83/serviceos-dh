@@ -333,8 +333,7 @@ async function harness(
       // CLI download places each endpoint's shared files under functions/ while
       // its entrypoint retains original ../_shared imports. Resolve this layout
       // without changing any downloaded runtime source.
-      const downloadedEntry =
-        process.env.PHONE_HANDLER_READBACK_ROOT && parent.identifier === entry;
+      const downloadedEntry = useReadback && parent.identifier === entry;
       return load(
         downloadedEntry && spec.startsWith("../_shared/")
           ? resolve(dirname(parent.identifier), "functions", spec.slice(3))
@@ -344,11 +343,18 @@ async function harness(
     return mod;
   }
   const readback = process.env.PHONE_HANDLER_READBACK_ROOT;
-  const entry =
+  const useReadback = Boolean(
     readback &&
-    ["simwood-sync-calls", "simwood-sync-recordings", "phone-process-pending"].includes(name)
-      ? resolve(readback, name, "index.ts")
-      : resolve(`supabase/functions/${name}/index.ts`);
+    [
+      "simwood-sync-calls",
+      "simwood-sync-recordings",
+      "phone-process-pending",
+      "phone-scheduled-sync",
+    ].includes(name),
+  );
+  const entry = useReadback
+    ? resolve(readback, name, "index.ts")
+    : resolve(`supabase/functions/${name}/index.ts`);
   const mod = await load(entry);
   await mod.evaluate();
   return {

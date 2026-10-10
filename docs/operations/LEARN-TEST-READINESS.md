@@ -1,5 +1,20 @@
 # Existing TEST environment: verified release gaps
 
+## Phone import/scheduler settlement — TEST release 041 and runtime deployed
+
+The schema installed at **19:33 UTC, 10 October** after hosted rollback rehearsal;
+the two sync endpoints became **v6** and the scheduler **v1** at **19:36 UTC**.
+Synthetic service-role SQL proves the combined import/settlement path, with all
+fixtures rolled back and all **75 pre-existing datasets** preserved. Both new
+receipt tables remain empty. Eighteen HTTP checks, 39 downloaded-handler tests
+and 15 release/deployment tests pass.
+
+The scheduler is **unconfigured**: no secret or active schedule was added. Its
+HTTP refusal is verified; authorized configured HTTP dispatch is not. Real provider
+capture, paid processing, signed-in application acceptance, full reconciliation
+and production promotion remain unfinished. This supersedes the local-only status
+below. [Details](LEARN-PHONE-ACCOUNT-BINDING.md#import-and-scheduler-settlement--test-release-041-installed).
+
 ## Phone scheduler settlement — locally verified; hosted release pending
 
 The candidate now settles the run, owned job, merged cursor and connector health

@@ -1,0 +1,21 @@
+{
+  "version": "learn-phone-settlement-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85",
+  "priorFingerprint": "dddd1851fbb564cd1f1252d8b1874d79",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101008000_learn_phone_import_completion.sql",
+      "sha256": "aeb2841df72067c8909ce7661d116e3dabed385822dd4c43707f85d04262893a"
+    },
+    {
+      "path": "supabase/migrations/20261101009000_learn_phone_schedule_settlement.sql",
+      "sha256": "90db0cb4756dc11964d4c01c8e9ee741bb81d140b9007fcb6cf3449281d86be9"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-phone-settlement-hosted.assert.sql",
+    "sha256": "96059fb4366c77f5b3f8daf9e1b3c98aefe601590997d5d8b48c749a2ccc8ef7"
+  },
+  "preservedDataSets": 75
+}

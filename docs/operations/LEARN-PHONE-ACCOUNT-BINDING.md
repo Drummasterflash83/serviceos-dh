@@ -403,3 +403,42 @@ claims and unknown acknowledgements leave retained evidence for reconciliation;
 there is no claim that these runs automatically reconcile yet. No real provider,
 paid processing, signed-in acceptance or production readiness is established.
 [Local scheduler evidence](evidence/learn-phone-schedule-settlement-local-2026-10-10.json).
+
+
+## Import and scheduler settlement — TEST release 041 installed
+
+The combined schema package installed at **19:33 UTC, 10 October**, after a matching
+hosted rollback rehearsal. Its synthetic probe runs in a savepoint and is entirely
+rolled back during both rehearsal and installation. Real TEST service-role SQL
+verifies import completion/replay, browser/tenant refusal, scheduled success with
+retained child evidence, cursor merge, account/owner/pause checks, paused/failed
+outcomes, coherent job/run status, retained audio pointers and immutable receipts.
+All **75 pre-existing datasets** retain their fingerprints, and both new receipt
+tables remain empty after acceptance.
+
+At **19:36 UTC**, `simwood-sync-calls` and `simwood-sync-recordings` became **v6**
+(JWT required), and `phone-scheduled-sync` was installed as **v1** with its existing
+shared-secret gate. The complete pinned runtime closure contains 14 files. No
+provider credential, user, grant or schedule was created. There were no active
+Phone schedules, and `PHONE_SCHEDULE_SECRET` remains absent: the scheduler is
+**deployed but unconfigured**, not an active capture service.
+
+All **18 actual HTTP checks** pass: missing/anonymous authority, method handling,
+retired-fixture capture pause, zero-duration window refusal, anonymous RPC denial,
+missing-run RPC refusal and the unconfigured scheduler's fail-closed response.
+The HTTP checks preserve all 75 datasets and leave both new tables empty. Downloaded
+published code passes **39 relevant handler tests** with synthetic ports; the
+compound pause test also exercises the unchanged local pipeline handler. Fifteen
+release/deployment tests pass. A path-selection bug in the readback harness was
+fixed before the successful published-code run; no runtime redeployment was needed.
+
+This supersedes the preceding local-only deployment status. Real provider capture,
+authorized configured scheduler HTTP dispatch, paid processing, signed-in user
+acceptance and production promotion remain unverified. Per-recording concurrency
+and automatic reconciliation of all unknown outcomes remain separate work.
+
+Package SHA-256: `1cebbbe0f05f4cee9b026663dbc0dc8e2d9f70b2b309b623267156e9bb11fe85`.
+Runtime bundle SHA-256: `2f1240af960444e7266ffc54ed880c32f6252b7c9ed658356e2786a402f7869e`.
+Full Phone catalog: `dff384a353e7dfa581173586a0d7cbe5` (42 ledger entries).
+Runtime catalog: `f27bc878a6d07993fb40647b44d5a72d`.
+[Release evidence](evidence/learn-phone-settlement-release-2026-10-10.json).
