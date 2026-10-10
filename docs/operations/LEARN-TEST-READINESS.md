@@ -1,5 +1,18 @@
 # Existing TEST environment: verified release gaps
 
+## Phone import completion — verified locally; combined TEST release pending
+
+The call and recording handlers now require an atomic completion receipt before
+reporting success. Unknown acknowledgements preserve the run for reconciliation
+and cannot launch background processing. Fifty-two actual-handler tests, strict
+TypeScript and real local PostgreSQL transaction/concurrency checks pass, including
+retention of stored audio. The new migration and endpoints are **not deployed**.
+
+Next: verify durable child completion and settle the scheduler's cursor/health
+atomically, then rehearse and accept the combined TEST release. Real provider and
+production acceptance remain outstanding.
+[Details](LEARN-PHONE-ACCOUNT-BINDING.md#import-completion--locally-verified-not-deployed).
+
 ## Phone recovery runtime — TEST worker v5, manual endpoint v1
 
 Both are deployed at **19:06 UTC, 10 October**. Eight actual HTTP checks pass,

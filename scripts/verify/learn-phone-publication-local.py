@@ -68,7 +68,27 @@ try:
  sql('grant select on phone_recordings,phone_sync_runs,phone_recording_pipeline_state to service_role;')
  sql(source('supabase/migrations/20261101007000_learn_phone_recovery_metadata_access.sql'))
  print(sql(source('scripts/verify/learn-phone-recovery.assert.sql')),flush=True)
- report={'observedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'state':'passed','scope':'Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.','checks':['migration rollback','exact replay and conflicting definitions','tenant/run/page validation','recording storage retention and new-recording classification','pause/account denial','atomic rollback on receipt failure','page bounds and browser/service privileges','immutable receipts','concurrent pause-first and publication-first','concurrent account disable','concurrent insertion returns exactly one new recording ID','interrupted publication remains recoverable through existing backlog selector','per-recording retry holds preserve history and pause visibility','stored stage progression and tenant isolation'],'limits':['No hosted deployment, real provider, application UI or complete source-pipeline acceptance.','Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture.']}
+ completion=source('supabase/migrations/20261101008000_learn_phone_import_completion.sql')
+ sql(completion.replace('\ncommit;','\nrollback;'))
+ assert sql("select to_regclass('learn_phone_import_completions') is null")=='t'
+ sql(completion)
+ print(sql(source('scripts/verify/learn-phone-completion.assert.sql')),flush=True)
+ run_concurrent("set application_name='phone-publisher-fixture';begin;update feature_flags set value='false';select pg_sleep(1);commit;",
+  "set role service_role;do $$begin begin perform fixture_complete(110);raise exception 'Stale pause completed';exception when sqlstate 'PT409' then assert SQLERRM='learn_capture_paused';end;end$$;select 'denied';",lambda r:r=='denied')
+ sql("update feature_flags set value='true';")
+ run_concurrent("set application_name='phone-publisher-fixture';begin;set local role service_role;select fixture_complete(111);select pg_sleep(1);commit;",
+  "update feature_flags set value='false';select status from phone_sync_runs where id=fixture_id(111);",lambda r:r=='success')
+ sql("update feature_flags set value='true';")
+ run_concurrent("set application_name='phone-publisher-fixture';begin;update connector_accounts set status='disabled';select pg_sleep(1);commit;",
+  "set role service_role;do $$begin begin perform fixture_complete(112);raise exception 'Stale account completed';exception when sqlstate 'PT409' then assert SQLERRM='phone_account_unavailable';end;end$$;select 'denied';",lambda r:r=='denied')
+ sql("update connector_accounts set status='active';")
+ with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+  completions=list(pool.map(lambda _:sql("set role service_role;select fixture_complete(113)::text;"),[1,2]))
+ assert completions[0]==completions[1]
+ assert sql("select count(*) from learn_phone_import_completions where run_id=fixture_id(113)")=='1'
+ print('PASS: concurrent final pause/account ordering and identical completion replay',flush=True)
+
+ report={'observedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'state':'passed','scope':'Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.','checks':['migration rollback','exact replay and conflicting definitions','tenant/run/page validation','recording storage retention and new-recording classification','pause/account denial','atomic rollback on receipt failure','page bounds and browser/service privileges','immutable receipts','concurrent pause-first and publication-first','concurrent account disable','concurrent insertion returns exactly one new recording ID','interrupted publication remains recoverable through existing backlog selector','per-recording retry holds preserve history and pause visibility','stored stage progression and tenant isolation','atomic import completion and rollback','completion scope, page totals, empty window and immutable replay','concurrent completion pause-first, completion-first, account disable and exact replay'],'limits':['No hosted deployment, real provider, application UI or complete source-pipeline acceptance.','Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture.']}
  (root/'.verification-results/phone-publication-local.json').write_text(json.dumps(report,indent=2)+'\n')
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

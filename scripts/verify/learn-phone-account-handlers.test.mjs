@@ -24,6 +24,20 @@ const account = () => ({
     enabled: true,
   },
 });
+const completionReceipt = (a) => ({
+  version: "learn-phone-import/1",
+  tenantId: a.p_tenant,
+  runId: a.p_run,
+  accountId: a.p_account,
+  connectorId: a.p_connector,
+  customerId: a.p_customer,
+  kind: a.p_kind,
+  pages: a.p_pages,
+  recordsProcessed: a.p_records,
+  from: a.p_metadata.from,
+  to: a.p_metadata.to,
+  windowComplete: true,
+});
 async function harness(
   name,
   {
@@ -38,6 +52,7 @@ async function harness(
     providerPage,
     onSourceWrite,
     publicationResponse,
+    completionResponse,
     recoveryJobCreate,
     recoveryClaimMissing = false,
     recoverySettleMissing = false,
@@ -54,6 +69,11 @@ async function harness(
   let handler;
   const db = {
     async rpc(name, args) {
+      if (name === "learn_phone_complete_import") {
+        writes.push({ table: name, op: "rpc", v: args });
+        if (completionResponse) return completionResponse(args);
+        return { data: completionReceipt(args), error: null };
+      }
       if (name === "phone_select_pending") return { data: pendingRows, error: null };
       if (name === "learn_phone_publish_page") {
         writes.push({ table: name, op: "rpc", v: args });
@@ -817,3 +837,99 @@ test("manual recovery persists partial failure as failed and missing settlement 
   assert.equal(response.status, 503);
   assert.equal((await response.json()).error.code, "phone_job_unconfirmed");
 });
+
+for (const name of ["simwood-sync-calls", "simwood-sync-recordings"]) {
+  test(`${name} rejects an empty time range before opening a run or contacting the provider`, async () => {
+    const h = await harness(name);
+    const r = await h.run({ from: "2026-10-10T00:00:00Z", to: "2026-10-10T00:00:00Z" });
+    assert.equal(r.status, 400);
+    assert.equal((await r.json()).error.code, "invalid_range");
+    assert.equal(h.requests.length, 0);
+    assert.equal(h.writes.length, 0);
+  });
+  test(`${name} confirms final page counts, scope and window without a direct success write`, async () => {
+    const h = await harness(name, { providerPage: () => ({ items: [] }) });
+    const r = await h.run({});
+    const body = await r.json();
+    assert.equal(r.status, 200);
+    assert.equal(body.success, true);
+    const writes = h.writes.filter((w) => w.table === "learn_phone_complete_import");
+    assert.equal(writes.length, 1);
+    const a = writes[0].v;
+    assert.equal(a.p_tenant, tenant);
+    assert.equal(a.p_run, id(4));
+    assert.equal(a.p_account, id(2));
+    assert.equal(a.p_connector, id(3));
+    assert.equal(a.p_customer, "3950");
+    assert.equal(a.p_pages, 1);
+    assert.equal(a.p_records, 0);
+    assert.equal(a.p_metadata.from, body.from);
+    assert.equal(a.p_metadata.to, body.to);
+    assert.equal(a.p_metadata.window_complete, true);
+    assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.op === "update"));
+  });
+  test(`${name} leaves unknown completion intact and starts no processing`, async () => {
+    const faults = [
+      () => {
+        throw Error("PRIVATE_TRANSPORT_DETAIL");
+      },
+      () => ({ data: null, error: { code: "XX000", message: "PRIVATE_DB_DETAIL" } }),
+      () => ({ data: null, error: null }),
+      ...Object.entries({
+        version: "other",
+        tenantId: id(50),
+        runId: id(50),
+        accountId: id(50),
+        connectorId: id(50),
+        customerId: "9999",
+        kind: "other",
+        pages: 99,
+        recordsProcessed: 99,
+        from: "wrong",
+        to: "wrong",
+        windowComplete: false,
+      }).map(([k, v]) => (a) => ({ data: { ...completionReceipt(a), [k]: v }, error: null })),
+    ];
+    for (const fault of faults) {
+      const h = await harness(name, {
+        providerPage: () => ({ items: [{ callId: "c1", id: "r1" }] }),
+        publicationResponse: (a) => ({
+          data: {
+            version: "learn-phone-page/1",
+            tenantId: a.p_tenant,
+            runId: a.p_run,
+            page: a.p_page,
+            kind: a.p_kind,
+            recordsProcessed: 1,
+            newRecordingIds: a.p_kind === "recordings" ? [id(8)] : [],
+          },
+          error: null,
+        }),
+        completionResponse: fault,
+      });
+      const r = await h.run({});
+      const body = await r.json();
+      assert.equal(r.status, 503);
+      assert.equal(body.error.code, "phone_completion_unconfirmed");
+      assert.ok(!JSON.stringify(body).includes("PRIVATE_"));
+      assert.equal(h.writes.filter((w) => w.table === "learn_phone_complete_import").length, 1);
+      assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs" && w.op === "update"));
+      assert.ok(!h.writes.some((w) => w.table === "audit_logs" && w.v.status === "success"));
+      assert.ok(!h.requests.some((r) => r.url.includes("phone-process-pipeline")));
+    }
+  });
+  test(`${name} stops when final database admission detects pause or rebind`, async () => {
+    for (const code of ["learn_capture_paused", "phone_account_unavailable"]) {
+      const h = await harness(name, {
+        completionResponse: () => ({ data: null, error: { code: "PT409", message: code } }),
+      });
+      const r = await h.run({});
+      assert.equal(r.status, 409);
+      assert.equal((await r.json()).error.code, code);
+      const failed = h.writes.find((w) => w.table === "phone_sync_runs" && w.op === "update");
+      assert.ok(failed.filters.some(([k, v]) => k === "status" && v === "running"));
+      assert.ok(failed.filters.some(([k, v]) => k === "tenant_id" && v === tenant));
+      assert.ok(!h.requests.some((r) => r.url.includes("phone-process-pipeline")));
+    }
+  });
+}

@@ -1,0 +1,82 @@
+{
+  "observedAt": "2026-10-10T19:17:21.213525+00:00",
+  "state": "locally_verified_not_deployed",
+  "scope": "Atomic completion of a Phone call/recording import after saved page receipts.",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101008000_learn_phone_import_completion.sql",
+      "sha256": "aeb2841df72067c8909ce7661d116e3dabed385822dd4c43707f85d04262893a"
+    },
+    {
+      "path": "supabase/functions/_shared/phone-import-completion.ts",
+      "sha256": "54b2ad6c2d5083697e9bdfd4c6390d49d512c3e357134f3dec35c9572ccae79e"
+    },
+    {
+      "path": "supabase/functions/simwood-sync-calls/index.ts",
+      "sha256": "f63fdf59e974cf31d9d4a5c25c2f2dbbf031d761504f7073dd4812d9bd051967"
+    },
+    {
+      "path": "supabase/functions/simwood-sync-recordings/index.ts",
+      "sha256": "364786e1b39f273005fedc23cc15818ce986c86fd1221f799a5bd90bac6effa3"
+    },
+    {
+      "path": "scripts/verify/learn-phone-completion.assert.sql",
+      "sha256": "5defd1bbbba9edd97b555d044f15ad48100d74bab312d030c56576e858ffae32"
+    },
+    {
+      "path": "scripts/verify/learn-phone-publication-local.py",
+      "sha256": "7eea6b0f4336fb0077ae46498cb836cda8b79a6e50dd8476bbe4112f0d4cc4d4"
+    },
+    {
+      "path": "scripts/verify/learn-phone-account-handlers.test.mjs",
+      "sha256": "7a583c2fb6c2abad40b8e57a78f5fd2b20a8159b5ad87dfa91232482fc8b6897"
+    }
+  ],
+  "localPostgres": {
+    "observedAt": "2026-10-10T19:16:40Z",
+    "state": "passed",
+    "scope": "Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.",
+    "checks": [
+      "migration rollback",
+      "exact replay and conflicting definitions",
+      "tenant/run/page validation",
+      "recording storage retention and new-recording classification",
+      "pause/account denial",
+      "atomic rollback on receipt failure",
+      "page bounds and browser/service privileges",
+      "immutable receipts",
+      "concurrent pause-first and publication-first",
+      "concurrent account disable",
+      "concurrent insertion returns exactly one new recording ID",
+      "interrupted publication remains recoverable through existing backlog selector",
+      "per-recording retry holds preserve history and pause visibility",
+      "stored stage progression and tenant isolation",
+      "atomic import completion and rollback",
+      "completion scope, page totals, empty window and immutable replay",
+      "concurrent completion pause-first, completion-first, account disable and exact replay"
+    ],
+    "limits": [
+      "No hosted deployment, real provider, application UI or complete source-pipeline acceptance.",
+      "Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture."
+    ]
+  },
+  "handlerTests": {
+    "passed": 52,
+    "command": "node --experimental-vm-modules --test scripts/verify/learn-phone-account-handlers.test.mjs",
+    "ports": "Actual Edge handlers and shared helper code with synthetic database/provider ports; no real provider requests.",
+    "newCoverage": [
+      "zero-duration range rejected before work",
+      "completion pins run, account, connector, customer, kind, page/record totals and time range",
+      "unknown, failed and mismatched receipts cause safe 503 without success/failure overwrite or background requests",
+      "known database pause/account denial conditionally fails only the same running tenant run"
+    ]
+  },
+  "typecheck": "Strict TypeScript passed for both modified sync handlers and their local dependency closure.",
+  "limits": [
+    "New migration and runtime changes are not deployed to TEST or production.",
+    "Provider exhaustion remains a trusted handler calculation; database receipts prove saved pages and matching scope/counts, not independent provider coverage.",
+    "Scheduler still needs durable child completion verification and atomic cursor/health settlement.",
+    "No real provider, paid processing, signed-in browser or end-to-end production acceptance is established.",
+    "Per-recording processing concurrency remains outstanding."
+  ]
+}

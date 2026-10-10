@@ -332,3 +332,37 @@ Bundle SHA-256: `ba30442581d897ece5658d2b9f2ddb844034641df6d3bf7eb2805aeb47d1f67
 Runtime catalog: `20303a1bf930ea5d60896b16d7c8c42f`; full Phone catalog remains
 `dddd1851fbb564cd1f1252d8b1874d79`.
 [Published runtime evidence](evidence/learn-phone-recovery-runtime-2026-10-10.json).
+
+
+## Import completion — locally verified, not deployed
+
+The call/recording handlers previously issued an unchecked final success update;
+recording processing also started before that write. The candidate now uses a
+service-only `learn_phone_complete_import` transaction to match all saved page
+receipts to the company, run, account, connector, provider customer and input kind,
+check the page/record totals and original window/filter metadata, recheck capture
+and account authority, and save success with an immutable completion receipt.
+Exact replay returns the original receipt, including after a later pause.
+
+An unknown acknowledgement returns `phone_completion_unconfirmed` and preserves
+the possibly committed run; it neither retries nor overwrites it as failed. Known
+pause/account refusals conditionally fail only the same tenant's running run.
+Recording background work starts only after receipt validation. Metadata records
+`auto_pipeline_eligible`, not an unproven count of completed/started jobs. A process
+that stops before that handoff leaves saved recordings available to the existing
+backlog recovery selector. Zero-duration input ranges are rejected before work.
+
+All **52 actual-handler VM tests** pass, including malformed/lost final receipts,
+empty imports and no follow-on work when completion is unknown. Strict TypeScript
+passes for both modified sync endpoints. Actual SQL in networkless PostgreSQL 15
+proves success/receipt atomicity, failure rollback without lost pages, both source
+kinds, preserved stored audio, scope/filter/count checks, immutable private receipts,
+exact replay, and concurrent pause-first/completion-first/account-disable ordering.
+The suite also reruns the prior page-publication and recovery assertions.
+
+**Not deployed.** The scheduler still needs durable child-receipt verification and
+atomic cursor/health settlement before this path is ready for a combined TEST
+release. The database proves retained pages and matching scope/counts; provider
+exhaustion is still calculated by the trusted handler. This is not evidence of
+real provider coverage, paid processing, signed-in acceptance or production readiness.
+[Local evidence](evidence/learn-phone-import-completion-local-2026-10-10.json).

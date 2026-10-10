@@ -1,3 +1,4 @@
+import { completePhoneImport } from "../_shared/phone-import-completion.ts";
 import { publishPhonePage } from "../_shared/phone-page-publication.ts";
 import { phoneCaptureGuard } from "../_shared/phone-capture-guard.ts";
 import { captureAdmission } from "../_shared/learn_capture_control.ts";
@@ -101,7 +102,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const nowIso = new Date().toISOString();
   const from = toIso(body.from) ?? new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const to = toIso(body.to) ?? nowIso;
-  if (Date.parse(from) > Date.parse(to)) {
+  if (Date.parse(from) >= Date.parse(to)) {
     return failResponse("invalid_range", "'from' must be before 'to'", 400);
   }
 
@@ -192,7 +193,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
           error_message: message,
           metadata,
         })
-        .eq("id", syncRunId);
+        .eq("id", syncRunId)
+        .eq("tenant_id", tenantId)
+        .eq("status", "running");
     } catch (_e) {
       // ignore
     }
@@ -382,11 +385,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
     );
 
-  // --- auto-process newly inserted recordings (background, isolated) -------
-  const toTrigger = newRecordingIds.slice(0, MAX_AUTO_PIPELINE);
-  if (toTrigger.length > 0 && pipelineToken) {
-    triggerPipelineBackground(tenantId, toTrigger, pipelineToken);
-  }
+  const toTrigger = pipelineToken ? newRecordingIds.slice(0, MAX_AUTO_PIPELINE) : [];
 
   // --- success -------------------------------------------------------------
   const metadata = {
@@ -398,18 +397,38 @@ Deno.serve(async (req: Request): Promise<Response> => {
     call_ids_referenced: referencedCallIds.size,
     linked_calls_matched: linkedCallsMatched,
     new_recordings: newRecordingIds.length,
-    auto_triggered: toTrigger.length,
+    auto_pipeline_eligible: toTrigger.length,
   };
-  await supabase
-    .from("phone_sync_runs")
-    .update({
-      status: "success",
-      completed_at: new Date().toISOString(),
+  const completion = await completePhoneImport(supabase, {
+    tenantId,
+    runId: syncRunId,
+    account,
+    kind: "recordings",
+    pages: pagesFetched,
+    recordsProcessed: processed,
+    metadata,
+  });
+  if (!completion.ok) {
+    if (completion.code !== "phone_completion_unconfirmed")
+      return await finishFailed(
+        completion.code,
+        completion.message,
+        completion.httpStatus,
+        processed,
+        { pages_fetched: pagesFetched, window_complete: false },
+      );
+    // The transaction may have committed. Preserve its status and receipt;
+    // never turn an unknown acknowledgement into a failed overwrite or retry.
+    return failResponse(completion.code, completion.message, completion.httpStatus, {
+      sync_run_id: syncRunId,
       records_processed: processed,
-      metadata,
-    })
-    .eq("id", syncRunId);
+      completion_unconfirmed: true,
+    });
+  }
   await writeAudit("success", metadata);
+  // Recovery can find retained rows if the process stops before this handoff.
+  if (toTrigger.length > 0 && pipelineToken)
+    triggerPipelineBackground(tenantId, toTrigger, pipelineToken);
 
   return jsonResponse({
     success: true,
