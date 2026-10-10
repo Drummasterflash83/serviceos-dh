@@ -631,3 +631,32 @@ with its prebuild checks. Production, original source files and providers were n
 changed; the frontend is built locally, not published. Interrupted hosted batches,
 large site/job/mixed-failure acceptance and governed conflict resolution remain open.
 See [pagination release and acceptance evidence](evidence/learn-import-pagination-2026-10-10.json).
+
+## Partial batch recovery accepted; large graph trial interrupted — 10 October
+
+A fresh 5,000-customer TEST run staged 1,200 committed rows through the existing
+private batch RPC, using the real preview's sealed mapping and owner actor. The
+last batch response was deliberately ignored; the durable ledger was inspected
+before continuing through the authenticated endpoint. All 1,200 existing people,
+cards, links, outcomes and provenance rows kept identical fingerprints. Changed
+CSV bytes and revoked authority were refused. Continuation completed in 20.397
+seconds with exactly 5,000 rows in each store, all outcomes readable and no duplicate
+attempts. Fixture access was retired and all prior source fingerprints matched.
+This stages an interrupted state; it does not induce an Edge crash or network partition.
+See [recovery evidence](evidence/learn-import-partial-recovery-2026-10-10.json).
+
+The new optional `--large-graph` acceptance covers 5,000 sites and a 5,000-row job
+file with invalid, held and contradictory rows, followed by dependency recovery.
+Its first run was interrupted during the earlier small suite, before this large
+phase began. Seven imports remain (six completed, one previewed); all three
+fixture logins were subsequently banned/password-rotated and roles demoted after
+process termination was verified. Pre-existing source fingerprints matched. This
+is not a passing large-file result; the harness remains pending execution.
+
+Chris has now prioritised the real Commusoft API for Monday, 12 October, as one
+client-selected business-system connector. File import remains a recovery path.
+The API must preserve source identities and relationships in a source-neutral
+customer/contact/site/job model, with tenant-scoped configuration, credentials,
+coverage and recovery controlled by OpenFolk. Existing local env files checked in
+this workspace and the two known earlier checkouts contain no COMMUSOFT-named
+variables; that does not prove no credential exists in a broker or elsewhere.

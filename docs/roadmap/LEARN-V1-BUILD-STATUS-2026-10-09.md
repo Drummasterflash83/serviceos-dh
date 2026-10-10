@@ -1172,3 +1172,23 @@ interrupted hosted batch recovery, large site/job/mixed-failure acceptance and t
 real package's unresolved ownership conflict. Broader connectors, scoring adapters
 and release requirements remain active. See
 [pagination evidence](../operations/evidence/learn-import-pagination-2026-10-10.json).
+
+## Monday priority and checkpoint backing — 10 October
+
+Chris requests the Drummonds Commusoft API connection as a major Monday, 12 October
+deliverable. Commusoft is an input adapter, not the ServiceOS data model: other
+clients can connect their own customer/job systems. Priorities are verified
+read-only ingestion, useful linked cards, existing communication evidence, and
+OpenFolk module/submodule switches, health diagnostics and recovery. Calm client
+status must remain accurate. Advanced scores need verified measurements.
+
+Partial 1,200→5,000 customer import recovery now passes with identical fingerprints
+for the earlier records and evidence. Large site/job mixed-file acceptance was
+interrupted before its large phase and remains pending; its fixture was retired.
+No current claim is made that the Commusoft API is connected or that Monday live
+acceptance is complete.
+
+The reconstructed working checkout had no Git remote. Its existing 74 local
+commits are being connected to the verified ServiceOS repository using the separate
+`codex/learn-v1-test` checkpoint branch. Branch-specific Vercel Git deployment is
+disabled there; source backup is not frontend publication or database backup.

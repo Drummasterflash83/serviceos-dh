@@ -183,3 +183,19 @@ Supabase migrations and edge functions deploy via the Supabase CLI against proje
 `tgbnakbxwcqjeimygroz`, independently of Vercel. A frontend deploy must never modify
 Supabase, publish the Customer Health policy, enable the source allowlist, or activate any
 live source.
+
+## LEARN V1 checkpoint branch — 10 October 2026
+
+Chris requests regular GitHub backups during TEST development. This reconstructed
+checkout uses `codex/learn-v1` locally and pushes checkpoints to
+`Drummasterflash83/serviceos-dh:codex/learn-v1-test`. Verify the remote head after
+each push. Keep secrets, private manifests, generated builds and original customer
+files excluded. The branch contains recovered source plus subsequent LEARN work;
+it does not replace the original checkout's full history.
+
+`vercel.json` disables automatic Git deployment for this exact TEST checkpoint
+branch, as supported by [Vercel Git configuration](https://vercel.com/docs/project-configuration/git-configuration).
+This permits source backup while a separately configured TEST frontend remains
+unpublished. Do not point it at production Supabase. Promoting `main` and deploying
+backend changes remain separate operations. A source-code backup is not a backup
+of hosted email, phone audio or database records.

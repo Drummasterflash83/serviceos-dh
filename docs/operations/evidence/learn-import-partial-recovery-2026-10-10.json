@@ -1,0 +1,624 @@
+{
+  "version": "learn-import-partial-recovery-evidence/1",
+  "acceptance": {
+    "version": "learn-test-import-volume/4",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "af2ea667f2220f67e00b6bbbedf94d8b6c348996e4c1225d94a0c654ee74de2b",
+    "runId": "0fad8a3a-5b85-4778-bb8f-0a7cd1299e63",
+    "tenant": "884201d3-1a98-48cb-b86a-a35f776a1987",
+    "user": "e7abc0c0-eff1-49f9-8931-d02914e1ed5b",
+    "rows": 5000,
+    "resumePrefix": 1200,
+    "created": true,
+    "seeded": true,
+    "retired": true,
+    "phase": "passed",
+    "timings": [
+      {
+        "action": "profiles",
+        "ms": 681,
+        "status": 200
+      },
+      {
+        "action": "preview",
+        "ms": 4994,
+        "status": 200
+      },
+      {
+        "action": "status",
+        "ms": 393,
+        "status": 200
+      },
+      {
+        "action": "apply",
+        "ms": 20396,
+        "status": 200
+      },
+      {
+        "action": "apply",
+        "ms": 673,
+        "status": 200
+      },
+      {
+        "action": "row_results",
+        "ms": 613,
+        "status": 200
+      }
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "importId": "0931c178-19fa-4c72-8088-f76195b51ed6",
+    "recovery": {
+      "mode": "staged committed prefix; final batch reply deliberately ignored",
+      "rows": 1200,
+      "confirmedBatches": 11,
+      "ignoredFinalReply": true,
+      "checkpoint": {
+        "people": 1200,
+        "cards": 1200,
+        "links": 1200,
+        "outcomes": 1200,
+        "provenance": 1200,
+        "unexpected_outcomes": 0
+      },
+      "prefixBefore": [
+        {
+          "name": "customer_cards",
+          "count": 1200,
+          "fingerprint": "eec48fa43b3e91402c45a260ebfed85b"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 1200,
+          "fingerprint": "d260eb19e388a9325e836fba84bdee10"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 1200,
+          "fingerprint": "ad1d196eaec69582200ac94f36b693ae"
+        },
+        {
+          "name": "import_row_results",
+          "count": 1200,
+          "fingerprint": "22fb86ea5c149564e6efa81cc8447c00"
+        },
+        {
+          "name": "people",
+          "count": 1200,
+          "fingerprint": "a20c4f1e37f51cbba8c27f5eae70fc29"
+        }
+      ],
+      "visibleIncompleteStatus": true,
+      "changedFileRefused": true,
+      "revokedAuthorityRefused": true,
+      "prefixAfter": [
+        {
+          "name": "customer_cards",
+          "count": 1200,
+          "fingerprint": "eec48fa43b3e91402c45a260ebfed85b"
+        },
+        {
+          "name": "import_entity_links",
+          "count": 1200,
+          "fingerprint": "d260eb19e388a9325e836fba84bdee10"
+        },
+        {
+          "name": "import_row_provenance",
+          "count": 1200,
+          "fingerprint": "ad1d196eaec69582200ac94f36b693ae"
+        },
+        {
+          "name": "import_row_results",
+          "count": 1200,
+          "fingerprint": "22fb86ea5c149564e6efa81cc8447c00"
+        },
+        {
+          "name": "people",
+          "count": 1200,
+          "fingerprint": "a20c4f1e37f51cbba8c27f5eae70fc29"
+        }
+      ],
+      "prefixPreserved": true
+    },
+    "counts": {
+      "people": 5000,
+      "cards": 5000,
+      "links": 5000,
+      "outcomes": 5000,
+      "provenance": 5000,
+      "unexpected_outcomes": 0
+    },
+    "replay": {
+      "already": true,
+      "status": "completed",
+      "created": 5000
+    },
+    "outcomePages": [
+      {
+        "afterRow": 1,
+        "returned": 100,
+        "nextAfterRow": 101
+      },
+      {
+        "afterRow": 101,
+        "returned": 100,
+        "nextAfterRow": 201
+      },
+      {
+        "afterRow": 201,
+        "returned": 100,
+        "nextAfterRow": 301
+      },
+      {
+        "afterRow": 301,
+        "returned": 100,
+        "nextAfterRow": 401
+      },
+      {
+        "afterRow": 401,
+        "returned": 100,
+        "nextAfterRow": 501
+      },
+      {
+        "afterRow": 501,
+        "returned": 100,
+        "nextAfterRow": 601
+      },
+      {
+        "afterRow": 601,
+        "returned": 100,
+        "nextAfterRow": 701
+      },
+      {
+        "afterRow": 701,
+        "returned": 100,
+        "nextAfterRow": 801
+      },
+      {
+        "afterRow": 801,
+        "returned": 100,
+        "nextAfterRow": 901
+      },
+      {
+        "afterRow": 901,
+        "returned": 100,
+        "nextAfterRow": 1001
+      },
+      {
+        "afterRow": 1001,
+        "returned": 100,
+        "nextAfterRow": 1101
+      },
+      {
+        "afterRow": 1101,
+        "returned": 100,
+        "nextAfterRow": 1201
+      },
+      {
+        "afterRow": 1201,
+        "returned": 100,
+        "nextAfterRow": 1301
+      },
+      {
+        "afterRow": 1301,
+        "returned": 100,
+        "nextAfterRow": 1401
+      },
+      {
+        "afterRow": 1401,
+        "returned": 100,
+        "nextAfterRow": 1501
+      },
+      {
+        "afterRow": 1501,
+        "returned": 100,
+        "nextAfterRow": 1601
+      },
+      {
+        "afterRow": 1601,
+        "returned": 100,
+        "nextAfterRow": 1701
+      },
+      {
+        "afterRow": 1701,
+        "returned": 100,
+        "nextAfterRow": 1801
+      },
+      {
+        "afterRow": 1801,
+        "returned": 100,
+        "nextAfterRow": 1901
+      },
+      {
+        "afterRow": 1901,
+        "returned": 100,
+        "nextAfterRow": 2001
+      },
+      {
+        "afterRow": 2001,
+        "returned": 100,
+        "nextAfterRow": 2101
+      },
+      {
+        "afterRow": 2101,
+        "returned": 100,
+        "nextAfterRow": 2201
+      },
+      {
+        "afterRow": 2201,
+        "returned": 100,
+        "nextAfterRow": 2301
+      },
+      {
+        "afterRow": 2301,
+        "returned": 100,
+        "nextAfterRow": 2401
+      },
+      {
+        "afterRow": 2401,
+        "returned": 100,
+        "nextAfterRow": 2501
+      },
+      {
+        "afterRow": 2501,
+        "returned": 100,
+        "nextAfterRow": 2601
+      },
+      {
+        "afterRow": 2601,
+        "returned": 100,
+        "nextAfterRow": 2701
+      },
+      {
+        "afterRow": 2701,
+        "returned": 100,
+        "nextAfterRow": 2801
+      },
+      {
+        "afterRow": 2801,
+        "returned": 100,
+        "nextAfterRow": 2901
+      },
+      {
+        "afterRow": 2901,
+        "returned": 100,
+        "nextAfterRow": 3001
+      },
+      {
+        "afterRow": 3001,
+        "returned": 100,
+        "nextAfterRow": 3101
+      },
+      {
+        "afterRow": 3101,
+        "returned": 100,
+        "nextAfterRow": 3201
+      },
+      {
+        "afterRow": 3201,
+        "returned": 100,
+        "nextAfterRow": 3301
+      },
+      {
+        "afterRow": 3301,
+        "returned": 100,
+        "nextAfterRow": 3401
+      },
+      {
+        "afterRow": 3401,
+        "returned": 100,
+        "nextAfterRow": 3501
+      },
+      {
+        "afterRow": 3501,
+        "returned": 100,
+        "nextAfterRow": 3601
+      },
+      {
+        "afterRow": 3601,
+        "returned": 100,
+        "nextAfterRow": 3701
+      },
+      {
+        "afterRow": 3701,
+        "returned": 100,
+        "nextAfterRow": 3801
+      },
+      {
+        "afterRow": 3801,
+        "returned": 100,
+        "nextAfterRow": 3901
+      },
+      {
+        "afterRow": 3901,
+        "returned": 100,
+        "nextAfterRow": 4001
+      },
+      {
+        "afterRow": 4001,
+        "returned": 100,
+        "nextAfterRow": 4101
+      },
+      {
+        "afterRow": 4101,
+        "returned": 100,
+        "nextAfterRow": 4201
+      },
+      {
+        "afterRow": 4201,
+        "returned": 100,
+        "nextAfterRow": 4301
+      },
+      {
+        "afterRow": 4301,
+        "returned": 100,
+        "nextAfterRow": 4401
+      },
+      {
+        "afterRow": 4401,
+        "returned": 100,
+        "nextAfterRow": 4501
+      },
+      {
+        "afterRow": 4501,
+        "returned": 100,
+        "nextAfterRow": 4601
+      },
+      {
+        "afterRow": 4601,
+        "returned": 100,
+        "nextAfterRow": 4701
+      },
+      {
+        "afterRow": 4701,
+        "returned": 100,
+        "nextAfterRow": 4801
+      },
+      {
+        "afterRow": 4801,
+        "returned": 100,
+        "nextAfterRow": 4901
+      },
+      {
+        "afterRow": 4901,
+        "returned": 100,
+        "nextAfterRow": null
+      }
+    ],
+    "outcomeLedger": {
+      "total": 5000,
+      "pages": 50,
+      "exactRowSequence": true,
+      "emptyEndCursor": true,
+      "previousCursor": true,
+      "emptyFilter": true
+    },
+    "cardPages": [
+      {
+        "page": 0,
+        "returned": 24,
+        "hasMore": true
+      },
+      {
+        "page": 1,
+        "returned": 24,
+        "hasMore": true
+      },
+      {
+        "page": 208,
+        "returned": 8,
+        "hasMore": false
+      }
+    ],
+    "preExistingSourcesPreserved": true,
+    "imports": [
+      {
+        "id": "0931c178-19fa-4c72-8088-f76195b51ed6",
+        "status": "completed",
+        "row_count": 5000,
+        "created_records": 5000,
+        "invalid_rows": 0,
+        "conflict_records": 0
+      }
+    ],
+    "observedAt": "2026-10-10T07:33:46.611Z",
+    "manifest": "/private/tmp/serviceos-learn-volume-0fad8a3a-5b85-4778-bb8f-0a7cd1299e63.json",
+    "limitations": [
+      "Synthetic customers only; sites, jobs and provider communication volumes are separate.",
+      "Only the first, second and last card pages are read; every row outcome is read through the real client in bounded pages.",
+      "One request at a time, no automatic mutation retries, and fixture records are retained.",
+      "Optional recovery stages partial commits through the real private RPC and ignores its last reply; it does not induce a hosted Edge crash or network partition."
+    ]
+  },
+  "preservation": {
+    "before": [
+      {
+        "name": "companies",
+        "count": 4,
+        "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+      },
+      {
+        "name": "contact_points",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "customer_cards",
+        "count": 11212,
+        "fingerprint": "739486693aac42a7ac6c18b84d88e97e"
+      },
+      {
+        "name": "data_imports",
+        "count": 44,
+        "fingerprint": "080057796b5db2f0f5327b54fcab36bc"
+      },
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "import_conflicts",
+        "count": 4,
+        "fingerprint": "ae513d18d4d26c0bab77d23e479ed9c8"
+      },
+      {
+        "name": "import_entity_links",
+        "count": 11233,
+        "fingerprint": "59aef1273220867782756b598486b770"
+      },
+      {
+        "name": "import_row_provenance",
+        "count": 11237,
+        "fingerprint": "ab45a77912233d7332b5278a2e70976f"
+      },
+      {
+        "name": "import_row_results",
+        "count": 11241,
+        "fingerprint": "b6f6cb76ff79e562c6b885b80e779650"
+      },
+      {
+        "name": "interactions",
+        "count": 34,
+        "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+      },
+      {
+        "name": "jobs",
+        "count": 17,
+        "fingerprint": "aaf5ac29853ef8d0597221607466f6e7"
+      },
+      {
+        "name": "people",
+        "count": 11215,
+        "fingerprint": "64c112d5bea327878ff5e31ddabf60fc"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "sites",
+        "count": 9,
+        "fingerprint": "4b4d06a443901d839fedb5d3e44cbf8b"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 18,
+        "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 22,
+        "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+      }
+    ],
+    "after": [
+      {
+        "name": "companies",
+        "count": 4,
+        "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+      },
+      {
+        "name": "contact_points",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "customer_cards",
+        "count": 11212,
+        "fingerprint": "739486693aac42a7ac6c18b84d88e97e"
+      },
+      {
+        "name": "data_imports",
+        "count": 44,
+        "fingerprint": "080057796b5db2f0f5327b54fcab36bc"
+      },
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "import_conflicts",
+        "count": 4,
+        "fingerprint": "ae513d18d4d26c0bab77d23e479ed9c8"
+      },
+      {
+        "name": "import_entity_links",
+        "count": 11233,
+        "fingerprint": "59aef1273220867782756b598486b770"
+      },
+      {
+        "name": "import_row_provenance",
+        "count": 11237,
+        "fingerprint": "ab45a77912233d7332b5278a2e70976f"
+      },
+      {
+        "name": "import_row_results",
+        "count": 11241,
+        "fingerprint": "b6f6cb76ff79e562c6b885b80e779650"
+      },
+      {
+        "name": "interactions",
+        "count": 34,
+        "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+      },
+      {
+        "name": "jobs",
+        "count": 17,
+        "fingerprint": "aaf5ac29853ef8d0597221607466f6e7"
+      },
+      {
+        "name": "people",
+        "count": 11215,
+        "fingerprint": "64c112d5bea327878ff5e31ddabf60fc"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "sites",
+        "count": 9,
+        "fingerprint": "4b4d06a443901d839fedb5d3e44cbf8b"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 18,
+        "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 22,
+        "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+      }
+    ]
+  },
+  "limitations": [
+    "Partial state was staged through the actual private batch RPC with the sealed profile and owner actor. The final batch reply was deliberately ignored, then the ledger was inspected before continuation.",
+    "This verifies recovery from the durable state, not an induced hosted process crash, network partition or rollback during a batch.",
+    "No new runtime deployment, SQL schema change, original file import or provider call."
+  ]
+}

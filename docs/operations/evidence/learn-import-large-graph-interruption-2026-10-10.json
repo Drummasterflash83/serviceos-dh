@@ -1,0 +1,52 @@
+{
+  "observedAt": "2026-10-10T07:37:50.510Z",
+  "state": "interrupted_not_accepted",
+  "imports": [
+    {
+      "id": "4329e18b-85e7-48d4-87ca-af342248b395",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "a4fb8de6-e5c5-4e90-a558-cf6b9333c82a",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "04274318-e4dc-4f3f-80b6-dd251a11ab8f",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "7761a618-3755-4a7f-bcb6-1c4fa1c59334",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "1cdb58d2-cb84-46f1-a3b2-a5f25d0959fa",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "4f6faec2-d898-4d76-81d1-93e23e81e59b",
+      "status": "completed",
+      "row_count": 1,
+      "created_records": 1
+    },
+    {
+      "id": "f47e1e6c-4a36-478d-8a85-f7d3c6627a1f",
+      "status": "previewed",
+      "row_count": 1,
+      "created_records": 0
+    }
+  ],
+  "preExistingSourcesPreserved": true,
+  "largeGraphStarted": false,
+  "approvingUsers": 0,
+  "loginsBannedAndRotated": 3
+}
