@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
 import { readCommusoftCatalog } from "./learn-commusoft-catalog.mjs";
 import { installedCommusoft } from "./learn-test-commusoft-release.mjs";
+import { installedCommusoftWorker } from "./learn-test-commusoft-runtime.mjs";
 import { AUTH_CONTRACT_QUERY } from "./learn-test-auth-contract.mjs";
 import { actionAuthContractMatches } from "./learn-test-actions-acceptance.mjs";
 import { readAcceptanceResponse } from "./learn-test-launch-acceptance.mjs";
@@ -30,7 +31,10 @@ const check = (v, s) => {
 };
 export async function acceptCommusoft({ allowProjectRef, token, fetcher = fetch }) {
   const pre = await readCommusoftCatalog({ allowProjectRef, token, fetcher });
-  check(installedCommusoft(pre), "Exact installed Commusoft TEST schema required");
+  check(
+    installedCommusoft(pre) || installedCommusoftWorker(pre),
+    "Exact installed Commusoft TEST schema and supported endpoint catalog required",
+  );
   async function request(url, headers, method = "GET", body) {
     return readAcceptanceResponse(
       await fetcher(url, {

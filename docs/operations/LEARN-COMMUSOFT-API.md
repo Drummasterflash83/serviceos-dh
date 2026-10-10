@@ -450,3 +450,42 @@ disabled. Synthetic evidence and actor records stay retained.
 See `evidence/learn-commusoft-test-acceptance-2026-10-10.json` for the outcome and
 independent retirement read-back. This does not establish a live Commusoft account,
 continuous ingestion, complete contact coverage or production readiness.
+
+## Worker deployed and exercised in TEST — 10 October
+
+The dedicated `learn-commusoft-worker` endpoint is now active at version 1 in
+TEST with gateway JWT verification enabled. Its eight-file bundle is pinned by
+`learn-test-commusoft-deploy.mjs`. The `LEARN_COMMUSOFT_WORKER_KEY` binding reuses
+the existing TEST service credential in memory/CLI stdin. This is a separate
+required request header, not an independently generated credential. No Commusoft
+API key was created or obtained. Supabase refreshed the eight existing endpoint
+runtime versions by exactly one when the environment binding changed; their
+source hashes, entrypoints, JWT policies and other metadata remained identical.
+
+`learn-test-commusoft-runtime.mjs` accepts only that exact refresh plus the
+recorded new endpoint, then reconstructs and verifies every prior schema/runtime
+contract. The review acceptance runner supports both its original pre-worker
+catalog and this exact deployed catalog. The release and deployment commands
+remain one-way checks and must not be rerun to recover an uncertain response.
+
+Actual HTTP acceptance passed missing-JWT checks (including a request with only
+the trigger header), anonymous/service JWT without the trigger, an incorrect
+trigger, GET refusal, caller-body refusal, and an authorised empty invocation.
+The queue and source fingerprints across 16 TEST tables stayed unchanged.
+
+Actual queued acceptance used a new synthetic tenant and a verified nonexistent
+Vault reference. The real service client resolved the complete stored scope;
+credential acquisition returned no permit. After the fixture's claimed lease was
+deliberately expired, the deployed worker reclaimed it at attempt two, retained
+`commusoft_authority_unavailable`, cleared the lease and created no successor.
+A second fixture job was also refused after its Commusoft module switch was
+disabled. No permit, retained page or credential was created. Existing records
+across 18 source/queue/input tables preserved their fingerprints. Both terminal
+jobs remain as evidence; all fixture switches/connectors/accounts are disabled,
+the connection is revoked, and no fixture work is active.
+
+Evidence: `evidence/learn-commusoft-test-worker-2026-10-10.json`. These results
+prove runtime authority/failure handling and interrupted-claim recovery, not a
+successful provider page or complete ingestion. Real Drummonds API access,
+successful page/replay acceptance, operator connection setup, contacts,
+existing-target reconciliation, source updates and production release remain.

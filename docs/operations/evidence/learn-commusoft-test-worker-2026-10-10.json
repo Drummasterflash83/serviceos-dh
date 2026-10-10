@@ -1,0 +1,130 @@
+{
+  "version": "learn-commusoft-test-worker-evidence/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "trigger": {
+    "observedAt": "2026-10-10T09:45:16.447Z",
+    "name": "LEARN_COMMUSOFT_WORKER_KEY",
+    "bindingDigestMatched": true,
+    "reusedExistingServiceCredential": true,
+    "exactRuntimeRefresh": true,
+    "schemaPreserved": true
+  },
+  "deployment": {
+    "version": "learn-test-commusoft-deploy/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T09:48:19.032Z",
+    "state": "deployed_needs_http_acceptance",
+    "writeAttempted": true,
+    "cliExitStatus": 0,
+    "sourceBundleSha256": "e614d5008825d4c562dbf5572a7b5ec1ae51ba940a5c4a470298351976c6043e",
+    "files": [
+      "learn-commusoft-worker/index.ts",
+      "_shared/commusoft/worker.ts",
+      "_shared/commusoft/read_page.ts",
+      "_shared/commusoft/bound_page.ts",
+      "_shared/commusoft/stored_scope.ts",
+      "_shared/commusoft/permit_server.ts",
+      "_shared/commusoft/page_store.ts",
+      "_shared/slack/slack_worker_http.ts"
+    ],
+    "priorSchemaAndEndpointsPreserved": true,
+    "endpoint": {
+      "id": "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+      "slug": "learn-commusoft-worker",
+      "name": "learn-commusoft-worker",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791625693801,
+      "updated_at": 1791625693801,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c37a06f6-3939-4e68-bdbf-2bd78f6869c2_1/source/supabase/functions/learn-commusoft-worker/index.ts",
+      "ezbr_sha256": "7140fc36f6d1abc5792c20097df27efc7b00f9608397abe1eba092c90c0e0b16"
+    },
+    "limitations": [
+      "Only learn-commusoft-worker was submitted; no prune, secret change, schedule, approval, provider operation or production change.",
+      "A deployment response is not runtime acceptance; uncertain results are inspected without automatic resubmission."
+    ]
+  },
+  "httpAcceptance": {
+    "version": "learn-test-commusoft-http/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T09:53:20.968Z",
+    "state": "passed",
+    "checks": [
+      {
+        "label": "Gateway rejects missing JWT",
+        "status": 401
+      },
+      {
+        "label": "Gateway requires JWT even with trigger key",
+        "status": 401
+      },
+      {
+        "label": "Anonymous JWT cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Service JWT alone cannot trigger worker",
+        "status": 403
+      },
+      {
+        "label": "Incorrect trigger key refused",
+        "status": 403
+      },
+      {
+        "label": "GET refused",
+        "status": 405
+      },
+      {
+        "label": "Caller job selectors refused",
+        "status": 400
+      },
+      {
+        "label": "Authorised empty invocation",
+        "status": 200
+      }
+    ],
+    "preExistingSourcesPreserved": true,
+    "activeJobs": 0,
+    "catalogPreserved": true,
+    "limitations": [
+      "Empty-queue runtime and gateway/trigger acceptance only; no queued page execution, provider request, real Commusoft access or signed-in owner JWT was tested.",
+      "Source fingerprints cover the 16 named TEST tables; this is not production inventory or a database backup."
+    ]
+  },
+  "queuedAcceptance": {
+    "version": "learn-test-commusoft-worker-acceptance/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T09:55:29.448Z",
+    "runId": "dcf85708-1847-4aae-8b86-92c12a90c313",
+    "state": "passed",
+    "failure": null,
+    "checks": [
+      "Real service client resolved complete stored scope; scoped acquisition refused the verified nonexistent Vault reference.",
+      "Deployed worker recovered the expired claim and retained a non-retryable authority failure at attempt two, with no successor.",
+      "Deployed worker refused source work after the tenant Commusoft switch was disabled."
+    ],
+    "retirement": {
+      "enabled_flags": 0,
+      "enabled_connectors": 0,
+      "active_connections": 0,
+      "active_accounts": 0,
+      "active_jobs": 0
+    },
+    "catalogPreserved": true,
+    "preExistingSourcesPreserved": true,
+    "manifest": "/private/tmp/serviceos-commusoft-worker-dcf85708-1847-4aae-8b86-92c12a90c313.json",
+    "limitations": [
+      "Synthetic missing-credential and disabled-module work only; no real Commusoft credential, provider request, successful page ingestion or production change.",
+      "Synthetic job history is retained; fixture switches/accounts/connectors are disabled and connection revoked."
+    ]
+  },
+  "verificationScriptSha256": {
+    "learn-test-commusoft-key.mjs": "32cc7b32c435ef21ac9cd253003f37faeaaac21fe9be04f0b7b18b4a7a10541f",
+    "learn-test-commusoft-runtime.mjs": "db6da9b0b5b027519242f8fa8fd79b9f6d89f04ee46320bc16f88d2a2c451201",
+    "learn-test-commusoft-deploy.mjs": "c01d2eeb314ad3d93390a23bcee4aca94ef1e48b13fe715a970bb5d6ed388821",
+    "learn-test-commusoft-http.mjs": "91f62ce1fa5fe7a8cc2250243e45912ee67cace8f674efe21923cbd80620fbf9",
+    "learn-test-commusoft-worker-acceptance.mjs": "43fcca7533b79f8cd720688fc7faebf8340298b7b9d2f4e6cc265074ea02ee0d"
+  }
+}

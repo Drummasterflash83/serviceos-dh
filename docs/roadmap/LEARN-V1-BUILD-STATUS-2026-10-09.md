@@ -1402,3 +1402,28 @@ This establishes the hosted review/card path, not provider capture: synthetic ra
 pages were inserted as test fixtures, without a Commusoft credential or API read.
 Dedicated worker deployment and runtime acceptance, real Drummonds access, operator
 connection setup, contacts, existing-target reconciliation and source updates remain.
+
+## Commusoft worker deployed and verified in TEST — 10 October
+
+The dedicated JWT-protected worker is active in TEST. Its trigger header reuses
+the existing TEST service credential; no Commusoft API key, schedule or production
+change was made. Binding the environment variable refreshed prior endpoint runtime
+versions by exactly one, with all source hashes and other metadata preserved. The
+new verifier pins both that refresh and the added worker without relaxing earlier
+schema or endpoint contracts.
+
+Eight actual HTTP checks passed: missing JWT (with and without a trigger), missing
+trigger under anonymous/service JWTs, wrong trigger, wrong method, caller-supplied
+scope, and authorised empty-queue execution. Existing TEST records stayed identical.
+
+A synthetic queued run then resolved real stored scope but refused a verified
+nonexistent Vault credential. The deployed worker recovered its deliberately
+expired claim and retained a terminal authority failure at attempt two. A second
+job was refused after module disablement. Neither created a permit, source page or
+successor. All prior source/queue fingerprints matched; the fixture account,
+connector and switches are disabled, its connection revoked and its jobs terminal.
+
+Evidence: [deployed worker acceptance](../operations/evidence/learn-commusoft-test-worker-2026-10-10.json).
+This closes the initial deployed-runtime and authority/failure checks. Successful
+page ingestion/recovery, real Drummonds API access, operator setup and the remaining
+LEARN V1 requirements are still open. Production and the live frontend are unchanged.

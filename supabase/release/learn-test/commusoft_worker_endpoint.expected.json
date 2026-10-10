@@ -1,0 +1,17 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "e614d5008825d4c562dbf5572a7b5ec1ae51ba940a5c4a470298351976c6043e",
+  "endpoint": {
+    "id": "c37a06f6-3939-4e68-bdbf-2bd78f6869c2",
+    "slug": "learn-commusoft-worker",
+    "name": "learn-commusoft-worker",
+    "status": "ACTIVE",
+    "version": 1,
+    "created_at": 1791625693801,
+    "updated_at": 1791625693801,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c37a06f6-3939-4e68-bdbf-2bd78f6869c2_1/source/supabase/functions/learn-commusoft-worker/index.ts",
+    "ezbr_sha256": "7140fc36f6d1abc5792c20097df27efc7b00f9608397abe1eba092c90c0e0b16"
+  }
+}
