@@ -11,6 +11,7 @@ export const RESIDENCE_METRIC = "work.owned_item_minutes";
 export const RESIDENCE_SOURCE = "serviceos.work.residence@1";
 export const WORK_COLLECTORS = {
   handoffs: {
+    subjectKind: "member",
     metric: HANDOFF_METRIC,
     unit: "handoffs",
     source: HANDOFF_SOURCE,
@@ -21,6 +22,7 @@ export const WORK_COLLECTORS = {
     collected: "Recorded handoff evidence has been collected for this period.",
   },
   residence: {
+    subjectKind: "member",
     metric: RESIDENCE_METRIC,
     unit: "item_minutes",
     source: RESIDENCE_SOURCE,
@@ -30,13 +32,25 @@ export const WORK_COLLECTORS = {
       "Add elapsed minutes for each owned item, including waiting and closed states. Two items held for an hour count as 120 item-minutes. This is not working hours or productivity; no business calendar or delay exclusion is applied.",
     collected: "Elapsed ownership evidence has been collected for this period.",
   },
+  teamResidence: {
+    subjectKind: "team",
+    metric: "work.team_owned_item_minutes",
+    unit: "item_minutes",
+    source: "serviceos.work.team-residence@1",
+    rpc: "learn_team_work_residence_collect",
+    title: "Collect team ownership evidence",
+    description:
+      "Add elapsed item-minutes from direct team assignments and members’ observed team affiliations. Concurrent items add separately, including waiting and closed states. This describes workload, not hours worked, speed or productivity; no calendar or delay exclusion is applied.",
+    collected: "Team ownership evidence has been collected for this period.",
+  },
 } as const;
 export type WorkCollectionKind = keyof typeof WORK_COLLECTORS;
 export function canCollectWork(policy: ScorecardPolicy, kind: WorkCollectionKind) {
   const spec = WORK_COLLECTORS[kind];
   return (
-    policy.subjectKind === "member" &&
-    !policy.groupId &&
+    !!spec &&
+    policy.subjectKind === spec.subjectKind &&
+    (spec.subjectKind === "team" || !policy.groupId) &&
     policy.metrics.some(
       (m) => m.key === spec.metric && m.unit === spec.unit && m.sourceSystems.includes(spec.source),
     )
@@ -50,21 +64,25 @@ export async function collectWorkEvidence(
   input: {
     kind?: WorkCollectionKind;
     policy: ScorecardPolicy;
-    memberId: string;
+    memberId?: string;
+    teamId?: string;
     period: ScorePeriod;
     requestId: string;
     reason: string;
   },
 ) {
-  const { policy, memberId, period, requestId, reason, kind = "handoffs" } = input;
+  const { policy, memberId, teamId, period, requestId, reason, kind = "handoffs" } = input;
   const spec = WORK_COLLECTORS[kind];
+  const subjectId = spec?.subjectKind === "team" ? teamId : memberId;
   const start = Date.parse(period.start),
     end = Date.parse(period.end);
   if (
     validateScorecardPolicy(policy).length ||
     !spec ||
     !canCollectWork(policy, kind) ||
-    !uuid(memberId) ||
+    !uuid(subjectId) ||
+    (spec.subjectKind === "team" ? memberId !== undefined : teamId !== undefined) ||
+    (spec.subjectKind === "team" && !!policy.groupId && policy.groupId !== teamId) ||
     !uuid(requestId) ||
     !Number.isFinite(start) ||
     !Number.isFinite(end) ||
@@ -77,7 +95,7 @@ export async function collectWorkEvidence(
     throw Error("Choose a supported policy, completed period and collection reason");
   const { data, error } = await db.rpc(spec.rpc, {
     p_tenant: policy.tenantId,
-    p_member: memberId,
+    [spec.subjectKind === "team" ? "p_team" : "p_member"]: subjectId,
     p_policy: policy.id,
     p_revision: policy.version,
     p_start: new Date(start).toISOString(),

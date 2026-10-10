@@ -6,6 +6,13 @@ import { readCardSource, CARD_SOURCE_FIELDS } from "./learn-card-sources.ts";
 import type { LearnReadClient } from "./learn-cards.ts";
 import type { EvidenceRef } from "./learn-scorecards.ts";
 const fields: Record<string, string[]> = {
+  learn_team_work_measurement_runs: [
+    "source_system",
+    "metric_key",
+    "observed_at",
+    "explanation",
+    "proof",
+  ],
   learn_work_measurement_runs: [
     "source_system",
     "metric_key",
@@ -29,6 +36,13 @@ export async function loadPerformanceEvidence(
 ): Promise<{ label: string; value: string }[]> {
   if (!uuid(tenantId) || !ref || !uuid(ref.id) || !Object.hasOwn(fields, ref.table))
     throw Error("Unsupported evidence reference");
+  const calculation = ["learn_work_measurement_runs", "learn_team_work_measurement_runs"].includes(
+    ref.table,
+  );
+  const contracts =
+    ref.table === "learn_team_work_measurement_runs"
+      ? ["team-work-residence@1"]
+      : ["work-handoffs@1", "work-residence@1"];
   const names = fields[ref.table];
   let record: Record<string, any>;
   if (ref.table === "interactions" || Object.hasOwn(CARD_SOURCE_FIELDS, ref.table)) {
@@ -60,10 +74,10 @@ export async function loadPerformanceEvidence(
     .filter((k) => record[k] !== null && record[k] !== undefined)
     .map((k) => {
       let value = record[k];
-      if (ref.table === "learn_work_measurement_runs" && k === "proof") {
+      if (calculation && k === "proof") {
         if (
           !value ||
-          !["work-handoffs@1", "work-residence@1"].includes(value.contract) ||
+          !contracts.includes(value.contract) ||
           !Array.isArray(value.items) ||
           !Array.isArray(value.credited)
         )
@@ -77,7 +91,7 @@ export async function loadPerformanceEvidence(
         label: k.replaceAll("_", " "),
         value:
           !["interactions", ...Object.keys(CARD_SOURCE_FIELDS)].includes(ref.table) &&
-          !(ref.table === "learn_work_measurement_runs" && k === "proof") &&
+          !(calculation && k === "proof") &&
           text.length > 4000
             ? text.slice(0, 4000) + "… [excerpt shortened]"
             : text,

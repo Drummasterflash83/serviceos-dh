@@ -1,5 +1,14 @@
 # Existing TEST environment: verified release gaps
 
+## Team workload calculation — local candidate verified, not deployed
+
+The new collector calculates elapsed item-minutes from direct team assignments and
+observed member affiliations. Transfers retain their historical team attribution;
+missing history withholds totals. Forty focused client tests, offline SQL including
+concurrent collection and actual SQL-to-card parsing, app/preview builds and actual
+synthetic browser checks pass. A pinned paired TEST release and signed-in acceptance
+remain required. [Contract, evidence and release limits](LEARN-TEAM-WORKLOAD.md).
+
 ## Team cards and scoring scopes — protected TEST frontend installed
 
 Separate team cards now read explicit team-assigned work and linked evidence.

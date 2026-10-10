@@ -11,6 +11,14 @@ import {
 
 const suggestions = [
   {
+    key: "work.team_owned_item_minutes",
+    label: "Team-owned item-minutes (all states, not hours worked)",
+    unit: "item_minutes",
+    zeroAt: 480,
+    fullAt: 60,
+    source: "serviceos.work.team-residence@1",
+  },
+  {
     key: "work.owned_item_minutes",
     label: "Elapsed owned item-minutes (all states, not hours worked)",
     unit: "item_minutes",
@@ -240,15 +248,16 @@ export function LearnScorecardSettings({
               Add custom measure
             </button>
             {suggestions
-              .filter(
-                (s) =>
-                  kind === "member" ||
-                  ![
-                    "work.owned_item_minutes",
-                    "work.recorded_handoffs",
-                    "work.desk_minutes",
-                    "driving.provider_score",
-                  ].includes(s.key),
+              .filter((s) =>
+                s.key === "work.team_owned_item_minutes"
+                  ? kind === "team"
+                  : kind === "member" ||
+                    ![
+                      "work.owned_item_minutes",
+                      "work.recorded_handoffs",
+                      "work.desk_minutes",
+                      "driving.provider_score",
+                    ].includes(s.key),
               )
               .map((s) => (
                 <button

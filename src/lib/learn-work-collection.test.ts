@@ -184,3 +184,87 @@ test("elapsed ownership uses its own exact source contract and sends no calculat
       }),
     );
 });
+
+test("team collection binds a team subject and historical calculation contract", async () => {
+  const team = {
+    ...policy,
+    subjectKind: "team",
+    metrics: [
+      {
+        ...policy.metrics[0],
+        key: "work.team_owned_item_minutes",
+        unit: "item_minutes",
+        sourceSystems: ["serviceos.work.team-residence@1"],
+      },
+    ],
+  };
+  assert.equal(canCollectWork(team, "teamResidence"), true);
+  assert.equal(canCollectWork({ ...team, groupId: id(8) }, "teamResidence"), true);
+  assert.equal(canCollectWork(team, "residence"), false);
+  assert.equal(canCollectWork({ ...team, subjectKind: "member" }, "teamResidence"), false);
+  const calls: any[] = [];
+  const db = {
+    rpc: async (name: string, args: any) => {
+      calls.push({ name, args });
+      return { data: { measurementId: args.p_request, reused: false }, error: null };
+    },
+  };
+  const teamInput = {
+    kind: "teamResidence" as const,
+    policy: team,
+    teamId: id(8),
+    requestId: id(4),
+    period: input.period,
+    reason: "Team capture review",
+  };
+  await collectWorkEvidence(db, teamInput);
+  assert.equal(calls[0].name, "learn_team_work_residence_collect");
+  assert.equal(calls[0].args.p_team, id(8));
+  assert.equal(calls[0].args.p_member, undefined);
+  assert.equal(Object.keys(calls[0].args).length, 8);
+  await collectWorkEvidence(db, { ...teamInput, policy: { ...team, groupId: id(8) } });
+  for (const patch of [
+    { teamId: undefined },
+    { memberId: id(3) },
+    { policy: { ...team, groupId: id(9) } },
+    { policy: { ...team, subjectKind: "member" } },
+    { policy: { ...team, metrics: [{ ...team.metrics[0], sourceSystems: [RESIDENCE_SOURCE] }] } },
+  ])
+    await assert.rejects(collectWorkEvidence(db, { ...teamInput, ...patch }));
+  assert.equal(calls.length, 2, "Invalid scope must never reach the database");
+});
+
+test("team proof is scoped to its receipt table and retains all attributed segments", async () => {
+  let record: any = {
+    id: id(4),
+    tenant_id: id(2),
+    source_system: "serviceos.work.team-residence@1",
+    proof: {
+      contract: "team-work-residence@1",
+      items: [],
+      credited: [{ owner: "team:" + id(8), extra: "x".repeat(4500) }],
+    },
+  };
+  const db: any = {
+    from: (table: string) => {
+      assert.equal(table, "learn_team_work_measurement_runs");
+      const q: any = {
+        select: () => q,
+        eq: () => q,
+        limit: () => q,
+        then: (f: any) => Promise.resolve({ data: [record], error: null }).then(f),
+      };
+      return q;
+    },
+  };
+  const ref = { table: "learn_team_work_measurement_runs", id: id(4) };
+  const result = await loadPerformanceEvidence(db, id(2), ref);
+  assert.equal(
+    JSON.parse(result.find((r) => r.label === "proof")!.value).credited[0].extra.length,
+    4500,
+  );
+  record = { ...record, proof: { ...record.proof, contract: "work-residence@1" } };
+  await assert.rejects(loadPerformanceEvidence(db, id(2), ref), /proof/);
+  record = { ...record, tenant_id: id(99) };
+  await assert.rejects(loadPerformanceEvidence(db, id(2), ref), /access/);
+});

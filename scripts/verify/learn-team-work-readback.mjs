@@ -1,0 +1,21 @@
+/** Validate real, synthetic SQL output with the production card readers. */
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import { parseMeasurementSnapshot } from '../../src/lib/learn-performance-measurements.ts';
+import { evaluateScorecard } from '../../src/lib/learn-scorecards.ts';
+import { loadPerformanceEvidence } from '../../src/lib/learn-performance-evidence.ts';
+const data=JSON.parse(readFileSync(0,'utf8'));
+const row=data.measurement, policy=data.policy;
+assert.equal(policy.tenantId,'aaaa0000-0000-0000-0000-000000000003');
+const subject={kind:'team',id:row.subject_id,groupIds:row.group_ids};
+const period={start:row.window_start,end:row.window_end};
+const confirmed=parseMeasurementSnapshot(policy,subject,period,[row],data.reviews,[]);
+assert.equal(confirmed[0].review,'confirmed');
+assert.equal(evaluateScorecard(policy,subject,period,confirmed).state,'draft');
+assert.equal(typeof evaluateScorecard(policy,subject,period,confirmed).previewScore,'number');
+const unreviewed=parseMeasurementSnapshot(policy,subject,period,[row],[],[]);
+assert.equal(evaluateScorecard(policy,subject,period,unreviewed).previewScore,null);
+const db={from(table){assert.equal(table,'learn_team_work_measurement_runs');const q={select(){return q;},eq(key,value){assert.equal(data.receipt[key],value);return q;},limit(){return q;},then(f){return Promise.resolve({data:[data.receipt],error:null}).then(f);}};return q;}};
+const evidence=await loadPerformanceEvidence(db,policy.tenantId,{table:'learn_team_work_measurement_runs',id:row.id});
+assert.deepEqual(JSON.parse(evidence.find(r=>r.label==='proof').value),data.receipt.proof);
+console.log('Actual team SQL measurement, review, score and retained-proof parsing: PASS');

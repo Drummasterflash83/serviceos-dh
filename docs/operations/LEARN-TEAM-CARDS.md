@@ -50,3 +50,6 @@ No credentials, temporary users, operator grants, provider requests, source
 mutations, real scoring rules, real assessments or production changes were made.
 Fresh signed-in hosted acceptance and evidenced team aggregation remain pending.
 Current deployment is recorded in [DEPLOYMENT](../DEPLOYMENT.md).
+
+The next [team workload collector](LEARN-TEAM-WORKLOAD.md) is locally verified but
+not yet installed in TEST. Its deployment must be paired with the matching frontend.

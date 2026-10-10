@@ -27,6 +27,7 @@ import {
   type EvidenceRef,
   type ScoreSubject,
 } from "@/lib/learn-scorecards";
+const unitLabel = (s: string) => (s === "item_minutes" ? "item-minutes" : s);
 const date = (s: string) => new Date(s).toLocaleString("en-GB");
 const number = (n: number | null) =>
   n === null
@@ -210,15 +211,15 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
               No stored measurements were returned for this exact subject, period and rule revision.
             </p>
           )}
-          {kind === "member" &&
-            (["handoffs", "residence"] as const)
+          {["member", "team"].includes(kind) &&
+            (["handoffs", "residence", "teamResidence"] as const)
               .filter((mode) => canCollectWork(current.policy, mode))
               .map((mode) => (
                 <WorkCollection
                   key={`${mode}:${id}:${current.policy.id}:${current.policy.version}:${query.from}:${query.until}`}
                   mode={mode}
                   policy={current.policy}
-                  memberId={id}
+                  subjectId={id}
                   period={assessmentPeriod(query.from, query.until)}
                   exists={current.rows.some((m) => m.metricKey === WORK_COLLECTORS[mode].metric)}
                   onSaved={refresh}
@@ -231,7 +232,7 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
               <article className="lp-metric" key={metric.key}>
                 <h4>{metric.label}</h4>
                 <p>
-                  Weight {metric.weight} · {number(metric.value)} {metric.unit} · score{" "}
+                  Weight {metric.weight} · {number(metric.value)} {unitLabel(metric.unit)} · score{" "}
                   {number(metric.score)} / {current.score.scaleMax}
                 </p>
                 {!!metric.reasons.length && (
@@ -249,7 +250,7 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
                   >
                     <summary>
                       {replaced.has(m.id) ? "Earlier observation" : "Current observation"}:{" "}
-                      {number(m.value)} {m.unit} · {m.review}
+                      {number(m.value)} {unitLabel(m.unit)} · {m.review}
                     </summary>
                     <p>
                       Source observed {date(m.sourceObservedAt ?? m.observedAt)} · source coverage
@@ -283,7 +284,7 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
                         <div>
                           <p>
                             Value corrected from {number(m.correction.previous_value)} to{" "}
-                            {number(m.correction.corrected_value)} {m.unit} ·{" "}
+                            {number(m.correction.corrected_value)} {unitLabel(m.unit)} ·{" "}
                             {date(m.correction.created_at)}
                           </p>
                           <p>{m.correction.reason}</p>
@@ -376,7 +377,7 @@ function CorrectionForm({
         needs a separate evidence review before it can support a score.
       </p>
       <label>
-        Corrected value ({measurement.unit})
+        Corrected value ({unitLabel(measurement.unit)})
         <input
           type="number"
           step="any"
@@ -534,6 +535,7 @@ const evidenceTitles: Record<string, string> = {
   phone_recordings: "Recording details",
   jobs: "Job details",
   team_members: "Team member details",
+  learn_team_work_measurement_runs: "Retained team workload calculation",
   learn_work_measurement_runs: "Calculation record",
 };
 const evidenceLabels: Record<string, string> = {
@@ -608,13 +610,13 @@ function Evidence({ tenantId, reference }: { tenantId: string; reference: Eviden
 function WorkCollection({
   mode,
   policy,
-  memberId,
+  subjectId,
   period,
   exists,
   onSaved,
 }: {
   policy: ScorecardPolicy;
-  memberId: string;
+  subjectId: string;
   period: { start: string; end: string };
   exists: boolean;
   onSaved: () => void;
@@ -639,7 +641,7 @@ function WorkCollection({
           await collectWorkEvidence(getSupabaseClient(), {
             kind: mode,
             policy,
-            memberId,
+            ...(spec.subjectKind === "team" ? { teamId: subjectId } : { memberId: subjectId }),
             period,
             ...pending.current,
           });

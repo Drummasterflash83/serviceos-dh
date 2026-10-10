@@ -342,7 +342,7 @@ export async function readLearnCardDetail(
     findings = batches.flat();
     gaps.push(
       kind === "team"
-        ? "Shows work explicitly assigned to this team and its linked evidence. Individual members’ work and scores are not aggregated here."
+        ? "These findings cover work explicitly assigned to this team and its linked evidence. Member workload is calculated separately in performance evidence; individual scores are not aggregated."
         : "Timeline covers evidence linked to owned work; it does not establish all of this person's communications.",
     );
   } else {

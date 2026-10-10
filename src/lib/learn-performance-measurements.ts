@@ -37,6 +37,7 @@ const sources = new Set([
   "jobs",
   "team_members",
   "learn_work_measurement_runs",
+  "learn_team_work_measurement_runs",
 ]);
 const evidence = (v: any): boolean =>
   Array.isArray(v) && v.length > 0 && v.every((r) => r && sources.has(r.table) && uuid(r.id));

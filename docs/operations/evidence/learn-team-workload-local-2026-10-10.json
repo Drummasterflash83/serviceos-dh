@@ -1,0 +1,38 @@
+{
+  "version": "learn-team-workload-local/1",
+  "date": "2026-10-10",
+  "migration": "20261101080000_learn_team_work_residence.sql",
+  "migrationSha256": "dc5b889428f07c8d40d9788116ba03ac796a9ce04a36668780c8dd6a6a276ef1",
+  "verification": {
+    "clientTests": 40,
+    "offlineSQL": "passed: member regressions, team source calculation, access, immutable evidence, rollback, policy scopes, expiry, late directory identity",
+    "concurrentMemberCollection": "one observation",
+    "concurrentTeamCollection": "one observation",
+    "actualSQLToProductionParser": true,
+    "appTypecheck": true,
+    "previewTypecheck": true,
+    "appBuild": true,
+    "previewBuild": true,
+    "appPrebuildTests": 47,
+    "syntheticBrowser": [
+      "Required collection reason",
+      "120 item-minutes remains inferred and unassessed",
+      "Retained proof opens",
+      "Incomplete history withholds value and score"
+    ],
+    "screenshots": [
+      ".verification-results/learn-team-residence-complete-2026-10-10.png",
+      ".verification-results/learn-team-residence-partial-2026-10-10.png"
+    ]
+  },
+  "hostedDeployment": false,
+  "signedInHostedAcceptance": false,
+  "productionChanged": false,
+  "providerRequests": 0,
+  "remaining": [
+    "Pinned 047-based TEST package and preservation rehearsal",
+    "Paired backend/frontend deployment",
+    "Fresh signed-in hosted owner acceptance",
+    "Business calendars, exclusions, job outcomes and large-population processing remain incomplete"
+  ]
+}
