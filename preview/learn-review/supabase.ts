@@ -2,8 +2,16 @@ import {slackRecoveryFixture} from './slack-recovery-fixture';
 import {slackThreadFixture} from './slack-thread-fixture';
 import {workHistoryFixture} from './work-history-fixture';
 import {cardFixture,readDraftFixture,saveDraftFixture,reviewPerformanceFixture,collectHandoffFixture,publishScorecardFixture,publishedPeriodFixture} from './card-fixture';
-const slackImports=new Map<string,unknown>();
-function queueSlackFixture(args:any){const prior=slackImports.get(args.p_request_id);if(prior)return {data:{...prior as any,reused:true},error:null};const data={requestId:args.p_request_id,accountId:crypto.randomUUID(),jobId:crypto.randomUUID(),reused:false};slackImports.set(args.p_request_id,data);return {data,error:null};}
+function queueSlackFixture(args:any){
+ const scenario=new URLSearchParams(location.search).get('slack')??'normal';
+ const key=`serviceos:synthetic:channel:${scenario}`;
+ const imports=JSON.parse(sessionStorage.getItem(key)??'{}');
+ if(scenario==='stale')return{data:null,error:{code:'PT409'}};
+ const prior=imports[args.p_request_id];if(prior)return{data:{...prior,reused:true},error:null};
+ const data={requestId:args.p_request_id,accountId:crypto.randomUUID(),jobId:crypto.randomUUID(),reused:false};
+ imports[args.p_request_id]=data;sessionStorage.setItem(key,JSON.stringify(imports));
+ return scenario==='uncertain'?{data:null,error:{code:'synthetic_lost_response'}}:{data,error:null};
+}
 const idle={state:'idle',started_at:null,completed_at:null,records_processed:null,error_present:null};
 export const supabaseConfig={url:'https://synthetic.invalid',anonKey:''};
 function launchFixture(){const now=Date.now(),tenant_id='11111111-1111-4111-8111-111111111111',scenario=new URLSearchParams(location.search).get('scenario'),stamp=new Date(now-60000).toISOString(),source=(n:number)=>({read_status:'ok',record_count:n,latest_record_at:stamp});return {version:'learn-launch/1',tenant_id:scenario==='foreign'?'33333333-3333-4333-8333-333333333333':tenant_id,observed_at:new Date(now).toISOString(),valid_until:new Date(now+60000).toISOString(),counts:{version:'learn-status/1',tenant_id,observed_at:new Date(now).toISOString(),valid_until:new Date(now+60000).toISOString(),phone:source(2),email:source(3)},recordings:source(1),voicemails:{read_status:'ok',record_count:0,latest_record_at:null},email:{latest_message_sync_attempt:idle,stored_label_counts:{inbox:2,sent:1,draft:0},label_scope:'stored_current_metadata',draft_lifecycle:'unverified',accounts:1,disabled_accounts:0,mailboxes:2,selected_mailboxes:1,removed_mailboxes:0,last_successful_message_sync_at:stamp},phone:{transcript_status_counts:{completed:1,failed:0,pending:0,processing:0},transcript_scope:'stored_status_rows',latest_call_sync_attempt:idle,last_successful_call_sync_at:stamp,recent_calls:[{id:'44444444-4444-4444-8444-444444444444',recording_ids:['66666666-6666-4666-8666-666666666666'],linked_id:'synthetic-family',raw_direction:'IN',started_at:stamp,duration_seconds:30}],direction_scope:'raw_provider',family_audio_coverage:'unverified'},slack:{notifications_enabled:null,message_ingestion:'unavailable'}};}

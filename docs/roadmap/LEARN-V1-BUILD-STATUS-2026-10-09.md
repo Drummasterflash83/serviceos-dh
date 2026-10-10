@@ -718,3 +718,19 @@ successful browser sign-out. The test tab and owned local server were closed.
 This resolves the signed-in browser gap above. No production change, real provider
 capture or frontend deployment occurred. Durable requests remain browser-local and
 limited to channel recovery. See [acceptance and limitations](../operations/LEARN-SLACK-INGESTION.md#channel-recovery-screen--signed-in-test-acceptance-10-october).
+
+
+## Initial Slack approvals now survive reload — local, 10 October
+
+Channel approvals and partial thread batches now retain exact pending requests
+across reload/reopening. Refreshing thread progress no longer discards them.
+Receipts are saved before the next batch item; retry skips confirmed items, and
+clearing an explicit rejection preserves other pending work and existing evidence.
+Storage is scoped by backend, actor, company and import type; authority/lifetime
+checks and browser locks protect submission.
+
+Thirty-three focused tests, application/preview typechecks and preview build passed.
+Synthetic browser acceptance verified lost-response reload/retry, partial batches,
+per-item rejection and viewer restrictions. No hosted state or production source
+changed. Signed-in hosted acceptance of these forms remains; browser-local storage
+does not provide cross-device recovery. See [evidence and remaining scope](../operations/LEARN-SLACK-INGESTION.md#durable-initial-channel-and-thread-approvals--local-10-october).

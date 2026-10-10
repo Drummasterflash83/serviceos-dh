@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useSlackImportOutbox } from "./useSlackImportOutbox";
+import { SlackSavedImport } from "./SlackSavedImport";
 import { LearnSlackRecovery } from "./LearnSlackRecovery";
 import { LearnSlackThreads } from "./LearnSlackThreads";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -6,9 +8,7 @@ import {
   loadSlackConnections,
   validateSlackImportRequest,
   slackChannelId,
-  startSlackImport,
   type SlackConnectionOption,
-  type SlackImportRequest,
 } from "@/lib/learn-slack-setup";
 const local = (ms: number) => {
   const d = new Date(ms);
@@ -32,11 +32,11 @@ export function LearnSlackSetup({
     [end, setEnd] = useState(() => local(Date.now())),
     [pages, setPages] = useState(3),
     [reason, setReason] = useState("");
-  const [busy, setBusy] = useState(false),
-    [submitted, setSubmitted] = useState(false),
-    [queued, setQueued] = useState(false);
-  const pending = useRef<SlackImportRequest | null>(null),
-    generation = useRef(0);
+  const outbox = useSlackImportOutbox(tenantId, actorId, canEdit, "channel");
+  const busy = outbox.busy,
+    submitted = !!outbox.draft,
+    queued = !!outbox.completed;
+  const generation = useRef(0);
   async function load() {
     const ticket = ++generation.current;
     setLoading(true);
@@ -60,50 +60,30 @@ export function LearnSlackSetup({
     };
   }, [tenantId]);
   async function submit() {
-    if (!canEdit || busy || queued) return;
+    if (!canEdit || busy || queued || !outbox.ready) return;
     const connection = connections?.[0];
     if (!connection) return;
     const id = slackChannelId(channel, connection.teamId);
-    if (!pending.current && !id) {
+    if (!id) {
       setNotice("Paste a channel ID or an app.slack.com channel link from the selected workspace.");
       return;
     }
-    const ticket = generation.current;
-    setBusy(true);
-    setNotice("");
     try {
-      const request = pending.current ?? {
+      const request = {
         requestId: crypto.randomUUID(),
         tenantId,
         connection,
-        channelId: id!,
+        channelId: id,
         start: new Date(start).toISOString(),
         end: new Date(end).toISOString(),
         maxPages: pages,
         reason,
       };
       validateSlackImportRequest(request);
-      // Keep the same immutable request after any uncertain network outcome.
-      pending.current = request;
-      setSubmitted(true);
-      const receipt = await startSlackImport(getSupabaseClient(), request);
-      if (ticket === generation.current) {
-        setQueued(true);
-        setNotice(
-          receipt.reused
-            ? "This request was already recorded. No second job was created. This receipt does not establish the current import status."
-            : "Import queued. The worker will check Slack access before reading messages. Queueing does not confirm import completion.",
-        );
-      }
-    } catch (error) {
-      if (ticket === generation.current)
-        setNotice(
-          error instanceof Error
-            ? error.message
-            : "Import was not confirmed. Retry the same request.",
-        );
-    } finally {
-      if (ticket === generation.current) setBusy(false);
+      setNotice("");
+      await outbox.submit([{ kind: "channel", request }]);
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Review this import before approving.");
     }
   }
   return (
@@ -179,12 +159,13 @@ export function LearnSlackSetup({
             </p>
           )
         )}
+        <SlackSavedImport outbox={outbox} canEdit={canEdit} />
         {!submitted && (
           <button className="cp-secondary" onClick={() => void load()} disabled={loading}>
             Reload connections
           </button>
         )}
-        {!!connections?.length && (
+        {!!connections?.length && !submitted && !queued && (
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -192,7 +173,10 @@ export function LearnSlackSetup({
             }}
             className="space-y-4"
           >
-            <fieldset disabled={!canEdit || busy || submitted} className="space-y-3">
+            <fieldset
+              disabled={!canEdit || busy || submitted || queued || !outbox.ready}
+              className="space-y-3"
+            >
               <label className="block">
                 Public channel link or ID
                 <input
@@ -255,7 +239,11 @@ export function LearnSlackSetup({
                 />
               </label>
             </fieldset>
-            <button className="cp-secondary" disabled={!canEdit || busy || queued} type="submit">
+            <button
+              className="cp-secondary"
+              disabled={!canEdit || busy || queued || !outbox.ready}
+              type="submit"
+            >
               {queued
                 ? "Request recorded"
                 : busy
@@ -275,7 +263,12 @@ export function LearnSlackSetup({
         aria-labelledby="slack-threads-tab"
         hidden={view !== "threads"}
       >
-        <LearnSlackThreads key={tenantId} tenantId={tenantId} canEdit={canEdit} />
+        <LearnSlackThreads
+          key={`${actorId}:${tenantId}`}
+          tenantId={tenantId}
+          actorId={actorId}
+          canEdit={canEdit}
+        />
       </div>
     </div>
   );

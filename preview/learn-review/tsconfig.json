@@ -79,6 +79,9 @@
       ],
       "@/lib/learn-slack-recovery-outbox": [
         "../../src/lib/learn-slack-recovery-outbox.ts"
+      ],
+      "@/lib/learn-slack-import-outbox": [
+        "../../src/lib/learn-slack-import-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,

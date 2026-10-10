@@ -1,3 +1,4 @@
+import { SlackImportError } from "./learn-slack-import-errors.ts";
 import type { LearnReadClient } from "./learn-cards.ts";
 export type SlackConnectionOption = { id: string; teamId: string; name: string; revision: string };
 type SetupClient = LearnReadClient & {
@@ -118,14 +119,17 @@ export async function startSlackImport(
     p_reason: input.reason.trim(),
   });
   if (error)
-    throw Error(
+    throw new SlackImportError(
+      error.code ?? "unknown",
       ["40001", "PT409"].includes(error.code ?? "")
         ? "Connection or request changed. Reload setup before continuing."
         : error.code === "55000"
           ? "This channel has an active or incomplete import, or its connector is disabled. Review the existing import before starting another."
-          : error.code === "42501"
-            ? "Company owner or admin access is required."
-            : "Import was not confirmed. Retry the same request to avoid duplicates; the setup service may need deploying.",
+          : error.code === "22023"
+            ? "The import details were rejected. Review the channel and window before approving again."
+            : error.code === "42501"
+              ? "Company owner or admin access is required."
+              : "Import was not confirmed. Retry the same request to avoid duplicates; the setup service may need deploying.",
     );
   if (
     !data ||

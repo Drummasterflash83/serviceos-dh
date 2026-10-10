@@ -669,3 +669,46 @@ cancelled before worker execution. TEST schema/runtime are unchanged; no product
 mutation, provider credential change, scheduler or frontend deployment occurred.
 Live capture, thread recovery, continuous/multi-window capture and the remaining
 LEARN V1 work are still outstanding.
+
+
+## Durable initial channel and thread approvals — local, 10 October
+
+Initial channel imports and observed-thread batches now save their reviewed requests
+in browser local storage before sending. This closes the in-memory gap recorded
+above: closing/reopening, full reload, or refreshing thread progress no longer
+discards an unresolved approval. One channel request and one batch of up to twenty
+threads can be retained per backend, signed-in actor and company. No automatic
+submission occurs on reload. Existing pending requests lost by an older application
+version cannot be reconstructed by this change.
+
+Each thread receipt is validated and saved before sending the next request. Retry
+skips confirmed requests and uses the original IDs for unresolved items. A revoked
+role or closed review stops the unsent remainder. Web Locks serialize same-browser
+tabs; a different unresolved batch cannot replace the saved one. Storage failure,
+malformed history or unexpected replacement stops submission rather than silently
+starting new work. Only allowlisted review metadata and receipts are stored, never
+message excerpts, source payloads, private cursors or credentials.
+
+The saved review is separate from current source progress, so retries remain
+available even if current source discovery fails. Only an explicit conflict,
+unavailable-state or invalid-input database rejection permits an operator to clear
+that individual request. Confirmed and unresolved siblings remain; network failures,
+unverified receipts and permission denial cannot authorize clearing. Clearing a
+local rejected review does not delete source records or backend approvals.
+
+Thirty-three focused Slack tests passed, including nine new outbox tests for lost
+responses, partial batches, scope separation, storage failure, closure/revocation,
+competing requests, per-item rejection and external replacement. Application and
+preview typechecks passed. The preview build passed with its existing dynamic-import
+and chunk-size warnings. Synthetic browser checks verified partial batch → progress
+refresh → full reload → original retry, channel reload/retry, individual rejection
+and viewer restrictions. The preview tab and owned loopback server were closed.
+
+See [structured evidence](evidence/learn-slack-import-outbox-local-2026-10-10.json)
+and [restored batch screenshot](evidence/learn-slack-import-outbox-2026-10-10.png).
+These forms still need signed-in hosted browser acceptance. Actual two-tab browser
+contention was not exercised; lock competition has unit evidence. Storage is local
+to the browser, not a server outbox or cross-device queue. No hosted schema,
+production data, provider, credential or schedule changed. TEST remains release
+014/runtime v4. Live capture, thread recovery, continuous/multi-window capture,
+frontend deployment and the broader LEARN V1 requirements remain outstanding.

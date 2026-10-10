@@ -1,22 +1,31 @@
 import { useEffect, useRef, useState } from "react";
+import { useSlackImportOutbox } from "./useSlackImportOutbox";
+import { SlackSavedImport } from "./SlackSavedImport";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   loadSlackStoredChannels,
   loadSlackObservedThreads,
-  startSlackThreadImport,
   validateSlackThreadRequest,
   slackThreadProgress,
   type SlackStoredChannel,
   type SlackThreadPage,
-  type SlackThreadRequest,
 } from "@/lib/learn-slack-threads";
 const local = (ms: number) => {
   const d = new Date(ms);
   return new Date(ms - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 };
 const display = (value: string) => new Date(value).toLocaleString();
-type Approval = { request: SlackThreadRequest; confirmed: boolean; reused?: boolean };
-export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; canEdit: boolean }) {
+export function LearnSlackThreads({
+  tenantId,
+  actorId,
+  canEdit,
+}: {
+  tenantId: string;
+  actorId: string;
+  canEdit: boolean;
+}) {
+  const outbox = useSlackImportOutbox(tenantId, actorId, canEdit, "threads");
+  const busy = outbox.busy;
   const [channels, setChannels] = useState<SlackStoredChannel[]>([]),
     [channelsNext, setChannelsNext] = useState<string | null>(null),
     [account, setAccount] = useState("");
@@ -25,16 +34,12 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
     [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false),
     [notice, setNotice] = useState(""),
-    [readError, setReadError] = useState(false),
-    [busy, setBusy] = useState(false),
-    [approvals, setApprovals] = useState<Approval[] | null>(null);
+    [readError, setReadError] = useState(false);
   const [start, setStart] = useState(() => local(Date.now() - 86400000)),
     [end, setEnd] = useState(() => local(Date.now())),
     [limit, setLimit] = useState(3),
     [reason, setReason] = useState("");
-  const generation = useRef(0),
-    pending = useRef<Approval[] | null>(null),
-    inFlight = useRef(false);
+  const generation = useRef(0);
   async function channelsLoad(after: string | null = null) {
     const ticket = ++generation.current;
     setLoading(true);
@@ -81,65 +86,44 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
       if (ticket === generation.current) setLoading(false);
     }
   }
+  useEffect(() => {
+    const first = outbox.draft?.entries[0];
+    if (first?.kind === "threads" && !account && !loading) {
+      setAccount(first.request.accountId);
+      void threadsLoad(first.request.accountId);
+    }
+  }, [outbox.draft?.id, account, loading]);
   async function approve() {
-    if (!canEdit || inFlight.current || !page?.canImport || !page.connectionRevision) return;
-    inFlight.current = true;
-    setBusy(true);
+    if (!canEdit || busy || !outbox.ready || !page?.canImport || !page.connectionRevision) return;
     setNotice("");
-    const ticket = generation.current;
     try {
-      if (!pending.current) {
-        const batch = page.threads
-          .filter((t) => selected.includes(t.sourceId))
-          .map((t) => ({
-            request: {
-              requestId: crypto.randomUUID(),
-              tenantId,
-              accountId: page.accountId,
-              sourceId: t.sourceId,
-              sourceVersion: t.sourceVersion,
-              parentTimestamp: t.parentTimestamp,
-              connectionRevision: page.connectionRevision!,
-              start: new Date(start).toISOString(),
-              end: new Date(end).toISOString(),
-              maxPages: limit,
-              reason,
-            },
-            confirmed: false,
-          }));
-        if (!batch.length) throw Error("Select at least one observed thread.");
-        for (const item of batch) validateSlackThreadRequest(item.request);
-        pending.current = batch;
-        setApprovals([...batch]);
-      }
-      const batch = pending.current;
-      if (!batch) throw Error("No prepared requests are available.");
-      for (const item of batch) {
-        if (item.confirmed) continue;
-        // Stop if the panel closes; an in-flight request may still finish. Never
-        // submit the rest of the batch after the operator leaves this review.
-        if (ticket !== generation.current) return;
-        const receipt = await startSlackThreadImport(getSupabaseClient(), item.request);
-        item.confirmed = true;
-        item.reused = receipt.reused;
-        if (ticket === generation.current) setApprovals([...batch]);
-      }
-      if (ticket === generation.current)
-        setNotice(
-          "Requests recorded. Refresh progress to check the worker; approval does not confirm captured replies.",
-        );
+      const requests = page.threads
+        .filter((t) => selected.includes(t.sourceId))
+        .map((t) => ({
+          kind: "threads" as const,
+          request: {
+            requestId: crypto.randomUUID(),
+            tenantId,
+            accountId: page.accountId,
+            sourceId: t.sourceId,
+            sourceVersion: t.sourceVersion,
+            parentTimestamp: t.parentTimestamp,
+            connectionRevision: page.connectionRevision!,
+            start: new Date(start).toISOString(),
+            end: new Date(end).toISOString(),
+            maxPages: limit,
+            reason,
+          },
+        }));
+      if (!requests.length) throw Error("Select at least one observed thread.");
+      for (const r of requests) validateSlackThreadRequest(r.request);
+      await outbox.submit(requests);
     } catch (e) {
-      if (ticket === generation.current)
-        setNotice(
-          e instanceof Error ? e.message : "Approval was not confirmed. Retry the same requests.",
-        );
-    } finally {
-      inFlight.current = false;
-      if (ticket === generation.current) setBusy(false);
+      setNotice(e instanceof Error ? e.message : "Review the selected imports before approving.");
     }
   }
-  const locked = busy || !!approvals,
-    allConfirmed = !!approvals?.every((a) => a.confirmed);
+  const locked = busy || !!outbox.draft || !outbox.ready,
+    allConfirmed = !!outbox.completed;
   return (
     <section className="space-y-4" aria-labelledby="slack-thread-title">
       <h3 id="slack-thread-title" className="font-semibold">
@@ -150,6 +134,7 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
         period you want to import. This list does not establish that every Slack thread has been
         discovered.
       </p>
+      <SlackSavedImport outbox={outbox} canEdit={canEdit} />
       <label className="block">
         Stored channel
         <select
@@ -200,8 +185,7 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
           className="cp-secondary"
           disabled={loading || busy}
           onClick={() => {
-            pending.current = null;
-            setApprovals(null);
+            outbox.clearCompleted();
             void threadsLoad(account, before);
           }}
         >
@@ -305,7 +289,7 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
               </button>
             )}
           </div>
-          {!!page.threads.length && (
+          {!!page.threads.length && !outbox.draft && (
             <form
               className="space-y-3"
               onSubmit={(e) => {
@@ -374,35 +358,19 @@ export function LearnSlackThreads({ tenantId, canEdit }: { tenantId: string; can
                   !page.canImport ||
                   busy ||
                   allConfirmed ||
-                  (!approvals && !selected.length)
+                  !outbox.ready ||
+                  !selected.length
                 }
               >
                 {busy
                   ? "Recording requests…"
                   : allConfirmed
                     ? "Requests recorded"
-                    : approvals
-                      ? "Retry unconfirmed requests"
-                      : `Approve ${selected.length} thread import${selected.length === 1 ? "" : "s"}`}
+                    : `Approve ${selected.length} thread import${selected.length === 1 ? "" : "s"}`}
               </button>
             </form>
           )}
         </>
-      )}
-      {approvals && (
-        <div className="text-sm">
-          <p>
-            {approvals.filter((a) => a.confirmed).length} of {approvals.length} requests confirmed.
-            Retries reuse their original request IDs.
-          </p>
-          {approvals.some((a) => !a.confirmed) && (
-            <p>
-              Keep this panel open to retry the same requests. Refreshing progress clears this
-              request review; an unconfirmed request may already be recorded, so check the latest
-              window before approving again.
-            </p>
-          )}
-        </div>
       )}
       {!canEdit && <p>Only your company’s owner or admin can approve imports.</p>}
       {notice && <p role={readError ? "alert" : "status"}>{notice}</p>}

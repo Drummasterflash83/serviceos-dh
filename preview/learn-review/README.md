@@ -9,7 +9,8 @@ company. Synthetic recovery receipts/state persist in session storage so
 a full reload. Retry resolves the same receipt. `stale`, `viewer`, `complete`,
 `disabled` and `error` cover rejection, read-only authority, completion and unavailable
 states. These are local fixtures; no provider or hosted database is contacted.
-Older setup/thread forms still retain their pending requests only in memory.
+Initial channel and thread approvals now also use durable browser-local requests,
+including partial batch confirmations. Refreshing progress keeps unresolved work.
 
 9 October card increment: `?launch=1` now mounts the actual current company-card
 and scoring-settings components with synthetic canonical records. Office/engineer
@@ -20,7 +21,9 @@ The current application stylesheet is imported so dialog utility classes are
 generated correctly. These changes supersede the older statements below that all
 preview mutations throw and that the global stylesheet is a frozen copy.
 
-Slack setup also uses synthetic connection metadata and in-memory import receipts.
+Slack setup uses synthetic connection metadata and session-storage import receipts.
+`&slack=uncertain` loses the initial reply; a reload and exact retry resolves it.
+`&slack=stale` returns an explicit rejection that the operator may clear.
 `&slack=empty` shows the missing-connection state. “Approve and queue import” in
 this local preview never creates a database job or contacts Slack. It exercises
 the actual setup form and client request contract only.
@@ -31,7 +34,10 @@ approval receipts and latest-window progress. `&threads=uncertain` simulates a l
 second approval response; retry reuses its saved request ID and completes the
 remaining batch. `disabled`, `empty`, `no-threads` and `error` exercise retained
 evidence, empty and failed-read states. These fixtures never create database jobs
-or call Slack; refreshing the browser resets them.
+or call Slack; their synthetic receipts and source timing now survive reload within
+the tab. `&threads=stale` rejects the second item; clearing it preserves the other
+batch members. Browser-local approval storage is separate from these fixture
+receipts and remains scoped to backend, actor, company and import type.
 
 A local, static review of the requested LEARN experience, mounted in the actual baseline ClientPortal and OperatorShell. Baseline:13b554368cda86dfb0a4014d4187b548a8b9de02. This supersedes the rejected4a8a05d preview direction; no publication is authorized.
 

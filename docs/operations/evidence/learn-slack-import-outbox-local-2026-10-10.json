@@ -1,0 +1,57 @@
+{
+  "version": "learn-slack-import-outbox-local/1",
+  "date": "2026-10-10",
+  "result": "passed",
+  "implementation": {
+    "scope": [
+      "backend",
+      "signed-in actor",
+      "company",
+      "channel or threads"
+    ],
+    "maxPendingChannelRequests": 1,
+    "maxPendingThreadRequests": 20,
+    "storage": "browser localStorage",
+    "coordination": "Web Locks",
+    "persistBeforeRpc": true,
+    "persistReceiptBeforeNextRequest": true,
+    "automaticRetryOnReload": false,
+    "sourcePayloadOrCredentialsStored": false
+  },
+  "tests": {
+    "command": "node --test src/lib/learn-slack-import-outbox.test.ts src/lib/learn-slack-setup.test.ts src/lib/learn-slack-threads.test.ts src/lib/learn-slack-recovery-outbox.test.ts src/lib/learn-slack-history-recovery.test.ts",
+    "passed": 33,
+    "failed": 0,
+    "newOutboxTests": 9
+  },
+  "checks": {
+    "applicationTypecheck": "passed",
+    "previewTypecheck": "passed",
+    "previewBuild": "passed with existing dynamic-import and chunk-size warnings",
+    "diffCheck": "passed"
+  },
+  "browser": {
+    "environment": "actual components with synthetic-only preview; no real database or provider",
+    "observations": [
+      "Selected all three observed threads and approved a synthetic batch; the second response was lost after the fixture recorded it.",
+      "Saved review showed one confirmed and two unresolved items with their original windows, reasons and page budgets.",
+      "Refresh thread progress retained the one-of-three saved review while current fixture progress showed two queued imports.",
+      "Full page reload and reopening restored the same one-of-three review and stored channel; no auto-submission occurred.",
+      "Retry saved requests resolved all three approvals; already confirmed requests were skipped by the tested outbox contract.",
+      "Initial channel approval with a lost response survived reload and resolved through its original request.",
+      "A separate thread batch explicitly rejected its second item after one confirmation. Clearing only that rejection preserved its confirmed and unsent siblings; retry resolved two confirmations and one cleared rejection.",
+      "A pending channel request remained visible but its retry button was disabled after synthetic role changed to viewer. Restoring owner authority allowed the original request to resolve."
+    ],
+    "tabClosed": true,
+    "ownedServerStopped": true,
+    "screenshot": "learn-slack-import-outbox-2026-10-10.png"
+  },
+  "limits": [
+    "No hosted signed-in acceptance of the newly durable initial channel/thread forms in this milestone; prior backend contracts and recovery-screen acceptance are separate evidence.",
+    "Lock competition is tested through the storage/lock contract, not a real two-tab browser race.",
+    "Browser-local storage does not survive browser-data removal or move between devices. Existing requests already lost by older in-memory forms cannot be reconstructed.",
+    "Explicit database rejections can be cleared per item; uncertain and permission-denied outcomes retain their exact requests.",
+    "No production mutation, hosted schema change, provider request, credential change, scheduler or frontend deployment.",
+    "Live Slack and voicemail capture, continuous history, other source integrations and broader LEARN V1 remain incomplete."
+  ]
+}

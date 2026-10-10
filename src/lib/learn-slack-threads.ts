@@ -1,3 +1,4 @@
+import { SlackImportError } from "./learn-slack-import-errors.ts";
 export type SlackThreadClient = {
   rpc: (
     name: string,
@@ -237,14 +238,17 @@ export async function startSlackThreadImport(db: SlackThreadClient, r: SlackThre
     p_reason: r.reason.trim(),
   });
   if (error)
-    throw Error(
+    throw new SlackImportError(
+      error.code ?? "unknown",
       error.code === "42501"
         ? "Company owner or admin access is required."
-        : error.code === "PT409"
+        : ["PT409", "40001"].includes(error.code ?? "")
           ? "The source, connection or saved request changed. Reload the thread evidence before preparing another import."
-          : error.code === "55000"
-            ? "A thread import is already active or this connection is disabled. Review its status before preparing another request."
-            : "Thread approval was not confirmed. Retry the same request to avoid duplicates.",
+          : error.code === "22023"
+            ? "The thread import details were rejected. Review the source and window before approving again."
+            : error.code === "55000"
+              ? "A thread import is already active or this connection is disabled. Review its status before preparing another request."
+              : "Thread approval was not confirmed. Retry the same request to avoid duplicates.",
     );
   if (
     data?.requestId !== r.requestId ||
