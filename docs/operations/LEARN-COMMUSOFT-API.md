@@ -10,7 +10,8 @@ Production and the frontend release are unchanged.
 
 OpenFolk operator switch/import-approval RPCs and their application adapter are
 now implemented and verified locally. They use the existing platform authority
-ledger. The UI, prerequisite-aware TEST release and signed-in operator acceptance
+ledger. The OpenFolk Modules view now includes the local operator screen and durable
+request recovery. Prerequisite-aware TEST release and signed-in operator acceptance
 remain outstanding; these new controls are not yet available in hosted TEST.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
@@ -538,3 +539,30 @@ and migration rollback. Actual SQL output also passes the application parser; fi
 client tests and application typechecking pass. These are local checks, not hosted
 operator or provider acceptance. Operator UI, connection credential setup/verification,
 incomplete-import recovery controls and successful provider page tests remain open.
+
+## OpenFolk screen and saved requests — local, 10 October
+
+`OperatorLearnInputs` is mounted in the operator client's Modules view. It shows
+the two implemented module switches, connection verification/binding metadata,
+bounded collection/page/expiry choices and per-account progress. An explicit
+reason and review checkbox precede changes. It distinguishes queued work, retained
+pages, interrupted work and traversal completion. It does not label recorded
+credential metadata as successful provider capture. Email/phone/Slack switches
+and the credential setup flow remain unwired.
+
+`learn-operator-input-outbox.ts` saves each request before any network call under
+the backend, actor and tenant. Web Locks coordinate tabs. Check, same-request retry
+and cancellation all read the server receipt first; unavailable, pending or
+unverifiable results retain the local request. New changes stay blocked while a
+request is unresolved. Storage failures do not send a request; changed context or
+competing storage contents cannot be silently cleared. An acknowledged result
+remains acknowledged even if refreshing the overview fails afterwards.
+
+The isolated preview disables network connections and uses synthetic receipts
+stored independently from the real outbox. Browser acceptance passed a lost save
+reply, actual page reload, retained pending controls, and receipt recovery with the
+saved disabled module state visible. Unavailable-service state hides mutation
+controls. Eleven adapter/outbox tests, application typechecking, application build
+and isolated preview build pass. These checks do not replace hosted operator
+authorization or real provider acceptance. Screenshot:
+`evidence/learn-operator-inputs-browser-2026-10-10.png`.

@@ -37,6 +37,9 @@ const ClientInvestment = lazy(() =>
 const OperatorDelivery = lazy(() =>
   import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
 );
+const OperatorLearnInputs = lazy(() =>
+  import("./OperatorLearnInputs").then((module) => ({ default: module.OperatorLearnInputs })),
+);
 const tabs: { view: ReceptionistView; label: string }[] = [
   { view: "testing", label: "Automated voice tests" },
   { view: "improvements", label: "Feedback & responses" },
@@ -91,7 +94,9 @@ function OperatorModuleContent({
           ))}
         </nav>
         <Suspense fallback={<p role="status">Opening the receptionist…</p>}>
-          {view === "today" && <PhoneCaptureCoverage key={`capture-${tenantId}`} tenantId={tenantId} />}
+          {view === "today" && (
+            <PhoneCaptureCoverage key={`capture-${tenantId}`} tenantId={tenantId} />
+          )}
           {view === "testing" ? (
             <ReceptionistTesting key={tenantId} tenantId={tenantId} />
           ) : view === "improvements" ? (
@@ -127,6 +132,17 @@ function OperatorModuleContent({
   if (module === "modules")
     return (
       <>
+        {user && (
+          <Suspense fallback={<p role="status">Opening LEARN controls…</p>}>
+            <div className="cp-root op-embedded" style={{ marginBottom: 24 }}>
+              <OperatorLearnInputs
+                key={`${tenantId}:${user.id}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
+            </div>
+          </Suspense>
+        )}
         <OperatorDelivery key={`${tenantId}-delivery`} tenantId={tenantId} mode="outcomes" />
         <div style={{ marginTop: 28 }}>
           <p className="op-shared-note">

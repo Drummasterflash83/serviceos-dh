@@ -1450,3 +1450,21 @@ credentials or provider traffic changed. The TEST project lacks the existing
 platform-authority prerequisites, so those must be inspected and packaged before
 hosted release. The operator UI, connection setup/verification, recovery controls
 and real-source acceptance remain to be completed.
+
+## OpenFolk input controls wired into Modules — local, 10 October
+
+The operator Modules view now exposes LEARN/Commusoft switches, connection metadata,
+bounded import approvals and retained progress. Saved requests are scoped to the
+backend/operator/company and coordinated across tabs. An uncertain reply blocks new
+changes until an explicit receipt check, same-request retry or server cancellation
+resolves it. Requests survive reload, and storage/context failures never silently
+discard unresolved work. The UI distinguishes an approval queued for work from
+completed capture and preserves acknowledged results if a status refresh fails.
+
+Eleven adapter/outbox tests, application typechecking and builds pass. Synthetic
+browser acceptance passed lost-save response, actual reload, receipt recovery and
+the unavailable-service screen. The preview has network access disabled; its
+simulated receipts are not hosted TEST or real provider evidence. The new screen
+still needs the operator prerequisites/RPCs released and signed-in verification
+against TEST. Credential setup, incomplete-import recovery and broader module
+controls remain open. No production or hosted source data changed.

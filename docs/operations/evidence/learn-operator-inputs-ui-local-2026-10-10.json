@@ -1,0 +1,27 @@
+{
+  "version": "learn-operator-inputs-ui-local/1",
+  "observedAt": "2026-10-10T10:16:02.318362+00:00",
+  "state": "passed",
+  "checks": [
+    "OperatorModules mounts the new control screen under the existing OpenFolk route authority gate.",
+    "Eleven adapter/outbox tests pass, including lost replies, reload/read recovery, storage denial, conflicting context and cancellation.",
+    "Application TypeScript check, production build with 47 prebuild checks and isolated preview build pass.",
+    "Real browser: simulated successful module change with lost reply, actual page reload, new controls blocked, check saved result recovers recorded disabled state.",
+    "Unavailable-service browser screen hides mutation controls.",
+    "Acknowledged save remains visible when the following status refresh fails."
+  ],
+  "screenshot": "learn-operator-inputs-browser-2026-10-10.png",
+  "sourceSha256": {
+    "src/components/app/OperatorLearnInputs.tsx": "5255425411fce6a6068767a07d32314cdcbabdf7cc4325ac2519df8f83ba964e",
+    "src/components/app/OperatorModules.tsx": "a268bcfda0cec30fc3da0ae80151cdaf11673c7acb9a01178ff3d3b53aa3fa78",
+    "src/lib/learn-operator-input-outbox.ts": "1dd78c3c67e2e690e78cc9516e2cff259b783112f4266c5069730fedfcff4d5e",
+    "src/styles/operator-learn-inputs.css": "04a0aa0861721c8e1e60d34fb16953b86b21b52ff398abc5a087ce5edf2d1cf9"
+  },
+  "limitations": [
+    "Browser preview uses synthetic local-storage server receipts and CSP connect-src none; it does not exercise hosted Auth/PostgREST.",
+    "Operator prerequisites and RPCs still need TEST release and signed-in acceptance.",
+    "Credential setup, incomplete-import recovery, email/phone/Slack switches and real Commusoft source capture remain open.",
+    "No production deployment, provider request or hosted data change."
+  ],
+  "cleanup": "Temporary preview tab closed and server stopped; user preview on port 47871 untouched."
+}

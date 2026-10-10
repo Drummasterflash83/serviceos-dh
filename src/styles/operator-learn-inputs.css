@@ -1,0 +1,21 @@
+.op-learn-inputs fieldset { min-width: 0; }
+.op-learn-inputs legend { margin-bottom: 12px; }
+.op-learn-inputs label { font-size: 13px; line-height: 1.5; }
+.op-learn-inputs .cp-input,
+.op-learn-inputs .cp-select {
+  display: block;
+  margin-top: 6px;
+  min-height: 42px;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1px solid #d8d1df;
+  border-radius: 9px;
+  color: #302a3d;
+  font: inherit;
+}
+.op-learn-inputs textarea { min-height: 88px; resize: vertical; }
+.op-learn-inputs input[type="checkbox"] { width: 16px; height: 16px; accent-color: #725888; flex-shrink: 0; }
+.op-learn-inputs :focus-visible { outline: 2px solid #725888; outline-offset: 3px; }
+.op-learn-inputs button:disabled,
+.op-learn-inputs fieldset:disabled { opacity: .6; }
+.op-learn-inputs button { white-space: normal; }
