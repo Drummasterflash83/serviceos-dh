@@ -2,17 +2,17 @@
 
 ## Current state — 10 October 2026
 
-The input schema and dedicated worker are installed in TEST. Customer/site/job
-review has passed signed-in acceptance using synthetic sources. The deployed
-worker has passed HTTP authority checks, interrupted-claim recovery and missing-
-credential/module-disabled handling. Successful real API capture is not established.
-Production and the frontend release are unchanged.
+The input schema, dedicated worker and OpenFolk switch/import-approval RPCs are
+installed in TEST. Signed-in operator and customer/site/job review acceptance
+passes. A successful synthetic ingestion run exercised real Vault/RPCs, page
+continuation, lost-reply handling, deployed committed-page recovery and reviewed
+cards. Real Commusoft API access and coverage are not established. Production and
+the frontend release are unchanged.
 
-OpenFolk operator switch/import-approval RPCs and their application adapter are
-now implemented and verified locally. They use the existing platform authority
-ledger. The OpenFolk Modules view now includes the local operator screen and durable
-request recovery. Prerequisite-aware TEST release and signed-in operator acceptance
-remain outstanding; these new controls are not yet available in hosted TEST.
+The local OpenFolk screen includes durable request recovery and read-only viewer
+controls. Atomic connection configuration is now implemented and tested locally,
+using the existing tenant Vault broker; it is not yet released to TEST. Its setup
+screen and connection verification operation remain to be completed.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
 connection or Commusoft-named project secret. Checked local environment variable
@@ -662,3 +662,37 @@ access, response shapes, contact/work-address support, coverage and operational
 readiness still require account-specific acceptance. The next build slice is
 operator connection setup; incomplete-import recovery, contacts projection,
 reconciliation and source updates remain unfinished.
+
+## Atomic connection configuration — local, 10 October
+
+`20261031170000_learn_commusoft_connection_setup.sql` adds an operator-only
+`learn_commusoft_configure` protocol and a private immutable request ledger.
+It depends on the existing operator access helper and tenant Vault broker.
+The definition contains account identity, region, observed connection revision,
+reuse/replace choice, reason and explicit same-account confirmation. A credential
+is a separate transient argument, never part of a persisted recovery definition.
+Configuration, Vault storage, metadata, audit and receipt commit atomically.
+
+The protocol supports apply/check/cancel. Exact replay checks the retained request;
+a supplied replacement key is compared through a private fingerprint. A receipt
+check or cancellation must omit credentials. No automatic retry is performed.
+Cancellation prevents a delayed apply. A later receipt failure rolls back even
+an already-executed Vault update. Existing account/region cannot be changed by
+this maintenance action, and active Commusoft jobs block reconfiguration.
+
+Every configuration clears `verified_at` and records `not_verified`; a setup
+receipt explicitly says verification is required. It does not enable flags,
+reset checkpoints or enqueue work. The application adapter rejects unexpected
+secret-bearing definition fields and sanitizes all transport/database errors.
+
+Local tests execute the existing broker SQL against a synthetic Vault stand-in,
+including rotation invalidation, rollback and apply/cancel concurrency. They do
+not prove hosted encryption or release compatibility. The setup UI, verification
+operation and hosted release remain outstanding. Evidence:
+`evidence/learn-commusoft-connection-local-2026-10-10.json`.
+
+Commusoft's official authentication guide was rechecked on 10 October: private-app
+keys are created by an account administrator under Settings / Private applications
+and sent as `x-api-key`. The endpoint-generated Bearer example still conflicts
+with that guide; real account verification must resolve it without silently trying
+alternate authentication modes. No real key was requested or read in this slice.

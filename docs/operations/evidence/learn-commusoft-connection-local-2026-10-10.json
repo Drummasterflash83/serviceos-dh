@@ -1,0 +1,30 @@
+{
+  "version": "learn-commusoft-connection-local/1",
+  "observedAt": "2026-10-10T10:54:38.782675+00:00",
+  "state": "passed",
+  "checks": [
+    "Operator admin authority, expected actor, View As denial, immediate grant revocation and denied API-role raw history/credential reads.",
+    "Credential values excluded from retained definitions, receipts and audit; client sanitizes errors and never retries a secret-bearing request automatically.",
+    "Existing tenant-qualified key reuse, initial key storage, explicit rotation and cleared verification.",
+    "Immutable request replay, changed-key/client/revision rejection and cancelled-request late apply.",
+    "Existing provider account/region cannot be silently rebound; active imports prevent reconfiguration.",
+    "Late receipt failure rolls back Vault replacement, connection metadata and audit together.",
+    "Concurrent apply/cancel yields one durable outcome; migration rollback leaves no new setup objects.",
+    "Actual SQL receipt passes application adapter; four client tests and application typecheck pass."
+  ],
+  "sourceSha256": {
+    "supabase/migrations/20261031170000_learn_commusoft_connection_setup.sql": "913de38bd2a3f165289feac6a1517008936c57cc3848d8b334a5b5ac5da7a239",
+    "src/lib/learn-commusoft-connection.ts": "8a499da918d83977bee702aa4dbb2b774a44402b8747ff9127a69d3d0e55c330",
+    "src/lib/learn-commusoft-connection.test.ts": "998a3670287e7a66a8bc4ad0649d1713721f2347e7f9f214283968e6005cb8d6",
+    "scripts/verify/learn-commusoft-connection.py": "2659d1801e53577391f089597b0412fdad530dab7f710ebc86b0323fcd863946",
+    "scripts/verify/learn-commusoft-connection.fixture.sql": "4d726b2950547283676a6c7a78fe87895bd72cae07520af37e7d593f43eb9937",
+    "scripts/verify/learn-commusoft-connection.assert.sql": "29953a52cb6b7768cd21a144040635701bbf356a99727535e9b4d6edcce6d946"
+  },
+  "limitations": [
+    "Disposable PostgreSQL 15 uses synthetic supporting tables and Vault stand-ins; the actual existing provider broker SQL is executed, but Vault encryption and complete hosted schema compatibility are not established by this run.",
+    "New connection setup migration and RPC are local only. No hosted or production credentials, connections, data or schema were changed.",
+    "Browser setup/recovery UI and provider verification operation remain unfinished. Configured credentials require verification before imports can be approved.",
+    "Different Commusoft account/region migration and incomplete-import recovery require separate explicit workflows."
+  ],
+  "cleanup": "Disposable database container removed; no network or host mounts were used."
+}

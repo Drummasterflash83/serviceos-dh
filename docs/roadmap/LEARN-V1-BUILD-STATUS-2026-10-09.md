@@ -1575,3 +1575,31 @@ check confirmed retirement. Evidence:
 Next: operator connection setup and real Drummonds API access/coverage. Incomplete
 import recovery controls, contacts projection, existing-target reconciliation,
 source updates, Slack/voicemail completion and production release remain open.
+
+## Atomic Commusoft connection setup — local, 10 October
+
+A new operator-only configure/check/cancel RPC reuses the existing tenant Vault
+broker and commits credential storage, connection metadata, audit and immutable
+receipt in one transaction. Existing stored credentials can be reused without
+being read into the browser. Replacement credentials are transient RPC arguments;
+only a private fingerprint is retained with the request. Configuration always
+clears verification and never enables a module or starts an import.
+
+The request validates exact non-secret fields before retaining even a cancellation.
+Receipt checks require no key, conflicting key/revision/client/actor use is refused,
+and a cancelled request cannot apply later. Existing account/region identity cannot
+be silently changed, and active imports must be resolved before reconfiguration.
+The application adapter sanitizes provider/database errors and returns only the
+safe receipt fields.
+
+Disposable PostgreSQL checks passed authority, replay/cancellation, concurrent
+requests, source identity protection, actual broker key reuse/rotation, verification
+invalidation and complete rollback after a late receipt failure. The actual SQL
+receipt passes the client parser; four client tests and application typechecking
+pass. Vault encryption uses a stand-in in this local fixture; hosted compatibility
+and encryption acceptance remain required. No hosted state changed.
+
+Next: the bounded connection verification operation and setup/recovery screen,
+then TEST packaging and signed-in acceptance. Real Drummonds access is still
+unconfirmed. Evidence:
+[local connection setup](../operations/evidence/learn-commusoft-connection-local-2026-10-10.json).
