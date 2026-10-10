@@ -85,7 +85,9 @@ begin
     'account_key',c.non_secret_config->>'account_key','region',c.non_secret_config->>'region','configured_fields',c.configured_fields);
  end if;
  if credential_mode='reuse' then
-  select id into secret_id from vault.secrets where name='provider_secret:'||p_tenant::text||':commusoft:api_key' for share;
+  -- Vault grants metadata SELECT, not UPDATE needed by row-lock clauses. The
+  -- tenant setup lock and connection row lock fence governed configuration changes.
+  select id into secret_id from vault.secrets where name='provider_secret:'||p_tenant::text||':commusoft:api_key';
   if secret_id is null then raise exception 'learn_connection_credential_missing' using errcode='55000';end if;
   if has_connection and c.secret_refs ? 'api_key' and c.secret_refs->>'api_key' is distinct from secret_id::text then
    raise exception 'learn_connection_binding_changed' using errcode='PT409';end if;

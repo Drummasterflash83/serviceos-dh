@@ -66,7 +66,7 @@ begin
   or nullif(btrim(c.non_secret_config->>'account_key'),'') is null
   or public.learn_commusoft_verification_binding(c) is distinct from r.binding then return false;end if;
  perform 1 from vault.secrets where id::text=c.secret_refs->>'api_key'
-  and name='provider_secret:'||r.tenant_id::text||':commusoft:api_key' for share;
+  and name='provider_secret:'||r.tenant_id::text||':commusoft:api_key';
  if not found then return false;end if;
  return r.expires_at>clock_timestamp();
 end $$;

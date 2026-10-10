@@ -1,0 +1,36 @@
+{
+  "version": "learn-commusoft-connection-package/1",
+  "sha256": "15c41fa4166c4584e768d922ed8d4a2e10a103fd2ecd003074e33cc75597437c",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260810120000_provider_secret_broker.sql",
+      "sha256": "dd074d6ece827c80d811b8dac584072759e3988448555559f5e3d968934ac7ec"
+    },
+    {
+      "path": "supabase/migrations/20261031170000_learn_commusoft_connection_setup.sql",
+      "sha256": "a847fcb67e725f113bf1aff87822c5cb764f88fbaffac32aa66b19e15a70847f"
+    },
+    {
+      "path": "supabase/migrations/20261031180000_learn_commusoft_connection_verification.sql",
+      "sha256": "1f76f2bd7a4704e8cb9c25eee8890f5ac1199d867803928285a09ea93129e7c0"
+    }
+  ],
+  "tables": [
+    "learn_commusoft_connection_requests",
+    "learn_commusoft_verification_requests",
+    "learn_commusoft_verification_permits",
+    "learn_commusoft_verification_results"
+  ],
+  "functions": [
+    "provider_secret_name",
+    "provider_secret_store",
+    "learn_commusoft_configure",
+    "learn_commusoft_verification_binding",
+    "learn_commusoft_verification_authority",
+    "learn_commusoft_verification_receipt",
+    "learn_commusoft_verify_request",
+    "learn_commusoft_verify_acquire",
+    "learn_commusoft_verify_authorized",
+    "learn_commusoft_verify_finish"
+  ]
+}

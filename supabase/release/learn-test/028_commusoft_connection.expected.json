@@ -1,0 +1,740 @@
+{
+  "sourceSha256": "15c41fa4166c4584e768d922ed8d4a2e10a103fd2ecd003074e33cc75597437c",
+  "tables": [
+    {
+      "rls": true,
+      "name": "learn_commusoft_connection_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "definition",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "credential_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "previous_state",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "receipt",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_commusoft_connection_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_commusoft_connection_requests_pkey ON public.learn_commusoft_connection_requests USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_commusoft_connection_immutable",
+          "function": "learn_operator_input_immutable",
+          "definition": "CREATE TRIGGER learn_commusoft_connection_immutable BEFORE DELETE OR UPDATE ON public.learn_commusoft_connection_requests FOR EACH ROW EXECUTE FUNCTION learn_operator_input_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_commusoft_connection_requests_actor_id_fkey",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_commusoft_connection_requests_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_commusoft_connection_requests_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_commusoft_verification_permits",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "credential_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "send_before",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_commusoft_verification_permits_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_commusoft_verification_permits_pkey ON public.learn_commusoft_verification_permits USING btree (id)"
+        },
+        {
+          "name": "learn_commusoft_verification_permits_request_id_key",
+          "definition": "CREATE UNIQUE INDEX learn_commusoft_verification_permits_request_id_key ON public.learn_commusoft_verification_permits USING btree (request_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_commusoft_verification_permit_immutable",
+          "function": "learn_operator_input_immutable",
+          "definition": "CREATE TRIGGER learn_commusoft_verification_permit_immutable BEFORE DELETE OR UPDATE ON public.learn_commusoft_verification_permits FOR EACH ROW EXECUTE FUNCTION learn_operator_input_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_commusoft_verification_permit_credential_fingerprint_fkey",
+          "definition": "FOREIGN KEY (credential_fingerprint) REFERENCES learn_business_input_request_gates(credential_fingerprint)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_commusoft_verification_permits_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_commusoft_verification_permits_request_id_fkey",
+          "definition": "FOREIGN KEY (request_id) REFERENCES learn_commusoft_verification_requests(id)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_commusoft_verification_permits_request_id_key",
+          "definition": "UNIQUE (request_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_commusoft_verification_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "definition",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "binding",
+          "type": "jsonb",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_commusoft_verification_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_commusoft_verification_requests_pkey ON public.learn_commusoft_verification_requests USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_commusoft_verification_request_immutable",
+          "function": "learn_operator_input_immutable",
+          "definition": "CREATE TRIGGER learn_commusoft_verification_request_immutable BEFORE DELETE OR UPDATE ON public.learn_commusoft_verification_requests FOR EACH ROW EXECUTE FUNCTION learn_operator_input_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_commusoft_verification_requests_actor_id_fkey",
+          "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_commusoft_verification_requests_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_commusoft_verification_requests_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_commusoft_verification_results",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "observation_code",
+          "type": "text",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "retry_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "receipt",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_commusoft_verification_results_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_commusoft_verification_results_pkey ON public.learn_commusoft_verification_results USING btree (request_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "learn_commusoft_verification_result_immutable",
+          "function": "learn_operator_input_immutable",
+          "definition": "CREATE TRIGGER learn_commusoft_verification_result_immutable BEFORE DELETE OR UPDATE ON public.learn_commusoft_verification_results FOR EACH ROW EXECUTE FUNCTION learn_operator_input_immutable()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_commusoft_verification_results_pkey",
+          "definition": "PRIMARY KEY (request_id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_commusoft_verification_results_request_id_fkey",
+          "definition": "FOREIGN KEY (request_id) REFERENCES learn_commusoft_verification_requests(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_commusoft_configure",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text, p_api_key text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_configure(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text DEFAULT 'apply'::text, p_api_key text DEFAULT NULL::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare prior public.learn_commusoft_connection_requests%rowtype;c public.provider_connections%rowtype;\n wanted_revision timestamptz;region text;account_key text;credential_mode text;secret_id uuid;\n key_fingerprint text;previous jsonb;receipt jsonb;has_connection boolean;\nbegin\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n if p_request is null or p_mode is null or p_mode not in ('apply','check','cancel')\n  or jsonb_typeof(p_definition) is distinct from 'object' or octet_length(p_definition::text)>10000\n  or (p_mode<>'apply' and p_api_key is not null) then\n  raise exception 'learn_connection_request_invalid' using errcode='22023';end if;\n if p_api_key is not null then\n  if octet_length(p_api_key) not between 1 and 4096 or p_api_key!~'^[!-~]+$' then\n   raise exception 'learn_connection_credential_invalid' using errcode='22023';end if;\n  key_fingerprint:=encode(sha256(convert_to('commusoft:'||p_api_key,'UTF8')),'hex');\n end if;\n if not p_definition ?& array['kind','reason','region','account_key','expected_revision','credential_mode','same_account_confirmed']\n  or (p_definition-array['kind','reason','region','account_key','expected_revision','credential_mode','same_account_confirmed'])<>'{}'::jsonb\n  or p_definition->>'kind' is distinct from 'configure_commusoft'\n  or jsonb_typeof(p_definition->'reason') is distinct from 'string' or length(btrim(p_definition->>'reason')) not between 1 and 1000\n  or jsonb_typeof(p_definition->'region') is distinct from 'string' or p_definition->>'region' not in ('uk','us')\n  or jsonb_typeof(p_definition->'account_key') is distinct from 'string' or length(btrim(p_definition->>'account_key')) not between 1 and 2000\n  or jsonb_typeof(p_definition->'expected_revision') not in ('string','null')\n  or jsonb_typeof(p_definition->'credential_mode') is distinct from 'string' or p_definition->>'credential_mode' not in ('reuse','replace')\n  or p_definition->'same_account_confirmed' is distinct from 'true'::jsonb then\n  raise exception 'learn_connection_definition_invalid' using errcode='22023';end if;\n region:=p_definition->>'region';account_key:=btrim(p_definition->>'account_key');credential_mode:=p_definition->>'credential_mode';\n if p_definition->>'expected_revision' is not null then\n  wanted_revision:=(p_definition->>'expected_revision')::timestamptz;\n  if not isfinite(wanted_revision) then raise exception 'learn_connection_revision_invalid' using errcode='22023';end if;\n end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-connection-request:'||p_request::text,0));\n select * into prior from public.learn_commusoft_connection_requests where id=p_request;\n if found then\n  if prior.tenant_id<>p_tenant or prior.actor_id<>p_actor or prior.definition<>p_definition\n   or (p_api_key is not null and prior.receipt->>'state'<>'cancelled' and prior.credential_fingerprint is distinct from key_fingerprint) then\n   raise exception 'learn_connection_request_conflict' using errcode='PT409';end if;\n  return prior.receipt;\n end if;\n if p_mode='check' then return jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','pending');end if;\n if p_mode='cancel' then\n  receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','cancelled');\n  insert into public.learn_commusoft_connection_requests(id,tenant_id,actor_id,definition,receipt) values(p_request,p_tenant,p_actor,p_definition,receipt);\n  return receipt;\n end if;\n if (credential_mode='replace' and p_api_key is null) or (credential_mode='reuse' and p_api_key is not null) then\n  raise exception 'learn_connection_credential_mode_invalid' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-setup:'||p_tenant::text,0));\n perform 1 from public.tenants where id=p_tenant and status='active' for share;\n if not found then raise exception 'learn_connection_tenant_inactive' using errcode='55000';end if;\n -- Approval creation uses the same tenant lock. Running/queued work must first\n -- be resolved; do not invalidate a source traversal behind its operator.\n if exists(select 1 from public.platform_jobs where tenant_id=p_tenant and job_type='commusoft.source_sync' and status in ('queued','running','retrying')) then\n  raise exception 'learn_connection_import_active' using errcode='55000';end if;\n select * into c from public.provider_connections where tenant_id=p_tenant and provider='commusoft' for update;\n has_connection:=found;\n if (has_connection and c.updated_at is distinct from wanted_revision) or (not has_connection and wanted_revision is not null) then\n  raise exception 'learn_connection_revision_changed' using errcode='PT409';end if;\n -- This is credential maintenance for the same source identity. Moving to a\n -- different provider account/region requires an explicit retained-identity flow.\n if has_connection and ((c.non_secret_config ? 'account_key' and c.non_secret_config->>'account_key' is distinct from account_key)\n  or (c.non_secret_config ? 'region' and c.non_secret_config->>'region' is distinct from region)) then\n  raise exception 'learn_connection_source_identity_changed' using errcode='PT409';end if;\n if has_connection then\n  previous:=jsonb_build_object('connection_id',c.id,'revision',c.updated_at,'status',c.status,'verified_at',c.verified_at,\n    'account_key',c.non_secret_config->>'account_key','region',c.non_secret_config->>'region','configured_fields',c.configured_fields);\n end if;\n if credential_mode='reuse' then\n  -- Vault grants metadata SELECT, not UPDATE needed by row-lock clauses. The\n  -- tenant setup lock and connection row lock fence governed configuration changes.\n  select id into secret_id from vault.secrets where name='provider_secret:'||p_tenant::text||':commusoft:api_key';\n  if secret_id is null then raise exception 'learn_connection_credential_missing' using errcode='55000';end if;\n  if has_connection and c.secret_refs ? 'api_key' and c.secret_refs->>'api_key' is distinct from secret_id::text then\n   raise exception 'learn_connection_binding_changed' using errcode='PT409';end if;\n else\n  secret_id:=public.provider_secret_store(p_tenant,'commusoft','api_key',p_api_key);\n end if;\n if has_connection then\n  update public.provider_connections set status='configured',auth_mode='private_api_key',\n   non_secret_config=non_secret_config||jsonb_build_object('region',region,'account_key',account_key),\n   configured_fields=array['api_key'],secret_refs=jsonb_build_object('api_key',secret_id),\n   verified_at=null,last_test=jsonb_build_object('state','not_verified','code','configuration_changed'),\n   updated_by=p_actor,revoked_at=null,revoked_by=null where id=c.id returning * into c;\n else\n  insert into public.provider_connections(tenant_id,provider,status,auth_mode,non_secret_config,configured_fields,secret_refs,created_by,updated_by,last_test)\n   values(p_tenant,'commusoft','configured','private_api_key',jsonb_build_object('region',region,'account_key',account_key),\n    array['api_key'],jsonb_build_object('api_key',secret_id),p_actor,p_actor,jsonb_build_object('state','not_verified','code','configuration_changed')) returning * into c;\n end if;\n insert into public.provider_connection_events(tenant_id,provider,event,actor_id,detail)\n  values(p_tenant,'commusoft','learn_connection_configured',p_actor,jsonb_build_object('request_id',p_request,'connection_id',c.id,'credential_mode',credential_mode,'verified',false));\n receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','recorded','connection_id',c.id,'revision',c.updated_at,'credential_bound',true,'verification','required');\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n insert into public.learn_commusoft_connection_requests(id,tenant_id,actor_id,definition,credential_fingerprint,previous_state,receipt)\n  values(p_request,p_tenant,p_actor,p_definition,key_fingerprint,previous,receipt);\n return receipt;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_verification_authority",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "r learn_commusoft_verification_requests",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verification_authority(r learn_commusoft_verification_requests)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare c public.provider_connections%rowtype;\nbegin\n if current_setting('transaction_isolation')<>'read committed' or r.binding is null or r.expires_at<=clock_timestamp() then return false;end if;\n perform 1 from public.profiles where id=r.actor_id for share;\n if not found then return false;end if;\n perform 1 from public.platform_authority_grants where profile_id=r.actor_id and permission='platform.controlplane.admin'\n  and coalesce(effective_from,'-infinity')<=clock_timestamp() and coalesce(effective_to,'infinity')>clock_timestamp() for share;\n if not found then return false;end if;\n if exists(select 1 from public.view_as_context where actor_user_id=r.actor_id and ended_at is null\n  and (expires_at is null or expires_at>clock_timestamp())) then return false;end if;\n perform 1 from public.tenants where id=r.tenant_id and status='active' for share;\n if not found then return false;end if;\n if exists(select 1 from public.platform_jobs where tenant_id=r.tenant_id and job_type='commusoft.source_sync' and status in ('queued','running','retrying')) then return false;end if;\n select * into c from public.provider_connections where id=(r.definition->>'connection_id')::uuid and tenant_id=r.tenant_id for share;\n if not found or c.provider is distinct from 'commusoft' or c.status is distinct from 'configured'\n  or c.auth_mode is distinct from 'private_api_key' or c.revoked_at is not null\n  or not coalesce('api_key'=any(c.configured_fields),false)\n  or coalesce(c.non_secret_config->>'region','') not in ('uk','us')\n  or nullif(btrim(c.non_secret_config->>'account_key'),'') is null\n  or public.learn_commusoft_verification_binding(c) is distinct from r.binding then return false;end if;\n perform 1 from vault.secrets where id::text=c.secret_refs->>'api_key'\n  and name='provider_secret:'||r.tenant_id::text||':commusoft:api_key';\n if not found then return false;end if;\n return r.expires_at>clock_timestamp();\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verification_binding",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "c provider_connections",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verification_binding(c provider_connections)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\n select jsonb_build_object('connection_id',c.id,'revision',c.updated_at,'region',c.non_secret_config->>'region',\n 'account_key',c.non_secret_config->>'account_key','secret_id',c.secret_refs->>'api_key');\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verification_receipt",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verification_receipt(p_tenant uuid, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r public.learn_commusoft_verification_requests%rowtype; receipt jsonb;\nbegin\n select * into r from public.learn_commusoft_verification_requests where id=p_request and tenant_id=p_tenant;\n if not found then return jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','pending');end if;\n select x.receipt into receipt from public.learn_commusoft_verification_results x where request_id=r.id;\n if found then return receipt;end if;\n return jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state',\n  case when r.expires_at<=clock_timestamp() then 'expired'\n  when exists(select 1 from public.learn_commusoft_verification_permits where request_id=r.id) then 'running' else 'approved' end,\n  'expires_at',r.expires_at);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verify_acquire",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verify_acquire(p_tenant uuid, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r public.learn_commusoft_verification_requests%rowtype;secret text;fingerprint text;next_at timestamptz;permit public.learn_commusoft_verification_permits%rowtype;\nbegin\n if auth.role() is distinct from 'service_role' then raise exception 'learn_verification_forbidden' using errcode='42501';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-verification-request:'||p_request::text,0));\n select * into r from public.learn_commusoft_verification_requests where id=p_request and tenant_id=p_tenant;\n if not found or exists(select 1 from public.learn_commusoft_verification_results where request_id=r.id)\n  or exists(select 1 from public.learn_commusoft_verification_permits where request_id=r.id) then return null;end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-setup:'||p_tenant::text,0));\n if not public.learn_commusoft_verification_authority(r) then return null;end if;\n select decrypted_secret into secret from vault.decrypted_secrets where id::text=r.binding->>'secret_id'\n  and name='provider_secret:'||p_tenant::text||':commusoft:api_key';\n if secret is null or octet_length(secret) not between 1 and 4096 or secret!~'^[!-~]+$' then return null;end if;\n fingerprint:=encode(sha256(convert_to('commusoft:'||secret,'UTF8')),'hex');\n insert into public.learn_business_input_request_gates values(fingerprint,clock_timestamp()) on conflict do nothing;\n select next_allowed_at into next_at from public.learn_business_input_request_gates where credential_fingerprint=fingerprint for update;\n if not public.learn_commusoft_verification_authority(r) then return null;end if;\n if next_at>clock_timestamp() then return jsonb_build_object('state','wait','retryAt',ceil(extract(epoch from next_at)*1000)::bigint);end if;\n update public.learn_business_input_request_gates set next_allowed_at=clock_timestamp()+interval '1250 milliseconds' where credential_fingerprint=fingerprint;\n insert into public.learn_commusoft_verification_permits(request_id,credential_fingerprint,send_before)\n  values(r.id,fingerprint,least(r.expires_at,clock_timestamp()+interval '5 seconds')) returning * into permit;\n return jsonb_build_object('state','ready','apiKey',secret,'permitId',permit.id,'region',r.binding->>'region',\n  'sendBefore',floor(extract(epoch from permit.send_before)*1000)::bigint);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verify_authorized",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_permit uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verify_authorized(p_tenant uuid, p_request uuid, p_permit uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r public.learn_commusoft_verification_requests%rowtype;permit public.learn_commusoft_verification_permits%rowtype;fingerprint text;\nbegin\n if auth.role() is distinct from 'service_role' then raise exception 'learn_verification_forbidden' using errcode='42501';end if;\n select * into r from public.learn_commusoft_verification_requests where id=p_request and tenant_id=p_tenant;\n if not found or exists(select 1 from public.learn_commusoft_verification_results where request_id=r.id) then return false;end if;\n select * into permit from public.learn_commusoft_verification_permits where id=p_permit and request_id=r.id;\n if not found or not public.learn_commusoft_verification_authority(r) then return false;end if;\n select encode(sha256(convert_to('commusoft:'||decrypted_secret,'UTF8')),'hex') into fingerprint from vault.decrypted_secrets\n  where id::text=r.binding->>'secret_id' and name='provider_secret:'||p_tenant::text||':commusoft:api_key';\n return fingerprint is not null and fingerprint=permit.credential_fingerprint;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verify_finish",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_permit uuid, p_code text, p_retry_at timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verify_finish(p_tenant uuid, p_request uuid, p_permit uuid, p_code text, p_retry_at timestamp with time zone DEFAULT NULL::timestamp with time zone)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r public.learn_commusoft_verification_requests%rowtype;permit public.learn_commusoft_verification_permits%rowtype;\n prior public.learn_commusoft_verification_results%rowtype;receipt jsonb;code text;verified timestamptz;revision timestamptz;\nbegin\n if auth.role() is distinct from 'service_role' then raise exception 'learn_verification_forbidden' using errcode='42501';end if;\n if p_code is null or p_code not in ('access_verified','invalid_request','authority_unavailable','transport_unavailable','authentication_required',\n  'access_denied','rate_limited','provider_unavailable','provider_rejected','response_too_large','invalid_response')\n  or (p_retry_at is not null and not isfinite(p_retry_at)) then raise exception 'learn_verification_result_invalid' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-verification-request:'||p_request::text,0));\n select * into r from public.learn_commusoft_verification_requests where id=p_request and tenant_id=p_tenant;\n if not found then return null;end if;\n select * into permit from public.learn_commusoft_verification_permits where id=p_permit and request_id=r.id;\n if not found then return null;end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-setup:'||p_tenant::text,0));\n -- Even a late response after cancellation/revocation must protect shared quota.\n if p_retry_at is not null then\n  update public.learn_business_input_request_gates set next_allowed_at=greatest(next_allowed_at,p_retry_at) where credential_fingerprint=permit.credential_fingerprint;\n end if;\n select * into prior from public.learn_commusoft_verification_results where request_id=r.id;\n if found then\n  if prior.receipt->>'state'<>'cancelled' and (prior.observation_code is distinct from p_code or prior.retry_at is distinct from p_retry_at) then\n   raise exception 'learn_verification_result_conflict' using errcode='PT409';end if;\n  return prior.receipt;\n end if;\n -- Acquire the connection update lock before inspecting its revision/authority.\n perform 1 from public.provider_connections where id=(r.definition->>'connection_id')::uuid and tenant_id=p_tenant for update;\n code:=case when public.learn_commusoft_verify_authorized(p_tenant,p_request,p_permit) then p_code else 'authority_changed' end;\n if code<>'authority_changed' then\n  if code='access_verified' then verified:=clock_timestamp();end if;\n  update public.provider_connections set verified_at=verified,\n   last_test=jsonb_build_object('state',case when verified is null then 'failed' else 'verified' end,'code',code,'request_id',r.id,'checked_at',clock_timestamp()),\n   updated_by=r.actor_id where id=(r.definition->>'connection_id')::uuid and tenant_id=p_tenant returning updated_at into revision;\n  insert into public.provider_connection_events(tenant_id,provider,event,actor_id,detail)\n   values(p_tenant,'commusoft','learn_connection_checked',r.actor_id,jsonb_build_object('request_id',r.id,'code',code,'verified',verified is not null));\n end if;\n receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','recorded','connection_id',r.definition->>'connection_id',\n  'code',code,'verified_at',verified,'revision',revision);\n insert into public.learn_commusoft_verification_results(request_id,observation_code,retry_at,receipt) values(r.id,p_code,p_retry_at,receipt);\n return receipt;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_verify_request",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_verify_request(p_tenant uuid, p_request uuid, p_actor uuid, p_definition jsonb, p_mode text DEFAULT 'apply'::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r public.learn_commusoft_verification_requests%rowtype;c public.provider_connections%rowtype;receipt jsonb;revision timestamptz;connection uuid;\nbegin\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n if p_request is null or p_mode is null or p_mode not in ('apply','check','cancel')\n  or jsonb_typeof(p_definition) is distinct from 'object' or octet_length(p_definition::text)>10000\n  or not p_definition ?& array['kind','reason','connection_id','revision','one_read_confirmed']\n  or (p_definition-array['kind','reason','connection_id','revision','one_read_confirmed'])<>'{}'::jsonb\n  or p_definition->>'kind' is distinct from 'verify_commusoft'\n  or jsonb_typeof(p_definition->'reason') is distinct from 'string' or length(btrim(p_definition->>'reason')) not between 1 and 1000\n  or jsonb_typeof(p_definition->'connection_id') is distinct from 'string'\n  or jsonb_typeof(p_definition->'revision') is distinct from 'string'\n  or p_definition->'one_read_confirmed' is distinct from 'true'::jsonb then\n  raise exception 'learn_verification_definition_invalid' using errcode='22023';end if;\n connection:=(p_definition->>'connection_id')::uuid;revision:=(p_definition->>'revision')::timestamptz;\n if not isfinite(revision) then raise exception 'learn_verification_revision_invalid' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-verification-request:'||p_request::text,0));\n select * into r from public.learn_commusoft_verification_requests where id=p_request;\n if found and (r.tenant_id<>p_tenant or r.actor_id<>p_actor or r.definition<>p_definition) then\n  raise exception 'learn_verification_request_conflict' using errcode='PT409';end if;\n if p_mode='check' then return public.learn_commusoft_verification_receipt(p_tenant,p_request);end if;\n if r.id is not null and (p_mode='apply' or exists(select 1 from public.learn_commusoft_verification_results where request_id=r.id)) then\n  return public.learn_commusoft_verification_receipt(p_tenant,p_request);end if;\n if p_mode='cancel' then\n  if r.id is null then\n   insert into public.learn_commusoft_verification_requests(id,tenant_id,actor_id,definition,expires_at)\n    values(p_request,p_tenant,p_actor,p_definition,clock_timestamp());\n  end if;\n  receipt:=jsonb_build_object('tenant_id',p_tenant,'request_id',p_request,'state','cancelled');\n  insert into public.learn_commusoft_verification_results(request_id,receipt) values(p_request,receipt);\n  return receipt;\n end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-input-setup:'||p_tenant::text,0));\n if exists(select 1 from public.learn_commusoft_verification_requests q where q.tenant_id=p_tenant\n  and q.expires_at>clock_timestamp() and not exists(select 1 from public.learn_commusoft_verification_results x where x.request_id=q.id)) then\n  raise exception 'learn_verification_active' using errcode='55000';end if;\n if exists(select 1 from public.platform_jobs where tenant_id=p_tenant and job_type='commusoft.source_sync' and status in ('queued','running','retrying')) then\n  raise exception 'learn_verification_import_active' using errcode='55000';end if;\n select * into c from public.provider_connections where id=connection and tenant_id=p_tenant for share;\n if not found or c.updated_at is distinct from revision then raise exception 'learn_verification_revision_changed' using errcode='PT409';end if;\n r.id:=p_request;r.tenant_id:=p_tenant;r.actor_id:=p_actor;r.definition:=p_definition;\n r.binding:=public.learn_commusoft_verification_binding(c);r.expires_at:=clock_timestamp()+interval '2 minutes';\n if not public.learn_commusoft_verification_authority(r) then raise exception 'learn_verification_unavailable' using errcode='55000';end if;\n insert into public.learn_commusoft_verification_requests(id,tenant_id,actor_id,definition,binding,expires_at)\n  values(r.id,r.tenant_id,r.actor_id,r.definition,r.binding,r.expires_at);\n perform public.learn_operator_input_access(p_tenant,p_actor,true);\n return public.learn_commusoft_verification_receipt(p_tenant,p_request);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "provider_secret_name",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_tenant uuid, p_provider text, p_field text",
+      "definition": "CREATE OR REPLACE FUNCTION public.provider_secret_name(p_tenant uuid, p_provider text, p_field text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select 'provider_secret:' || p_tenant::text || ':' || lower(p_provider) || ':' || lower(p_field);\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "provider_secret_store",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "arguments": "p_tenant uuid, p_provider text, p_field text, p_secret text",
+      "definition": "CREATE OR REPLACE FUNCTION public.provider_secret_store(p_tenant uuid, p_provider text, p_field text, p_secret text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare\n  v_name text := public.provider_secret_name(p_tenant, p_provider, p_field);\n  v_id   uuid;\nbegin\n  if p_tenant is null or coalesce(p_provider, '') = '' or coalesce(p_field, '') = '' then\n    raise exception 'provider_secret_store: tenant, provider and field are required';\n  end if;\n  if coalesce(p_secret, '') = '' then\n    raise exception 'provider_secret_store: empty secret rejected';\n  end if;\n  select id into v_id from vault.secrets where name = v_name;\n  if v_id is null then\n    v_id := vault.create_secret(\n      p_secret,\n      v_name,\n      'ServiceOS provider credential (' || lower(p_provider) || '/' || lower(p_field) || ')'\n    );\n  else\n    perform vault.update_secret(v_id, p_secret, v_name);\n  end if;\n  return v_id;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    }
+  ],
+  "grants": [
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_connection_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_requests",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_commusoft_verification_results",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    }
+  ],
+  "vault": {
+    "apiUsage": [
+      {
+        "role": "anon",
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "usage": false
+      },
+      {
+        "role": "service_role",
+        "usage": true
+      }
+    ],
+    "extension": "0.3.1",
+    "functions": [
+      {
+        "name": "create_secret",
+        "owner": "supabase_admin",
+        "arguments": "new_secret text, new_name text, new_description text, new_key_id uuid",
+        "postgresExecute": true,
+        "securityDefiner": true
+      },
+      {
+        "name": "update_secret",
+        "owner": "supabase_admin",
+        "arguments": "secret_id uuid, new_secret text, new_name text, new_description text, new_key_id uuid",
+        "postgresExecute": true,
+        "securityDefiner": true
+      }
+    ],
+    "relations": [
+      {
+        "kind": "v",
+        "name": "decrypted_secrets",
+        "owner": "supabase_admin",
+        "postgresInsert": false,
+        "postgresSelect": true,
+        "postgresUpdate": false
+      },
+      {
+        "kind": "r",
+        "name": "secrets",
+        "owner": "supabase_admin",
+        "postgresInsert": false,
+        "postgresSelect": true,
+        "postgresUpdate": false
+      }
+    ]
+  }
+}

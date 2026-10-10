@@ -1,0 +1,99 @@
+{
+  "version": "learn-commusoft-connection-test-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T11:38:46.822Z",
+  "state": "installed_needs_authenticated_acceptance",
+  "sourceSha256": "15c41fa4166c4584e768d922ed8d4a2e10a103fd2ecd003074e33cc75597437c",
+  "tables": 110,
+  "releaseReceipts": 29,
+  "rehearsal": {
+    "observedAt": "2026-10-10T11:36:54.534Z",
+    "state": "rehearsed_and_rolled_back",
+    "acknowledged": true,
+    "preExistingSourcesPreserved": true
+  },
+  "installation": {
+    "observedAt": "2026-10-10T11:37:18.953Z",
+    "acknowledged": true,
+    "initialState": "requires_inspection",
+    "writeAttempts": 1,
+    "inspection": "Initial follow-up reads hit management API HTTP 429. The acknowledged installation was not resubmitted. Fresh read-only confirmation passed."
+  },
+  "confirmation": {
+    "schemaVerified": true,
+    "priorCatalogPreserved": true,
+    "preExistingSourcesPreserved": true,
+    "newState": [
+      {
+        "name": "learn_commusoft_connection_requests",
+        "count": 0
+      },
+      {
+        "name": "learn_commusoft_verification_requests",
+        "count": 0
+      },
+      {
+        "name": "learn_commusoft_verification_permits",
+        "count": 0
+      },
+      {
+        "name": "learn_commusoft_verification_results",
+        "count": 0
+      }
+    ]
+  },
+  "preservedTables": [
+    "public.authority_permissions",
+    "public.companies",
+    "public.connector_accounts",
+    "public.customer_cards",
+    "public.email_messages",
+    "public.feature_flags",
+    "public.interactions",
+    "public.jobs",
+    "public.learn_business_input_observations",
+    "public.learn_business_input_pages",
+    "public.learn_business_input_request_gates",
+    "public.learn_business_input_request_permits",
+    "public.learn_business_input_versions",
+    "public.learn_operator_input_requests",
+    "public.people",
+    "public.phone_calls",
+    "public.phone_recordings",
+    "public.phone_transcripts",
+    "public.platform_authority_grants",
+    "public.platform_jobs",
+    "public.profiles",
+    "public.provider_connection_events",
+    "public.provider_connections",
+    "public.sites",
+    "public.slack_message_versions",
+    "public.slack_messages",
+    "public.tenant_connectors",
+    "vault.secrets"
+  ],
+  "validation": [
+    "Disposable Supabase PostgreSQL 17 reproduced observed table, helper, grant and real encrypted Vault contracts.",
+    "Fixed unreleased metadata reads requiring UPDATE privilege; retained tenant/connection locks and did not broaden Vault permissions.",
+    "Rollback, injected late receipt failure, duplicate installation refusal, actual encrypted key storage/reuse and verification permit/result passed.",
+    "Existing setup and verification SQL regressions passed including concurrency, authority, cancellation, shared ingestion quota and actual SQL receipt parsers.",
+    "Five release/preservation tests passed, including drift in both receipt inventories, Vault privileges, late lost replies, unavailable/changed sources and unexpected new requests."
+  ],
+  "sourceHashes": {
+    "supabase/release/learn-test/028_commusoft_connection.sql": "15c41fa4166c4584e768d922ed8d4a2e10a103fd2ecd003074e33cc75597437c",
+    "supabase/release/learn-test/028_commusoft_connection.manifest.json": "de2f467c586e1de944a40890e416ae5b0cc4c4241bd158679d4566f573f7ff15",
+    "supabase/release/learn-test/028_commusoft_connection.prerequisites.json": "3635d84a07c1322503f20f1b16b11408740f279199167b13b211deac405f9b2e",
+    "supabase/release/learn-test/028_commusoft_connection.expected.json": "f6fb6a0673c6be462a227867abdc88940fb0ec6bf3e972e1aec4819fd4fca668",
+    "supabase/migrations/20261031170000_learn_commusoft_connection_setup.sql": "a847fcb67e725f113bf1aff87822c5cb764f88fbaffac32aa66b19e15a70847f",
+    "supabase/migrations/20261031180000_learn_commusoft_connection_verification.sql": "1f76f2bd7a4704e8cb9c25eee8890f5ac1199d867803928285a09ea93129e7c0",
+    "scripts/verify/learn-test-commusoft-setup-release.mjs": "702161a98734bc61e3b2991762379b47065ac194abbb14e73b7230efb5d68aa2",
+    "scripts/verify/learn-test-commusoft-setup-hosted.mjs": "8c60d383564b50ace395fb918ad2576ca9e3b6b8a2423d7aa6b946bc1bd8e219"
+  },
+  "limitations": [
+    "Hosted signed-in configuration/verification acceptance remains.",
+    "The verification Edge endpoint and frontend are not released.",
+    "No real Commusoft API request or Drummonds credential/access validation occurred.",
+    "No production changes, module changes, schedules, imports, or credential writes occurred in this release.",
+    "Preservation fingerprints cover the 28 named existing TEST data sets; this is not a production backup or restore test."
+  ]
+}

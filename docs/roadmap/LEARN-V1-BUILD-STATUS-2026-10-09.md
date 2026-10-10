@@ -1683,3 +1683,39 @@ rehearse against the exact catalog, then install and perform signed-in acceptanc
 This screen has only synthetic browser acceptance; the new RPCs and endpoint are
 not yet hosted. Real Drummonds Commusoft access/coverage, incomplete import recovery,
 contacts/reconciliation/source updates and the wider LEARN V1 requirements remain.
+
+## Commusoft setup/verification database release installed in TEST — 10 October
+
+Release 028 is installed and independently confirmed at 11:38:46 UTC. TEST now
+has 110 observed tables and 29 release receipts. The package adds four private
+request/permit/result tables and ten functions, including the previously absent
+credential name/store helpers. No credentials, connection changes, module flags,
+operator grants, imports, endpoints or schedules were created by installation.
+
+The exact-schema rehearsal used the actual Supabase Vault encryption extension.
+It exposed a permission mismatch in the unreleased source: metadata SELECT FOR
+SHARE requires UPDATE permission, which the TEST owner does not hold on Vault.
+Those metadata reads now use SELECT while retaining tenant/connection locks and
+revision/binding checks. Vault privileges were not widened. Encryption roundtrip,
+key reuse, verification permit/result, rollback and injected late failure passed.
+Existing isolated setup/verification concurrency and recovery regressions also pass.
+
+Five release tests verify exact prior and installed contracts, both copies of the
+release ledger, Vault grants, durable pre-write journaling, one-write behavior,
+unknown-outcome recovery and preservation failures. Hosted rollback passed before
+the single installation attempt. Its acknowledgement succeeded, but subsequent
+metadata reads hit HTTP 429. Fresh read-only inspection confirmed the installed
+schema and unchanged prior catalog without rerunning the installation.
+
+All 28 checked existing TEST data sets retained identical row counts/fingerprints,
+including communication history, canonical records, source pages, connection and
+operator state, quota records and encrypted Vault rows. All four new tables were
+empty. Private pre-write journals remain ignored; no decrypted secret or source
+payload is in the release evidence. This is TEST preservation evidence, not a
+production backup/restore test. See
+[release evidence](../operations/evidence/learn-commusoft-connection-test-release-2026-10-10.json).
+
+Next: signed-in hosted setup/verification acceptance and the verification Edge
+endpoint. Real Drummonds access, contacts/reconciliation/source updates, incomplete
+import recovery, broader operator controls, Slack/voicemail and production release
+remain unfinished. The live site is unchanged.

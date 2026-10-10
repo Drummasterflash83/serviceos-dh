@@ -9,14 +9,18 @@ continuation, lost-reply handling, deployed committed-page recovery and reviewed
 cards. Real Commusoft API access and coverage are not established. Production and
 the frontend release are unchanged.
 
-The local OpenFolk screen includes durable request recovery and read-only viewer
-controls. Atomic connection configuration is now implemented and tested locally,
-using the existing tenant Vault broker; it is not yet released to TEST. The bounded
-connection verification protocol, signed-in Edge entrypoint and client adapter
-are also implemented and tested locally. OpenFolk now has the setup/access-check
-screen with retained request recovery, shared browser locking with module/import
-actions and safe operator diagnostics. Synthetic browser acceptance passes. Hosted
-compatibility checks and the configuration/verification TEST release remain.
+The OpenFolk setup/access-check screen is implemented and has synthetic browser
+acceptance. Atomic configuration and verification SQL are now installed in TEST
+(release 028), with the required name/store broker helpers. The existing TEST
+Vault permissions are unchanged. Exact-schema PG17 encryption/reuse checks, hosted
+rollback and fresh read-only installation confirmation pass; 28 existing data sets
+retain identical fingerprints. No keys, connection changes or requests were seeded.
+The initial post-install inspection hit management API rate limits; the acknowledged
+installation was confirmed read-only and was not submitted again.
+
+Hosted signed-in configuration/verification acceptance and deployment of the
+verification Edge endpoint remain. The frontend remains unreleased. See
+[connection release evidence](evidence/learn-commusoft-connection-test-release-2026-10-10.json).
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
 connection or Commusoft-named project secret. Checked local environment variable
