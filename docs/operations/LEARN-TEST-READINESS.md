@@ -1,5 +1,52 @@
 # Existing TEST environment: verified release gaps
 
+## Mailbox page engine — local implementation, 10 October 2026
+
+`email_capture_engine.ts` composes job/attempt recovery, the durable transition
+outbox, explicit Gmail pages, atomic source persistence and the existing
+`platform_jobs_complete_email_v1` queue completion contract. Each new attempt
+processes one page. A successful partial page yields its checkpoint and creates
+the next queue job atomically with completion. Recent capture visits both INBOX
+and SENT before advancing the original captured history boundary. Historical
+capture uses its saved page token and total and completes only on exhaustion.
+
+Saved provider continuation is validated before credentials are resolved. Each
+mailbox-processing invocation checks the profile's mailbox identity before listing mail.
+Force/refetch policy belongs to the traversal and is preserved across successors;
+successor payloads do not repeat an instruction to start another forced traversal.
+Expired provider history blocks for explicit recovery. A legacy `restart` flag
+does not authorize resetting progress. Source/parse/storage failures are recorded
+through the guarded protocol, including unknown persistence when a write reply
+cannot be confirmed. Protocol uncertainty never becomes an invented failure or
+new transition that bypasses an unresolved request.
+
+Recovery settles a saved transition before checking capture admission or resolving
+provider credentials. A terminal recovered attempt completes its queue job using
+the existing historical-receipt contract: zero invocation count, no new provider
+work and no immediate successor. That contract leaves further traversal to a
+later scheduled job; this engine does not claim immediate continuation after an
+interrupted completion. A lost queue-completion response raises a distinct
+uncertain outcome because completion and its successor may already have committed;
+the caller must not fall back to generic job failure.
+
+The local engine uses the actual recorded v2 protocol, new storage functions and
+the recorded atomic queue-completion function in disposable PostgreSQL. Provider
+responses and credential-resolution ports are synthetic. Mailbox/Workspace
+authorization and credential resolution remain required server-side ports.
+
+The combined suite passes **39 scenarios / 40 Node results**, including ten new
+engine scenarios. Changing profile boundaries across successors verifies that
+only the originally captured boundary advances. Fourteen page/adapter tests and
+shared-module TypeScript checking also pass. See
+[local evidence](evidence/learn-email-engine-local-2026-10-10.json).
+
+**Not routed into the existing handlers or deployed.** The generic queue worker
+and queue admission still need coordinating so paused recovery reaches this
+engine, completed jobs are not completed twice, and uncertain completion is not
+overwritten. Existing direct mailbox endpoints also need adapting to this queue
+path. Coordinated TEST runtime installation, scheduler verification and production
+promotion remain separate work. No real Gmail requests or hosted changes occurred.
+
 ## Atomic email page storage — local implementation, 10 October 2026
 
 `20261031235500_learn_email_page_store.sql` and `gmail_page_store.ts` connect the

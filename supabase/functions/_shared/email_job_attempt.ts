@@ -24,7 +24,9 @@ export function validateEmailJobLease(v: EmailJobLease) {
   )
     throw Error("Invalid email worker lease.");
 }
-/** Call only after capture admission. Creation of the run and binding is atomic.
+/** Creation of the run and binding is atomic. Queue admission precedes new work;
+ * binding/recovery may run while capture is paused to settle retained evidence.
+ * The engine must check fresh capture admission before accessing the provider.
  * A terminal result is recovery evidence, never permission to fetch another page.
  * Unknown outcomes are retried with the same queue identity, not a new run ID.
  */

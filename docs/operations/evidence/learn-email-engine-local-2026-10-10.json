@@ -1,0 +1,50 @@
+{
+  "version": "learn-email-engine-local/1",
+  "observedAt": "2026-10-10T14:53:13.403Z",
+  "state": "local_verified_not_routed",
+  "databaseScenarios": 39,
+  "databaseTestResults": 40,
+  "engineScenarios": 10,
+  "pageAndAdapterUnitTests": 14,
+  "typescript": "passed",
+  "files": [
+    {
+      "path": "supabase/functions/_shared/email_capture_engine.ts",
+      "sha256": "be79f545db21094f6a06ae2ebb9d9dd8efb32464fc5f74715b58229e229a93dd"
+    },
+    {
+      "path": "supabase/functions/_shared/gmail_capture_page.ts",
+      "sha256": "503ff40716b09bbb75d5111332e97ba5a4f303c16befa4e605aa72207eaa7204"
+    },
+    {
+      "path": "supabase/functions/_shared/email_job_attempt.ts",
+      "sha256": "3344da6044bb7eec1f19d41cf5b120769e8a8493dc1f9a8398e48f96e0c4b4cb"
+    },
+    {
+      "path": "scripts/verify/learn-email-capture-engine-cases.mjs",
+      "sha256": "ed69cafbbdf3caafc5be4b076c51c17e164a8223b125eafc54a9478a494269b5"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "fc3bcc73dd2f674ba371bd519cd730f4dfd692965b6343d6480368fdc6c899f9"
+    }
+  ],
+  "verified": [
+    "Recent INBOX and SENT traversal follows atomic queue successors and advances only the original captured boundary, despite changing provider profile boundaries.",
+    "Historical pages retain exact tokens/totals and finish only on exhaustion.",
+    "Pending page transitions settle before capture admission without another token or provider call.",
+    "Lost checkpoint replies recover the same terminal run; lost queue completion retains the committed successor and exact replay receipt.",
+    "Expired history blocks without cursor reset; malformed continuation is rejected before credentials; foreign token identity is refused before listing.",
+    "Storage failure records uncertainty without advancing the cursor or completing the queue job.",
+    "Forced reconciliation retains its refetch policy and generation across successors, preserving message identities."
+  ],
+  "limitations": [
+    "Not routed into existing mailbox handlers, generic queue worker or schedulers; not deployed.",
+    "Synthetic provider responses and authorization/credential ports; no real Gmail requests.",
+    "Recorded TEST SQL contracts in disposable PostgreSQL, with previously documented fixture omissions; production parity is not established.",
+    "Recovered terminal attempts follow the existing historical-receipt contract: no immediate successor; a later scheduler job must continue any remaining traversal.",
+    "Queue admission still needs integration so paused saved-work recovery can reach this engine.",
+    "Generic caller must not apply normal completion or failure after engine completion or an uncertain completion acknowledgement.",
+    "No hosted data, credentials, permissions, schedules or production deployment changed."
+  ]
+}

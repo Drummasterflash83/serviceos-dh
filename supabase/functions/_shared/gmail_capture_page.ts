@@ -38,6 +38,7 @@ export class GmailCaptureError extends Error {
     | "persistence_failed"
     | "history_expired"
     | "pagination_no_progress"
+    | "checkpoint_conflict"
     | "source_ineligible";
   readonly persistenceUnknown: boolean;
   constructor(code: GmailCaptureError["code"], persistenceUnknown = false) {

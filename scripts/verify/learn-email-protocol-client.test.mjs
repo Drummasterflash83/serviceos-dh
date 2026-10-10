@@ -31,6 +31,7 @@ import {
 } from "../../supabase/functions/_shared/email_ingestion_outbox.ts";
 import { bindEmailJobAttempt } from "../../supabase/functions/_shared/email_job_attempt.ts";
 import { verifyEmailPageStore } from "./learn-email-page-store-cases.mjs";
+import { verifyEmailCaptureEngine } from "./learn-email-capture-engine-cases.mjs";
 const docker = "/usr/local/bin/docker",
   name = "learn-email-protocol-" + randomUUID().slice(0, 8);
 const source = readFileSync(
@@ -74,6 +75,7 @@ const db = {
         "learn_email_job_attempt",
         "learn_email_store_existing",
         "learn_email_store_page",
+        "platform_jobs_complete_email_v1",
       ].includes(fn),
     );
     return {
@@ -1010,6 +1012,7 @@ test("email client preserves the existing hosted progress protocol", async (t) =
       },
     );
     await verifyEmailPageStore({ t, sql, db, queueJob, q, i });
+    await verifyEmailCaptureEngine({ t, sql, db, queueJob, q, reference });
   } finally {
     if (created) execFileSync(docker, ["rm", "-f", name], { stdio: "pipe", timeout: 30000 });
     rmSync(dir, { recursive: true, force: true });
