@@ -1,6 +1,6 @@
 """Exercise the exact import release against current TEST schema metadata.
 
-No connection to a hosted DB or any existing container. Eleven relevant tables (twelve with --cards),
+No connection to a hosted DB or any existing container. Eleven relevant tables (twelve with --cards/--batches),
 all their recorded constraints/indexes/policies/triggers and actual referenced
 helpers are restored in a new network-isolated PG17 container. auth.users/uid are
 explicit fixture stand-ins; Auth, Edge, marketing eligibility and UI acceptance
@@ -15,15 +15,15 @@ NODE=shutil.which('node') or '/usr/local/bin/node'
 NAME='serviceos-import-test-'+uuid.uuid4().hex[:8]
 IMAGE='public.ecr.aws/supabase/postgres:17.6.1.141'
 DB='postgres'
-if len(sys.argv) not in (2,3) or (len(sys.argv)==3 and sys.argv[2] not in ('--authority','--cards')):raise SystemExit('Provide a verified release-021 schema-only catalog and optional --authority or --cards')
+if len(sys.argv) not in (2,3) or (len(sys.argv)==3 and sys.argv[2] not in ('--authority','--cards','--batches')):raise SystemExit('Provide a verified release-021 schema-only catalog and optional --authority, --cards or --batches')
 catalog=json.loads(Path(sys.argv[1]).read_text())
 assert catalog['projectRef']=='saatxzwxvdvqevbnskxy' and len(catalog['tables'])==91 and len(catalog['readiness']['customMigrationEntries'])==22
 names=['tenants','profiles','view_as_context','people','companies','sites','jobs','data_imports','import_profiles','import_row_provenance','job_number_aliases']
-if '--cards' in sys.argv:names.append('customer_cards')
+if ('--cards' in sys.argv or '--batches' in sys.argv):names.append('customer_cards')
 tables=[t for t in catalog['tables'] if t['name'] in names]
 assert len(tables)==len(names)
 service_grants=None
-if '--cards' in sys.argv:
+if ('--cards' in sys.argv or '--batches' in sys.argv):
  grant_snapshot=json.loads((ROOT/'docs/operations/evidence/learn-import-projection-grants-2026-10-10.json').read_text())
  assert grant_snapshot['projectRef']==catalog['projectRef'] and grant_snapshot['verifiedRelease']=='023+import-endpoint-v1'
  service_grants={g['name']:g['privileges'] for g in grant_snapshot['grants']}
@@ -122,7 +122,7 @@ try:
   'indexes':[dict(x,table=t['name']) for t in snapshot() for x in t['indexes'] if x['name'] in manifest['existingTableIndexes']],
   'functions':functions,'profiles':json.loads(run(import_queries[1]).stdout)}
  (ROOT/'.verification-results/learn-import-expected.json').write_text(json.dumps(expected,indent=2)+'\n')
- if '--authority' in sys.argv or '--cards' in sys.argv:
+ if '--authority' in sys.argv or '--cards' in sys.argv or '--batches' in sys.argv:
   authority=(ROOT/'supabase/release/learn-test/023_import_authority.sql').read_text()
   authority_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(hashlib.sha256(authority.encode()).hexdigest())+';'
   old_function=run("select pg_get_functiondef('public.import_row_preamble(uuid,uuid,uuid,integer,jsonb,jsonb,text)'::regprocedure)").stdout
@@ -159,7 +159,7 @@ try:
    if holder.poll() is None:holder.terminate();holder.wait(timeout=10)
    holder.stdout.close();holder.stderr.close()
   print('Concurrent role, company and View As changes cannot race a live row: PASS',flush=True)
- if '--cards' in sys.argv:
+ if ('--cards' in sys.argv or '--batches' in sys.argv):
   cards=(ROOT/'supabase/release/learn-test/024_import_customer_cards.sql').read_text()
   card_sha=hashlib.sha256(cards.encode()).hexdigest()
   card_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(card_sha)+';'
@@ -213,6 +213,20 @@ try:
    if holder.poll() is None:holder.terminate();holder.wait(timeout=10)
    holder.stdout.close();holder.stderr.close()
   print('Concurrent service projections reuse one card identity: PASS',flush=True)
+
+ if '--batches' in sys.argv:
+  batch=(ROOT/'supabase/migrations/20261031080000_learn_import_batches.sql').read_text()
+  batch_tables=snapshot();batch_rows=retained()
+  apply('set role postgres;'+batch.replace('\ncommit;','\nrollback;'),'Import batch rollback')
+  assert snapshot()==batch_tables and retained()==batch_rows
+  apply('set role postgres;'+batch,'Private import batch helpers installed locally')
+  assert snapshot()==batch_tables and retained()==batch_rows
+  apply((ROOT/'scripts/verify/learn-import-batches.assert.sql').read_text(),'100-row preview/apply, replay, partial failure isolation, whole-batch contract rollback and authority boundaries')
+  assert retained()==batch_rows
+  batch_query=node("import {RULES_FUNCTION_QUERY} from './scripts/verify/learn-rules-catalog.mjs';process.stdout.write(RULES_FUNCTION_QUERY.replace(/p\\.proname in \\([^)]*\\)/,\"p.proname in ('learn_import_batch_authority','learn_import_match_batch','learn_import_apply_batch')\"));")
+  batch_functions=json.loads(run(batch_query).stdout)
+  assert len(batch_functions)==3 and all(f['owner']=='postgres' and not f['securityDefiner'] and not f['authenticatedExecute'] and not f['anonExecute'] and f['serviceExecute'] for f in batch_functions)
+  (ROOT/'.verification-results/learn-import-batches-expected.json').write_text(json.dumps(batch_functions,indent=2)+'\n')
 
  print(json.dumps({'state':'passed','sourceSha256':sha,'restoredTables':len(tables),'importFunctions':len(manifest['functions']),'addedTables':manifest['tables'],'historicalMarketingEligibilityTested':False,'hostedWrite':False,'limitations':['Auth is a fixture stand-in; actual signed-in Edge/UI acceptance remains.','Only import-related TEST tables and their actual guards restored; not the whole TEST application.','Hosted rollback, exact catalog comparison and source/row preservation remain release gates.']},indent=2))
 finally:subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

@@ -1,0 +1,69 @@
+{
+  "version": "learn-import-batches-local/1",
+  "state": "local_candidate_passed_not_hosted",
+  "functions": [
+    {
+      "name": "learn_import_apply_batch",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_import uuid, p_actor uuid, p_entity text, p_options jsonb, p_rows jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_apply_batch(p_tenant uuid, p_import uuid, p_actor uuid, p_entity text, p_options jsonb, p_rows jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare item jsonb;result jsonb;results jsonb:='[]';seen integer[]:='{}';n integer;fields text[];code text;\nbegin\n perform learn_import_batch_authority(p_tenant,p_actor);\n if p_entity is null or p_entity not in ('customers','sites','jobs') or jsonb_typeof(p_rows) is distinct from 'array' then\n  raise exception 'Governed entity and rows required' using errcode='22023';\n end if;\n if jsonb_array_length(p_rows) not between 1 and 100 then raise exception 'Batch must contain 1..100 rows' using errcode='22023';end if;\n for item in select value from jsonb_array_elements(p_rows) loop\n  if jsonb_typeof(item) is distinct from 'object' or jsonb_typeof(item->'record') is distinct from 'object'\n   or jsonb_typeof(item->'row_number') is distinct from 'number' or (item->>'row_number')!~'^[0-9]{1,4}$' then\n   raise exception 'Invalid batch row' using errcode='22023';\n  end if;\n  n:=(item->>'row_number')::integer;\n  if n not between 2 and 5001 or n=any(seen) then raise exception 'Duplicate or out-of-range row' using errcode='22023';end if;\n  seen:=array_append(seen,n);\n  -- Also validates sealed options, entity, row bounds, current role/company/View As.\n  -- A contract or authority error aborts the batch, rather than becoming a row failure.\n  perform import_row_preamble(p_tenant,p_import,p_actor,n,item->'record',p_options,p_entity);\n  if item ? 'invalid_fields' then\n   if jsonb_typeof(item->'invalid_fields') is distinct from 'array' then raise exception 'Invalid field list' using errcode='22023';end if;\n   if jsonb_array_length(item->'invalid_fields') not between 1 and 20 or exists(select 1 from jsonb_array_elements(item->'invalid_fields') f where jsonb_typeof(f) is distinct from 'string' or length(f#>>'{}') not between 1 and 80) then raise exception 'Invalid field list' using errcode='22023';end if;\n   select array_agg(value) into fields from jsonb_array_elements_text(item->'invalid_fields');\n   result:=import_row_outcome(p_tenant,p_import,n,'invalid','row failed column validation',fields);\n   result:=jsonb_build_object('action',case when (result->>'already')::boolean then 'already_applied' else 'invalid' end);\n  else\n   -- Isolate row failures in subtransactions; successful rows commit together\n   -- at this bounded batch's transaction boundary.\n   -- Return SQLSTATE only, never customer values from a database error message.\n   -- Edge retains classified failures using the existing outcome recorder. A\n   -- lost response requires inspection: a committed batch retains successes,\n   -- while a rolled-back batch retains none. Row errors remain unprocessed.\n   begin\n    case p_entity\n     when 'customers' then result:=import_customer_row(p_tenant,p_import,p_actor,n,item->'record',p_options);\n     when 'sites' then result:=import_site_row(p_tenant,p_import,p_actor,n,item->'record',p_options);\n     when 'jobs' then result:=import_job_row(p_tenant,p_import,p_actor,n,item->'record',p_options);\n    end case;\n   exception when insufficient_privilege then raise;\n    when others then get stacked diagnostics code=returned_sqlstate;result:=jsonb_build_object('error_code',code);\n   end;\n  end if;\n  results:=results||jsonb_build_array(jsonb_build_object('row_number',n,'result',result));\n end loop;\n return results;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_import_batch_authority",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_actor uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_batch_authority(p_tenant uuid, p_actor uuid)\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nbegin\n if current_setting('transaction_isolation')<>'read committed' then\n  raise exception 'Import batch requires a fresh snapshot' using errcode='22023';\n end if;\n if p_tenant is null or p_actor is null then\n  raise exception 'Company and actor required' using errcode='22023';\n end if;\n perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));\n perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant::text,0));\n if not exists(select 1 from profiles where id=p_actor and tenant_id=p_tenant and role in ('owner','admin'))\n  or not exists(select 1 from tenants where id=p_tenant and status='active')\n  or exists(select 1 from view_as_context where actor_user_id=p_actor and ended_at is null and (expires_at is null or expires_at>clock_timestamp())) then\n  raise exception 'Current company import authority required' using errcode='42501';\n end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_import_match_batch",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_actor uuid, p_source text, p_entity text, p_rows jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_import_match_batch(p_tenant uuid, p_actor uuid, p_source text, p_entity text, p_rows jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare item jsonb;result jsonb;results jsonb:='[]';seen integer[]:='{}';n integer;\nbegin\n perform learn_import_batch_authority(p_tenant,p_actor);\n if p_entity is null or p_entity not in ('customers','sites','jobs') or nullif(btrim(p_source),'') is null\n  or jsonb_typeof(p_rows) is distinct from 'array' then\n  raise exception 'Governed entity, source and rows required' using errcode='22023';\n end if;\n if jsonb_array_length(p_rows) not between 1 and 100 then raise exception 'Batch must contain 1..100 rows' using errcode='22023';end if;\n for item in select value from jsonb_array_elements(p_rows) loop\n  if jsonb_typeof(item) is distinct from 'object' or jsonb_typeof(item->'record') is distinct from 'object'\n   or jsonb_typeof(item->'row_number') is distinct from 'number' or (item->>'row_number')!~'^[0-9]{1,4}$' then\n   raise exception 'Invalid batch row' using errcode='22023';\n  end if;\n  n:=(item->>'row_number')::integer;\n  if n not between 2 and 5001 or n=any(seen) then raise exception 'Duplicate or out-of-range row' using errcode='22023';end if;\n  seen:=array_append(seen,n);\n  case p_entity\n   when 'customers' then result:=import_match_customer(p_tenant,p_source,item->'record');\n   when 'sites' then result:=import_match_site(p_tenant,p_source,item->'record');\n   when 'jobs' then result:=import_match_job(p_tenant,p_source,item->'record');\n  end case;\n  results:=results||jsonb_build_array(jsonb_build_object('row_number',n,'result',result));\n end loop;\n return results;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "checks": [
+    "100-row preview creates no identities",
+    "100-row apply produces canonical customers, cards and attempt-1 outcomes",
+    "Replay reuses terminal outcomes and card identities",
+    "Column validation records invalid outcome under current authority",
+    "Injected row constraint error returns SQLSTATE only, with later row success",
+    "Late contract violation rolls back prior rows from that batch",
+    "Duplicate and 101-row batches refused",
+    "Sealed options, company boundaries, demotion, suspension, active View As and stale snapshots refused",
+    "Sites/jobs reuse canonical dependency matching and refuse exact-site ownership contradiction",
+    "Migration rollback/install and assertion rollback preserve retained source/card rows"
+  ],
+  "sourceHashes": {
+    "supabase/migrations/20261031080000_learn_import_batches.sql": "af7c74063dff768c6822b83817eb9469809aa344565a296c3953f70b561d91a1",
+    "scripts/verify/learn-import-batches.assert.sql": "e795d5a385e85f530e01353c818d8fcf85b98167d82255d3c77dffc975e4541a",
+    "scripts/verify/learn-import-test-projection.py": "862475b4a1dccab63850ce92ac73626b25c1099f2fba0aff72c49c3d94ef36e8",
+    "scripts/verify/learn-test-import-volume-acceptance.mjs": "48d6cf964ceba6957750ad5d84eda71071e0285df6df2a576d025912c27dc48e"
+  },
+  "limitations": [
+    "Local projected TEST schema, Auth stand-in, no live Edge integration or hosted batch release.",
+    "Existing per-row error classification remains in Edge; candidate returns row SQLSTATE for that recorder. Query cancellation aborts the batch rather than being converted into a row failure.",
+    "Batch transaction boundary groups up to 100 successful rows; clients must inspect durable outcomes after uncertain responses.",
+    "Maximum-volume hosted acceptance still fails on the current deployed endpoint."
+  ]
+}

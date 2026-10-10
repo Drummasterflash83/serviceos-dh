@@ -1128,3 +1128,18 @@ successful page reopen. The performance panel kept the unconfigured scope
 unassessed. Fixture access is retired and all evidence retained. Import-volume
 acceptance is next; the real Commusoft ownership conflict remains unresolved.
 See [browser evidence](../operations/evidence/learn-import-cards-browser-2026-10-10.json).
+
+## Advertised import limit failed; bounded batch candidate prepared — 10 October
+
+Actual TEST import of 1,200 synthetic customers completed with matching canonical,
+card and evidence counts. The 5,000-row preview failed HTTP 546 after 132 seconds
+and created no import/canonical rows. All pre-existing source/card fingerprints
+matched and temporary accounts are retired. This is an unresolved release gap,
+not a passing maximum-volume acceptance.
+
+A locally tested 100-row database-batch candidate reuses existing match/apply rules
+and authority checks. Customer/site/job paths, replay, failure isolation and rollback
+pass in the isolated projection. It is not yet integrated into Edge or installed.
+Next: integrate bounded calls, verify error/recovery behavior, pin and rehearse TEST
+release, deploy the reviewed endpoint, then repeat maximum-volume acceptance.
+See [volume findings and candidate](../operations/LEARN-COMMUSOFT-RECOVERY.md#import-volume-failure-and-bounded-batch-candidate--10-october).

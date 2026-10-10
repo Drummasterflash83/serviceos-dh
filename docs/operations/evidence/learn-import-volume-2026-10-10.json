@@ -1,0 +1,126 @@
+{
+  "version": "learn-import-volume-observation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "verifiedInstalledRelease": "024+import-endpoint-v1",
+  "endpointBundleSha256": "215aba93f37688636d45885916e34d498c34189c9ac888e7fa426833700ddc04",
+  "trials": [
+    {
+      "version": "learn-test-import-volume/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "runId": "2857b28a-4245-4679-a40b-c6a4a742612d",
+      "tenant": "80f27add-3367-434b-bd86-88108a25ea32",
+      "user": "f008f8d7-b18f-4397-98bc-82cf6849a75e",
+      "rows": 1200,
+      "created": true,
+      "seeded": true,
+      "retired": true,
+      "phase": "requires_inspection",
+      "timings": [
+        {
+          "action": "profiles",
+          "ms": 539,
+          "status": 200
+        },
+        {
+          "action": "preview",
+          "ms": 50482,
+          "status": 200
+        },
+        {
+          "action": "apply",
+          "ms": 81724,
+          "status": 200
+        },
+        {
+          "action": "apply",
+          "ms": 833,
+          "status": 200
+        }
+      ],
+      "failure": "Completed replay changed canonical counts",
+      "cleanupErrors": [],
+      "importId": "83af51e3-45ab-4a9b-9a8e-9c2bf3f335c5",
+      "counts": {
+        "people": 1200,
+        "cards": 1200,
+        "links": 1200,
+        "outcomes": 1200,
+        "provenance": 1200,
+        "unexpected_outcomes": 0
+      },
+      "preExistingSourcesPreserved": true,
+      "imports": [
+        {
+          "id": "83af51e3-45ab-4a9b-9a8e-9c2bf3f335c5",
+          "status": "completed",
+          "row_count": 1200,
+          "created_records": 1200,
+          "invalid_rows": 0,
+          "conflict_records": 0
+        }
+      ],
+      "observedAt": "2026-10-10T06:53:15.348Z",
+      "manifest": "/private/tmp/serviceos-learn-volume-2857b28a-4245-4679-a40b-c6a4a742612d.json",
+      "limitations": [
+        "Synthetic customers only; sites, jobs and provider communication volumes are separate.",
+        "Only card pages 1, 2 and 50 are read; row outcomes still expose a bounded 1000-row window.",
+        "One request at a time, no automatic mutation retries, and fixture records are retained."
+      ]
+    },
+    {
+      "version": "learn-test-import-volume/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "runId": "cb2be55c-0be8-4374-855f-86448d0bc846",
+      "tenant": "f82a51ea-b5b3-48d2-a419-2850886b4cc7",
+      "user": "c986c5a3-25fa-4c9c-bc78-77249a4dced6",
+      "rows": 5000,
+      "created": true,
+      "seeded": true,
+      "retired": true,
+      "phase": "requires_inspection",
+      "timings": [
+        {
+          "action": "profiles",
+          "ms": 858,
+          "status": 200
+        },
+        {
+          "action": "preview",
+          "ms": 132325,
+          "status": 546
+        }
+      ],
+      "failure": "preview failed HTTP 546 (unknown)",
+      "cleanupErrors": [],
+      "preExistingSourcesPreserved": true,
+      "counts": {
+        "people": 0,
+        "cards": 0,
+        "links": 0,
+        "outcomes": 0,
+        "provenance": 0,
+        "unexpected_outcomes": 0
+      },
+      "imports": [],
+      "observedAt": "2026-10-10T06:56:18.908Z",
+      "manifest": "/private/tmp/serviceos-learn-volume-cb2be55c-0be8-4374-855f-86448d0bc846.json",
+      "limitations": [
+        "Synthetic customers only; sites, jobs and provider communication volumes are separate.",
+        "Only the first, second and last card pages are read; row outcomes still expose a bounded 1000-row window.",
+        "One request at a time, no automatic mutation retries, and fixture records are retained."
+      ]
+    }
+  ],
+  "findings": [
+    "1,200 synthetic customers previewed in 50.482 seconds and applied in 81.724 seconds. Exactly 1,200 people, cards, source links, row outcomes and provenance records were retained.",
+    "Completed replay returned HTTP 200 and did not change counts/attempts. The first harness incorrectly expected top-level status; the implemented response carries import.status. The harness was corrected; authenticated row-window/card-pagination assertions were not reached in that trial.",
+    "The advertised 5,000-row preview failed HTTP 546 after 132.325 seconds. It left no saved import, canonical records or outcomes. The precise server-side resource limit was not determined.",
+    "Both fixtures retired their temporary login/write authority, retained evidence and matched all 18 pre-existing source/card table fingerprints.",
+    "Current code makes one database RPC per matched/applied row. Bounded database batches are the next candidate; they are not installed or used by the hosted endpoint."
+  ],
+  "limitations": [
+    "Synthetic customer imports only; no real package or provider traffic.",
+    "The full 5,000-row advertised capability is disproved for this current endpoint. Large imports are not accepted as production-ready.",
+    "Row outcome pagination beyond 1,000 and large-card-page acceptance remain unverified."
+  ]
+}

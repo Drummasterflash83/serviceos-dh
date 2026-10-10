@@ -512,3 +512,39 @@ memberships ended. All rows remain retained; 17 pre-existing source-table finger
 matched. The local server was stopped, owned browser tabs closed and the temporary
 plaintext password removed. Screenshot and database evidence are recorded in
 [browser acceptance](evidence/learn-import-cards-browser-2026-10-10.json).
+
+## Import volume failure and bounded batch candidate — 10 October
+
+The installed endpoint previewed 1,200 synthetic customers in **50.482 seconds** and
+applied them in **81.724 seconds**. It retained exactly 1,200 people, cards, links,
+outcomes and provenance rows, with attempt 1 throughout. Completed replay returned
+HTTP 200 and unchanged counts. The first harness then stopped on an incorrect
+response assertion (`status` instead of `import.status`); it did not reach the
+outcome-window/card-pagination checks. The assertion is now corrected.
+
+A separate **5,000-row** trial failed during preview with **HTTP 546 after 132.325
+seconds**, leaving no saved import or canonical rows. This disproves readiness at
+the endpoint's advertised file limit. The exact server resource constraint has not
+been established; source inspection confirms one database round trip per valid
+preview row and per applied row. Both synthetic trial accounts are retired and all
+18 pre-existing source/card-table fingerprints matched. Evidence is retained in
+[volume observations](evidence/learn-import-volume-2026-10-10.json).
+
+Local migration `20261031080000_learn_import_batches.sql` adds three private invoker
+helpers for current authority, matching batches and applying batches of 1–100 rows.
+They reuse existing customer/site/job logic, sealed options, active-company and
+owner/admin checks, cross-company View As refusal, and registry/roster lock order.
+Preview creates no canonical records. Apply isolates row errors in subtransactions;
+successful rows commit together at the batch boundary. Contract/authority errors
+roll back the entire batch. Returned row failures contain SQLSTATE only, for the
+existing Edge classifier/outcome recorder; a lost response requires inspecting the
+durable ledger before continuing. Invalid-field outcomes are recorded inside the
+batch after checking current authority. Terminal row replay remains idempotent.
+
+The isolated TEST-schema projection passed 100-row customer preview/apply, replay,
+invalid-row recording, injected row failure without raw error disclosure, continued
+later rows, late contract rollback, duplicate/oversized batches, sealed-option
+mismatch, foreign/demoted/suspended/View As refusal, and site/job creation with exact
+site-owner contradiction refusal. Existing rows survived installation and rollback.
+The batch helpers are **local only**: Edge integration, pinned TEST release,
+endpoint deployment and repeated maximum-volume acceptance remain required.
