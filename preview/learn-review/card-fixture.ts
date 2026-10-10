@@ -48,7 +48,7 @@ function publicationFixtureRows(){
 export function publishScorecardFixture(args:any){
  const prior=publications.find(r=>r.id===args.p_request);
  if(prior)return {data:{publicationId:prior.id,policyId:prior.policy_id,revision:prior.revision,effectiveFrom:prior.effective_from,reused:true},error:null};
- const policy=drafts[0]?.value??(selectedPolicy());
+ const policy=drafts.find(d=>d.value.id===args.p_policy&&d.value.version===args.p_revision)?.value??(selectedPolicy());
  if(policy.id!==args.p_policy||policy.version!==args.p_revision)return {data:null,error:{code:"PT409"}};
  const at=new Date().toISOString();
  publications.push({id:args.p_request,tenant_id,policy_id:policy.id,revision:policy.version,effective_from:at,
@@ -202,6 +202,7 @@ function records(): Record<string, any[]> {
       }),
     ],
     intelligence_objects: [
+      row(12, {object_type:"commitment",subject:"Review team dispatch queue · synthetic",status:"open",responsible_ref:{kind:"org_unit",ref:id(4)},source_interactions:[id(8)],source_entities:[]}),
       row(11, {
         object_type: "commitment",
         subject: "Confirm the service appointment",
@@ -304,7 +305,7 @@ export function cardFixture(table: string) {
 }
 
 export function readDraftFixture(args:any){
- const value=drafts[0]?.value??(new URLSearchParams(location.search).has("performance")?selectedPolicy():null);
+ const value=drafts.find(d=>d.scope_ref===`${args.p_kind}:${args.p_group??"all"}`)?.value??(new URLSearchParams(location.search).has("performance")?selectedPolicy():null);
  return {data:value&&value.tenantId===args.p_tenant&&value.subjectKind===args.p_kind&&(value.groupId??null)===(args.p_group??null)?value:null,error:null};
 }
 

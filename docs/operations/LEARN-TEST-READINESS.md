@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Team cards and scoring scopes — frontend candidate verified
+
+Separate team cards now read explicit team-assigned work and linked evidence.
+Settings expose the existing individual, team, job and customer policy scopes
+without mixing their revisions. Thirty-one focused tests, four readiness checks,
+app/preview builds and actual synthetic browser scope checks pass. Existing hosted
+TEST columns and scoring contracts were read back; fresh signed-in acceptance and
+team calculation adapters remain pending. No backend migration or source mutation
+is required. [Implementation and limits](LEARN-TEAM-CARDS.md).
+
 ## Retained job detail — TEST release 047 and paired frontend installed
 
 Owners can inspect a captured Commusoft job's source fields and dates while its

@@ -1,0 +1,112 @@
+{
+  "version": "learn-team-cards/1",
+  "scope": "frontend; existing backend contracts",
+  "local": {
+    "focusedTests": 31,
+    "readinessTests": 4,
+    "appTypecheck": true,
+    "previewTypecheck": true,
+    "appBuild": true,
+    "appPrebuildTests": 47,
+    "previewBuild": true,
+    "browser": [
+      "Team directory and exact Office filter",
+      "Explicit team work and linked email",
+      "Separate team 0\u201350 draft, no measurements remains unassessed",
+      "Member/customer scope isolation",
+      "Job draft does not replace team revision"
+    ],
+    "screenshot": ".verification-results/learn-team-card-2026-10-10.png"
+  },
+  "hostedMetadata": {
+    "observedAt": "2026-10-10T22:43:56.221Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "rls": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "tenant_id",
+        "type": "uuid",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "kind",
+        "type": "text",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "parent_id",
+        "type": "uuid",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "metadata",
+        "type": "jsonb",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "authenticatedSelect": true
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "authenticatedSelect": true
+      }
+    ],
+    "policies": [
+      {
+        "name": "learn_foundation_tenant_boundary",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "(tenant_id = current_tenant_id())",
+        "command": "SELECT"
+      },
+      {
+        "name": "org_units_select",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "((tenant_id = current_tenant_id()) OR is_openfolk())",
+        "command": "SELECT"
+      }
+    ],
+    "functions": [
+      {
+        "md5": "c7f014760979e79fa6828a0f37c0920d",
+        "name": "learn_scorecard_policy_for_period",
+        "authenticatedExecute": true
+      },
+      {
+        "md5": "4810627b5ca1b4576dfc06bbbc08d1f8",
+        "name": "learn_scorecard_read_draft",
+        "authenticatedExecute": true
+      },
+      {
+        "md5": "65ff14a5e65a21f1ce6614e20e90bf7a",
+        "name": "learn_scorecard_save_draft",
+        "authenticatedExecute": true
+      }
+    ]
+  },
+  "hostedSignedInAcceptance": false,
+  "frontendDeployment": "pending",
+  "remaining": [
+    "Fresh signed-in hosted team card and scoring scope acceptance",
+    "Team source calculation adapters and aggregation",
+    "Other LEARN V1 launch requirements remain open"
+  ]
+}

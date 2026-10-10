@@ -6,6 +6,7 @@ import {
   validateScorecardPolicy,
   type ScorecardPolicy,
   type ScoreMetricRule,
+  type ScoreSubject,
 } from "@/lib/learn-scorecards";
 
 const suggestions = [
@@ -70,10 +71,12 @@ const suggestions = [
 /** Draft-only configuration. Saving does not activate scores or change pay. */
 export function LearnScorecardSettings({
   tenantId,
+  kind,
   groupId,
   canEdit,
 }: {
   tenantId: string;
+  kind: ScoreSubject["kind"];
   groupId: string | null;
   canEdit: boolean;
 }) {
@@ -91,16 +94,16 @@ export function LearnScorecardSettings({
     setMessage("Reading scoring rules…");
     void (async () => {
       try {
-        const saved = await loadScorecardDraft(getSupabaseClient(), tenantId, "member", groupId);
+        const saved = await loadScorecardDraft(getSupabaseClient(), tenantId, kind, groupId);
         if (!active) return;
         setPolicy(
           saved ?? {
             tenantId,
             id: crypto.randomUUID(),
             version: 1,
-            name: "Team performance",
+            name: `${kind === "member" ? "Individual" : kind === "team" ? "Team" : kind === "job" ? "Job" : "Customer"} performance`,
             status: "draft",
-            subjectKind: "member",
+            subjectKind: kind,
             groupId,
             scaleMax: 100,
             metrics: [],
@@ -112,7 +115,7 @@ export function LearnScorecardSettings({
         setMessage(
           saved
             ? `Loaded revision ${saved.version}. Saving creates a new draft.`
-            : "No scoring rules saved for this group. Choose the measures and weights you want to review.",
+            : "No scoring rules saved for this selection. Choose the measures and weights you want to review.",
         );
       } catch {
         if (active) setMessage("Scoring rules could not be read. Reload to retry.");
@@ -121,7 +124,7 @@ export function LearnScorecardSettings({
     return () => {
       active = false;
     };
-  }, [tenantId, groupId, reload]);
+  }, [tenantId, kind, groupId, reload]);
   const update = (index: number, patch: Partial<ScoreMetricRule>) =>
     setPolicy((old) =>
       old
@@ -154,9 +157,25 @@ export function LearnScorecardSettings({
     <div className="ls-settings">
       <p>
         Choose the measures, weights and scoring scale for{" "}
-        {groupId ? "this team group" : "all team members"}. These are draft rules for review.
-        Evidence collection and live scoring are separate.
+        {kind === "member"
+          ? groupId
+            ? "individual members of this team group"
+            : "individual team members"
+          : kind === "team"
+            ? groupId
+              ? "this team as a whole"
+              : "each team as a whole"
+            : kind === "job"
+              ? "individual jobs"
+              : "individual customers"}
+        . These are draft rules for review. Evidence collection and live scoring are separate.
       </p>
+      {kind === "team" && (
+        <p>
+          Team measures need their own evidenced calculations. Individual scores are not averaged or
+          copied into team scores.
+        </p>
+      )}
       <p role="status">{message}</p>
       <button
         type="button"
@@ -220,36 +239,47 @@ export function LearnScorecardSettings({
             >
               Add custom measure
             </button>
-            {suggestions.map((s) => (
-              <button
-                type="button"
-                className="cp-secondary"
-                disabled={policy.metrics.some((m) => m.key === s.key)}
-                key={s.key}
-                onClick={() =>
-                  setPolicy({
-                    ...policy,
-                    metrics: [
-                      ...policy.metrics,
-                      {
-                        key: s.key,
-                        label: s.label,
-                        unit: s.unit,
-                        zeroAt: s.zeroAt,
-                        fullAt: s.fullAt,
-                        weight: 0,
-                        minSamples: 5,
-                        minCoverage: 1,
-                        maxAgeHours: 24,
-                        sourceSystems: [s.source],
-                      },
-                    ],
-                  })
-                }
-              >
-                Add: {s.label}
-              </button>
-            ))}
+            {suggestions
+              .filter(
+                (s) =>
+                  kind === "member" ||
+                  ![
+                    "work.owned_item_minutes",
+                    "work.recorded_handoffs",
+                    "work.desk_minutes",
+                    "driving.provider_score",
+                  ].includes(s.key),
+              )
+              .map((s) => (
+                <button
+                  type="button"
+                  className="cp-secondary"
+                  disabled={policy.metrics.some((m) => m.key === s.key)}
+                  key={s.key}
+                  onClick={() =>
+                    setPolicy({
+                      ...policy,
+                      metrics: [
+                        ...policy.metrics,
+                        {
+                          key: s.key,
+                          label: s.label,
+                          unit: s.unit,
+                          zeroAt: s.zeroAt,
+                          fullAt: s.fullAt,
+                          weight: 0,
+                          minSamples: 5,
+                          minCoverage: 1,
+                          maxAgeHours: 24,
+                          sourceSystems: [s.source],
+                        },
+                      ],
+                    })
+                  }
+                >
+                  Add: {s.label}
+                </button>
+              ))}
           </div>
           {policy.metrics.map((m, i) => (
             <article className="ls-rule" key={m.key}>

@@ -28,12 +28,28 @@ function database(data: Record<string, any[]>, failures: string[] = []) {
     async rpc(name: string, args: Record<string, any>) {
       assert.equal(name, "learn_card_communications_read");
       calls.push({ table: name, tenant: args.p_tenant });
-      const selected = (data.interactions ?? []).filter(r => r.tenant_id === args.p_tenant &&
-        !["deleted", "removed"].includes(r.status) && (args.p_ids?.includes(r.id) ||
-        (args.p_person && r.related_person_id === args.p_person) || (args.p_company && r.related_company_id === args.p_company) ||
-        (args.p_job && r.related_job_id === args.p_job))).slice(0, 51).map(({updated_at, ...r}) => r);
-      return failures.includes("interactions") ? { data: null, error: { message: "private provider error" } } :
-        { data: { version: "learn-card-communications/1", tenant_id: args.p_tenant, rows: selected }, error: null };
+      const selected = (data.interactions ?? [])
+        .filter(
+          (r) =>
+            r.tenant_id === args.p_tenant &&
+            !["deleted", "removed"].includes(r.status) &&
+            (args.p_ids?.includes(r.id) ||
+              (args.p_person && r.related_person_id === args.p_person) ||
+              (args.p_company && r.related_company_id === args.p_company) ||
+              (args.p_job && r.related_job_id === args.p_job)),
+        )
+        .slice(0, 51)
+        .map(({ updated_at, ...r }) => r);
+      return failures.includes("interactions")
+        ? { data: null, error: { message: "private provider error" } }
+        : {
+            data: {
+              version: "learn-card-communications/1",
+              tenant_id: args.p_tenant,
+              rows: selected,
+            },
+            error: null,
+          };
     },
     from(table: string) {
       const call = { table, tenant: undefined as string | undefined };
@@ -301,4 +317,76 @@ test("team groups come from tenant configuration and filter current members only
   await assert.rejects(readLearnCards(db, T, "member", 0, now, "bad-filter"));
   await assert.rejects(readLearnTeamGroups(database({}, ["org_units"]), T));
   assert.ok(db.calls.every((c) => c.tenant === T));
+});
+
+test("team cards read tenant org units, filter one team and keep bounded pagination", async () => {
+  const db = database({
+    org_units: [
+      ...Array.from({ length: 26 }, (_, i) => row(i + 1, { name: `Team ${i}`, kind: "crew" })),
+      row(99, { tenant_id: OTHER, name: "Foreign" }),
+    ],
+  });
+  const first = await readLearnCards(db, T, "team", 0, now);
+  assert.equal(first.cards.length, 24);
+  assert.equal(first.hasMore, true);
+  assert.equal(first.cards[0].title, "Team 0");
+  assert.equal(first.cards[0].subtitle, "crew");
+  assert.equal(first.cards[0].recordState, "Stored team group");
+  assert.equal((await readLearnCards(db, T, "team", 1, now)).cards.length, 2);
+  assert.deepEqual(
+    (await readLearnCards(db, T, "team", 0, now, id(2))).cards.map((c) => c.id),
+    [id(2)],
+  );
+  assert.equal((await readLearnCards(db, T, "team", 0, now, id(99))).cards.length, 0);
+  await assert.rejects(readLearnCards(db, T, "team", 0, now, "bad"));
+  await assert.rejects(readLearnCards(db, T, "job", 0, now, id(2)));
+  await assert.rejects(readLearnCards(database({}, ["org_units"]), T, "team", 0, now));
+  assert.ok(db.calls.every((c) => c.tenant === T));
+});
+
+test("team detail joins explicit typed team ownership, never current member work or other tenants", async () => {
+  const data = {
+    org_units: [row(1, { name: "Office", kind: "department" })],
+    team_members: [row(2, { display_name: "Person", org_unit_id: id(1) })],
+    intelligence_objects: [
+      row(3, {
+        responsible_ref: { kind: "team", ref: id(1) },
+        accountable_ref: { kind: "org_unit", ref: id(1) },
+        source_interactions: [id(9)],
+      }),
+      row(4, { responsible_ref: { kind: "org_unit", ref: id(1) }, source_interactions: [id(10)] }),
+      row(5, { responsible_ref: { kind: "member", ref: id(2) }, source_interactions: [id(11)] }),
+      row(6, { responsible_ref: { kind: "member", ref: id(1) }, source_interactions: [id(11)] }),
+      row(7, { responsible_ref: { kind: "team", ref: id(2) }, source_interactions: [id(11)] }),
+      row(8, {
+        tenant_id: OTHER,
+        responsible_ref: { kind: "team", ref: id(1) },
+        source_interactions: [id(11)],
+      }),
+    ],
+    interactions: [row(9), row(10), row(11)],
+  };
+  const db = database(data);
+  const detail = await readLearnCardDetail(db, T, "team", id(1), now);
+  assert.deepEqual(
+    detail.findings.map((f) => f.id),
+    [id(3), id(4)],
+  );
+  assert.deepEqual(
+    detail.evidence.map((e) => e.id),
+    [id(9), id(10)],
+  );
+  assert.ok(detail.findings.every((f) => f.owner === "Office"));
+  assert.match(detail.gaps.join(" "), /not aggregated/);
+  assert.ok(db.calls.every((c) => c.tenant === T));
+  await assert.rejects(readLearnCardDetail(db, T, "team", id(99), now));
+  const denied = await readLearnCardDetail(
+    database(data, ["intelligence_objects"]),
+    T,
+    "team",
+    id(1),
+    now,
+  );
+  assert.equal(denied.findings.length, 0);
+  assert.match(denied.gaps.join(" "), /could not be read/);
 });

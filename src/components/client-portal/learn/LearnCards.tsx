@@ -25,7 +25,8 @@ import {
 const kinds = [
   { kind: "customer", label: "Customers", Icon: Building2 },
   { kind: "job", label: "Jobs", Icon: BriefcaseBusiness },
-  { kind: "member", label: "Team", Icon: Users },
+  { kind: "member", label: "Team members", Icon: Users },
+  { kind: "team", label: "Teams", Icon: Users },
 ] as const;
 const when = (value: string | null) =>
   value ? new Date(value).toLocaleString("en-GB") : "Not established";
@@ -99,7 +100,7 @@ function CardWorkspace({
           kind,
           page,
           Date.now(),
-          kind === "member" ? group : undefined,
+          ["member", "team"].includes(kind) ? group : undefined,
         );
         if (active) setResult({ kind, group, page, revision, data });
       } catch {
@@ -141,6 +142,8 @@ function CardWorkspace({
             aria-pressed={kind === value}
             onClick={() => {
               setKind(value);
+              setGroup("");
+              setSettingsOpen(false);
               setPage(0);
               setSelected(null);
             }}
@@ -150,7 +153,7 @@ function CardWorkspace({
           </button>
         ))}
       </div>
-      {kind === "member" && (
+      {["member", "team"].includes(kind) && (
         <label className="lc-group">
           Company team group{" "}
           <select
@@ -160,7 +163,7 @@ function CardWorkspace({
               setPage(0);
             }}
           >
-            <option value="">All team members</option>
+            <option value="">{kind === "team" ? "All teams" : "All team members"}</option>
             {groups?.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name}
@@ -170,7 +173,7 @@ function CardWorkspace({
           {groups === null && (
             <span>
               {groupsFailed
-                ? "Group list unavailable; showing all accessible members."
+                ? "Group list unavailable; showing accessible records."
                 : "Reading team groups…"}
             </span>
           )}
@@ -190,8 +193,10 @@ function CardWorkspace({
             {kind === "job"
               ? "Job cards appear when operational records are imported and linked. Communications alone do not confirm a job's status."
               : kind === "member"
-                ? "Team cards appear as people are added to the existing company directory."
-                : "Customer cards appear as the existing identity and customer-card pipeline links your communications."}
+                ? "Member cards appear as people are added to the existing company directory."
+                : kind === "team"
+                  ? "Team cards appear as groups are added to the company directory."
+                  : "Customer cards appear as the existing identity and customer-card pipeline links your communications."}
           </p>
         </div>
       )}
@@ -240,24 +245,23 @@ function CardWorkspace({
               actorId={actorId}
               kind={kind}
               id={selected}
-              groupId={kind === "member" ? group || null : null}
+              groupId={["member", "team"].includes(kind) ? group || null : null}
               canReview={canEdit}
             />
           )}
         </DialogContent>
       </Dialog>
-      {kind === "member" && (
-        <div className="ls-entry">
-          <h3>Performance scorecards</h3>
-          <p>
-            Configure measures, targets and weights for the selected team group. Scores remain
-            unassessed until approved rules and verified measurements are connected.
-          </p>
-          <button type="button" className="cp-secondary" onClick={() => setSettingsOpen(true)}>
-            Review scoring rules
-          </button>
-        </div>
-      )}
+      <div className="ls-entry">
+        <h3>Performance scorecards</h3>
+        <p>
+          Configure measures, targets and weights for these{" "}
+          {kinds.find((k) => k.kind === kind)?.label.toLowerCase()}. Scores remain unassessed until
+          approved rules and verified measurements are connected.
+        </p>
+        <button type="button" className="cp-secondary" onClick={() => setSettingsOpen(true)}>
+          Review scoring rules
+        </button>
+      </div>
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="lc-dialog" overlayClassName="lc-overlay">
           <DialogHeader>
@@ -268,9 +272,10 @@ function CardWorkspace({
           </DialogHeader>
           {settingsOpen && (
             <LearnScorecardSettings
-              key={`${tenantId}:${group}`}
+              key={`${tenantId}:${kind}:${group}`}
               tenantId={tenantId}
-              groupId={group || null}
+              kind={kind}
+              groupId={["member", "team"].includes(kind) ? group || null : null}
               canEdit={canEdit}
             />
           )}

@@ -27,7 +27,7 @@ export const READ_CONTRACT = {
     customer_cards: 'id,tenant_id,title,summary,person_id,company_id,owner_id,updated_at',
     jobs: 'id,tenant_id,title,job_number,status,source_system,verified,updated_at',
     team_members: 'id,tenant_id,display_name,formal_role,org_unit_id,profile_id,confirmed_at,effective_to,updated_at',
-    org_units: 'id,tenant_id,name',
+    org_units: 'id,tenant_id,name,kind,updated_at',
     interactions: 'id,tenant_id,source_connector_id,source_type,source_table,source_id,occurred_at,subject,summary,body_preview,status,related_person_id,related_company_id,related_job_id',
     intelligence_objects: 'id,tenant_id,object_type,subject,status,deadline,responsible_ref,accountable_ref,waiting_on_ref,confidence,source_interactions,source_entities,attributes,created_at,updated_at',
     graph_nodes: 'id,tenant_id,source_table,source_id',

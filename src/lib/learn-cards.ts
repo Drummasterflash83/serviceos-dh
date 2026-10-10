@@ -1,7 +1,11 @@
-import { readCardCommunications, type LearnCommunicationClient, type CommunicationScope } from "./learn-card-communications.ts";
+import {
+  readCardCommunications,
+  type LearnCommunicationClient,
+  type CommunicationScope,
+} from "./learn-card-communications.ts";
 /** Read-only views of existing canonical records. The caller supplies the user's
  * RLS client; never a service-role client. No new card store or intelligence queue. */
-export type LearnCardKind = "customer" | "job" | "member";
+export type LearnCardKind = "customer" | "job" | "member" | "team";
 export type Row = Record<string, any>;
 export interface LearnReadClient {
   from(table: string): any;
@@ -14,8 +18,14 @@ const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ?
 const date = (v: unknown, now: number): string | null =>
   typeof v === "string" && Number.isFinite(Date.parse(v)) && Date.parse(v) <= now ? v : null;
 const ids = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter(uuid))] : []);
-const tables = { customer: "customer_cards", job: "jobs", member: "team_members" } as const;
+const tables = {
+  customer: "customer_cards",
+  job: "jobs",
+  member: "team_members",
+  team: "org_units",
+} as const;
 const columns = {
+  team: "id,tenant_id,name,kind,updated_at",
   customer: "id,tenant_id,title,summary,person_id,company_id,owner_id,updated_at",
   job: "id,tenant_id,title,job_number,status,source_system,verified,updated_at",
   member:
@@ -109,20 +119,28 @@ function card(row: Row, kind: LearnCardKind, now: number): LearnCard {
     id: row.id,
     kind,
     title:
-      text(kind === "member" ? row.display_name : row.title) ??
+      text(kind === "member" ? row.display_name : kind === "team" ? row.name : row.title) ??
       (kind === "job" && text(row.job_number) ? `Job ${row.job_number}` : "Identity needs review"),
     subtitle:
-      kind === "member" ? text(row.formal_role) : kind === "job" ? text(row.job_number) : null,
-    recordState:
       kind === "member"
-        ? row.confirmed_at
-          ? "Confirmed team record"
-          : "Team identity needs review"
-        : kind === "job"
-          ? row.verified
-            ? "Verified job record"
-            : "Job record needs review"
-          : "Stored customer record",
+        ? text(row.formal_role)
+        : kind === "team"
+          ? text(row.kind)
+          : kind === "job"
+            ? text(row.job_number)
+            : null,
+    recordState:
+      kind === "team"
+        ? "Stored team group"
+        : kind === "member"
+          ? row.confirmed_at
+            ? "Confirmed team record"
+            : "Team identity needs review"
+          : kind === "job"
+            ? row.verified
+              ? "Verified job record"
+              : "Job record needs review"
+            : "Stored customer record",
     updatedAt: date(row.updated_at, now),
   };
 }
@@ -136,10 +154,11 @@ export async function readLearnCards(
 ): Promise<LearnCardPage> {
   scope(tenant, kind);
   if (!Number.isSafeInteger(page) || page < 0 || page > 10000) throw new Error("Invalid page");
-  if (group && (kind !== "member" || !uuid(group))) throw new Error("Invalid group");
+  if (group && (!["member", "team"].includes(kind) || !uuid(group)))
+    throw new Error("Invalid group");
   let q = db.from(tables[kind]).select(columns[kind]).eq("tenant_id", tenant);
   if (kind === "member") q = q.is("effective_to", null);
-  if (group) q = q.eq("org_unit_id", group);
+  if (group) q = q.eq(kind === "team" ? "id" : "org_unit_id", group);
   const result = await rows(
     q
       .order("updated_at", { ascending: false })
@@ -208,6 +227,12 @@ export function projectLearnDetail(input: {
       excerpt: text(r.body_preview),
     }))
     .sort((a, b) => (Date.parse(b.occurredAt ?? "") || 0) - (Date.parse(a.occurredAt ?? "") || 0));
+  const labelReference = (ref: unknown) => {
+    const r = ref as Row | null;
+    return kind === "team" && r && ["team", "org_unit"].includes(r.kind) && r.ref === record.id
+      ? (text(record.name) ?? referenceLabel(ref, input.members))
+      : referenceLabel(ref, input.members);
+  };
   const visible = new Set(evidence.map((e) => e.id));
   const terminal = new Set(["complete", "completed", "cancelled", "resolved", "closed", "done"]);
   const findings = [
@@ -223,10 +248,8 @@ export function projectLearnDetail(input: {
       title: text(r.subject) ?? "Finding needs review",
       type: text(r.object_type) ?? "Finding",
       status: text(r.status) ?? "unknown",
-      owner:
-        referenceLabel(r.accountable_ref, input.members) ??
-        referenceLabel(r.responsible_ref, input.members),
-      waitingOn: referenceLabel(r.waiting_on_ref, input.members),
+      owner: labelReference(r.accountable_ref) ?? labelReference(r.responsible_ref),
+      waitingOn: labelReference(r.waiting_on_ref),
       deadline,
       overdue: !!deadline && Date.parse(deadline) < now && !terminal.has(r.status),
       confidence:
@@ -275,20 +298,30 @@ export async function readLearnCardDetail(
     }
   }
   async function communications(label: string, selection: CommunicationScope) {
-    try { return await readCardCommunications(db, tenant, selection); }
-    catch { gaps.push(label); return []; }
+    try {
+      return await readCardCommunications(db, tenant, selection);
+    } catch {
+      gaps.push(label);
+      return [];
+    }
   }
   const findingsQuery = () =>
     db.from("intelligence_objects").select(findingColumns).eq("tenant_id", tenant);
   let direct: Row[] = [],
     findings: Row[] = [];
-  if (kind === "member") {
+  if (kind === "member" || kind === "team") {
     // Ownership caches use {kind,ref}, not bare UUIDs. Do not join on display names.
-    const refs = [
-      { kind: "member", ref: id },
-      { kind: "team_member", ref: id },
-    ];
-    if (uuid(record.profile_id))
+    const refs =
+      kind === "team"
+        ? [
+            { kind: "team", ref: id },
+            { kind: "org_unit", ref: id },
+          ]
+        : [
+            { kind: "member", ref: id },
+            { kind: "team_member", ref: id },
+          ];
+    if (kind === "member" && uuid(record.profile_id))
       refs.push(
         { kind: "user", ref: record.profile_id },
         { kind: "profile", ref: record.profile_id },
@@ -308,15 +341,23 @@ export async function readLearnCardDetail(
     );
     findings = batches.flat();
     gaps.push(
-      "Timeline covers evidence linked to owned work; it does not establish all of this person's communications.",
+      kind === "team"
+        ? "Shows work explicitly assigned to this team and its linked evidence. Individual members’ work and scores are not aggregated here."
+        : "Timeline covers evidence linked to owned work; it does not establish all of this person's communications.",
     );
   } else {
-    const selection: CommunicationScope = kind === "job" ? { job: id } : {
-      ...(uuid(record.company_id) ? { company: record.company_id } : {}),
-      ...(uuid(record.person_id) ? { person: record.person_id } : {}),
-    };
+    const selection: CommunicationScope =
+      kind === "job"
+        ? { job: id }
+        : {
+            ...(uuid(record.company_id) ? { company: record.company_id } : {}),
+            ...(uuid(record.person_id) ? { person: record.person_id } : {}),
+          };
     if (Object.keys(selection).length)
-      direct = await communications("Linked communications could not be read. Company owner/admin access is required.", selection);
+      direct = await communications(
+        "Linked communications could not be read. Company owner/admin access is required.",
+        selection,
+      );
     else gaps.push("This customer has no canonical person or company link yet.");
     const graphFilters = [`and(source_table.eq.${tables[kind]},source_id.eq.${id})`];
     if (kind === "customer" && uuid(record.company_id))
