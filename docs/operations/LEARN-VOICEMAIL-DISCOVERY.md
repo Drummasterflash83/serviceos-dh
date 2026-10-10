@@ -78,3 +78,82 @@ messages even when source retention or mailbox ownership later changes; do not
 mark messages read or delete them. Private voicemail access must not silently
 become tenant-wide LEARN access. End-to-end capture, transcription, reconciliation
 and ongoing scheduling remain incomplete.
+
+## Existing email notification discovery — 10 October
+
+`scripts/verify/learn-voicemail-email-audit.mjs` checks whether the existing imported
+email history contains possible voicemail notifications. It is a read-only diagnostic,
+not an importer or a substitute for the provider contract above. Server-side subject
+matching covers `voicemail`, `voice mail` and `voice-mail`. Other subject wording,
+body-only references and messages never imported into ServiceOS are outside its scope.
+
+The audit requires the existing explicit project/tenant allowlist and first verifies
+the tenant identity. It reads candidate IDs, direction and the existing attachment
+hint; it does not retrieve subjects, bodies, sender/recipient addresses or raw
+provider payloads. Attachment metadata reads are limited to those candidate IDs.
+Filename/MIME indicators, positive size and storage pointers are reported separately:
+none authenticates Birchills, establishes mailbox ownership or proves playable audio.
+A mention of voicemail in an ordinary email is also a possible match.
+
+Reads use a fixed Supabase origin, refuse redirects and time out after 20 seconds.
+Each JSON response is limited to 2 MiB; scans use ordered unique IDs, 250-row pages,
+a maximum of 20,000 rows per scan and a global budget of 200 HTTP requests. Exact
+counts are checked before/after, and failed, partial, duplicate, cross-company or
+changed-count results cannot claim complete query coverage. Stable counts cannot
+exclude all concurrent edits and do not create a consistent database snapshot.
+The report says `complete_for_subject_query`, never complete voicemail coverage.
+
+Public output contains counts and company-scoped message fingerprints. Optional
+private output retains only the original candidate IDs with those fingerprints,
+using an exclusive file with mode 0600. Keep that file in ignored verification output.
+No source content, filename, storage path, credential or provider error prose enters
+the report. There are no database writes, storage downloads, provider requests,
+transcriptions, messages to others or access changes.
+
+Run with the existing secure verification environment (do not paste credentials):
+
+```sh
+node scripts/verify/learn-voicemail-email-audit.mjs .verification-results/voicemail-email-private.json
+node --test scripts/verify/learn-voicemail-email-audit.test.mjs scripts/verify/learn-preservation.test.mjs
+```
+
+Seven new tests cover pagination/batching, safe projections, empty matches, failed
+and oversized responses, company/identity isolation, duplicates, count drift,
+attachment uncertainty and the global request budget. The five existing preservation
+tests also pass. Live discovery results are recorded separately below.
+
+### Live attempt and query cancellations
+
+The first identity read failed; a separate identity read succeeded at 03:00:38 UTC.
+The subsequent audit (03:00:46–03:01:55) could not establish either the email count
+or candidate count. Its status is **unverified**. Zero observed candidates in that
+report is not evidence of zero matching emails. The initial run predates the added
+safe HTTP/transport failure categories in the diagnostic; those categories are
+covered by the local tests.
+
+A separate email-count HEAD returned HTTP 500 at 03:03:55. A GET count returned
+HTTP 500 with SQLSTATE `57014` at 03:04:38. Read-only database activity metadata
+at 03:05:30 showed no blocked client sessions or locks on the inspected source
+relations; that later observation does not establish the cause of the earlier
+cancellations. One bounded aggregate query through the existing management
+read-only endpoint also failed (HTTP 544). No server timeout, role, query, schedule
+or session was changed or cancelled to work around the failures.
+
+The concurrent preservation check (03:01:55–03:04:25) was also **unverified** for
+email, calls, recordings, transcripts, interactions, customers and recording
+storage. It did verify the existing zero jobs, eight members, zero captured
+voicemails, 30 email accounts and three tenant connectors. Failed reads are not
+missing rows. The earlier successful 00:40–00:41 inventory remains the last verified
+comparison for the larger sources: 18,456 emails, 4,324 calls and 2,882 recordings.
+This step made no production mutation and does not claim a fresh preservation proof.
+
+Evidence: [candidate audit](evidence/learn-voicemail-email-audit-2026-10-10.json),
+[partial preservation check](evidence/learn-preservation-voicemail-email-2026-10-10.json),
+[read-only wait/lock metadata](evidence/learn-source-read-timeouts-2026-10-10.json),
+and [verification and failed-read diagnostics](evidence/learn-voicemail-email-verification-2026-10-10.json).
+
+Next, establish why these bounded source reads are cancelled and repeat the audit
+when reads are available. If actual candidate notifications exist, inspect a
+specifically scoped authorised sample to verify message identity, sender
+authentication, mailbox identity and audio retrieval. Do not infer a usable
+voicemail-to-email connector from a subject match or attachment flag.

@@ -914,3 +914,22 @@ Five synthetic assessments remain as evidence. All four users were banned, rotat
 and demoted; memberships/previews ended. Existing source/performance rows retained
 identical fingerprints. Production and frontend deployment are unchanged. See
 [full evidence and limits](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#saved-assessments-accepted-in-test--10-october).
+
+## Voicemail email discovery and unavailable source reads — 10 October
+
+A bounded read-only diagnostic now searches existing imported email subjects for
+possible voicemail notifications and checks candidate attachment metadata. It
+preserves private source references separately, reports only safe indicators, and
+never promotes hints or pointers to verified voicemail/playable audio. Twelve
+focused diagnostic/preservation checks pass. No hosted deployment or data change
+was made; TEST remains release 020.
+
+The live audit could not establish candidate counts. Email count probes returned
+HTTP 500/SQLSTATE 57014; a management aggregate also failed with HTTP 544. A later
+read-only activity check found no active blockers. Fresh preservation reads for the
+larger sources and recording storage are unverified, not missing; small registries
+and the existing zero voicemail/job counts were verified. The earlier successful
+18,456 email / 4,324 call / 2,882 recording comparison remains the latest complete
+source inventory. Source-read availability needs investigation before another live
+voicemail audit or a claim of fresh preservation. See
+[diagnostic contract, evidence and limits](../operations/LEARN-VOICEMAIL-DISCOVERY.md#existing-email-notification-discovery--10-october).

@@ -1,0 +1,52 @@
+{
+  "version": "learn-voicemail-email-verification/1",
+  "recordedAt": "2026-10-10T03:07:36.575709+00:00",
+  "localChecks": {
+    "passed": 12,
+    "command": "node --test scripts/verify/learn-voicemail-email-audit.test.mjs scripts/verify/learn-preservation.test.mjs",
+    "syntaxCheck": "passed",
+    "diffWhitespaceCheck": "passed"
+  },
+  "sourceHashes": {
+    "scripts/verify/learn-voicemail-email-audit.mjs": "88d1818625e746f2ce67762b3a667043c8b1f5fa59ba2c5b2a870b7e21144e11",
+    "scripts/verify/learn-voicemail-email-audit.test.mjs": "79108fed342f1f44995ef04324dddef5781fdd69b45cdf2efd98924bd23408b8"
+  },
+  "liveDiagnostics": [
+    {
+      "time": "2026-10-10T03:00:38.181Z",
+      "operation": "tenant identity GET",
+      "httpStatus": 200,
+      "matchedTenant": true
+    },
+    {
+      "time": "2026-10-10T03:03:55.380Z",
+      "operation": "email exact count HEAD",
+      "httpStatus": 500,
+      "countAvailable": false
+    },
+    {
+      "time": "2026-10-10T03:04:38.629Z",
+      "operation": "email exact count GET, limit 1",
+      "httpStatus": 500,
+      "databaseCode": "57014",
+      "countAvailable": false
+    },
+    {
+      "time": "2026-10-10T03:05:30.285917Z",
+      "operation": "read-only database activity/lock metadata",
+      "blockedClientSessions": 0,
+      "inspectedSourceLocks": 0
+    },
+    {
+      "operation": "single read-only management aggregate of candidate email/attachment metadata",
+      "httpStatus": 544,
+      "resultAvailable": false
+    }
+  ],
+  "outcome": "Local diagnostic verified; live candidate discovery and fresh large-source preservation unverified.",
+  "limits": [
+    "Failure is not evidence of missing source data or absent voicemail emails.",
+    "The later lock snapshot does not identify the cause of earlier cancellations.",
+    "No provider access, source write, audio/body download, transcription, credential change, deployment, session cancellation or timeout change occurred."
+  ]
+}

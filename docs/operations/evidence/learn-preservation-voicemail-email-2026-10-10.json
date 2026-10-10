@@ -1,0 +1,128 @@
+{
+  "version": "learn-preservation/1",
+  "project_ref": "tgbnakbxwcqjeimygroz",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "cutoff": "2026-10-10T03:01:55.614Z",
+  "observed_at": "2026-10-10T03:04:25.866Z",
+  "sources": {
+    "email_messages": {
+      "complete": false,
+      "count": null
+    },
+    "phone_calls": {
+      "complete": false,
+      "count": null
+    },
+    "phone_recordings": {
+      "complete": false,
+      "count": null
+    },
+    "phone_transcripts": {
+      "complete": false,
+      "count": null
+    },
+    "interactions": {
+      "complete": false,
+      "count": null
+    },
+    "customer_cards": {
+      "complete": false,
+      "count": null
+    },
+    "jobs": {
+      "complete": true,
+      "count": 0
+    },
+    "team_members": {
+      "complete": true,
+      "count": 8
+    },
+    "receptionist_voicemails": {
+      "complete": true,
+      "count": 0
+    },
+    "email_accounts": {
+      "complete": true,
+      "count": 30
+    },
+    "tenant_connectors": {
+      "complete": true,
+      "count": 3
+    }
+  },
+  "transcript_statuses": null,
+  "storage": {
+    "complete": false,
+    "objects": 0,
+    "recordings_matched": 0,
+    "recordings_missing": 0,
+    "recordings_unverified": 0
+  },
+  "limitations": [
+    "Not a transactionally consistent database snapshot or a backup.",
+    "Storage metadata confirms object presence and size, not playable audio.",
+    "A changed row set needs investigation; a higher total alone cannot prove preservation."
+  ],
+  "comparison": {
+    "sources": {
+      "email_messages": {
+        "status": "unverified"
+      },
+      "phone_calls": {
+        "status": "unverified"
+      },
+      "phone_recordings": {
+        "status": "unverified"
+      },
+      "phone_transcripts": {
+        "status": "unverified"
+      },
+      "interactions": {
+        "status": "unverified"
+      },
+      "customer_cards": {
+        "status": "unverified"
+      },
+      "jobs": {
+        "status": "preserved",
+        "prior_count": 0,
+        "current_count": 0,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "team_members": {
+        "status": "preserved",
+        "prior_count": 8,
+        "current_count": 8,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "receptionist_voicemails": {
+        "status": "preserved",
+        "prior_count": 0,
+        "current_count": 0,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "email_accounts": {
+        "status": "preserved",
+        "prior_count": 30,
+        "current_count": 30,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      },
+      "tenant_connectors": {
+        "status": "preserved",
+        "prior_count": 3,
+        "current_count": 3,
+        "missing_rows": 0,
+        "changed_storage_pointers": 0
+      }
+    },
+    "storage": {
+      "status": "unverified"
+    },
+    "complete": false,
+    "comparison_state": "unverified"
+  }
+}

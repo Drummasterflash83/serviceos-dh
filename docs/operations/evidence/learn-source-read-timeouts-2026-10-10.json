@@ -1,0 +1,131 @@
+{
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "diagnostic": [
+    {
+      "diagnostic": {
+        "sessions": [
+          {
+            "pid": 3566871,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 52,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3892691,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 36,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566869,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 59,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566872,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 61,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566866,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 61,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566849,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 60,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 2458035,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 3666843,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566889,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 61,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566874,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 59,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566873,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 60,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566887,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 55,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 3566888,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 57,
+            "transactionAgeSeconds": null
+          },
+          {
+            "pid": 656249,
+            "state": "idle",
+            "waitType": "Client",
+            "waitEvent": "ClientRead",
+            "blockingPids": [],
+            "queryAgeSeconds": 1990,
+            "transactionAgeSeconds": null
+          }
+        ],
+        "observedAt": "2026-10-10T03:05:30.285917+00:00",
+        "sourceLocks": []
+      }
+    }
+  ],
+  "scope": "Read-only activity/lock metadata; no query text, source content or changes."
+}
