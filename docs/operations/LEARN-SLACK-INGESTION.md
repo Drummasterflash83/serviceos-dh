@@ -60,7 +60,9 @@ The two recurring tables remain empty. No channel, credential or trigger was add
 
 **Not activated.** The controls are included in the protected TEST frontend built
 from `3f96f523bdf109570f147b67df405350dad82028`; its homepage/sign-in checks passed.
-Remaining work includes authenticated hosted channel-control acceptance, explicit
+Authenticated hosted client and operator empty-channel states also pass; the
+temporary operator session is retired ([evidence](evidence/learn-hosted-operator-acceptance-2026-10-10.json)).
+Remaining work includes populated hosted channel-control acceptance, explicit
 trigger activation and real Slack workspace/channel access. This path
 covers channel-history windows only: automatic thread discovery, older message
 edit/delete reconciliation, other channel types and attachment capture remain

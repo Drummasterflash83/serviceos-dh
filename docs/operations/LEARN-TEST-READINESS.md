@@ -13,40 +13,51 @@ Client and OpenFolk controls are now included in the protected TEST frontend at
 [the current staging URL](https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app),
 built from `3f96f523bdf109570f147b67df405350dad82028`. The homepage/sign-in path
 passed browser checks and anonymous routes still redirect to Vercel authentication.
-The controls themselves have synthetic browser verification; signed-in hosted
-acceptance remains pending.
+Signed-in hosted operator source-switch acceptance and the client/operator Slack
+empty states now pass, as recorded below. Populated-channel acceptance remains pending.
 The existing 62 Slack tests, TypeScript and frontend build passed; seven additional
 release/deployment tests pass. Authenticated hosted channel-control acceptance,
 trigger activation and real Slack workspace access
 remain outstanding. See [implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--test-backend-installed-10-october-2026)
 and [hosted evidence](evidence/learn-slack-recurring-hosted-2026-10-10.json).
 
-## Hosted operator acceptance session — prepared, approval pending
+## Hosted operator acceptance — controls passed, session retired
 
-The read-only preflight for run `0be31171-a302-4840-80fd-f433726a7300` passed
-against release 034. It rechecked the exact health catalog, existing Auth contract,
-absence of `chris@openfolk.ai` in TEST Auth/profiles, and 64 aggregate preservation
-fingerprints. No account or grant has been created for this run. Release 035 later
-changed the health catalog's release ledger; the activation script now pins the
-verified post-035 health fingerprint and still rechecks the saved preservation
-baseline and identity absence before creating any access.
+Explicitly approved run `0be31171-a302-4840-80fd-f433726a7300` used the TEST-only
+`chris@openfolk.ai` login, an archived synthetic company and a 30-minute platform
+admin grant. Activation rechecked the post-035 health catalog, Auth identity absence
+and all 64 saved preservation fingerprints. No production changes were made.
 
-`scripts/verify/learn-hosted-operator-session.mjs` prepares, activates, inspects and
-retires the bounded session. Activation requires explicit approval of this new run;
-the previous contacts fixture approval does not apply. The plan creates the TEST
-login required by the existing frontend gate and one archived synthetic company,
-with a 30-minute `platform.controlplane.admin` grant. That grant can access all TEST
-clients; acceptance changes are restricted to the marked company. No provider
-credential, import, schedule or email is included.
+The protected hosted frontend accepted sign-in, loaded the 86-company directory,
+and displayed the synthetic company's shared health and LEARN controls. Two capture
+changes saved: all four switches Off, then master/Email/Slack On with Phone Off.
+Commusoft's independent module setting also saved On. A reload preserved all five
+choices. Effective capture correctly remained paused because the fixture company
+was archived, and the diagnostics reported no connected accounts. Both the client
+Slack dialog and operator recurring panel showed the correct empty-channel state.
 
-The private plan is `.verification-results/hosted-operator-session.json`. Activation
-rechecks identity absence and unchanged retained sources, journals before creating
-Auth, and refuses replay after an attempted activation. Retirement ends database
-authority before banning the login, so an Auth outage cannot leave the grant active.
-The account and synthetic evidence remain retained. The tool reports only explicit
-safe fields; passwords and source fingerprints remain local and ignored. Six session
-tests and nine existing connection-outbox tests pass. Actual hosted signed-in
-acceptance remains pending; the preflight does not count as a successful login.
+Retirement completed at **17:41:56 UTC on 10 October**: zero active grants, one
+banned TEST login, zero enabled fixture flags, zero connections and zero active
+jobs. The two capture receipts and one input-module receipt remain retained.
+Refreshing capture controls from the old browser session then refused access, and
+sign-out returned to the login screen. All **64** monitored datasets outside the
+explicit fixture exclusions retained their original counts and fingerprints.
+The temporary password was removed from the private plan.
+
+**Outstanding:** delivery editing failed to load, the directory's build estimate
+was unavailable, and this viewer-role fixture could not read the client launch
+evidence summary. The TEST metadata endpoint has an owner/admin-only mode; this
+run does not establish complete client-role acceptance. No portal programme or
+membership was created, so the fixture workspace remained in preparation. Care,
+notifications, invoices, populated Slack channel controls and real-provider capture
+still need their separate acceptance. No provider credentials, calls, imports,
+emails or schedules were created by this run.
+
+See [sanitized acceptance and retirement evidence](evidence/learn-hosted-operator-acceptance-2026-10-10.json)
+and [the saved controls screenshot](evidence/learn-hosted-operator-controls-2026-10-10.png).
+The private plan remains ignored at `.verification-results/hosted-operator-session.json`.
+The session script journals before mutation, refuses activation replay and ends
+database authority before banning Auth. Six existing session tests pass.
 
 ## Operator backend and shared health foundation — installed in TEST, 10 October 2026
 
@@ -94,9 +105,9 @@ the new state. Release SHA:
 `24ba1a152ff214e261acf717efc63e7d9686ea8e54ec60c4affe882a6b910816`.
 See [health release evidence](evidence/learn-operator-health-hosted-2026-10-10.json).
 
-**Remaining:** create/authorize the planned TEST operator access, verify the actual
-signed-in directory, module controls and client surfaces, and complete the later
+**Remaining:** complete client-role acceptance and the later delivery/build-estimate/
 care/notification/invoice dependencies where those screens require them. The
+signed-in directory and source/module switches now pass, as recorded above. The
 foundation is not a claim that every receptionist workflow is installed. No user
 account, per-user grant, provider secret, source import or schedule was added;
 production remains unchanged.

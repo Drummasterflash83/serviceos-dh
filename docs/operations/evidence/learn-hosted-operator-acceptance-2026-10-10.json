@@ -1,0 +1,63 @@
+{
+  "observedAt": "2026-10-10T17:42:38.904Z",
+  "deployment": "https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app",
+  "frontendCommit": "3f96f523bdf109570f147b67df405350dad82028",
+  "session": {
+    "version": "learn-hosted-operator-session/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "0be31171-a302-4840-80fd-f433726a7300",
+    "email": "chris@openfolk.ai",
+    "tenant": "23665e71-465d-4548-b608-b81d80e95778",
+    "durationMinutes": 30,
+    "state": "retired",
+    "expiresAt": "2026-10-10 18:06:30.698167+00",
+    "checks": {
+      "active_grants": 0,
+      "banned_logins": 1,
+      "active_jobs": 0,
+      "connections": 0
+    },
+    "preserved": true,
+    "restrictions": [
+      "Only the marked synthetic company may be changed.",
+      "No provider credential, provider call, import or schedule.",
+      "Retain evidence; ban login, end grant and disable fixture flags after acceptance."
+    ]
+  },
+  "retiredAt": "2026-10-10T17:41:56.239Z",
+  "preservedDatasets": 64,
+  "fixture": {
+    "enabled_flags": 0,
+    "capture_receipts": 2,
+    "input_receipts": 1
+  },
+  "browserChecks": {
+    "signedIn": true,
+    "directoryClients": 86,
+    "syntheticCompanyHealthLoaded": true,
+    "allCaptureOffSaved": true,
+    "independentCaptureSettingsSaved": {
+      "master": true,
+      "email": true,
+      "phone": false,
+      "slack": true
+    },
+    "commusoftModuleOnSaved": true,
+    "settingsPersistedAfterReload": true,
+    "archivedTenantEffectiveCapturePaused": true,
+    "noConnectedAccountsReported": true,
+    "operatorAndClientSlackEmptyState": true,
+    "afterRetirementCaptureRefreshDenied": true,
+    "signedOut": true
+  },
+  "limitations": [
+    "No provider requests, credentials, imports or schedules were created.",
+    "Delivery editing failed to load.",
+    "Build estimate was unavailable.",
+    "The viewer-role fixture displayed unavailable client launch evidence; full client-role acceptance remains outstanding.",
+    "No portal programme/membership was created: workspace remained in preparation.",
+    "No real Slack channel was configured; enable/pause on a populated hosted channel remains unverified.",
+    "Care, notifications, invoices and real-provider end-to-end acceptance remain separate."
+  ],
+  "screenshot": "learn-hosted-operator-controls-2026-10-10.png"
+}
