@@ -337,3 +337,7 @@ verify_jwt = true
 # Gateway JWT plus explicitly bound existing trigger key. No schedule.
 [functions.learn-slack-worker]
 verify_jwt = true
+
+# Gateway JWT plus explicitly configured infrastructure trigger key. No schedule.
+[functions.learn-commusoft-worker]
+verify_jwt = true

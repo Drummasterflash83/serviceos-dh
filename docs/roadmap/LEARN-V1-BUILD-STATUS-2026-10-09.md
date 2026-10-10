@@ -1248,3 +1248,21 @@ scope/refused publication, new-attempt recovery, mutation guards, concurrent exa
 replay and migration rollback. Verification containers were confirmed removed.
 No real data, hosted schema, credentials or provider configuration changed. Durable
 worker orchestration, canonical projection and hosted acceptance remain required.
+
+## Commusoft dedicated worker and transactional continuation — local, 10 October
+
+The worker now checks retained receipts before reading, runs one permitted source
+page, and probes committed state before failure settlement. Dedicated SQL claiming
+excludes Commusoft from the generic worker. Completion and successor enqueue are
+atomic, replayable and derived from stored scope/current authority. Continuations
+respect shared cooldowns; module disablement stops further pages while acknowledging
+already committed work. Job keys bind the exact account and approval identity.
+
+Fifty Commusoft and three shared HTTP-guard tests pass, as do strict module checks
+and Edge entrypoint syntax validation. Isolated database tests passed successor
+rollback, replay, changed-job-approval refusal, recovery beyond the retry budget,
+disabled continuation, cooldown/backoff, ownership and concurrent claims. Worker
+migration rollback restores all modified prior functions. Containers were removed.
+The dedicated JWT/key-protected endpoint is local only; no key, schedule, hosted
+schema, deployment or live provider operation was created. Canonical projection,
+operator setup/recovery and TEST/live acceptance remain required.

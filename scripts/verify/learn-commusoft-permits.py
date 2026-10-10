@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parents[2]
 docker = shutil.which('docker') or '/usr/local/bin/docker'
 name = 'serviceos-commusoft-permits-' + uuid.uuid4().hex[:8]
 created = False
-if sys.argv[1:] not in ([], ['--pages']):
-    raise SystemExit('Usage: learn-commusoft-permits.py [--pages]')
+if sys.argv[1:] not in ([], ['--pages'], ['--worker']):
+    raise SystemExit('Usage: learn-commusoft-permits.py [--pages|--worker]')
 
 
 def sql(text):
@@ -45,6 +45,35 @@ try:
         'supabase/migrations/20261031090000_learn_commusoft_page_permits.sql',
         'scripts/verify/learn-commusoft-permits.assert.sql',
     ]
+    if sys.argv[1:] == ['--worker']:
+        sql('\n'.join((root / path).read_text() for path in paths[:2]))
+        sql((root / 'scripts/verify/learn-commusoft-worker.fixture.sql').read_text())
+        queue = (root / 'supabase/migrations/20260710120000_platform_job_queue.sql').read_text()
+        marker = '-- ── Register the async queue worker'
+        if queue.count(marker) != 1:
+            raise RuntimeError('Original queue source boundary changed')
+        sql(queue.split(marker)[0])  # Original claim function; no scheduler definitions.
+        sql((root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text())
+        migration = (root / 'supabase/migrations/20261031110000_learn_commusoft_worker.sql').read_text()
+        hash_query = "select md5(pg_get_functiondef('public.platform_jobs_claim(text,integer,integer,text[])'::regprocedure)||pg_get_functiondef('public.learn_commusoft_acquire_page(uuid,uuid,text,integer,jsonb)'::regprocedure)||pg_get_functiondef('public.learn_commusoft_commit_page(uuid,uuid,text,integer,uuid,jsonb)'::regprocedure));"
+        before = sql(hash_query)
+        sql(migration.replace('\ncommit;', '\nrollback;'))
+        if sql(hash_query) != before or sql("select to_regprocedure('public.learn_commusoft_claim_jobs(uuid)') is null;") != 't':
+            raise RuntimeError('Worker rollback changed prior functions')
+        print('Worker rollback restores generic claim and credential acquisition.')
+        print(sql(migration + '\n' + (root / 'scripts/verify/learn-commusoft-worker.assert.sql').read_text()))
+        sql("""insert into platform_jobs(id,tenant_id,job_type,job_key,status,attempt_count,max_attempts,payload)
+          values(fixture_id(32),fixture_id(1),'commusoft.source_sync','race','queued',0,3,'{}');""")
+
+        def claim(worker):
+            return sql(f"set request.jwt.claim.role='service_role'; set role service_role; select id from learn_commusoft_claim_jobs(fixture_id({worker}));")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(claim, [70, 71]))
+        if sorted(results) != ['', '00000000-0000-4000-8000-000000000032']:
+            raise RuntimeError(f'Worker claim race failed: {results}')
+        print('Concurrent worker claims: only one worker owns the queued job.')
+        raise SystemExit(0)
     if sys.argv[1:] == ['--pages']:
         sql('\n'.join((root / path).read_text() for path in paths[:2]))
         page_migration = (root / 'supabase/migrations/20261031100000_learn_business_input_pages.sql').read_text()

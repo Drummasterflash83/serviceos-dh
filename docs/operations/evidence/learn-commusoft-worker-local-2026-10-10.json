@@ -1,0 +1,31 @@
+{
+  "version": "learn-commusoft-worker-local/1",
+  "observedAt": "2026-10-10T08:29:29Z",
+  "scope": "local synthetic verification only",
+  "nodeTests": { "commusoftPassed": 50, "sharedHttpGuardPassed": 3, "failed": 0 },
+  "strictModuleTypecheck": "passed",
+  "edgeEntrypointSyntax": "passed",
+  "isolatedPostgres": {
+    "image": "postgres:15",
+    "network": "none",
+    "hostMounts": false,
+    "publishedPorts": false,
+    "genericClaimExclusion": "passed",
+    "approvalIdentityChange": "publication refused",
+    "successorFailure": "completion rolled back; source page retained",
+    "settlementReplay": "one successor; changed outcome refused",
+    "sharedCooldown": "successor waits for retained provider gate",
+    "expiredLeaseWithCommittedPage": "recovered beyond attempt budget",
+    "disabledModule": "committed page acknowledged without continuation",
+    "failureRetry": "provider delay retained; budget exhaustion dead-letters",
+    "concurrentClaims": "one worker owns the queued job",
+    "migrationRollback": "prior generic claim, acquisition and publication restored",
+    "containersRemoved": true
+  },
+  "limitations": [
+    "Minimal synthetic schema; hosted catalogue and existing queue integration require acceptance.",
+    "Exact deployed Deno/SDK bundle has not been verified; Deno unavailable on current shell PATH.",
+    "No actual provider request, credential setup, hosted migration, deployment or schedule.",
+    "Connection/approval UI, canonical projection and live coverage remain incomplete."
+  ]
+}

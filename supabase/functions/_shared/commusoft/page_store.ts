@@ -1,7 +1,7 @@
 import type { CommusoftWorkerScope } from "./stored_scope.ts";
 import type { readApprovedCommusoftPage } from "./bound_page.ts";
 
-type RpcContext = CommusoftWorkerScope & {
+export type RpcContext = CommusoftWorkerScope & {
   supabaseAdmin: CommusoftWorkerScope["supabaseAdmin"] & {
     rpc: (
       name: string,

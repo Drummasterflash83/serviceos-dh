@@ -81,7 +81,7 @@ export async function readStoredCommusoftScope(
     }
     const job = await read(
       "platform_jobs",
-      "id,tenant_id,job_type,status,payload,claimed_by,attempt_count,lease_expires_at",
+      "id,tenant_id,job_type,job_key,status,payload,claimed_by,attempt_count,lease_expires_at",
       [
         ["tenant_id", ctx.tenantId],
         ["id", ctx.jobId],
@@ -151,6 +151,7 @@ export async function readStoredCommusoftScope(
       (cfg.resource !== "propertyContacts" && cfg.contactType !== undefined)
     )
       return null;
+    if (job.job_key !== `commusoft.source:${account.id}:${cfg.approvalId}`) return null;
     const connection = await read(
       "provider_connections",
       "id,tenant_id,provider,status,auth_mode,revoked_at,verified_at,updated_at,non_secret_config,configured_fields,secret_refs",

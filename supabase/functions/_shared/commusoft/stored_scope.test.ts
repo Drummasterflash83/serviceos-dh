@@ -28,6 +28,7 @@ function fixture() {
         id: id(2),
         tenant_id: id(1),
         job_type: "commusoft.source_sync",
+        job_key: `commusoft.source:${id(3)}:${id(6)}`,
         status: "running",
         payload: { connector_account_id: id(3) },
         claimed_by: "synthetic-worker",

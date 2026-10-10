@@ -3,9 +3,10 @@
 ## Current state — 10 October 2026
 
 Local source reader, provider-neutral source-record adapter, durable scope binding
-and atomic credential/pacing/source-publication functions are implemented. Forty
-synthetic tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
-This is not an installed connector: no provider request, real API credential read, sync job,
+and atomic credential/pacing/source-publication functions, dedicated worker and
+transactional settlement are implemented. Fifty Commusoft tests and three shared
+HTTP-guard tests, strict standalone TypeScript checks and isolated PostgreSQL assertions pass.
+This is not an installed connector: no provider request, real API credential read, live sync job,
 production migration or frontend release was performed for this increment.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
@@ -97,11 +98,12 @@ acquisition and around the provider read. Its mandatory credential/permit port
 must atomically recheck that scope, reserve shared quota and resolve the exact
 Vault reference. Throttled/exhausted-quota responses require a durable shared
 deferral acknowledgement. `permit_server.ts` now implements that port through
-two service-only RPCs. There is no fallback to general secret lookup, registered
-handler, enqueue action or automatic provider activity. The migration remains
-local and unapplied to TEST or production.
+two service-only RPCs. There is no fallback to general secret lookup or automatic
+provider activity. A dedicated worker endpoint is wired locally; the generic
+handler registry is unchanged. Setup/enqueue controls are not yet wired. The
+migrations remain local and unapplied to TEST or production.
 
-The SQL implementation must repeat these checks under locks. Current metadata
+The SQL acquisition/publication functions repeat these checks under locks. Metadata
 reads are not a transaction; they cannot alone authorize a source/checkpoint write.
 Binding tests cover suspension, missing/disabled flags, stale or expired leases,
 wrong tenants/accounts, revoked/unverified credentials, changed connection
@@ -113,9 +115,9 @@ Migration `20261031090000_learn_commusoft_page_permits.sql` rechecks current
 tenant/flags/job/claim/account/connector/approval/checkpoint/connection under locks.
 Only the exact Vault reference with the existing tenant-qualified broker name can
 release a key. Each job attempt can acquire only one permit; an uncertain response
-cannot be retried inline. Committed-page recovery is now implemented; queue
-settlement remains unwired. The permit retains the validated approval, checkpoint,
-request and connection binding (without the key) for the future atomic page writer.
+cannot be retried inline. Committed-page recovery and queue settlement are now
+implemented locally. The permit retains the validated approval, checkpoint,
+request and connection binding (without the key) for the atomic page writer.
 
 The private pacing table keys quota by a SHA-256 fingerprint of the credential,
 so the same key stored in different tenant Vault entries shares one gate. Neither
@@ -165,8 +167,8 @@ fetching the provider again. Receipt recovery also works after a module is disab
 it acknowledges committed work without authorizing new processing.
 
 `page_store.ts` uses these RPCs, validates acknowledgements against the submitted
-scope/page and never retries an uncertain write automatically. Worker orchestration
-must call recovery first, then read/publish only when no commit exists.
+scope/page and never retries an uncertain write automatically. The dedicated
+worker calls recovery first, then reads/publishes only when no commit exists.
 
 Isolated checks passed: authority and changed-checkpoint denial; duplicate rows and
 invalid cursor refusal; injected failure at checkpoint update and later job-receipt
@@ -177,14 +179,53 @@ history mutation refusal; competing identical publications producing one page;
 and migration rollback restoring the acquisition function. This remains synthetic
 minimal-schema evidence, not hosted acceptance or a real interrupted provider sync.
 
+## Dedicated worker and atomic continuation — local
+
+`worker.ts` connects recovery, authoritative scope, credential permits, provider
+reads and atomic publication. It never chooses a tenant/account from the HTTP
+request. Before declaring failure it asks the settlement RPC whether a page was
+actually committed, covering a lost publication response. Errors expose safe codes
+only. Malformed claims, unreadable recovery and uncertain settlement remain errors.
+
+Migration `20261031110000_learn_commusoft_worker.sql` excludes this job type from
+the generic queue claim and adds dedicated one-job claiming and fenced settlement.
+Jobs use `commusoft.source:<account UUID>:<approval UUID>`; the binding, credential
+acquisition and publication require the same approval identity. Completion and
+successor enqueue are one transaction. Successor failure rolls back completion;
+exact settlement replay reuses its receipt and cannot create another successor.
+
+Continuation is derived from the saved page and current switches/approval,
+checkpoint and connection. It respects the existing shared provider cooldown.
+Disabling processing after a commit acknowledges that page and stops continuation.
+Collection exhaustion and page-budget exhaustion have distinct results; neither
+claims complete ongoing provider coverage. Uncommitted failures have bounded
+retry/backoff and dead-letter handling. A committed page can recover an expired
+lease beyond the retry budget to settle without another provider call.
+
+`learn-commusoft-worker/index.ts` is a local Edge entrypoint with gateway JWT
+verification plus `LEARN_COMMUSOFT_WORKER_KEY` in the existing infrastructure-key
+header. It reuses the tested empty-POST guard; caller-supplied selectors/bodies are
+rejected. No trigger key has been created or copied and no schedule enabled.
+The endpoint has syntax validation, while its exact deployed Deno/SDK bundle still
+requires release verification. All imported Commusoft TypeScript modules pass
+strict checking; Deno is not available on this shell's PATH.
+
+Isolated SQL checks passed: generic claim exclusion, exclusive dedicated claims,
+changed approval identity denial, atomic successor rollback, exact/conflicting
+settlement replay, shared cooldown scheduling, expired-lease recovery, disabled
+continuation, ownership fences, bounded retries and competing workers. Rollback
+restored the original generic claim, credential and publication functions. Tests
+use the repository's original generic claim implementation plus a minimal fixture
+schema; the installed TEST catalogue and live API are still unverified.
+
 ## Still required before enabling Drummonds
 
 1. Verify subscription/private-app access, reuse or securely bind an authorized
    credential, and verify account/region/authentication with a bounded real read.
-2. Package and verify the credential/permit migration against the installed TEST
-   schema. Revalidate authority transactionally when committing source data.
-3. Wire retained source publication/recovery into durable worker settlement,
-   safe retries and continuation through the shared gate; add canonical projection.
+2. Package and verify all three migrations and the worker against the installed
+   TEST schema, including its existing feature flags and queue functions.
+3. Add authorized connection/approval setup and operator progress/recovery controls;
+   project retained source records into canonical customers, contacts, sites and jobs.
 4. Resolve customer types and property/contact/job relationships, preserve legacy
    links, and handle conflicts, updates and deletions without deleting history.
 5. Verify resumable collection traversal, recurring sync and reconciliation,
@@ -198,10 +239,11 @@ not implemented until the complete synchronization contract is verified.
 Validation:
 
 ```sh
-node --test supabase/functions/_shared/commusoft/*.test.ts
+node --test supabase/functions/_shared/commusoft/*.test.ts supabase/functions/_shared/slack/slack_worker_http.test.ts
 npx tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions --lib ES2022,DOM supabase/functions/_shared/commusoft/*.ts supabase/functions/_shared/business_inputs/source_record.ts
 python3 scripts/verify/learn-commusoft-permits.py
 python3 scripts/verify/learn-commusoft-permits.py --pages
+python3 scripts/verify/learn-commusoft-permits.py --worker
 ```
 
 These tests cover transport/adapter contracts with synthetic HTTP responses. They
