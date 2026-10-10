@@ -13,12 +13,8 @@ import {
   type ReviewedPerformanceMeasurement,
 } from "@/lib/learn-performance-measurements";
 import { reviewPerformanceMeasurement, type ReviewRequest } from "@/lib/learn-performance-reviews";
-import {
-  collectWorkEvidence,
-  canCollectWork,
-  WORK_COLLECTORS,
-  type WorkCollectionKind,
-} from "@/lib/learn-work-collection";
+import { LearnWorkCollections, type RetainedWorkReview } from "./LearnWorkCollections";
+import { LearnWorkCollectionEvidence } from "./LearnWorkCollectionEvidence";
 import { loadPerformanceEvidence } from "@/lib/learn-performance-evidence";
 import {
   evaluateScorecard,
@@ -56,6 +52,7 @@ export function LearnPerformanceCard(props: Props) {
   );
 }
 function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) {
+  const [retainedReview, setRetainedReview] = useState<RetainedWorkReview | null>(null);
   const nowField = assessmentTimeField();
   const [from, setFrom] = useState(() => assessmentTimeField(Date.now() - 7 * 86400000)),
     [until, setUntil] = useState(nowField);
@@ -76,11 +73,12 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
     setMessage("Reading performance evidence…");
     void (async () => {
       try {
-        const period = assessmentPeriod(query.from, query.until);
+        const period = retainedReview?.period ?? assessmentPeriod(query.from, query.until);
         const policy =
-          ruleMode === "published"
+          retainedReview?.policy ??
+          (ruleMode === "published"
             ? await loadPublishedScorecard(getSupabaseClient(), tenantId, kind, groupId, period)
-            : await loadScorecardDraft(getSupabaseClient(), tenantId, kind, groupId);
+            : await loadScorecardDraft(getSupabaseClient(), tenantId, kind, groupId));
         if (!policy) {
           if (active)
             setMessage(
@@ -112,8 +110,8 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
     return () => {
       active = false;
     };
-  }, [tenantId, kind, id, groupId, query, ruleMode]);
-  const current = from === query.from && until === query.until ? loaded : null;
+  }, [tenantId, kind, id, groupId, query, ruleMode, retainedReview]);
+  const current = retainedReview || (from === query.from && until === query.until) ? loaded : null;
   const refresh = () => setQuery({ from, until, revision: query.revision + 1 });
   return (
     <div className="lp-content">
@@ -125,53 +123,75 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
         Rules to review
         <select
           value={ruleMode}
-          onChange={(e) => setRuleMode(e.target.value as "draft" | "published")}
+          onChange={(e) => {
+            setRetainedReview(null);
+            setLoaded(null);
+            setRuleMode(e.target.value as "draft" | "published");
+          }}
         >
           <option value="draft">Draft simulation</option>
           <option value="published">Published rules for these dates</option>
         </select>
       </label>
-      <form
-        className="lp-period"
-        onSubmit={(e) => {
-          e.preventDefault();
-          refresh();
-        }}
-      >
-        <label>
-          From (UTC, inclusive)
-          <input
-            type="datetime-local"
-            step="1"
-            value={from}
-            onInput={(e) => setFrom(e.currentTarget.value)}
-            onChange={(e) => setFrom(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Until (UTC, exclusive)
-          <input
-            type="datetime-local"
-            step="1"
-            value={until}
-            onInput={(e) => setUntil(e.currentTarget.value)}
-            onChange={(e) => setUntil(e.target.value)}
-            max={nowField}
-            required
-          />
-        </label>
-        <button
-          className="cp-secondary"
-          type="button"
-          onClick={() => setUntil(assessmentTimeField())}
+      {retainedReview ? (
+        <p>
+          Reviewing the retained draft rules, revision {retainedReview.policy.version}, for{" "}
+          {retainedReview.period.start} – {retainedReview.period.end}. This is a draft simulation.{" "}
+          <button
+            type="button"
+            className="cp-secondary"
+            onClick={() => {
+              setRetainedReview(null);
+              setLoaded(null);
+              refresh();
+            }}
+          >
+            Return to selected rules and dates
+          </button>
+        </p>
+      ) : (
+        <form
+          className="lp-period"
+          onSubmit={(e) => {
+            e.preventDefault();
+            refresh();
+          }}
         >
-          Through now
-        </button>
-        <button className="cp-secondary" disabled={loading} type="submit">
-          {loading ? "Reading…" : "Load / refresh assessment"}
-        </button>
-      </form>
+          <label>
+            From (UTC, inclusive)
+            <input
+              type="datetime-local"
+              step="1"
+              value={from}
+              onInput={(e) => setFrom(e.currentTarget.value)}
+              onChange={(e) => setFrom(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Until (UTC, exclusive)
+            <input
+              type="datetime-local"
+              step="1"
+              value={until}
+              onInput={(e) => setUntil(e.currentTarget.value)}
+              onChange={(e) => setUntil(e.target.value)}
+              max={nowField}
+              required
+            />
+          </label>
+          <button
+            className="cp-secondary"
+            type="button"
+            onClick={() => setUntil(assessmentTimeField())}
+          >
+            Through now
+          </button>
+          <button className="cp-secondary" disabled={loading} type="submit">
+            {loading ? "Reading…" : "Load / refresh assessment"}
+          </button>
+        </form>
+      )}
       {message && <p role="status">{message}</p>}
       <LearnAssessmentHistory
         key={`${actorId}:${tenantId}:${kind}:${id}`}
@@ -184,6 +204,30 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
             ? { policy: current.policy, rows: current.rows, period: current.score.period }
             : null
         }
+      />
+      <LearnWorkCollections
+        tenantId={tenantId}
+        actorId={actorId}
+        subjectId={id}
+        subjectKind={kind}
+        canReview={canReview}
+        current={
+          current
+            ? { policy: current.policy, period: current.score.period, rows: current.rows }
+            : null
+        }
+        onSaved={refresh}
+        onReview={(selection) => {
+          if (
+            selection.subject.id !== id ||
+            selection.subject.kind !== kind ||
+            selection.policy.tenantId !== tenantId
+          )
+            return;
+          setLoaded(null);
+          setRetainedReview(selection);
+          setRuleMode("draft");
+        }}
       />
       {!current && loaded && <p>Load the selected dates before reviewing.</p>}
       {current && (
@@ -211,20 +255,6 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
               No stored measurements were returned for this exact subject, period and rule revision.
             </p>
           )}
-          {["member", "team"].includes(kind) &&
-            (["handoffs", "residence", "teamResidence"] as const)
-              .filter((mode) => canCollectWork(current.policy, mode))
-              .map((mode) => (
-                <WorkCollection
-                  key={`${mode}:${id}:${current.policy.id}:${current.policy.version}:${query.from}:${query.until}`}
-                  mode={mode}
-                  policy={current.policy}
-                  subjectId={id}
-                  period={assessmentPeriod(query.from, query.until)}
-                  exists={current.rows.some((m) => m.metricKey === WORK_COLLECTORS[mode].metric)}
-                  onSaved={refresh}
-                />
-              ))}
           {current.score.metrics.map((metric) => {
             const observations = current.rows.filter((r) => r.metricKey === metric.key);
             const replaced = new Set(observations.map((r) => r.supersedes));
@@ -559,7 +589,14 @@ function evidenceValue(label: string, value: string) {
     return new Date(value).toLocaleString("en-GB", { timeZone: "UTC" }) + " UTC";
   return label === "duration seconds" ? value + " seconds" : value;
 }
-function Evidence({ tenantId, reference }: { tenantId: string; reference: EvidenceRef }) {
+function Evidence(props: { tenantId: string; reference: EvidenceRef }) {
+  return props.reference.table === "learn_work_collection_runs" ? (
+    <LearnWorkCollectionEvidence tenantId={props.tenantId} requestId={props.reference.id} />
+  ) : (
+    <LegacyEvidence {...props} />
+  );
+}
+function LegacyEvidence({ tenantId, reference }: { tenantId: string; reference: EvidenceRef }) {
   const [open, setOpen] = useState(false),
     [data, setData] = useState<{ label: string; value: string }[] | null>(null),
     [error, setError] = useState("");
@@ -604,78 +641,5 @@ function Evidence({ tenantId, reference }: { tenantId: string; reference: Eviden
           <p>Reading source…</p>
         ))}
     </details>
-  );
-}
-
-function WorkCollection({
-  mode,
-  policy,
-  subjectId,
-  period,
-  exists,
-  onSaved,
-}: {
-  policy: ScorecardPolicy;
-  subjectId: string;
-  period: { start: string; end: string };
-  exists: boolean;
-  onSaved: () => void;
-  mode: WorkCollectionKind;
-}) {
-  const spec = WORK_COLLECTORS[mode];
-  const [reason, setReason] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-  const pending = useRef<{ requestId: string; reason: string } | null>(null);
-  if (exists) return <p>{spec.collected} Review the retained calculation below.</p>;
-  return (
-    <form
-      className="lp-review"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (busy || !reason.trim()) return;
-        pending.current ??= { requestId: crypto.randomUUID(), reason: reason.trim() };
-        setBusy(true);
-        setMessage("");
-        try {
-          await collectWorkEvidence(getSupabaseClient(), {
-            kind: mode,
-            policy,
-            ...(spec.subjectKind === "team" ? { teamId: subjectId } : { memberId: subjectId }),
-            period,
-            ...pending.current,
-          });
-          onSaved();
-        } catch (error) {
-          setMessage(error instanceof Error ? error.message : "Collection failed");
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      <h4>{spec.title}</h4>
-      <p>
-        {spec.description} Missing history withholds the value. The saved observation still needs
-        human review.
-      </p>
-      <label>
-        Collection reason
-        <input
-          value={reason}
-          required
-          maxLength={1000}
-          disabled={busy || !!pending.current}
-          onChange={(e) => setReason(e.target.value)}
-        />
-      </label>
-      <button type="submit" className="cp-secondary" disabled={busy || !reason.trim()}>
-        {busy
-          ? "Collecting…"
-          : pending.current
-            ? "Retry collection request"
-            : "Collect work evidence"}
-      </button>
-      {message && <p role="status">{message}</p>}
-    </form>
   );
 }

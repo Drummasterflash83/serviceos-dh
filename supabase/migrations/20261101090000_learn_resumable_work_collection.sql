@@ -410,20 +410,44 @@ end $$;
 revoke all on function public.learn_work_collection_step(uuid,uuid,integer) from public,anon,authenticated,service_role;
 grant execute on function public.learn_work_collection_step(uuid,uuid,integer) to authenticated;
 
-create function public.learn_work_collection_abandon(p_tenant uuid,p_request uuid,p_reason text) returns jsonb
+-- Ending an unconfirmed start shares the request lock with begin and retains a
+-- terminal intent even when no source snapshot was created. A delayed begin can
+-- only read that terminal result; it cannot resurrect the request.
+create function public.learn_work_collection_abandon(p_tenant uuid,p_kind text,p_subject uuid,p_policy uuid,p_revision integer,
+ p_start timestamptz,p_end timestamptz,p_request uuid,p_reason text,p_end_reason text) returns jsonb
 language plpgsql security definer set search_path=public,pg_temp as $$
-declare actor uuid:=learn_work_collection_access(p_tenant);r learn_work_collection_runs%rowtype;begin
- if length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then raise exception 'A reason is required' using errcode='22023';end if;
- select * into r from learn_work_collection_runs where id=p_request and tenant_id=p_tenant for update;
- if not found or r.actor_id<>actor then raise exception 'Collection unavailable to this actor' using errcode='42501';end if;
- if r.state='collecting' then
-  update learn_work_collection_runs set state='abandoned',end_reason=btrim(p_reason) where id=p_request returning * into r;
- elsif r.state<>'abandoned' or r.end_reason is distinct from btrim(p_reason) then
-  raise exception 'Collection is already final' using errcode='PT409';end if;
+declare actor uuid:=learn_work_collection_access(p_tenant);r learn_work_collection_runs%rowtype;descriptor jsonb;begin
+ if p_kind is null or p_kind not in ('handoffs','residence','teamResidence') or p_subject is null or p_policy is null or p_request is null
+  or p_revision is null or p_revision<1 or p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end)
+  or p_start>=p_end or p_end>statement_timestamp() or p_end-p_start>interval '366 days'
+  or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 or length(btrim(coalesce(p_end_reason,''))) not between 1 and 1000 then
+  raise exception 'An exact collection request and ending reason are required' using errcode='22023';end if;
+ descriptor:=jsonb_build_object('contract','work-collection@1','kind',p_kind,'subjectId',p_subject,'policyId',p_policy,'policyVersion',p_revision,
+  'start',p_start,'end',p_end,'reason',btrim(p_reason),'actorId',actor);
+ perform pg_advisory_xact_lock(hashtextextended('learn-work-collect:'||p_request::text,0));
+ select * into r from learn_work_collection_runs where id=p_request for update;
+ if found then
+  if r.tenant_id<>p_tenant or r.actor_id<>actor or r.request is distinct from descriptor then raise exception 'Collection request identity changed' using errcode='PT409';end if;
+  if r.state='collecting' then
+   update learn_work_collection_runs set state='abandoned',end_reason=btrim(p_end_reason) where id=p_request returning * into r;
+  elsif r.state='abandoned' and r.end_reason is distinct from btrim(p_end_reason) then
+   raise exception 'Collection ending reason already recorded' using errcode='PT409';end if;
+ else
+  if exists(select 1 from measurements where id=p_request) or exists(select 1 from learn_work_measurement_runs where id=p_request)
+   or exists(select 1 from learn_team_work_measurement_runs where id=p_request) then raise exception 'Request identity already used' using errcode='PT409';end if;
+  insert into learn_work_collection_runs(id,tenant_id,actor_id,request,kind,subject_kind,subject_id,policy_id,policy_revision,policy,
+   window_start,window_end,reason,snapshot_at,roster,teams,source_system,metric_key,unit,state,end_reason)
+  values(p_request,p_tenant,actor,descriptor,p_kind,case when p_kind='teamResidence' then 'team' else 'member' end,p_subject,p_policy,p_revision,'{}',
+   p_start,p_end,btrim(p_reason),statement_timestamp(),'{}','[]',
+   case p_kind when 'handoffs' then 'serviceos.work.handoffs@1' when 'residence' then 'serviceos.work.residence@1' else 'serviceos.work.team-residence@1' end,
+   case p_kind when 'handoffs' then 'work.recorded_handoffs' when 'residence' then 'work.owned_item_minutes' else 'work.team_owned_item_minutes' end,
+   case p_kind when 'handoffs' then 'handoffs' else 'item_minutes' end,'abandoned',btrim(p_end_reason)) returning * into r;
+ end if;
+ perform learn_work_collection_access(p_tenant);
  return learn_work_collection_result(r);
 end $$;
-revoke all on function public.learn_work_collection_abandon(uuid,uuid,text) from public,anon,authenticated,service_role;
-grant execute on function public.learn_work_collection_abandon(uuid,uuid,text) to authenticated;
+revoke all on function public.learn_work_collection_abandon(uuid,text,uuid,uuid,integer,timestamptz,timestamptz,uuid,text,text) from public,anon,authenticated,service_role;
+grant execute on function public.learn_work_collection_abandon(uuid,text,uuid,uuid,integer,timestamptz,timestamptz,uuid,text,text) to authenticated;
 
 create function public.learn_work_collection_status(p_tenant uuid,p_request uuid) returns jsonb
 language plpgsql security definer set search_path=public,pg_temp as $$
@@ -446,7 +470,8 @@ declare actor uuid:=learn_work_collection_access(p_tenant);r learn_work_collecti
  if p_part is null or p_part not in ('overview','membership','teams','items') or p_after is null or p_after<0 or p_after>r.population or (p_part<>'items' and p_after<>0) then
   raise exception 'Invalid evidence page' using errcode='22023';end if;
  if p_part='overview' then return jsonb_build_object('contract','work-collection-evidence@1','runId',r.id,'tenantId',r.tenant_id,'part',p_part,
-  'sourceSystem',r.source_system,'metricKey',r.metric_key,'observedAt',r.observed_at,'explanation',r.explanation,'proof',r.proof);end if;
+  'sourceSystem',r.source_system,'metricKey',r.metric_key,'observedAt',r.observed_at,'explanation',r.explanation,'proof',r.proof,
+  'policy',r.policy,'subject',jsonb_build_object('kind',r.subject_kind,'id',r.subject_id),'period',jsonb_build_object('start',r.window_start,'end',r.window_end));end if;
  if p_part in ('membership','teams') then return jsonb_build_object('contract','work-collection-evidence@1','runId',r.id,'tenantId',r.tenant_id,'part',p_part,
   'snapshotAt',r.snapshot_at,'data',case p_part when 'membership' then r.roster else r.teams end);end if;
  for i in select * from learn_work_collection_items where run_id=p_request and ordinal>p_after order by ordinal limit 100 loop

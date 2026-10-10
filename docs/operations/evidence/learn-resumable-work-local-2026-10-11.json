@@ -1,10 +1,10 @@
 {
   "version": "learn-resumable-work-local/1",
-  "observedAt": "2026-10-10T23:24:52.100804+00:00",
+  "observedAt": "2026-10-10T23:39:19.438667+00:00",
   "deployed": false,
-  "browserControlsWired": false,
+  "browserControlsWired": true,
   "source": "supabase/migrations/20261101090000_learn_resumable_work_collection.sql",
-  "sha256": "d9558a7c2391e747bfed27598bd9d26fa6554d4c9d1f669b8ec1e98f45b8dda1",
+  "sha256": "6dcc66b01f802c6312c16916c3dd788a624579cbd483c527e24cdee367b94688",
   "observedProductionWorkItems": 14394,
   "productionCountObservedAt": "2026-10-10T23:09:09.186Z",
   "syntheticPopulation": 14500,
@@ -26,12 +26,37 @@
     "actualSqlClientApiParsing": "passed",
     "newClientTests": 7,
     "existingClientTests": 7,
-    "appTypecheck": "passed"
+    "appTypecheck": "passed",
+    "cancelBeforeStartAndDelayedBegin": "passed",
+    "actualSqlMeasurementReviewScorer": "passed",
+    "durableOutboxTests": 8,
+    "focusedClientTests": 45,
+    "previewTypecheck": "passed",
+    "appBuild": "passed",
+    "appPrebuildTests": 47,
+    "previewBuild": "passed",
+    "syntheticBrowser": {
+      "population": 250,
+      "evidencePages": [
+        100,
+        100,
+        50
+      ],
+      "failedPageRetainsEvidence": "passed",
+      "frozenIdentityInspection": "passed",
+      "humanReviewScore": 85.71,
+      "reloadOriginalRulesAndDates": "passed",
+      "lostBatchReplyReloadResume": "passed",
+      "pauseInFlightBatch": "passed",
+      "ruleSelectionChangeRetainsRecovery": "passed",
+      "retainedAbandonment": "passed",
+      "incompleteCoverageConfirmedStillUnassessed": "passed",
+      "hostedAcceptance": false
+    }
   },
   "remaining": [
-    "Durable browser request recovery and resume controls",
-    "Paged full-proof viewer and measurement/card/scorer integration",
-    "Browser interruption, scope, review and paging verification",
-    "Pinned paired TEST release and hosted owner acceptance"
+    "Pinned paired TEST release with preservation checks",
+    "Hosted owner acceptance",
+    "Real-population latency and coverage acceptance before production"
   ]
 }

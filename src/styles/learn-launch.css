@@ -97,3 +97,7 @@
 .lr-coverage p { margin: 8px 0; }
 .lr-connector .lr-sync { font-size: 11px; line-height: 1.5; color: #766781; }
 .lr-connector .lr-sync strong { font-size: 12px; color: #665672; }
+
+.lp-calculation pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 360px; overflow: auto; padding: 12px; background: #f4f6f4; border-radius: 6px; font-size: 12px; }
+.lp-calculation section > details { margin: 8px 0; }
+.lp-review progress { width: 100%; max-width: 480px; }

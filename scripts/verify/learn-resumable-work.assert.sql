@@ -178,7 +178,7 @@ set role authenticated;
 do $$declare s timestamptz;e timestamptz;begin
  select start_at+interval '.000003 second',end_at into s,e from batch_small_period;
  perform learn_work_collection_begin('aaa40000-0000-0000-0000-000000000006','handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000069','Will abandon');
- assert learn_work_collection_abandon('aaa40000-0000-0000-0000-000000000006','fff40000-0000-0000-0000-000000000069','Owner stopped') ->>'state'='abandoned';
+ assert learn_work_collection_abandon('aaa40000-0000-0000-0000-000000000006','handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000069','Will abandon','Owner stopped') ->>'state'='abandoned';
  assert learn_work_collection_step('aaa40000-0000-0000-0000-000000000006','fff40000-0000-0000-0000-000000000069',0)->>'state'='abandoned';
  perform learn_work_collection_begin('aaa40000-0000-0000-0000-000000000006','handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000070','A new revision will be saved');
 end $$;
@@ -212,4 +212,20 @@ do $$declare s timestamptz;e timestamptz;begin
  select start_at+interval '.000001 second',end_at into s,e from batch_period;
  perform learn_work_collection_begin('aaa40000-0000-0000-0000-000000000004','teamResidence','aaa40000-0000-0000-0000-000000000041','ddd40000-0000-0000-0000-000000000043',1,s,e,'fff40000-0000-0000-0000-000000000081','Concurrent batch');
 end $$;
+reset role;
+
+-- Ending an unconfirmed start must win against any later delivery of that start.
+set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000006';set role authenticated;
+do $$declare t uuid:='aaa40000-0000-0000-0000-000000000006';s timestamptz;e timestamptz;a jsonb;begin
+ select start_at,end_at into s,e from batch_small_period;
+ a:=learn_work_collection_abandon(t,'handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000082','Unconfirmed start','Ended before start');
+ assert a->>'state'='abandoned' and a->>'population'='0';
+ assert a=learn_work_collection_begin(t,'handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000082','Unconfirmed start');
+ assert not exists(select 1 from learn_work_collection_items where run_id='fff40000-0000-0000-0000-000000000082');
+ assert not exists(select 1 from measurements where id='fff40000-0000-0000-0000-000000000082');
+ begin perform learn_work_collection_begin(t,'handoffs','ccc40000-0000-0000-0000-000000000061','ddd40000-0000-0000-0000-000000000064',1,s,e,'fff40000-0000-0000-0000-000000000082','Changed reason');raise exception 'Cancelled identity reused';exception when sqlstate 'PT409' then null;end;
+end $$;reset role;
+
+set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';set role authenticated;
+select learn_performance_review('aaa40000-0000-0000-0000-000000000004','fff40000-0000-0000-0000-000000000041','fff40000-0000-0000-0000-000000000084',0,'confirmed','Checked synthetic frozen work evidence');
 reset role;

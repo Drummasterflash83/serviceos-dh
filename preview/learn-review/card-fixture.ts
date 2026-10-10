@@ -13,7 +13,10 @@ const performanceEnd = new Date().toISOString().slice(0,10)+"T00:00:00.000Z";
 const performanceObserved = new Date(Date.now()-60000).toISOString();
 const performancePolicy = {tenantId:tenant_id,id:id(30),version:1,status:"draft",name:"Synthetic service response",subjectKind:"member",groupId:null,scaleMax:100,
  metrics:[{key:"response.within_target",label:"Responses within the agreed time",unit:"percent",weight:1,zeroAt:0,fullAt:100,minSamples:5,minCoverage:1,maxAgeHours:72,sourceSystems:["communications"]}]};
-const handoffRows:any[]=[];
+const workFixtureKey='serviceos:synthetic:work-ui:1:'+new URLSearchParams(location.search).get('collection');
+const workFixture=JSON.parse(sessionStorage.getItem(workFixtureKey)??'{"rows":[],"reviews":[]}');
+export const handoffRows:any[]=workFixture.rows;
+export function persistWorkFixture(){sessionStorage.setItem(workFixtureKey,JSON.stringify({rows:handoffRows,reviews:performanceReviews}));}
 const handoffRuns:any[]=[];
 const handoffPolicy={...performancePolicy,name:"Synthetic recorded handoffs",metrics:[{key:"work.recorded_handoffs",
  label:"Recorded outgoing ownership handoffs",unit:"handoffs",weight:1,zeroAt:0,fullAt:10,minSamples:1,minCoverage:1,
@@ -22,7 +25,7 @@ const residencePolicy={...performancePolicy,name:"Synthetic elapsed ownership",m
  label:"Elapsed owned item-minutes (all states)",unit:"item_minutes",weight:1,zeroAt:480,fullAt:60,minSamples:1,minCoverage:1,
  maxAgeHours:72,sourceSystems:["serviceos.work.residence@1"]}]};
 const teamResidencePolicy={...residencePolicy,name:"Synthetic team ownership",subjectKind:"team",metrics:[{...residencePolicy.metrics[0],key:"work.team_owned_item_minutes",label:"Team-owned item-minutes",sourceSystems:["serviceos.work.team-residence@1"]}]};
-const selectedPolicy=()=>new URLSearchParams(location.search).has("teamResidence")?teamResidencePolicy:new URLSearchParams(location.search).has("residence")?residencePolicy:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+export const selectedPolicy=()=>new URLSearchParams(location.search).has("teamResidence")?teamResidencePolicy:new URLSearchParams(location.search).has("residence")?residencePolicy:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
 export function collectHandoffFixture(args:any,residence=false,team=false){
  const metric=team?"work.team_owned_item_minutes":residence?"work.owned_item_minutes":"work.recorded_handoffs",source=team?"serviceos.work.team-residence@1":residence?"serviceos.work.residence@1":"serviceos.work.handoffs@1",unit=residence?"item_minutes":"handoffs",value=residence?120:2;
  const prior=handoffRows.find(r=>r.id===args.p_request);
@@ -89,7 +92,7 @@ if(new URLSearchParams(location.search).has('assessmentHistory')&&!assessmentRow
 let historyPageFailed=false;
 const fixtureMicros=(s:string)=>BigInt(Date.parse(s.replace(/\.\d+(?=Z|[+-])/,'')))*1000n+BigInt((s.match(/\.(\d+)/)?.[1]??'').padEnd(6,'0'));
 const performanceCorrections:any[]=[];
-const performanceReviews:any[]=[];
+const performanceReviews:any[]=workFixture.reviews;
 export function correctPerformanceFixture(args:any){
  const rows=(new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
  const prior=performanceCorrections.find(r=>r.id===args.p_request);
@@ -111,6 +114,7 @@ export function reviewPerformanceFixture(args:any){
  if(args.p_expected_revision!==revision)return {data:null,error:{code:"PT409"}};
  const r={id:args.p_request_id,tenant_id,measurement_id:args.p_measurement_id,revision:revision+1,decision:args.p_decision,reviewed_by:id(40),reason:args.p_reason,created_at:new Date().toISOString()};
  performanceReviews.push(r);
+ persistWorkFixture();
  return {data:{reviewId:r.id,measurementId:r.measurement_id,revision:r.revision,decision:r.decision,reused:false},error:null};
 }
 

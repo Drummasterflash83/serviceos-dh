@@ -20,7 +20,7 @@ do $probe$declare role_name text;fn record;privilege_name text;denied boolean;n 
   if not denied then raise exception 'Unauthenticated collection step admitted';end if;
   denied:=false;begin perform learn_work_collection_status(t,t);exception when insufficient_privilege then denied:=true;end;
   if not denied then raise exception 'Unauthenticated collection status admitted';end if;
-  denied:=false;begin perform learn_work_collection_abandon(t,t,'Access probe');exception when insufficient_privilege then denied:=true;end;
+  denied:=false;begin perform learn_work_collection_abandon(t,'residence',t,t,1,now()-interval '2 days',now()-interval '1 day',t,'Access probe','Access probe');exception when insufficient_privilege then denied:=true;end;
   if not denied then raise exception 'Unauthenticated collection abandonment admitted';end if;
   denied:=false;begin perform learn_work_collection_evidence(t,t,'overview');exception when insufficient_privilege then denied:=true;end;
   if not denied then raise exception 'Unauthenticated calculation evidence admitted';end if;

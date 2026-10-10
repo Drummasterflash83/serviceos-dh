@@ -264,8 +264,12 @@ test("overview and frozen identity responses bind tenant, contract and complete 
     metricKey: "work.team_owned_item_minutes",
     observedAt: "2026-01-03T00:00:00Z",
     explanation: "Frozen population",
+    policy,
+    subject: { kind: "team", id: request.subjectId },
+    period: request.period,
     proof: {
       contract: "work-collection@1",
+      kind: "teamResidence",
       runId: id(5),
       itemCount: 14500,
       populationCount: 14500,

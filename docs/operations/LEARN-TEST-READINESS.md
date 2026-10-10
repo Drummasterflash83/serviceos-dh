@@ -1,14 +1,17 @@
 # Existing TEST environment: verified release gaps
 
-## Resumable work collection — local backend/API candidate, not deployed
+## Resumable work collection — local backend and card UI verified, not deployed
 
-A fresh read-only production count found 14,394 retained work items, beyond the
-existing 2,000-item collector cap. The new local path freezes the population and
-source/identity history, processes 100 items per batch and retains proof by item.
-The 14,500-item offline test, concurrency/retry/coverage/access checks, complete
-proof paging and actual SQL-to-client API parsing pass. Browser recovery/progress,
-full proof/card/scorer integration and a pinned paired release are still required.
-The TEST site below remains on 048. [Contract and next integration steps](LEARN-RESUMABLE-WORK-COLLECTION.md).
+A read-only production count found 14,394 retained work items, beyond the existing
+2,000-item collector cap. The local replacement freezes the population and history,
+processes 100 items per batch and retains proof by item. The 14,500-item offline
+suite, concurrent retries, preservation/access checks, full proof traversal and
+actual SQL-to-card/scorer parsing pass. Cards now retain interrupted requests,
+resume the original dates/rules and expose paged full evidence. Forty-five focused
+tests, app/preview typechecks and builds, and actual synthetic browser recovery,
+review, paging, pause and incomplete-coverage checks pass. A pinned paired TEST
+release and hosted owner acceptance remain required. The TEST site below remains
+on 048. [Contract, local verification and limits](LEARN-RESUMABLE-WORK-COLLECTION.md).
 
 ## Team workload calculation — TEST release 048 and paired frontend installed
 

@@ -112,6 +112,12 @@
       ],
       "@/lib/learn-commusoft-job-details": [
         "../../src/lib/learn-commusoft-job-details.ts"
+      ],
+      "@/lib/learn-resumable-work": [
+        "../../src/lib/learn-resumable-work.ts"
+      ],
+      "@/lib/learn-work-collection-outbox": [
+        "../../src/lib/learn-work-collection-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,

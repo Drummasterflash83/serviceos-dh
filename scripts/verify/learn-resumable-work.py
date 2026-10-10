@@ -160,6 +160,8 @@ try:
     batch_readback="""set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';set role authenticated;
     select jsonb_build_object('request',jsonb_build_object('tenantId',r.tenant_id,'actorId',r.actor_id,'requestId',r.id,'kind',r.kind,'subjectId',r.subject_id,'policyId',r.policy_id,'policyVersion',r.policy_revision,'reason',r.reason,'period',jsonb_build_object('start',r.window_start,'end',r.window_end)),
     'progress',learn_work_collection_status(r.tenant_id,r.id),
+    'measurement',(select to_jsonb(m) from measurements m where m.id=r.id),
+    'reviews',(select coalesce(jsonb_agg(to_jsonb(v)),'[]') from learn_performance_reviews v where v.measurement_id=r.id),
     'overview',learn_work_collection_evidence(r.tenant_id,r.id,'overview'),
     'membership',learn_work_collection_evidence(r.tenant_id,r.id,'membership'),
     'teams',learn_work_collection_evidence(r.tenant_id,r.id,'teams'),

@@ -48,7 +48,7 @@ const integer = (v: unknown): v is number =>
 const instant = (v: unknown): v is string =>
   typeof v === "string" && /(Z|[+-]\d{2}:\d{2})$/.test(v) && Number.isFinite(Date.parse(v));
 const sameTime = (a: unknown, b: string) => instant(a) && Date.parse(a) === Date.parse(b);
-function validateRequest(r: WorkCollectionRequest) {
+export function validateWorkCollectionRequest(r: WorkCollectionRequest) {
   if (
     !r ||
     ![r.tenantId, r.actorId, r.requestId, r.subjectId, r.policyId].every(uuid) ||
@@ -93,7 +93,7 @@ export function createWorkCollectionRequest(input: {
     period: { start: input.period.start, end: input.period.end },
     reason: input.reason.trim(),
   };
-  validateRequest(r);
+  validateWorkCollectionRequest(r);
   return r;
 }
 export function parseWorkCollectionProgress(
@@ -101,7 +101,7 @@ export function parseWorkCollectionProgress(
   r: WorkCollectionRequest,
   previous?: WorkCollectionProgress,
 ): WorkCollectionProgress {
-  validateRequest(r);
+  validateWorkCollectionRequest(r);
   const d = data as WorkCollectionProgress;
   if (
     !d ||
@@ -157,7 +157,7 @@ function rpcError(error: any): Error {
   );
 }
 export async function beginWorkCollection(db: WorkCollectionClient, r: WorkCollectionRequest) {
-  validateRequest(r);
+  validateWorkCollectionRequest(r);
   const { data, error } = await db.rpc("learn_work_collection_begin", {
     p_tenant: r.tenantId,
     p_kind: r.kind,
@@ -177,7 +177,7 @@ export async function readWorkCollectionProgress(
   r: WorkCollectionRequest,
   previous?: WorkCollectionProgress,
 ) {
-  validateRequest(r);
+  validateWorkCollectionRequest(r);
   const { data, error } = await db.rpc("learn_work_collection_status", {
     p_tenant: r.tenantId,
     p_request: r.requestId,
@@ -206,17 +206,27 @@ export async function abandonWorkCollection(
   reason: string,
   previous?: WorkCollectionProgress,
 ) {
-  validateRequest(r);
+  validateWorkCollectionRequest(r);
   if (typeof reason !== "string" || !reason.trim() || reason.length > 1000)
     throw Error("Add a reason for ending this collection");
   const { data, error } = await db.rpc("learn_work_collection_abandon", {
     p_tenant: r.tenantId,
+    p_kind: r.kind,
+    p_subject: r.subjectId,
+    p_policy: r.policyId,
+    p_revision: r.policyVersion,
+    p_start: r.period.start,
+    p_end: r.period.end,
     p_request: r.requestId,
-    p_reason: reason.trim(),
+    p_reason: r.reason,
+    p_end_reason: reason.trim(),
   });
   if (error) throw rpcError(error);
   const result = parseWorkCollectionProgress(data, r, previous);
-  if (result.state !== "abandoned" || result.endReason !== reason.trim())
+  if (
+    result.state === "collecting" ||
+    (result.state === "abandoned" && result.endReason !== reason.trim())
+  )
     throw Error("Ending this collection could not be confirmed");
   return result;
 }
@@ -290,6 +300,18 @@ export async function readWorkCollectionEvidence(
       throw Error("Evidence continuation could not be verified");
   } else if (part === "overview") {
     if (
+      !d.policy ||
+      validateScorecardPolicy(d.policy).length > 0 ||
+      d.policy.tenantId !== tenantId ||
+      !uuid(d.subject?.id) ||
+      d.subject.kind !== d.policy.subjectKind ||
+      !instant(d.period?.start) ||
+      !instant(d.period?.end) ||
+      Date.parse(d.period.start) >= Date.parse(d.period.end) ||
+      !Object.hasOwn(WORK_COLLECTORS, d.proof?.kind ?? "") ||
+      d.sourceSystem !== WORK_COLLECTORS[d.proof.kind as WorkCollectionKind]?.source ||
+      d.metricKey !== WORK_COLLECTORS[d.proof.kind as WorkCollectionKind]?.metric ||
+      d.subject.kind !== WORK_COLLECTORS[d.proof.kind as WorkCollectionKind]?.subjectKind ||
       d.proof?.contract !== "work-collection@1" ||
       d.proof.runId !== requestId ||
       !integer(d.proof.itemCount) ||
