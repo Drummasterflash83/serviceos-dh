@@ -1,0 +1,41 @@
+{
+  "version": "learn-test-recovery-installed/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "observedAt": "2026-10-10T00:10:02.794901+00:00",
+  "installedSchemaMatches": true,
+  "catalogSha256": "a83ad15eee3c7ba25f64c1f646d28cfc1be77ce4ee8854f81827b8e8354af923",
+  "baselineReference": "learn-test-pacing-installed-2026-10-10.json",
+  "recoveryProjection": "supabase/release/learn-test/014_slack_recovery.expected.json",
+  "tables": 89,
+  "receipts": 15,
+  "receipt": {
+    "source_sha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+    "migration_name": "learn_slack_history_recovery_v1",
+    "project_ref": "saatxzwxvdvqevbnskxy",
+    "applied_at": "2026-10-10 00:06:21.152202+00"
+  },
+  "endpoints": [
+    {
+      "slug": "learn-launch-status",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "854d6165869638b1c3c97c8e02f14e14b2719f770c2045ee68bf85c03f8257af"
+    },
+    {
+      "slug": "work-transition",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "2bc2ec603c7d6825b7dc0289e62618c563c391623e9bcc012d1b381411332506"
+    },
+    {
+      "slug": "learn-slack-worker",
+      "version": 4,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "sourceSha256": "7b1cdf0793bf7f97eb6cb1884f1ccc37f916a61153cbe30e36ed64913e7fa6ae"
+    }
+  ]
+}

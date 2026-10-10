@@ -1,0 +1,59 @@
+{
+  "version": "learn-slack-recovery-release-local/1",
+  "observedAt": "2026-10-10T00:08:59.112242+00:00",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "state": "passed",
+  "sources": [
+    {
+      "path": "supabase/release/learn-test/014_slack_recovery.sql",
+      "sha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc"
+    },
+    {
+      "path": "supabase/release/learn-test/014_slack_recovery.manifest.json",
+      "sha256": "62ae70ff3f2a1f01c031956a6ac5954fd7d6430c46033dad107b04fb7bc048e1"
+    },
+    {
+      "path": "supabase/release/learn-test/014_slack_recovery.expected.json",
+      "sha256": "0f8b2ef367e2c2dadacb4e611f6b2c02dddbc7af4d653763ff58c1c52770be99"
+    },
+    {
+      "path": "scripts/verify/learn-slack-pacing-baseline.mjs",
+      "sha256": "4f768cfb3a06a403c3c41cd50a04c467a7f9a6f3c09474c45cf3dd779b00d4c7"
+    },
+    {
+      "path": "scripts/verify/learn-slack-recovery-bundle.mjs",
+      "sha256": "6922e3151cd867331e650707420f3f8aeb24ad9a9fcb8df6c89c793fa36f79c4"
+    },
+    {
+      "path": "scripts/verify/learn-slack-recovery-catalog.mjs",
+      "sha256": "1ce163f1928c8a47d3244913903225816f75b7ffd4cd1c5d6229b45178e19e12"
+    },
+    {
+      "path": "scripts/verify/learn-test-recovery-release.mjs",
+      "sha256": "6bdb7650bd3cae1e502eef12e94281ebc8c6486c7941c28c7b90edb60e7842cb"
+    },
+    {
+      "path": "scripts/verify/learn-test-recovery-release.test.mjs",
+      "sha256": "11646c0d4e32a9c417160bd47105bba41e3be68895dd37ba551233f15608556c"
+    },
+    {
+      "path": "scripts/verify/learn-foundation-release.py",
+      "sha256": "ffdd12ebf2fe529c80f62bfe373dba22b3beb96b1affed75665ba0b746553c6d"
+    }
+  ],
+  "sqlCommand": "python3 scripts/verify/learn-foundation-release.py --rules --conflicts --measurements --work --actions --slack --slack-worker --slack-threads --slack-operator --slack-pacing --slack-history-resume --write-recovery-expected",
+  "database": "Fresh --network none PostgreSQL container, removed after success; existing local databases untouched",
+  "checks": [
+    "Exact release receipt-failure injection and rollback rehearsal preserve prior tables/functions.",
+    "Existing table definitions/privileges and all prior public function definitions unchanged after installation.",
+    "Installed three-function projection captured and duplicate installation refused.",
+    "Recovery SQL permission, continuation, restart, replay, source preservation and controlled concurrency checks pass.",
+    "Thirteen focused Node tests pass: seven release tests and six recovery client tests.",
+    "Reconstructed release-013 baseline matches the verified catalog fingerprint; hosted release tooling refuses drift, wrong target, stale rehearsal and write retries."
+  ],
+  "nodeCommand": "/usr/local/bin/node --test scripts/verify/learn-test-recovery-release.test.mjs src/lib/learn-slack-history-recovery.test.ts",
+  "limitations": [
+    "Synthetic isolated SQL is not hosted Auth, browser or live-provider acceptance.",
+    "Only the recovery release slice is verified here; LEARN V1 remains incomplete."
+  ]
+}

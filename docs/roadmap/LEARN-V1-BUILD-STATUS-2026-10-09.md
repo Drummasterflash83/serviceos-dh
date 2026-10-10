@@ -666,3 +666,25 @@ outbox is present yet.
 TEST remains release 013/runtime v4. Hosted release packaging/acceptance and recovery
 UI are next; no real provider fetch, production change or schedule occurred. See
 [local recovery evidence and limits](../operations/LEARN-SLACK-INGESTION.md#reviewed-channel-recovery--local-implementation-10-october).
+
+## Slack channel recovery released and verified in TEST — 10 October
+
+Release 014 adds the reviewed recovery and safe progress contracts: 89 public
+tables, fifteen receipts, existing table/function definitions and privileges
+preserved, worker still runtime v4. Exact isolated and hosted rollback checks,
+installation/readback and thirteen focused client/release tests passed.
+
+Real signed-in TEST users verified safe viewer reads and denied approval, company
+isolation, renewed consent, preserved cursors/checkpoints, continuation deduplication,
+reviewed restart and one queued job from competing reviews. The existing worker
+handled a recovery job and refused a nonexistent credential before contacting Slack.
+Completed recovery was refused without creating an approval. An initial test's HTTP
+status assumption was corrected after inspection; a fresh full run passed.
+
+All prior TEST communications retained their counts and row fingerprints. Both
+synthetic fixture runs retain their evidence with logins/approval roles revoked and
+zero active jobs, connections or reservations. No production data, real provider
+fetch, credential or schedule changed. Recovery UI, durable pending approvals,
+thread recovery and continuous/multi-window capture remain, alongside the broader
+LEARN V1 scope. See
+[release 014 evidence and limits](../operations/LEARN-SLACK-INGESTION.md#current-test-state--channel-recovery-release-014-10-october).

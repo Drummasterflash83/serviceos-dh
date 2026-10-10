@@ -1,0 +1,30 @@
+{
+  "version": "learn-test-recovery-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "observedAt": "2026-10-10T00:07:42.119Z",
+  "runId": "7bd95b87-b7b7-4550-84d0-f37f1517504e",
+  "state": "requires_inspection",
+  "checks": [
+    "Actual viewer/company/anonymous/service restrictions and safe reader; expired consent renewed; competing owner requests queue once; exact replay retains receipt and old checkpoint"
+  ],
+  "failure": "Completed window accepted recovery",
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 4,
+    "active_jobs": 0,
+    "active_connections": 0,
+    "active_reservations": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-recovery-7bd95b87-b7b7-4550-84d0-f37f1517504e.json",
+  "limitations": [
+    "Random synthetic TEST companies/workspace, nonexistent credential reference; no real Slack fetch or production change.",
+    "Fixture expiry and pacing deadlines explicitly advanced. Hosted concurrency uses independent HTTP requests; controlled blocking was verified separately in isolated SQL.",
+    "Worker v4 exercised recovery binding and missing-credential refusal, not live ingestion. Sources and approvals retained; fixture logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+    "Recovery browser UI, durable client outbox, continuous/multi-window capture and full LEARN V1 remain incomplete."
+  ]
+}

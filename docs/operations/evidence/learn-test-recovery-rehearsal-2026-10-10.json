@@ -1,0 +1,14 @@
+{
+  "version": "learn-test-recovery-rehearsal/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "state": "rehearsed_and_rolled_back",
+  "observedBefore": "2026-10-10T00:05:20.551039+00:00",
+  "observedAfter": "2026-10-10T00:05:35.835042+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "catalogUnchanged": true,
+  "beforeCatalogSha256": "f26cc87d2d5a263029af8b5b2b9c7437deefe5654142afce40900c70a47243bf",
+  "afterCatalogSha256": "f26cc87d2d5a263029af8b5b2b9c7437deefe5654142afce40900c70a47243bf"
+}

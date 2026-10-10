@@ -1,0 +1,36 @@
+{
+  "version": "learn-test-recovery-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "observedAt": "2026-10-10T00:09:27.554Z",
+  "runId": "6c40039a-e917-4426-abce-c9dedf4ab84a",
+  "state": "passed_retained_synthetic_acceptance",
+  "checks": [
+    "Actual viewer/company/anonymous/service restrictions and safe reader; expired consent renewed; competing owner requests queue once; exact replay retains receipt and old checkpoint",
+    "Continue deduplicates retained sources; reviewed restart preserves checkpoint; existing worker v4 handles recovery and refuses missing credential before Slack; subsequent recovery completes bounded window and completed recovery is refused",
+    "Pre-existing TEST email/call/recording/transcript/Slack/version/interaction row counts and fingerprints unchanged"
+  ],
+  "completionRefusal": {
+    "httpStatus": 500,
+    "code": "55000"
+  },
+  "failure": null,
+  "cleanupErrors": [],
+  "loginsAndApprovalRevoked": true,
+  "retained": {
+    "messages": 2,
+    "versions": 2,
+    "interactions": 2,
+    "approvals": 4,
+    "active_jobs": 0,
+    "active_connections": 0,
+    "active_reservations": 0
+  },
+  "fixtureManifest": "/private/tmp/serviceos-learn-recovery-6c40039a-e917-4426-abce-c9dedf4ab84a.json",
+  "limitations": [
+    "Random synthetic TEST companies/workspace, nonexistent credential reference; no real Slack fetch or production change.",
+    "Fixture expiry and pacing deadlines explicitly advanced. Hosted concurrency uses independent HTTP requests; controlled blocking was verified separately in isolated SQL.",
+    "Worker v4 exercised recovery binding and missing-credential refusal, not live ingestion. Sources and approvals retained; fixture logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+    "Recovery browser UI, durable client outbox, continuous/multi-window capture and full LEARN V1 remain incomplete."
+  ]
+}

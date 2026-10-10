@@ -440,13 +440,25 @@ try:
                                         if '--slack-history-resume' in sys.argv:
                                             resume_before=json.loads(run(catalog_sql).stdout)
                                             resume_functions_before=json.loads(run(thread_function_query).stdout)
-                                            resume_sql=(ROOT/'supabase/migrations/20261030160000_learn_slack_history_resume.sql').read_text()
-                                            failed=run('set role postgres;'+resume_sql.replace('\ncommit;','\ndo $$begin raise exception \'Injected resume migration failure\';end $$;\ncommit;'),False)
+                                            resume_sql=node("import {recoveryReleaseSql} from './scripts/verify/learn-test-recovery-release.mjs';process.stdout.write(recoveryReleaseSql());")
+                                            failed=run('set role postgres;'+resume_sql.replace('insert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)',"do $$begin raise exception 'Injected resume migration failure';end $$;\ninsert into of_test_deploy.migrations(source_sha256,migration_name,project_ref,applied_at)"),False)
                                             assert failed.returncode and b'Injected resume migration failure' in failed.stderr
                                             assert json.loads(run(catalog_sql).stdout)['tables']==resume_before['tables']
                                             assert json.loads(run(thread_function_query).stdout)==resume_functions_before
+                                            resume_rehearsal=node("import {recoveryRehearsalSql} from './scripts/verify/learn-test-recovery-release.mjs';process.stdout.write(recoveryRehearsalSql());")
+                                            apply('set role postgres;'+resume_rehearsal,'Exact channel recovery release rollback rehearsal')
+                                            assert json.loads(run(thread_function_query).stdout)==resume_functions_before
                                             apply('set role postgres;'+resume_sql,'Reviewed channel checkpoint recovery and safe progress read')
                                             assert json.loads(run(catalog_sql).stdout)['tables']==resume_before['tables'],'History recovery changed existing table definitions or privileges'
+                                            assert json.loads(run(thread_function_query).stdout)[:len(resume_functions_before)]==resume_functions_before,'Recovery changed existing functions'
+                                            resume_query=node("import {RECOVERY_FUNCTION_QUERY} from './scripts/verify/learn-slack-recovery-catalog.mjs';process.stdout.write(RECOVERY_FUNCTION_QUERY);")
+                                            resume_sha=node("import {checkedRecovery} from './scripts/verify/learn-slack-recovery-bundle.mjs';process.stdout.write(checkedRecovery().manifest.sha256);")
+                                            resume_expected={'sourceSha256':resume_sha,'tables':[],'functions':json.loads(run(resume_query).stdout)}
+                                            resume_expected_path=ROOT/'supabase/release/learn-test/014_slack_recovery.expected.json'
+                                            if '--write-recovery-expected' in sys.argv:resume_expected_path.write_text(json.dumps(resume_expected,indent=2)+'\n')
+                                            else:assert resume_expected==json.loads(resume_expected_path.read_text()),'Recovery definitions differ'
+                                            duplicate=run('set role postgres;'+resume_sql,False)
+                                            assert duplicate.returncode and b'Slack recovery release already exists' in duplicate.stderr
                                             apply((ROOT/'scripts/verify/learn-slack-history-resume.assert.sql').read_text(),'History cursor continuation, renewed approval, idempotency, restart, atomic rollback, completion and preservation')
                                             resume_races={}
                                             exec((ROOT/'scripts/verify/learn-slack-history-resume-concurrency.py').read_text(),resume_races)

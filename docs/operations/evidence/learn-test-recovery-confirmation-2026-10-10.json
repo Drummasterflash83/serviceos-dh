@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-recovery-confirmation/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "observedAt": "2026-10-10T00:10:02.794901+00:00",
+  "state": "verified_release_and_retained_synthetic_acceptance",
+  "catalogSha256": "a83ad15eee3c7ba25f64c1f646d28cfc1be77ce4ee8854f81827b8e8354af923",
+  "release": "learn-test-recovery-release-2026-10-10.json",
+  "acceptance": "learn-test-recovery-acceptance-2026-10-10.json",
+  "initialAcceptance": "learn-test-recovery-acceptance-initial-2026-10-10.json",
+  "acceptanceScriptSha256": "4a947402d63d7cdfbfd9d6fd9ff160d9fce684b4639c7530e684cbff9e82db35",
+  "initialCheckCorrection": "First run assumed HTTP 400 for completed-window SQLSTATE 55000. Read-only inspection found zero approvals for that request, four retained approvals and a complete checkpoint. Corrected acceptance checks database code plus no new approval; fresh run confirms HTTP 500/code 55000. No release code changed or write was replayed.",
+  "bothFixtureRunsRetired": true,
+  "limitations": [
+    "Random synthetic TEST companies/workspace, nonexistent credential reference; no real Slack fetch or production change.",
+    "Fixture expiry and pacing deadlines explicitly advanced. Hosted concurrency uses independent HTTP requests; controlled blocking was verified separately in isolated SQL.",
+    "Worker v4 exercised recovery binding and missing-credential refusal, not live ingestion. Sources and approvals retained; fixture logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+    "Recovery browser UI, durable client outbox, continuous/multi-window capture and full LEARN V1 remain incomplete."
+  ]
+}

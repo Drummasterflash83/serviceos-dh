@@ -1,0 +1,27 @@
+{
+  "version": "learn-slack-recovery-bundle/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "releaseName": "learn_slack_history_recovery_v1",
+  "sha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030160000_learn_slack_history_resume.sql",
+      "sha256": "a40a14c793251bbca78d1d75c9f2ef82c1df38854500502dea1d86621001fc29"
+    }
+  ],
+  "tables": [],
+  "newFunctions": [
+    "learn_slack_history_state",
+    "learn_slack_history_read",
+    "learn_slack_resume_history"
+  ],
+  "changedFunctions": [],
+  "unchanged": [
+    "Existing table definitions, privileges, sources, credentials and schedules.",
+    "Existing history approval/page/finish contracts and unrelated queue completion."
+  ],
+  "deferred": [
+    "Hosted authenticated recovery acceptance and browser controls.",
+    "Live Slack access, continuous coverage and thread recovery."
+  ]
+}

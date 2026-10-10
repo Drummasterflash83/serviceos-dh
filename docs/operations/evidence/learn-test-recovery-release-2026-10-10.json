@@ -1,0 +1,20 @@
+{
+  "version": "learn-test-recovery-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc",
+  "state": "installed_needs_user_verification",
+  "writeAttempted": true,
+  "observedBefore": "2026-10-10T00:06:10.762842+00:00",
+  "observedAfter": "2026-10-10T00:06:27.52108+00:00",
+  "acknowledged": true,
+  "httpStatus": 201,
+  "databaseCode": null,
+  "installedSchemaMatches": true,
+  "existingSourceCatalogPreserved": true,
+  "beforeCatalogSha256": "f26cc87d2d5a263029af8b5b2b9c7437deefe5654142afce40900c70a47243bf",
+  "afterCatalogSha256": "a83ad15eee3c7ba25f64c1f646d28cfc1be77ce4ee8854f81827b8e8354af923",
+  "limitations": [
+    "TEST three new recovery functions only. No credentials, source rows, schedules, provider requests or production changes.",
+    "Hosted authenticated recovery/browser acceptance is still required. An uncertain write is never automatically retried."
+  ]
+}

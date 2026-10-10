@@ -528,3 +528,65 @@ hosted rehearsal/acceptance and a recovery review screen remain. The client adap
 does not yet provide a durable browser outbox. Thread recovery, ongoing/multi-window
 capture and actual provider access remain separate work. No production data,
 credential, provider request, deployment or schedule changed in this step.
+
+## Current TEST state — channel recovery release 014, 10 October
+
+Release 014 `learn_slack_history_recovery_v1` is installed with checksum
+`0e33e36138c1e8988d13b90b32295ace2d2f3480d6fec83b2deaae919f421efc`.
+This supersedes the local-only recovery status above. TEST has 89 public tables
+and fifteen receipts. The three new functions match their isolated projection;
+existing table definitions, privileges, source writers and endpoint hashes remain
+unchanged. The Slack worker is still runtime v4, with no redeployment or new secret.
+
+The exact bundle passed isolated injected receipt failure, rollback rehearsal,
+duplicate-install refusal, existing-function preservation and the full recovery
+permission/source/concurrency suite. Thirteen focused Node tests passed. Hosted
+rollback rehearsal preserved the catalog, and one acknowledged installation matched
+the expected definitions. The release-013 baseline is reconstructed from its prior
+catalog, exact projection and retained receipt, with a matching verified fingerprint;
+another full duplicate catalog is unnecessary.
+
+Actual TEST Auth/RPC checks verified company isolation, safe viewer reads, denied
+viewer approval and private-helper access, renewed expired consent, continuation
+from the saved cursor and immutable prior checkpoints. Two simultaneous owner
+reviews queued one job; the other conflicted. Exact retry returned the same receipt,
+while changing its mode conflicted. Replaying an existing message during continuation
+retained exactly two messages and two versions after adding the next message.
+
+A reviewed restart cleared only the new cursor and retained its predecessor. The
+existing Edge worker handled that recovery job and refused its nonexistent Vault
+credential before any provider request. Another reviewed continuation completed the
+bounded window. Completed-window recovery was refused, created no approval, and
+an older exact request still resolved its original receipt after completion.
+
+The first acceptance run incorrectly assumed HTTP 400 for SQLSTATE `55000`.
+Read-only inspection found no approval for the final refused request, four retained
+approvals and a complete checkpoint. The test now checks refusal by the documented
+database code and absence of a new approval. A fresh full run passed and recorded
+HTTP 500 with code `55000`; the client already maps that code to an unavailable
+review. No release function changed and no uncertain write was replayed.
+
+Both fixture runs retain their synthetic evidence. Each has two messages, two
+versions, two interactions and four approvals. Their logins are banned, passwords
+rotated, owner roles revoked and active jobs/connections/reservations zero. The
+passing run also checked unchanged counts and row fingerprints for pre-existing
+TEST emails, calls, recordings, transcripts, Slack messages/versions and interactions.
+Fixture consent expiry and pacing deadlines were explicitly advanced; this is
+protocol acceptance, not timed live-provider acceptance.
+
+Evidence:
+
+- [Exact isolated release checks](evidence/learn-slack-recovery-release-local-2026-10-10.json)
+- [Fresh prerequisite comparison](evidence/learn-test-recovery-before-2026-10-10.json)
+- [Hosted rollback rehearsal](evidence/learn-test-recovery-rehearsal-2026-10-10.json)
+- [Installation and preservation](evidence/learn-test-recovery-release-2026-10-10.json)
+- [Passing actual Auth/RPC/worker acceptance](evidence/learn-test-recovery-acceptance-2026-10-10.json)
+- [Compact installed catalog](evidence/learn-test-recovery-installed-2026-10-10.json)
+- [Combined verification and initial test correction](evidence/learn-test-recovery-confirmation-2026-10-10.json)
+
+Current UI and fixture launch guards recognize release 014. Historical acceptance
+commands retain their original release requirements. The recovery review screen,
+durable browser outbox, thread recovery, live Slack access and continuous/multi-window
+capture remain outstanding. No production write, real Slack fetch, frontend
+deployment, credential change or schedule occurred. This completes the recovery
+backend release milestone, not Slack ingestion or LEARN V1.
