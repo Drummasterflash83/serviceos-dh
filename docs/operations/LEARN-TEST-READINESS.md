@@ -1,5 +1,16 @@
 # Existing TEST environment: verified release gaps
 
+## Recurring Slack capture — local implementation, not deployed
+
+An explicit recurring-channel approval and service-only scheduling endpoint now
+advance an existing public channel through bounded windows, preserving each prior
+checkpoint and requiring matching completion evidence. Pause/resume, authority and
+connection changes, queue rollback and concurrent calls are covered by disposable
+PostgreSQL verification; all 56 Slack Node tests pass. No hosted schema, schedule,
+Slack credential or source data changed. The control UI, hosted release acceptance
+and live workspace authorization remain outstanding. See
+[implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--local-implementation-10-october-2026).
+
 ## Hosted operator acceptance session — prepared, approval pending
 
 The read-only preflight for run `0be31171-a302-4840-80fd-f433726a7300` passed

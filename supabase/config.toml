@@ -338,6 +338,11 @@ verify_jwt = true
 [functions.learn-slack-worker]
 verify_jwt = true
 
+# Optional recurring-window enqueue only; requires explicit channel approval.
+# No cron is created by this endpoint or its migration.
+[functions.learn-slack-schedule]
+verify_jwt = true
+
 # Gateway JWT plus explicitly configured infrastructure trigger key. No schedule.
 [functions.learn-commusoft-worker]
 verify_jwt = true

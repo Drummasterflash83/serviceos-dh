@@ -1,0 +1,35 @@
+{
+  "version": "learn-slack-recurring-local/1",
+  "observedAt": "2026-10-10T17:09:12.529757+00:00",
+  "state": "local_verified_not_deployed",
+  "nodeTests": 56,
+  "sqlChecks": [
+    "PASS: owner approval, request replay and service-only scheduler",
+    "PASS: viewer and View-As denial",
+    "PASS: atomic bounded window enqueue, replay and previous-checkpoint retention",
+    "PASS: unfinished and unverified windows are held",
+    "PASS: capture pause and changed connection hold scheduling",
+    "PASS: approver revocation and scope withdrawal block new windows",
+    "PASS: insertion failure rolls back all changes; next window has no gap",
+    "PASS: explicit disable withdraws current recurring scope and retains history",
+    "PASS: re-enable retains exact unfinished window, cursor, expiry and budget",
+    "PASS: concurrent schedulers produce one window; locked tenant is skipped"
+  ],
+  "sourceSha256": {
+    "supabase/migrations/20261101003000_learn_slack_recurring.sql": "910d769fd491395ef7b92ab8c24ee98304b18037a3790faed34f9680db1f7a99",
+    "supabase/functions/_shared/slack/slack_recurring.ts": "d7dbad0f619e00aaf1d78d6c042545cec7593719207b1cbfafad727d03d64414",
+    "supabase/functions/learn-slack-schedule/index.ts": "e53fef4413d9d9994af7e9b386299fec2a233b4d35a8d05284b4df3e1c99563d",
+    "scripts/verify/learn-slack-recurring-local.py": "3fdb64024cb750f9f6e4188fcb558f62ec91634dbcb7ebdad13099897a0e0c8e",
+    "scripts/verify/learn-slack-recurring.assert.sql": "6d4610aa67f51c1af337180caed7181369c0a8ad63dd6331e8e609e7815ea98a"
+  },
+  "remoteChanges": false,
+  "providerRequests": 0,
+  "credentialsCreated": 0,
+  "schedulesActivated": 0,
+  "limitations": [
+    "Disposable minimal Auth/queue projection with recorded tenant-role helpers and real history storage/setup/capture predicate.",
+    "Completion receipts are synthetic; provider and fenced-worker end-to-end acceptance remains required.",
+    "No hosted migration, signed-in recurring control UI, trigger activation or real Slack workspace acceptance.",
+    "Selected public channel history only; automatic thread discovery, edit/delete reconciliation, other channel types and attachments remain incomplete."
+  ]
+}

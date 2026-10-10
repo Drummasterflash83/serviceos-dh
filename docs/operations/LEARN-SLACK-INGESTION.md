@@ -1,5 +1,50 @@
 # LEARN Slack history ingestion
 
+## Recurring channel capture — local implementation, 10 October 2026
+
+`20261101003000_learn_slack_recurring.sql` adds an explicit ongoing approval for
+an existing captured public channel. Owner/admin approval binds the company,
+account, workspace, channel and connection revision. The request ledger supports
+exact lost-response replay and optimistic revision checks. Viewer and View-As
+sessions cannot change it; browsers cannot call the service-only scheduler.
+
+The scheduler queues successive windows of up to 15 minutes, ending at least two
+minutes behind the current time. Each retains the preceding approval/checkpoint
+and uses the existing `slack.history_sync` page worker with its conservative quota
+and ten-page budget. A completed boolean alone cannot advance capture: it needs a
+matching saved page receipt from a succeeded job. Unfinished or unverified windows,
+changed connections, withdrawn approvals and paused capture are held. Account and
+tenant setup locks prevent duplicate windows across simultaneous scheduler calls.
+Queue insertion, approval creation and checkpoint changes are one transaction.
+
+Disabling withdraws the current recurring window's request authority without
+deleting its cursor or evidence. Re-enabling that same paused window restores its
+approval without extending expiry or page limits. Dead-letter or exhausted work
+still requires the existing explicit recovery flow. After a manual replacement or
+recovery approval changes the scope, recurring capture holds for a fresh review;
+it does not silently skip the retained window.
+
+The new `learn-slack-schedule` endpoint only enqueues bounded work and exposes
+aggregate outcomes. It uses gateway JWT verification and the existing dedicated
+Slack worker trigger header. It never reads a provider credential or calls Slack.
+No schedule, channel approval or credential is installed by these files.
+
+Validation: **56 Slack Node tests pass**. An offline disposable PostgreSQL test
+exercises actual recurring/storage/setup SQL, the real capture predicate, recorded
+tenant/role helper definitions, and minimal Auth/queue fixtures. It checks request
+replay, viewer/preview denial, successive boundaries, receipt requirements,
+module/credential/approver pauses, injected queue failure rollback, pause/resume,
+retained synthetic source/version fingerprints and two concurrent scheduler
+sessions producing one job. Completion receipts in this fixture are synthetic;
+this does not establish actual provider-to-worker execution.
+
+**Not deployed or activated.** Remaining work includes the reviewable client and
+OpenFolk controls, current-schema hosted rehearsal, authenticated acceptance,
+explicit trigger activation and real Slack workspace/channel access. This path
+covers channel-history windows only: automatic thread discovery, older message
+edit/delete reconciliation, other channel types and attachment capture remain
+separate requirements. See [local verification evidence](evidence/learn-slack-recurring-local-2026-10-10.json).
+
 ## Current implementation and limits
 
 The `slack.history_sync` transport now requires an owned, unexpired queue
