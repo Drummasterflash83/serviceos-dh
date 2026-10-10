@@ -60,6 +60,31 @@ Vault rows. Signed-in hosted contact acceptance is the next required check. The
 frontend and production remain unchanged. See
 [contact release evidence](evidence/learn-commusoft-contacts-test-release-2026-10-10.json).
 
+### Prepared hosted contact acceptance — awaiting approval
+
+`learn-test-commusoft-contacts-acceptance.mjs` extends the successful ingestion
+runner with four synthetic contacts, both contact collection types, cursor
+continuation and actual signed-in review adapters. Prepared assertions cover
+multiple phones, an unresolved parent held for review, shared-email identity
+selection, unchanged existing person fields, lost-reply recovery with capture
+disabled, cancellation, replay and tenant/role denial. These new hosted assertions
+have **not run** and must not be described as passing.
+
+Automatic approval review rejected execution before process creation because the
+run creates a temporary account, operator grant, dummy Vault entry and synthetic
+connection. Explicit approval is pending for one fixed recipient and company in
+TEST only. A private local plan fixes their IDs and the scope; validation refuses
+missing or expanded scope before any network request. The operator grant expires
+after 30 minutes and allows TEST-wide control during that interval. Cleanup also
+bans the login, ends its access and retires the dummy credential binding, retaining
+synthetic evidence. Provider transport is intercepted; no real Commusoft request
+or production change is allowed. The plan and private results stay out of Git.
+The initial recovery manifest uses exclusive creation to prevent accidental reuse
+of a plan from overwriting a previous run's evidence.
+
+Local fixture-plan validation passes. Continue unaffected work while approval is
+pending; do not execute this hosted run through an alternative path.
+
 ## Contact review checkpoint — local acceptance, 10 October
 
 Property contacts now project into the existing `people`, `contact_points` and

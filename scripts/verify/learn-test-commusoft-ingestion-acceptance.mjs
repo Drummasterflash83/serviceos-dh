@@ -3,6 +3,7 @@
  * the fixture's capture module is disabled. Never calls a provider or adds a schedule.
  */
 import { randomUUID, randomBytes, createHash } from "node:crypto";
+import { contactFixtureIdentities } from "./learn-commusoft-contact-fixture-plan.mjs";
 import { writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
@@ -33,13 +34,26 @@ import {
 } from "../../src/lib/learn-commusoft-review.ts";
 import { loadWorkPage, resolveWorkDraft } from "../../src/lib/learn-commusoft-work.ts";
 import { readLearnCards } from "../../src/lib/learn-cards.ts";
+import { readContactCatalog } from "./learn-commusoft-contacts-catalog.mjs";
+import { installedContacts, contactFingerprint } from "./learn-test-commusoft-contacts-release.mjs";
+import {
+  syntheticContactPage,
+  acceptCapturedContacts,
+} from "./learn-commusoft-contact-acceptance-flow.mjs";
 const q = (s) => `'${String(s).replaceAll("'", "''")}'`;
 const check = (v, m) => {
   if (!v) throw Error(m);
 };
 const base = `https://${TEST_PROJECT}.supabase.co`;
-export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher = fetch }) {
+export async function acceptCommusoftIngestion({
+  allowProjectRef,
+  token,
+  fetcher = fetch,
+  includeContacts = false,
+  contactFixturePlan = null,
+}) {
   check(allowProjectRef === TEST_PROJECT, "Explicit TEST project required");
+  const planned = includeContacts ? contactFixtureIdentities(contactFixturePlan) : null;
   // Hard network allowlist: no code in this runner can send a real provider request.
   const network = async (url, options) => {
     const parsed = new URL(typeof url === "string" ? url : url instanceof URL ? url.href : url.url);
@@ -52,8 +66,11 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     );
     return fetcher(url, { ...options, redirect: "error" });
   };
-  const pre = await readOperatorInputsCatalog({ allowProjectRef, token, fetcher: network });
-  check(installedOperatorInputs(pre), "Exact installed operator/worker TEST contract required");
+  const readRuntime = includeContacts ? readContactCatalog : readOperatorInputsCatalog,
+    installedRuntime = includeContacts ? installedContacts : installedOperatorInputs,
+    runtimeFingerprint = includeContacts ? contactFingerprint : operatorInputFingerprint;
+  const pre = await readRuntime({ allowProjectRef, token, fetcher: network });
+  check(installedRuntime(pre), "Exact installed ingestion/review TEST contract required");
   const management = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   async function request(url, headers, method = "GET", body) {
     return readAcceptanceResponse(
@@ -114,36 +131,57 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: network },
   });
-  const p = Object.fromEntries(
-    ["runId", "tenant", "actor", "grant", "connection"].map((k) => [k, randomUUID()]),
-  );
+  const p =
+    planned ??
+    Object.fromEntries(
+      ["runId", "tenant", "actor", "grant", "connection"].map((k) => [k, randomUUID()]),
+    );
   Object.assign(p, {
     version: "learn-commusoft-ingestion-fixture/1",
     projectRef: TEST_PROJECT,
+    includeContacts,
     requests: [],
     created: false,
     secret: null,
     sourceBefore: null,
   });
-  p.email = `learn-ingestion-${p.runId}@example.invalid`;
+  p.email = planned?.email ?? `learn-ingestion-${p.runId}@example.invalid`;
   const dummy = `SYNTHETIC_NOT_A_PROVIDER_KEY_${randomBytes(32).toString("hex")}`;
   const fingerprint = createHash("sha256")
     .update("commusoft:" + dummy)
     .digest("hex");
   const secretName = `provider_secret:${p.tenant}:commusoft:api_key`;
-  const manifest = `/private/tmp/serviceos-commusoft-ingestion-${p.runId}.json`;
+  const manifest = `/private/tmp/serviceos-commusoft-${includeContacts ? "contacts" : "ingestion"}-${p.runId}.json`;
   const save = () => writeFileSync(manifest, JSON.stringify(p, null, 2) + "\n", { mode: 0o600 });
-  save();
+  // A fixed approved plan is single-use. Preserve any earlier run's recovery
+  // record instead of overwriting it and attempting the same identities again.
+  writeFileSync(manifest, JSON.stringify(p, null, 2) + "\n", { mode: 0o600, flag: "wx" });
   const snapshot = async () => {
     const tables = [
-      ...OPERATOR_PRESERVED_TABLES,
-      "learn_business_input_request_permits",
-      "learn_business_input_links",
-      "learn_business_input_projection_batches",
-      "learn_operator_input_requests",
-      "tenants",
-      "profiles",
-      "platform_authority_grants",
+      ...new Set([
+        ...OPERATOR_PRESERVED_TABLES,
+        "learn_business_input_request_permits",
+        "learn_business_input_links",
+        "learn_business_input_projection_batches",
+        "learn_operator_input_requests",
+        "tenants",
+        "profiles",
+        "platform_authority_grants",
+        ...(includeContacts
+          ? [
+              "contact_points",
+              "graph_nodes",
+              "graph_edges",
+              "graph_events",
+              "learn_business_input_projection_attempts",
+              "provider_connection_events",
+              "learn_commusoft_connection_requests",
+              "learn_commusoft_verification_requests",
+              "learn_commusoft_verification_permits",
+              "learn_commusoft_verification_results",
+            ]
+          : []),
+      ]),
     ];
     const statements = tables.map((name) => {
       const filter =
@@ -162,7 +200,7 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       `select 'credential_gates' as name,count(*)::int as count,md5(coalesce(string_agg(md5(row_to_json(s)::text),'' order by md5(row_to_json(s)::text)),'')) as fingerprint from public.learn_business_input_request_gates s where credential_fingerprint<>${q(fingerprint)}`,
     );
     statements.push(
-      `select 'vault_metadata' as name,count(*)::int as count,md5(coalesce(string_agg(md5(row_to_json(s)::text),'' order by md5(row_to_json(s)::text)),'')) as fingerprint from (select id,name,description from vault.secrets where name is distinct from ${q(secretName)} and name is distinct from ${q("retired-synthetic:" + p.runId)}) s`,
+      `select 'vault_metadata' as name,count(*)::int as count,md5(coalesce(string_agg(md5(row_to_json(s)::text),'' order by md5(row_to_json(s)::text)),'')) as fingerprint from (select * from vault.secrets where name is distinct from ${q(secretName)} and name is distinct from ${q("retired-synthetic:" + p.runId)}) s`,
     );
     return (await sql(statements.join(" union all "), true)).sort((a, b) =>
       a.name.localeCompare(b.name),
@@ -174,7 +212,8 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     cleanupErrors = [],
     summary = null,
     sourceAfter = null,
-    owner;
+    owner,
+    contactSummary = null;
   let providerReads = 0,
     lostCommit = false;
   const fixtureFetch = async (url, options) => {
@@ -234,6 +273,10 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       );
       data = [{ id: 301, propertyID: 201, description: "Synthetic captured job", status: "Open" }];
       nextCursor = 301;
+    } else if (includeContacts && providerReads >= 3 && providerReads <= 6) {
+      const envelope = syntheticContactPage(u, providerReads - 3);
+      providerReads++;
+      return Response.json(envelope);
     } else throw Error("Unexpected duplicate or unscoped synthetic provider read");
     providerReads++;
     return Response.json({ data, pagination: { hasMore, nextCursor }, synthetic: true });
@@ -270,7 +313,7 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       "apply",
     );
   };
-  const approve = async (resource, max_pages) => {
+  const approve = async (resource, max_pages, contact_type) => {
     const current = await readOperatorInputs(owner, p.tenant);
     check(
       current.connections.length === 1 && current.connections[0].credential_bound,
@@ -282,6 +325,7 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       connection_id: p.connection,
       revision: current.connections[0].revision,
       resource,
+      ...(resource === "propertyContacts" ? { contact_type } : {}),
       max_pages,
       page_size: 1,
       expires_at: new Date(Date.now() + 3600000).toISOString(),
@@ -335,7 +379,7 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       global: { headers: { Authorization: `Bearer ${login.data.access_token}` }, fetch: network },
     });
     await sql(
-      `begin;insert into tenants(id,slug,display_name,status,metadata) values(${q(p.tenant)},${q("learn-ingestion-" + p.runId)},'SYNTHETIC ingestion acceptance','active',${q(JSON.stringify({ synthetic: true, learn_ingestion_run: p.runId }))});update profiles set tenant_id=${q(p.tenant)},role='owner' where id=${q(p.actor)} and email=${q(p.email)};insert into platform_authority_grants(id,profile_id,permission,granted_by,reason,source) values(${q(p.grant)},${q(p.actor)},'platform.controlplane.admin',${q("synthetic:" + p.runId)},'Temporary synthetic ingestion acceptance','test');commit;`,
+      `begin;insert into tenants(id,slug,display_name,status,metadata) values(${q(p.tenant)},${q("learn-ingestion-" + p.runId)},'SYNTHETIC ingestion acceptance','active',${q(JSON.stringify({ synthetic: true, learn_ingestion_run: p.runId }))});update profiles set tenant_id=${q(p.tenant)},role='owner' where id=${q(p.actor)} and email=${q(p.email)};insert into platform_authority_grants(id,profile_id,permission,granted_by,reason,source,effective_to) values(${q(p.grant)},${q(p.actor)},'platform.controlplane.admin',${q("synthetic:" + p.runId)},'Temporary synthetic ingestion acceptance','test',clock_timestamp()+interval '30 minutes');commit;`,
     );
     // A fake, never-provider-valid value exists only in TEST Vault and process memory.
     const created = await sql(
@@ -539,6 +583,62 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     checks.push(
       "The captured customer, work address and job pass the real signed-in review adapters and produce one customer card, one site and one job visible through the application card reader.",
     );
+    if (includeContacts) {
+      stage = "contact collections and signed-in review";
+      for (const [contactType, maxPages] of [
+        ["workaddress", 1],
+        ["customer", 3],
+      ]) {
+        const approval = await approve("propertyContacts", maxPages, contactType);
+        let expected = approval.receipt.job_id;
+        for (let index = 0; index < maxPages; index++) {
+          await onlyJob(expected);
+          const timing = (
+            await sql(
+              `select j.available_at,g.next_allowed_at from platform_jobs j left join learn_business_input_request_gates g on g.credential_fingerprint=${q(fingerprint)} where j.id=${q(expected)}`,
+              true,
+            )
+          )[0];
+          const delay = Math.max(
+            0,
+            Date.parse(timing.available_at) - Date.now() + 25,
+            Date.parse(timing.next_allowed_at ?? new Date().toISOString()) - Date.now() + 25,
+          );
+          check(delay < 5000, "Unexpected contact job/pacing delay");
+          if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+          const run = await runCommusoftWorker(admin, randomUUID(), handler);
+          check(
+            run.claimed === 1 &&
+              run.outcomes[0].job_id === expected &&
+              run.outcomes[0].status === "succeeded",
+            "Captured contact page failed",
+          );
+          expected = run.outcomes[0].successor_id;
+          check(
+            index === maxPages - 1 ? expected === null : !!expected,
+            "Contact page continuation differs",
+          );
+        }
+      }
+      check(providerReads === 7, "Unexpected contact provider read count");
+      const anonymous = createClient(base, anon, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { fetch: network },
+      });
+      const contactResult = await acceptCapturedContacts({
+        owner,
+        anonymous,
+        tenant: p.tenant,
+        actor: p.actor,
+        connection: p.connection,
+        customerId: customer.entityId,
+        backend: base,
+        sql,
+        setModules,
+      });
+      checks.push(...contactResult.checks);
+      contactSummary = contactResult.summary;
+    }
     summary = (
       await sql(
         `select (select count(*)::int from learn_business_input_pages where tenant_id=${q(p.tenant)}) as pages,(select count(*)::int from learn_business_input_versions where tenant_id=${q(p.tenant)}) as versions,(select count(*)::int from learn_business_input_request_permits where tenant_id=${q(p.tenant)}) as permits,(select count(*)::int from platform_jobs where tenant_id=${q(p.tenant)} and status='succeeded') as succeeded_jobs,(select count(*)::int from platform_jobs where tenant_id=${q(p.tenant)} and status in ('queued','running','retrying')) as active_jobs,(select count(*)::int from customer_cards where tenant_id=${q(p.tenant)}) as customer_cards,(select count(*)::int from sites where tenant_id=${q(p.tenant)}) as sites,(select count(*)::int from jobs where tenant_id=${q(p.tenant)}) as jobs`,
@@ -546,20 +646,19 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
       )
     )[0];
     check(
-      summary.pages === 3 &&
-        summary.versions === 3 &&
-        summary.permits === 3 &&
-        summary.succeeded_jobs === 3 &&
+      summary.pages === (includeContacts ? 7 : 3) &&
+        summary.versions === (includeContacts ? 7 : 3) &&
+        summary.permits === (includeContacts ? 7 : 3) &&
+        summary.succeeded_jobs === (includeContacts ? 7 : 3) &&
         summary.active_jobs === 0 &&
         summary.customer_cards === 1 &&
         summary.sites === 1 &&
         summary.jobs === 1,
       "Retained ingestion counts differ",
     );
-    const after = await readOperatorInputsCatalog({ allowProjectRef, token, fetcher: network });
+    const after = await readRuntime({ allowProjectRef, token, fetcher: network });
     check(
-      installedOperatorInputs(after) &&
-        operatorInputFingerprint(pre) === operatorInputFingerprint(after),
+      installedRuntime(after) && runtimeFingerprint(pre) === runtimeFingerprint(after),
       "Schema/runtime changed during acceptance",
     );
     stage = "passed";
@@ -614,11 +713,21 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     } catch {
       cleanupErrors.push("Final preservation/retirement read requires inspection");
     }
-    Object.assign(p, { stage, failure, cleanupErrors, sourceAfter, summary, providerReads });
+    Object.assign(p, {
+      stage,
+      failure,
+      cleanupErrors,
+      sourceAfter,
+      summary,
+      contactSummary,
+      providerReads,
+    });
     save();
   }
   return {
-    version: "learn-commusoft-ingestion-test-acceptance/1",
+    version: includeContacts
+      ? "learn-commusoft-contacts-test-acceptance/1"
+      : "learn-commusoft-ingestion-test-acceptance/1",
     projectRef: TEST_PROJECT,
     runId: p.runId,
     observedAt: new Date().toISOString(),
@@ -628,6 +737,8 @@ export async function acceptCommusoftIngestion({ allowProjectRef, token, fetcher
     failure,
     cleanupErrors,
     summary,
+    contactSummary,
+    sourceDataSets: sourceAfter?.length ?? null,
     syntheticProviderReads: providerReads,
     preExistingSourcesPreserved:
       !!p.sourceBefore &&
