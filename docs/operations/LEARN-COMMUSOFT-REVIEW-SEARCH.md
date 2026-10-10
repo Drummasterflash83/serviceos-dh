@@ -1,6 +1,6 @@
 # Searching retained Commusoft records
 
-## Current state — local candidate, not deployed
+## Behaviour — installed in TEST release 045
 
 The customer and work-review lists now have an explicit search over all retained
 records in the selected company, connection and collection. It runs before paging,
@@ -50,12 +50,24 @@ literal special characters, paging, ambiguous/missing observations, role/tenant
 boundaries, private helpers, rollback and unchanged source/canonical fingerprints.
 The existing review/projection/replay/concurrency regression checks also pass.
 
-## Release boundary
+## Retained-record search — TEST release 045 installed at 21:44 UTC
 
-Install both read RPCs in TEST before deploying the matching frontend. This candidate
-has not changed the hosted schema or current protected frontend. In particular,
-prepared Drummonds continuation `d764008e` still targets its unchanged release-044
-preflight and awaits approval. Fresh signed-in visual acceptance is unconfirmed
-because the browser connection is unavailable. Production remains unchanged.
+Server-side customer/site/job/contact search is installed in TEST and the matching
+[protected frontend](https://serviceos-learn-test-pmmtsr47h-allkin.vercel.app) is READY
+from Git commit `899afbaa5b126be027bdd0cdf7752add6996616f`. The hosted rollback
+rehearsal matched the installed schema; all 78 monitored datasets are unchanged.
+The original review functions, authority definitions, owners and grants are identical.
+Six real HTTP checks confirm anonymous/service-role denial, and all three frontend
+routes remain protected by Vercel. Positive owner behaviour and SQL-to-client search
+parsing pass locally; fresh signed-in hosted owner and visual acceptance remain
+unverified. A successful deployment does not establish those checks.
 
-[Local evidence](evidence/learn-commusoft-review-search-local-2026-10-10.json).
+Prepared import continuation `d764008e` still awaits approval, with zero requests
+and zero new grants. Its exact schema check now recognises the installed read-only
+search release; its identity, tenant, duration, budgets, encrypted key and original
+preservation baseline are unchanged. All 28 continuation/boundary checks pass.
+No provider requests, capture activation or production changes occurred.
+[Release evidence](evidence/learn-review-search-test-2026-10-10.json).
+
+The earlier [local evidence](evidence/learn-commusoft-review-search-local-2026-10-10.json)
+retains the implementation and benchmark record.

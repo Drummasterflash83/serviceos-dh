@@ -43,7 +43,7 @@ and application continuation parsing. Cases include changed scope, incorrect
 approval, uncertain activation/worker responses, exhausted limits, expired authority,
 foreign jobs, exact checkpoint preservation, collection sequencing and cleanup
 identity mismatch. The generated continuation and contact definitions pass the
-actual application validator. Hosted read-only preflight confirms release 044,
+actual application validator. Hosted read-only preflight initially confirmed release 044,
 worker/verification v4 with JWT checks, the existing verified credential binding,
 two paused flags, no active Commusoft jobs or OpenFolk admin grants, and the retained
 incomplete jobs checkpoint. This does not claim a positive hosted continuation run.
@@ -65,3 +65,13 @@ grant and pauses capture even after access expiry, then checks the identity befo
 banning it. `status` verifies preservation without reopening access.
 
 [Prepared evidence](evidence/learn-commusoft-continuation-prepared-2026-10-10.json).
+
+## Read-only search release compatibility — 21:45 UTC
+
+TEST release 045 adds retained-record search without changing import functions,
+source data or existing review authority. The continuation's exact schema check
+now pins `1d4abe822677de6bcc22597cf4b02c66`. Its original 78-dataset baseline still
+matches. The prepared run remains unactivated, with zero new provider requests
+and access grants; its user, tenant, 60-minute duration and 4,000-request limit are
+unchanged. Twenty-eight continuation/boundary tests pass. This update does not
+replace the pending user approval or reopen the retired original session.

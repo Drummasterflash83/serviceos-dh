@@ -1,0 +1,162 @@
+{
+  "version": "learn-review-search-test/1",
+  "checkedAt": "2026-10-10T21:46:24.683086+00:00",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "045_commusoft_review_search",
+  "state": "installed_with_permission_checks_frontend_ready",
+  "packageCommit": "899afbaa5b126be027bdd0cdf7752add6996616f",
+  "rehearsal": {
+    "version": "learn-review-search/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "3187b15992bc7ecf8aa99563538a35434aa3920b44a7669fb63b000078f3a1bd",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T21:43:45.209Z",
+    "priorFingerprint": "17ded8b89b7fbceae74eceee3d2269e4",
+    "expectedFingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+    "afterFingerprint": "17ded8b89b7fbceae74eceee3d2269e4",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+      "functions": 3
+    }
+  },
+  "application": {
+    "version": "learn-review-search/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "3187b15992bc7ecf8aa99563538a35434aa3920b44a7669fb63b000078f3a1bd",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T21:44:29.946Z",
+    "priorFingerprint": "17ded8b89b7fbceae74eceee3d2269e4",
+    "expectedFingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+    "afterFingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+      "functions": 3
+    }
+  },
+  "http": {
+    "checkedAt": "2026-10-10T21:44:44.860Z",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "function": "learn_commusoft_review_search",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "function": "learn_commusoft_work_review_search",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "function": "learn_commusoft_source_matches",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_commusoft_review_search",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_commusoft_work_review_search",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_commusoft_source_matches",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "preservationAfterHttp": {
+    "checkedAt": "2026-10-10T21:45:23.136Z",
+    "fingerprint": "05aed8c2ba42454697eee66b66bc62e6",
+    "preserved": true,
+    "datasets": 78,
+    "ledger": 46
+  },
+  "frontend": {
+    "observedAt": "2026-10-10T21:45:23.836Z",
+    "id": "dpl_9uDGFF39FACmH3SXZPReR2ZSXvtM",
+    "url": "serviceos-learn-test-pmmtsr47h-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "899afbaa5b126be027bdd0cdf7752add6996616f"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "frontendProtection": {
+    "observedAt": "2026-10-10T21:45:46.913Z",
+    "base": "https://serviceos-learn-test-pmmtsr47h-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "verification": {
+    "releaseTests": 5,
+    "continuationBoundaryTests": 28,
+    "localSql": "Full retained-record review suite passed, including actual SQL-to-client parsing, exact hosted matcher/permission probe, rollback, source preservation and ambiguous-source holds. The 10,000-job benchmark measured 170 ms in this repeated local run.",
+    "signedInHostedOwnerAcceptance": false,
+    "visualAcceptance": false
+  },
+  "continuation": {
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "boundary": {
+      "requests": 0,
+      "active_grants": 0,
+      "banned": 0
+    },
+    "schemaPreflight": {
+      "checkedAt": "2026-10-10T21:45:00.908Z",
+      "fingerprint": "1d4abe822677de6bcc22597cf4b02c66",
+      "ledger": 46
+    },
+    "scopeChanged": false,
+    "explanation": "Only the exact accepted schema fingerprint was refreshed for the verified read-only search release. Prepared identity, duration, request budgets, tenant, connection, encrypted key and original source baseline are unchanged. No activation."
+  },
+  "scope": [
+    "Two authenticated search readers and one private matcher added; original review functions and authority definitions/owners/grants are identical.",
+    "All 78 monitored datasets preserved, including earlier Drummonds pages, source versions and checkpoint.",
+    "No new login, operator grant, provider request, canonical publication, capture schedule or production change."
+  ],
+  "remaining": [
+    "Signed-in hosted owner and visual acceptance.",
+    "Approval and execution of prepared import continuation d764008e.",
+    "Full jobs/contacts capture, canonical review, scorecard evidence and production promotion."
+  ]
+}

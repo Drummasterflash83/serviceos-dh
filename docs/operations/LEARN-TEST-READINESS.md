@@ -1,15 +1,34 @@
 # Existing TEST environment: verified release gaps
 
-## Retained-record search — local candidate, not deployed
+## Retained-record search — TEST release 045 installed at 21:44 UTC
+
+Server-side customer/site/job/contact search is installed in TEST and the matching
+[protected frontend](https://serviceos-learn-test-pmmtsr47h-allkin.vercel.app) is READY
+from Git commit `899afbaa5b126be027bdd0cdf7752add6996616f`. The hosted rollback
+rehearsal matched the installed schema; all 78 monitored datasets are unchanged.
+The original review functions, authority definitions, owners and grants are identical.
+Six real HTTP checks confirm anonymous/service-role denial, and all three frontend
+routes remain protected by Vercel. Positive owner behaviour and SQL-to-client search
+parsing pass locally; fresh signed-in hosted owner and visual acceptance remain
+unverified. A successful deployment does not establish those checks.
+
+Prepared import continuation `d764008e` still awaits approval, with zero requests
+and zero new grants. Its exact schema check now recognises the installed read-only
+search release; its identity, tenant, duration, budgets, encrypted key and original
+preservation baseline are unchanged. All 28 continuation/boundary checks pass.
+No provider requests, capture activation or production changes occurred.
+[Release evidence](evidence/learn-review-search-test-2026-10-10.json).
+
+## Earlier retained-record search candidate — now installed in TEST release 045
 
 Customer, site, job and contact review now supports server-side search before
 pagination, keeping latest-source and existing identity-review safeguards. Twenty-one
 client tests, 47 build prerequisites, TypeScript, the app build and isolated SQL
 checks pass. Actual SQL results pass application parsing. A 10,000-job synthetic
 search took 172 ms after replacing per-record latest-source lookups with a set-based
-query. This is a local measurement, not hosted acceptance. A paired TEST SQL/frontend
-release and signed-in visual acceptance remain pending; the prepared import
-continuation's hosted baseline is unchanged.
+query. This is a local measurement, not hosted acceptance. The paired TEST SQL/frontend
+release is now installed as recorded above; signed-in visual acceptance remains
+pending and the prepared import's source preservation baseline is unchanged.
 [Implementation and evidence](LEARN-COMMUSOFT-REVIEW-SEARCH.md).
 
 ## Commusoft continuation — prepared, awaiting new access approval
