@@ -1,3 +1,4 @@
+import { LearnAssessmentHistory } from "./LearnAssessmentHistory";
 import {
   correctPerformanceMeasurement,
   type CorrectionRequest,
@@ -170,6 +171,16 @@ function Assessment({ tenantId, kind, id, groupId, canReview }: Props) {
         </button>
       </form>
       {message && <p role="status">{message}</p>}
+      <LearnAssessmentHistory
+        key={`${tenantId}:${kind}:${id}`}
+        tenantId={tenantId}
+        subject={{ kind, id, groupIds: groupId ? [groupId] : [] }}
+        current={
+          current
+            ? { policy: current.policy, rows: current.rows, period: current.score.period }
+            : null
+        }
+      />
       {!current && loaded && <p>Load the selected dates before reviewing.</p>}
       {current && (
         <>

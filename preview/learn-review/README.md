@@ -102,3 +102,13 @@ the actual evidence component. The preview implements the restricted RPC envelop
 in memory; it does not query raw source tables or any hosted service. Recording
 details contain metadata only, not playable audio. Rebuilding requires reloading
 the page; all synthetic state resets.
+
+
+10 October saved assessments: the actual performance card now saves and reopens
+published-rule input snapshots in the synthetic preview. Use `&performance=1&publication=historical`
+with the seven-day period ending at today's UTC midnight to match the example
+measurement. `&assessments=uncertain` commits each in-memory save but loses its first
+reply; retry returns the same receipt. Confirm evidence between saves to inspect
+an earlier unassessed result beside the later 80/100 result. Fixtures disappear on
+reload and never write to a database. The final UI provides a bordered reason field,
+selected history item and a scrollable retained-metric table.

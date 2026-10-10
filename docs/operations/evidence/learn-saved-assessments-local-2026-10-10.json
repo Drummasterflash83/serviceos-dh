@@ -1,0 +1,12 @@
+{
+  "state": "passed",
+  "checks": [
+    "Server-owned canonical snapshots retain published policy, original measurements and complete review/correction ledgers.",
+    "Changed request, stale evidence, wrong publication, future period, foreign subject, role/company/View-As and raw writes denied.",
+    "A later review creates a new snapshot without changing the first. Exact retry and simultaneous same-request saves retain one record.",
+    "Snapshot rewrite/delete/truncate and injected insert failure denied; prior source measurements and reviews retained."
+  ],
+  "limitations": [
+    "Isolated PostgreSQL and synthetic dependencies with actual published-policy reader; not hosted Auth, production or provider acceptance."
+  ]
+}

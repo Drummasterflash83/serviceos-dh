@@ -879,3 +879,22 @@ zero-active readback. Production and frontend deployment are unchanged. Recordin
 metadata is not playable audio; real provider capture, Slack/voicemail completion,
 retained assessments and real-source acceptance remain open. See
 [release evidence and limits](../operations/LEARN-CARD-SOURCES.md#accepted-in-test--10-october-2026).
+
+
+## Saved assessment history — local, 10 October
+
+Published-rule cards now have a local save/reopen flow backed by a proposed immutable
+assessment ledger. The server captures canonical rules, measurements, reviews and
+corrections; the browser cannot submit arbitrary scores. Stored inputs use a named
+V1 engine and retained calculation time, so later evidence changes do not rewrite
+history. Drafts cannot be saved; incomplete assessments remain unassessed. Exact
+request retries and concurrent retries produce one record.
+
+Thirty-five client/regression tests, isolated SQL authority/immutability/concurrency
+checks, actual SQL snapshots through the application reader, both typechecks/builds
+and 47 prebuild tests passed. Browser checks recovered lost responses and reopened
+an earlier unassessed record after a later confirmed 80/100 save. No live input,
+provider, production or TEST state changed. TEST stays release 019. Hosted rehearsal
+and actual signed-in acceptance remain next; durable pending saves and pagination
+beyond the latest 20 records remain open. See
+[saved assessment contract and evidence](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#saved-assessments--local-implementation-10-october).

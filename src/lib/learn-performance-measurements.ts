@@ -1,5 +1,6 @@
 import {
   attachPerformanceCorrections,
+  parsePerformanceCorrections,
   type PerformanceCorrection,
 } from "./learn-performance-corrections.ts";
 /** Read the complete correction history for one exact assessment cell set.
@@ -14,7 +15,11 @@ import {
   type ScorePeriod,
   type ScoreSubject,
 } from "./learn-scorecards.ts";
-import { loadPerformanceReviews, type PerformanceReview } from "./learn-performance-reviews.ts";
+import {
+  loadPerformanceReviews,
+  parsePerformanceReviews,
+  type PerformanceReview,
+} from "./learn-performance-reviews.ts";
 export type ReviewedPerformanceMeasurement = PerformanceMeasurement & {
   reviews: PerformanceReview[];
   correction?: PerformanceCorrection;
@@ -67,6 +72,42 @@ export async function loadPerformanceMeasurements(
     .limit(501);
   if (error || !Array.isArray(data) || !integer(count) || count > 500 || data.length !== count)
     throw Error("Complete measurement history could not be read. No score has been calculated.");
+  const { measurements, correctionMarkers } = parseMeasurementRows(policy, subject, period, data);
+  const corrected = await attachPerformanceCorrections(
+    db,
+    policy.tenantId,
+    measurements,
+    correctionMarkers,
+  );
+  const histories = await loadPerformanceReviews(
+    db,
+    policy.tenantId,
+    measurements.map((m) => m.id),
+  );
+  return corrected.map((m) => {
+    const reviews = histories.get(m.id) ?? [];
+    // Human decisions are separate facts. They never change observedAt, sourceThrough,
+    // values, counts or the source correction chain. No ledger = no confirmation.
+    return { ...m, review: reviews.at(-1)?.decision ?? "inferred", reviews };
+  });
+}
+
+export function parseMeasurementRows(
+  policy: ScorecardPolicy,
+  subject: ScoreSubject,
+  period: ScorePeriod,
+  data: any[],
+) {
+  if (
+    validateScorecardPolicy(policy).length ||
+    !uuid(subject?.id) ||
+    subject.kind !== policy.subjectKind ||
+    !Number.isFinite(stamp(period?.start)) ||
+    !(stamp(period?.end) > stamp(period.start)) ||
+    !Array.isArray(data) ||
+    data.length > 500
+  )
+    throw Error("Invalid measurement snapshot scope");
   const ids = new Set<string>();
   const correctionMarkers = new Map<string, string>();
   const measurements: PerformanceMeasurement[] = data.map((r: any) => {
@@ -145,21 +186,31 @@ export async function loadPerformanceMeasurements(
       ...(r.supersedes ? { supersedes: r.supersedes } : {}),
     };
   });
-  const corrected = await attachPerformanceCorrections(
-    db,
+  return { measurements, correctionMarkers };
+}
+
+export function parseMeasurementSnapshot(
+  policy: ScorecardPolicy,
+  subject: ScoreSubject,
+  period: ScorePeriod,
+  data: any[],
+  reviews: PerformanceReview[],
+  corrections: PerformanceCorrection[],
+): ReviewedPerformanceMeasurement[] {
+  const { measurements, correctionMarkers } = parseMeasurementRows(policy, subject, period, data);
+  const corrected = parsePerformanceCorrections(
     policy.tenantId,
     measurements,
     correctionMarkers,
+    corrections,
   );
-  const histories = await loadPerformanceReviews(
-    db,
+  const histories = parsePerformanceReviews(
     policy.tenantId,
     measurements.map((m) => m.id),
+    reviews,
   );
   return corrected.map((m) => {
     const reviews = histories.get(m.id) ?? [];
-    // Human decisions are separate facts. They never change observedAt, sourceThrough,
-    // values, counts or the source correction chain. No ledger = no confirmation.
     return { ...m, review: reviews.at(-1)?.decision ?? "inferred", reviews };
   });
 }

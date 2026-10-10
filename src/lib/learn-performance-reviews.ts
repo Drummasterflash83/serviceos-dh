@@ -49,8 +49,20 @@ export async function loadPerformanceReviews(
       return data as PerformanceReview[];
     }),
   );
-  const rows = results.flat(),
-    found = new Set<string>(),
+  return parsePerformanceReviews(tenantId, ids, results.flat());
+}
+export function parsePerformanceReviews(
+  tenantId: string,
+  ids: string[],
+  rows: PerformanceReview[],
+): Map<string, PerformanceReview[]> {
+  if (
+    !uuid(tenantId) ||
+    !Array.isArray(rows) ||
+    rows.some((r) => !r || !ids.includes(r.measurement_id))
+  )
+    throw Error("Review history differs from measurement scope");
+  const found = new Set<string>(),
     histories = new Map<string, PerformanceReview[]>();
   if (rows.length > 1000) throw Error("Review history exceeds the current read window");
   for (const r of rows) {

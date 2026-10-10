@@ -166,7 +166,7 @@ export function validateScorecardPolicy(policy: ScorecardPolicy): string[] {
 
 /** Use only measurements for this exact subject and period. Callers must read
  * them with tenant authorization; any mixed scope rejects the whole evaluation. */
-export function evaluateScorecard(
+export function evaluateScorecardV1(
   policy: ScorecardPolicy,
   subject: ScoreSubject,
   period: ScorePeriod,
@@ -327,6 +327,9 @@ export function evaluateScorecard(
     use: "advisory_review",
   };
 }
+
+/** Current engine. Retained assessments call V1 explicitly; keep its semantics stable. */
+export const evaluateScorecard = evaluateScorecardV1;
 
 export type TimeWindow = { start: string; end: string };
 function union(windows: TimeWindow[], from: number, to: number): [number, number][] {

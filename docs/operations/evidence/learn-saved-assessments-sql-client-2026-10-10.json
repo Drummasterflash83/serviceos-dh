@@ -1,0 +1,34 @@
+{
+  "state": "passed",
+  "checks": "Actual SQL snapshots parsed and scored through the application reader, including later review and numerical correction without changing earlier results.",
+  "results": [
+    {
+      "id": "00000000-0000-4000-8000-000000000070",
+      "state": "incomplete",
+      "score": null,
+      "measurements": 2,
+      "corrections": 0
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000072",
+      "state": "ready",
+      "score": 58.333333333333336,
+      "measurements": 2,
+      "corrections": 0
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000075",
+      "state": "ready",
+      "score": 58.333333333333336,
+      "measurements": 2,
+      "corrections": 0
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000077",
+      "state": "incomplete",
+      "score": null,
+      "measurements": 3,
+      "corrections": 1
+    }
+  ]
+}

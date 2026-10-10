@@ -39,7 +39,7 @@ export async function attachPerformanceCorrections(
   )
     throw Error("Invalid correction scope");
   const ids = [...markers.keys()],
-    corrections = new Map<string, PerformanceCorrection>();
+    rows: PerformanceCorrection[] = [];
   for (let offset = 0; offset < ids.length; offset += 100) {
     const batch = ids.slice(offset, offset + 100);
     const { data, error, count } = await db
@@ -53,31 +53,50 @@ export async function attachPerformanceCorrections(
       .limit(101);
     if (error || !Array.isArray(data) || count !== batch.length || data.length !== count)
       throw Error("Complete numerical correction history could not be read");
-    for (const r of data as PerformanceCorrection[]) {
-      if (
-        !r ||
-        !batch.includes(r.id) ||
-        corrections.has(r.id) ||
-        r.tenant_id !== tenant ||
-        !uuid(r.predecessor_id) ||
-        !uuid(r.corrected_by) ||
-        !numberOrNull(r.previous_value) ||
-        !numberOrNull(r.corrected_value) ||
-        r.previous_value === r.corrected_value ||
-        !Number.isSafeInteger(r.expected_review_revision) ||
-        r.expected_review_revision < 0 ||
-        r.expected_review_revision >= 2147483647 ||
-        typeof r.reason !== "string" ||
-        !r.reason.trim() ||
-        r.reason.length > 1000 ||
-        !Number.isFinite(stamp(r.source_observed_at)) ||
-        !Number.isFinite(stamp(r.created_at)) ||
-        stamp(r.source_observed_at) > stamp(r.created_at)
-      )
-        throw Error("Numerical correction history failed validation");
-      corrections.set(r.id, r);
-    }
+    rows.push(...(data as PerformanceCorrection[]));
   }
+  return parsePerformanceCorrections(tenant, measurements, markers, rows);
+}
+export function parsePerformanceCorrections(
+  tenant: string,
+  measurements: PerformanceMeasurement[],
+  markers: Map<string, string>,
+  rows: PerformanceCorrection[],
+): CorrectedPerformanceMeasurement[] {
+  const corrections = new Map<string, PerformanceCorrection>(),
+    batch = [...markers.keys()];
+  if (!Array.isArray(rows) || rows.length !== batch.length)
+    throw Error("Complete numerical correction history could not be read");
+  for (const r of rows) {
+    if (
+      !r ||
+      !batch.includes(r.id) ||
+      corrections.has(r.id) ||
+      r.tenant_id !== tenant ||
+      !uuid(r.predecessor_id) ||
+      !uuid(r.corrected_by) ||
+      !numberOrNull(r.previous_value) ||
+      !numberOrNull(r.corrected_value) ||
+      r.previous_value === r.corrected_value ||
+      !Number.isSafeInteger(r.expected_review_revision) ||
+      r.expected_review_revision < 0 ||
+      r.expected_review_revision >= 2147483647 ||
+      typeof r.reason !== "string" ||
+      !r.reason.trim() ||
+      r.reason.length > 1000 ||
+      !Number.isFinite(stamp(r.source_observed_at)) ||
+      !Number.isFinite(stamp(r.created_at)) ||
+      stamp(r.source_observed_at) > stamp(r.created_at)
+    )
+      throw Error("Numerical correction history failed validation");
+    corrections.set(r.id, r);
+  }
+  return resolvePerformanceCorrections(measurements, corrections);
+}
+function resolvePerformanceCorrections(
+  measurements: PerformanceMeasurement[],
+  corrections: Map<string, PerformanceCorrection>,
+): CorrectedPerformanceMeasurement[] {
   const byId = new Map(measurements.map((m) => [m.id, m])),
     resolved = new Map<string, CorrectedPerformanceMeasurement>(),
     visiting = new Set<string>();

@@ -61,6 +61,7 @@ export function publishedPeriodFixture(args:any){
  return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
 }
 const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)},{table:"email_messages",id:id(18)},{table:"phone_calls",id:id(19)},{table:"phone_recordings",id:id(21)}],exclusions:[],supersedes:null,group_ids:[]}];
+const assessmentRows:any[]=[];
 const performanceCorrections:any[]=[];
 const performanceReviews:any[]=[];
 export function correctPerformanceFixture(args:any){
@@ -118,6 +119,7 @@ function records(): Record<string, any[]> {
     measurements: (new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? performanceRows : [],
     learn_performance_reviews: performanceReviews,
     learn_performance_corrections: performanceCorrections,
+    learn_assessments: assessmentRows,
     customer_cards: [row(1, { title: "Example customer · synthetic", company_id: id(2) })],
     jobs: [
       row(3, {
@@ -288,4 +290,21 @@ export async function sourceFixture(args:any){
  const row=result.data[0];
  const record=row?Object.fromEntries(["id","tenant_id",...names].map(k=>[k,row[k]??null])):null;
  return {data:{version:"learn-card-source/1",tenant_id,table:args.p_table,id:args.p_id,record},error:null};
+}
+
+export function saveAssessmentFixture(args:any){
+ const prior=assessmentRows.find(r=>r.id===args.p_request);
+ if(prior)return {data:{assessmentId:prior.id,recordedAt:prior.recorded_at,reused:true},error:null};
+ const policy=publishedPeriodFixture(args).data;
+ if(!policy||policy.publication.id!==args.p_publication)return {data:null,error:{code:"PT409"}};
+ const available=(new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
+ const measurements=available.filter(m=>m.subject_id===args.p_subject&&m.policy_id===policy.id&&m.policy_revision===policy.version&&Date.parse(m.window_start)===Date.parse(args.p_start)&&Date.parse(m.window_end)===Date.parse(args.p_end));
+ const ids=measurements.map(m=>m.id),reviews=performanceReviews.filter(r=>ids.includes(r.measurement_id)),corrections=performanceCorrections.filter(r=>ids.includes(r.id));
+ const expected=measurements.map(m=>({id:m.id,reviewRevision:reviews.filter(r=>r.measurement_id===m.id).length})).sort((a,b)=>a.id.localeCompare(b.id));
+ if(JSON.stringify(expected)!==JSON.stringify(args.p_expected))return {data:null,error:{code:"PT409"}};
+ const at=new Date().toISOString();
+ assessmentRows.unshift({id:args.p_request,tenant_id,publication_id:args.p_publication,subject_kind:args.p_kind,subject_id:args.p_subject,window_start:args.p_start,window_end:args.p_end,recorded_at:at,recorded_by:id(40),reason:args.p_reason,
+ snapshot:structuredClone({version:"learn-assessment/1",engine:"learn-scorecards/1",policy,subject:{kind:args.p_kind,id:args.p_subject,groupIds:args.p_group?[args.p_group]:[]},period:{start:args.p_start,end:args.p_end},assessedAt:at,measurements,reviews,corrections})});
+ if(new URLSearchParams(location.search).get("assessments")==="uncertain")return {data:null,error:{code:"network"}};
+ return {data:{assessmentId:args.p_request,recordedAt:at,reused:false},error:null};
 }

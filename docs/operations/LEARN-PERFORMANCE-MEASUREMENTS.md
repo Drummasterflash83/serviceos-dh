@@ -291,3 +291,75 @@ LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy node scripts/verify/learn-test
 
 Real source adapters, saved assessments under published rules, team aggregation,
 agreed calendars/exclusions and manager-reviewed reward decisions remain unfinished.
+
+
+## Saved assessments — local implementation, 10 October
+
+Cards can retain and reopen assessments under the published rules covering an exact
+subject and period. Draft simulations remain unsaved. Saving an incomplete assessment
+retains the missing/disputed evidence state rather than manufacturing a zero.
+
+`20261031040000_learn_saved_assessments.sql` adds an immutable `learn_assessments`
+ledger and `learn_assessment_save` RPC. The caller provides a request UUID, publication,
+subject, period, expected measurement IDs/review revisions, and reason. It cannot
+submit a score, measurement value, policy body or arbitrary snapshot. The RPC reads
+the authoritative publication and captures measurement rows, reviews and corrections
+in one MVCC statement. It rejects changed evidence, another company/subject,
+unpublished or out-of-interval rules, unfinished periods and unproven group scope.
+For existing group-scoped measurements, retained observed group attribution survives
+later roster changes; empty group-scoped assessments require the existing historical
+membership proof.
+
+The saved record includes canonical policy/input snapshots, its server capture time,
+author and reason. `learn-assessment/1` binds these to `learn-scorecards/1`.
+`evaluateScorecardV1` derives the advisory result from retained inputs at the retained
+time. The current engine aliases V1; future engines must preserve V1 for historical
+records. No browser-calculated score is stored as authoritative data. Existing
+measurement, review and correction validation is shared between live and retained
+reads, including complete correction chains and original source freshness. Unknown
+snapshot/engine versions and mismatched scope fail closed.
+
+Owners/admins can read company history. Saving additionally excludes View-As. Neither
+anon nor service-role callers can execute the human save RPC; ordinary clients and
+service-role credentials receive no direct writes to the ledger. Update, delete and
+truncate are rejected. Request identity is bound to actor, company and complete input;
+a repeated identical request returns its earlier receipt even after later evidence
+changes. Concurrent same-request saves create one record. New requests append new
+assessments and never supersede or rewrite earlier records.
+
+The card displays the latest 20 records with the total count, retained score/coverage
+status, rules revision, dates, reason and measurement/review/correction details.
+The save form freezes its request until a confirmed receipt or explicit conflict.
+An unknown reply retries the same request while the card remains open. Pending saves
+are not yet durable across a page reload or closing the card. Older-history pagination
+and durable pending-save recovery remain follow-up work. Retained inputs include
+source reference IDs; they do not duplicate original email bodies, recordings or
+source excerpts. This is an advisory assessment record, not payroll approval.
+
+Verification completed locally:
+
+- Thirty-five assessment/measurement/review/correction/scoring tests passed.
+- A disposable network-isolated PostgreSQL 15 instance, using actual deployed
+  append/review/published-policy bodies with synthetic dependencies, verified exact
+  retry, simultaneous retry, stale evidence/publication rejection, authority and
+  company boundaries, immutable history and injected insert failure.
+- Actual SQL snapshots passed the application parser/scorer: disputed → unassessed;
+  later confirmed → 58.33/100; later unreviewed numerical correction → unassessed.
+  Earlier snapshots retained their original values, review state and result.
+- Application and preview TypeScript checks and both builds passed, including the
+  47 existing prebuild tests.
+- Browser checks used the actual card component with in-memory synthetic records:
+  a simulated lost response recovered without duplication, an unassessed record
+  survived later confirmation and a saved 80/100 result, and the earlier record
+  reopened unchanged. The final form/table layout was inspected; no console errors
+  were reported.
+
+[Isolated database evidence](evidence/learn-saved-assessments-local-2026-10-10.json)
+and [SQL-to-client evidence](evidence/learn-saved-assessments-sql-client-2026-10-10.json).
+The local browser image is `.verification-results/learn-saved-assessments-preview.jpg`.
+
+This migration is not installed in TEST or production. TEST remains release 019,
+90 tables and 20 receipts. Next: pin/rehearse the exact hosted release, verify full
+schema/group behavior and actual Auth/PostgREST snapshots, preserve existing sources,
+and retire retained synthetic fixture access. No frontend deployment, provider
+traffic, real employee assessment or payment has occurred in this increment.

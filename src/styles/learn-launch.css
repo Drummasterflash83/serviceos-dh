@@ -48,3 +48,15 @@
 .lw-table-wrap small { display: block; margin-top: 6px; }
 .lw-table-wrap code { display: block; font-size: 10px; overflow-wrap: anywhere; }
 .lw-result { margin-top: 16px; }
+
+.lp-history > label { display: grid; gap: 6px; margin: 16px 0 10px; font-size: .9rem; }
+.lp-history textarea { width: 100%; min-height: 80px; border: 1px solid #cbd5cf; border-radius: 6px; padding: 10px; background: #fff; resize: vertical; }
+.lp-history > ul { display: grid; gap: 8px; padding: 0; margin: 12px 0; list-style: none; }
+.lp-history > ul button { width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.lp-history > ul button[aria-pressed="true"] { border-color: #59695e; background: #f0f5f1; }
+.lp-history p { margin: 8px 0; line-height: 1.5; }
+.lp-history h3, .lp-history h4 { font-weight: 600; }
+.lp-history-table { overflow-x: auto; margin: 12px 0; }
+.lp-history table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.lp-history th, .lp-history td { padding: 10px 8px; border-bottom: 1px solid #d8dfda; text-align: left; vertical-align: top; min-width: 90px; }
+.lp-history details { overflow-wrap: anywhere; font-size: .875rem; }

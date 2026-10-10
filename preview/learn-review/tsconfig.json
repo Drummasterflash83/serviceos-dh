@@ -85,6 +85,9 @@
       ],
       "@/lib/learn-performance-corrections": [
         "../../src/lib/learn-performance-corrections.ts"
+      ],
+      "@/lib/learn-assessments": [
+        "../../src/lib/learn-assessments.ts"
       ]
     },
     "allowImportingTsExtensions": true,
