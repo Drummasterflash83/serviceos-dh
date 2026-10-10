@@ -962,5 +962,9 @@ The isolated PostgreSQL chain passed rollback, metadata preservation, worker
 continuation/deduplication, authority/revision races, restart and queue rollback.
 Thirty-nine Slack client tests, actual SQL responses through the application adapter,
 and strict/application typechecks passed. No hosted or provider operation occurred;
-TEST stays release 020. Recovery UI/durable requests and hosted release/acceptance
-remain next. See [implementation and evidence](../operations/LEARN-SLACK-THREAD-RECOVERY.md).
+TEST stays release 020. The recovery UI and durable browser requests are now locally
+verified: lost responses survive reload and unavailable progress reads; exact retry,
+restart, rejected-review clearing, viewer access and completed-window restrictions
+passed synthetic browser acceptance. All 46 Slack tests, both typechecks and both
+builds passed. Hosted release/acceptance remains next. See
+[implementation and evidence](../operations/LEARN-SLACK-THREAD-RECOVERY.md).

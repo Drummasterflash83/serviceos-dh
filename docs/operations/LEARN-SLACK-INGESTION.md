@@ -723,6 +723,9 @@ reviews queue once. The existing worker processes these approvals unchanged.
 
 The full isolated SQL chain, controlled authority/connection/approval races,
 39 Slack client checks, actual SQL responses through the client and application
-TypeScript passed. This is local implementation: the recovery screen/outbox and
-hosted release/acceptance are next. TEST remains release 020/runtime v4. See
+TypeScript passed. The recovery screen and durable browser outbox subsequently
+passed 46 client tests, application/preview typechecks, both builds and synthetic
+browser checks for lost-response reload/retry, restart, rejected reviews, viewer
+access and complete-window restrictions. Hosted release/acceptance remains next.
+TEST remains release 020/runtime v4. See
 [contract, evidence and limits](LEARN-SLACK-THREAD-RECOVERY.md).

@@ -88,6 +88,12 @@
       ],
       "@/lib/learn-assessments": [
         "../../src/lib/learn-assessments.ts"
+      ],
+      "@/lib/learn-slack-thread-recovery": [
+        "../../src/lib/learn-slack-thread-recovery.ts"
+      ],
+      "@/lib/learn-slack-thread-recovery-outbox": [
+        "../../src/lib/learn-slack-thread-recovery-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,

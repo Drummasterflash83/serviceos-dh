@@ -264,6 +264,7 @@ export function LearnSlackSetup({
         hidden={view !== "threads"}
       >
         <LearnSlackThreads
+          active={view === "threads"}
           key={`${actorId}:${tenantId}`}
           tenantId={tenantId}
           actorId={actorId}

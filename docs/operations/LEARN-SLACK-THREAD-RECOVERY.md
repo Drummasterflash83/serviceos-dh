@@ -1,8 +1,9 @@
 # Slack thread recovery
 
 Local implementation, 10 October 2026. This adds reviewed recovery of an existing
-incomplete thread window. It has not been installed in TEST or production and has
-no recovery screen yet. TEST remains release 020 and Slack worker runtime v4.
+incomplete thread window, with a locally verified recovery screen and durable
+browser requests. It has not been installed in TEST or production. TEST remains
+release 020 and Slack worker runtime v4.
 
 ## Retained approval chain
 
@@ -56,10 +57,33 @@ contradictory eligibility, malformed windows and mismatched receipts, and strips
 unexpected private fields. Definite invalid/conflict/unavailable responses are
 separate from uncertain network/unknown responses that require the same request ID.
 
-This adapter is not a UI or a durable browser outbox. The next application step must
-retain unresolved thread recovery requests across refresh/reload before exposing
-approval controls. The existing channel-recovery outbox does not automatically
-cover this new operation.
+`LearnSlackThreadRecovery` exposes this review from each recorded thread import.
+It shows the original parent/window, approval-specific page budget, expiry and queue
+state. Owners/admins can continue or restart eligible windows with a reason; viewers
+can inspect progress. Completed and active windows have no approval form.
+
+The dedicated thread-recovery outbox saves and reads back the exact request before
+sending, scoped to backend, actor and company. Web Locks serialize submissions in
+the same browser. Uncertain responses, failed reads and full reloads retain the
+request for exact retry; a matching receipt clears it. Only a definitively rejected
+review offers explicit local clearing. Selecting another thread cannot overwrite
+an unresolved request. Authority and mounted/active state are checked again after
+waiting for the lock. Stored fields exclude provider cursors, message excerpts,
+credentials and raw payloads. Browser data must be retained until resolution; this
+does not provide cross-device recovery.
+
+The synthetic browser preview verified lost-response persistence through reload
+with unavailable progress reads, exact retained retry, restart with a fresh page
+budget, rejected-review clearing, selection protection, viewer inspection and
+completed-window restrictions. No console errors were captured. All 46 focused
+Slack tests, application/preview typechecks and both builds passed. Seven new outbox
+tests cover storage failure, account isolation, competing locks, authority changes
+and uncertain outcomes. Actual two-tab browser contention was not exercised; its
+coordination has unit evidence. The preview keeps its original thread-list fixture
+after recovery; the recovery panel reads the new synthetic approval. Hosted list
+refresh and actual signed-in acceptance remain to be tested.
+
+See [UI verification evidence](evidence/learn-slack-thread-recovery-ui-local-2026-10-10.json).
 
 ## Verification
 
@@ -97,6 +121,7 @@ node scripts/verify/learn-slack-thread-client.mjs .verification-results/learn-th
 See [structured local evidence](evidence/learn-slack-thread-recovery-local-2026-10-10.json).
 The local database uses a recorded schema projection and synthetic Auth identities;
 it is not exact current TEST release acceptance or real Slack access. The recovery
-screen/outbox, pinned release packaging, hosted rollback/install and actual signed-in
-acceptance remain required. No live source read/write, provider fetch, credential
+UI is verified separately with synthetic fixtures; pinned release packaging,
+hosted rollback/install and actual signed-in acceptance remain required. No live
+source read/write, provider fetch, credential
 change, hosted deployment, schedule or production mutation occurred in this step.

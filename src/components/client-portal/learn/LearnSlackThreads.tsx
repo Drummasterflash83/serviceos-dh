@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSlackImportOutbox } from "./useSlackImportOutbox";
+import { LearnSlackThreadRecovery, type ThreadRecoveryTarget } from "./LearnSlackThreadRecovery";
 import { SlackSavedImport } from "./SlackSavedImport";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
@@ -19,11 +20,14 @@ export function LearnSlackThreads({
   tenantId,
   actorId,
   canEdit,
+  active = true,
 }: {
   tenantId: string;
   actorId: string;
   canEdit: boolean;
+  active?: boolean;
 }) {
+  const [recoveryTarget, setRecoveryTarget] = useState<ThreadRecoveryTarget | null>(null);
   const outbox = useSlackImportOutbox(tenantId, actorId, canEdit, "threads");
   const busy = outbox.busy;
   const [channels, setChannels] = useState<SlackStoredChannel[]>([]),
@@ -135,6 +139,17 @@ export function LearnSlackThreads({
         discovered.
       </p>
       <SlackSavedImport outbox={outbox} canEdit={canEdit} />
+      <LearnSlackThreadRecovery
+        key={`${tenantId}:${actorId}`}
+        tenantId={tenantId}
+        actorId={actorId}
+        canEdit={canEdit}
+        active={active}
+        selection={recoveryTarget}
+        onRecorded={() => {
+          if (account) void threadsLoad(account, before);
+        }}
+      />
       <label className="block">
         Stored channel
         <select
@@ -205,10 +220,11 @@ export function LearnSlackThreads({
             <p>No observed threads on this page. This does not mean the channel has no replies.</p>
           )}
           {!!page.threads.length && (
-            <fieldset disabled={locked || !canEdit || !page.canImport} className="space-y-3">
+            <div className="space-y-3">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
+                  disabled={locked || !canEdit || !page.canImport}
                   checked={selected.length === page.threads.length}
                   onChange={(e) =>
                     setSelected(e.target.checked ? page.threads.map((t) => t.sourceId) : [])
@@ -221,6 +237,7 @@ export function LearnSlackThreads({
                   <label className="flex gap-2 items-start">
                     <input
                       type="checkbox"
+                      disabled={locked || !canEdit || !page.canImport}
                       checked={selected.includes(t.sourceId)}
                       onChange={(e) =>
                         setSelected((old) =>
@@ -260,6 +277,18 @@ export function LearnSlackThreads({
                       {t.latestImport.complete && (
                         <p>Applies to this observed thread and window only.</p>
                       )}
+                      <button
+                        type="button"
+                        className="cp-secondary"
+                        onClick={() =>
+                          setRecoveryTarget({
+                            accountId: page.accountId,
+                            importId: t.latestImport!.id,
+                          })
+                        }
+                      >
+                        Review thread progress &amp; recovery
+                      </button>
                       {t.latestImport.errorCode && (
                         <p>Support reference: {t.latestImport.errorCode}</p>
                       )}
@@ -267,7 +296,7 @@ export function LearnSlackThreads({
                   )}
                 </article>
               ))}
-            </fieldset>
+            </div>
           )}
           <div className="flex gap-2">
             {before && (

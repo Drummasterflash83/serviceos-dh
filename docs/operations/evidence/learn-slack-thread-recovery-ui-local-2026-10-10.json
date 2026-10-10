@@ -1,0 +1,50 @@
+{
+  "version": "learn-slack-thread-recovery-ui-local/1",
+  "recordedAt": "2026-10-10T03:40:57.814923+00:00",
+  "state": "local_verified",
+  "sourceHashes": {
+    "src/components/client-portal/learn/LearnSlackThreadRecovery.tsx": "db60fb982b3e120269dbdf2e4b2463814d63fcc95fb82287470f54d58da76b08",
+    "src/components/client-portal/learn/LearnSlackThreads.tsx": "5726fd88e2327bfaa85138eafee719687e8ed38ec793730b0dd5d84f4c9a8f1f",
+    "src/components/client-portal/learn/LearnSlackSetup.tsx": "dcddafe71dc5cba288b236134776f6eaba65e4187005765470f28080727bca48",
+    "src/lib/learn-slack-thread-recovery-outbox.ts": "f0e83c26859dfd83240ccbe33efa7e2ad6a4a2c2d9821024f3a38b85cb5bd080",
+    "src/lib/learn-slack-thread-recovery-outbox.test.ts": "9665558b600a0f07adea06d010b447b3413ca3c4abb1cef18e0c2a21d493f077",
+    "preview/learn-review/slack-thread-recovery-fixture.ts": "e646838ed853a862870d175cc5b56d01c84d61777892f6cf99cc7b49474602bf"
+  },
+  "tests": {
+    "focusedSlackPassed": 46,
+    "newOutboxTests": 7,
+    "applicationTypecheck": true,
+    "previewTypecheck": true,
+    "previewBuild": true,
+    "applicationBuild": true
+  },
+  "browser": {
+    "surface": "Codex in-app browser, isolated loopback synthetic preview",
+    "checks": [
+      "Lost response retains exact request",
+      "Full reload restores request even when progress read fails",
+      "Retry resolves previously recorded receipt",
+      "Restart queues a fresh 2-page approval with 0 new pages",
+      "Stale rejection retains request and permits explicit local clearing",
+      "Selecting another thread cannot replace unresolved review",
+      "Viewer reads progress but cannot approve or select imports",
+      "Completed thread exposes no recovery approval"
+    ],
+    "consoleErrors": 0,
+    "screenshot": ".verification-results/learn-thread-recovery-queued.jpg"
+  },
+  "limitations": [
+    "Synthetic preview only; no actual signed-in hosted acceptance.",
+    "Thread-list fixture retains old latestImport; recovery panel reads new approval.",
+    "Browser two-tab contention not exercised; Web Lock competition has unit coverage.",
+    "Browser-scoped persistence, not cross-device recovery.",
+    "No provider fetch, live source operation, credential change, hosted deployment or schedule."
+  ],
+  "testReleaseUnchanged": "020",
+  "slackWorkerRuntimeUnchanged": "v4",
+  "remaining": [
+    "Pinned release packaging and hosted rollback/install",
+    "Actual signed-in application acceptance",
+    "Live provider capture and continuous ingestion"
+  ]
+}
