@@ -1,5 +1,25 @@
 # Commusoft read-only API adapter
 
+## Real job lifecycle formats — local correction, not deployed
+
+The approved hosted capture exposed a difference between the response example and
+real v2.1 records. Responses contain lowercase `ongoing`, `completed` and `on_hold`;
+these align with the documented request-filter vocabulary. A new local migration
+accepts those values and `pending`, while preserving the existing `Open`, `Complete`
+and `Closed` mappings. Empty optional timestamps mean absent. A nonempty timestamp
+without a zone remains held with a specific explanation; no UTC conversion or
+performance duration is invented. Unknown statuses and invalid dates remain held.
+
+Actual PostgreSQL checks pass for all mapped states, empty optional dates, zoned
+instants, unzoned holds, replay, unchanged source/existing jobs, migration rollback,
+and retained grants/ownership. The retained real source records are unchanged.
+The [official job reference](https://developer.commusoft.com/list-jobs-24695917e0)
+shows the two status vocabularies and declares completion time as `date-time`
+without explaining the observed unzoned format. A
+[clarification draft](COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt) is prepared, not sent.
+Missing property references remain held; endpoint exhaustion alone does not prove
+coverage of dormant/deleted records or complete historical company relationships.
+
 ## Secondary contact discovery — local candidate, not deployed
 
 Customer review now considers both the source telephone and mobile, plus existing

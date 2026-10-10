@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-10T21:04:51.087837+00:00",
+  "status": "local_verified_not_deployed",
+  "migration": "20261101040000_learn_commusoft_job_lifecycle.sql",
+  "basis": "Retained real Drummonds TEST job payload shapes plus official job schema; no new provider requests for this investigation.",
+  "officialReference": "https://developer.commusoft.com/list-jobs-24695917e0",
+  "mapping": {
+    "Open": "open",
+    "ongoing": "open",
+    "Complete": "completed",
+    "completed": "completed",
+    "Closed": "closed",
+    "on_hold": "on_hold",
+    "pending": "pending"
+  },
+  "timestamps": {
+    "emptyOptionalValue": "absent",
+    "explicitZone": "existing strict timestamp conversion",
+    "noZone": "held: job_timestamp_timezone_required",
+    "invalid": "held: job_timestamp_invalid"
+  },
+  "verification": {
+    "postgres": "Actual projection through retained synthetic pages: known states, blank/zoned/unzoned dates, calendar failures, unknown status, replay, source/existing-record preservation, migration rollback and unchanged grants/owner passed.",
+    "nodeTests": 16,
+    "typescript": "tsc --noEmit passed",
+    "build": "npm run build passed"
+  },
+  "notEstablished": [
+    "Timezone of actual unzoned completion values",
+    "Full historical property coverage",
+    "Hosted migration or real canonical projection",
+    "Production acceptance"
+  ],
+  "supportDraft": "COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt; not sent"
+}

@@ -370,6 +370,8 @@ export function workHoldMessage(reason: string | null | undefined): string {
     property_reference_invalid: "The source property reference needs correction.",
     job_status_unrecognised: "The source job status needs review.",
     job_timestamp_invalid: "The source job dates need review.",
+    job_timestamp_timezone_required:
+      "The source job time needs its timezone confirmed before this job can be linked.",
     site_field_invalid: "The source address needs review.",
     job_field_invalid: "The source job details need review.",
   };

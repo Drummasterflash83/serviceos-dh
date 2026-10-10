@@ -157,6 +157,16 @@ try:
                 assert sql(contract).split('|')[1:]==before.split('|')[1:],'Candidate grants/owner changed'
                 print(sql((root/'scripts/verify/learn-customer-candidate-endpoints.assert.sql').read_text()))
                 print('Customer discovery migration rollback and unchanged grants/ownership passed.')
+                migration=(root/'supabase/migrations/20261101040000_learn_commusoft_job_lifecycle.sql').read_text()
+                signature="'public.learn_commusoft_confirm_work_record(uuid,uuid,uuid,text)'::regprocedure"
+                contract="select md5(pg_get_functiondef("+signature+")),proacl::text,pg_get_userbyid(proowner) from pg_proc where oid="+signature
+                before=sql(contract)
+                sql(migration.replace('\ncommit;', '\nrollback;'))
+                assert sql(contract)==before,'Lifecycle rollback changed the existing function/grants'
+                sql(migration)
+                assert sql(contract).split('|')[1:]==before.split('|')[1:],'Lifecycle grants/owner changed'
+                print(sql((root/'scripts/verify/learn-commusoft-job-lifecycle.assert.sql').read_text()))
+                print('Job lifecycle migration rollback and unchanged grants/ownership passed.')
 
             def contact_race(_):
                 return sql("set request.jwt.claim.role='authenticated';set request.jwt.claim.sub='00000000-0000-4000-8000-000000000080';set role authenticated;select learn_commusoft_confirm_contact(fixture_id(1),fixture_work_version('propertyContacts','510'),null,'Concurrent contact review')->>'already';")

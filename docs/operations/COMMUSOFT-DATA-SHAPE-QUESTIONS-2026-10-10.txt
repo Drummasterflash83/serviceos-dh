@@ -1,0 +1,22 @@
+DRAFT ONLY — not sent
+Subject: Drummonds private application — API v2.1 status, timezone and property coverage clarification
+
+Hi,
+
+We have corrected our request configuration and are now successfully capturing read-only properties and jobs from the hosted OpenFolk integration using the existing private application for client 19136. No key or account changes were needed.
+
+We are validating the mappings before publishing these records into our customer and job views. Could you clarify three details of the current API contract?
+
+1. Job statuses
+GET /api/v2/jobs?limit=100, with Authorization: Bearer [REDACTED], Accept: application/json, User-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai), and X-API-VERSION: 2.1 returns lowercase status values including ongoing, completed and on_hold. The response schema/example lists Open, Complete and Closed, while the request filter lists ongoing, completed, on_hold and pending. What is the complete set of response values for v2.1, and how should a finally closed job be identified?
+
+2. Completion timestamps
+createdOnDateTime arrives as an ISO timestamp with Z. completed.completedOnDateTime arrives as a string in the format YYYY-MM-DD HH:MM:SS, with no timezone or offset, and an empty string when not populated. Is a populated completion value UTC or the account's local timezone? We retain the original value and are holding conversion until confirmed, so elapsed-time calculations do not assume the wrong timezone.
+
+3. Property coverage
+Our unfiltered GET /api/v2/properties?limit=100 traversal followed each nextCursor until hasMore=false and returned 2,418 properties. Some returned work addresses reference a customer not in that result, and some returned jobs reference a property not in that result. Does an unfiltered property list exclude dormant or deleted records, and what is the supported read-only way to resolve those historical references?
+
+These are contract/coverage questions following successful requests, rather than a request to enable access. We can provide correlation IDs for a specific request if helpful. No API keys or customer details are included here.
+
+Kind regards,
+Christopher
