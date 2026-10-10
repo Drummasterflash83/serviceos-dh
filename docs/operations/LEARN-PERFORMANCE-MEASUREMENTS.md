@@ -358,8 +358,63 @@ Verification completed locally:
 and [SQL-to-client evidence](evidence/learn-saved-assessments-sql-client-2026-10-10.json).
 The local browser image is `.verification-results/learn-saved-assessments-preview.jpg`.
 
-This migration is not installed in TEST or production. TEST remains release 019,
-90 tables and 20 receipts. Next: pin/rehearse the exact hosted release, verify full
-schema/group behavior and actual Auth/PostgREST snapshots, preserve existing sources,
-and retire retained synthetic fixture access. No frontend deployment, provider
-traffic, real employee assessment or payment has occurred in this increment.
+At the local implementation milestone, TEST remained release 019 with 90 tables
+and 20 receipts. Hosted release/acceptance is recorded below. No frontend deployment,
+provider traffic, real employee assessment or payment occurred in the local increment.
+
+
+## Saved assessments accepted in TEST — 10 October
+
+Release `020_saved_assessments.sql` installs the immutable assessment ledger and
+save RPC in TEST: 91 public tables and 21 release receipts. The source SHA-256 is
+`728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a`.
+
+The release pins the complete preceding release 019 plus the new table, functions,
+constraints, indexes, policies, triggers, table grants and per-column permissions.
+A matching acknowledged rollback rehearsal is required within one hour before
+installation. Unknown responses trigger inspection rather than a write replay.
+Eleven release-runner tests passed, including earlier communication/correction/source
+contracts, drift rejection, stale/foreign prerequisites and lost-response handling.
+The exact release also passed isolated PostgreSQL 17 non-superuser installation,
+explicit rollback and rollback following an injected receipt failure.
+
+Hosted rollback and installation matched their pinned catalogs. Actual synthetic
+Auth/PostgREST clients then exercised the application publication, measurement,
+correction, assessment-save and assessment-history readers. The fixture published
+rules prospectively through the actual API; no publication was backdated. Empty
+measurements used the actual historical-team proof. The sequence retained:
+
+- Empty evidence: unassessed, without inventing zero.
+- An unreviewed 30-minute observation: unassessed.
+- Confirmed observation: 25/50.
+- Separately reviewed correction to 20 minutes after a later team transfer: 33.33/50,
+  retaining the original observed group and source freshness.
+- A simultaneous identical save: one new assessment and one reused receipt.
+
+All earlier saved results remained identical. A later prospective 100-point rules
+publication left the earlier 50-point assessment unchanged. Stale inputs, changed
+request identity, wrong publication, future period, foreign company, viewer, service,
+direct insert, immutable-history mutation, View-As and same-session revocation checks
+passed. Direct ledger reads remained company-scoped. Four test users were banned,
+passwords rotated and roles demoted; memberships and previews ended. Five assessments,
+two measurements, two reviews, one correction and two publications remain as evidence.
+
+Existing email, call, recording, transcript, Slack, interaction, measurement, review
+and correction rows retained identical counts/fingerprints across the complete
+rehearsal, installation and acceptance. The acceptance also compared pre-existing
+assessment rows, excluding only its two new synthetic tenants. TEST UI verification
+helpers now require the exact release 020; their syntax checks passed.
+
+Evidence: [isolated release](evidence/learn-test-assessments-local-release-2026-10-10.json),
+[hosted rollback](evidence/learn-test-assessments-rehearsal-2026-10-10.json),
+[installation](evidence/learn-test-assessments-install-2026-10-10.json),
+[signed-in acceptance](evidence/learn-test-assessments-acceptance-2026-10-10.json),
+[final catalog, preservation and retirement](evidence/learn-test-assessments-final-2026-10-10.json).
+Final readback at 02:53:06 UTC confirmed the exact installed catalog, five retained
+assessments and zero active fixture users, memberships or previews.
+
+This is acceptance of retained synthetic TEST assessments, not real employee scoring,
+complete provider capture, payroll approval or production deployment. The frontend
+has not been deployed. Durable pending assessment saves, history pagination beyond
+the latest 20 records, real-source adapters and approved operational definitions
+remain open alongside the wider LEARN launch requirements.

@@ -1,0 +1,32 @@
+{
+  "version": "learn-test-assessments-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a",
+  "observedAt": "2026-10-10T02:52:34.608Z",
+  "runId": "909073e2-9782-4af4-b3a1-e010dd9a3fd9",
+  "state": "passed",
+  "checks": [
+    "Actual signed-in publication, measurement and saved-assessment readers retained empty, inferred, confirmed and corrected outcomes. Historical team proof passed before evidence; retained group attribution survived a later transfer. Earlier results stayed identical.",
+    "Same-request concurrency retained one record; changed identity, stale inputs, later publication, role/company/service, direct-write, immutable-history, View-As and same-session revocation checks passed. Five assessments remain without any payroll action."
+  ],
+  "failure": null,
+  "lastOperation": "later publication",
+  "cleanupErrors": [],
+  "retained": {
+    "assessments": 5,
+    "measurements": 2,
+    "reviews": 2,
+    "corrections": 1,
+    "publications": 2,
+    "active_users": 0,
+    "active_members": 0,
+    "open_previews": 0
+  },
+  "preExistingEvidencePreserved": true,
+  "fixtureManifest": "/private/tmp/serviceos-learn-assessments-909073e2-9782-4af4-b3a1-e010dd9a3fd9.json",
+  "limitations": [
+    "Actual Auth/PostgREST/application readers with retained synthetic TEST subjects, source observations and prospective publications; not real employee scores.",
+    "No provider ingestion, production changes, payroll, schedules or paid processing.",
+    "Browser behavior was verified separately with local synthetic fixtures."
+  ]
+}

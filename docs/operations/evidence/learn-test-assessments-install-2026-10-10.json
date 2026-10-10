@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-saved-assessments/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a",
+  "observedAt": "2026-10-10T02:45:11.195Z",
+  "writeAttempted": true,
+  "acknowledged": true,
+  "state": "installed_needs_authenticated_acceptance",
+  "beforeFingerprint": "e8bcf10597a2654c5d6b50d3fd1e56d6dec15c3b45ea4acaaee8e38b92e9481b",
+  "afterFingerprint": "5973de929f6c7989c9b98bf6fd7271e608821eb969f25bc3debb504fc33cde5b",
+  "scope": "One immutable assessment ledger and owner/admin save RPC. No source-row edits, provider traffic, Edge changes, schedules or production changes."
+}

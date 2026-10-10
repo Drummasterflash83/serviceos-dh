@@ -1,0 +1,127 @@
+{
+  "version": "learn-test-assessments-final/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T02:53:06.963Z",
+  "state": "passed",
+  "sourceSha256": "728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a",
+  "catalogFingerprint": "5973de929f6c7989c9b98bf6fd7271e608821eb969f25bc3debb504fc33cde5b",
+  "publicTables": 91,
+  "releaseReceipts": 21,
+  "retirement": {
+    "retained_users": 4,
+    "active_users": 0,
+    "active_members": 0,
+    "retained_assessments": 5,
+    "open_previews": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "comparison": "Before hosted rollback through installed release and actual Auth acceptance, excluding only this run\u2019s two new synthetic tenants.",
+  "before": [
+    {
+      "name": "email_messages",
+      "count": 4,
+      "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+    },
+    {
+      "name": "interactions",
+      "count": 29,
+      "fingerprint": "bf1f6b5be0a73b6264abd42c3343a59f"
+    },
+    {
+      "name": "learn_performance_corrections",
+      "count": 4,
+      "fingerprint": "7e5a5d4d820ee14a0feab9a1611ec00f"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 12,
+      "fingerprint": "b1bf25519f6cd62a3d07989c020be653"
+    },
+    {
+      "name": "measurements",
+      "count": 17,
+      "fingerprint": "a51a13064406f3153ab4019d763436d7"
+    },
+    {
+      "name": "phone_calls",
+      "count": 6,
+      "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 8,
+      "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 17,
+      "fingerprint": "77d11d177fbb30561b3ad49c15f3c4e8"
+    }
+  ],
+  "after": [
+    {
+      "name": "email_messages",
+      "count": 4,
+      "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+    },
+    {
+      "name": "interactions",
+      "count": 29,
+      "fingerprint": "bf1f6b5be0a73b6264abd42c3343a59f"
+    },
+    {
+      "name": "learn_performance_corrections",
+      "count": 4,
+      "fingerprint": "7e5a5d4d820ee14a0feab9a1611ec00f"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 12,
+      "fingerprint": "b1bf25519f6cd62a3d07989c020be653"
+    },
+    {
+      "name": "measurements",
+      "count": 17,
+      "fingerprint": "a51a13064406f3153ab4019d763436d7"
+    },
+    {
+      "name": "phone_calls",
+      "count": 6,
+      "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 8,
+      "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 17,
+      "fingerprint": "77d11d177fbb30561b3ad49c15f3c4e8"
+    }
+  ],
+  "limitations": [
+    "TEST only; production and provider/storage completeness were not assessed by this check.",
+    "Saved assessment fixtures are synthetic advisory results, not real employee assessments or payments."
+  ]
+}

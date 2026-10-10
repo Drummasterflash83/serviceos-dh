@@ -898,3 +898,19 @@ provider, production or TEST state changed. TEST stays release 019. Hosted rehea
 and actual signed-in acceptance remain next; durable pending saves and pagination
 beyond the latest 20 records remain open. See
 [saved assessment contract and evidence](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#saved-assessments--local-implementation-10-october).
+
+
+## Saved assessments accepted in TEST — 10 October
+
+Release 020 is installed: 91 public tables and 21 receipts. Exact PostgreSQL 17
+release rollback, hosted rollback/install and 11 release-runner tests passed.
+Actual signed-in application clients retained empty/unreviewed, confirmed and
+corrected outcomes under prospective published rules. Earlier 25/50 assessments
+stayed identical after a corrected 33.33/50 assessment, later team transfer and later
+100-point rules publication. Concurrent retry created one record, and authority,
+stale-input, immutability and company-isolation checks passed.
+
+Five synthetic assessments remain as evidence. All four users were banned, rotated
+and demoted; memberships/previews ended. Existing source/performance rows retained
+identical fingerprints. Production and frontend deployment are unchanged. See
+[full evidence and limits](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#saved-assessments-accepted-in-test--10-october).

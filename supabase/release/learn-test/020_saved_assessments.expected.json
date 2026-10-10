@@ -1,0 +1,1182 @@
+{
+  "table": {
+    "rls": true,
+    "name": "learn_assessments",
+    "owner": "postgres",
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "tenant_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "publication_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "subject_kind",
+        "type": "text",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "subject_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "window_start",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "window_end",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "recorded_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "recorded_by",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "reason",
+        "type": "text",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "request",
+        "type": "jsonb",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "snapshot",
+        "type": "jsonb",
+        "default": null,
+        "notNull": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "learn_assessment_history",
+        "definition": "CREATE INDEX learn_assessment_history ON public.learn_assessments USING btree (tenant_id, subject_kind, subject_id, recorded_at DESC, id)"
+      },
+      {
+        "name": "learn_assessments_pkey",
+        "definition": "CREATE UNIQUE INDEX learn_assessments_pkey ON public.learn_assessments USING btree (id)"
+      }
+    ],
+    "forceRls": false,
+    "policies": [
+      {
+        "name": "learn_assessments_read",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "((tenant_id = current_tenant_id()) AND (COALESCE(current_user_role(), ''::text) = ANY (ARRAY['owner'::text, 'admin'::text])))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      }
+    ],
+    "triggers": [
+      {
+        "name": "learn_assessments_immutable",
+        "function": "learn_assessment_immutable",
+        "definition": "CREATE TRIGGER learn_assessments_immutable BEFORE DELETE OR UPDATE ON public.learn_assessments FOR EACH ROW EXECUTE FUNCTION learn_assessment_immutable()"
+      },
+      {
+        "name": "learn_assessments_no_truncate",
+        "function": "learn_assessment_immutable",
+        "definition": "CREATE TRIGGER learn_assessments_no_truncate BEFORE TRUNCATE ON public.learn_assessments FOR EACH STATEMENT EXECUTE FUNCTION learn_assessment_immutable()"
+      }
+    ],
+    "anonAccess": false,
+    "serviceDml": false,
+    "constraints": [
+      {
+        "kind": "c",
+        "name": "learn_assessments_check",
+        "definition": "CHECK ((isfinite(window_start) AND isfinite(window_end) AND (window_start < window_end) AND (window_end <= recorded_at)))"
+      },
+      {
+        "kind": "p",
+        "name": "learn_assessments_pkey",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "kind": "f",
+        "name": "learn_assessments_publication_id_fkey",
+        "definition": "FOREIGN KEY (publication_id) REFERENCES learn_scorecard_publications(id)"
+      },
+      {
+        "kind": "c",
+        "name": "learn_assessments_reason_check",
+        "definition": "CHECK (((length(btrim(reason)) >= 1) AND (length(btrim(reason)) <= 1000)))"
+      },
+      {
+        "kind": "f",
+        "name": "learn_assessments_recorded_by_fkey",
+        "definition": "FOREIGN KEY (recorded_by) REFERENCES profiles(id)"
+      },
+      {
+        "kind": "c",
+        "name": "learn_assessments_snapshot_check",
+        "definition": "CHECK (((jsonb_typeof(snapshot) = 'object'::text) AND (octet_length((snapshot)::text) <= 2097152)))"
+      },
+      {
+        "kind": "c",
+        "name": "learn_assessments_subject_kind_check",
+        "definition": "CHECK ((subject_kind = ANY (ARRAY['member'::text, 'team'::text, 'job'::text, 'customer'::text])))"
+      },
+      {
+        "kind": "f",
+        "name": "learn_assessments_tenant_id_fkey",
+        "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+      }
+    ],
+    "authenticatedWrite": false,
+    "authenticatedSelect": true
+  },
+  "functions": [
+    {
+      "name": "learn_assessment_immutable",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_assessment_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nbegin raise exception 'Saved assessments are immutable; retain and reassess' using errcode='23001';end $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_assessment_save",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_publication uuid, p_kind text, p_subject uuid, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_expected jsonb, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_assessment_save(p_tenant uuid, p_request uuid, p_publication uuid, p_kind text, p_subject uuid, p_group uuid, p_start timestamp with time zone, p_end timestamp with time zone, p_expected jsonb, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare actor uuid:=auth.uid(); prior learn_assessments%rowtype; policy jsonb; wanted jsonb;\n ms jsonb; rs jsonb; cs jsonb; heads jsonb; captured timestamptz; snap jsonb;\nbegin\n if actor is null or p_tenant is distinct from current_tenant_id() then\n  raise exception 'Company owner/admin access required' using errcode='42501';end if;\n perform 1 from profiles where id=actor and tenant_id=p_tenant and role in ('owner','admin') for share;\n if not found or exists(select 1 from view_as_context where actor_user_id=actor and ended_at is null and (expires_at is null or expires_at>clock_timestamp())) then\n  raise exception 'Company owner/admin access outside preview required' using errcode='42501';end if;\n if p_request is null or p_publication is null or p_subject is null or p_kind is null or p_kind not in ('member','team','job','customer')\n  or p_start is null or p_end is null or not isfinite(p_start) or not isfinite(p_end) or p_start>=p_end or p_end>clock_timestamp() or p_end-p_start>interval '366 days'\n  or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 or jsonb_typeof(p_expected) is distinct from 'array' then\n  raise exception 'Published rules, completed period, expected evidence and reason required' using errcode='22023';end if;\n if jsonb_array_length(p_expected)>500 or octet_length(p_expected::text)>65536 then\n  raise exception 'Assessment evidence exceeds the current window' using errcode='22023';end if;\n wanted:=jsonb_build_object('publication',p_publication,'kind',p_kind,'subject',p_subject,'group',p_group,'start',p_start,'end',p_end,'expected',p_expected,'reason',btrim(p_reason));\n perform pg_advisory_xact_lock(hashtextextended('learn-assessment:'||p_request::text,0));\n select * into prior from learn_assessments where id=p_request;\n if found then\n  if prior.tenant_id<>p_tenant or prior.recorded_by<>actor or prior.request is distinct from wanted then\n   raise exception 'Assessment request identity changed' using errcode='PT409';end if;\n  return jsonb_build_object('assessmentId',prior.id,'recordedAt',prior.recorded_at,'reused',true);\n end if;\n policy:=learn_scorecard_policy_for_period(p_tenant,p_kind,p_group,p_start,p_end);\n if policy is null or policy#>>'{publication,id}' is distinct from p_publication::text then\n  raise exception 'Published rules changed or do not cover this period' using errcode='PT409';end if;\n if (p_kind='member' and not exists(select 1 from team_members where id=p_subject and tenant_id=p_tenant))\n  or (p_kind='team' and not exists(select 1 from org_units where id=p_subject and tenant_id=p_tenant))\n  or (p_kind='job' and not exists(select 1 from jobs where id=p_subject and tenant_id=p_tenant))\n  or (p_kind='customer' and not exists(select 1 from customer_cards where id=p_subject and tenant_id=p_tenant))\n  or (p_group is not null and (p_kind not in ('member','team') or (p_kind='team' and p_subject<>p_group))) then\n  raise exception 'Unknown company subject or group' using errcode='22023';end if;\n -- One MVCC statement captures all three ledgers; no client-provided values or review decisions.\n with m as materialized (\n  select id,tenant_id,subject_kind,subject_id,policy_id,policy_revision,metric_key,value,unit,window_start,window_end,measured_at,source,source_through,sample_count,covered_count,eligible_count,review_state,evidence,exclusions,supersedes,group_ids,request_payload->>'manualCorrectionId' as correction_request_id\n  from measurements where tenant_id=p_tenant and policy_id=(policy->>'id')::uuid and policy_revision=(policy->>'version')::int\n   and subject_kind=p_kind and subject_id=p_subject and window_start=p_start and window_end=p_end order by measured_at,id limit 501\n ), r as materialized (\n  select r.* from learn_performance_reviews r join m on m.id=r.measurement_id where r.tenant_id=p_tenant order by r.measurement_id,r.revision limit 1001\n ), c as materialized (\n  select c.* from learn_performance_corrections c join m on m.id=c.id where c.tenant_id=p_tenant order by c.id limit 501\n ) select (select coalesce(jsonb_agg(to_jsonb(m) order by measured_at,id),'[]') from m),\n  (select coalesce(jsonb_agg(to_jsonb(r) order by measurement_id,revision),'[]') from r),\n  (select coalesce(jsonb_agg(to_jsonb(c) order by id),'[]') from c),\n  (select coalesce(jsonb_agg(jsonb_build_object('id',m.id,'reviewRevision',coalesce((select max(revision) from r where measurement_id=m.id),0)) order by m.id),'[]') from m)\n into ms,rs,cs,heads;\n if jsonb_array_length(ms)>500 or jsonb_array_length(rs)>1000 or jsonb_array_length(cs)>500 then\n  raise exception 'Complete assessment evidence exceeds the current window' using errcode='22023';end if;\n if heads is distinct from p_expected then\n  raise exception 'Measurements or reviews changed; reload before saving' using errcode='PT409';end if;\n if p_group is not null and p_kind='member' then\n  if (jsonb_array_length(ms)=0 and not learn_member_group_covers(p_tenant,p_subject,p_group,p_start,p_end))\n   or exists(select 1 from jsonb_array_elements(ms) m where not coalesce(m->'group_ids' @> jsonb_build_array(p_group),false)) then\n   raise exception 'Observed team attribution does not cover this assessment' using errcode='22023';end if;\n end if;\n captured:=clock_timestamp();\n snap:=jsonb_build_object('version','learn-assessment/1','engine','learn-scorecards/1','policy',policy,\n  'subject',jsonb_build_object('kind',p_kind,'id',p_subject,'groupIds',case when p_group is null then '[]'::jsonb else jsonb_build_array(p_group) end),\n  'period',jsonb_build_object('start',p_start,'end',p_end),'assessedAt',captured,'measurements',ms,'reviews',rs,'corrections',cs);\n if octet_length(snap::text)>2097152 then raise exception 'Assessment snapshot exceeds current limit' using errcode='22023';end if;\n insert into learn_assessments(id,tenant_id,publication_id,subject_kind,subject_id,window_start,window_end,recorded_at,recorded_by,reason,request,snapshot)\n values(p_request,p_tenant,p_publication,p_kind,p_subject,p_start,p_end,captured,actor,btrim(p_reason),wanted,snap);\n return jsonb_build_object('assessmentId',p_request,'recordedAt',captured,'reused',false);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ],
+  "access": [
+    {
+      "role": "anon",
+      "column": "id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "request",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "request",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "request",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "request",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "anon",
+      "column": null,
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "id",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "publication_id",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "reason",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_at",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "recorded_by",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "request",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "request",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "request",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "request",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "snapshot",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_id",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "subject_kind",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "tenant_id",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_end",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": "window_start",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "column": null,
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "publication_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "reason",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_at",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "recorded_by",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "request",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "request",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "request",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "request",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "snapshot",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "subject_kind",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "tenant_id",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "window_end",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": "window_start",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "column": null,
+      "allowed": false,
+      "privilege": "UPDATE"
+    }
+  ]
+}

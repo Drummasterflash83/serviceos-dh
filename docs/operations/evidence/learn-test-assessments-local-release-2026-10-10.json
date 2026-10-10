@@ -1,0 +1,12 @@
+{
+  "state": "passed",
+  "sourceSha256": "728d46dcf93127cfcb917b355d86a006e46d72bb5249b784a485ba079bcd798a",
+  "checks": [
+    "Exact release DDL installs under a non-superuser deployment owner using recorded reference-column types.",
+    "Explicit rollback removes all new objects; receipt failure atomically rolls back the ledger and RPC.",
+    "New ledger SELECT-only grants, RLS and RPC execution rights match the intended contract."
+  ],
+  "limitations": [
+    "Three referenced tables restored without customer rows; original helper bodies. Functional behavior was checked separately; full hosted compatibility and signed-in acceptance remain."
+  ]
+}

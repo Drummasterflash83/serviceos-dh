@@ -2,13 +2,13 @@
 import {randomUUID,randomBytes} from 'node:crypto';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {installedSources} from './learn-test-sources-release.mjs';
-import {readSourceCatalog} from './learn-card-sources-catalog.mjs';
+import {installedAssessments} from './learn-test-assessments-release.mjs';
+import {readAssessmentCatalog} from './learn-assessments-catalog.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';
 import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';
 const [mode,path]=process.argv.slice(2),check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''")}'`;
 check(['create','inspect','verify','retire'].includes(mode)&&/^\/private\/tmp\/serviceos-learn-recovery-browser-[\w-]+\.json$/.test(path??'')&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST recovery browser fixture required');
-const token=savedCliToken();check(installedSources(await readSourceCatalog({allowProjectRef:TEST_PROJECT,token})),'Exact installed TEST release 019 and reviewed endpoints required');
+const token=savedCliToken();check(installedAssessments(await readAssessmentCatalog({allowProjectRef:TEST_PROJECT,token})),'Exact installed TEST release 020 and reviewed endpoints required');
 const mgmt={Authorization:`Bearer ${token}`,'Content-Type':'application/json'},base=`https://${TEST_PROJECT}.supabase.co`;
 async function request(url,headers,method='GET',body){const r=await fetch(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(30000)});check(r.ok,`TEST recovery browser request failed (HTTP ${r.status})`);return r.json();}
 const sql=(query,readOnly=false)=>request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query${readOnly?'/read-only':''}`,mgmt,'POST',{query,...(readOnly?{}:{read_only:false})});
