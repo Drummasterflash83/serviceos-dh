@@ -1,0 +1,96 @@
+{
+  "version": "learn-team-workload-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "048_team_work",
+  "rehearsal": {
+    "version": "learn-team-work/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "fb365f60c88ea0be343c04f2c002f3fb799c55f04384b3e3237cc7e70d9e1fd8",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T23:03:49.968Z",
+    "priorFingerprint": "b0f1f290d66d92517b0bb25651696f71",
+    "expectedFingerprint": "dc16429c4eabc555357af6ffedcc878f",
+    "afterFingerprint": "b0f1f290d66d92517b0bb25651696f71",
+    "preservedDataSets": 91,
+    "receipt": {
+      "fingerprint": "dc16429c4eabc555357af6ffedcc878f",
+      "functions": 1
+    }
+  },
+  "installation": {
+    "version": "learn-team-work/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "fb365f60c88ea0be343c04f2c002f3fb799c55f04384b3e3237cc7e70d9e1fd8",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T23:04:25.677Z",
+    "priorFingerprint": "b0f1f290d66d92517b0bb25651696f71",
+    "expectedFingerprint": "dc16429c4eabc555357af6ffedcc878f",
+    "afterFingerprint": "dc16429c4eabc555357af6ffedcc878f",
+    "preservedDataSets": 91,
+    "receipt": {
+      "fingerprint": "dc16429c4eabc555357af6ffedcc878f",
+      "functions": 1
+    }
+  },
+  "httpAccess": {
+    "observedAt": "2026-10-10T23:04:45.369Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "path": "rpc/learn_team_work_residence_collect",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "learn_team_work_measurement_runs?select=id&limit=1",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_team_work_residence_collect",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "learn_team_work_measurement_runs?select=id&limit=1",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "postHttpPreservation": {
+    "observedAt": "2026-10-10T23:05:02.780Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "fingerprint": "dc16429c4eabc555357af6ffedcc878f",
+    "ledger": 49,
+    "preservedDataSets": 91,
+    "newLedgerRows": 0,
+    "continuationSchemaFingerprint": "523d19346fb1de6f8346e14449bf25cf"
+  },
+  "verification": {
+    "releaseGuardTests": 6,
+    "continuationBoundaryTests": 12,
+    "localSQL": "Exact hosted role probe, member/team history and scope regressions, concurrent same-cell collection and actual SQL-to-client measurement/review/score/proof parsing passed.",
+    "signedInHostedOwnerAcceptance": false
+  },
+  "frontend": null,
+  "scope": [
+    "91 datasets preserved, including existing work history and member receipts.",
+    "Only the exact team evidence allowlist addition changes the existing performance append definition; all other monitored authority is unchanged.",
+    "No identity creation, operator grant, provider request, source capture activation, canonical publication or production change."
+  ],
+  "remaining": [
+    "Matching protected frontend deployment.",
+    "Fresh signed-in hosted owner collection/review acceptance.",
+    "Resumable collection for populations above the existing bounded collector limits.",
+    "Job-outcome, communication-response and calendar/exclusion adapters.",
+    "Pending Commusoft continuation approval remains separate."
+  ]
+}

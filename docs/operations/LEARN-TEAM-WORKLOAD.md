@@ -1,9 +1,10 @@
 # Team workload from observed ownership
 
-Local implementation verified on 10 October 2026. The team workload collector is
-**not installed in hosted TEST or production**. The current protected TEST frontend
-remains the separate team-card/scoring-scope release recorded in
-[DEPLOYMENT](../DEPLOYMENT.md). This collector and its frontend must ship together.
+Local implementation verified on 10 October; TEST backend release 048 installed on
+11 October local time (10 October 23:04 UTC). Its exact hosted rollback rehearsal,
+91-dataset preservation and HTTP access-denial checks passed. The matching protected
+frontend deployment and signed-in owner acceptance are pending. Production is unchanged.
+[TEST release evidence](evidence/learn-team-workload-test-2026-10-11.json).
 
 ## Meaning and collection
 
@@ -108,5 +109,5 @@ contract after migration, allowing only the exact append evidence-list extension
 The hosted probe uses real anonymous/authenticated-without-identity/service roles,
 checks collector denial and ledger read/write boundaries, and leaves no identities
 or source fixtures. Six release-runner tests and the disposable SQL integration
-suite (including this exact hosted probe) pass. Hosted rehearsal/apply evidence
-and a matching protected frontend deployment are still required.
+suite (including this exact hosted probe) pass. Hosted rehearsal and installation passed with all 91 datasets unchanged. A matching
+protected frontend and signed-in owner acceptance are still required.
