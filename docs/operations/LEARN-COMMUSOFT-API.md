@@ -1,5 +1,44 @@
 # Commusoft read-only API adapter
 
+## Contacts require a parent property — live samples verified, traversal correction pending
+
+At **20:11 UTC**, actual properties and jobs both passed first/next-page reads.
+The existing unscoped contact request returned JSON **404**. The full published
+[contacts OpenAPI schema](https://developer.commusoft.com/list-property-contacts-28546275e0.md)
+marks `propertyID` as **required**. This is an implementation gap on our side;
+contacts cannot be imported as one global collection filtered only by `type`.
+The earlier synthetic contact-import fixtures did not enforce this provider contract.
+
+After correcting the request, **20:13 UTC** live reads returned HTTP 200 for both
+customer and work-address contacts using the existing key and scopes. Two pages
+of customer contacts passed, and one work-address contact page reached that
+property's terminal cursor. Each returned contact matched its requested parent.
+Property discovery sampled 200 records in memory; jobs and contact samples were
+one record per page. Seven requests succeeded after the five-request diagnostic
+that exposed the missing parameter. No source records/IDs/keys were retained and
+no database/provider mutations occurred.
+
+The local reader now requires a positive safe-integer parent ID, sends it as
+`propertyID`, and rejects contacts belonging to a different or missing parent.
+The stored worker scope also refuses an unbound contact request before acquiring
+a credential. Seventy-two tests and strict TypeScript pass. These source changes
+are **not deployed**. The historical authentication-only release remains pinned
+and refuses the changed bundle; deployed TEST v3 still uses the earlier contact
+contract. No contact jobs/connections were enabled by the preceding release.
+[Redacted checks](evidence/learn-commusoft-contact-scope-2026-10-10.json).
+
+**Required correction to the import workflow:** derive a frozen, tenant/connection-
+scoped list of customer or work-address properties from a completed property
+traversal. Retain the property source version and plan membership. Traverse each
+property's contacts with its own cursor, including empty properties; checkpoint
+both the property position and contact cursor atomically with each source page.
+A completed property must advance to the next property, not finish the company
+import. Retrying or resuming must keep the same plan, parent and cursor; new or
+changed properties belong to a later reconciliation. Bind the parent in both the
+SQL credential permit and SQL publication validation, then expose property progress
+through the operator's existing receipt/recovery workflow. Customer-wide coverage
+remains unverified until this path passes real SQL, worker and hosted acceptance.
+
 ## Request configuration corrected — properties and jobs verified, 10 October 20:00 UTC
 
 **This supersedes the unresolved access blocker below.** Support asked for the full
@@ -329,8 +368,8 @@ Read on 10 October 2026, including the endpoint Markdown OpenAPI exports:
   unlike properties it does not specify a cursor envelope. The current three-
   collection reader does not fetch this endpoint or guess its flag semantics.
 - [Contacts](https://developer.commusoft.com/list-property-contacts-28546275e0):
-  people associated with properties; suppliers also exist. The reader requires an
-  explicit customer/workaddress contact filter. The exported `type` schema is an
+  people associated with properties; suppliers also exist. The full export requires
+  `propertyID` as well as our explicit customer/workaddress contact filter. The exported `type` schema is an
   unconstrained string (only `customer` is exemplified); verify the workaddress
   filter with account access before claiming contact coverage.
 - [Jobs](https://developer.commusoft.com/list-jobs-24695917e0): `propertyID` is a
@@ -343,8 +382,9 @@ Read on 10 October 2026, including the endpoint Markdown OpenAPI exports:
   on success and a safe retry time on throttling. It never retries automatically.
 
 The authentication guide conflicts with the endpoint-generated Bearer examples.
-The implementation follows the explicit private-app guide. Live validation must
-resolve this; do not automatically retry alternate authentication modes or hosts.
+The earlier implementation followed the explicit private-app guide. The verified
+request correction above now uses Bearer; do not automatically retry alternate
+authentication modes or hosts.
 Provider page-size maximums and default ordering are not fully specified. The
 local maximum is 100; forward reads require increasing safe integer IDs and a
 returned cursor matching the final ID. Unexpected behavior stops the read rather

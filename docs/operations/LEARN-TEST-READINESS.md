@@ -1,5 +1,17 @@
 # Existing TEST environment: verified release gaps
 
+## Commusoft contact traversal — provider access verified, implementation correction pending
+
+Real customer and work-address contacts both return HTTP 200 when the documented
+required `propertyID` is supplied. Customer-contact pagination passes too. The
+earlier unscoped contact request returned 404; our synthetic fixtures had missed
+this requirement. The local reader now binds and checks the parent, with 72 tests
+and strict TypeScript passing. **Not deployed:** the database permit/publication,
+per-property traversal and operator progress must be updated together. Full
+contact import remains unfinished. This is internal implementation work, not an
+external API-access blocker.
+[Evidence and required workflow](LEARN-COMMUSOFT-API.md#contacts-require-a-parent-property--live-samples-verified-traversal-correction-pending).
+
 ## Commusoft request correction — real bounded reads and TEST runtime verified
 
 The existing private-app credential now returns HTTP 200 for properties and jobs

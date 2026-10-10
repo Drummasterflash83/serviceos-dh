@@ -1,0 +1,307 @@
+{
+  "version": "commusoft-bounded-coverage/2",
+  "startedAt": "2026-10-10T20:13:39.407Z",
+  "state": "bounded_reads_verified",
+  "checks": [
+    {
+      "resource": "properties",
+      "page": 1,
+      "limit": 100,
+      "parentBound": false,
+      "usesReturnedCursor": false,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:39.409Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 100,
+      "hasMore": true,
+      "quota": {
+        "remaining": 59,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "customer": 44,
+        "site": 56
+      }
+    },
+    {
+      "resource": "properties",
+      "page": 2,
+      "limit": 100,
+      "parentBound": false,
+      "usesReturnedCursor": true,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:39.716Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 100,
+      "hasMore": true,
+      "quota": {
+        "remaining": 58,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "customer": 62,
+        "site": 38
+      }
+    },
+    {
+      "resource": "jobs",
+      "page": 1,
+      "limit": 1,
+      "parentBound": false,
+      "usesReturnedCursor": false,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:39.908Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 1,
+      "hasMore": true,
+      "quota": {
+        "remaining": 57,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "job": 1
+      }
+    },
+    {
+      "resource": "jobs",
+      "page": 2,
+      "limit": 1,
+      "parentBound": false,
+      "usesReturnedCursor": true,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:40.183Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 1,
+      "hasMore": true,
+      "quota": {
+        "remaining": 56,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "job": 1
+      }
+    },
+    {
+      "resource": "propertyContacts",
+      "contactType": "customer",
+      "page": 1,
+      "limit": 1,
+      "parentBound": true,
+      "usesReturnedCursor": false,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:40.360Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 1,
+      "hasMore": true,
+      "quota": {
+        "remaining": 55,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "contact": 1
+      }
+    },
+    {
+      "resource": "propertyContacts",
+      "contactType": "customer",
+      "page": 2,
+      "limit": 1,
+      "parentBound": true,
+      "usesReturnedCursor": true,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:40.514Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 1,
+      "hasMore": true,
+      "quota": {
+        "remaining": 54,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "contact": 1
+      }
+    },
+    {
+      "resource": "propertyContacts",
+      "contactType": "workaddress",
+      "page": 1,
+      "limit": 1,
+      "parentBound": true,
+      "usesReturnedCursor": false,
+      "state": "passed",
+      "startedAt": "2026-10-10T20:13:40.625Z",
+      "status": 200,
+      "responseFormat": "json",
+      "records": 1,
+      "hasMore": false,
+      "quota": {
+        "remaining": 53,
+        "resetAt": 1791663240000,
+        "retryAt": null
+      },
+      "projectionCounts": {
+        "contact": 1
+      }
+    }
+  ],
+  "providerRequests": 7,
+  "providerMutations": 0,
+  "databaseMutations": 0,
+  "limits": [
+    "At most two 100-record property pages, two one-record job pages and two one-record contact pages per observed property type. No full traversal or account-wide completeness claim.",
+    "Direct local provider reads only. No hosted binding, import, schedule, canonical publication or signed-in acceptance.",
+    "No source records, source IDs, cursors or credentials retained. Candidate mapping alone does not prove canonical relationships."
+  ],
+  "completedAt": "2026-10-10T20:13:40.738Z",
+  "precedingFailure": {
+    "version": "commusoft-bounded-coverage/1",
+    "startedAt": "2026-10-10T20:11:33.765Z",
+    "state": "not_verified",
+    "checks": [
+      {
+        "resource": "properties",
+        "page": 1,
+        "limit": 1,
+        "usesReturnedCursor": false,
+        "state": "passed",
+        "startedAt": "2026-10-10T20:11:33.766Z",
+        "status": 200,
+        "responseFormat": "json",
+        "records": 1,
+        "hasMore": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "customer",
+            "reason": null,
+            "referenceCount": 0
+          }
+        ],
+        "quota": {
+          "remaining": 59,
+          "resetAt": 1791663120000,
+          "retryAt": null
+        }
+      },
+      {
+        "resource": "properties",
+        "page": 2,
+        "limit": 1,
+        "usesReturnedCursor": true,
+        "state": "passed",
+        "startedAt": "2026-10-10T20:11:34.062Z",
+        "status": 200,
+        "responseFormat": "json",
+        "records": 1,
+        "hasMore": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "customer",
+            "reason": null,
+            "referenceCount": 0
+          }
+        ],
+        "quota": {
+          "remaining": 58,
+          "resetAt": 1791663120000,
+          "retryAt": null
+        }
+      },
+      {
+        "resource": "jobs",
+        "page": 1,
+        "limit": 1,
+        "usesReturnedCursor": false,
+        "state": "passed",
+        "startedAt": "2026-10-10T20:11:34.287Z",
+        "status": 200,
+        "responseFormat": "json",
+        "records": 1,
+        "hasMore": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "job",
+            "reason": null,
+            "referenceCount": 1
+          }
+        ],
+        "quota": {
+          "remaining": 57,
+          "resetAt": 1791663120000,
+          "retryAt": null
+        }
+      },
+      {
+        "resource": "jobs",
+        "page": 2,
+        "limit": 1,
+        "usesReturnedCursor": true,
+        "state": "passed",
+        "startedAt": "2026-10-10T20:11:34.535Z",
+        "status": 200,
+        "responseFormat": "json",
+        "records": 1,
+        "hasMore": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "job",
+            "reason": null,
+            "referenceCount": 1
+          }
+        ],
+        "quota": {
+          "remaining": 56,
+          "resetAt": 1791663120000,
+          "retryAt": null
+        }
+      },
+      {
+        "resource": "propertyContacts",
+        "contactType": "customer",
+        "page": 1,
+        "limit": 1,
+        "usesReturnedCursor": false,
+        "state": "failed",
+        "startedAt": "2026-10-10T20:11:34.674Z",
+        "status": 404,
+        "responseFormat": "json",
+        "code": "provider_rejected",
+        "retryAt": null
+      }
+    ],
+    "providerRequests": 5,
+    "providerMutations": 0,
+    "databaseMutations": 0,
+    "limits": [
+      "At most two pages of one record per collection/filter. No full traversal or account-wide completeness claim.",
+      "Direct local provider reads only. No hosted binding, import, schedule, canonical publication or signed-in acceptance.",
+      "No source records, source IDs, cursors or credentials retained. Candidate mapping alone does not prove canonical relationships."
+    ]
+  },
+  "publishedContract": {
+    "url": "https://developer.commusoft.com/list-property-contacts-28546275e0.md",
+    "requiredQueryParameter": "propertyID",
+    "schemaSha256": "a62b9d981f97c7b17b67adf086f999a534eda8a68c918602f3a60b2e4322021b"
+  },
+  "localVerification": {
+    "testsPassed": 72,
+    "strictTypeScript": "passed",
+    "runtimeDeployed": false,
+    "databaseTraversalImplemented": false
+  }
+}

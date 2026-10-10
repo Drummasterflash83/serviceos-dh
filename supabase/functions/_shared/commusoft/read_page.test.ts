@@ -73,19 +73,29 @@ test("GET binds UK endpoint, verified Bearer header and honest application ident
   });
 });
 
-test("US contacts require explicit property type; provider cursor continues without inferred offsets", async () => {
-  const f = fixture(envelope([{ id: 50 }, { id: 88 }], true, 88));
+test("US contacts require explicit parent property and type; provider cursor continues without inferred offsets", async () => {
+  const f = fixture(
+    envelope(
+      [
+        { id: 50, propertyID: 42 },
+        { id: 88, propertyID: 42 },
+      ],
+      true,
+      88,
+    ),
+  );
   const page = await f.run({
     region: "us",
     resource: "propertyContacts",
     contactType: "workaddress",
+    propertyId: 42,
     after: 30,
     limit: 2,
   });
   assert.equal(page.nextCursor, 88);
   assert.equal(
     f.calls[0].url,
-    "https://app.commusoft.us/api/v2/propertyContacts?limit=2&after=30&type=workaddress",
+    "https://app.commusoft.us/api/v2/propertyContacts?limit=2&after=30&type=workaddress&propertyID=42",
   );
   assert.equal(page.collectionExhausted, false);
 });
@@ -105,6 +115,14 @@ test("invalid resource, region, bounds, contact scope or header rejected before 
     { after: -1 },
     { after: Number.MAX_SAFE_INTEGER + 1 },
     { resource: "propertyContacts" },
+    { resource: "propertyContacts", contactType: "customer" },
+    { resource: "propertyContacts", contactType: "customer", propertyId: 0 },
+    {
+      resource: "propertyContacts",
+      contactType: "customer",
+      propertyId: Number.MAX_SAFE_INTEGER + 1,
+    },
+    { propertyId: 42 },
     { contactType: "supplier" },
   ]) {
     const f = fixture();
@@ -120,6 +138,16 @@ test("invalid resource, region, bounds, contact scope or header rejected before 
     errorCode("invalid_request"),
   );
   assert.equal(f.calls.length, 0);
+});
+
+test("contact responses from another property are refused, including missing or string parent IDs", async () => {
+  for (const propertyID of [undefined, 43, "42"]) {
+    const f = fixture(envelope([{ id: 1, propertyID }], false, null));
+    await assert.rejects(
+      f.run({ ...request, resource: "propertyContacts", contactType: "customer", propertyId: 42 }),
+      errorCode("invalid_response"),
+    );
+  }
 });
 
 test("rejects malformed, oversized, repeated, backwards and imprecise pages", async () => {

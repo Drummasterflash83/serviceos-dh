@@ -147,8 +147,9 @@ export async function readStoredCommusoftScope(
       cfg.pageSize > 100 ||
       !["properties", "propertyContacts", "jobs"].includes(cfg.resource) ||
       (cfg.resource === "propertyContacts" &&
-        !["customer", "workaddress"].includes(cfg.contactType)) ||
-      (cfg.resource !== "propertyContacts" && cfg.contactType !== undefined)
+        (!["customer", "workaddress"].includes(cfg.contactType) || !id(cfg.propertyId))) ||
+      (cfg.resource !== "propertyContacts" &&
+        (cfg.contactType !== undefined || cfg.propertyId !== undefined))
     )
       return null;
     if (job.job_key !== `commusoft.source:${account.id}:${cfg.approvalId}`) return null;
@@ -207,6 +208,7 @@ export async function readStoredCommusoftScope(
       after: checkpoint.after,
       limit: cfg.pageSize,
       ...(cfg.contactType ? { contactType: cfg.contactType } : {}),
+      ...(cfg.propertyId !== undefined ? { propertyId: cfg.propertyId } : {}),
     };
     // Compare all selected authority and cursor fields; a lease extension alone is
     // allowed. Stored approval/config changes invalidate the acquired binding.

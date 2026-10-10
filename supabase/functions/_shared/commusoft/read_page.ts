@@ -34,6 +34,8 @@ export interface CommusoftReadRequest {
   limit: number;
   // Contacts can include suppliers; explicitly restrict them to customer/workaddress.
   contactType?: "customer" | "workaddress";
+  // Required by the provider: contacts are a collection under ONE property.
+  propertyId?: number;
 }
 export interface CommusoftPage {
   records: Record<string, unknown>[];
@@ -64,14 +66,18 @@ function requestUrl(request: CommusoftReadRequest): string {
     request.limit > 100 ||
     (request.after !== null && !positiveId(request.after)) ||
     (request.resource === "propertyContacts" &&
-      !["customer", "workaddress"].includes(request.contactType ?? "")) ||
-    (request.resource !== "propertyContacts" && request.contactType !== undefined)
+      (!["customer", "workaddress"].includes(request.contactType ?? "") ||
+        !positiveId(request.propertyId))) ||
+    (request.resource !== "propertyContacts" &&
+      (request.contactType !== undefined || request.propertyId !== undefined))
   )
     fail("invalid_request");
   const url = new URL(`/api/v2/${request.resource}`, origins[request.region]);
   url.searchParams.set("limit", String(request.limit));
   if (request.after !== null) url.searchParams.set("after", String(request.after));
   if (request.contactType) url.searchParams.set("type", request.contactType);
+  if (request.propertyId !== undefined)
+    url.searchParams.set("propertyID", String(request.propertyId));
   return url.href;
 }
 
@@ -172,6 +178,7 @@ function parsePage(
       !object(record) ||
       !positiveId(record.id) ||
       record.id <= previous ||
+      (request.resource === "propertyContacts" && record.propertyID !== request.propertyId) ||
       encoder.encode(JSON.stringify(record)).byteLength > maximumRecordBytes
     )
       fail("invalid_response");

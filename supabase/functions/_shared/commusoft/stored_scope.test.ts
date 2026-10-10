@@ -147,6 +147,24 @@ test("scope comes from tenant-scoped durable rows, never queued payload", async 
     assert.ok(read.filters.some(([k, v]) => k === "tenant_id" && v === id(1)));
 });
 
+test("contacts require a durable parent binding before credential acquisition", async () => {
+  for (const propertyId of [undefined, 0, "42", Number.MAX_SAFE_INTEGER + 1]) {
+    const f = fixture();
+    Object.assign(f.cfg, { resource: "propertyContacts", contactType: "customer", propertyId });
+    assert.equal(await f.read(), null);
+    await assert.rejects(f.run(), /authority_unavailable/);
+    assert.deepEqual(f.counts(), { acquisitions: 0, fetches: 0 });
+  }
+  const f = fixture();
+  Object.assign(f.cfg, { resource: "propertyContacts", contactType: "customer", propertyId: 42 });
+  Object.assign(f.ctx.payload, { propertyId: 99 });
+  const scope = await f.read();
+  assert.equal(scope?.request.propertyId, 42);
+  const originalKey = scope?.scopeKey;
+  Object.assign(f.cfg, { propertyId: 43 });
+  assert.notEqual((await f.read())?.scopeKey, originalKey);
+});
+
 test("client, module, connector, account, approval, lease and credential gates all fail closed", async () => {
   const mutations: ((f: ReturnType<typeof fixture>) => void)[] = [
     (f) => {
