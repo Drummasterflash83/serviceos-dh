@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: gmail-sync-messages (Email Phase-2)
 //
 // Syncs recent Gmail messages from a connected OAuth mailbox into email_threads
@@ -84,6 +85,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "email");
+  if (!admission.allowed) return fail(admission.code, admission.message, admission.httpStatus);
 
   const config = getGoogleOAuthConfig();
   if (!config) return fail("config_error", "Google OAuth is not configured", 500);

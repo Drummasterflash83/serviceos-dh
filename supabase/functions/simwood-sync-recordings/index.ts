@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-sync-recordings (Phase Phone-2)
 //
@@ -115,6 +116,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "phone");
+  if (!admission.allowed)
+    return failResponse(admission.code, admission.message, admission.httpStatus);
   // Background pipeline processing must NOT depend on the caller's (expiring) JWT.
   // Trigger it via the internal service path (service-role key + explicit tenant).
   const pipelineToken = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";

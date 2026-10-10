@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: gmail-workspace-backfill-messages (DWD backfill)
 //
 // Imports HISTORICAL Gmail for one Workspace DWD mailbox, one page at a time, so
@@ -76,11 +77,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "email");
+  if (!admission.allowed) return fail(admission.code, admission.message, admission.httpStatus);
 
   // Verify the account belongs to this tenant AND is a DWD mailbox.
   const { data: account, error: accErr } = await supabase
     .from("email_accounts")
-    .select("id, email_address, status, backfill_status, backfill_page_token, backfill_total_fetched")
+    .select(
+      "id, email_address, status, backfill_status, backfill_page_token, backfill_total_fetched",
+    )
     .eq("id", accountId)
     .eq("tenant_id", tenantId)
     .eq("provider", PROVIDER)
@@ -152,11 +157,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
     })
     .eq("id", accountId);
 
-  async function backfillFailed(code: string, message: string, httpStatus: number): Promise<Response> {
+  async function backfillFailed(
+    code: string,
+    message: string,
+    httpStatus: number,
+  ): Promise<Response> {
     try {
       await supabase!
         .from("email_accounts")
-        .update({ backfill_status: "error", backfill_error: code, updated_at: new Date().toISOString() })
+        .update({
+          backfill_status: "error",
+          backfill_error: code,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", accountId);
       await supabase!
         .from("email_sync_runs")
@@ -181,7 +194,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     accessToken = token.accessToken;
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : "delegation_failed";
-    return await backfillFailed("delegation_failed", `Domain-wide delegation failed (${reason})`, 502);
+    return await backfillFailed(
+      "delegation_failed",
+      `Domain-wide delegation failed (${reason})`,
+      502,
+    );
   }
 
   // One page of ALL mail (no label filter → historical, excludes spam/trash).
@@ -226,13 +243,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { error: thErr } = await supabase
       .from("email_threads")
       .upsert(threadRows, { onConflict: "tenant_id,provider,provider_thread_id" });
-    if (thErr) return await backfillFailed("db_error", `Failed to upsert threads: ${thErr.message}`, 500);
+    if (thErr)
+      return await backfillFailed("db_error", `Failed to upsert threads: ${thErr.message}`, 500);
   }
   if (messageRows.length > 0) {
     const { error: msgErr } = await supabase
       .from("email_messages")
       .upsert(messageRows, { onConflict: "tenant_id,provider,provider_message_id" });
-    if (msgErr) return await backfillFailed("db_error", `Failed to upsert messages: ${msgErr.message}`, 500);
+    if (msgErr)
+      return await backfillFailed("db_error", `Failed to upsert messages: ${msgErr.message}`, 500);
   }
 
   const totalFetched = priorTotal + allIds.length;

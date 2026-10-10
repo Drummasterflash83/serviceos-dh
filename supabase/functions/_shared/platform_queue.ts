@@ -1,3 +1,4 @@
+import { captureAdmission, captureSourceForJob } from "./learn_capture_control.ts";
 // ServiceOS — shared Platform Queue helper (Deno, service-role).
 //
 // The async worker queue lives IN platform_jobs (see migration
@@ -85,6 +86,7 @@ export interface EnqueueInput {
 export interface EnqueueResult {
   id: string | null;
   duplicate: boolean;
+  captureWaiting?: "paused" | "unavailable";
 }
 
 /**
@@ -97,6 +99,12 @@ export async function enqueueJob(
   input: EnqueueInput,
 ): Promise<EnqueueResult> {
   if (!input.tenantId || !input.jobType || !input.jobKey) return { id: null, duplicate: false };
+  const source = captureSourceForJob(input.jobType);
+  if (source) {
+    const admission = await captureAdmission(client, input.tenantId, source);
+    if (!admission.allowed) return { id: null, duplicate: false, captureWaiting: admission.reason };
+  }
+
   try {
     const { data, error } = await client
       .from("platform_jobs")
@@ -192,8 +200,13 @@ export async function failJob(
   const nowIso = new Date().toISOString();
   try {
     if (canRetry) {
-      const minimum=Number.isSafeInteger(err.retryAfterSeconds)&&err.retryAfterSeconds!>=0&&err.retryAfterSeconds!<=31536000?err.retryAfterSeconds!:0;
-      const delay = Math.max(BACKOFF_SECONDS[job.attempt] ?? 3600,minimum);
+      const minimum =
+        Number.isSafeInteger(err.retryAfterSeconds) &&
+        err.retryAfterSeconds! >= 0 &&
+        err.retryAfterSeconds! <= 31536000
+          ? err.retryAfterSeconds!
+          : 0;
+      const delay = Math.max(BACKOFF_SECONDS[job.attempt] ?? 3600, minimum);
       const availableAt = new Date(Date.now() + delay * 1000).toISOString();
       await client
         .from("platform_jobs")

@@ -5,7 +5,7 @@ const worker = "00000000-0000-4000-8000-000000000001";
 function fixture() {
   const job = {
     id: "job",
-    tenant_id: "company",
+    tenant_id: "00000000-0000-4000-8000-000000000002",
     job_type: "slack.history_sync",
     claimed_by: `learn-slack:${worker}`,
     attempt_count: 2,
@@ -13,15 +13,49 @@ function fixture() {
     metadata: {} as Record<string, unknown>,
   };
   const calls: { name: string; args: any }[] = [];
-  const state = { published: false, claimError: false, settleError: false };
+  const state = {
+    published: false,
+    claimError: false,
+    settleError: false,
+    allowed: true,
+    admissions: 0,
+  };
   const db = {
     rpc: async (name: string, args: any) => {
+      if (name === "learn_capture_admission") {
+        state.admissions++;
+        return {
+          data: {
+            version: "learn-capture-admission/1",
+            tenant_id: job.tenant_id,
+            source: "slack",
+            allowed: state.allowed,
+            checked_at: new Date().toISOString(),
+          },
+          error: null,
+        };
+      }
       calls.push({ name, args });
+      if (name === "learn_capture_defer_job")
+        return {
+          data: {
+            job_id: job.id,
+            state: "waiting",
+            reason: args.p_reason,
+            attempt_count: job.attempt_count - 1,
+          },
+          error: null,
+        };
       if (name === "learn_slack_claim_jobs")
         return state.claimError
           ? { data: null, error: { message: "private" } }
           : { data: [job], error: null };
-      assert.equal(name, job.job_type === "slack.thread_sync" ? "learn_slack_finish_thread_job" : "learn_slack_finish_job");
+      assert.equal(
+        name,
+        job.job_type === "slack.thread_sync"
+          ? "learn_slack_finish_thread_job"
+          : "learn_slack_finish_job",
+      );
       if (state.settleError)
         return { data: null, error: { code: "XX000", message: "private database failure" } };
       if (args.p_outcome.success && !state.published && !job.metadata.slack_page_v1)
@@ -42,7 +76,7 @@ test("one scoped claim passes the ownership fence and settles the server-derived
   const f = fixture();
   const r = await runSlackWorker(f.db, worker, async (ctx) => {
     assert.deepEqual(ctx.claim, { claimedBy: `learn-slack:${worker}`, attemptCount: 2 });
-    assert.equal(ctx.tenantId, "company");
+    assert.equal(ctx.tenantId, f.job.tenant_id);
     f.state.published = true;
     return { success: true, continuation: { jobType: "malicious", jobKey: "untrusted" } };
   });
@@ -57,14 +91,19 @@ test("thread jobs carry their trusted type and recover through the thread comple
   await runSlackWorker(f.db, worker, async (ctx) => {
     assert.equal(ctx.jobType, "slack.thread_sync");
     f.state.published = true;
-    return { success: false, error: { code: "slack_history_failed", message: "lost response", retryable: false } };
+    return {
+      success: false,
+      error: { code: "slack_history_failed", message: "lost response", retryable: false },
+    };
   });
   assert.equal(f.calls[1].name, "learn_slack_finish_thread_job");
   assert.deepEqual(f.calls[1].args.p_outcome, { success: true });
   const recovered = fixture();
   recovered.job.job_type = "slack.thread_sync";
   recovered.job.metadata.slack_page_v1 = { kind: "thread" };
-  await runSlackWorker(recovered.db, worker, async () => { throw Error("Unexpected provider request"); });
+  await runSlackWorker(recovered.db, worker, async () => {
+    throw Error("Unexpected provider request");
+  });
   assert.equal(recovered.calls[1].name, "learn_slack_finish_thread_job");
 });
 test("a recovered committed page skips the provider entirely", async () => {
@@ -141,4 +180,28 @@ test("foreign job types and replaced ownership are refused before handler execut
     assert.equal(called, false);
     assert.equal(f.calls.length, 1);
   }
+});
+
+test("pause after claim waits without calling a provider or marking capture successful", async () => {
+  const f = fixture();
+  f.state.allowed = false;
+  const r = await runSlackWorker(f.db, worker, async () => {
+    throw Error("Provider accessed while paused");
+  });
+  assert.equal(f.state.admissions, 1);
+  assert.deepEqual(
+    f.calls.map((c) => c.name),
+    ["learn_slack_claim_jobs", "learn_capture_defer_job"],
+  );
+  assert.deepEqual(r.outcomes, [
+    { job_id: f.job.id, state: "waiting", reason: "paused", attempt_count: 1 },
+  ]);
+  const saved = fixture();
+  saved.state.allowed = false;
+  saved.job.metadata.slack_page_v1 = { saved: true };
+  await runSlackWorker(saved.db, worker, async () => {
+    throw Error("Saved page fetched again");
+  });
+  assert.equal(saved.state.admissions, 0);
+  assert.equal(saved.calls[1].name, "learn_slack_finish_job");
 });

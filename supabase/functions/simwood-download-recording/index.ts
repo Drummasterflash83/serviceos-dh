@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import {
   resolveSimwoodAccount,
   boundSimwoodRecordingUrl,
@@ -118,6 +119,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
+  // --- load the recording row ---------------------------------------------
+  const { data: recording, error: recErr } = await supabase
+    .from("phone_recordings")
+    .select(
+      "id, provider, provider_recording_id, recording_uri, storage_path, file_size, started_at, created_at",
+    )
+    .eq("id", recordingId)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (recErr) {
+    return failResponse("db_error", "Failed to load recording", 500);
+  }
+  if (!recording) {
+    return failResponse("not_found", "Recording not found for this tenant", 404);
+  }
+
+  // Stored audio remains usable while capture is paused. Only a new download
+  // (including force) needs provider admission, before opening a sync run.
+  if (!recording.storage_path || force) {
+    const admission = await captureAdmission(supabase, tenantId, "phone");
+    if (!admission.allowed)
+      return failResponse(admission.code, admission.message, admission.httpStatus);
+  }
+
   const baseMetadata: Record<string, unknown> = { recording_id: recordingId, force };
 
   // Open a sync run (status running) so even a mid-run failure is auditable.
@@ -193,23 +219,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
       sync_run_id: syncRunId,
       recording_id: recordingId,
     });
-  }
-
-  // --- load the recording row ---------------------------------------------
-  const { data: recording, error: recErr } = await supabase
-    .from("phone_recordings")
-    .select(
-      "id, provider, provider_recording_id, recording_uri, storage_path, file_size, started_at, created_at",
-    )
-    .eq("id", recordingId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
-  if (recErr) {
-    return await finishFailed("db_error", "Failed to load recording", 500);
-  }
-  if (!recording) {
-    return await finishFailed("not_found", "Recording not found for this tenant", 404);
   }
 
   if (recording.provider !== PROVIDER)

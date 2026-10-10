@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import { resolveSimwoodAccount } from "../_shared/simwood-account.ts";
 // ServiceOS — Edge Function: simwood-sync-calls (Phase Phone-1)
 //
@@ -115,6 +116,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "phone");
+  if (!admission.allowed)
+    return failResponse(admission.code, admission.message, admission.httpStatus);
 
   const suppliedCustomerId =
     typeof body.provider_customer_id === "string" && body.provider_customer_id.trim() !== ""

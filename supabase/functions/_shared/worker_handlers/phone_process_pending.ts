@@ -1,3 +1,4 @@
+import { captureAdmission } from "../learn_capture_control.ts";
 // ServiceOS — Worker handler: phone.process_pending (backlog drainer orchestration).
 // Pure orchestration — auth, CORS and the platform_jobs lifecycle live in the
 // caller. Tenant is always caller-validated.
@@ -100,6 +101,7 @@ export async function handlePhoneProcessPending(
     let analysedCount = 0;
     let interactionReady = 0;
     let failed = 0;
+    let captureWaiting = 0;
     // Surface the most recent child error (e.g. missing OPENAI_API_KEY) + the step
     // it failed at, instead of hiding it behind an opaque `failed` count. Never a
     // secret and never transcript/audio — the step functions return only
@@ -111,6 +113,14 @@ export async function handlePhoneProcessPending(
 
     // Serial + failure-isolated: one bad recording never aborts the batch.
     for (const r of pending) {
+      if (r.stage === "download") {
+        const admission = await captureAdmission(supabase, tenantId, "phone");
+        if (!admission.allowed) {
+          captureWaiting += 1;
+          continue;
+        }
+      }
+
       const res = await invokeFunction(
         "phone-process-pipeline",
         { tenant_id: tenantId, recording_id: r.id, force: false },
@@ -122,6 +132,13 @@ export async function handlePhoneProcessPending(
         if (j.transcribed) transcribed += 1;
         if (j.analysed) analysedCount += 1;
         if (j.interaction_ready) interactionReady += 1;
+      } else if (
+        ["learn_capture_paused", "learn_capture_unavailable"].includes(
+          (j?.error as { code?: string } | undefined)?.code ?? "",
+        )
+      ) {
+        captureWaiting += 1;
+        continue;
       } else {
         failed += 1;
         const err = (j?.error ?? null) as { code?: unknown; message?: unknown } | null;
@@ -152,7 +169,8 @@ export async function handlePhoneProcessPending(
     const remaining = remainingCount ?? eligibleBacklog;
 
     const result = {
-      processed: pending.length,
+      processed: pending.length - captureWaiting,
+      capture_waiting: captureWaiting,
       downloaded,
       transcribed,
       analysed: analysedCount,
@@ -160,7 +178,12 @@ export async function handlePhoneProcessPending(
       failed,
       skipped: 0,
       eligible_backlog: remaining,
-      reason: failed > 0 ? "processed_with_failures" : "processed",
+      reason:
+        failed > 0
+          ? "processed_with_failures"
+          : captureWaiting > 0
+            ? "capture_waiting"
+            : "processed",
       last_error: lastError,
       failed_step: lastFailedStep,
       failures,
@@ -168,7 +191,7 @@ export async function handlePhoneProcessPending(
 
     return {
       success: failed === 0,
-      recordsProcessed: pending.length,
+      recordsProcessed: pending.length - captureWaiting,
       result,
       ...(failed > 0
         ? {

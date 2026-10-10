@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: phone-scheduled-sync (Scheduled Phone Sync)
 //
 // Keeps the live Calls & Comms feed current WITHOUT a human clicking the Admin
@@ -163,6 +164,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     for (const account of (accounts ?? []) as AccountRow[]) {
       const tenantId = account.tenant_id;
+      const admission = await captureAdmission(supabase, tenantId, "phone");
+      if (!admission.allowed) {
+        results.push({ tenant_id: tenantId, ok: false, waiting: admission.reason });
+        continue;
+      }
+
       const customerId = customerIdOf(account);
       const { from, to } = windowFor(account, nowMs);
 
@@ -230,6 +237,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       if (!callsOk) errors.calls = errorCodeOf(callsRes.json, callsRes.status);
       if (!recOk) errors.recordings = errorCodeOf(recRes.json, recRes.status);
       const overallOk = callsOk && recOk;
+      const waiting =
+        !overallOk &&
+        Object.values(errors).every((code) =>
+          ["learn_capture_paused", "learn_capture_unavailable"].includes(code),
+        );
 
       const metadata = {
         ...baseMetadata,
@@ -244,10 +256,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
         await supabase
           .from("phone_sync_runs")
           .update({
-            status: overallOk ? "success" : "failed",
+            status: overallOk ? "success" : waiting ? "paused" : "failed",
             completed_at: new Date().toISOString(),
             records_processed: callsProcessed + recProcessed,
-            error_message: overallOk ? null : JSON.stringify(errors),
+            error_message: overallOk || waiting ? null : JSON.stringify(errors),
             metadata,
           })
           .eq("id", syncRunId);
@@ -272,7 +284,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             last_error: null,
           })
           .eq("id", connector.id);
-      } else {
+      } else if (!waiting) {
         const errText = JSON.stringify(errors);
         await supabase
           .from("connector_accounts")
@@ -294,6 +306,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
             recordsProcessed: callsProcessed + recProcessed,
             result: { calls_processed: callsProcessed, recordings_processed: recProcessed },
           });
+        } else if (waiting) {
+          await supabase
+            .from("platform_jobs")
+            .update({
+              status: "cancelled",
+              completed_at: new Date().toISOString(),
+              lease_expires_at: null,
+              result: {
+                capture_waiting: true,
+                calls_processed: callsProcessed,
+                recordings_processed: recProcessed,
+              },
+            })
+            .eq("id", jobId)
+            .eq("tenant_id", tenantId);
         } else {
           await failPlatformJob(supabase, jobId, JSON.stringify(errors), {
             calls_processed: callsProcessed,
@@ -306,6 +333,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         tenant_id: tenantId,
         provider_customer_id: customerId,
         ok: overallOk,
+        ...(waiting ? { waiting: "capture_control" } : {}),
         calls_processed: callsProcessed,
         recordings_processed: recProcessed,
         sync_run_id: syncRunId,
@@ -316,6 +344,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
-  const overall = results.every((r) => r.ok === true);
+  const overall = results.every((r) => r.ok === true || !!r.waiting);
   return json({ success: overall, accounts: results.length, results });
 });

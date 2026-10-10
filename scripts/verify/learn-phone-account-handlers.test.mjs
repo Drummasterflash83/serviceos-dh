@@ -31,6 +31,8 @@ async function harness(
     alreadyStored = false,
     providerAccount = "3950",
     credentials = true,
+    captureAllowed = true,
+    captureError = false,
   } = {},
 ) {
   const requests = [],
@@ -38,6 +40,21 @@ async function harness(
     uploads = [];
   let handler;
   const db = {
+    async rpc(name, args) {
+      assert.equal(name, "learn_capture_admission");
+      return {
+        data: captureError
+          ? null
+          : {
+              version: "learn-capture-admission/1",
+              tenant_id: args.p_tenant,
+              source: args.p_source,
+              allowed: captureAllowed,
+              checked_at: new Date().toISOString(),
+            },
+        error: captureError ? { message: "PRIVATE_DIAGNOSTIC" } : null,
+      };
+    },
     from(table) {
       let op = "read";
       const result = () =>
@@ -252,4 +269,45 @@ test("stored audio requires no live provider credential and denied bindings are 
     assert.equal((await h.run({ provider_customer_id: "8000" })).status, 409);
     assert.equal(h.requests.length, 0);
   }
+});
+
+for (const name of [
+  "simwood-sync-calls",
+  "simwood-sync-recordings",
+  "simwood-download-recording",
+  "phone-process-pipeline",
+  "gmail-sync-messages",
+  "gmail-workspace-sync-messages",
+  "gmail-workspace-backfill-messages",
+  "google-workspace-discover-mailboxes",
+]) {
+  test(`${name} pauses before credentials, provider access or a failed run`, async () => {
+    for (const captureError of [false, true]) {
+      const h = await harness(name, { captureAllowed: false, captureError });
+      const r = await h.run({ email_account_id: id(6) });
+      assert.equal(r.status, captureError ? 503 : 409);
+      assert.equal(
+        (await r.json()).error.code,
+        captureError ? "learn_capture_unavailable" : "learn_capture_paused",
+      );
+      assert.equal(h.requests.length, 0);
+      assert.equal(h.writes.length, 0);
+      assert.equal(h.uploads.length, 0);
+    }
+  });
+}
+test("pause retains cached audio access but prevents a forced replacement", async () => {
+  const h = await harness("simwood-download-recording", {
+    captureAllowed: false,
+    alreadyStored: true,
+  });
+  assert.equal((await h.run({})).status, 200);
+  assert.equal(h.requests.length, 0);
+  const forced = await harness("simwood-download-recording", {
+    captureAllowed: false,
+    alreadyStored: true,
+  });
+  assert.equal((await forced.run({ force: true })).status, 409);
+  assert.equal(forced.requests.length, 0);
+  assert.equal(forced.writes.length, 0);
 });

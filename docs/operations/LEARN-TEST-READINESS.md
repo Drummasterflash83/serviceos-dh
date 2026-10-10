@@ -1,5 +1,50 @@
 # Existing TEST environment: verified release gaps
 
+## Capture module controls — local implementation, 10 October 2026
+
+`20261031230000_learn_capture_controls.sql` adds audited operator control requests
+for the LEARN master switch and email/phone/Slack capture. It reuses existing
+OpenFolk effective-dated authority, denies tenant ownership and View As as sources
+of operator permission, and shares the existing Commusoft setup lock. Changes use
+a revision check, immutable receipts, replay recovery and cancellation tombstones.
+Malformed flag values block capture without exposing their raw contents. Missing
+source flags inherit current connector behavior; installation seeds no switches.
+
+New server admission checks run before provider access in OAuth Gmail, Workspace
+incremental/backfill/discovery, phone calls/recordings/downloads and the Slack
+worker. Enqueue and SQL claim paths also check capture policy. A pause after claim
+returns the same queue lease without consuming a retry or recording false capture
+success/failure. Saved Slack pages can still settle without fetching again. The
+generic worker reports an unconfirmed deferral as unresolved. A batch already
+admitted may finish; the next capture boundary checks policy again.
+
+Phone downloads check policy before creating a sync run. Cached audio remains
+available, while forced downloads require admission. Scheduled phone capture
+retains its cursor when either child waits; waiting is distinct from a provider
+failure. A pipeline interrupted before downloading retains a `pipeline_waiting`
+operational row so it does not replace the retry history of actual pipeline
+attempts. Phone selection filters paused downloads before its bounded result,
+allowing transcription/analysis of retained audio to continue.
+
+Local validation: 23 actual Edge/worker-handler VM checks and 11 admission/Slack
+tests pass; application TypeScript passes. The isolated SQL fixture exercises the
+actual operator, queue and phone-fairness functions, plus rollback, scope/authority,
+audit/replay/cancellation, stale revisions, malformed flags, source/checkpoint
+preservation, saved-page recovery, retry-neutral deferral and a concurrent pause
+waiting on the admission lock. See
+[local control evidence](evidence/learn-capture-controls-local-2026-10-10.json).
+
+**Not installed in TEST or production.** Remaining release work includes an
+actual-schema rehearsal of these additional dependencies, deployed email-worker
+reconciliation (the existing TEST ingestion protocol differs from this checkout),
+phone scheduler/pipeline race acceptance, new pinned worker bundles, hosted
+acceptance, and the operator UI with retained-request recovery and intentional-pause
+health states. Existing historical phone/Slack deployment bundles must not be
+repointed at the changed source. Deploy the coordinated schema/runtime before
+exposing these switches; a missing admission RPC deliberately prevents capture.
+No existing hosted records, flags, jobs, schedules or credentials changed in this
+implementation turn.
+
 ## Commusoft contact acceptance — hosted TEST, 10 October 2026
 
 The explicitly approved single-account test passed at **13:21:15 UTC**, with a

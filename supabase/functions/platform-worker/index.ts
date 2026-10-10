@@ -1,3 +1,8 @@
+import {
+  captureAdmission,
+  captureSourceForJob,
+  deferCaptureJob,
+} from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: platform-worker (Async Worker Queue v1)
 //
 // The generic queue worker. Invoked on a 1-minute cron (secret-gated), it:
@@ -104,7 +109,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     jobTypes: jobTypes && jobTypes.length ? jobTypes : null,
   });
 
-  const counts = { claimed: claimed.length, succeeded: 0, retrying: 0, dead_lettered: 0 };
+  const counts = {
+    claimed: claimed.length,
+    succeeded: 0,
+    retrying: 0,
+    dead_lettered: 0,
+    waiting: 0,
+  };
 
   async function processOne(job: JobRow): Promise<void> {
     const id = job.id as string;
@@ -112,6 +123,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const jobType = job.job_type as string;
     const attempt = (job.attempt_count as number) ?? 1;
     const maxAttempts = (job.max_attempts as number) ?? 5;
+    const captureSource = captureSourceForJob(jobType);
+    const captureClaim = { tenantId, jobId: id, claimedBy: job.claimed_by as string, attempt };
+    if (captureSource) {
+      const admission = await captureAdmission(admin, tenantId, captureSource);
+      if (!admission.allowed) {
+        await deferCaptureJob(admin, captureClaim, admission.reason);
+        counts.waiting += 1;
+        return;
+      }
+    }
 
     // Preferred: a shared handler runs the business logic IN-PROCESS (no HTTP).
     const handler = getWorkerHandler(jobType);
@@ -138,7 +159,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tenantId,
               jobType: r.continuation.jobType,
               jobKey: r.continuation.jobKey,
-              connectorId: r.continuation.connectorId ?? (job.connector_id as string | null) ?? null,
+              connectorId:
+                r.continuation.connectorId ?? (job.connector_id as string | null) ?? null,
               moduleId: r.continuation.moduleId ?? (job.module_id as string | null) ?? null,
               priority: r.continuation.priority ?? 50,
               payload: r.continuation.payload ?? {},
@@ -158,6 +180,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
         counts.succeeded += 1;
         return;
       }
+      if (
+        captureSource &&
+        ["learn_capture_paused", "learn_capture_unavailable"].includes(r.error?.code ?? "")
+      ) {
+        await deferCaptureJob(
+          admin,
+          captureClaim,
+          r.error?.code === "learn_capture_paused" ? "paused" : "unavailable",
+        );
+        counts.waiting += 1;
+        return;
+      }
       const hOutcome = await failJob(
         admin,
         { id, attempt, maxAttempts },
@@ -174,7 +208,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
           component,
           status: hOutcome === "retrying" ? "degraded" : "failed",
           error: r.error?.message ?? "handler failed",
-          metadata: { job_type: jobType, code: r.error?.code ?? "handler_error", outcome: hOutcome },
+          metadata: {
+            job_type: jobType,
+            code: r.error?.code ?? "handler_error",
+            outcome: hOutcome,
+          },
         });
       if (hOutcome === "retrying") counts.retrying += 1;
       else counts.dead_lettered += 1;
@@ -197,11 +235,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (er?.waitUntil) er.waitUntil(work);
   await work;
 
-  const failed = counts.claimed - counts.succeeded - counts.retrying - counts.dead_lettered;
+  const failed =
+    counts.claimed - counts.succeeded - counts.retrying - counts.dead_lettered - counts.waiting;
   return json({
     success: true,
     claimed: counts.claimed,
     succeeded: counts.succeeded,
+    waiting: counts.waiting,
     retrying: counts.retrying,
     dead_lettered: counts.dead_lettered,
     failed: Math.max(0, failed),

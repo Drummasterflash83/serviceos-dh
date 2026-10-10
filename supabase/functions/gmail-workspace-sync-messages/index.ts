@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: gmail-workspace-sync-messages (Workspace DWD sync)
 //
 // Syncs recent Gmail messages for a Workspace mailbox using DOMAIN-WIDE
@@ -83,6 +84,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return fail(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "email");
+  if (!admission.allowed) return fail(admission.code, admission.message, admission.httpStatus);
 
   // Verify the account belongs to this tenant AND is a DWD mailbox.
   const { data: account, error: accErr } = await supabase

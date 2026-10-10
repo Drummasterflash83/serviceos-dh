@@ -1,0 +1,31 @@
+{
+  "version": "learn-capture-controls-local/1",
+  "observedAt": "2026-10-10T13:47:47.843Z",
+  "state": "local_verified_not_deployed",
+  "source": "supabase/migrations/20261031230000_learn_capture_controls.sql",
+  "sourceSha256": "51265e71ef999ecbf27673220ea04ef6cc1711fd81cc1848bb74513a10c73067",
+  "validation": {
+    "edgeAndWorkerVmTests": 23,
+    "admissionAndSlackTests": 11,
+    "applicationTypescript": true,
+    "sqlRollback": true,
+    "operatorAuthorityAndViewAsDenial": true,
+    "immutableRequestReplayAndCancellation": true,
+    "staleRevisionRefusal": true,
+    "privateFlagRedaction": true,
+    "sourceAndCheckpointPreservation": true,
+    "queuePauseWithoutAttemptConsumption": true,
+    "committedSlackRecovery": true,
+    "leaseBoundDeferralReplay": true,
+    "phoneRetainedAudioSelection": true,
+    "concurrentPauseAdmission": true
+  },
+  "hostedMutations": 0,
+  "providerRequests": 0,
+  "limitations": [
+    "SQL fixture uses repository functions and synthetic supporting tables; exact hosted-schema rehearsal remains required.",
+    "Edge/worker VM tests use synthetic ports, not deployed provider access.",
+    "Operator UI and explicit paused health presentation remain to be integrated.",
+    "Reconcile deployed email ingestion protocol, verify phone scheduler/pipeline races, then package and accept coordinated TEST schema/worker releases."
+  ]
+}

@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: google-workspace-discover-mailboxes (Workspace v1)
 //
 // Discovers all users/mailboxes in the configured Google Workspace domain via
@@ -52,6 +53,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const auth = await requireTenantUser(req, supabase, ["owner", "admin"]);
   if (!auth.ok) return fail(auth.error.code, auth.error.message, auth.error.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const admission = await captureAdmission(supabase, tenantId, "email");
+  if (!admission.allowed) return fail(admission.code, admission.message, admission.httpStatus);
   const startedAt = new Date().toISOString();
 
   // Best-effort logging (email_sync_runs + audit_logs). NEVER logs key/token.

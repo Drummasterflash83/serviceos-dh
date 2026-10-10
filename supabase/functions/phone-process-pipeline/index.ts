@@ -1,3 +1,4 @@
+import { captureAdmission } from "../_shared/learn_capture_control.ts";
 // ServiceOS — Edge Function: phone-process-pipeline (Phase 5A)
 //
 // Orchestrates the full phone intelligence pipeline for ONE recording:
@@ -65,6 +66,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
   if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
   const tenantId = auth.ctx.tenantId;
+  const captureRecording = await supabase
+    .from("phone_recordings")
+    .select("storage_path")
+    .eq("tenant_id", tenantId)
+    .eq("id", recordingId)
+    .maybeSingle();
+  if (captureRecording.error)
+    return failResponse("db_error", "Could not verify the recording", 503);
+  if (!captureRecording.data)
+    return failResponse("not_found", "Recording not found for this tenant", 404);
+  if (force || !captureRecording.data.storage_path) {
+    const admission = await captureAdmission(supabase, tenantId, "phone");
+    if (!admission.allowed)
+      return failResponse(admission.code, admission.message, admission.httpStatus);
+  }
 
   // The caller (user OR internal) is now authenticated and the tenant is bound
   // server-side. The heavy step functions run SERVER-TO-SERVER via the internal
@@ -229,6 +245,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // --- Step 2: download (idempotent) --------------------------------------
   const d = await ensureRecordingDownloaded({ tenantId, recordingId, force, authToken });
   if (!d.ok) {
+    if (["learn_capture_paused", "learn_capture_unavailable"].includes(d.code)) {
+      await supabase
+        .from("phone_sync_runs")
+        .update({
+          status: "paused",
+          sync_type: "pipeline_waiting",
+          completed_at: new Date().toISOString(),
+          records_processed: 0,
+          error_message: null,
+          metadata: { ...baseMetadata, capture_waiting: d.code },
+        })
+        .eq("id", syncRunId)
+        .eq("tenant_id", tenantId);
+      return failResponse(d.code, d.message, d.httpStatus, {
+        sync_run_id: syncRunId,
+        recording_id: recordingId,
+        capture_waiting: true,
+      });
+    }
+
     return await finishFailed(
       d.code,
       d.message,
