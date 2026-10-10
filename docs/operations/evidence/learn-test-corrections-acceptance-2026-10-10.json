@@ -1,0 +1,28 @@
+{
+  "version": "learn-test-corrections-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "da742d0a4ea5b20aa98e03fcbee02b85e9f2a0d93f3aed7dcd64a9c7205fea8d",
+  "observedAt": "2026-10-10T01:57:12.056Z",
+  "runId": "c1603e30-6d3b-45ba-93dc-54234b92abbf",
+  "state": "passed",
+  "checks": [
+    "Actual application correction RPC and reader passed exact retry, stale/changed request/fork denial, original timing, separate review and earlier-team attribution after transfer.",
+    "Real concurrent requests retained one successor; NULL withholding retained four observations and two reviews; original rows stayed unchanged. Tenant/role, direct-write, immutable-ledger, View-As and same-session revocation checks passed."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "measurements": 4,
+    "reviews": 2,
+    "corrections": 3,
+    "active_users": 0,
+    "active_members": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "fixtureManifest": "/private/tmp/serviceos-learn-corrections-c1603e30-6d3b-45ba-93dc-54234b92abbf.json",
+  "limitations": [
+    "Actual Auth/PostgREST/application readers with retained synthetic TEST evidence, not real employee measurements or provider capture.",
+    "No production changes, paid processing, schedules, source ingestion or payroll.",
+    "Browser behavior was tested separately with local synthetic fixtures."
+  ]
+}

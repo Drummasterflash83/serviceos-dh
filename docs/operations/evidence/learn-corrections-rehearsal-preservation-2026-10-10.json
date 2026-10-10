@@ -1,0 +1,98 @@
+{
+  "observedAt": "2026-10-10T01:53:10.443Z",
+  "unchanged": true,
+  "before": [
+    {
+      "name": "email_messages",
+      "count": 2,
+      "fingerprint": "cfe8f02ea6a15155163b5d97703139be"
+    },
+    {
+      "name": "interactions",
+      "count": 21,
+      "fingerprint": "479ee2bf3faed3041fe744a74946230b"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 9,
+      "fingerprint": "44eabf0a3528bbf5caace90a2d379644"
+    },
+    {
+      "name": "measurements",
+      "count": 11,
+      "fingerprint": "3d2473724fb12e931ceb6ebb54e4b9c9"
+    },
+    {
+      "name": "phone_calls",
+      "count": 4,
+      "fingerprint": "0e788c946ca4f0048d7bc06903ef8162"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 6,
+      "fingerprint": "3361a866add68e38eeb95fa702f3a283"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 15,
+      "fingerprint": "7d93bd5d7a02b50e64d5e19141d8492a"
+    }
+  ],
+  "after": [
+    {
+      "name": "email_messages",
+      "count": 2,
+      "fingerprint": "cfe8f02ea6a15155163b5d97703139be"
+    },
+    {
+      "name": "interactions",
+      "count": 21,
+      "fingerprint": "479ee2bf3faed3041fe744a74946230b"
+    },
+    {
+      "name": "learn_performance_reviews",
+      "count": 9,
+      "fingerprint": "44eabf0a3528bbf5caace90a2d379644"
+    },
+    {
+      "name": "measurements",
+      "count": 11,
+      "fingerprint": "3d2473724fb12e931ceb6ebb54e4b9c9"
+    },
+    {
+      "name": "phone_calls",
+      "count": 4,
+      "fingerprint": "0e788c946ca4f0048d7bc06903ef8162"
+    },
+    {
+      "name": "phone_recordings",
+      "count": 6,
+      "fingerprint": "3361a866add68e38eeb95fa702f3a283"
+    },
+    {
+      "name": "phone_transcripts",
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    {
+      "name": "slack_message_versions",
+      "count": 13,
+      "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+    },
+    {
+      "name": "slack_messages",
+      "count": 15,
+      "fingerprint": "7d93bd5d7a02b50e64d5e19141d8492a"
+    }
+  ]
+}

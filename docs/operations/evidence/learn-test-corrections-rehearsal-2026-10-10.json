@@ -1,0 +1,12 @@
+{
+  "version": "learn-test-performance-corrections/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "da742d0a4ea5b20aa98e03fcbee02b85e9f2a0d93f3aed7dcd64a9c7205fea8d",
+  "observedAt": "2026-10-10T01:53:10.275Z",
+  "writeAttempted": true,
+  "acknowledged": true,
+  "state": "rehearsed_and_rolled_back",
+  "beforeFingerprint": "befa68de978c62f66f74ec69dc5152f379eb9f623991751734de7b864ee43d1e",
+  "afterFingerprint": "befa68de978c62f66f74ec69dc5152f379eb9f623991751734de7b864ee43d1e",
+  "scope": "One append-only correction ledger and owner/admin RPC. No source-row edits, provider traffic, Edge changes, schedules or production changes."
+}

@@ -828,3 +828,21 @@ retained 80 → 90 → withheld synthetic history and required independent revie
 a draft score appeared. This is local implementation only; TEST stays release 017.
 Pinned hosted rehearsal, actual Auth/PostgREST acceptance and production release are
 still required. See [contract, evidence and limits](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#numerical-corrections--local-implementation-10-october).
+
+## Numerical corrections accepted in TEST — 10 October
+
+Release 018 installs the correction ledger and RPC, bringing TEST to 90 tables and
+19 receipts. Local PostgreSQL 17 checks and the hosted rollback proved atomic DDL
+and preserved prior objects; installation matched the pinned catalog and endpoints.
+Actual signed-in application clients verified numerical correction, separate review,
+retry/conflicts, competing requests, withholding, original timing, tenant/role
+isolation and past observed-team attribution after a later transfer.
+
+An initial test caller omitted the scorer's team context; the scorer rejected it.
+That stopped run remains documented and retired. The corrected harness passed with
+a fresh fixture. All eight synthetic users across both runs were banned and demoted,
+and memberships ended; six measurements, three reviews and four corrections remain
+as evidence. Source and earlier performance rows were preserved. Production and
+frontend deployment are unchanged. This is synthetic TEST acceptance, not a real
+employee score or proof of complete provider capture. See
+[release evidence and limitations](../operations/LEARN-PERFORMANCE-MEASUREMENTS.md#numerical-corrections-accepted-in-test--10-october).

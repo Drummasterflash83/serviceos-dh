@@ -1,0 +1,282 @@
+{
+  "table": {
+    "rls": true,
+    "name": "learn_performance_corrections",
+    "owner": "postgres",
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "tenant_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "predecessor_id",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "previous_value",
+        "type": "numeric",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "corrected_value",
+        "type": "numeric",
+        "default": null,
+        "notNull": false
+      },
+      {
+        "name": "source_observed_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "expected_review_revision",
+        "type": "integer",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "corrected_by",
+        "type": "uuid",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "reason",
+        "type": "text",
+        "default": null,
+        "notNull": true
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "default": null,
+        "notNull": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "learn_performance_corrections_pkey",
+        "definition": "CREATE UNIQUE INDEX learn_performance_corrections_pkey ON public.learn_performance_corrections USING btree (id)"
+      },
+      {
+        "name": "learn_performance_corrections_predecessor_id_key",
+        "definition": "CREATE UNIQUE INDEX learn_performance_corrections_predecessor_id_key ON public.learn_performance_corrections USING btree (predecessor_id)"
+      }
+    ],
+    "forceRls": false,
+    "policies": [
+      {
+        "name": "learn_performance_correction_read",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "((tenant_id = current_tenant_id()) AND (COALESCE(current_user_role(), ''::text) = ANY (ARRAY['owner'::text, 'admin'::text])))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      }
+    ],
+    "triggers": [
+      {
+        "name": "learn_performance_correction_immutable",
+        "function": "objectives_append_only",
+        "definition": "CREATE TRIGGER learn_performance_correction_immutable BEFORE DELETE OR UPDATE ON public.learn_performance_corrections FOR EACH ROW EXECUTE FUNCTION objectives_append_only()"
+      },
+      {
+        "name": "learn_performance_correction_no_truncate",
+        "function": "objectives_append_only",
+        "definition": "CREATE TRIGGER learn_performance_correction_no_truncate BEFORE TRUNCATE ON public.learn_performance_corrections FOR EACH STATEMENT EXECUTE FUNCTION objectives_append_only()"
+      }
+    ],
+    "anonAccess": false,
+    "serviceDml": false,
+    "constraints": [
+      {
+        "kind": "c",
+        "name": "learn_performance_corrections_check",
+        "definition": "CHECK ((isfinite(source_observed_at) AND isfinite(created_at) AND (source_observed_at <= created_at)))"
+      },
+      {
+        "kind": "c",
+        "name": "learn_performance_corrections_check1",
+        "definition": "CHECK ((previous_value IS DISTINCT FROM corrected_value))"
+      },
+      {
+        "kind": "f",
+        "name": "learn_performance_corrections_corrected_by_fkey",
+        "definition": "FOREIGN KEY (corrected_by) REFERENCES profiles(id)"
+      },
+      {
+        "kind": "c",
+        "name": "learn_performance_corrections_expected_review_revision_check",
+        "definition": "CHECK (((expected_review_revision >= 0) AND (expected_review_revision < 2147483647)))"
+      },
+      {
+        "kind": "f",
+        "name": "learn_performance_corrections_id_fkey",
+        "definition": "FOREIGN KEY (id) REFERENCES measurements(id)"
+      },
+      {
+        "kind": "p",
+        "name": "learn_performance_corrections_pkey",
+        "definition": "PRIMARY KEY (id)"
+      },
+      {
+        "kind": "f",
+        "name": "learn_performance_corrections_predecessor_id_fkey",
+        "definition": "FOREIGN KEY (predecessor_id) REFERENCES measurements(id)"
+      },
+      {
+        "kind": "u",
+        "name": "learn_performance_corrections_predecessor_id_key",
+        "definition": "UNIQUE (predecessor_id)"
+      },
+      {
+        "kind": "c",
+        "name": "learn_performance_corrections_reason_check",
+        "definition": "CHECK (((length(btrim(reason)) >= 1) AND (length(btrim(reason)) <= 1000)))"
+      },
+      {
+        "kind": "f",
+        "name": "learn_performance_corrections_tenant_id_fkey",
+        "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id)"
+      }
+    ],
+    "authenticatedWrite": false,
+    "authenticatedSelect": true
+  },
+  "functions": [
+    {
+      "name": "learn_performance_correct",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_measurement uuid, p_request uuid, p_expected_review_revision integer, p_value numeric, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_performance_correct(p_tenant uuid, p_measurement uuid, p_request uuid, p_expected_review_revision integer, p_value numeric, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n actor_tenant uuid;actor_role text;\n parent public.measurements%rowtype;\n prior public.learn_performance_corrections%rowtype;\n previous_correction public.learn_performance_corrections%rowtype;\n current_revision integer;observed timestamptz;source_observed timestamptz;payload jsonb;receipt jsonb;\nbegin\n select p.tenant_id,p.role into actor_tenant,actor_role from public.profiles p where p.id=auth.uid() for share;\n if auth.uid() is null or actor_tenant is distinct from p_tenant or coalesce(actor_role,'') not in ('owner','admin')\n or exists(select 1 from public.view_as_context where actor_user_id=auth.uid() and ended_at is null and (expires_at is null or expires_at>clock_timestamp())) then\n  raise exception 'Company owner/admin access required outside preview' using errcode='42501';end if;\n if p_tenant is null or p_measurement is null or p_request is null or p_expected_review_revision is null\n or p_expected_review_revision<0 or p_expected_review_revision>=2147483647\n or length(btrim(coalesce(p_reason,''))) not between 1 and 1000\n or (p_value is not null and (p_value::text in ('NaN','Infinity','-Infinity') or abs(p_value)>1.7976931348623157e308)) then\n  raise exception 'A measurement, finite value or withheld value, current review revision and reason are required' using errcode='22023';end if;\n perform pg_advisory_xact_lock(hashtextextended('learn-performance-correction:'||p_request::text,0));\n select * into prior from public.learn_performance_corrections where id=p_request;\n if found then\n  if prior.tenant_id<>p_tenant or prior.predecessor_id<>p_measurement or prior.corrected_by<>auth.uid()\n   or prior.expected_review_revision<>p_expected_review_revision or prior.corrected_value is distinct from p_value or prior.reason<>btrim(p_reason) then\n   raise exception 'Correction request identity changed' using errcode='PT409';end if;\n  return jsonb_build_object('measurementId',prior.id,'predecessorId',prior.predecessor_id,'reused',true);\n end if;\n select * into parent from public.measurements where id=p_measurement and tenant_id=p_tenant for update;\n if not found or parent.subject_kind='tenant' or parent.request_payload is null then\n  raise exception 'Performance observation unavailable' using errcode='22023';end if;\n if exists(select 1 from public.measurements where supersedes=parent.id) then\n  raise exception 'Observation already corrected; reload the card' using errcode='PT409';end if;\n select coalesce(max(revision),0) into current_revision from public.learn_performance_reviews where measurement_id=parent.id;\n if current_revision<>p_expected_review_revision then raise exception 'Review changed; reload the card' using errcode='PT409';end if;\n if parent.value is not distinct from p_value then raise exception 'Correction must change or withhold the value' using errcode='22023';end if;\n source_observed:=parent.measured_at;\n if parent.request_payload ? 'manualCorrectionId' then\n  select * into previous_correction from public.learn_performance_corrections where id=parent.id and tenant_id=p_tenant;\n  if not found or parent.request_payload->>'manualCorrectionId' is distinct from parent.id::text\n   or previous_correction.predecessor_id is distinct from parent.supersedes or previous_correction.corrected_value is distinct from parent.value then\n   raise exception 'Correction provenance is incomplete' using errcode='PT409';end if;\n  source_observed:=previous_correction.source_observed_at;\n end if;\n observed:=clock_timestamp();\n if date_trunc('milliseconds',observed)<=date_trunc('milliseconds',parent.measured_at) then\n  raise exception 'Observation is too recent; retry after reloading' using errcode='PT409';end if;\n -- Only the value and correction identity change. Counts, source watermark,\n -- unit, scope, evidence and exclusions remain those of the retained parent.\n payload:=parent.request_payload||jsonb_build_object('id',p_request,'supersedes',parent.id,'value',p_value,'observedAt',observed,'review','inferred','manualCorrectionId',p_request);\n receipt:=public.learn_performance_append(p_tenant,payload,btrim(p_reason));\n if receipt->>'measurementId' is distinct from p_request::text or receipt->>'reused' is distinct from 'false' then\n  raise exception 'Correction append receipt differs' using errcode='PT409';end if;\n insert into public.learn_performance_corrections(id,tenant_id,predecessor_id,previous_value,corrected_value,source_observed_at,expected_review_revision,corrected_by,reason,created_at)\n values(p_request,p_tenant,parent.id,parent.value,p_value,source_observed,p_expected_review_revision,auth.uid(),btrim(p_reason),observed);\n return jsonb_build_object('measurementId',p_request,'predecessorId',parent.id,'reused',false);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    }
+  ],
+  "access": [
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "anon",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "authenticated",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "authenticated",
+      "allowed": true,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "service_role",
+      "allowed": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "allowed": true,
+      "privilege": "SELECT"
+    }
+  ]
+}

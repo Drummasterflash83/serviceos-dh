@@ -226,3 +226,68 @@ release the application with the required database contract. Saved assessments,
 real source adapters, historical team attribution and reward review remain separate
 work. Historical group membership acceptance for numerical corrections is not yet
 established by the minimal SQL fixture.
+
+## Numerical corrections accepted in TEST — 10 October
+
+Release **018**, `learn_performance_corrections_v1`, installs the ledger and RPC in
+TEST `saatxzwxvdvqevbnskxy`. Its pinned SQL checksum is
+`da742d0a4ea5b20aa98e03fcbee02b85e9f2a0d93f3aed7dcd64a9c7205fea8d`.
+The earlier local-only deployment statement is superseded for TEST. Production and
+the frontend remain unchanged.
+
+The PostgreSQL 17 rehearsal used recorded reference-column types under the
+non-superuser deployment owner. Explicit rollback and injected receipt failure
+both removed all additions. The hosted rehearsal acknowledged rollback, matched
+before/after catalog fingerprints and preserved source and measurement/review
+counts and full-row fingerprints. Installation matched the pinned new definitions,
+RLS, all seven table privilege classes and RPC execution grants while retaining the
+preceding catalog and Edge endpoint metadata. TEST now has 90 tables and 19 receipts.
+
+Actual signed-in Auth/PostgREST acceptance exercised the application correction
+client and measurement reader. It verified owner/admin correction, exact retry,
+changed request and stale revision rejection, immutable originals, separate review,
+company/role isolation, direct-write denial, View-As denial and immediate role
+revocation. Two concurrent requests produced one successor and one HTTP 409.
+Explicit withholding retained the chain and withheld the draft score. A correction
+after a later team transfer retained the earlier period's observed team attribution.
+The earlier minimal-fixture limitation on historical group acceptance is therefore
+resolved for this synthetic observed-history case; missing historical membership
+has not been reconstructed or inferred.
+
+The initial acceptance run stopped when its scorer caller omitted `groupIds`.
+The correction and reader had succeeded, but the scorer correctly rejected the
+incomplete subject. The harness now uses the subject returned by the validated
+measurement reader. Its failed run and evidence were preserved; a fresh run passed.
+The first run retained two measurements, one review and one correction; the passing
+run retained four measurements, two reviews and three corrections. Both runs' eight
+synthetic logins were banned, passwords replaced and roles revoked; members were
+ended. No guard was disabled and no fixture evidence was deleted.
+
+Seven release/context tests and fourteen acceptance/client tests passed. The latter
+include a no-network wrong-project rejection and the correction reader's fail-closed
+provenance checks. Current browser fixture/server helpers now require release 018.
+The browser interaction proof remains the earlier local synthetic preview, not a
+hosted frontend test. None of this establishes real employee scores, provider source
+completeness, reward approval or payroll.
+
+Evidence:
+
+- [PostgreSQL 17 release checks](evidence/learn-performance-corrections-release-local-2026-10-10.json)
+- [Hosted rollback](evidence/learn-test-corrections-rehearsal-2026-10-10.json)
+- [Rehearsal source preservation](evidence/learn-corrections-rehearsal-preservation-2026-10-10.json)
+- [Installed release](evidence/learn-test-corrections-installed-2026-10-10.json)
+- [Initial harness stop](evidence/learn-test-corrections-acceptance-initial-2026-10-10.json)
+- [Passing signed-in acceptance](evidence/learn-test-corrections-acceptance-2026-10-10.json)
+- [Final catalog, access retirement and source preservation](evidence/learn-test-corrections-final-2026-10-10.json)
+
+The release runner accepts only the named TEST project and pinned SQL, requires a
+matching rollback rehearsal no older than one hour, and inspects uncertain outcomes
+without replaying the write. The acceptance command deliberately creates retained
+synthetic evidence and retires its users:
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy node scripts/verify/learn-test-corrections-acceptance.mjs --accept --existing-cli-login
+```
+
+Real source adapters, saved assessments under published rules, team aggregation,
+agreed calendars/exclusions and manager-reviewed reward decisions remain unfinished.
