@@ -1,0 +1,64 @@
+{
+  "version": "learn-commusoft-resume-local/1",
+  "observedAt": "2026-10-10T12:36:40.478302+00:00",
+  "state": "local_passed_hosted_unverified",
+  "hostedChanges": false,
+  "realProviderRequests": 0,
+  "sources": [
+    {
+      "path": "supabase/migrations/20261031200000_learn_commusoft_resume.sql",
+      "sha256": "78ac03c85d11fc11f513679ffdc8b7eed942bbe28664ab7c854cfdd34168f70a"
+    },
+    {
+      "path": "src/lib/learn-operator-inputs.ts",
+      "sha256": "a4ad2ffa034cdec14aab9e546b821228c89c1287dff52fd4eb70e9bc0a7ba505"
+    },
+    {
+      "path": "src/lib/learn-commusoft-resume.test.ts",
+      "sha256": "a399420acab1fbe32d15b6d1f6a44ce90ca375fec8e015af5ef7a8a62addcb64"
+    },
+    {
+      "path": "src/components/app/OperatorCommusoftResume.tsx",
+      "sha256": "72728c69525d50ef2a9ced94bf3eaefa18b3cfab85c54445af2ee237f2bfad55"
+    },
+    {
+      "path": "src/components/app/OperatorLearnInputs.tsx",
+      "sha256": "4f5e9c0713f2bd498b30aff6972026c42edf69dad5117766235390c397b1163a"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-resume.py",
+      "sha256": "bb77d50488e7904777078fe6035fdc1358a51e4f495e52bb84e490377aede487"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-resume.assert.sql",
+      "sha256": "9f98e5547dda686c03b8f268828cdc6239d8ee7ed46329d3cd68c83f00cdbecd"
+    },
+    {
+      "path": "preview/learn-operator-inputs/main.tsx",
+      "sha256": "578688eaf14cd06a47d698c6214db2df5166fcfb83a74f12d3543a0eb7147830"
+    }
+  ],
+  "checks": {
+    "isolatedSql": "passed; synthetic supporting schema, real permit/page/worker/operator/resume functions",
+    "concurrentApplyCancel": "one immutable outcome",
+    "competingRequests": "one new queued job",
+    "adapterOutboxTests": 15,
+    "typecheck": "passed",
+    "applicationBuild": "passed",
+    "previewBuild": "passed",
+    "browser": [
+      "lost continuation reply retained",
+      "reload recovered saved receipt",
+      "changed limits clear approval",
+      "new import blocked over unfinished traversal",
+      "viewer cannot edit continuation or approve"
+    ]
+  },
+  "limitations": [
+    "Exact hosted-schema rehearsal outstanding",
+    "Hosted TEST release and authenticated acceptance outstanding",
+    "Real Commusoft API credentials and response coverage unverified",
+    "Frontend and production not released"
+  ],
+  "screenshot": "learn-commusoft-resume-local-2026-10-10.jpg"
+}

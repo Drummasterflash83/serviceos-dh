@@ -3,6 +3,12 @@ export type InputFlags = {
   "learn.enabled": boolean | null;
   "learn.inputs.commusoft.enabled": boolean | null;
 };
+export type InputCheckpoint = {
+  approvalId: string | null;
+  pages: number | null;
+  after: number | null;
+  complete: boolean | null;
+};
 export type OperatorInputDefinition =
   | { kind: "set_modules"; reason: string; expected: InputFlags; values: InputFlags }
   | {
@@ -14,6 +20,18 @@ export type OperatorInputDefinition =
       contact_type?: "customer" | "workaddress";
       max_pages: number;
       page_size: number;
+      expires_at: string;
+    }
+  | {
+      kind: "resume_commusoft";
+      reason: string;
+      account_id: string;
+      approval_id: string;
+      job_id: string;
+      connection_id: string;
+      revision: string;
+      checkpoint: InputCheckpoint;
+      max_pages: number;
       expires_at: string;
     };
 export type OperatorInputRequest = {
@@ -30,6 +48,8 @@ export type InputReceipt = {
   flags?: InputFlags;
   account_id?: string;
   job_id?: string;
+  approval_id?: string;
+  checkpoint?: InputCheckpoint;
 };
 export type InputConnection = {
   id: string;
@@ -50,12 +70,7 @@ export type InputAccount = {
   approval_id: string | null;
   expires_at: string | null;
   max_pages: number | null;
-  checkpoint: {
-    approvalId: string | null;
-    pages: number | null;
-    after: number | null;
-    complete: boolean | null;
-  };
+  checkpoint: InputCheckpoint;
   latest_job: null | {
     id: string;
     status: string;
@@ -98,6 +113,24 @@ const date = (v: unknown): v is string => typeof v === "string" && Number.isFini
 const nullable = (v: unknown, test: (v: unknown) => boolean) => v === null || test(v);
 const string = (v: unknown): v is string => typeof v === "string" && v.length <= 2000;
 const integer = (v: unknown) => Number.isSafeInteger(v) && Number(v) >= 0;
+function checkpoint(v: unknown): v is InputCheckpoint {
+  return (
+    object(v) &&
+    Object.keys(v).sort().join() === ["approvalId", "pages", "after", "complete"].sort().join() &&
+    nullable(v.approvalId, uuid) &&
+    nullable(v.pages, integer) &&
+    nullable(v.after, integer) &&
+    nullable(v.complete, (x) => typeof x === "boolean")
+  );
+}
+function sameCheckpoint(a: unknown, b: InputCheckpoint) {
+  return (
+    checkpoint(a) &&
+    ["approvalId", "pages", "after", "complete"].every(
+      (k) => a[k as keyof InputCheckpoint] === b[k as keyof InputCheckpoint],
+    )
+  );
+}
 function flags(v: unknown): v is InputFlags {
   return (
     object(v) &&
@@ -160,6 +193,38 @@ export function validateInputRequest(r: unknown): asserts r is OperatorInputRequ
       throw Error("Check the connection, collection and import limits.");
     // Expired saved requests still need receipt checks/cancellation. The server
     // validates time before a new apply, after checking its immutable receipt.
+  } else if (d.kind === "resume_commusoft") {
+    if (
+      Object.keys(d).sort().join() !==
+        [
+          "kind",
+          "reason",
+          "account_id",
+          "approval_id",
+          "job_id",
+          "connection_id",
+          "revision",
+          "checkpoint",
+          "max_pages",
+          "expires_at",
+        ]
+          .sort()
+          .join() ||
+      !uuid(d.account_id) ||
+      !uuid(d.approval_id) ||
+      !uuid(d.job_id) ||
+      !uuid(d.connection_id) ||
+      !date(d.revision) ||
+      !date(d.expires_at) ||
+      !checkpoint(d.checkpoint) ||
+      !integer(d.max_pages) ||
+      d.max_pages < 1 ||
+      d.max_pages > 10000 ||
+      d.checkpoint.complete === true ||
+      d.max_pages <= (d.checkpoint.pages ?? 0) ||
+      (d.checkpoint.approvalId !== null && d.checkpoint.approvalId !== d.approval_id)
+    )
+      throw Error("Refresh retained progress and review the continuation limits.");
   } else throw Error("Unsupported operator action.");
 }
 export async function readOperatorInputs(
@@ -229,13 +294,18 @@ export async function resolveOperatorInput(
   mode: "apply" | "check" | "cancel",
 ): Promise<InputReceipt> {
   validateInputRequest(r);
-  const { data, error } = await db.rpc("learn_operator_input_request", {
-    p_tenant: r.tenantId,
-    p_request: r.requestId,
-    p_actor: r.actorId,
-    p_definition: r.definition,
-    p_mode: mode,
-  });
+  const { data, error } = await db.rpc(
+    r.definition.kind === "resume_commusoft"
+      ? "learn_operator_resume_commusoft"
+      : "learn_operator_input_request",
+    {
+      p_tenant: r.tenantId,
+      p_request: r.requestId,
+      p_actor: r.actorId,
+      p_definition: r.definition,
+      p_mode: mode,
+    },
+  );
   if (error)
     throw Error(
       "The request was not confirmed. Keep it saved and check its receipt before making another change.",
@@ -258,7 +328,13 @@ export async function resolveOperatorInput(
                   k as keyof InputFlags
                 ],
             )
-          : !uuid(data.account_id) || !uuid(data.job_id))))
+          : !uuid(data.account_id) ||
+            !uuid(data.job_id) ||
+            (r.definition.kind === "resume_commusoft" &&
+              (data.account_id !== r.definition.account_id ||
+                data.approval_id !== r.definition.approval_id ||
+                data.job_id === r.definition.job_id ||
+                !sameCheckpoint(data.checkpoint, r.definition.checkpoint))))))
   )
     throw Error("The result could not be verified. Keep this request saved and check again.");
   return data as InputReceipt;

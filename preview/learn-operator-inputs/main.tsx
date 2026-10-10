@@ -94,8 +94,16 @@ const client: ConnectionControlClient = {
           data: previous ?? { tenant_id: tenant, request_id: requestId, state: "pending" },
           error: null,
         };
-      if (scenario === "connection_missing" && name === "learn_commusoft_configure" && args.p_mode === "apply" && definition.credential_mode === "reuse")
-        return { data: null, error: { code: "55000", message: "learn_connection_credential_missing" } };
+      if (
+        scenario === "connection_missing" &&
+        name === "learn_commusoft_configure" &&
+        args.p_mode === "apply" &&
+        definition.credential_mode === "reuse"
+      )
+        return {
+          data: null,
+          error: { code: "55000", message: "learn_connection_credential_missing" },
+        };
       if (args.p_mode === "cancel") {
         receipts[requestId] = { tenant_id: tenant, request_id: requestId, state: "cancelled" };
       } else if (name === "learn_commusoft_configure") {
@@ -142,7 +150,13 @@ const client: ConnectionControlClient = {
             kind: definition.kind,
             ...(definition.kind === "set_modules"
               ? { flags: definition.values }
-              : { account_id: id(6), job_id: id(9) }),
+              : {
+                  account_id: id(6),
+                  job_id: id(9),
+                  ...(definition.kind === "resume_commusoft"
+                    ? { approval_id: definition.approval_id, checkpoint: definition.checkpoint }
+                    : {}),
+                }),
           };
     receipts[requestId] = receipt;
     localStorage.setItem(key, JSON.stringify(receipts));
@@ -158,6 +172,10 @@ const client: ConnectionControlClient = {
           error_code: null,
           attempt_count: 0,
         };
+      if (definition.kind === "resume_commusoft") {
+        updated.accounts[0].max_pages = definition.max_pages;
+        updated.accounts[0].expires_at = definition.expires_at;
+      }
       localStorage.setItem(stateKey, JSON.stringify(updated));
       if (scenario === "uncertain")
         throw Error("Synthetic lost reply. The saved request remains available.");

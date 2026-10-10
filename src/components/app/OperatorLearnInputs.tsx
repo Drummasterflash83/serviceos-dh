@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { OperatorCommusoftResume } from "./OperatorCommusoftResume";
 import { OperatorCommusoftConnection } from "./OperatorCommusoftConnection";
 import type { ConnectionControlClient } from "@/lib/learn-commusoft-connection-outbox";
 import { connectionOutboxKey } from "@/lib/learn-operator-request-scope";
@@ -167,7 +168,9 @@ export function OperatorLearnInputs({
             ? "Request cancelled. A delayed copy cannot apply it."
             : receipt.kind === "set_modules"
               ? "Module settings recorded."
-              : "Import approval recorded and queued. Check progress below; this is not a completed sync.";
+              : receipt.kind === "resume_commusoft"
+                ? "Continuation recorded and queued from the saved position. Retained history is unchanged; check progress below."
+                : "Import approval recorded and queued. Check progress below; this is not a completed sync.";
       if (receipt.state !== "pending") {
         setReason("");
         try {
@@ -208,7 +211,15 @@ export function OperatorLearnInputs({
     );
   }
   const selected = data?.connections.find((c) => c.id === connection);
+  const unfinished = data?.accounts.some(
+    (a) =>
+      a.connection_id === selected?.id &&
+      (a.checkpoint.complete !== true ||
+        a.checkpoint.approvalId !== a.approval_id ||
+        ["queued", "running", "retrying"].includes(a.latest_job?.status ?? "")),
+  );
   const canStart =
+    !unfinished &&
     selected?.status === "configured" &&
     !selected.revoked &&
     selected.credential_bound &&
@@ -265,7 +276,9 @@ export function OperatorLearnInputs({
           <p>
             {pending.request.definition.kind === "set_modules"
               ? "Module settings change"
-              : "Commusoft import approval"}{" "}
+              : pending.request.definition.kind === "resume_commusoft"
+                ? "Commusoft import continuation"
+                : "Commusoft import approval"}{" "}
             · {pending.request.definition.reason}
           </p>
           <p className="text-sm">
@@ -469,8 +482,8 @@ export function OperatorLearnInputs({
                 </fieldset>
                 <p className="text-sm">
                   The worker reads one collection within these limits. An incomplete earlier import
-                  must be reviewed before a new one can start. Contact capture does not yet create
-                  reviewed contact cards.
+                  must be reviewed before a new one can start. Captured contacts are available for
+                  review and linking to existing people, customers and sites.
                 </p>
                 {resource === "workaddress" && (
                   <p className="text-sm">
@@ -518,8 +531,9 @@ export function OperatorLearnInputs({
                 </button>
                 {!canStart && (
                   <p className="text-sm">
-                    Enable both switches and complete connection verification before approving an
-                    import.
+                    {unfinished
+                      ? "This connection has unfinished work. Review its progress below and continue from the saved position when the current job has settled."
+                      : "Enable both switches and complete connection verification before approving an import."}
                   </p>
                 )}
               </>
@@ -564,6 +578,17 @@ export function OperatorLearnInputs({
                     progress before retrying.
                   </p>
                 )}
+                <OperatorCommusoftResume
+                  key={`${a.id}:${a.latest_job?.id}:${a.checkpoint.pages}`}
+                  account={a}
+                  connection={data.connections.find((c) => c.id === a.connection_id)}
+                  flags={data.flags}
+                  disabled={disabled}
+                  approved={approved}
+                  reason={reason}
+                  onChange={() => setApproved(false)}
+                  onSubmit={submit}
+                />
               </article>
             ))}
           </div>

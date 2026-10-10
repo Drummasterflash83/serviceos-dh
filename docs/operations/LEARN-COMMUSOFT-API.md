@@ -85,6 +85,53 @@ of a plan from overwriting a previous run's evidence.
 Local fixture-plan validation passes. Continue unaffected work while approval is
 pending; do not execute this hosted run through an alternative path.
 
+## Import continuation — local, 10 October
+
+`20261031200000_learn_commusoft_resume.sql` adds an explicit OpenFolk administrator
+continuation operation. It uses the existing immutable operator request ledger
+and apply/check/cancel protocol. No additional table, default grant, credential,
+schedule or queued job is created by installation. This migration is **not yet
+installed in hosted TEST or production**; its frontend remains unreleased.
+
+An administrator reviews a settled, incomplete import, provides a reason, total
+page allowance and expiry, and approves continuation. The server compares the
+observed account, approval, connection revision, latest job and checkpoint. It
+requires current platform authority, no View As, active tenant/account/connector,
+enabled modules and a verified tenant-bound credential. It verifies the saved
+checkpoint against the last retained source page. Active jobs, including expired
+leases, cannot be replaced. A committed but unsettled failed job is refused so
+source-free worker recovery can settle it first. Completed traversals cannot be
+continued. An empty checkpoint is allowed only for a failed first-page attempt.
+
+The operation preserves the original approval identity, collection, contact type,
+page size, cursor, pages, source versions and terminal jobs. Only total page budget
+and expiry can increase (within 10,000 pages and 24 hours). One new job references
+the terminal predecessor; the original configuration/checkpoint and operator reason
+remain in the immutable receipt history. Shared credential pacing remains enforced
+by the existing worker acquisition path. Late receipt failure rolls back the limit
+change and new job. Cancellation fences delayed apply; replay returns the same job.
+
+The operator progress card now includes continuation controls and blocks a new
+import over unfinished work. Changed limits clear confirmation. It reuses the
+backend/actor/tenant-scoped durable outbox and cross-tab lock; lost acknowledgements
+are checked before resubmission. Receipts must bind the account, approval, preserved
+checkpoint and a new job before local recovery state clears.
+
+Local verification used real permit, page publication, worker settlement, operator
+authority and continuation SQL against a disposable PostgreSQL database with
+synthetic supporting tables and data. A real first page stopped at its budget;
+continuation preserved it and the worker committed the next page from its cursor.
+Checks cover stale progress, scope changes, limits, disabled modules, revoked/viewer/
+client-owner/View As authority, cancellation, exact replay, late-failure rollback,
+completed traversal refusal, competing requests and apply/cancel concurrency. This
+is not an exact hosted-schema or provider acceptance test; both remain necessary.
+
+All 15 operator/continuation adapter and outbox tests, TypeScript, application build
+and isolated preview build passed. Network-disabled browser acceptance exercised
+lost reply → reload → saved-result recovery, retained progress, replacement-import
+blocking, review reset after editing limits and viewer denial. Evidence:
+[evidence/learn-commusoft-resume-local-2026-10-10.json](evidence/learn-commusoft-resume-local-2026-10-10.json).
+
 ## Contact review checkpoint — local acceptance, 10 October
 
 Property contacts now project into the existing `people`, `contact_points` and
