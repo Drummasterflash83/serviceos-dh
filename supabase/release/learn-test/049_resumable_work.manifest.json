@@ -1,0 +1,17 @@
+{
+  "version": "learn-resumable-work-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "c02b8b9e3245d19216601bd45b66251d407828305c095e1dd850fdcc01addd03",
+  "priorFingerprint": "ab06df8a18d4cb0d87be87a0421fd6ff",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101090000_learn_resumable_work_collection.sql",
+      "sha256": "6dcc66b01f802c6312c16916c3dd788a624579cbd483c527e24cdee367b94688"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-resumable-work-hosted.assert.sql",
+    "sha256": "69fa24978e64a9de79c1a3723fc3d0181255777d5e8fc4b2377bb7576ca7044e"
+  },
+  "preservedDataSets": 92
+}
