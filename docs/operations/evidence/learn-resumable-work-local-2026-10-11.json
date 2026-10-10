@@ -1,0 +1,37 @@
+{
+  "version": "learn-resumable-work-local/1",
+  "observedAt": "2026-10-10T23:24:52.100804+00:00",
+  "deployed": false,
+  "browserControlsWired": false,
+  "source": "supabase/migrations/20261101090000_learn_resumable_work_collection.sql",
+  "sha256": "d9558a7c2391e747bfed27598bd9d26fa6554d4c9d1f669b8ec1e98f45b8dda1",
+  "observedProductionWorkItems": 14394,
+  "productionCountObservedAt": "2026-10-10T23:09:09.186Z",
+  "syntheticPopulation": 14500,
+  "batchSize": 100,
+  "completedBatches": 145,
+  "verification": {
+    "localSql": "passed",
+    "rollbackRehearsal": "passed",
+    "allThreeCalculatorsMatchExisting": true,
+    "concurrentSameCheckpoint": "passed",
+    "frozenSnapshotAfterLaterWrites": "passed",
+    "allItemPagesTraversed": 14500,
+    "finalAppendRollback": "passed",
+    "missingHistoryWithheld": "passed",
+    "revocationAndViewAs": "passed",
+    "immutableEvidence": "passed",
+    "olderCollectorsRegression": "passed",
+    "roleBoundaryProbe": "passed",
+    "actualSqlClientApiParsing": "passed",
+    "newClientTests": 7,
+    "existingClientTests": 7,
+    "appTypecheck": "passed"
+  },
+  "remaining": [
+    "Durable browser request recovery and resume controls",
+    "Paged full-proof viewer and measurement/card/scorer integration",
+    "Browser interruption, scope, review and paging verification",
+    "Pinned paired TEST release and hosted owner acceptance"
+  ]
+}

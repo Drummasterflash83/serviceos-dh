@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Resumable work collection — local backend/API candidate, not deployed
+
+A fresh read-only production count found 14,394 retained work items, beyond the
+existing 2,000-item collector cap. The new local path freezes the population and
+source/identity history, processes 100 items per batch and retains proof by item.
+The 14,500-item offline test, concurrency/retry/coverage/access checks, complete
+proof paging and actual SQL-to-client API parsing pass. Browser recovery/progress,
+full proof/card/scorer integration and a pinned paired release are still required.
+The TEST site below remains on 048. [Contract and next integration steps](LEARN-RESUMABLE-WORK-COLLECTION.md).
+
 ## Team workload calculation — TEST release 048 and paired frontend installed
 
 The collector calculates elapsed item-minutes from direct team assignments and
