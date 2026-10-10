@@ -4,8 +4,9 @@ import {writeFileSync} from 'node:fs';
 import {createClient} from '@supabase/supabase-js';
 import {readLearnCards} from '../../src/lib/learn-cards.ts';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {readImportCardsCatalog} from './learn-import-cards-catalog.mjs';
-import {installedImportCards} from './learn-test-import-cards-release.mjs';
+import {readImportBatchesCatalog} from './learn-import-batches-catalog.mjs';
+import {IMPORT_ENDPOINT_SHA} from './learn-test-import-batches-deploy.mjs';
+import {installedImportBatchesEndpoint} from './learn-test-import-batches-endpoint-catalog.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';
 import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';
 import {readAcceptanceResponse} from './learn-test-launch-acceptance.mjs';
@@ -13,14 +14,14 @@ const check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''
 const args=process.argv.slice(2),rowCount=args.length===2?1200:Number(args[3]);
 check(args[0]==='--accept'&&args[1]==='--existing-cli-login'&&(args.length===2||(args.length===4&&args[2]==='--rows'))&&[1200,5000].includes(rowCount)&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit synthetic TEST volume acceptance required');
 const token=savedCliToken(),base=`https://${TEST_PROJECT}.supabase.co`,management={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
-const catalog=await readImportCardsCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportCards(catalog),'Exact TEST import/card release required');
+const catalog=await readImportBatchesCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportBatchesEndpoint(catalog),'Exact TEST import/card release required');
 async function request(url,headers,method='GET',body,timeout=45000){return readAcceptanceResponse(await fetch(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(timeout)}));}
 async function sql(query,readOnly=true){const r=await request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query${readOnly?'/read-only':''}`,management,'POST',{query,...(readOnly?{}:{read_only:false})});check(r.ok,`Volume SQL failed (${r.status})`);return r.data;}
 const auth=await sql(AUTH_CONTRACT_QUERY);check(auth?.length===1&&actionAuthContractMatches(auth[0].contract),'Auth fixture contract differs');
 const keys=await request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/api-keys?reveal=true`,management);check(keys.ok&&Array.isArray(keys.data),'TEST keys unavailable');
 const keyFor=role=>{const a=keys.data.filter(k=>k.name===role);check(a.length===1,'Unique TEST credential required');const v=a[0].api_key,c=JSON.parse(Buffer.from(v.split('.')[1],'base64url').toString());check(c.ref===TEST_PROJECT&&c.role===role,'TEST credential target differs');return v;};
 const anon=keyFor('anon'),service=keyFor('service_role'),admin={apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'};
-const p={version:'learn-test-import-volume/1',projectRef:TEST_PROJECT,runId:randomUUID(),tenant:randomUUID(),user:randomUUID(),rows:rowCount,created:false,seeded:false,retired:false,phase:'prepared',timings:[],failure:null,cleanupErrors:[]};
+const p={version:'learn-test-import-volume/2',projectRef:TEST_PROJECT,sourceBundleSha256:IMPORT_ENDPOINT_SHA,runId:randomUUID(),tenant:randomUUID(),user:randomUUID(),rows:rowCount,created:false,seeded:false,retired:false,phase:'prepared',timings:[],failure:null,cleanupErrors:[]};
 p.email=`learn-volume-${p.runId}@example.invalid`;
 const manifest=`/private/tmp/serviceos-learn-volume-${p.runId}.json`,save=()=>writeFileSync(manifest,JSON.stringify(p,null,2)+'\n',{mode:0o600});writeFileSync(manifest,JSON.stringify(p,null,2)+'\n',{mode:0o600,flag:'wx'});
 const names=['email_messages','phone_calls','phone_recordings','phone_transcripts','slack_messages','slack_message_versions','interactions','sites','jobs','people','companies','contact_points','data_imports','import_entity_links','import_row_results','import_row_provenance','import_conflicts','customer_cards'];

@@ -1,15 +1,15 @@
 /** Actual signed-in synthetic governed import acceptance. Never reads real input files. */
 import {randomUUID,randomBytes} from 'node:crypto';import {writeFileSync} from 'node:fs';import {pathToFileURL} from 'node:url';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {readImportCardsCatalog} from './learn-import-cards-catalog.mjs';
-import {installedImportCards} from './learn-test-import-cards-release.mjs';
+import {readImportBatchesCatalog} from './learn-import-batches-catalog.mjs';
+import {installedImportBatchesEndpoint} from './learn-test-import-batches-endpoint-catalog.mjs';
 import {exerciseImportedCards} from './learn-import-cards-acceptance.mjs';
 import {exerciseImportConflicts} from './learn-import-conflict-acceptance.mjs';
-import {importEndpointBundle,assertImportEndpoint,IMPORT_ENDPOINT_SHA} from './learn-test-import-deploy.mjs';
+import {importEndpointBundle,assertImportEndpoint,IMPORT_ENDPOINT_SHA} from './learn-test-import-batches-deploy.mjs';
 import {AUTH_CONTRACT_QUERY} from './learn-test-auth-contract.mjs';import {actionAuthContractMatches} from './learn-test-actions-acceptance.mjs';import {readAcceptanceResponse} from './learn-test-launch-acceptance.mjs';
 const check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''")}'`,base=`https://${TEST_PROJECT}.supabase.co`;
 export async function acceptImport({allowProjectRef,token,fetcher=fetch}){
- assertImportEndpoint(importEndpointBundle());const pre=await readImportCardsCatalog({allowProjectRef,token,fetcher});check(installedImportCards(pre),'Exact installed TEST import schema and endpoint required');
+ assertImportEndpoint(importEndpointBundle());const pre=await readImportBatchesCatalog({allowProjectRef,token,fetcher});check(installedImportBatchesEndpoint(pre),'Exact installed TEST import schema and endpoint required');
  const management={Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
  async function request(url,headers,method='GET',body){return readAcceptanceResponse(await fetcher(url,{method,headers,...(body===undefined?{}:{body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(30000)}));}
  async function sql(query,readOnly=false){const r=await request(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/database/query${readOnly?'/read-only':''}`,management,'POST',{query,...(readOnly?{}:{read_only:false})});check(r.ok,`TEST import SQL failed (${r.status})`);return r.data;}

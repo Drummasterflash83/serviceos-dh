@@ -215,11 +215,16 @@ try:
   print('Concurrent service projections reuse one card identity: PASS',flush=True)
 
  if '--batches' in sys.argv:
-  batch=(ROOT/'supabase/migrations/20261031080000_learn_import_batches.sql').read_text()
+  batch=(ROOT/'supabase/release/learn-test/025_import_batches.sql').read_text()
+  batch_prefix="set role postgres;set serviceos.release_target='saatxzwxvdvqevbnskxy';set serviceos.release_source_sha256="+q(hashlib.sha256(batch.encode()).hexdigest())+';'
   batch_tables=snapshot();batch_rows=retained()
-  apply('set role postgres;'+batch.replace('\ncommit;','\nrollback;'),'Import batch rollback')
+  apply(batch_prefix+batch.replace('\ncommit;','\nrollback;'),'Import batch rollback')
   assert snapshot()==batch_tables and retained()==batch_rows
-  apply('set role postgres;'+batch,'Private import batch helpers installed locally')
+  run("alter table of_test_deploy.migrations add constraint fail_batch_receipt check(migration_name<>'learn_import_batches_v1');")
+  failed=run(batch_prefix+batch,False);assert failed.returncode and 'fail_batch_receipt' in failed.stderr
+  assert snapshot()==batch_tables and retained()==batch_rows
+  run('alter table of_test_deploy.migrations drop constraint fail_batch_receipt;')
+  apply(batch_prefix+batch,'Private import batch helpers installed locally')
   assert snapshot()==batch_tables and retained()==batch_rows
   apply((ROOT/'scripts/verify/learn-import-batches.assert.sql').read_text(),'100-row preview/apply, replay, partial failure isolation, whole-batch contract rollback and authority boundaries')
   assert retained()==batch_rows

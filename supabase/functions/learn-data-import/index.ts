@@ -14,7 +14,7 @@ const refuse = (status: number, code: string, message: string) =>
 
 export async function handleLearnDataImport(req: Request): Promise<Response> {
   try {
-    if (req.method !== "POST") return await handleDataImport(req, { governedOnly: true });
+    if (req.method !== "POST") return await handleDataImport(req, { governedOnly: true, batched: true });
     const length = req.headers.get("content-length");
     if (length && (!/^\d+$/.test(length) || Number(length) > MAX_REQUEST_BYTES))
       return refuse(413, "too_large", "Import request exceeds the 16 MiB limit");
@@ -41,7 +41,7 @@ export async function handleLearnDataImport(req: Request): Promise<Response> {
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
     return await handleDataImport(new Request(req.url, {
       method: "POST", headers: req.headers, body: bytes,
-    }), { governedOnly: true });
+    }), { governedOnly: true, batched: true });
   } catch {
     // No database exception, bearer, CSV row or parser detail in the response.
     return refuse(503, "unavailable", "Import request could not finish; reload its status before retrying");

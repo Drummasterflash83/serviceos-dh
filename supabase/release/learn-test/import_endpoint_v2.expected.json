@@ -1,0 +1,42 @@
+{
+  "version": "learn-test-import-endpoint/2",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T07:12:18.205Z",
+  "state": "deployed_needs_authenticated_acceptance",
+  "writeAttempted": true,
+  "cliExitStatus": 0,
+  "schemaVerified": true,
+  "otherEndpointsUnchanged": true,
+  "sourceBundleSha256": "6f1fd6f7ee939fc9b5fbd6a166d6d629cab66afde553183c0e1d8f4092254bd1",
+  "files": [
+    "learn-data-import/index.ts",
+    "data-import/handler.ts",
+    "_shared/authz.ts",
+    "_shared/audit.ts",
+    "_shared/simwood.ts",
+    "_shared/imports/profile.ts",
+    "_shared/imports/redact.ts",
+    "_shared/imports/matching.ts",
+    "_shared/imports/job_number.ts",
+    "_shared/imports/row_failure.ts",
+    "_shared/imports/batches.ts"
+  ],
+  "endpoint": {
+    "id": "c21e3607-5680-4b67-9c51-0567a100f899",
+    "slug": "learn-data-import",
+    "name": "learn-data-import",
+    "status": "ACTIVE",
+    "version": 2,
+    "created_at": 1791607142178,
+    "updated_at": 1791616333414,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_c21e3607-5680-4b67-9c51-0567a100f899_2/source/supabase/functions/learn-data-import/index.ts",
+    "ezbr_sha256": "5764340500abbf610859bf36388233d75929bccea796bd0db8a1444410a5f674"
+  },
+  "limitations": [
+    "Only the governed-only LEARN endpoint was replaced; legacy data-import was not deployed or replaced.",
+    "No real file import, provider, secret, schedule or production change. CLI output is withheld.",
+    "Metadata is not signed-in HTTP acceptance. An uncertain deployment must be inspected, never replayed automatically."
+  ]
+}

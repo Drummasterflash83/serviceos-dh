@@ -548,3 +548,44 @@ mismatch, foreign/demoted/suspended/View As refusal, and site/job creation with 
 site-owner contradiction refusal. Existing rows survived installation and rollback.
 The batch helpers are **local only**: Edge integration, pinned TEST release,
 endpoint deployment and repeated maximum-volume acceptance remain required.
+
+## Bounded importer installed; 5,000-row acceptance passed — 10 October
+
+TEST release 025 installs the three batch helpers without source-row changes. The
+exact release passed local transaction/receipt-failure rollback, then hosted rollback
+at 07:11 UTC and installation at 07:11 UTC. The 18 monitored source/card table
+fingerprints stayed unchanged across both hosted operations. TEST now has 95 tables
+and 26 release receipts.
+
+The governed-only `learn-data-import` endpoint is version 2. Its pinned eleven-file
+bundle uses 100-row database batches for valid preview rows and governed apply.
+Every complete batch reply is checked for row identity, cardinality, duplicates,
+action vocabulary and SQLSTATE shape before consumption. Missing/malformed or
+uncertain replies halt without retry/finalisation; reload uses the durable ledger.
+The existing per-row error classifier records returned SQLSTATE failures, never
+raw database error messages. The legacy `data-import` entrypoint retains its
+single-row behavior and was not deployed. All other hosted endpoints are unchanged.
+
+Strict Edge typechecking, 18 handler/request/contract tests, two SQL release tests,
+four deployment checks and two endpoint-catalog checks passed. The initial wider
+command also selected `scripts/data-import.test.mjs`, a separate live legacy test
+that exited with `MISSING env`; it was not supplied an environment or counted as
+passed. The actual signed-in TEST suite then passed company/role/View As guards,
+customer→site→job dependency recovery, exact-site contradiction retention, replay,
+original-file checksum checks and imported-card visibility. Its fixtures are retired.
+
+The previously failing **5,000-customer** trial now passes through the deployed
+endpoint: **4.469 seconds preview, 18.090 seconds apply, 0.614 seconds completed
+replay**. Exactly 5,000 people, customer cards, import links, row outcomes and
+provenance rows remain, with no unexpected outcome/attempt. The first two card pages
+return 24 distinct records each; page 209 returns the final eight and no next page.
+The outcome endpoint correctly reports its current 1,000-row window as truncated,
+with 5,000 outcomes stored. Full outcome pagination is still required.
+
+Both new acceptance runs preserved all pre-existing source/card fingerprints, banned
+and password-rotated temporary logins, removed their approving role and retained
+fixtures/evidence. The real Commusoft package was not imported and its ownership
+contradiction remains unresolved. This benchmark covers valid synthetic customers;
+large site/job files, large mixed-failure files, interrupted hosted batch recovery,
+full row-ledger navigation and production/frontend acceptance remain open. See
+[installed batch release and volume evidence](evidence/learn-import-batches-test-release-2026-10-10.json).

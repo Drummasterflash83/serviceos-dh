@@ -13,7 +13,7 @@ const sha=s=>createHash('sha256').update(s).digest('hex');
 export function harness(options={}){
  const calls=[],writes=[];
  const profile={id:profileId,tenant_id:null,source_system:'commusoft',entity_type:'customers',name:'Synthetic governed profile',active:true,version:1,definition:options.definition??definition};
- const imp={id:importId,tenant_id:tenant,profile_id:profileId,source_system:'commusoft',entity_type:'customers',status:options.status??'previewed',file_checksum:sha(csv),row_count:1,preview:{sealed:{profile:{id:profileId,definition,definition_sha256:sha(JSON.stringify(definition))},mapping:{external_id:0,record_kind:1,display_name:2},import_options:{source:'commusoft'},provenance_source:'commusoft'}},...options.import};
+ const imp={id:importId,tenant_id:tenant,profile_id:profileId,source_system:'commusoft',entity_type:'customers',status:options.status??'previewed',file_checksum:sha(options.csv??csv),row_count:1,preview:{sealed:{profile:{id:profileId,definition,definition_sha256:sha(JSON.stringify(definition))},mapping:{external_id:0,record_kind:1,display_name:2},import_options:{source:'commusoft'},provenance_source:'commusoft'}},...options.import};
  const privateError={code:'08006',message:'SYNTHETIC PRIVATE DATABASE DETAIL'};
  const db={
   auth:{getUser:async token=>token==='session'?{data:{user:{id:actor,email:'synthetic@example.invalid'}},error:null}:{data:{user:null},error:privateError}},
@@ -29,8 +29,14 @@ export function harness(options={}){
     return {data,error:null};}
    return query;
   },
-  async rpc(name,args){calls.push({rpc:name,args});if(!name.startsWith('import_match_'))writes.push({rpc:name});
+  async rpc(name,args){calls.push({rpc:name,args});if(!name.startsWith('import_match_')&&name!=='learn_import_match_batch')writes.push({rpc:name});
    if(options.failRpc===name||options.failRpcs?.includes(name))return {data:null,error:{...privateError,code:options.rpcCode??privateError.code}};
+   if(name==='learn_import_match_batch'||name==='learn_import_apply_batch'){
+    const index=calls.filter(c=>c.rpc===name).length;
+    if(options.batchErrorAt===index)return {data:null,error:{...privateError,code:options.rpcCode??'08006'}};
+    const result=args.p_rows.map(row=>({row_number:row.row_number,result:name==='learn_import_match_batch'?(options.matcher??{action:'new',strategy:'created',confidence:1}):(row.invalid_fields?{action:'invalid'}:options.rowResult??{action:'created'})}));
+    return {data:options.batchReply?options.batchReply(result,index):result,error:null};
+   }
    if(name.startsWith('import_match_'))return {data:options.matcher??{action:'new',strategy:'created',confidence:1},error:null};
    if(name==='import_customer_row')return {data:options.rowResult??{action:'created',entity_id:'synthetic'},error:null};
    if(name==='import_row_outcome')return {data:{already:false},error:null};

@@ -31,6 +31,7 @@ import {
   type StrategyHit,
 } from "../_shared/imports/matching.ts";
 import { normalizeJobNumber } from "../_shared/imports/job_number.ts";
+import { IMPORT_BATCH_SIZE, checkedImportBatch, type ImportBatchRow, type ImportBatchResult } from "../_shared/imports/batches.ts";
 import { classifyRowApplyFailure } from "../_shared/imports/row_failure.ts";
 
 const cors = {
@@ -98,7 +99,7 @@ const ACTION_KEYS: Record<string, string[]> = {
 
 export async function handleDataImport(
   req: Request,
-  options: { governedOnly?: boolean } = {},
+  options: { governedOnly?: boolean; batched?: boolean } = {},
 ): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return fail("method_not_allowed", "Use POST", 405);
@@ -597,6 +598,17 @@ export async function handleDataImport(
       willHold = 0;
     const sample: Array<Record<string, unknown>> = [];
     const mapped = dataRows.map((cells, i) => mapRow(cells, def, cm.mapping, i + 2));
+    const batchMatches = new Map<number, ImportBatchResult>();
+    if (options.batched && governed) {
+      const validRows = mapped.filter(m => !m.errors.length);
+      for (let offset = 0; offset < validRows.length; offset += IMPORT_BATCH_SIZE) {
+        const batch = validRows.slice(offset, offset + IMPORT_BATCH_SIZE).map(m => ({ row_number: m.rowNumber, record: m.record }));
+        const r = await db.rpc("learn_import_match_batch", { p_tenant: tenantId, p_actor: actorId, p_source: source, p_entity: entity, p_rows: batch });
+        if (r.error) return fail(r.error.code === "42501" ? "forbidden" : "unavailable", "Could not validate the import preview", r.error.code === "42501" ? 403 : 503);
+        try { for (const [n, result] of checkedImportBatch(r.data, batch, "match")) batchMatches.set(n, result); }
+        catch { return fail("unavailable", "Incomplete preview batch; no preview was saved", 503); }
+      }
+    }
     for (const m of mapped) {
       if (m.errors.length) {
         invalid++;
@@ -615,6 +627,8 @@ export async function handleDataImport(
           return fail("unavailable", "Could not validate the import preview", 503);
         }
         outcome = r.data as never;
+      } else if (governed && options.batched) {
+        outcome = batchMatches.get(m.rowNumber) as never;
       } else if (governed) {
         // the SAME validation + resolution decisions the row RPCs apply —
         // read-only, candidate COUNTS only, ZERO canonical writes
@@ -1203,14 +1217,27 @@ export async function handleDataImport(
         already: 0,
       };
       const failures: Array<{ row: number; reason: string }> = [];
+      let batchResults = new Map<number, ImportBatchResult>();
       for (let i = 1; i < records.length; i++) {
         const rowNumber = i + 1;
         if (terminal.has(rowNumber)) {
           run.already++;
           continue;
         }
+        if (options.batched && !batchResults.has(rowNumber)) {
+          const batch: ImportBatchRow[] = [];
+          for (let j = i; j < Math.min(records.length, i + IMPORT_BATCH_SIZE); j++) {
+            if (terminal.has(j + 1)) continue;
+            const mapped = mapRow(records[j], sealedDef, sealedMapping, j + 1);
+            batch.push({ row_number: j + 1, record: mapped.record, ...(mapped.errors.length ? { invalid_fields: mapped.errors.map(e => e.field).slice(0,20) } : {}) });
+          }
+          const response = await db.rpc("learn_import_apply_batch", { p_tenant: tenantId, p_import: importId, p_actor: actorId, p_entity: imp.entity_type, p_options: govSealed.import_options, p_rows: batch });
+          if (response.error) return fail(response.error.code === "42501" ? "forbidden" : "unavailable", "Import batch could not finish; reload its saved outcomes before continuing", response.error.code === "42501" ? 403 : 503);
+          try { batchResults = checkedImportBatch(response.data, batch, "apply"); }
+          catch { return fail("unavailable", "Incomplete batch result; reload saved outcomes before continuing", 503); }
+        }
         const m = mapRow(records[i], sealedDef, sealedMapping, rowNumber);
-        if (m.errors.length) {
+        if (m.errors.length && !options.batched) {
           const rec = await db.rpc("import_row_outcome", {
             p_tenant: tenantId,
             p_import: importId,
@@ -1224,7 +1251,10 @@ export async function handleDataImport(
           else run.invalid++;
           continue;
         }
-        const r = await db.rpc(rowRpc, {
+        const batchResult = batchResults.get(rowNumber);
+        const r = options.batched
+          ? { data: batchResult, error: batchResult?.error_code ? { code: batchResult.error_code } : null }
+          : await db.rpc(rowRpc, {
           p_tenant: tenantId,
           p_import: importId,
           p_actor: actorId,

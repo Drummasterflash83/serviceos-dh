@@ -1,13 +1,13 @@
 /** Bounded repair of one retained synthetic browser import; never a real company. */
 import {readFileSync,writeFileSync} from 'node:fs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
-import {readImportCardsCatalog} from './learn-import-cards-catalog.mjs';
-import {installedImportCards} from './learn-test-import-cards-release.mjs';
+import {readImportBatchesCatalog} from './learn-import-batches-catalog.mjs';
+import {installedImportBatchesEndpoint} from './learn-test-import-batches-endpoint-catalog.mjs';
 import {communicationQuery} from './learn-card-communication-catalog.mjs';
 const [flag,path]=process.argv.slice(2),check=(v,s)=>{if(!v)throw Error(s);},q=s=>`'${String(s).replaceAll("'","''")}'`,uuid=v=>typeof v==='string'&&/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v);
 check(flag==='--repair'&&path?.startsWith('/private/tmp/serviceos-learn-ui-')&&process.env.LEARN_TEST_ALLOW_PROJECT_REF===TEST_PROJECT,'Explicit TEST synthetic repair required');
 const p=JSON.parse(readFileSync(path));check(p.version==='learn-test-ui-fixture/1'&&p.projectRef===TEST_PROJECT&&p.accessRevoked===true&&p.importBrowser&&uuid(p.tenant)&&uuid(p.runId),'Retired synthetic import manifest required');
-const token=savedCliToken(),catalog=await readImportCardsCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportCards(catalog),'Exact TEST card release required');
+const token=savedCliToken(),catalog=await readImportBatchesCatalog({allowProjectRef:TEST_PROJECT,token});check(installedImportBatchesEndpoint(catalog),'Exact TEST card release required');
 const sql=(query,readOnly=true)=>communicationQuery(token,query,{readOnly});
 const marked=await sql(`select id from tenants where id=${q(p.tenant)} and metadata->>'learn_ui_run'=${q(p.runId)} and metadata->>'synthetic'='true'`);check(marked.length===1,'Synthetic company marker differs');
 const imports=await sql(`select id from data_imports where tenant_id=${q(p.tenant)} and status='completed'`);check(imports.length===1,'Exact retained completed browser import required');

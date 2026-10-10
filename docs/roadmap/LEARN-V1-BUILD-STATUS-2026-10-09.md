@@ -1143,3 +1143,18 @@ pass in the isolated projection. It is not yet integrated into Edge or installed
 Next: integrate bounded calls, verify error/recovery behavior, pin and rehearse TEST
 release, deploy the reviewed endpoint, then repeat maximum-volume acceptance.
 See [volume findings and candidate](../operations/LEARN-COMMUSOFT-RECOVERY.md#import-volume-failure-and-bounded-batch-candidate--10-october).
+
+## Bounded import release accepted at 5,000 customers — 10 October
+
+TEST release 025 and importer endpoint v2 are installed and verified. The unchanged
+real-Auth dependency/conflict/card suite passes, and a new 5,000-customer trial now
+finishes: 4.469-second preview, 18.090-second apply, 0.614-second idempotent replay.
+All 5,000 canonical customers, cards, links, outcomes and provenance rows are retained;
+pre-existing source/card fingerprints match. Temporary accounts are retired.
+
+The first, second and final card pages passed authenticated reads. The outcome API
+still exposes only its explicitly truncated 1,000-row window; full ledger pagination
+is next. Large site/job/mixed-failure acceptance, interrupted hosted batch recovery,
+real-source ownership reconciliation and production/frontend release remain open.
+No original source files, providers or production deployment changed. See
+[batch release evidence](../operations/evidence/learn-import-batches-test-release-2026-10-10.json).
