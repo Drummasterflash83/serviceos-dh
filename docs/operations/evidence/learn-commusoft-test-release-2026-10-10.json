@@ -1,0 +1,423 @@
+{
+  "version": "learn-commusoft-test-release/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "installed_needs_authenticated_acceptance",
+  "rehearsal": {
+    "version": "learn-test-commusoft-release/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "78e885c2bcb815fb7308dc1431155dab3542171abef7db9fe29c23fcd901eeee",
+    "observedAt": "2026-10-10T09:33:20.748Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "rehearsed_and_rolled_back",
+    "beforeFingerprint": "2fc3c8b3e0ab6e6c5170043da7c40048ab2615bdb66dc683a6aa381f9d6c8619",
+    "afterFingerprint": "2fc3c8b3e0ab6e6c5170043da7c40048ab2615bdb66dc683a6aa381f9d6c8619",
+    "scope": "Retained input/review schema and empty module-switch store. No credentials, enabled flags, connections, approvals, jobs, providers, schedules, Edge or production changes."
+  },
+  "initialInstallationReadback": {
+    "version": "learn-test-commusoft-release/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "78e885c2bcb815fb7308dc1431155dab3542171abef7db9fe29c23fcd901eeee",
+    "observedAt": "2026-10-10T09:34:14.796Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "requires_inspection",
+    "beforeFingerprint": "2fc3c8b3e0ab6e6c5170043da7c40048ab2615bdb66dc683a6aa381f9d6c8619",
+    "afterFingerprint": "01dbf3bba4053f68bc4c6869c7c1a316fc4521003667a5ef5b30dcae2ddb63f3",
+    "scope": "Retained input/review schema and empty module-switch store. No credentials, enabled flags, connections, approvals, jobs, providers, schedules, Edge or production changes."
+  },
+  "confirmation": {
+    "version": "learn-commusoft-test-schema-confirmation/1",
+    "observedAt": "2026-10-10T09:35:53.395Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "installedVerified": true,
+    "priorCatalogPreserved": true,
+    "tables": 104,
+    "receipts": 27,
+    "counts": {
+      "flags": 0,
+      "connections": 0,
+      "jobs": 0,
+      "pages": 0
+    },
+    "state": "installed_needs_authenticated_acceptance",
+    "verificationCorrection": "The shared queue definition is mirrored in workerFunctions and threadFunctions. Both are checked against the expected new definition before projecting the exact prior definition. No SQL was resubmitted."
+  },
+  "preservation": {
+    "rehearsal": {
+      "before": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "people",
+          "count": 16217,
+          "fingerprint": "ea75b79c1c5b6898afe4d5b79dd44dad"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "customer_cards",
+          "count": 16214,
+          "fingerprint": "08ce3c5d2073b310bec09532b4c8285e"
+        },
+        {
+          "name": "sites",
+          "count": 11,
+          "fingerprint": "0453e0881cf9a4d08fbd05e5369cfbc2"
+        },
+        {
+          "name": "jobs",
+          "count": 19,
+          "fingerprint": "b805fe7ccb8917b54214e1ed62f0a0a0"
+        },
+        {
+          "name": "provider_connections",
+          "count": 13,
+          "fingerprint": "d538ca12daf4f03ba0cb4a14b2d6b109"
+        },
+        {
+          "name": "tenant_connectors",
+          "count": 17,
+          "fingerprint": "cccb98e6e7c0bcee7ca59434be6fb887"
+        },
+        {
+          "name": "connector_accounts",
+          "count": 22,
+          "fingerprint": "5e91d58736d6278af0e12eb765af5355"
+        },
+        {
+          "name": "platform_jobs",
+          "count": 42,
+          "fingerprint": "bcfeb55ea0ca62fb5a3c83a059b08954"
+        }
+      ],
+      "after": [
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "people",
+          "count": 16217,
+          "fingerprint": "ea75b79c1c5b6898afe4d5b79dd44dad"
+        },
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "customer_cards",
+          "count": 16214,
+          "fingerprint": "08ce3c5d2073b310bec09532b4c8285e"
+        },
+        {
+          "name": "sites",
+          "count": 11,
+          "fingerprint": "0453e0881cf9a4d08fbd05e5369cfbc2"
+        },
+        {
+          "name": "jobs",
+          "count": 19,
+          "fingerprint": "b805fe7ccb8917b54214e1ed62f0a0a0"
+        },
+        {
+          "name": "provider_connections",
+          "count": 13,
+          "fingerprint": "d538ca12daf4f03ba0cb4a14b2d6b109"
+        },
+        {
+          "name": "tenant_connectors",
+          "count": 17,
+          "fingerprint": "cccb98e6e7c0bcee7ca59434be6fb887"
+        },
+        {
+          "name": "connector_accounts",
+          "count": 22,
+          "fingerprint": "5e91d58736d6278af0e12eb765af5355"
+        },
+        {
+          "name": "platform_jobs",
+          "count": 42,
+          "fingerprint": "bcfeb55ea0ca62fb5a3c83a059b08954"
+        }
+      ],
+      "preserved": true
+    },
+    "installation": {
+      "before": [
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "connector_accounts",
+          "count": 22,
+          "fingerprint": "5e91d58736d6278af0e12eb765af5355"
+        },
+        {
+          "name": "customer_cards",
+          "count": 16214,
+          "fingerprint": "08ce3c5d2073b310bec09532b4c8285e"
+        },
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "jobs",
+          "count": 19,
+          "fingerprint": "b805fe7ccb8917b54214e1ed62f0a0a0"
+        },
+        {
+          "name": "people",
+          "count": 16217,
+          "fingerprint": "ea75b79c1c5b6898afe4d5b79dd44dad"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "platform_jobs",
+          "count": 42,
+          "fingerprint": "bcfeb55ea0ca62fb5a3c83a059b08954"
+        },
+        {
+          "name": "provider_connections",
+          "count": 13,
+          "fingerprint": "d538ca12daf4f03ba0cb4a14b2d6b109"
+        },
+        {
+          "name": "sites",
+          "count": 11,
+          "fingerprint": "0453e0881cf9a4d08fbd05e5369cfbc2"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "tenant_connectors",
+          "count": 17,
+          "fingerprint": "cccb98e6e7c0bcee7ca59434be6fb887"
+        }
+      ],
+      "after": [
+        {
+          "name": "companies",
+          "count": 4,
+          "fingerprint": "0e6010d1268ab3a82e044267ea4aaff2"
+        },
+        {
+          "name": "connector_accounts",
+          "count": 22,
+          "fingerprint": "5e91d58736d6278af0e12eb765af5355"
+        },
+        {
+          "name": "customer_cards",
+          "count": 16214,
+          "fingerprint": "08ce3c5d2073b310bec09532b4c8285e"
+        },
+        {
+          "name": "email_messages",
+          "count": 4,
+          "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+        },
+        {
+          "name": "interactions",
+          "count": 34,
+          "fingerprint": "a5fb62d29fe4786a195e6fc918f4d5e1"
+        },
+        {
+          "name": "jobs",
+          "count": 19,
+          "fingerprint": "b805fe7ccb8917b54214e1ed62f0a0a0"
+        },
+        {
+          "name": "people",
+          "count": 16217,
+          "fingerprint": "ea75b79c1c5b6898afe4d5b79dd44dad"
+        },
+        {
+          "name": "phone_calls",
+          "count": 6,
+          "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+        },
+        {
+          "name": "phone_recordings",
+          "count": 8,
+          "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+        },
+        {
+          "name": "phone_transcripts",
+          "count": 0,
+          "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "platform_jobs",
+          "count": 42,
+          "fingerprint": "bcfeb55ea0ca62fb5a3c83a059b08954"
+        },
+        {
+          "name": "provider_connections",
+          "count": 13,
+          "fingerprint": "d538ca12daf4f03ba0cb4a14b2d6b109"
+        },
+        {
+          "name": "sites",
+          "count": 11,
+          "fingerprint": "0453e0881cf9a4d08fbd05e5369cfbc2"
+        },
+        {
+          "name": "slack_message_versions",
+          "count": 18,
+          "fingerprint": "fa01ea89074b0d0fdfbd56d5d74e193f"
+        },
+        {
+          "name": "slack_messages",
+          "count": 22,
+          "fingerprint": "0e6f9ce13042e4c9724767c42022cf58"
+        },
+        {
+          "name": "tenant_connectors",
+          "count": 17,
+          "fingerprint": "cccb98e6e7c0bcee7ca59434be6fb887"
+        }
+      ],
+      "preserved": true
+    }
+  },
+  "localProjection": {
+    "command": "python3 scripts/verify/learn-commusoft-test-projection.py .verification-results/commusoft-test-catalog-before.json",
+    "state": "passed",
+    "image": "public.ecr.aws/supabase/postgres:17.6.1.141",
+    "network": "none",
+    "hostMounts": false,
+    "publishedPorts": false,
+    "observedTablesReconstructed": 13,
+    "checks": [
+      "exact tables/helpers/grants reproduced",
+      "rollback restores prior schema and records",
+      "receipt failure rolls back generic worker edit and all new objects",
+      "installation as non-superuser owner",
+      "prior record/grant preservation",
+      "flags empty",
+      "duplicate installation refusal"
+    ],
+    "limitations": [
+      "Auth functions/users are fixture stand-ins.",
+      "Does not establish hosted signed-in access or worker/provider runtime."
+    ]
+  },
+  "sourceHashes": {
+    "supabase/release/learn-test/026_commusoft_inputs.manifest.json": "3763d09a997452fc31a8dac3fc38012f204c69c5247335404b0e217c27f9c42d",
+    "supabase/release/learn-test/026_commusoft_inputs.expected.json": "92ceb001fdf1a47b21fe043dc7ced4a4fe3ec2a4f100de30d5799ea7f5668e73",
+    "supabase/release/learn-test/026_commusoft_inputs.sql": "78e885c2bcb815fb7308dc1431155dab3542171abef7db9fe29c23fcd901eeee",
+    "supabase/release/learn-test/026_commusoft_inputs.prerequisites.json": "31d32216ecd5ab298fb9dd6e163f709132033c715970f7441c3b3dea974e15a8"
+  },
+  "limitations": [
+    "No actual Auth/PostgREST acceptance for new RPCs yet.",
+    "No worker endpoint, credential, connection, enabled flag, approval or schedule created.",
+    "No provider or production change; existing record comparison is TEST only."
+  ],
+  "releaseTests": {
+    "command": "node --test scripts/verify/learn-test-commusoft-release.test.mjs",
+    "passed": 2,
+    "cases": [
+      "exact prior/new contracts and drift refusal",
+      "fresh rehearsal; one write; uncertain results inspected; no retry; stale/changed rehearsal denied; wrong project denied; already installed does not write"
+    ]
+  }
+}

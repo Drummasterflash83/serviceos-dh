@@ -399,3 +399,33 @@ held until a subsequent explicit target-reconciliation workflow. It neither
 updates existing rows nor guesses ownership. Contacts and governed source updates
 are still outstanding. The migration/UI are local only and require hosted catalogue,
 Auth/PostgREST and real-source acceptance before use with Drummonds.
+
+## Hosted TEST schema package 026 — 10 October
+
+The package `supabase/release/learn-test/026_commusoft_inputs.sql` combines the seven
+reviewed Commusoft migrations into one transaction and installs the missing TEST
+`feature_flags` table using its existing repository model. Flags start empty;
+service workers can read them, but this package gives clients no write access.
+No connection, credential, approval, queue job, worker endpoint or schedule is
+created by this release.
+
+`learn-commusoft-test-projection.py` restores the 13 relevant observed TEST tables,
+including their actual constraints, indexes, policies, triggers, helper definitions
+and grants, into an isolated PG17 database. It verifies exact reconstruction before
+rehearsing the package as the non-superuser deployment owner. Rollback, injected
+receipt failure, retained canonical records, unchanged prior grants and duplicate
+installation refusal are covered. Auth users/functions are explicit fixture
+stand-ins; this rehearsal is separate from actual signed-in acceptance.
+
+`learn-test-commusoft-release.mjs` pins SQL, source migrations, expected catalog and
+prior helper/grant contracts. It requires exact release 025 plus importer endpoint
+v3, and a matching successful rollback rehearsal less than an hour old. Unknown
+write results require inspection, with no automatic retry. The modified generic
+queue function is checked in both catalog sections that report it before the prior
+release is reconstructed and verified. All earlier schema and endpoint checks stay
+in force.
+
+Hosted installation and confirmation evidence is recorded in
+`evidence/learn-commusoft-test-release-2026-10-10.json`. Actual Auth/PostgREST
+acceptance and the dedicated worker deployment remain required; schema presence
+alone does not make Commusoft live.

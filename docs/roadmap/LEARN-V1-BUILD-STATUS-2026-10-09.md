@@ -1348,3 +1348,30 @@ This is local implementation, not a hosted release or real Commusoft sync. Hoste
 Auth/PostgREST acceptance, real API access, operator connection setup, contacts,
 existing-target reconciliation and governed source updates remain open. See
 [batch verification evidence](../operations/evidence/learn-commusoft-work-batches-local-2026-10-10.json).
+
+## Commusoft schema installed and confirmed in hosted TEST — 10 October
+
+Release 026 now installs the retained input/identity/review schema in the named
+TEST project, bringing it to 104 tables and 27 deployment receipts. The missing
+module-switch table was included using the repository's existing feature-flag
+model. A fresh read confirms zero flags, Commusoft connections, source-sync jobs
+and retained pages. No worker endpoint, credential, schedule or real sync was
+created. Production remains unchanged.
+
+The exact package passed a local PG17 rehearsal using the observed TEST table,
+helper and grant contracts, including non-superuser installation, rollback, injected
+receipt failure and preservation of prior records. Hosted rollback and installation
+both preserved fingerprints across 16 existing communication, canonical and
+connector/queue tables.
+
+The first installed read-back required inspection because the release verifier
+restored the shared queue definition in only one of its two metadata sections.
+The installed new tables/functions/grants already matched the expected package.
+The verifier now checks both reported copies and restores both when validating the
+prior release. Fresh read-only confirmation proves the complete installed schema
+and prior catalog preservation; no installation request was repeated.
+
+Next: real signed-in Auth/PostgREST acceptance using synthetic retained inputs,
+then dedicated worker deployment/verification and operator setup. Drummonds API
+access, contacts, existing-target reconciliation, source updates and broader LEARN
+release acceptance remain open.

@@ -1,0 +1,1667 @@
+{
+  "sourceSha256": "78e885c2bcb815fb7308dc1431155dab3542171abef7db9fe29c23fcd901eeee",
+  "tables": [
+    {
+      "rls": true,
+      "name": "feature_flags",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "flag",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "value",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "feature_flags_natural_uk",
+          "definition": "CREATE UNIQUE INDEX feature_flags_natural_uk ON public.feature_flags USING btree (COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), flag)"
+        },
+        {
+          "name": "feature_flags_pkey",
+          "definition": "CREATE UNIQUE INDEX feature_flags_pkey ON public.feature_flags USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [
+        {
+          "name": "ff_select",
+          "check": null,
+          "roles": [
+            "authenticated"
+          ],
+          "using": "((tenant_id IS NULL) OR (tenant_id = current_tenant_id()) OR is_openfolk())",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE"
+        }
+      ],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "feature_flags_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "feature_flags_tenant_id_fkey",
+          "definition": "FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE"
+        },
+        {
+          "kind": "f",
+          "name": "feature_flags_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES config_versions(id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": true
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_links",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "collection",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_kind",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_table",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "card_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": false
+        },
+        {
+          "name": "request",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_links_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_links_pkey ON public.learn_business_input_links USING btree (id)"
+        },
+        {
+          "name": "learn_business_input_links_tenant_id_connection_id_provider_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_links_tenant_id_connection_id_provider_key ON public.learn_business_input_links USING btree (tenant_id, connection_id, provider, collection, external_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_links FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_links FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_business_input_links_card_id_fkey",
+          "definition": "FOREIGN KEY (card_id) REFERENCES customer_cards(id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "c",
+          "name": "learn_business_input_links_check",
+          "definition": "CHECK ((((entity_kind = 'customer'::text) AND (entity_table = ANY (ARRAY['people'::text, 'companies'::text]))) OR ((entity_kind = 'contact'::text) AND (entity_table = 'people'::text)) OR ((entity_kind = 'site'::text) AND (entity_table = 'sites'::text)) OR ((entity_kind = 'job'::text) AND (entity_table = 'jobs'::text))))"
+        },
+        {
+          "kind": "c",
+          "name": "learn_business_input_links_entity_kind_check",
+          "definition": "CHECK ((entity_kind = ANY (ARRAY['customer'::text, 'site'::text, 'contact'::text, 'job'::text])))"
+        },
+        {
+          "kind": "p",
+          "name": "learn_business_input_links_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_business_input_links_source_version_id_fkey",
+          "definition": "FOREIGN KEY (source_version_id) REFERENCES learn_business_input_versions(id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "u",
+          "name": "learn_business_input_links_tenant_id_connection_id_provider_key",
+          "definition": "UNIQUE (tenant_id, connection_id, provider, collection, external_id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_observations",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "page_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "ordinal",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_observations_page_id_version_id_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_observations_page_id_version_id_key ON public.learn_business_input_observations USING btree (page_id, version_id)"
+        },
+        {
+          "name": "learn_business_input_observations_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_observations_pkey ON public.learn_business_input_observations USING btree (page_id, ordinal)"
+        },
+        {
+          "name": "learn_business_input_observations_version_idx",
+          "definition": "CREATE INDEX learn_business_input_observations_version_idx ON public.learn_business_input_observations USING btree (version_id, page_id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_observations FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_observations FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_business_input_observations_page_id_fkey",
+          "definition": "FOREIGN KEY (page_id) REFERENCES learn_business_input_pages(id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "u",
+          "name": "learn_business_input_observations_page_id_version_id_key",
+          "definition": "UNIQUE (page_id, version_id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_business_input_observations_pkey",
+          "definition": "PRIMARY KEY (page_id, ordinal)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_business_input_observations_version_id_fkey",
+          "definition": "FOREIGN KEY (version_id) REFERENCES learn_business_input_versions(id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_pages",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "collection",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "permit_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "envelope",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "checkpoint_before",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "checkpoint_after",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "record_count",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "committed_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_pages_job_id_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_pages_job_id_key ON public.learn_business_input_pages USING btree (job_id)"
+        },
+        {
+          "name": "learn_business_input_pages_permit_id_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_pages_permit_id_key ON public.learn_business_input_pages USING btree (permit_id)"
+        },
+        {
+          "name": "learn_business_input_pages_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_pages_pkey ON public.learn_business_input_pages USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_pages FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_pages FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "u",
+          "name": "learn_business_input_pages_job_id_key",
+          "definition": "UNIQUE (job_id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_business_input_pages_permit_id_fkey",
+          "definition": "FOREIGN KEY (permit_id) REFERENCES learn_business_input_request_permits(id) ON DELETE RESTRICT"
+        },
+        {
+          "kind": "u",
+          "name": "learn_business_input_pages_permit_id_key",
+          "definition": "UNIQUE (permit_id)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_business_input_pages_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_projection_attempts",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "source_version_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "request",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "result",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_projection_attempts_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_projection_attempts_pkey ON public.learn_business_input_projection_attempts USING btree (id)"
+        },
+        {
+          "name": "learn_business_input_projection_attempts_source_idx",
+          "definition": "CREATE INDEX learn_business_input_projection_attempts_source_idx ON public.learn_business_input_projection_attempts USING btree (tenant_id, source_version_id, created_at)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_projection_attempts FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_projection_attempts FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_business_input_projection_attempts_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "f",
+          "name": "learn_business_input_projection_attempts_source_version_id_fkey",
+          "definition": "FOREIGN KEY (source_version_id) REFERENCES learn_business_input_versions(id) ON DELETE RESTRICT"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_projection_batches",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "request",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "result",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_projection_batches_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_projection_batches_pkey ON public.learn_business_input_projection_batches USING btree (tenant_id, id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_projection_batches FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_projection_batches FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_business_input_projection_batches_pkey",
+          "definition": "PRIMARY KEY (tenant_id, id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_request_gates",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "credential_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "next_allowed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_request_gates_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_request_gates_pkey ON public.learn_business_input_request_gates USING btree (credential_fingerprint)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_business_input_request_gates_pkey",
+          "definition": "PRIMARY KEY (credential_fingerprint)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_request_permits",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "job_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "claimed_by",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "attempt_count",
+          "type": "integer",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "binding",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "credential_fingerprint",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "requested_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_request_permits_job_id_attempt_count_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_request_permits_job_id_attempt_count_key ON public.learn_business_input_request_permits USING btree (job_id, attempt_count)"
+        },
+        {
+          "name": "learn_business_input_request_permits_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_request_permits_pkey ON public.learn_business_input_request_permits USING btree (id)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "f",
+          "name": "learn_business_input_request_permit_credential_fingerprint_fkey",
+          "definition": "FOREIGN KEY (credential_fingerprint) REFERENCES learn_business_input_request_gates(credential_fingerprint)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_business_input_request_permits_job_id_attempt_count_key",
+          "definition": "UNIQUE (job_id, attempt_count)"
+        },
+        {
+          "kind": "p",
+          "name": "learn_business_input_request_permits_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    },
+    {
+      "rls": true,
+      "name": "learn_business_input_versions",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": "gen_random_uuid()",
+          "notNull": true
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "connection_id",
+          "type": "uuid",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "collection",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "external_id",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "content_hash",
+          "type": "text",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "default": null,
+          "notNull": true
+        },
+        {
+          "name": "first_seen_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notNull": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "learn_business_input_versions_pkey",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_versions_pkey ON public.learn_business_input_versions USING btree (id)"
+        },
+        {
+          "name": "learn_business_input_versions_tenant_id_connection_id_provi_key",
+          "definition": "CREATE UNIQUE INDEX learn_business_input_versions_tenant_id_connection_id_provi_key ON public.learn_business_input_versions USING btree (tenant_id, connection_id, provider, collection, external_id, content_hash)"
+        }
+      ],
+      "forceRls": false,
+      "policies": [],
+      "triggers": [
+        {
+          "name": "retain_all",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_all BEFORE TRUNCATE ON public.learn_business_input_versions FOR EACH STATEMENT EXECUTE FUNCTION learn_business_input_retain()"
+        },
+        {
+          "name": "retain_rows",
+          "function": "learn_business_input_retain",
+          "definition": "CREATE TRIGGER retain_rows BEFORE DELETE OR UPDATE ON public.learn_business_input_versions FOR EACH ROW EXECUTE FUNCTION learn_business_input_retain()"
+        }
+      ],
+      "anonAccess": false,
+      "serviceDml": false,
+      "constraints": [
+        {
+          "kind": "p",
+          "name": "learn_business_input_versions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "kind": "u",
+          "name": "learn_business_input_versions_tenant_id_connection_id_provi_key",
+          "definition": "UNIQUE (tenant_id, connection_id, provider, collection, external_id, content_hash)"
+        }
+      ],
+      "authenticatedWrite": false,
+      "authenticatedSelect": false
+    }
+  ],
+  "functions": [
+    {
+      "name": "learn_business_customer_summary",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_value jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_customer_summary(p_value jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\n select jsonb_build_object(\n  'person_name',nullif(concat_ws(' ',public.learn_business_input_text(p_value->'contact','firstName'),public.learn_business_input_text(p_value->'contact','lastName')),''),\n  'company_name',public.learn_business_input_text(p_value,'companyName'),\n  'email',public.learn_business_input_text(p_value->'contact','email'),\n  'phone',coalesce(public.learn_business_input_text(p_value->'contact','telephone'),public.learn_business_input_text(p_value->'contact','mobile')),\n  'address',nullif(concat_ws(', ',public.learn_business_input_text(p_value,'addressLine1'),public.learn_business_input_text(p_value,'addressLine2'),public.learn_business_input_text(p_value,'addressLine3'),public.learn_business_input_text(p_value,'town'),public.learn_business_input_text(p_value,'province')),''),\n  'postcode',public.learn_business_input_text(p_value,'postcode'),\n  'source_type',public.learn_business_input_text(p_value,'type'),\n  'customer_type',case when jsonb_typeof(p_value->'customerType') in ('number','string') then left(p_value->>'customerType',100) end);\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_business_input_latest",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_connection uuid, p_provider text, p_collection text, p_external text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_input_latest(p_tenant uuid, p_connection uuid, p_provider text, p_collection text, p_external text)\n RETURNS learn_business_input_versions\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare v public.learn_business_input_versions%rowtype;t timestamptz;n integer;begin\n select max(p.committed_at) into t from public.learn_business_input_versions s\n  join public.learn_business_input_observations o on o.version_id=s.id join public.learn_business_input_pages p on p.id=o.page_id\n  where s.tenant_id=p_tenant and s.connection_id=p_connection and s.provider=p_provider and s.collection=p_collection and s.external_id=p_external\n   and p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.provider=s.provider and p.collection=s.collection;\n select count(distinct s.id) into n from public.learn_business_input_versions s\n  join public.learn_business_input_observations o on o.version_id=s.id join public.learn_business_input_pages p on p.id=o.page_id\n  where s.tenant_id=p_tenant and s.connection_id=p_connection and s.provider=p_provider and s.collection=p_collection and s.external_id=p_external\n   and p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.provider=s.provider and p.collection=s.collection and p.committed_at=t;\n if n<>1 then return v;end if;\n select s.* into v from public.learn_business_input_versions s\n  join public.learn_business_input_observations o on o.version_id=s.id join public.learn_business_input_pages p on p.id=o.page_id\n  where s.tenant_id=p_tenant and s.connection_id=p_connection and s.provider=p_provider and s.collection=p_collection and s.external_id=p_external\n   and p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.provider=s.provider and p.collection=s.collection and p.committed_at=t limit 1;\n return v;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_business_input_projection_result",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_version uuid, p_request jsonb, p_result jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_input_projection_result(p_tenant uuid, p_version uuid, p_request jsonb, p_result jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare attempt uuid;begin\n insert into public.learn_business_input_projection_attempts(tenant_id,source_version_id,actor_id,request,result)\n  values(p_tenant,p_version,auth.uid(),p_request,p_result) returning id into attempt;\n return p_result||jsonb_build_object('attempt_id',attempt);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_business_input_retain",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_input_retain()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nbegin raise exception 'business_input_history_retained' using errcode='42501';end $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_business_input_review_access",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_connection uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_input_review_access(p_tenant uuid, p_connection uuid DEFAULT NULL::uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare f text;begin\n if auth.role() is distinct from 'authenticated' or auth.uid() is null then raise exception 'business_input_review_forbidden' using errcode='42501';end if;\n perform public.learn_import_batch_authority(p_tenant,auth.uid());\n foreach f in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n  perform 1 from public.feature_flags where tenant_id=p_tenant and flag=f and value='true'::jsonb for share;\n  if not found then raise exception 'business_input_module_unavailable' using errcode='42501';end if;\n end loop;\n perform 1 from public.tenant_connectors where tenant_id=p_tenant and provider='commusoft' and connector_id='commusoft' and enabled and status='active' for share;\n if not found then raise exception 'business_input_connector_unavailable' using errcode='42501';end if;\n if p_connection is not null then\n  perform 1 from public.provider_connections where tenant_id=p_tenant and id=p_connection and provider='commusoft'\n   and status='configured' and revoked_at is null and verified_at<=clock_timestamp() for share;\n  if not found then raise exception 'business_input_connection_unavailable' using errcode='42501';end if;\n end if;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_business_input_text",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_value jsonb, p_key text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_business_input_text(p_value jsonb, p_key text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'pg_catalog'\nAS $function$\n select case when jsonb_typeof(p_value->p_key)='string' then nullif(left(btrim(p_value->>p_key),1000),'') end;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_acquire_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_expected jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_acquire_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_expected jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n  j public.platform_jobs%rowtype;\n  a public.connector_accounts%rowtype;\n  c public.provider_connections%rowtype;\n  cfg jsonb; cp jsonb; req jsonb; pages integer; after_id bigint; flag_name text;\n  secret text; fingerprint text; next_at timestamptz; permit_id uuid;\nbegin\n  if auth.role() is distinct from 'service_role' then\n    raise exception 'commusoft_permit_forbidden' using errcode='42501';\n  end if;\n  if current_setting('transaction_isolation')<>'read committed' then\n    raise exception 'commusoft_permit_snapshot' using errcode='22023';\n  end if;\n  if p_tenant_id is null or p_job_id is null or nullif(btrim(p_claimed_by),'') is null\n     or p_attempt_count is null or p_attempt_count<1 or jsonb_typeof(p_expected) is distinct from 'object'\n     or p_expected->>'tenantId' is distinct from p_tenant_id::text\n     or p_expected->>'jobId' is distinct from p_job_id::text then return null; end if;\n\n  select * into j from public.platform_jobs where id=p_job_id and tenant_id=p_tenant_id for update;\n  if not found or j.job_type is distinct from 'commusoft.source_sync' or j.status is distinct from 'running'\n     or j.claimed_by is distinct from p_claimed_by or j.attempt_count is distinct from p_attempt_count\n     or coalesce(j.lease_expires_at,'-infinity')<=clock_timestamp() then return null; end if;\n  perform 1 from public.tenants where id=p_tenant_id and status='active' for share;\n  if not found then return null; end if;\n  foreach flag_name in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n    perform 1 from public.feature_flags where tenant_id=p_tenant_id and flag=flag_name and value='true'::jsonb for share;\n    if not found then return null; end if;\n  end loop;\n  select * into a from public.connector_accounts where id::text=j.payload->>'connector_account_id'\n    and tenant_id=p_tenant_id for share;\n  if not found or a.status is distinct from 'active' or a.id::text is distinct from p_expected->>'accountId'\n     or nullif(btrim(a.account_key),'') is null or length(a.account_key)>2000\n     or a.tenant_connector_id::text is distinct from p_expected->>'connectorId'\n     or a.sync_cursor is distinct from p_expected->'checkpoint' then return null; end if;\n  perform 1 from public.tenant_connectors where id=a.tenant_connector_id and tenant_id=p_tenant_id\n    and connector_id='commusoft' and provider='commusoft' and enabled and status='active' for share;\n  if not found then return null; end if;\n  cfg:=a.settings->'commusoft_import';\n  if jsonb_typeof(cfg) is distinct from 'object' or cfg is distinct from p_expected->'approval'\n     or cfg->'approved' is distinct from 'true'::jsonb\n     or (cfg->>'approvalId')::uuid is null or (cfg->>'connectionId')::uuid is null\n     or nullif(btrim(cfg->>'consentReference'),'') is null or length(cfg->>'consentReference')>2000\n     or coalesce((cfg->>'expiresAt')::timestamptz,'-infinity')<=clock_timestamp()\n     or jsonb_typeof(cfg->'maxPages') is distinct from 'number' or (cfg->>'maxPages')::integer not between 1 and 10000\n     or jsonb_typeof(cfg->'pageSize') is distinct from 'number' or (cfg->>'pageSize')::integer not between 1 and 100\n     or coalesce(cfg->>'resource','') not in ('properties','propertyContacts','jobs') then return null; end if;\n  if cfg->>'resource'='propertyContacts' then\n    if coalesce(cfg->>'contactType','') not in ('customer','workaddress') then return null; end if;\n  elsif cfg ? 'contactType' then return null; end if;\n\n  if j.job_key is distinct from 'commusoft.source:'||a.id::text||':'||(cfg->>'approvalId') then return null;end if;\n  select * into c from public.provider_connections where id=(cfg->>'connectionId')::uuid and tenant_id=p_tenant_id for share;\n  if not found or c.id::text is distinct from p_expected->>'connectionId' or c.provider is distinct from 'commusoft'\n     or c.status is distinct from 'configured' or c.auth_mode is distinct from 'private_api_key'\n     or c.revoked_at is not null or c.verified_at is null or c.verified_at>clock_timestamp()\n     or c.updated_at is null or c.updated_at is distinct from (p_expected->>'connectionRevision')::timestamptz\n     or coalesce(c.non_secret_config->>'region','') not in ('uk','us')\n     or c.non_secret_config->>'account_key' is distinct from a.account_key\n     or not coalesce('api_key'=any(c.configured_fields),false)\n     or c.secret_refs->>'api_key' is distinct from p_expected->>'secretId' then return null; end if;\n\n  cp:=a.sync_cursor;\n  if cp='{}'::jsonb then cp:=jsonb_build_object('approvalId',cfg->>'approvalId','after',null,'pages',0,'complete',false); end if;\n  if jsonb_typeof(cp) is distinct from 'object' or cp->>'approvalId' is distinct from cfg->>'approvalId'\n     or jsonb_typeof(cp->'pages') is distinct from 'number' or cp->'complete' is distinct from 'false'::jsonb then return null; end if;\n  pages:=(cp->>'pages')::integer;\n  if pages<0 or pages>=(cfg->>'maxPages')::integer then return null; end if;\n  if cp->'after'='null'::jsonb then after_id:=null;\n  elsif jsonb_typeof(cp->'after')='number' then after_id:=(cp->>'after')::bigint;\n  else return null; end if;\n  if pages=0 and after_id is not null or pages>0 and (after_id is null or after_id<1 or after_id>9007199254740991) then return null; end if;\n  req:=jsonb_build_object('region',c.non_secret_config->>'region','resource',cfg->>'resource','after',after_id,'limit',(cfg->>'pageSize')::integer);\n  if cfg->>'resource'='propertyContacts' then req:=req||jsonb_build_object('contactType',cfg->>'contactType'); end if;\n  if req is distinct from p_expected->'request' or p_expected->'pages' is distinct from to_jsonb(pages)\n     or p_expected->'complete' is distinct from 'false'::jsonb then return null; end if;\n\n  if coalesce(j.metadata,'{}'::jsonb) ? 'commusoft_page_v1' then return null; end if;\n  -- A repeated acquisition cannot release a second credential for this attempt.\n  -- An uncertain response is not retried inline; recovery uses a new queue attempt.\n  if exists(select 1 from public.learn_business_input_request_permits where job_id=j.id and attempt_count=p_attempt_count) then return null; end if;\n  select decrypted_secret into secret from vault.decrypted_secrets\n    where id=(c.secret_refs->>'api_key')::uuid and name='provider_secret:'||p_tenant_id::text||':commusoft:api_key';\n  if secret is null or length(secret) not between 1 and 4096 or secret !~ '^[!-~]+$' then return null; end if;\n  -- The same key stored in different tenant Vault entries still shares quota.\n  -- Fingerprints are infrastructure-private, never returned to a worker/client.\n  fingerprint:=encode(sha256(convert_to('commusoft:'||secret,'UTF8')),'hex');\n  insert into public.learn_business_input_request_gates values(fingerprint,clock_timestamp()) on conflict do nothing;\n  select next_allowed_at into next_at from public.learn_business_input_request_gates\n    where credential_fingerprint=fingerprint for update;\n  if j.lease_expires_at<=clock_timestamp() or (cfg->>'expiresAt')::timestamptz<=clock_timestamp() then return null; end if;\n  if next_at>clock_timestamp() then\n    return jsonb_build_object('state','wait','retryAt',ceil(extract(epoch from next_at)*1000)::bigint);\n  end if;\n  -- 48 reservations/minute leaves room below the documented 60/minute ceiling.\n  update public.learn_business_input_request_gates set next_allowed_at=clock_timestamp()+interval '1250 milliseconds'\n    where credential_fingerprint=fingerprint;\n  insert into public.learn_business_input_request_permits(tenant_id,job_id,claimed_by,attempt_count,binding,credential_fingerprint)\n    values(p_tenant_id,p_job_id,p_claimed_by,p_attempt_count,\n      jsonb_build_object('accountId',a.id,'connectorId',a.tenant_connector_id,'connectionId',c.id,\n        'connectionRevision',c.updated_at,'secretId',c.secret_refs->>'api_key',\n        'approval',cfg,'checkpoint',a.sync_cursor,'request',req),fingerprint) returning id into permit_id;\n  -- Short send window prevents delayed workers banking reservations for a burst.\n  return jsonb_build_object('state','ready','apiKey',secret,'permitId',permit_id,\n    'sendBefore',floor(extract(epoch from clock_timestamp()+interval '5 seconds')*1000)::bigint);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_claim_jobs",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_worker uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_claim_jobs(p_worker uuid)\n RETURNS SETOF platform_jobs\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j public.platform_jobs%rowtype;begin\n if auth.role() is distinct from 'service_role' then raise exception 'commusoft_queue_forbidden' using errcode='42501';end if;\n if p_worker is null or current_setting('transaction_isolation')<>'read committed' then raise exception 'commusoft_queue_invalid' using errcode='22023';end if;\n for j in select * from public.platform_jobs q where q.job_type='commusoft.source_sync'\n   and q.status in ('queued','retrying','running') and coalesce(q.available_at,'-infinity')<=clock_timestamp()\n   and coalesce(q.lease_expires_at,'-infinity')<=clock_timestamp()\n   order by q.priority,q.created_at,q.id for update skip locked limit 1\n loop\n   if j.attempt_count is null or j.attempt_count<0 or j.max_attempts is null or j.max_attempts<1 or\n     (j.attempt_count>=j.max_attempts and not exists(select 1 from public.learn_business_input_pages p where p.job_id=j.id and p.tenant_id=j.tenant_id)) then\n     update public.platform_jobs set status='dead_letter',dead_lettered_at=clock_timestamp(),failed_at=clock_timestamp(),\n       lease_expires_at=null,error_code='commusoft_attempts_exhausted' where id=j.id;\n   else\n     update public.platform_jobs set status='running',claimed_by='learn-commusoft:'||p_worker::text,\n       claimed_at=clock_timestamp(),lease_expires_at=clock_timestamp()+interval '180 seconds',\n       attempt_count=j.attempt_count+1,last_attempt_at=clock_timestamp(),started_at=coalesce(started_at,clock_timestamp())\n       where id=j.id returning * into j;\n     return next j;\n   end if;\n end loop;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_commit_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_envelope jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_commit_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_envelope jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n  permit public.learn_business_input_request_permits%rowtype;\n  prior public.learn_business_input_pages%rowtype;\n  j public.platform_jobs%rowtype;\n  a public.connector_accounts%rowtype;\n  connection public.provider_connections%rowtype;\n  b jsonb; cfg jsonb; cp jsonb; next_cp jsonb; receipt jsonb; flag_name text;\n  page_id uuid; version_id uuid; item jsonb; item_id bigint; previous_id bigint; next_id bigint;\n  n integer:=0; pages integer; has_more boolean; v_hash text; saved_payload jsonb;\nbegin\n  if auth.role() is distinct from 'service_role' then raise exception 'commusoft_publication_forbidden' using errcode='42501';end if;\n  if current_setting('transaction_isolation')<>'read committed' then raise exception 'commusoft_publication_snapshot' using errcode='22023';end if;\n  -- Serialize against acquisition and concurrent/repeated publication for this job.\n  select * into j from public.platform_jobs where id=p_job_id and tenant_id=p_tenant_id for update;\n  if not found then raise exception 'commusoft_job_unavailable' using errcode='42501';end if;\n  select * into permit from public.learn_business_input_request_permits where id=p_permit_id and tenant_id=p_tenant_id\n    and job_id=p_job_id and claimed_by=p_claimed_by and attempt_count=p_attempt_count;\n  if not found then raise exception 'commusoft_permit_unavailable' using errcode='42501';end if;\n  select * into prior from public.learn_business_input_pages where permit_id=p_permit_id;\n  if found then\n    if prior.envelope is distinct from p_envelope then raise exception 'commusoft_page_conflict' using errcode='PT409';end if;\n    -- Exact replay acknowledges retained data without changing it or acquiring authority.\n    return jsonb_build_object('pageId',prior.id,'checkpoint',prior.checkpoint_after,'records',prior.record_count,'already',true);\n  end if;\n  if j.job_type is distinct from 'commusoft.source_sync' or j.status is distinct from 'running'\n    or j.claimed_by is distinct from p_claimed_by or j.attempt_count is distinct from p_attempt_count\n    or coalesce(j.lease_expires_at,'-infinity')<=clock_timestamp()\n    or coalesce(j.metadata,'{}'::jsonb) ? 'commusoft_page_v1' then raise exception 'commusoft_job_unavailable' using errcode='42501';end if;\n  perform 1 from public.tenants where id=p_tenant_id and status='active' for share;\n  if not found then raise exception 'commusoft_tenant_unavailable' using errcode='42501';end if;\n  foreach flag_name in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n    perform 1 from public.feature_flags where tenant_id=p_tenant_id and flag=flag_name and value='true'::jsonb for share;\n    if not found then raise exception 'commusoft_module_unavailable' using errcode='42501';end if;\n  end loop;\n  b:=permit.binding; cfg:=b->'approval'; cp:=b->'checkpoint';\n  if j.job_key is distinct from 'commusoft.source:'||(b->>'accountId')||':'||(cfg->>'approvalId') then raise exception 'commusoft_queue_identity' using errcode='PT409';end if;\n  select * into a from public.connector_accounts where id::text=b->>'accountId' and tenant_id=p_tenant_id for update;\n  if not found or a.id::text is distinct from j.payload->>'connector_account_id' or a.status is distinct from 'active'\n    or a.tenant_connector_id::text is distinct from b->>'connectorId'\n    or a.settings->'commusoft_import' is distinct from cfg or a.sync_cursor is distinct from cp\n    or coalesce((cfg->>'expiresAt')::timestamptz,'-infinity')<=clock_timestamp() then\n    raise exception 'commusoft_scope_changed' using errcode='PT409';end if;\n  perform 1 from public.tenant_connectors where id=a.tenant_connector_id and tenant_id=p_tenant_id\n    and connector_id='commusoft' and provider='commusoft' and enabled and status='active' for share;\n  if not found then raise exception 'commusoft_connector_unavailable' using errcode='42501';end if;\n  select * into connection from public.provider_connections where id::text=b->>'connectionId' and tenant_id=p_tenant_id for share;\n  if not found or connection.provider is distinct from 'commusoft' or connection.status is distinct from 'configured'\n    or connection.auth_mode is distinct from 'private_api_key' or connection.revoked_at is not null\n    or connection.verified_at is null or connection.verified_at>clock_timestamp()\n    or connection.updated_at is distinct from (b->>'connectionRevision')::timestamptz\n    or connection.non_secret_config->>'account_key' is distinct from a.account_key\n    or connection.non_secret_config->>'region' is distinct from b->'request'->>'region'\n    or not coalesce('api_key'=any(connection.configured_fields),false)\n    or connection.secret_refs->>'api_key' is distinct from b->>'secretId' then\n    raise exception 'commusoft_connection_changed' using errcode='42501';end if;\n\n  if jsonb_typeof(p_envelope) is distinct from 'object' or octet_length(p_envelope::text)>4194304\n    or jsonb_typeof(p_envelope->'data') is distinct from 'array'\n    or jsonb_array_length(p_envelope->'data')>(b->'request'->>'limit')::integer\n    or jsonb_typeof(p_envelope->'pagination') is distinct from 'object'\n    or jsonb_typeof(p_envelope->'pagination'->'hasMore') is distinct from 'boolean' then\n    raise exception 'commusoft_page_invalid' using errcode='22023';end if;\n  has_more:=(p_envelope->'pagination'->>'hasMore')::boolean;\n  previous_id:=coalesce((b->'request'->>'after')::bigint,0);\n  pages:=case when cp='{}'::jsonb then 0 else (cp->>'pages')::integer end;\n  next_cp:=jsonb_build_object('approvalId',cfg->>'approvalId','after',null,'pages',pages+1,'complete',not has_more);\n  page_id:=gen_random_uuid();\n  -- Stage checkpoint in a local variable; immutable page is inserted after validation.\n  for item in select value from jsonb_array_elements(p_envelope->'data') loop\n    if jsonb_typeof(item) is distinct from 'object' or octet_length(item::text)>524288\n      or jsonb_typeof(item->'id') is distinct from 'number' or (item->>'id') !~ '^[0-9]+$' then\n      raise exception 'commusoft_record_invalid' using errcode='22023';end if;\n    item_id:=(item->>'id')::bigint;\n    if item_id<=previous_id or item_id>9007199254740991 then raise exception 'commusoft_record_order_invalid' using errcode='22023';end if;\n    previous_id:=item_id; n:=n+1;\n  end loop;\n  if p_envelope->'pagination'->'nextCursor' is null or p_envelope->'pagination'->'nextCursor'='null'::jsonb then next_id:=null;\n  elsif jsonb_typeof(p_envelope->'pagination'->'nextCursor')='number' and p_envelope->'pagination'->>'nextCursor' ~ '^[0-9]+$' then\n    next_id:=(p_envelope->'pagination'->>'nextCursor')::bigint;\n  else raise exception 'commusoft_cursor_invalid' using errcode='22023';end if;\n  if has_more and (n=0 or next_id is null or next_id<>previous_id) or\n     not has_more and next_id is not null and next_id<>0 and next_id<>previous_id then\n    raise exception 'commusoft_cursor_invalid' using errcode='22023';end if;\n  if has_more then next_cp:=jsonb_set(next_cp,'{after}',to_jsonb(next_id));end if;\n  insert into public.learn_business_input_pages(id,tenant_id,connection_id,provider,collection,job_id,permit_id,envelope,checkpoint_before,checkpoint_after,record_count)\n    values(page_id,p_tenant_id,connection.id,'commusoft',b->'request'->>'resource',p_job_id,p_permit_id,p_envelope,cp,next_cp,n);\n  n:=0;\n  for item in select value from jsonb_array_elements(p_envelope->'data') loop\n    n:=n+1; v_hash:=encode(sha256(convert_to(item::text,'UTF8')),'hex');\n    insert into public.learn_business_input_versions(tenant_id,connection_id,provider,collection,external_id,content_hash,payload)\n      values(p_tenant_id,connection.id,'commusoft',b->'request'->>'resource',item->>'id',v_hash,item)\n      on conflict(tenant_id,connection_id,provider,collection,external_id,content_hash) do nothing;\n    select v.id,v.payload into version_id,saved_payload from public.learn_business_input_versions v where v.tenant_id=p_tenant_id\n      and v.connection_id=connection.id and v.provider='commusoft' and v.collection=b->'request'->>'resource'\n      and v.external_id=item->>'id' and v.content_hash=v_hash;\n    if version_id is null or saved_payload is distinct from item then raise exception 'commusoft_version_conflict' using errcode='PT409';end if;\n    insert into public.learn_business_input_observations values(page_id,version_id,n);\n  end loop;\n  if j.lease_expires_at<=clock_timestamp() or (cfg->>'expiresAt')::timestamptz<=clock_timestamp() then\n    raise exception 'commusoft_authority_expired' using errcode='42501';end if;\n  update public.connector_accounts set sync_cursor=next_cp where id=a.id and tenant_id=p_tenant_id;\n  receipt:=jsonb_build_object('pageId',page_id,'checkpoint',next_cp,'records',n,'already',false);\n  update public.platform_jobs set metadata=coalesce(metadata,'{}'::jsonb)||jsonb_build_object('commusoft_page_v1',receipt) where id=j.id;\n  return receipt;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_committed_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_committed_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j public.platform_jobs%rowtype;p public.learn_business_input_pages%rowtype;begin\n  if auth.role() is distinct from 'service_role' then raise exception 'commusoft_receipt_forbidden' using errcode='42501';end if;\n  select * into j from public.platform_jobs where id=p_job_id and tenant_id=p_tenant_id for share;\n  if not found or j.job_type is distinct from 'commusoft.source_sync' or j.status is distinct from 'running'\n    or p_claimed_by is null or j.claimed_by is distinct from p_claimed_by or p_attempt_count is null\n    or j.attempt_count is distinct from p_attempt_count or coalesce(j.lease_expires_at,'-infinity')<=clock_timestamp() then\n    raise exception 'commusoft_job_unavailable' using errcode='42501';end if;\n  select * into p from public.learn_business_input_pages where job_id=p_job_id and tenant_id=p_tenant_id;\n  if not found then\n    if coalesce(j.metadata,'{}'::jsonb) ? 'commusoft_page_v1' then raise exception 'commusoft_receipt_missing' using errcode='PT409';end if;\n    return null;\n  end if;\n  if j.metadata->'commusoft_page_v1' is distinct from jsonb_build_object('pageId',p.id,'checkpoint',p.checkpoint_after,'records',p.record_count,'already',false) then\n    raise exception 'commusoft_receipt_mismatch' using errcode='PT409';end if;\n  return jsonb_build_object('pageId',p.id,'checkpoint',p.checkpoint_after,'records',p.record_count,'already',true);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_confirm_customer",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_version uuid, p_kind text, p_target uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_confirm_customer(p_tenant uuid, p_version uuid, p_kind text, p_target uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nbegin\n if auth.role() is distinct from 'authenticated' or auth.uid() is null then raise exception 'business_input_review_forbidden' using errcode='42501';end if;\n return public.learn_commusoft_review_customer(p_tenant,auth.uid(),p_version,p_kind,p_target,p_reason);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_confirm_work_record",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_version uuid, p_target uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_confirm_work_record(p_tenant uuid, p_version uuid, p_target uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n v public.learn_business_input_versions%rowtype;latest public.learn_business_input_versions%rowtype;\n l public.learn_business_input_links%rowtype;s public.sites%rowtype;j public.jobs%rowtype;\n owner jsonb;request jsonb;result jsonb;meta jsonb;field text;kind text;parent text;reason text;target uuid;\n person uuid;company uuid;site uuid;namespace text;address text;status text;created timestamptz;completed timestamptz;ts text;\nbegin\n perform public.learn_business_input_review_access(p_tenant);\n if p_version is null or p_reason is null or length(btrim(p_reason)) not between 3 and 1000 then\n  raise exception 'business_input_review_invalid' using errcode='22023';end if;\n select * into v from public.learn_business_input_versions where id=p_version and tenant_id=p_tenant and provider='commusoft';\n if not found or not (v.collection='jobs' or (v.collection='properties' and v.payload->>'type'='workaddress')) then\n  raise exception 'business_input_work_source_required' using errcode='22023';end if;\n perform public.learn_business_input_review_access(p_tenant,v.connection_id);\n perform 1 from public.provider_connections where tenant_id=p_tenant and id=v.connection_id for update;\n kind:=case when v.collection='jobs' then 'job' else 'site' end;\n request:=jsonb_build_object('target',p_target,'reason',btrim(p_reason),'kind',kind);\n -- The block exits on a held condition; the final attempt records the reason.\n <<project>> begin\n  latest:=public.learn_business_input_latest(p_tenant,v.connection_id,v.provider,v.collection,v.external_id);\n  if latest.id is distinct from v.id then reason:='source_changed_or_ambiguous';exit project;end if;\n  if jsonb_typeof(v.payload->'id') is distinct from 'number' or v.payload->>'id' is distinct from v.external_id then reason:='source_identity_invalid';exit project;end if;\n  select * into l from public.learn_business_input_links where tenant_id=p_tenant and connection_id=v.connection_id\n   and provider=v.provider and collection=v.collection and external_id=v.external_id;\n  if found and (l.source_version_id<>v.id or l.entity_kind<>kind or (p_target is not null and p_target<>l.entity_id)) then\n   reason:='existing_identity_needs_review';exit project;end if;\n  field:=case when kind='site' then 'parentPropertyID' else 'propertyID' end;parent:=v.payload->>field;\n  if jsonb_typeof(v.payload->field) is distinct from 'number' or parent!~'^[1-9][0-9]{0,15}$'\n   or (kind='site' and parent=v.external_id) then reason:='property_reference_invalid';exit project;end if;\n  if parent::numeric>9007199254740991 then reason:='property_reference_invalid';exit project;end if;\n  owner:=public.learn_commusoft_property_owner(p_tenant,v.connection_id,parent,kind='job');\n  if owner->>'state'<>'ready' then reason:=owner->>'reason';exit project;end if;\n  person:=(owner->>'person_id')::uuid;company:=(owner->>'company_id')::uuid;site:=(owner->>'site_id')::uuid;\n  target:=coalesce(l.entity_id,p_target);namespace:='commusoft:connection:'||v.connection_id::text;\n  if target is null then\n   -- Existing CSV imports are candidates, not proof of the same provider account.\n   if kind='site' and exists(select 1 from public.sites where tenant_id=p_tenant and source_system in ('commusoft',namespace) and external_id=v.external_id)\n    or kind='job' and exists(select 1 from public.jobs where tenant_id=p_tenant and source_system in ('commusoft',namespace) and external_id=v.external_id) then\n    reason:='existing_external_identity_needs_review';exit project;end if;\n   meta:=jsonb_build_object('learn_business_input',jsonb_build_object('connection_id',v.connection_id,'source_version_id',v.id,'property_external_id',parent,'relationships',owner));\n   if kind='site' then\n    foreach field in array array['addressLine1','addressLine2','addressLine3','town','province','postcode'] loop\n     if v.payload ? field and v.payload->field<>'null'::jsonb and (jsonb_typeof(v.payload->field)<>'string' or length(v.payload->>field)>1000) then reason:='site_field_invalid';exit project;end if;\n    end loop;\n    address:=public.learn_business_customer_summary(v.payload)->>'address';\n    insert into public.sites(tenant_id,source_system,external_id,person_id,company_id,label,address_text,postcode,created_source,verified,metadata)\n     values(p_tenant,namespace,v.external_id,person,company,coalesce(public.learn_business_input_text(v.payload,'addressLine1'),'Work site '||v.external_id),address,\n      public.learn_business_input_text(v.payload,'postcode'),'business_input:commusoft',false,meta) returning id into target;\n   else\n    if jsonb_typeof(v.payload->'status') is distinct from 'string' or v.payload->>'status' not in ('Open','Complete','Closed') then reason:='job_status_unrecognised';exit project;end if;\n    if v.payload ? 'description' and v.payload->'description'<>'null'::jsonb and (jsonb_typeof(v.payload->'description')<>'string' or length(v.payload->>'description')>1000) then reason:='job_field_invalid';exit project;end if;\n    status:=case v.payload->>'status' when 'Open' then 'open' when 'Complete' then 'completed' else 'closed' end;\n    if v.payload ? 'completed' and v.payload->'completed'<>'null'::jsonb and jsonb_typeof(v.payload->'completed')<>'object' then reason:='job_timestamp_invalid';exit project;end if;\n    -- Only explicit source timestamps with a timezone are eligible. Closed does\n    -- not mean completed: outcome, money, staff and reward semantics stay raw.\n    foreach field in array array['created','completed'] loop\n     ts:=case when field='created' then v.payload->>'createdOnDateTime' else v.payload->'completed'->>'completedOnDateTime' end;\n     if ts is not null then\n      if ts!~'^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,6})?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$' then reason:='job_timestamp_invalid';exit project;end if;\n      begin if field='created' then created:=ts::timestamptz;else completed:=ts::timestamptz;end if;\n      exception when invalid_datetime_format or datetime_field_overflow then reason:='job_timestamp_invalid';exit project;end;\n     end if;\n    end loop;\n    insert into public.jobs(tenant_id,source_system,external_id,job_number,customer_person_id,customer_company_id,site_id,title,description,status,created_date,completed_date,created_source,verified,metadata)\n     values(p_tenant,namespace,v.external_id,v.external_id,person,company,site,coalesce(public.learn_business_input_text(v.payload,'description'),'Job '||v.external_id),\n      public.learn_business_input_text(v.payload,'description'),status,created,completed,'business_input:commusoft',false,meta) returning id into target;\n   end if;\n  else\n   if kind='site' then\n    select * into s from public.sites where tenant_id=p_tenant and id=target for share;\n    if not found or s.person_id is distinct from person or s.company_id is distinct from company then reason:='target_site_owner_mismatch';exit project;end if;\n   else\n    select * into j from public.jobs where tenant_id=p_tenant and id=target for share;\n    if not found or j.customer_person_id is distinct from person or j.customer_company_id is distinct from company or j.site_id is distinct from site then reason:='target_job_owner_mismatch';exit project;end if;\n   end if;\n  end if;\n  if l.id is null then\n   insert into public.learn_business_input_links(tenant_id,connection_id,provider,collection,external_id,source_version_id,entity_kind,entity_table,entity_id,card_id,request,actor_id)\n    values(p_tenant,v.connection_id,v.provider,v.collection,v.external_id,v.id,kind,case when kind='site' then 'sites' else 'jobs' end,target,(owner->>'card_id')::uuid,request,auth.uid()) returning * into l;\n   result:=jsonb_build_object('state','linked','entity_id',target,'entity_kind',kind,'link_id',l.id,'already',false);\n  else result:=jsonb_build_object('state','linked','entity_id',target,'entity_kind',kind,'link_id',l.id,'already',true);end if;\n end project;\n if reason is not null then result:=jsonb_build_object('state','held','reason',reason);end if;\n return public.learn_business_input_projection_result(p_tenant,v.id,request,result);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_customer_candidates",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_version uuid, p_kind text, p_search text, p_after uuid, p_limit integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_customer_candidates(p_tenant uuid, p_version uuid, p_kind text, p_search text DEFAULT ''::text, p_after uuid DEFAULT NULL::uuid, p_limit integer DEFAULT 20)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare v public.learn_business_input_versions%rowtype;s jsonb;q text;result jsonb;more boolean;last_id uuid;\nbegin\n if p_version is null or p_kind is null or p_kind not in ('person','company') or p_search is null or length(btrim(p_search))>150\n  or length(btrim(p_search))=1 or p_limit is null or p_limit not between 1 and 50 then raise exception 'business_input_search_invalid' using errcode='22023';end if;\n perform public.learn_business_input_review_access(p_tenant);\n select * into v from public.learn_business_input_versions where id=p_version and tenant_id=p_tenant and provider='commusoft' and collection='properties';\n if not found then raise exception 'business_input_source_unavailable' using errcode='22023';end if;\n perform public.learn_business_input_review_access(p_tenant,v.connection_id);\n s:=public.learn_business_customer_summary(v.payload);q:=lower(btrim(p_search));\n with candidates as (\n  select id,display_name as name,primary_email as email,primary_phone as phone,postcode from public.people where tenant_id=p_tenant and p_kind='person'\n  union all select id,name,null,phone,postcode from public.companies where tenant_id=p_tenant and p_kind='company'\n ), matches as (\n  select *,case\n   when nullif(lower(btrim(email)),'')=nullif(lower(btrim(s->>'email')),'') then 'shared_email'\n   when nullif(regexp_replace(phone,'[^0-9]','','g'),'')=nullif(regexp_replace(s->>'phone','[^0-9]','','g'),'') then 'shared_phone'\n   when nullif(lower(btrim(name)),'')=nullif(lower(btrim(s->>case when p_kind='person' then 'person_name' else 'company_name' end)),'') then 'same_name'\n   else 'search' end as reason from candidates\n  where (p_after is null or id>p_after) and (\n   (q<>'' and position(q in lower(concat_ws(' ',name,email,phone,postcode)))>0) or\n   (q='' and (nullif(lower(btrim(email)),'')=nullif(lower(btrim(s->>'email')),'') or\n    nullif(regexp_replace(phone,'[^0-9]','','g'),'')=nullif(regexp_replace(s->>'phone','[^0-9]','','g'),'') or\n    nullif(lower(btrim(name)),'')=nullif(lower(btrim(s->>case when p_kind='person' then 'person_name' else 'company_name' end)),'') ))\n  ) order by id limit p_limit+1\n ), numbered as (select *,row_number() over(order by id) as n from matches)\n select coalesce(jsonb_agg(jsonb_build_object('id',id,'name',left(name,1000),'email',left(email,1000),'phone',left(phone,1000),'postcode',left(postcode,1000),'reason',reason) order by id) filter(where n<=p_limit),'[]'),\n  count(*)>p_limit,(array_agg(id order by id) filter(where n<=p_limit))[p_limit] into result,more,last_id from numbered;\n return jsonb_build_object('tenant_id',p_tenant,'version_id',p_version,'kind',p_kind,'rows',result,'next_cursor',case when more then last_id end);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_defer_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_retry_at timestamp with time zone",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_defer_page(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_permit_id uuid, p_retry_at timestamp with time zone)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare permit public.learn_business_input_request_permits%rowtype;\nbegin\n  if auth.role() is distinct from 'service_role' then raise exception 'commusoft_permit_forbidden' using errcode='42501'; end if;\n  if p_retry_at is null or not isfinite(p_retry_at) then return false; end if;\n  select * into permit from public.learn_business_input_request_permits where id=p_permit_id\n    and tenant_id=p_tenant_id and job_id=p_job_id and claimed_by=p_claimed_by and attempt_count=p_attempt_count;\n  if not found then return false; end if;\n  -- A delayed 429 still protects other workers after the original job/connection\n  -- changes. The acquired permit, not current approval, authorizes only extending\n  -- this existing shared gate. Never move the gate backwards or release a key.\n  update public.learn_business_input_request_gates set next_allowed_at=greatest(next_allowed_at,p_retry_at)\n    where credential_fingerprint=permit.credential_fingerprint;\n  return found;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_finish_job",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_outcome jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_finish_job(p_tenant_id uuid, p_job_id uuid, p_claimed_by text, p_attempt_count integer, p_outcome jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare j public.platform_jobs%rowtype;p public.learn_business_input_pages%rowtype;\n permit public.learn_business_input_request_permits%rowtype;a public.connector_accounts%rowtype;\n b jsonb;cfg jsonb;finish jsonb;receipt jsonb;answer jsonb;successor uuid;\n next_status text;stop_reason text;delay_seconds integer;failure_code text;allowed boolean;next_at timestamptz;\nbegin\n if auth.role() is distinct from 'service_role' then raise exception 'commusoft_queue_forbidden' using errcode='42501';end if;\n if current_setting('transaction_isolation')<>'read committed' or p_claimed_by is null or p_attempt_count is null or p_attempt_count<1\n   or jsonb_typeof(p_outcome) is distinct from 'object' or jsonb_typeof(p_outcome->'success') is distinct from 'boolean' then\n   raise exception 'commusoft_queue_invalid' using errcode='22023';end if;\n select * into j from public.platform_jobs where id=p_job_id and tenant_id=p_tenant_id for update;\n if not found or j.job_type is distinct from 'commusoft.source_sync' or j.claimed_by is distinct from p_claimed_by or j.attempt_count is distinct from p_attempt_count then\n   raise exception 'commusoft_queue_not_owned' using errcode='PT409';end if;\n finish:=j.metadata->'commusoft_finish_v1';\n if j.status in ('succeeded','retrying','dead_letter') and finish->>'claimed_by'=p_claimed_by and (finish->>'attempt_count')::integer=p_attempt_count then\n   if finish->'outcome'=p_outcome then return finish->'answer';end if;\n   raise exception 'commusoft_queue_replay_conflict' using errcode='PT409';\n end if;\n if j.status is distinct from 'running' or coalesce(j.lease_expires_at,'-infinity')<=clock_timestamp() then\n   raise exception 'commusoft_queue_not_owned' using errcode='PT409';end if;\n select * into p from public.learn_business_input_pages where job_id=j.id and tenant_id=p_tenant_id;\n if found then\n   -- Never overwrite a committed page as failed, including a lost publication reply.\n   if p_outcome<>'{\"success\":true}'::jsonb then raise exception 'commusoft_queue_page_committed' using errcode='PT409';end if;\n   receipt:=jsonb_build_object('pageId',p.id,'checkpoint',p.checkpoint_after,'records',p.record_count,'already',false);\n   if j.metadata->'commusoft_page_v1' is distinct from receipt then raise exception 'commusoft_queue_receipt_mismatch' using errcode='PT409';end if;\n   select * into permit from public.learn_business_input_request_permits where id=p.permit_id;\n   if not found then raise exception 'commusoft_queue_receipt_mismatch' using errcode='PT409';end if;\n   b:=permit.binding;cfg:=b->'approval';\n   if j.job_key is distinct from 'commusoft.source:'||(b->>'accountId')||':'||(cfg->>'approvalId') then\n     raise exception 'commusoft_queue_identity' using errcode='PT409';end if;\n   stop_reason:=case when p.checkpoint_after->'complete'='true'::jsonb then 'collection_exhausted'\n     when (p.checkpoint_after->>'pages')::integer>=(cfg->>'maxPages')::integer then 'page_budget_exhausted' else 'next_page' end;\n   if stop_reason='next_page' then\n     -- Current switches/approval decide only whether to continue. Prior committed\n     -- work is still acknowledged if an operator has since disabled processing.\n     perform 1 from public.tenants where id=p_tenant_id and status='active' for share;\n     allowed:=found;\n     perform 1 from public.feature_flags where tenant_id=p_tenant_id and flag='learn.enabled' and value='true'::jsonb for share;\n     allowed:=allowed and found;\n     perform 1 from public.feature_flags where tenant_id=p_tenant_id and flag='learn.inputs.commusoft.enabled' and value='true'::jsonb for share;\n     allowed:=allowed and found;\n     select * into a from public.connector_accounts where id::text=b->>'accountId' and tenant_id=p_tenant_id for share;\n     allowed:=allowed and found and a.status='active' and a.settings->'commusoft_import'=cfg and a.sync_cursor=p.checkpoint_after\n       and coalesce((cfg->>'expiresAt')::timestamptz,'-infinity')>clock_timestamp();\n     perform 1 from public.tenant_connectors where id=a.tenant_connector_id and tenant_id=p_tenant_id and connector_id='commusoft'\n       and provider='commusoft' and enabled and status='active' for share;\n     allowed:=allowed and found;\n     perform 1 from public.provider_connections where id::text=b->>'connectionId' and tenant_id=p_tenant_id\n       and provider='commusoft' and status='configured' and auth_mode='private_api_key' and revoked_at is null and verified_at is not null\n       and verified_at<=clock_timestamp() and updated_at=(b->>'connectionRevision')::timestamptz\n       and non_secret_config->>'account_key'=a.account_key and non_secret_config->>'region'=b->'request'->>'region'\n       and secret_refs->>'api_key'=b->>'secretId' and 'api_key'=any(configured_fields) for share;\n     allowed:=allowed and found;\n     if allowed is distinct from true then stop_reason:='authorisation_changed';end if;\n   end if;\n   update public.platform_jobs set status='succeeded',completed_at=clock_timestamp(),lease_expires_at=null,error_code=null,\n     records_processed=p.record_count,result=jsonb_build_object('receipt',receipt,'stop_reason',stop_reason,\n       'coverage','one_collection_traversal','ingestion_complete',false) where id=j.id;\n   if stop_reason='next_page' then\n     select next_allowed_at into next_at from public.learn_business_input_request_gates\n       where credential_fingerprint=permit.credential_fingerprint for share;\n     if not found then raise exception 'commusoft_queue_gate_missing' using errcode='PT409';end if;\n     insert into public.platform_jobs(tenant_id,connector_id,module_id,job_type,job_key,status,priority,max_attempts,available_at,parent_job_id,payload)\n       values(p_tenant_id,j.connector_id,j.module_id,j.job_type,j.job_key,'queued',j.priority,j.max_attempts,\n         greatest(clock_timestamp()+interval '1250 milliseconds',next_at),j.id,jsonb_build_object('connector_account_id',a.id)) returning id into successor;\n   end if;\n   next_status:='succeeded';\n else\n   if coalesce(j.metadata,'{}'::jsonb) ? 'commusoft_page_v1' then raise exception 'commusoft_queue_receipt_mismatch' using errcode='PT409';end if;\n   if p_outcome->'success'='true'::jsonb then raise exception 'commusoft_queue_page_missing' using errcode='PT409';end if;\n   if not p_outcome ?& array['success','code','retryable','retry_after_seconds'] or (select count(*) from jsonb_object_keys(p_outcome))<>4\n     or jsonb_typeof(p_outcome->'retryable') is distinct from 'boolean' or jsonb_typeof(p_outcome->'code') is distinct from 'string'\n     or p_outcome->>'code' !~ '^commusoft_[a-z_]{1,80}$' or jsonb_typeof(p_outcome->'retry_after_seconds') is distinct from 'number'\n     or p_outcome->>'retry_after_seconds' !~ '^[0-9]{1,8}$' then raise exception 'commusoft_queue_invalid' using errcode='22023';end if;\n   delay_seconds:=(p_outcome->>'retry_after_seconds')::integer;\n   if delay_seconds>31536000 then raise exception 'commusoft_queue_invalid' using errcode='22023';end if;\n   delay_seconds:=greatest(delay_seconds,case j.attempt_count when 1 then 60 when 2 then 300 when 3 then 900 else 3600 end);\n   next_status:=case when p_outcome->'retryable'='true'::jsonb and j.attempt_count<j.max_attempts then 'retrying' else 'dead_letter' end;\n   failure_code:=p_outcome->>'code';\n   update public.platform_jobs set status=next_status,lease_expires_at=null,error_code=failure_code,error_count=coalesce(error_count,0)+1,\n     failed_at=clock_timestamp(),available_at=case when next_status='retrying' then clock_timestamp()+make_interval(secs=>delay_seconds) else available_at end,\n     dead_lettered_at=case when next_status='dead_letter' then clock_timestamp() else dead_lettered_at end where id=j.id;\n end if;\n if j.lease_expires_at<=clock_timestamp() then raise exception 'commusoft_queue_not_owned' using errcode='PT409';end if;\n answer:=jsonb_build_object('job_id',j.id,'status',next_status,'successor_id',successor);\n update public.platform_jobs set metadata=coalesce(metadata,'{}')||jsonb_build_object('commusoft_finish_v1',\n   jsonb_build_object('claimed_by',p_claimed_by,'attempt_count',p_attempt_count,'outcome',p_outcome,'answer',answer)) where id=j.id;\n return answer;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_property_owner",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_connection uuid, p_external text, p_allow_site boolean",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_property_owner(p_tenant uuid, p_connection uuid, p_external text, p_allow_site boolean DEFAULT true)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare v public.learn_business_input_versions%rowtype;l public.learn_business_input_links%rowtype;\n s public.sites%rowtype;owner jsonb;person uuid;company uuid;parent text;original jsonb;begin\n v:=public.learn_business_input_latest(p_tenant,p_connection,'commusoft','properties',p_external);\n if v.id is null then return jsonb_build_object('state','held','reason','property_missing_or_ambiguous');end if;\n select * into l from public.learn_business_input_links where tenant_id=p_tenant and connection_id=p_connection\n  and provider='commusoft' and collection='properties' and external_id=p_external;\n if not found then return jsonb_build_object('state','held','reason','property_identity_unreviewed');end if;\n if v.payload->>'type'='customer' and l.entity_kind='customer' then\n  if l.entity_table='people' then\n   select id into person from public.people where tenant_id=p_tenant and id=l.entity_id for share;\n  elsif l.entity_table='companies' then\n   select id into company from public.companies where tenant_id=p_tenant and id=l.entity_id for share;\n  end if;\n  if person is null and company is null then return jsonb_build_object('state','held','reason','customer_target_missing');end if;\n  perform 1 from public.customer_cards where id=l.card_id and tenant_id=p_tenant and\n   ((person is not null and person_id=person) or (company is not null and person_id is null and company_id=company)) for share;\n  if not found then return jsonb_build_object('state','held','reason','customer_card_changed');end if;\n  return jsonb_build_object('state','ready','person_id',person,'company_id',company,'site_id',null,'card_id',l.card_id,'customer_link_id',l.id);\n elsif p_allow_site and v.payload->>'type'='workaddress' and l.entity_kind='site' and l.entity_table='sites' then\n  parent:=v.payload->>'parentPropertyID';\n  if jsonb_typeof(v.payload->'parentPropertyID') is distinct from 'number' or parent!~'^[1-9][0-9]{0,15}$' or parent=p_external then\n   return jsonb_build_object('state','held','reason','site_parent_invalid');end if;\n  select payload into original from public.learn_business_input_versions where id=l.source_version_id;\n  if original->>'parentPropertyID' is distinct from parent then return jsonb_build_object('state','held','reason','site_source_owner_changed');end if;\n  owner:=public.learn_commusoft_property_owner(p_tenant,p_connection,parent,false);\n  if owner->>'state'<>'ready' then return owner;end if;\n  select * into s from public.sites where id=l.entity_id and tenant_id=p_tenant for share;\n  if not found or s.person_id is distinct from (owner->>'person_id')::uuid or s.company_id is distinct from (owner->>'company_id')::uuid then\n   return jsonb_build_object('state','held','reason','site_canonical_owner_changed');end if;\n  return owner||jsonb_build_object('site_id',s.id,'site_link_id',l.id);\n end if;\n return jsonb_build_object('state','held','reason','property_kind_changed');\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_review_connections",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_review_connections(p_tenant uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare result jsonb;begin\n perform public.learn_business_input_review_access(p_tenant);\n select coalesce(jsonb_agg(jsonb_build_object('id',id,'name',coalesce(nullif(left(non_secret_config->>'account_key',150),''),'Commusoft connection')) order by id),'[]') into result\n  from public.provider_connections where tenant_id=p_tenant and provider='commusoft' and status='configured' and revoked_at is null and verified_at<=clock_timestamp();\n return jsonb_build_object('tenant_id',p_tenant,'connections',result);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_review_customer",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_actor uuid, p_version uuid, p_kind text, p_target uuid, p_reason text",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_review_customer(p_tenant uuid, p_actor uuid, p_version uuid, p_kind text, p_target uuid, p_reason text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare\n v public.learn_business_input_versions%rowtype;\n l public.learn_business_input_links%rowtype;\n c public.provider_connections%rowtype;\n request jsonb; contact jsonb; raw jsonb; meta jsonb;\n flag_name text; field_name text; target_table text; label text; address text;\n target uuid; card uuid; latest timestamptz; latest_versions integer; latest_matches integer;\nbegin\n if auth.role() is distinct from 'service_role' and not (auth.role()='authenticated' and auth.uid() is not null and p_actor is not distinct from auth.uid()) then\n  raise exception 'business_input_review_forbidden' using errcode='42501';end if;\n perform public.learn_import_batch_authority(p_tenant,p_actor);\n if p_version is null or p_kind is null or p_kind not in ('person','company')\n  or p_reason is null or length(btrim(p_reason)) not between 3 and 1000 then\n  raise exception 'business_input_review_invalid' using errcode='22023';end if;\n -- Same lock order as the source writer. The exclusive connection lock below\n -- fences a new page publication until this reviewed snapshot has committed.\n perform 1 from public.tenants where id=p_tenant and status='active' for share;\n if not found then raise exception 'business_input_tenant_unavailable' using errcode='42501';end if;\n foreach flag_name in array array['learn.enabled','learn.inputs.commusoft.enabled'] loop\n  perform 1 from public.feature_flags where tenant_id=p_tenant and flag=flag_name and value='true'::jsonb for share;\n  if not found then raise exception 'business_input_module_unavailable' using errcode='42501';end if;\n end loop;\n select * into v from public.learn_business_input_versions where id=p_version and tenant_id=p_tenant;\n if not found or v.provider<>'commusoft' or v.collection<>'properties' then\n  raise exception 'business_input_source_unavailable' using errcode='22023';end if;\n perform 1 from public.tenant_connectors where tenant_id=p_tenant and connector_id='commusoft'\n  and provider='commusoft' and enabled and status='active' for share;\n if not found then raise exception 'business_input_connector_unavailable' using errcode='42501';end if;\n select * into c from public.provider_connections where id=v.connection_id and tenant_id=p_tenant for update;\n if not found or c.provider is distinct from 'commusoft' or c.status is distinct from 'configured' or c.revoked_at is not null\n  or c.verified_at is null or c.verified_at>clock_timestamp() then\n  raise exception 'business_input_connection_unavailable' using errcode='42501';end if;\n target_table:=case when p_kind='person' then 'people' else 'companies' end;\n request:=jsonb_build_object('version',p_version,'kind',p_kind,'target',p_target,'actor',p_actor,'reason',btrim(p_reason));\n select * into l from public.learn_business_input_links where tenant_id=p_tenant\n  and connection_id=v.connection_id and provider=v.provider and collection=v.collection and external_id=v.external_id;\n if found then\n  if l.request is distinct from request then raise exception 'business_input_identity_already_reviewed' using errcode='PT409';end if;\n  -- Exact lost-response recovery. Never changes the original target or card.\n  execute format('select id from public.%I where tenant_id=$1 and id=$2 for share',l.entity_table)\n   into target using p_tenant,l.entity_id;\n  perform 1 from public.customer_cards where id=l.card_id and tenant_id=p_tenant\n    and ((l.entity_table='people' and person_id=l.entity_id)\n      or (l.entity_table='companies' and person_id is null and company_id=l.entity_id)) for share;\n  if target is null or not found then\n   raise exception 'business_input_target_unavailable' using errcode='PT409';end if;\n  return jsonb_build_object('link_id',l.id,'entity_table',l.entity_table,'entity_id',l.entity_id,'card_id',l.card_id,'already',true);\n end if;\n -- Only an observed source version can be approved. Equal-time differing\n -- observations are ambiguous, not UUID-ordered into an invented winner.\n select max(p.committed_at) into latest from public.learn_business_input_observations o\n  join public.learn_business_input_pages p on p.id=o.page_id\n  join public.learn_business_input_versions s on s.id=o.version_id\n  where s.tenant_id=p_tenant and s.connection_id=v.connection_id and s.provider=v.provider\n   and s.collection=v.collection and s.external_id=v.external_id\n   and p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.provider=s.provider and p.collection=s.collection;\n select count(distinct s.id),count(distinct s.id) filter(where s.id=v.id) into latest_versions,latest_matches\n  from public.learn_business_input_observations o join public.learn_business_input_pages p on p.id=o.page_id\n  join public.learn_business_input_versions s on s.id=o.version_id\n  where s.tenant_id=p_tenant and s.connection_id=v.connection_id and s.provider=v.provider\n   and s.collection=v.collection and s.external_id=v.external_id and p.committed_at=latest\n   and p.tenant_id=s.tenant_id and p.connection_id=s.connection_id and p.provider=s.provider and p.collection=s.collection;\n if latest_versions<>1 or latest_matches<>1 then raise exception 'business_input_review_stale' using errcode='PT409';end if;\n raw:=v.payload;\n if raw->>'type' is distinct from 'customer' or jsonb_typeof(raw->'id') is distinct from 'number'\n  or raw->>'id' is distinct from v.external_id then\n  raise exception 'business_input_customer_required' using errcode='22023';end if;\n if p_target is not null then\n  execute format('select id from public.%I where tenant_id=$1 and id=$2 for share',target_table)\n   into target using p_tenant,p_target;\n  if target is null then raise exception 'business_input_target_unavailable' using errcode='22023';end if;\n else\n  -- Copy only typed source fields. No invented email, consent, historical\n  -- timestamps, performance score, or \"verified\" status is created.\n  contact:=coalesce(nullif(raw->'contact','null'::jsonb),'{}'::jsonb);\n  if jsonb_typeof(contact)<>'object' then raise exception 'business_input_customer_invalid' using errcode='22023';end if;\n  foreach field_name in array array['firstName','lastName','telephone','mobile','email'] loop\n   if contact ? field_name and contact->field_name<>'null'::jsonb and\n    (jsonb_typeof(contact->field_name)<>'string' or length(contact->>field_name)>1000) then\n    raise exception 'business_input_customer_invalid' using errcode='22023';end if;\n  end loop;\n  foreach field_name in array array['companyName','addressLine1','addressLine2','addressLine3','town','province','postcode'] loop\n   if raw ? field_name and raw->field_name<>'null'::jsonb and\n    (jsonb_typeof(raw->field_name)<>'string' or length(raw->>field_name)>1000) then\n    raise exception 'business_input_customer_invalid' using errcode='22023';end if;\n  end loop;\n  address:=nullif(concat_ws(', ',nullif(btrim(raw->>'addressLine1'),''),nullif(btrim(raw->>'addressLine2'),''),\n   nullif(btrim(raw->>'addressLine3'),''),nullif(btrim(raw->>'town'),''),nullif(btrim(raw->>'province'),'')),'');\n  meta:=jsonb_build_object('learn_business_input',jsonb_build_object('connection_id',v.connection_id,\n   'provider',v.provider,'collection',v.collection,'external_id',v.external_id,'source_version_id',v.id));\n  if p_kind='person' then\n   label:=nullif(btrim(concat_ws(' ',nullif(btrim(contact->>'firstName'),''),nullif(btrim(contact->>'lastName'),''))),'');\n   if label is null then raise exception 'business_input_customer_name_required' using errcode='22023';end if;\n   insert into public.people(tenant_id,display_name,first_name,last_name,primary_email,primary_phone,address_text,postcode,verified,created_source,metadata)\n    values(p_tenant,label,nullif(btrim(contact->>'firstName'),''),nullif(btrim(contact->>'lastName'),''),\n     nullif(btrim(contact->>'email'),''),coalesce(nullif(btrim(contact->>'telephone'),''),nullif(btrim(contact->>'mobile'),'')),\n     address,nullif(btrim(raw->>'postcode'),''),false,'business_input:commusoft',meta) returning id into target;\n  else\n   label:=nullif(btrim(raw->>'companyName'),'');\n   if label is null then raise exception 'business_input_customer_name_required' using errcode='22023';end if;\n   insert into public.companies(tenant_id,name,phone,address_text,postcode,verified,created_source,metadata)\n    values(p_tenant,label,coalesce(nullif(btrim(contact->>'telephone'),''),nullif(btrim(contact->>'mobile'),'')),\n     address,nullif(btrim(raw->>'postcode'),''),false,'business_input:commusoft',meta) returning id into target;\n  end if;\n end if;\n -- Reuse exactly the customer-card identity indexes used by governed imports.\n -- Existing titles, summaries, ownership, activity, assessments and metadata stay.\n if p_kind='person' then\n  select display_name into label from public.people where id=target and tenant_id=p_tenant;\n  insert into public.customer_cards(tenant_id,person_id,title,metadata)\n   values(p_tenant,target,coalesce(nullif(btrim(label),''),'Imported customer'),jsonb_build_object('learn_source_version_id',v.id))\n   on conflict(tenant_id,person_id) where person_id is not null do nothing returning id into card;\n  if card is null then select id into card from public.customer_cards where tenant_id=p_tenant and person_id=target;end if;\n else\n  select name into label from public.companies where id=target and tenant_id=p_tenant;\n  insert into public.customer_cards(tenant_id,company_id,title,metadata)\n   values(p_tenant,target,coalesce(nullif(btrim(label),''),'Imported customer'),jsonb_build_object('learn_source_version_id',v.id))\n   on conflict(tenant_id,company_id) where person_id is null and company_id is not null do nothing returning id into card;\n  if card is null then select id into card from public.customer_cards where tenant_id=p_tenant and company_id=target and person_id is null;end if;\n end if;\n perform 1 from public.customer_cards where id=card and tenant_id=p_tenant\n  and ((p_kind='person' and person_id=target) or (p_kind='company' and person_id is null and company_id=target)) for share;\n if card is null or not found then raise exception 'business_input_card_changed' using errcode='40001';end if;\n insert into public.learn_business_input_links(tenant_id,connection_id,provider,collection,external_id,source_version_id,\n  entity_kind,entity_table,entity_id,card_id,request,actor_id)\n  values(p_tenant,v.connection_id,v.provider,v.collection,v.external_id,v.id,'customer',target_table,target,card,request,p_actor)\n  returning * into l;\n return jsonb_build_object('link_id',l.id,'entity_table',target_table,'entity_id',target,'card_id',card,'already',false);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "authenticatedExecute": false
+    },
+    {
+      "name": "learn_commusoft_review_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_connection uuid, p_after text, p_limit integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_review_page(p_tenant uuid, p_connection uuid, p_after text DEFAULT NULL::text, p_limit integer DEFAULT 20)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare result jsonb;more boolean;last_id text;begin\n if p_connection is null or p_limit is null or p_limit not between 1 and 50 or\n  (p_after is not null and p_after!~'^[0-9]{1,16}$') then raise exception 'business_input_page_invalid' using errcode='22023';end if;\n perform public.learn_business_input_review_access(p_tenant,p_connection);\n with identities as (\n  select distinct external_id from public.learn_business_input_versions\n  where tenant_id=p_tenant and connection_id=p_connection and provider='commusoft' and collection='properties'\n   and (p_after is null or external_id collate \"C\">p_after collate \"C\")\n ), latest as (\n  select s.*,l.id as link_id,l.entity_table,l.entity_id,l.card_id,l.source_version_id as linked_version\n  from identities i cross join lateral (\n   select v.id,v.external_id,v.payload,p.committed_at from public.learn_business_input_versions v\n   join public.learn_business_input_observations o on o.version_id=v.id join public.learn_business_input_pages p on p.id=o.page_id\n   where v.tenant_id=p_tenant and v.connection_id=p_connection and v.provider='commusoft' and v.collection='properties' and v.external_id=i.external_id\n    and p.tenant_id=v.tenant_id and p.connection_id=v.connection_id and p.provider=v.provider and p.collection=v.collection\n   order by p.committed_at desc,v.id limit 1\n  ) s left join public.learn_business_input_links l on l.tenant_id=p_tenant and l.connection_id=p_connection\n    and l.provider='commusoft' and l.collection='properties' and l.external_id=s.external_id\n  where s.payload->>'type'='customer' or l.entity_kind='customer'\n ), bounded as (select * from latest order by external_id collate \"C\" limit p_limit+1), output as (\n  select *,row_number() over(order by external_id collate \"C\") as n from bounded\n )\n select coalesce(jsonb_agg(jsonb_build_object('version_id',id,'external_id',external_id,'observed_at',committed_at,\n   'summary',public.learn_business_customer_summary(payload),\n   'link',case when link_id is not null then jsonb_build_object('entity_table',entity_table,'entity_id',entity_id,'card_id',card_id,'source_version_id',linked_version) end)\n   order by external_id collate \"C\") filter(where n<=p_limit),'[]'),count(*)>p_limit,\n   max(external_id collate \"C\") filter(where n<=p_limit) into result,more,last_id from output;\n return jsonb_build_object('tenant_id',p_tenant,'connection_id',p_connection,'rows',result,'next_cursor',case when more then last_id end);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_work_batch",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid, p_connection uuid, p_kind text, p_items jsonb, p_reason text, p_cancel boolean, p_expected_actor uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_work_batch(p_tenant uuid, p_request uuid, p_connection uuid, p_kind text, p_items jsonb, p_reason text, p_cancel boolean DEFAULT false, p_expected_actor uuid DEFAULT auth.uid())\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare b public.learn_business_input_projection_batches%rowtype;v public.learn_business_input_versions%rowtype;\n request jsonb;result jsonb;outcomes jsonb:='[]';item jsonb;outcome jsonb;version uuid;target uuid;\n seen uuid[]:='{}';identities text[]:='{}';linked integer:=0;held integer:=0;\nbegin\n if auth.role() is distinct from 'authenticated' or auth.uid() is null then raise exception 'business_input_review_forbidden' using errcode='42501';end if;\n if p_expected_actor is distinct from auth.uid() then raise exception 'business_input_actor_changed' using errcode='42501';end if;\n -- Existing tenant roster lock also serializes competing confirmations/cancellations.\n perform public.learn_import_batch_authority(p_tenant,auth.uid());\n if p_request is null or p_connection is null or p_kind is null or p_kind not in ('site','job') or p_cancel is null\n  or p_reason is null or length(btrim(p_reason)) not between 3 and 1000 or jsonb_typeof(p_items) is distinct from 'array'\n  or jsonb_array_length(p_items) not between 1 and 50 then raise exception 'business_input_batch_invalid' using errcode='22023';end if;\n for item in select value from jsonb_array_elements(p_items) loop\n  if jsonb_typeof(item) is distinct from 'object' or (select count(*) from jsonb_object_keys(item))<>2\n   or jsonb_typeof(item->'version_id') is distinct from 'string' or item->>'version_id'!~*'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'\n   or not item ? 'target_id' or not (item->'target_id'='null'::jsonb or (jsonb_typeof(item->'target_id')='string' and item->>'target_id'~*'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$')) then\n   raise exception 'business_input_batch_item_invalid' using errcode='22023';end if;\n  version:=(item->>'version_id')::uuid;\n  if version=any(seen) then raise exception 'business_input_batch_duplicate' using errcode='22023';end if;\n  seen:=array_append(seen,version);\n end loop;\n request:=jsonb_build_object('connection_id',p_connection,'kind',p_kind,'items',p_items,'reason',btrim(p_reason));\n select * into b from public.learn_business_input_projection_batches where tenant_id=p_tenant and id=p_request;\n if found then\n  if b.actor_id is distinct from auth.uid() or b.request is distinct from request then raise exception 'business_input_batch_conflict' using errcode='PT409';end if;\n  return b.result; -- A saved cancellation also fences a late original apply.\n end if;\n if not p_cancel then\n  perform public.learn_business_input_review_access(p_tenant,p_connection);\n  perform 1 from public.provider_connections where id=p_connection and tenant_id=p_tenant for update;\n  -- Prevalidate every scope before any row is projected. Unknown/foreign rows\n  -- abort the batch, rather than becoming successful partial application.\n  for item in select value from jsonb_array_elements(p_items) loop\n   select * into v from public.learn_business_input_versions where id=(item->>'version_id')::uuid and tenant_id=p_tenant\n    and connection_id=p_connection and provider='commusoft';\n   if not found or (p_kind='job' and v.collection<>'jobs') or\n    (p_kind='site' and (v.collection<>'properties' or v.payload->>'type' is distinct from 'workaddress')) then\n    raise exception 'business_input_batch_scope_invalid' using errcode='22023';end if;\n   if v.external_id=any(identities) then raise exception 'business_input_batch_identity_duplicate' using errcode='22023';end if;\n   identities:=array_append(identities,v.external_id);\n  end loop;\n  for item in select value from jsonb_array_elements(p_items) loop\n   outcome:=public.learn_commusoft_confirm_work_record(p_tenant,(item->>'version_id')::uuid,(item->>'target_id')::uuid,btrim(p_reason));\n   if outcome->>'state'='linked' then linked:=linked+1;\n   elsif outcome->>'state'='held' then held:=held+1;\n   else raise exception 'business_input_batch_outcome_invalid';end if;\n   outcomes:=outcomes||jsonb_build_array(jsonb_build_object('version_id',item->>'version_id','outcome',outcome));\n  end loop;\n end if;\n result:=jsonb_build_object('batch_id',p_request,'tenant_id',p_tenant,'actor_id',auth.uid(),'connection_id',p_connection,'kind',p_kind,\n  'state',case when p_cancel then 'cancelled' else 'recorded' end,'items',outcomes,'linked',linked,'held',held);\n insert into public.learn_business_input_projection_batches(tenant_id,id,actor_id,request,result) values(p_tenant,p_request,auth.uid(),request,result);\n return result;\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_work_batch_result",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_request uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_work_batch_result(p_tenant uuid, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare result jsonb;begin\n if auth.role() is distinct from 'authenticated' or auth.uid() is null then raise exception 'business_input_review_forbidden' using errcode='42501';end if;\n perform public.learn_import_batch_authority(p_tenant,auth.uid());\n if p_request is null then raise exception 'business_input_batch_invalid' using errcode='22023';end if;\n select b.result into result from public.learn_business_input_projection_batches b where tenant_id=p_tenant and id=p_request and actor_id=auth.uid();\n return result; -- null is an observed absence, never a cancelled/incomplete write guarantee.\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "learn_commusoft_work_review_page",
+      "owner": "postgres",
+      "settings": [
+        "search_path=pg_catalog"
+      ],
+      "arguments": "p_tenant uuid, p_connection uuid, p_kind text, p_after text, p_limit integer",
+      "definition": "CREATE OR REPLACE FUNCTION public.learn_commusoft_work_review_page(p_tenant uuid, p_connection uuid, p_kind text, p_after text DEFAULT NULL::text, p_limit integer DEFAULT 20)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\ndeclare r record;v public.learn_business_input_versions%rowtype;l public.learn_business_input_links%rowtype;\n rows jsonb:='[]';owner jsonb;attempt jsonb;label text;parent text;customer text;v_collection text;last_id text;counted integer:=0;more boolean:=false;\nbegin\n if p_connection is null or p_kind is null or p_kind not in ('site','job') or p_limit is null or p_limit not between 1 and 50\n  or (p_after is not null and p_after!~'^[0-9]{1,16}$') then raise exception 'business_input_page_invalid' using errcode='22023';end if;\n perform public.learn_business_input_review_access(p_tenant,p_connection);\n v_collection:=case when p_kind='site' then 'properties' else 'jobs' end;\n for r in select distinct s.external_id collate \"C\" as external_id from public.learn_business_input_versions s where s.tenant_id=p_tenant and s.connection_id=p_connection\n  and s.provider='commusoft' and s.collection=v_collection and (p_kind='job' or s.payload->>'type'='workaddress')\n  and (p_after is null or s.external_id collate \"C\">p_after collate \"C\") order by s.external_id collate \"C\" limit p_limit+1 loop\n  counted:=counted+1;if counted>p_limit then more:=true;exit;end if;last_id:=r.external_id;\n  v:=public.learn_business_input_latest(p_tenant,p_connection,'commusoft',v_collection,r.external_id);\n  select * into l from public.learn_business_input_links where tenant_id=p_tenant and connection_id=p_connection and provider='commusoft'\n   and learn_business_input_links.collection=v_collection and external_id=r.external_id;\n  parent:=case when p_kind='site' then v.payload->>'parentPropertyID' else v.payload->>'propertyID' end;\n  owner:=case when v.id is null then jsonb_build_object('state','held','reason','source_changed_or_ambiguous')\n   else public.learn_commusoft_property_owner(p_tenant,p_connection,parent,p_kind='job') end;\n  customer:=null;\n  if owner->>'state'='ready' then\n   if owner->>'person_id' is not null then select display_name into customer from public.people where tenant_id=p_tenant and id=(owner->>'person_id')::uuid;\n   else select name into customer from public.companies where tenant_id=p_tenant and id=(owner->>'company_id')::uuid;end if;\n  end if;\n  select a.result into attempt from public.learn_business_input_projection_attempts a where a.tenant_id=p_tenant and a.source_version_id=v.id order by a.created_at desc,a.id desc limit 1;\n  label:=case when p_kind='site' then public.learn_business_input_text(v.payload,'addressLine1') else public.learn_business_input_text(v.payload,'description') end;\n  rows:=rows||jsonb_build_array(jsonb_build_object('external_id',r.external_id,'version_id',v.id,'title',coalesce(label,initcap(p_kind)||' '||r.external_id),\n   'property_reference',case when parent~'^[1-9][0-9]{0,15}$' then parent end,'customer_name',left(customer,1000),'relationship_reason',owner->>'reason',\n   'source_status',public.learn_business_input_text(v.payload,'status'),'linked_version_id',l.source_version_id,'last_result',attempt,\n   'selectable',v.id is not null and coalesce(p_kind='job' or v.payload->>'type'='workaddress',false)));\n end loop;\n return jsonb_build_object('tenant_id',p_tenant,'connection_id',p_connection,'kind',p_kind,'rows',rows,'next_cursor',case when more then last_id end);\nend $function$\n",
+      "anonExecute": false,
+      "serviceExecute": false,
+      "securityDefiner": true,
+      "authenticatedExecute": true
+    },
+    {
+      "name": "platform_jobs_claim",
+      "owner": "postgres",
+      "settings": null,
+      "arguments": "p_worker text, p_batch integer, p_lease_seconds integer, p_job_types text[]",
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_jobs_claim(p_worker text, p_batch integer DEFAULT 5, p_lease_seconds integer DEFAULT 300, p_job_types text[] DEFAULT NULL::text[])\n RETURNS SETOF platform_jobs\n LANGUAGE plpgsql\nAS $function$\nbegin\n  return query\n  update platform_jobs j set\n    status           = 'running',\n    claimed_at       = now(),\n    claimed_by       = p_worker,\n    lease_expires_at = now() + make_interval(secs => greatest(30, p_lease_seconds)),\n    attempt_count    = j.attempt_count + 1,\n    last_attempt_at  = now(),\n    started_at       = coalesce(j.started_at, now())\n  where j.id in (\n    select c.id\n    from platform_jobs c\n    where c.status in ('queued', 'retrying')\n      and c.job_type <> 'commusoft.source_sync'\n      and c.job_type not in ('slack.history_sync','slack.thread_sync')\n      and (c.available_at is null or c.available_at <= now())\n      and (c.lease_expires_at is null or c.lease_expires_at < now())\n      and (p_job_types is null or c.job_type = any(p_job_types))\n    order by c.priority asc, c.created_at asc\n    for update skip locked\n    limit greatest(1, least(50, p_batch))\n  )\n  returning j.*;\nend;\n$function$\n",
+      "anonExecute": false,
+      "serviceExecute": true,
+      "securityDefiner": false,
+      "authenticatedExecute": false
+    }
+  ],
+  "grants": [
+    {
+      "role": "authenticated",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_links",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_observations",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_pages",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_attempts",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_projection_batches",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_gates",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_request_permits",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "DELETE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "INSERT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "MAINTAIN"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "REFERENCES"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRIGGER"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "TRUNCATE"
+    },
+    {
+      "role": "postgres",
+      "table": "learn_business_input_versions",
+      "column": null,
+      "grantable": false,
+      "privilege": "UPDATE"
+    },
+    {
+      "role": "service_role",
+      "table": "feature_flags",
+      "column": null,
+      "grantable": false,
+      "privilege": "SELECT"
+    }
+  ]
+}
