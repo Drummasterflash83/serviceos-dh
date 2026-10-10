@@ -1,5 +1,40 @@
 # Existing TEST environment: verified release gaps
 
+## Paused email recovery — local implementation, 10 October 2026
+
+`20261101000500_learn_email_paused_recovery.sql` closes the queue admission gap
+for saved email work. The generic claimant now passes the candidate job ID to a
+four-argument overload of `learn_capture_job_allowed`. While capture is paused,
+only the three mailbox capture job types can use this exception, and only with
+an immutable attempt binding whose tenant and complete job definition still
+match. The bound run must have either an unsettled durable transition or a
+terminal success/failure. Metadata flags and merely having a running attempt do
+not bypass the pause. Discovery retains its ordinary admission check.
+
+The SQL change preserves the claimant's other filters, priority, lease handling,
+locking and dedicated-worker exclusions. Recovery settles saved state before the
+engine checks admission for new provider work. A recovered pending claim then
+defers without obtaining credentials and refunds that claim's attempt charge.
+Recovered terminal success creates no immediate successor; later scheduling is
+still responsible for resuming unfinished traversal after admission is restored.
+Terminal failure can settle after its mailbox has been disabled.
+
+**49 database scenarios / 50 Node results**, **nine actual-worker VM tests** and
+the existing complete capture-controls fixture pass. The new scenarios exercise
+the recorded TEST claimant, actual email protocol/engine and exact capture helper
+definitions, including rollback/grants, definition and tenant mismatches, all
+three mailbox types, provider-free recovery and attempt-neutral deferral.
+The email fixture reconstructs minimal tenant/flag tables and only the relevant
+capture-control functions; the separate full controls fixture covers operator,
+Slack and phone dependencies. See
+[local evidence](evidence/learn-email-paused-recovery-local-2026-10-10.json).
+
+**Not deployed.** Direct sync endpoints still use their old paths and must become
+authenticated queue submissions with truthful queued UI feedback before the
+coordinated email runtime release. Hosted migration/deployment acceptance and
+real mailbox authorization remain outstanding. No hosted data, credentials,
+permissions, provider traffic or schedules changed in this checkpoint.
+
 ## Credential reuse and queue routing — local implementation, 10 October 2026
 
 The three mailbox queue handlers now call the durable engine in-process with
@@ -45,8 +80,8 @@ declarations; this is not a Deno deployment build. See
 **Not deployed.** TEST credential/Workspace table definitions were read without
 credential values or mailbox data. Credential tests use synthetic database and
 provider ports; real Drummonds authorization has not been exercised here. Queue
-claim filtering still needs a narrow exception for saved email recovery while
-capture is paused. Direct sync endpoints still use their old paths and must be
+claim filtering's paused-recovery gap is addressed by the later local migration
+above. Direct sync endpoints still use their old paths and must be
 adapted before coordinated runtime installation. No hosted credentials, data,
 permissions or schedules changed, and no provider request was made.
 

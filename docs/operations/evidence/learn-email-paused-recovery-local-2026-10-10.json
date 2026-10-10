@@ -1,0 +1,40 @@
+{
+  "version": "learn-email-paused-recovery-local/1",
+  "observedAt": "2026-10-10T15:18:34.576418+00:00",
+  "state": "local_verified_not_deployed",
+  "databaseScenarios": 49,
+  "databaseTestResults": 50,
+  "workerVmTests": 9,
+  "fullCaptureControlsFixture": "passed",
+  "files": [
+    {
+      "path": "supabase/migrations/20261101000500_learn_email_paused_recovery.sql",
+      "sha256": "9b5cc76035d17889fc2a01ea10c091478e7b69711c94c2770f870c249f9c6ebb"
+    },
+    {
+      "path": "scripts/verify/learn-email-paused-recovery-cases.mjs",
+      "sha256": "ece17f0ef3903c6ade3457cec72c4347c7df098a1822e1da7efa9874f3d60898"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "f9b6b80568cdf8523e55401f5ce2fd75ce98ee791a2f6722916fd069fd7be4db"
+    }
+  ],
+  "verified": [
+    "Migration rollback preserves the exact prior claimant; only service_role can execute the new helper.",
+    "The claimant differs only by passing the job ID to the capture filter; existing ordering, lease, due and dedicated-worker rules remain intact.",
+    "Paused fresh and merely-bound jobs are not claimed and consume no attempts; metadata cannot bypass admission.",
+    "Only matching immutable job definitions, tenant and attempt scopes admit saved work.",
+    "Pending claims settle then defer before provider credentials or requests; the existing defer RPC refunds the recovery claim attempt.",
+    "Pending release and terminal success settle without provider access or an immediate successor.",
+    "Terminal failure remains recoverable after mailbox disablement and settles under the replacement lease.",
+    "Gmail, Workspace sync and Workspace backfill permit saved recovery; discovery stays paused and inherited/master/malformed flag behavior remains intact."
+  ],
+  "limitations": [
+    "Local disposable Postgres only; not installed in hosted TEST or production.",
+    "The email fixture reconstructs minimal tenant and flag tables plus actual capture helper definitions and the exact claimant patch. The complete original control migration runs in a separate fixture with its own documented omissions.",
+    "Provider and credential ports refuse all access during recovery tests; this does not validate real mailbox authorization.",
+    "Direct sync endpoints and their UI responses still need queue-only adaptation before coordinated runtime installation.",
+    "No hosted access grants, credentials, customer data, schedules or provider requests changed."
+  ]
+}
