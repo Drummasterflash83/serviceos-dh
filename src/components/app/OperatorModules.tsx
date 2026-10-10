@@ -37,6 +37,9 @@ const ClientInvestment = lazy(() =>
 const OperatorDelivery = lazy(() =>
   import("./OperatorDelivery").then((module) => ({ default: module.OperatorDelivery })),
 );
+const OperatorCaptureHealth = lazy(() =>
+  import("./OperatorCaptureHealth").then((m) => ({ default: m.OperatorCaptureHealth })),
+);
 const OperatorLearnInputs = lazy(() =>
   import("./OperatorLearnInputs").then((module) => ({ default: module.OperatorLearnInputs })),
 );
@@ -135,6 +138,11 @@ function OperatorModuleContent({
         {user && (
           <Suspense fallback={<p role="status">Opening LEARN controls…</p>}>
             <div className="cp-root op-embedded" style={{ marginBottom: 24 }}>
+              <OperatorCaptureHealth
+                key={`capture:${tenantId}:${user.id}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
               <OperatorLearnInputs
                 key={`${tenantId}:${user.id}`}
                 tenantId={tenantId}

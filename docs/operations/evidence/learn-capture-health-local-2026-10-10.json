@@ -1,0 +1,28 @@
+{
+  "status": "local_only_not_deployed",
+  "date": "2026-10-10",
+  "migration": "20261031210000_learn_operator_capture_health.sql",
+  "sql": "passed_isolated_pg15_synthetic_supporting_schema",
+  "typescript": "passed",
+  "unit_tests": 3,
+  "application_build": "passed",
+  "browser": {
+    "synthetic": true,
+    "network_disabled": true,
+    "pagination": [
+      50,
+      2
+    ],
+    "failure_clears_previous_rows": true,
+    "screenshot": "learn-capture-health-local-2026-10-10.jpg"
+  },
+  "hosted_install": false,
+  "real_provider_verification": false,
+  "source_mutations": 0,
+  "limitations": [
+    "Exact hosted schema rehearsal and authenticated hosted reads remain required",
+    "No unified email/phone/Slack worker pause controls implemented",
+    "Slack bounded channel history does not prove thread coverage or continuous capture",
+    "Account success does not prove all historical messages, recordings, transcripts or voicemail are captured"
+  ]
+}

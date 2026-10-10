@@ -1,5 +1,34 @@
 # Existing TEST environment: verified release gaps
 
+## OpenFolk capture diagnostics — local checkpoint, 10 October 2026
+
+The operator Modules view now includes a tenant-scoped email, phone and Slack
+capture panel. It reads a new metadata-only RPC, using existing platform authority;
+tenant ownership or View As does not grant access. Results exclude credentials,
+raw provider errors, account settings, cursor tokens and message/audio content.
+Reads are paginated at 50 accounts. Personal Gmail and Workspace DWD are identified
+separately. Recent activity is evidence of a run, not complete source coverage.
+Slack completion requires the latest successful history job to match the retained
+scope/page checkpoint and records only the approved channel window; thread and
+continuous capture remain separate checks. Failed refreshes clear old results.
+
+This is **local implementation only**. The RPC has not been installed in TEST or
+production, and the frontend is unreleased. The isolated PG15 fixture exercises the
+actual new SQL and authority helpers with synthetic supporting tables, not the full
+hosted schema. Deployment requires an exact-schema rehearsal and authenticated
+hosted read verification. No source records, workers, schedules, flags or credentials
+were changed. Email/phone/Slack pause controls still need every capture entry point
+to honour the operator's module decisions before those controls can be released.
+
+Validation: SQL rollback, cross-tenant exclusion, platform-viewer access,
+tenant-owner denial, revoked-access denial, source redaction, DWD classification,
+Slack checkpoint mismatch and 50+8 pagination pass; the actual SQL response passes
+the TypeScript parser. Three model/parser tests, TypeScript and application build
+pass. A network-disabled synthetic browser preview verifies 50+2 pagination,
+distinct freshness/authentication states and clearing results after a read failure.
+See [local evidence](evidence/learn-capture-health-local-2026-10-10.json).
+
+
 Read-only checks on 9 October 2026 reused the saved Supabase CLI and Vercel logins.
 Those initial audits changed no hosted state. The later **TEST-only metadata release
 and subsequent card/work foundation, rules, conflict-repair, measurement and work-capture installations** are recorded below; production remains untouched.
