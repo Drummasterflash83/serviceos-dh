@@ -66,7 +66,10 @@ test("one bounded GET verifies access; source records and secrets never leave ex
   assert.equal(f.network[0].url, "https://app.commusoft.co.uk/api/v2/properties?limit=1");
   assert.equal(f.network[0].init.method, "GET");
   assert.equal(f.network[0].init.redirect, "error");
-  assert.equal((f.network[0].init.headers as Record<string, string>)["x-api-key"], apiKey);
+  assert.equal(
+    (f.network[0].init.headers as Record<string, string>)["Authorization"],
+    `Bearer ${apiKey}`,
+  );
   assert.deepEqual(
     f.calls.map((c) => c.name),
     [

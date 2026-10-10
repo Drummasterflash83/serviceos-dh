@@ -1,5 +1,44 @@
 # Commusoft read-only API adapter
 
+## Request configuration corrected — properties and jobs verified, 10 October 20:00 UTC
+
+**This supersedes the unresolved access blocker below.** Support asked for the full
+request and response. Controlled comparisons showed that our request configuration
+needed correction. The saved credential was verified against the existing private
+app by fingerprint without revealing or regenerating it.
+
+| Controlled request | Result |
+| --- | --- |
+| Original Node defaults + `x-api-key` | HTML 403, 150-byte OpenResty denial |
+| Minimal curl + same `x-api-key` | JSON 401 `AUTHENTICATION_ERROR` |
+| Node + truthful OpenFolk User-Agent + same `x-api-key` | JSON 401 |
+| Same named Node client + `Authorization: Bearer …` | JSON 200 |
+| Actual corrected adapter, one property and one job | Both JSON 200; parser and in-memory candidate mapping passed |
+
+The explicit private-app authentication article described `x-api-key`, while the
+[List properties](https://developer.commusoft.com/list-properties-24494182e0)
+endpoint documents Bearer. Live evidence now resolves which works for this app.
+`read_page.ts` sends Bearer authentication and
+`User-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)` consistently, with the
+existing `X-API-VERSION: 2.1` header for jobs. There is no authentication fallback
+loop. The existing URL, read-only scopes, secret, bounded reads, redirect refusal,
+quota handling and tenant permission checks remain intact.
+
+Three successful GET entries were visible under private app 49 in Commusoft's API
+log. Six bounded GETs were made in this investigation (eight including the two
+historical failures); no provider/database records, credentials or scopes changed.
+No source values were retained in the report. Seventy connector/diagnostic tests
+and strict TypeScript pass. See [redacted evidence](evidence/learn-commusoft-request-correction-2026-10-10.json).
+
+**The correction is local source, not a deployed TEST/production runtime.** Full
+traversal, contacts permissions, canonical publication and scheduled ingestion
+remain to be accepted. Successful one-record reads do not prove full coverage.
+The [support reply](COMMUSOFT-SUPPORT-REPLY-2026-10-10.txt) is prepared for Chris to
+send; Codex has not sent it. The original full redacted 403 and controlled comparisons
+are retained in the evidence. No further access-enablement escalation is needed on
+the basis of that original request.
+
+
 ## Existing private application found; live read denied — 10 October 2026
 
 The signed-in Chrome session exposes the existing **OpenFolk — Drummonds read-only**

@@ -452,7 +452,7 @@ export async function acceptCommusoftConnection({ allowProjectRef, token, fetche
         check(
           String(url) === "https://app.commusoft.co.uk/api/v2/properties?limit=1" &&
             options.method === "GET" &&
-            options.headers["x-api-key"] === fakeKey,
+            options.headers.Authorization === `Bearer ${fakeKey}`,
           "Bounded synthetic request differs",
         );
         providerReads++;

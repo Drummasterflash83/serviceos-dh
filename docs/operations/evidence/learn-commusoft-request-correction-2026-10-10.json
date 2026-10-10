@@ -1,0 +1,322 @@
+{
+  "version": "learn-commusoft-request-correction/1",
+  "observedAt": "2026-10-10T20:01:56.635671+00:00",
+  "state": "direct_bounded_reads_verified_not_deployed",
+  "application": {
+    "id": 49,
+    "name": "OpenFolk \u2014 Drummonds read-only",
+    "accountReference": "19136",
+    "scopes": [
+      "crm.properties.read",
+      "jobs.jobs.read"
+    ],
+    "existingKeyMatchesDisplayedApp": true,
+    "keyRegenerated": false,
+    "scopesChanged": false,
+    "apiLogVerified": [
+      {
+        "resource": "properties",
+        "httpStatus": 200,
+        "displayedTime": "10/10/26, 19:59"
+      },
+      {
+        "resource": "properties",
+        "httpStatus": 200,
+        "displayedTime": "10/10/26, 20:00"
+      },
+      {
+        "resource": "jobs",
+        "httpStatus": 200,
+        "displayedTime": "10/10/26, 20:00"
+      }
+    ]
+  },
+  "finding": "Our outgoing request configuration required correction: explicit truthful User-Agent changed the x-api-key response from HTML 403 to JSON 401; Bearer authentication then returned JSON 200 using the same existing key. The actual corrected adapter subsequently read one property and one job successfully.",
+  "auditProviderGetRequests": 6,
+  "historicalProviderGetRequests": 2,
+  "providerMutations": 0,
+  "databaseMutations": 0,
+  "traces": [
+    {
+      "version": "learn-commusoft-support-trace/1",
+      "startedAt": "2026-10-10T19:56:57.289Z",
+      "request": {
+        "method": "GET",
+        "url": "https://app.commusoft.co.uk/api/v2/properties?limit=1",
+        "applicationHeaders": {
+          "x-api-key": "[REDACTED]",
+          "Accept": "application/json"
+        },
+        "body": null,
+        "redirectPolicy": "error",
+        "cookies": "omitted",
+        "automaticRetries": 0,
+        "wireHeaders": "GET /api/v2/properties?limit=1 HTTP/1.1\r\nhost: app.commusoft.co.uk\r\nconnection: keep-alive\r\nx-api-key: [REDACTED]\r\nAccept: application/json\r\naccept-language: *\r\nsec-fetch-mode: cors\r\nuser-agent: node\r\npragma: no-cache\r\ncache-control: no-cache\r\naccept-encoding: br, gzip, deflate\r\n"
+      },
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "source": "Local Node server transport; not browser fetch or hosted Edge"
+      },
+      "state": "completed",
+      "providerRequests": 1,
+      "sentAt": "2026-10-10T19:56:57.291Z",
+      "tls": {
+        "authorized": true,
+        "protocol": "TLSv1.3"
+      },
+      "response": {
+        "status": 403,
+        "statusText": "Forbidden",
+        "headers": {
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-type": "text/html",
+          "date": "Sat, 10 Oct 2026 19:56:57 GMT",
+          "server": "openresty",
+          "transfer-encoding": "chunked"
+        },
+        "body": {
+          "text": "<html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n<hr><center>openresty</center>\r\n</body>\r\n</html>\r\n",
+          "truncated": false,
+          "bytes": 150
+        }
+      },
+      "result": {
+        "state": "not_verified",
+        "code": "access_denied"
+      },
+      "completedAt": "2026-10-10T19:56:57.444Z"
+    },
+    {
+      "version": "commusoft-curl-support-trace/1",
+      "purpose": "Independent minimal curl comparison with the same URL, method and private-app authentication",
+      "sentAt": "2026-10-10T19:57:47.930Z",
+      "state": "completed",
+      "providerRequests": 1,
+      "proxyEnvironmentPresent": [],
+      "completedAt": "2026-10-10T19:57:48.092Z",
+      "exitCode": 0,
+      "trace": "* Host app.commusoft.co.uk:443 was resolved.\n[Network address omitted]\n[Network address omitted]\n[Network address omitted]\n[Network address omitted]\n* ALPN: curl offers http/1.1\n* (304) (OUT), TLS handshake, Client hello (1):\n} [321 bytes data]\n*  CAfile: /etc/ssl/cert.pem\n*  CApath: none\n* (304) (IN), TLS handshake, Server hello (2):\n{ [88 bytes data]\n* (304) (OUT), TLS handshake, Client hello (1):\n} [386 bytes data]\n* (304) (IN), TLS handshake, Server hello (2):\n{ [187 bytes data]\n* (304) (IN), TLS handshake, Unknown (8):\n{ [25 bytes data]\n* (304) (IN), TLS handshake, Certificate (11):\n{ [11352 bytes data]\n* (304) (IN), TLS handshake, CERT verify (15):\n{ [264 bytes data]\n* (304) (IN), TLS handshake, Finished (20):\n{ [52 bytes data]\n* (304) (OUT), TLS handshake, Finished (20):\n} [52 bytes data]\n* SSL connection using TLSv1.3 / AEAD-AES256-GCM-SHA384 / [blank] / UNDEF\n* ALPN: server accepted http/1.1\n* Server certificate:\n*  subject: CN=*.commusoft.co.uk\n*  start date: May  5 00:00:00 2026 GMT\n*  expire date: Nov 19 23:59:59 2026 GMT\n*  subjectAltName: host \"app.commusoft.co.uk\" matched cert's \"*.commusoft.co.uk\"\n*  issuer: C=GB; O=Sectigo Limited; CN=Sectigo Public Server Authentication CA DV R36\n*  SSL certificate verify ok.\n* using HTTP/1.x\n> GET /api/v2/properties?limit=1 HTTP/1.1\r\n> Host: app.commusoft.co.uk\r\n> User-Agent: curl/8.7.1\r\n> x-api-key: [REDACTED]\r\n> Accept: application/json\r\n> \r\n* Request completely sent off\n< HTTP/1.1 401 Unauthorized\r\n< Server: openresty\r\n< Date: Sat, 10 Oct 2026 19:57:48 GMT\r\n< Content-Type: application/json\r\n< Transfer-Encoding: chunked\r\n< Connection: keep-alive\r\n< X-Powered-By: PHP/8.1.34\r\n< Cache-Control: no-cache, private\r\n< X-Robots-Tag: noindex\r\n< X-Correlation-ID: 6ab70082-b47c-4398-9bff-a7cbda370cd7\r\n< \r\n{ [77 bytes data]\n* Connection #0 to host app.commusoft.co.uk left intact\n",
+      "status": 401,
+      "body": "{\"error\":{\"code\":\"AUTHENTICATION_ERROR\",\"message\":\"unauthorized\"}}"
+    },
+    {
+      "version": "learn-commusoft-support-trace/1",
+      "startedAt": "2026-10-10T19:59:03.175Z",
+      "request": {
+        "method": "GET",
+        "url": "https://app.commusoft.co.uk/api/v2/properties?limit=1",
+        "applicationHeaders": {
+          "x-api-key": "[REDACTED]",
+          "Accept": "application/json",
+          "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)"
+        },
+        "body": null,
+        "redirectPolicy": "error",
+        "cookies": "omitted",
+        "automaticRetries": 0,
+        "wireHeaders": "GET /api/v2/properties?limit=1 HTTP/1.1\r\nhost: app.commusoft.co.uk\r\nconnection: keep-alive\r\nx-api-key: [REDACTED]\r\nAccept: application/json\r\nUser-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)\r\naccept-language: *\r\nsec-fetch-mode: cors\r\npragma: no-cache\r\ncache-control: no-cache\r\naccept-encoding: br, gzip, deflate\r\n"
+      },
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "source": "Local Node server transport; not browser fetch or hosted Edge"
+      },
+      "state": "completed",
+      "providerRequests": 1,
+      "purpose": "Single-variable comparison: identify our Node client with an honest application User-Agent; URL, key and all other transport options unchanged",
+      "sentAt": "2026-10-10T19:59:03.176Z",
+      "tls": {
+        "authorized": true,
+        "protocol": "TLSv1.3"
+      },
+      "response": {
+        "status": 401,
+        "statusText": "Unauthorized",
+        "headers": {
+          "cache-control": "no-cache, private",
+          "connection": "keep-alive",
+          "content-type": "application/json",
+          "date": "Sat, 10 Oct 2026 19:59:03 GMT",
+          "server": "openresty",
+          "transfer-encoding": "chunked",
+          "x-correlation-id": "6a94de33-8820-4939-8d5e-ca5937ec3fcc",
+          "x-powered-by": "PHP/8.1.34",
+          "x-robots-tag": "noindex"
+        },
+        "body": {
+          "text": "{\"error\":{\"code\":\"AUTHENTICATION_ERROR\",\"message\":\"unauthorized\"}}",
+          "truncated": false,
+          "bytes": 66
+        }
+      },
+      "result": {
+        "state": "not_verified",
+        "code": "authentication_required"
+      },
+      "completedAt": "2026-10-10T19:59:03.397Z"
+    },
+    {
+      "version": "learn-commusoft-support-trace/1",
+      "startedAt": "2026-10-10T19:59:14.544Z",
+      "request": {
+        "method": "GET",
+        "url": "https://app.commusoft.co.uk/api/v2/properties?limit=1",
+        "applicationHeaders": {
+          "Accept": "application/json",
+          "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)",
+          "Authorization": "Bearer [REDACTED]"
+        },
+        "body": null,
+        "redirectPolicy": "error",
+        "cookies": "omitted",
+        "automaticRetries": 0,
+        "wireHeaders": "GET /api/v2/properties?limit=1 HTTP/1.1\r\nhost: app.commusoft.co.uk\r\nconnection: keep-alive\r\nAccept: application/json\r\nUser-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)\r\nAuthorization: [REDACTED]\r\naccept-language: *\r\nsec-fetch-mode: cors\r\npragma: no-cache\r\ncache-control: no-cache\r\naccept-encoding: br, gzip, deflate\r\n"
+      },
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "source": "Local Node server transport; not browser fetch or hosted Edge"
+      },
+      "state": "completed",
+      "providerRequests": 1,
+      "purpose": "Deliberate comparison against the official List properties Bearer example; diagnostic only, not automatic authentication fallback",
+      "sentAt": "2026-10-10T19:59:14.545Z",
+      "tls": {
+        "authorized": true,
+        "protocol": "TLSv1.3"
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "cache-control": "no-cache, private",
+          "connection": "keep-alive",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Sat, 10 Oct 2026 19:59:14 GMT",
+          "server": "openresty",
+          "transfer-encoding": "chunked",
+          "x-correlation-id": "4ad50036-69f7-4416-bc05-f48662f474a9",
+          "x-csversion": "731",
+          "x-powered-by": "PHP/8.1.34",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "59",
+          "x-ratelimit-reset": "1791662400",
+          "x-robots-tag": "noindex"
+        },
+        "body": {
+          "omitted": "Successful source records are not support diagnostic data."
+        }
+      },
+      "result": {
+        "state": "read_verified",
+        "records": 1,
+        "hasMore": true,
+        "quota": {
+          "remaining": 59,
+          "resetAt": 1791662400000,
+          "retryAt": null
+        }
+      },
+      "completedAt": "2026-10-10T19:59:14.860Z"
+    }
+  ],
+  "correctedAdapterAcceptance": {
+    "version": "commusoft-corrected-adapter-acceptance/1",
+    "startedAt": "2026-10-10T20:00:22.654Z",
+    "checks": [
+      {
+        "resource": "properties",
+        "limit": 1,
+        "after": null,
+        "startedAt": "2026-10-10T20:00:22.655Z",
+        "state": "passed",
+        "status": 200,
+        "headers": {
+          "date": "Sat, 10 Oct 2026 20:00:23 GMT",
+          "content-type": "application/json",
+          "x-correlation-id": "7fea9f7c-ad71-425f-a9ad-9b789f936833",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "59",
+          "x-ratelimit-reset": "1791662460"
+        },
+        "records": 1,
+        "hasMore": true,
+        "cursorAccepted": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "customer",
+            "reason": null,
+            "referenceCount": 0
+          }
+        ],
+        "quota": {
+          "remaining": 59,
+          "resetAt": 1791662460000,
+          "retryAt": null
+        }
+      },
+      {
+        "resource": "jobs",
+        "limit": 1,
+        "after": null,
+        "startedAt": "2026-10-10T20:00:22.958Z",
+        "state": "passed",
+        "status": 200,
+        "headers": {
+          "date": "Sat, 10 Oct 2026 20:00:23 GMT",
+          "content-type": "application/json",
+          "x-correlation-id": "eb94cbe5-9ac9-40b3-a1b1-d9fc172b1dc2",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "58",
+          "x-ratelimit-reset": "1791662460"
+        },
+        "records": 1,
+        "hasMore": true,
+        "cursorAccepted": true,
+        "projections": [
+          {
+            "state": "candidate",
+            "kind": "job",
+            "reason": null,
+            "referenceCount": 1
+          }
+        ],
+        "quota": {
+          "remaining": 58,
+          "resetAt": 1791662460000,
+          "retryAt": null
+        }
+      }
+    ],
+    "providerRequests": 2,
+    "providerMutations": 0,
+    "databaseMutations": 0,
+    "state": "bounded_reads_verified",
+    "completedAt": "2026-10-10T20:00:23.396Z",
+    "limits": [
+      "Two one-record direct reads only. No full traversal, contacts access, hosted binding, database import, deployment or schedule.",
+      "Projection ran in memory under a diagnostic-only placeholder connection; no source values or credentials retained."
+    ]
+  },
+  "tests": {
+    "connectorAndDiagnostic": {
+      "passed": 70
+    },
+    "strictTransportTypecheck": "passed",
+    "actualVerificationSqlAndBridge": "passed: bounded approval, shared quota, credential rotation/cancellation, retained receipt replay and concurrent single acquisition; synthetic local PostgreSQL only"
+  },
+  "sourceFiles": {
+    "supabase/functions/_shared/commusoft/read_page.ts": "fa3c64a409e80bc88a2d3cfccd86d1c52cebcd554a50696b02b933a20c165a89",
+    "scripts/verify/learn-commusoft-support-trace.mjs": "23164ca6cd2969902d181ec570668653010e4792964d6cca1ec36f87d1bf080f"
+  },
+  "limits": [
+    "No full traversal or completeness proof, propertyContacts read, hosted credential binding, import, schedule or deployment.",
+    "Observed application log associates successful requests with private app 49. Broader account/dataset coverage still needs reconciliation.",
+    "Corrected source differs from currently published TEST endpoints; promotion requires a reviewed TEST runtime release.",
+    "The support draft and diagnostic evidence have not been sent."
+  ]
+}

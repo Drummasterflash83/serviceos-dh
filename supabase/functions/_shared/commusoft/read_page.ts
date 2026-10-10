@@ -257,7 +257,11 @@ export async function readCommusoftPage(
       credentials: "omit",
       cache: "no-store",
       headers: {
-        "x-api-key": apiKey,
+        // Verified against the existing Drummonds private app on 10 Oct 2026.
+        // The endpoint's Bearer contract succeeds; the general x-api-key guide
+        // returned 401. An honest application UA also avoids the generic Node 403.
+        Authorization: `Bearer ${apiKey}`,
+        "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)",
         Accept: "application/json",
         ...(snapshot.resource === "jobs" ? { "X-API-VERSION": "2.1" } : {}),
       },

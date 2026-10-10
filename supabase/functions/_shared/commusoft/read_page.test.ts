@@ -49,7 +49,7 @@ const errorCode = (code: string) => (error: unknown) => {
   return true;
 };
 
-test("GET binds UK endpoint and private-app header; retains unknown fields without following links", async () => {
+test("GET binds UK endpoint, verified Bearer header and honest application identity; retains unknown fields without following links", async () => {
   const raw = envelope(
     [{ id: 1, links: { self: "https://untrusted.example" }, extra: { retained: true } }],
     false,
@@ -66,7 +66,11 @@ test("GET binds UK endpoint and private-app header; retains unknown fields witho
   assert.equal(f.calls[0].options.method, "GET");
   assert.equal(f.calls[0].options.redirect, "error");
   assert.equal(f.calls[0].options.credentials, "omit");
-  assert.deepEqual(f.calls[0].options.headers, { "x-api-key": key, Accept: "application/json" });
+  assert.deepEqual(f.calls[0].options.headers, {
+    Authorization: `Bearer ${key}`,
+    "User-Agent": "OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)",
+    Accept: "application/json",
+  });
 });
 
 test("US contacts require explicit property type; provider cursor continues without inferred offsets", async () => {

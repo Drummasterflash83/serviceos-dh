@@ -80,7 +80,7 @@ const fetcher = async (url, init) => {
   assert.equal(String(url), "https://app.commusoft.co.uk/api/v2/properties?limit=1");
   assert.equal(init.method, "GET");
   assert.equal(init.redirect, "error");
-  assert.equal(init.headers["x-api-key"], "SYNTHETIC_ROTATED_KEY");
+  assert.equal(init.headers.Authorization, "Bearer SYNTHETIC_ROTATED_KEY");
   reads++;
   return Response.json({
     data: [{ id: 123, privateCustomer: "fixture-payload-must-not-be-retained" }],

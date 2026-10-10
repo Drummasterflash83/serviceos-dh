@@ -1,0 +1,39 @@
+Hi,
+
+Thanks for coming back to me. We have now isolated and corrected our request configuration, and confirmed successful read-only responses for both properties and jobs using our existing private application.
+
+Client: Drummond Heating, 19136
+Private application: OpenFolk — Drummonds read-only (application 49)
+Scopes: crm.properties.read and jobs.jobs.read
+
+The successful properties request was:
+
+GET https://app.commusoft.co.uk/api/v2/properties?limit=1
+Authorization: Bearer [API KEY REDACTED]
+Accept: application/json
+User-Agent: OpenFolk-ServiceOS/1.0 (+https://openfolk.ai)
+
+No request body, cookies or redirects.
+
+Response, 10 October 2026 at 20:00:23 UTC:
+HTTP 200 OK
+Content-Type: application/json
+X-Correlation-ID: 7fea9f7c-ad71-425f-a9ad-9b789f936833
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 59
+X-RateLimit-Reset: 1791662460
+
+The JSON response contained one property and a valid continuation cursor. Customer fields are omitted here to avoid sharing customer data by email.
+
+We also verified:
+GET https://app.commusoft.co.uk/api/v2/jobs?limit=1
+with the same headers plus X-API-VERSION: 2.1.
+
+That returned HTTP 200 at 20:00:23 UTC, correlation ID eb94cbe5-9ac9-40b3-a1b1-d9fc172b1dc2, with one job and a valid continuation cursor. Both requests are visible in the private application's API logs.
+
+For completeness, our earlier Node request used x-api-key and the default Node User-Agent. It returned HTML 403. Identifying our application with its own User-Agent produced a JSON 401; changing to the Bearer header shown in the endpoint example resolved authentication. No key regeneration, permission or account changes were needed.
+
+We will continue validating the integration on our side. Thank you for your help.
+
+Kind regards,
+Christopher

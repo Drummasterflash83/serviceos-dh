@@ -265,7 +265,7 @@ export async function acceptCommusoftIngestion({
       "Unexpected synthetic transport request",
     );
     check(
-      new Headers(options.headers).get("x-api-key") === dummy,
+      new Headers(options.headers).get("authorization") === `Bearer ${dummy}`,
       "Vault binding did not deliver the synthetic key",
     );
     check(u.searchParams.get("limit") === "1", "Page limit differed");
