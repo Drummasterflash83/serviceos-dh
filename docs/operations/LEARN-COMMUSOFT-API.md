@@ -429,3 +429,24 @@ Hosted installation and confirmation evidence is recorded in
 `evidence/learn-commusoft-test-release-2026-10-10.json`. Actual Auth/PostgREST
 acceptance and the dedicated worker deployment remain required; schema presence
 alone does not make Commusoft live.
+
+## Signed-in TEST acceptance — 10 October
+
+`learn-test-commusoft-acceptance.mjs` requires the verified installed release and
+existing TEST Auth contract, then creates marked synthetic companies and three
+short-lived logins. It uses the actual review/work/card client adapters over real
+PostgREST. Source pages are explicit synthetic management-SQL fixtures; no provider
+credential, account, sync job or worker is created. This separates review-path
+acceptance from the still-required ingestion runtime tests.
+
+The passing run covered existing person/card preservation, reviewed company
+creation, site-before-job dependencies, mixed held/linked batches, saved receipt
+recovery after a simulated lost reply, exact replay, viewer/foreign-company/raw
+source denial, expected actor checks, module-disabled recovery/cancellation and
+immediate role revocation. Existing TEST source fingerprints matched. Temporary
+logins were banned/passwords rotated; roles demoted and fixture switches/connections
+disabled. Synthetic evidence and actor records stay retained.
+
+See `evidence/learn-commusoft-test-acceptance-2026-10-10.json` for the outcome and
+independent retirement read-back. This does not establish a live Commusoft account,
+continuous ingestion, complete contact coverage or production readiness.

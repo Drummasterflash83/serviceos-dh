@@ -1,0 +1,47 @@
+{
+  "version": "learn-commusoft-test-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "e67c9ba5-e703-474e-a9aa-4f7abc057b86",
+  "observedAt": "2026-10-10T09:40:58.800Z",
+  "state": "passed",
+  "stage": "passed",
+  "checks": [
+    "Real owner session sees only its configured fixture connection; anonymous, service, viewer and foreign-company review denied; raw source/history access denied.",
+    "Actual client adapters list sources and candidates, reuse the existing person/card unchanged, create the reviewed company/card and acknowledge exact customer replay.",
+    "A job waits for its reviewed site; site projection resolves its customer. Mixed job batch links two records and holds one. Lost-response simulation recovers the actual stored receipt without another write.",
+    "Real card loaders show customer and job records; viewers can read customer cards but cannot project work; other-company sessions cannot read these customer cards or approve batches.",
+    "Module disable stops new projection but retains receipt reads and cancellation. Late apply returns cancellation. Demotion immediately denies receipt access; no worker job was created."
+  ],
+  "failure": null,
+  "cleanupErrors": [],
+  "retained": {
+    "sites": 1,
+    "jobs": 2,
+    "cards": 2,
+    "links": 5,
+    "batches": 4,
+    "worker_jobs": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "retiredLogins": 3,
+  "manifest": "/private/tmp/serviceos-learn-commusoft-e67c9ba5-e703-474e-a9aa-4f7abc057b86.json",
+  "limitations": [
+    "Synthetic retained pages are seeded through management SQL, not obtained from Commusoft or the ingestion worker.",
+    "Real Auth, PostgREST, client adapters and database review paths are exercised; browser recovery is separately verified.",
+    "Synthetic records/history remain retained; logins are banned/passwords rotated, roles demoted and fixture switches/connections disabled.",
+    "No real provider credentials, provider requests, worker jobs or production changes."
+  ],
+  "retirementConfirmation": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "e67c9ba5-e703-474e-a9aa-4f7abc057b86",
+    "observedAt": "2026-10-10T09:41:57.892Z",
+    "state": "retirement_verified",
+    "demoted_profiles": 3,
+    "banned_logins": 3,
+    "enabled_flags": 0,
+    "revoked_connections": 1,
+    "disabled_connectors": 1,
+    "worker_jobs": 0
+  },
+  "acceptanceScriptSha256": "600981eb207b3ad6a563c233fe2a3b0346353fec1b3740a0e89aa86c4a67e278"
+}

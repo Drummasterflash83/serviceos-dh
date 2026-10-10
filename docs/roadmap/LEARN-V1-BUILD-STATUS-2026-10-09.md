@@ -1375,3 +1375,30 @@ Next: real signed-in Auth/PostgREST acceptance using synthetic retained inputs,
 then dedicated worker deployment/verification and operator setup. Drummonds API
 access, contacts, existing-target reconciliation, source updates and broader LEARN
 release acceptance remain open.
+
+## Commusoft signed-in customer/site/job acceptance — 10 October
+
+Real Auth and PostgREST acceptance now passes against hosted TEST release 026.
+The application adapters listed retained customer sources, found an existing email
+match, reused that person/card without changing any fields, and created an
+explicitly reviewed company/card. A job with an unreviewed site was held; after
+site approval, a mixed job batch linked two records and held the unresolved third.
+The actual card loader returned two customer cards and two job records.
+
+The run simulated a lost acknowledgement after an actual successful batch RPC.
+The client retained its request and recovered the stored receipt with a read,
+without resubmitting. Exact replay, module-disabled result reads/cancellation,
+late apply after cancellation, expected-actor mismatch, viewer/foreign-company
+write denial, raw-history denial and immediate owner-demotion checks passed.
+Owner and viewer card reads agreed; the other company could not read those cards.
+
+Pre-existing TEST record fingerprints matched. All three synthetic logins were
+banned and their passwords rotated; roles were demoted and the synthetic module
+switches/connection disabled. A separate fresh read confirmed that retirement and
+zero fixture worker jobs. Synthetic source/history and canonical results remain
+retained. Evidence: [signed-in acceptance](../operations/evidence/learn-commusoft-test-acceptance-2026-10-10.json).
+
+This establishes the hosted review/card path, not provider capture: synthetic raw
+pages were inserted as test fixtures, without a Commusoft credential or API read.
+Dedicated worker deployment and runtime acceptance, real Drummonds access, operator
+connection setup, contacts, existing-target reconciliation and source updates remain.
