@@ -1,0 +1,69 @@
+{
+  "version": "learn-hosted-test-frontend/2",
+  "state": "protected_frontend_verified_needs_signed_in_acceptance",
+  "deployment": {
+    "observedAt": "2026-10-10T17:33:50.040Z",
+    "id": "dpl_CZyeUE68AG9qS9Vr2556EUrF9atV",
+    "url": "serviceos-learn-test-ct2lfo3zs-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "3f96f523bdf109570f147b67df405350dad82028"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "configuration": {
+    "observedAt": "2026-10-10T17:32:38.852Z",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "backendRef": "saatxzwxvdvqevbnskxy",
+    "configuredUrlMatches": true,
+    "clientKeyRefMatches": true,
+    "clientKeyRole": "anon",
+    "previewOnlyVariables": [
+      "VITE_SUPABASE_URL",
+      "VITE_SUPABASE_ANON_KEY"
+    ],
+    "serverSecretsAdded": false,
+    "method": "Existing Vercel CLI login; values read in memory through individual env endpoint, not retained"
+  },
+  "protection": {
+    "observedAt": "2026-10-10T17:34:29.438Z",
+    "base": "https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "browser": {
+    "observedAt": "2026-10-10T17:34:53.511798+00:00",
+    "homepageRendered": true,
+    "loginStayedOnTestOrigin": true,
+    "loginUrl": "https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app/login?redirect=%2Fclient",
+    "consoleErrors": 0,
+    "signedIn": false,
+    "screenshot": "learn-hosted-test-login-slack-2026-10-10.png"
+  },
+  "limitations": [
+    "No application sign-in or hosted control interaction completed. Operator-session approval remains pending.",
+    "Real Slack access, channel approval and recurring activation remain outstanding.",
+    "No production deployment or backend/source modifications in this frontend release."
+  ]
+}

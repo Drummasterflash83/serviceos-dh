@@ -9,10 +9,15 @@ ACTIVE at version 1, with JWT and existing worker-key checks. Seven real HTTP ca
 passed; the authorized idle call queued no work. No channel approval, credential,
 user grant or recurring trigger was created. Production was untouched.
 
-Client and OpenFolk controls remain local, verified with synthetic browser data.
+Client and OpenFolk controls are now included in the protected TEST frontend at
+[the current staging URL](https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app),
+built from `3f96f523bdf109570f147b67df405350dad82028`. The homepage/sign-in path
+passed browser checks and anonymous routes still redirect to Vercel authentication.
+The controls themselves have synthetic browser verification; signed-in hosted
+acceptance remains pending.
 The existing 62 Slack tests, TypeScript and frontend build passed; seven additional
-release/deployment tests pass. Protected frontend deployment, authenticated hosted
-channel-control acceptance, trigger activation and real Slack workspace access
+release/deployment tests pass. Authenticated hosted channel-control acceptance,
+trigger activation and real Slack workspace access
 remain outstanding. See [implementation and limits](LEARN-SLACK-INGESTION.md#recurring-channel-capture--test-backend-installed-10-october-2026)
 and [hosted evidence](evidence/learn-slack-recurring-hosted-2026-10-10.json).
 

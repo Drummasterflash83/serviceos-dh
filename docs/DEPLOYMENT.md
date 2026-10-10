@@ -50,12 +50,16 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-boyeohqpc-allkin.vercel.app](https://serviceos-learn-test-boyeohqpc-allkin.vercel.app),
-built remotely from GitHub commit `86b5402206aa72a858aae4b2a5882c7cf30b32ca`.
+[serviceos-learn-test-ct2lfo3zs-allkin.vercel.app](https://serviceos-learn-test-ct2lfo3zs-allkin.vercel.app),
+built remotely from GitHub commit `3f96f523bdf109570f147b67df405350dad82028`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
 login stays on the current origin; production keeps the canonical login URL.
+The refreshed candidate includes recurring Slack controls. The homepage/sign-in
+flow passed browser checks and anonymous routes remain protected. Signed-in hosted
+control acceptance is still pending; a successful build is not that acceptance.
+See [deployment evidence](operations/evidence/learn-hosted-test-frontend-slack-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
 `vercel.json` disables that branch. Verify and deploy a pinned Git commit explicitly.

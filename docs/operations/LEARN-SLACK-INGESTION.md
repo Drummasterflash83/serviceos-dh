@@ -58,8 +58,9 @@ authorized empty scheduler call and refusal of missing keys, wrong keys, incorre
 methods and supplied work selectors. Hosted SQL also denied an unassigned identity.
 The two recurring tables remain empty. No channel, credential or trigger was added.
 
-**Not activated; frontend controls remain local.** Remaining work includes updating
-the protected frontend, authenticated hosted channel-control acceptance, explicit
+**Not activated.** The controls are included in the protected TEST frontend built
+from `3f96f523bdf109570f147b67df405350dad82028`; its homepage/sign-in checks passed.
+Remaining work includes authenticated hosted channel-control acceptance, explicit
 trigger activation and real Slack workspace/channel access. This path
 covers channel-history windows only: automatic thread discovery, older message
 edit/delete reconciliation, other channel types and attachment capture remain
