@@ -647,3 +647,22 @@ No production change, real provider fetch, credential change or schedule was mad
 Continuous/multi-window ingestion, provider access and recovery controls remain
 before complete Slack capture, alongside the other LEARN V1 requirements. See
 [release 013 evidence and limitations](../operations/LEARN-SLACK-INGESTION.md#current-test-state--workspace-pacing-release-013-10-october).
+
+## Reviewed Slack channel recovery — local, 10 October
+
+Added a company-scoped progress reader and owner/admin recovery for an incomplete
+channel window. Continue retains its saved cursor; restart replays the same bounded
+window. Both retain the old approval/checkpoint, renew the reviewed page budget and
+leave source/version deduplication intact. The reader labels current-approval page
+counts explicitly and excludes private cursors and credential references.
+
+The isolated SQL chain passed rollback, permissions, continuation/restart, exact
+retry, source preservation and controlled races: authority revocation is respected,
+connection changes invalidate review and competing approvals queue once. Twelve
+client tests and the focused strict typecheck passed. The client adapter retains
+caller-supplied request IDs for uncertain retries; no recovery UI or durable browser
+outbox is present yet.
+
+TEST remains release 013/runtime v4. Hosted release packaging/acceptance and recovery
+UI are next; no real provider fetch, production change or schedule occurred. See
+[local recovery evidence and limits](../operations/LEARN-SLACK-INGESTION.md#reviewed-channel-recovery--local-implementation-10-october).

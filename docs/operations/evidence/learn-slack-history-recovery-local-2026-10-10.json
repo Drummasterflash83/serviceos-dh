@@ -1,0 +1,58 @@
+{
+  "version": "learn-slack-history-recovery-local/1",
+  "observedAt": "2026-10-10T00:00:46.443118+00:00",
+  "state": "passed_isolated_database_and_client_verification",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261030160000_learn_slack_history_resume.sql",
+      "sha256": "a40a14c793251bbca78d1d75c9f2ef82c1df38854500502dea1d86621001fc29"
+    },
+    {
+      "path": "scripts/verify/learn-slack-history-resume.assert.sql",
+      "sha256": "bc8aba78a3969056506ef4d48585febcb052eeb831c24166c622b5cac99fb77f"
+    },
+    {
+      "path": "scripts/verify/learn-slack-history-resume-concurrency.py",
+      "sha256": "f2967d7308a1450ca129fd196dd147642b3e3dbf956726d8011795ddebfb5333"
+    },
+    {
+      "path": "scripts/verify/learn-foundation-release.py",
+      "sha256": "3477f05d407a97449542eb20206bf29908c06c12faaa33841e71c359b7751353"
+    },
+    {
+      "path": "src/lib/learn-slack-history-recovery.ts",
+      "sha256": "19262979ac2e19a32460833330032da464aea31fa6d4d0c5d1731950aca52b3f"
+    },
+    {
+      "path": "src/lib/learn-slack-history-recovery.test.ts",
+      "sha256": "d9a320fddd1c80f45dd2aca78f30db668519ce5b0ef20c114d1888963ed741cc"
+    }
+  ],
+  "databaseCommand": "python3 scripts/verify/learn-foundation-release.py --rules --conflicts --measurements --work --actions --slack --slack-worker --slack-threads --slack-operator --slack-pacing --slack-history-resume",
+  "database": "Fresh disposable PostgreSQL container with --network none; existing local databases untouched; container removed after successful run",
+  "checks": [
+    "Injected migration failure rolls back added functions and preserves the prior public table catalog.",
+    "Company-scoped progress reader excludes raw cursor, scope key, secret references and private job payload; anonymous and service roles cannot invoke it.",
+    "Viewer can inspect progress but cannot approve; foreign-company read and private helper access refused.",
+    "Fresh owner approval continues from the saved cursor with unchanged provider bounds, new page budget and renewed 24-hour consent.",
+    "Prior immutable approval and checkpoint retained; new checkpoint uses compact scope key compatible with the worker binding.",
+    "Exact request retries return the original receipt; changed request identity, stale state and active duplicate work refused.",
+    "Repeated source publication does not duplicate message versions; reviewed restart retains previous checkpoint and resets only the new batch cursor/pages.",
+    "Injected queue failure rolls back checkpoint replacement and new approval atomically.",
+    "Completed window cannot recover; original setup can approve the next bounded window.",
+    "Controlled blocked transactions prove revoked owner and changed connection are reread; two competing approvals queue one job.",
+    "Existing synthetic emails, Slack messages and source versions remain unchanged.",
+    "Twelve Node tests passed: six history recovery client tests and six existing thread client tests.",
+    "Focused strict TypeScript check passed for the recovery client and tests; git diff whitespace check passed."
+  ],
+  "nodeCommand": "/usr/local/bin/node --test src/lib/learn-slack-history-recovery.test.ts src/lib/learn-slack-threads.test.ts",
+  "typecheckCommand": "/usr/local/bin/node node_modules/typescript/bin/tsc --noEmit --target ES2022 --module nodenext --moduleResolution nodenext --allowImportingTsExtensions --skipLibCheck --strict src/lib/learn-slack-history-recovery.ts src/lib/learn-slack-history-recovery.test.ts",
+  "limitations": [
+    "Local migration and client adapter only. Hosted TEST remains release 013, worker runtime v4; no hosted release or browser recovery UI yet.",
+    "Synthetic SQL uses an ID-only auth stand-in, not hosted auth/provider acceptance. No real Slack requests, customer-data changes, new credentials or schedules.",
+    "Recovery is owner/admin-reviewed for the same incomplete channel window, up to ten pages per new approval. It does not enable continuous ingestion, thread recovery or unlimited backfill.",
+    "pagesThisApproval is the current batch count, not lifetime imported pages or a coverage guarantee; previous approval IDs/checkpoints are retained.",
+    "Client preserves caller-supplied request identity for retries but does not implement a durable browser outbox.",
+    "Actual Slack permissions, multi-window capture, voicemail ingestion and wider LEARN V1 remain outstanding."
+  ]
+}

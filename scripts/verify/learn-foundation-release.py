@@ -437,6 +437,21 @@ try:
                                         pacing_races={}
                                         exec((ROOT/'scripts/verify/learn-slack-pacing-concurrency.py').read_text(),pacing_races)
                                         pacing_races['verify_pacing_races'](run,Held,refused)
+                                        if '--slack-history-resume' in sys.argv:
+                                            resume_before=json.loads(run(catalog_sql).stdout)
+                                            resume_functions_before=json.loads(run(thread_function_query).stdout)
+                                            resume_sql=(ROOT/'supabase/migrations/20261030160000_learn_slack_history_resume.sql').read_text()
+                                            failed=run('set role postgres;'+resume_sql.replace('\ncommit;','\ndo $$begin raise exception \'Injected resume migration failure\';end $$;\ncommit;'),False)
+                                            assert failed.returncode and b'Injected resume migration failure' in failed.stderr
+                                            assert json.loads(run(catalog_sql).stdout)['tables']==resume_before['tables']
+                                            assert json.loads(run(thread_function_query).stdout)==resume_functions_before
+                                            apply('set role postgres;'+resume_sql,'Reviewed channel checkpoint recovery and safe progress read')
+                                            assert json.loads(run(catalog_sql).stdout)['tables']==resume_before['tables'],'History recovery changed existing table definitions or privileges'
+                                            apply((ROOT/'scripts/verify/learn-slack-history-resume.assert.sql').read_text(),'History cursor continuation, renewed approval, idempotency, restart, atomic rollback, completion and preservation')
+                                            resume_races={}
+                                            exec((ROOT/'scripts/verify/learn-slack-history-resume-concurrency.py').read_text(),resume_races)
+                                            resume_races['verify_history_resume_races'](run,Held,race_after,refused)
+
 
 
 

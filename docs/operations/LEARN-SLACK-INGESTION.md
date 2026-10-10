@@ -487,3 +487,44 @@ original schema requirements. No production write, real Slack fetch, new credent
 frontend deployment or schedule occurred. Continuous/multi-window capture, actual
 provider access, durable operator recovery, voicemail and the wider LEARN V1 scope
 remain outstanding.
+
+## Reviewed channel recovery — local implementation, 10 October
+
+An incomplete channel window can exhaust its page budget or stop with an expired
+provider cursor. The new local `learn_slack_history_read` contract exposes the
+retained approval, bounded window, current batch progress and safe queue status.
+It excludes raw provider cursors, scope keys, credential references and private
+job payloads. Company viewers can inspect it; recovery approval requires a current
+owner/admin outside preview. Eligibility flags describe channel state, not the
+viewer's authority to approve.
+
+`learn_slack_resume_history` accepts a reviewed state hash, request ID, reason and
+fresh budget of 1–10 pages. Continue preserves the saved cursor; restart begins the
+same window from the start. Both renew consent for 24 hours without changing the
+approved window bounds. The prior approval and checkpoint remain immutable in the
+approval chain. `pagesThisApproval` starts at zero for the new approval and must
+not be presented as lifetime history or a measure of complete company coverage.
+The progress reader includes the previous approval ID and recovery mode.
+
+Recovery refuses active imports, completed windows, stale reviews and changed
+request identities. Exact retries resolve the original retained receipt even
+after progress changes. Connection/account and company-authority locks protect
+approval; checkpoint replacement, queue insertion and the new retained approval
+commit together. Existing source/version publication remains unchanged, including
+deduplication when a reviewed restart sees an already stored message.
+
+The full isolated SQL chain passed migration rollback, permissions, expired-consent
+continuation, cursor/bounds preservation, exact replay, reviewed restart, queue
+failure rollback, completion and existing-source preservation. Controlled blocked
+transactions verified revoked owner denial, connection revision invalidation and
+one queued job from two competing approvals. Twelve focused client tests and the
+strict recovery-client typecheck passed. The new client adapter validates the
+company/account/state and receipt, removes unexpected private fields, and separates
+unconfirmed outcomes requiring the same request ID from rejected/stale reviews.
+
+See [local verification evidence](evidence/learn-slack-history-recovery-local-2026-10-10.json).
+This is **local only**: TEST remains release 013/runtime v4. Exact release packaging,
+hosted rehearsal/acceptance and a recovery review screen remain. The client adapter
+does not yet provide a durable browser outbox. Thread recovery, ongoing/multi-window
+capture and actual provider access remain separate work. No production data,
+credential, provider request, deployment or schedule changed in this step.
