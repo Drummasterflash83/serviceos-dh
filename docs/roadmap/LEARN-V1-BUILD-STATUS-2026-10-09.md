@@ -1719,3 +1719,42 @@ Next: signed-in hosted setup/verification acceptance and the verification Edge
 endpoint. Real Drummonds access, contacts/reconciliation/source updates, incomplete
 import recovery, broader operator controls, Slack/voicemail and production release
 remain unfinished. The live site is unchanged.
+
+## Commusoft verification endpoint and signed-in setup acceptance — 10 October
+
+The dedicated JWT-protected verification endpoint is deployed in TEST as version 1.
+Its five-file source bundle is pinned; the release stages only this endpoint and
+retains the existing ingestion workers. A durable pre-deployment journal precedes
+the single CLI submission. Post-deployment inspection confirms unchanged prior
+schema/endpoints and identical fingerprints across 32 existing TEST data sets.
+Eight release/deployment/preservation regressions and thirteen existing verification
+transport/HTTP/client tests pass.
+
+Real signed-in acceptance completed at 11:45:50 UTC using four synthetic accounts.
+The actual configuration RPC encrypted a dummy key in hosted Vault. The production
+outbox recovered a deliberately lost setup reply without storing or resending the
+key. Stored-key reuse succeeded and invalidated prior verification. Viewer/client
+owner access, wrong actors, cross-client/operator replay, raw request-history reads,
+stale revisions, View As and revoked authority were denied.
+
+The deployed Edge endpoint rejected anonymous/infrastructure tokens and malformed
+signed-in requests. It read pending receipts, recorded cancellation, rejected actor
+mismatch and returned cancelled/completed apply replays without releasing another
+provider permit. A separate actual operator approval was executed by the production
+verification module locally against hosted Vault and service RPCs, with its provider
+response intercepted. A deliberately lost final acknowledgement was recovered by
+reading the authenticated retained result. This is not proof of real Commusoft
+access or of a fresh provider call originating inside deployed Edge.
+
+The fixture retains two setup requests, two verification requests, one permit and
+two results; zero jobs, connector accounts or source pages were created. All 34
+checked pre-existing TEST data sets remain unchanged. The four fixture logins were
+banned/password rotated, profiles demoted, grants ended, connection revoked and the
+dummy encrypted Vault record renamed out of the active binding. An independent
+read-only check at 11:46:26 UTC confirms retirement and zero enabled flags/jobs.
+See [hosted acceptance evidence](../operations/evidence/learn-commusoft-connection-hosted-2026-10-10.json).
+
+Next is real Drummonds API access/coverage and the remaining usable import flow:
+contacts projection, reconciliation with existing targets, ongoing source updates
+and incomplete-import recovery. The frontend and production are unchanged; wider
+OpenFolk controls, Slack/voicemail and LEARN V1 production acceptance remain open.

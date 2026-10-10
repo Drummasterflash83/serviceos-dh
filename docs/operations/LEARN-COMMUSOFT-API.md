@@ -18,9 +18,19 @@ retain identical fingerprints. No keys, connection changes or requests were seed
 The initial post-install inspection hit management API rate limits; the acknowledged
 installation was confirmed read-only and was not submitted again.
 
-Hosted signed-in configuration/verification acceptance and deployment of the
-verification Edge endpoint remain. The frontend remains unreleased. See
-[connection release evidence](evidence/learn-commusoft-connection-test-release-2026-10-10.json).
+The JWT-protected verification endpoint is now deployed in TEST. Signed-in
+acceptance passes setup with a synthetic credential, stored-key reuse, lost-reply
+recovery, private-history access controls, cancellation and completed-result replay.
+The production executor exercised actual hosted Vault and verification RPCs using
+an intercepted synthetic provider response. This proves the hosted database path;
+a fresh provider read originating inside deployed Edge remains unverified. No real
+Commusoft request was sent. The four temporary logins were banned, authority ended,
+connection revoked and dummy Vault binding retired. An independent read-only check
+confirms retirement. All 34 checked pre-existing TEST data sets are unchanged.
+
+The frontend remains unreleased. See
+[connection release evidence](evidence/learn-commusoft-connection-test-release-2026-10-10.json)
+and [hosted acceptance](evidence/learn-commusoft-connection-hosted-2026-10-10.json).
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
 connection or Commusoft-named project secret. Checked local environment variable

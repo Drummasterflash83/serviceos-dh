@@ -1,0 +1,17 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "a889d50abce56116c26ecc9a8ca54198bdfde3accdd1964a1cd3a98816dd1a60",
+  "endpoint": {
+    "id": "1c60f3b8-eeda-4c3b-9743-74eabb9dda61",
+    "slug": "learn-commusoft-verify",
+    "name": "learn-commusoft-verify",
+    "status": "ACTIVE",
+    "version": 1,
+    "created_at": 1791632509160,
+    "updated_at": 1791632509160,
+    "verify_jwt": true,
+    "import_map": false,
+    "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_1c60f3b8-eeda-4c3b-9743-74eabb9dda61_1/source/supabase/functions/learn-commusoft-verify/index.ts",
+    "ezbr_sha256": "5843921efa403b1548b4ef3ee17ae06899a9ad118edd9d7c8b119365d90b0ce1"
+  }
+}

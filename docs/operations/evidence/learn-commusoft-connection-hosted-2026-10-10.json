@@ -1,0 +1,119 @@
+{
+  "version": "learn-commusoft-connection-hosted-acceptance/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-10T11:45:50.665Z",
+  "state": "passed",
+  "deployment": {
+    "observedAt": "2026-10-10T11:41:57.120Z",
+    "state": "deployed_needs_http_acceptance",
+    "sourceBundleSha256": "a889d50abce56116c26ecc9a8ca54198bdfde3accdd1964a1cd3a98816dd1a60",
+    "cliExitStatus": 0,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preExistingSourcesPreserved": true,
+    "endpoint": {
+      "id": "1c60f3b8-eeda-4c3b-9743-74eabb9dda61",
+      "slug": "learn-commusoft-verify",
+      "name": "learn-commusoft-verify",
+      "status": "ACTIVE",
+      "version": 1,
+      "created_at": 1791632509160,
+      "updated_at": 1791632509160,
+      "verify_jwt": true,
+      "import_map": false,
+      "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_1c60f3b8-eeda-4c3b-9743-74eabb9dda61_1/source/supabase/functions/learn-commusoft-verify/index.ts",
+      "ezbr_sha256": "5843921efa403b1548b4ef3ee17ae06899a9ad118edd9d7c8b119365d90b0ce1"
+    }
+  },
+  "deploymentPreservedDataSets": 32,
+  "checks": [
+    "Deployed JWT/authentication boundary rejects anonymous and infrastructure tokens; signed-in malformed input is rejected. Viewer/client owner/wrong actor cannot configure connections.",
+    "Real signed-in setup stores an encrypted synthetic key and retains a receipt. The production outbox recovered a deliberately lost acknowledgement without retaining or resending the key. Private raw history and cross-client/operator replay are denied.",
+    "The deployed endpoint reads pending receipts and records cancellation through real Auth/PostgREST. Actor mismatch is denied; cancelled apply replay stays cancelled without a provider permit.",
+    "A real operator approval and hosted encrypted Vault/service RPCs were exercised by the production executor with intercepted synthetic provider responses. Lost final acknowledgement recovered through authenticated receipt; deployed settled replay and duplicate acquisition cannot issue another read. No real Commusoft request was sent.",
+    "Stored-key reuse succeeds under actual hosted Vault permissions and clears previous verification. A stale revision cannot approve a new check.",
+    "View As and administrator revocation immediately deny retained-request access using the existing signed-in JWT."
+  ],
+  "retained": {
+    "setup_requests": 2,
+    "verification_requests": 2,
+    "permits": 1,
+    "results": 2,
+    "jobs": 0,
+    "accounts": 0,
+    "source_pages": 0
+  },
+  "preExistingSourcesPreserved": true,
+  "acceptancePreservedTables": [
+    "public.authority_permissions",
+    "public.companies",
+    "public.connector_accounts",
+    "public.customer_cards",
+    "public.email_messages",
+    "public.feature_flags",
+    "public.interactions",
+    "public.jobs",
+    "public.learn_business_input_observations",
+    "public.learn_business_input_pages",
+    "public.learn_business_input_request_gates",
+    "public.learn_business_input_request_permits",
+    "public.learn_business_input_versions",
+    "public.learn_commusoft_connection_requests",
+    "public.learn_commusoft_verification_permits",
+    "public.learn_commusoft_verification_requests",
+    "public.learn_commusoft_verification_results",
+    "public.learn_operator_input_requests",
+    "public.people",
+    "public.phone_calls",
+    "public.phone_recordings",
+    "public.phone_transcripts",
+    "public.platform_authority_grants",
+    "public.platform_jobs",
+    "public.profiles",
+    "public.provider_connection_events",
+    "public.provider_connections",
+    "public.sites",
+    "public.slack_message_versions",
+    "public.slack_messages",
+    "public.tenant_connectors",
+    "public.tenants",
+    "public.view_as_context",
+    "vault.secrets"
+  ],
+  "retirement": {
+    "version": "learn-connection-fixture-retirement/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-10T11:46:26.982Z",
+    "state": "confirmed",
+    "counts": {
+      "banned_fixture_logins": 4,
+      "retired_profiles": 4,
+      "active_grants": 0,
+      "active_previews": 0,
+      "retired_connections": 1,
+      "active_vault_bindings": 0,
+      "retired_vault_records": 1,
+      "enabled_flags": 0,
+      "jobs": 0
+    }
+  },
+  "localValidation": [
+    "Eight release/deployment/preservation regression tests passed.",
+    "Thirteen verification transport/HTTP/client tests passed.",
+    "No production application or endpoint source changed; the previously tested pinned endpoint bundle was deployed."
+  ],
+  "sourceHashes": {
+    "scripts/verify/learn-test-commusoft-verification-deploy.mjs": "d332f85860f107c7b6bf0d25073e67c3d35d73862e3bff55fe79a8a3b7df8a6b",
+    "scripts/verify/learn-test-commusoft-verification-deploy.test.mjs": "7801b76c5fd81a1dd11142125258863bf8e1b672b7d5cf8120745cdb165c5c3e",
+    "scripts/verify/learn-test-commusoft-verification-hosted.mjs": "306cade90fb0ec97dc1ddf043e7d4cc13465c75bad352df9c8f074bf83c9159e",
+    "scripts/verify/learn-test-commusoft-verification-runtime.mjs": "00d5fd12948e23f788e87f41718431ae18875f7da081c8866e5358652d794b14",
+    "scripts/verify/learn-test-commusoft-connection-acceptance.mjs": "fc51f8ac52c36fb1d2b13f3a5a450dec1c981a76d5a24186d510378df45a975f",
+    "supabase/release/learn-test/commusoft_verification_endpoint.expected.json": "682de38bbab80b28f57f188a4f5d338d88b7288d60a306a80e2ae30f7920ec57"
+  },
+  "limitations": [
+    "Hosted HTTP acceptance covers authentication, request validation, receipt reads, cancellation and settled replay; it does not prove a fresh provider request initiated inside the deployed Edge runtime.",
+    "Successful provider response was intercepted locally by the production executor using actual hosted Vault, approval/permit/result RPCs; no real Commusoft call was made.",
+    "Only a synthetic never-provider-valid credential was stored; its active Vault binding was retired and the encrypted history retained.",
+    "Real Drummonds API access, account identity, job/contact scope and provider coverage are not established.",
+    "Frontend and production remain unchanged; incomplete-import recovery and wider LEARN V1 remain open."
+  ]
+}

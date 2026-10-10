@@ -63,10 +63,12 @@ export function transport({
   committed = false,
   already = false,
   afterUnavailable = false,
+  currentCatalog,
 } = {}) {
   let writes = 0;
   const cached = new Map();
   const current = () => {
+    if (currentCatalog) return currentCatalog();
     const installed = already || (writes > 0 && !rehearse && (!unknown || committed));
     if (!cached.has(installed)) cached.set(installed, catalog(installed));
     return cached.get(installed);
