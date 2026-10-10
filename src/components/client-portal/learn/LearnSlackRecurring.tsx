@@ -39,6 +39,7 @@ export function LearnSlackRecurring({
   const [pending, setPending] = useState<SavedRecurring | null>(null),
     [reason, setReason] = useState(""),
     [reviewed, setReviewed] = useState(false);
+  const [target, setTarget] = useState<"channel" | "threads">("channel");
   const [notice, setNotice] = useState(""),
     [readError, setReadError] = useState("");
   const generation = useRef(0),
@@ -103,6 +104,12 @@ export function LearnSlackRecurring({
     };
   }, [tenantId, actorId, backend]);
   const selected = channels.find((c) => c.accountId === account);
+  const threadAction = target === "threads";
+  const enabled = threadAction ? selected?.threads?.enabled === true : selected?.enabled === true;
+  const canEnable = threadAction
+    ? selected?.threads?.canEnable === true
+    : !!(selected?.completeVerified || selected?.pausedWindow);
+  const subject = threadAction ? "thread reply capture" : "ongoing capture";
   async function resolve(mode: "apply" | "check" | "cancel") {
     if (working.current || !ready || !allowed()) return;
     const draft =
@@ -113,17 +120,28 @@ export function LearnSlackRecurring({
             backend,
             label: selected.name,
             request: {
+              ...(threadAction ? { kind: "threads" as const } : {}),
               tenantId,
               actorId,
               accountId: selected.accountId,
               requestId: crypto.randomUUID(),
               revision: selected.revision,
-              enabled: !selected.enabled,
+              enabled: !enabled,
               reason: reason.trim(),
             },
           }
         : null);
-    if (!draft || (!pending && (!writable || loading || !reviewed || !reason.trim()))) return;
+    if (
+      !draft ||
+      (!pending &&
+        (!writable ||
+          loading ||
+          !reviewed ||
+          !reason.trim() ||
+          (threadAction && !selected?.threads) ||
+          (!enabled && !canEnable)))
+    )
+      return;
     working.current = true;
     setBusy(true);
     setNotice("");
@@ -144,8 +162,12 @@ export function LearnSlackRecurring({
           : receipt.state === "cancelled"
             ? "Request cancelled. A delayed copy cannot apply it."
             : receipt.state === "recorded" && receipt.enabled
-              ? "Ongoing capture enabled. Check channel progress to confirm messages are arriving."
-              : "Ongoing capture paused. Saved messages and unfinished progress remain available.",
+              ? draft.request.kind === "threads"
+                ? "Thread reply capture enabled. Check observed-thread progress as windows are processed."
+                : "Ongoing capture enabled. Check channel progress to confirm messages are arriving."
+              : draft.request.kind === "threads"
+                ? "Thread reply capture paused. Saved replies and progress remain available."
+                : "Ongoing capture paused. Saved messages and unfinished progress remain available.",
       );
       restore();
       if (receipt.state !== "pending") {
@@ -199,6 +221,7 @@ export function LearnSlackRecurring({
             disabled={busy || !!pending}
             onChange={(e) => {
               setAccount(e.target.value);
+              setTarget("channel");
               setReviewed(false);
               setReason("");
             }}
@@ -237,10 +260,40 @@ export function LearnSlackRecurring({
           {selected.updatedAt && (
             <p>Last recorded update: {new Date(selected.updatedAt).toLocaleString()}</p>
           )}
-          <p>
-            Channel messages only. Thread replies, attachments and earlier edits need separate
-            coverage checks.
-          </p>
+          {selected.threads ? (
+            <div className="rounded border p-3 space-y-1" aria-label="Observed thread progress">
+              <p>
+                <strong>Thread reply capture:</strong>{" "}
+                {selected.threads.enabled ? "Enabled" : "Not enabled"}
+              </p>
+              {selected.threads.observed === null ? (
+                <p>No thread window has been checked yet.</p>
+              ) : (
+                <p>
+                  {selected.threads.completed} of {selected.threads.observed} observed threads have
+                  completed this window.{" "}
+                  {selected.threads.discoveryComplete
+                    ? "Discovery finished for retained parents."
+                    : "More retained parents may still be discovered."}
+                </p>
+              )}
+              <p>
+                Only threads identified in saved messages are included. Unseen parents, attachments
+                and earlier edits need separate coverage checks.
+              </p>
+              {selected.state === "threads_pending" && (
+                <p>
+                  Review thread imports; interrupted or exhausted imports need recovery
+                  before the next channel window.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>
+              Thread reply controls are not available from this service yet. Channel messages,
+              thread replies, attachments and earlier edits have separate coverage.
+            </p>
+          )}
           {!selected.enabled && !selected.completeVerified && !selected.pausedWindow && (
             <p>Complete or recover the initial window before enabling ongoing capture.</p>
           )}
@@ -249,7 +302,8 @@ export function LearnSlackRecurring({
       {pending ? (
         <div className="space-y-2" role="group" aria-label="Saved Slack capture request">
           <p>
-            Saved request: {pending.request.enabled ? "Enable" : "Pause"} ongoing capture for{" "}
+            Saved request: {pending.request.enabled ? "Enable" : "Pause"}{" "}
+            {pending.request.kind === "threads" ? "thread reply capture" : "ongoing capture"} for{" "}
             <strong>{pending.label}</strong>.
           </p>
           <p className="text-sm">
@@ -286,6 +340,28 @@ export function LearnSlackRecurring({
       ) : selected && canEdit && writable ? (
         <div className="space-y-3">
           <label className="block">
+            Change setting
+            <select
+              className="mt-1 block w-full rounded border p-2"
+              value={target}
+              disabled={busy}
+              onChange={(e) => {
+                setTarget(e.target.value as "channel" | "threads");
+                setReviewed(false);
+                setReason("");
+              }}
+            >
+              <option value="channel">Channel capture</option>
+              {selected.threads && <option value="threads">Thread reply capture</option>}
+            </select>
+          </label>
+          {threadAction && !enabled && !canEnable && (
+            <p>
+              Enable ongoing channel capture first. If a thread window has already started, pause
+              replies and let channel capture advance before enabling a fresh window.
+            </p>
+          )}
+          <label className="block">
             Reason for this change
             <textarea
               className="mt-1 block w-full rounded border p-2"
@@ -304,9 +380,13 @@ export function LearnSlackRecurring({
               onChange={(e) => setReviewed(e.target.checked)}
             />
             <span>
-              {selected.enabled
-                ? "Pause new capture for this channel and retain saved progress."
-                : "Allow ongoing reads of this public channel until paused. LEARN and Slack module switches still apply."}
+              {threadAction
+                ? enabled
+                  ? "Pause automatic thread reads and retain saved replies. Channel capture can continue."
+                  : "Allow ongoing reads of observed threads in this public channel. Unfinished replies hold the next channel window; LEARN and Slack switches still apply."
+                : enabled
+                  ? "Pause new capture for this channel and retain saved progress."
+                  : "Allow ongoing reads of this public channel until paused. LEARN and Slack module switches still apply."}
             </span>
           </label>
           <button
@@ -318,15 +398,12 @@ export function LearnSlackRecurring({
               !ready ||
               !reviewed ||
               !reason.trim() ||
-              (!selected.enabled && !selected.completeVerified && !selected.pausedWindow)
+              (!enabled && !canEnable) ||
+              (threadAction && !selected.threads)
             }
             onClick={() => void resolve("apply")}
           >
-            {busy
-              ? "Saving…"
-              : selected.enabled
-                ? "Pause ongoing capture"
-                : "Enable ongoing capture"}
+            {busy ? "Saving…" : `${enabled ? "Pause" : "Enable"} ${subject}`}
           </button>
         </div>
       ) : (

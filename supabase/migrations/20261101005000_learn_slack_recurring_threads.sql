@@ -25,22 +25,28 @@ revoke all on public.slack_recurring_thread_members from public,anon,authenticat
 grant select on public.slack_recurring_thread_members to service_role;
 
 -- Separate control preserves the existing ongoing-channel request contract.
-create function public.learn_slack_recurring_threads_control(p_tenant uuid,p_request uuid,p_account uuid,p_revision bigint,p_enabled boolean,p_reason text)
+create function public.learn_slack_recurring_threads_control(p_tenant uuid,p_request uuid,p_account uuid,p_revision bigint,p_enabled boolean,p_reason text,p_mode text default 'apply',p_actor uuid default auth.uid())
 returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
 declare s public.slack_recurring_channels%rowtype;r public.slack_recurring_requests%rowtype;definition jsonb;answer jsonb;
 begin
  if current_setting('transaction_isolation')<>'read committed' then raise exception 'slack_recurring_snapshot' using errcode='22023';end if;
  perform pg_advisory_xact_lock_shared(hashtextextended('learn-work-registry',0));
  perform pg_advisory_xact_lock(hashtextextended('learn-roster:'||p_tenant::text,0));
- if not public.learn_slack_recurring_access(p_tenant,true) then raise exception 'slack_recurring_forbidden' using errcode='42501';end if;
+ if p_actor is distinct from auth.uid() or not public.learn_slack_recurring_access(p_tenant,true) then raise exception 'slack_recurring_forbidden' using errcode='42501';end if;
  if p_request is null or p_account is null or p_revision is null or p_revision<1 or p_enabled is null
- or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 then raise exception 'slack_recurring_invalid' using errcode='22023';end if;
+ or length(btrim(coalesce(p_reason,''))) not between 1 and 1000 or p_mode is null or p_mode not in ('apply','check','cancel') then raise exception 'slack_recurring_invalid' using errcode='22023';end if;
  definition:=jsonb_build_object('kind','observed_threads','accountId',p_account,'revision',p_revision,'enabled',p_enabled,'reason',btrim(p_reason));
  perform pg_advisory_xact_lock(hashtextextended('learn-slack-recurring-request:'||p_request::text,0));
  select * into r from public.slack_recurring_requests where id=p_request;
  if found then
   if r.tenant_id<>p_tenant or r.actor_id<>auth.uid() or r.definition<>definition then raise exception 'slack_recurring_request_changed' using errcode='40001';end if;
   return r.receipt;
+ end if;
+ answer:=jsonb_build_object('tenantId',p_tenant,'requestId',p_request,'accountId',p_account,'state',case when p_mode='cancel' then 'cancelled' else 'pending' end);
+ if p_mode='check' then return answer;end if;
+ if p_mode='cancel' then
+  insert into public.slack_recurring_requests(id,tenant_id,actor_id,definition,receipt) values(p_request,p_tenant,auth.uid(),definition,answer);
+  return answer;
  end if;
  perform pg_advisory_xact_lock(hashtextextended('learn-slack-setup:'||p_tenant::text,0));
  select * into s from public.slack_recurring_channels where account_id=p_account and tenant_id=p_tenant for update;
@@ -56,8 +62,8 @@ begin
  insert into public.slack_recurring_requests(id,tenant_id,actor_id,definition,receipt) values(p_request,p_tenant,auth.uid(),definition,answer);
  return answer;
 end $$;
-revoke all on function public.learn_slack_recurring_threads_control(uuid,uuid,uuid,bigint,boolean,text) from public,anon,service_role;
-grant execute on function public.learn_slack_recurring_threads_control(uuid,uuid,uuid,bigint,boolean,text) to authenticated;
+revoke all on function public.learn_slack_recurring_threads_control(uuid,uuid,uuid,bigint,boolean,text,text,uuid) from public,anon,service_role;
+grant execute on function public.learn_slack_recurring_threads_control(uuid,uuid,uuid,bigint,boolean,text,text,uuid) to authenticated;
 
 -- Rechecked before credential access and page publication. Manual approvals retain
 -- their existing gate; recurring approvals additionally depend on the live subscription.
@@ -81,7 +87,7 @@ revoke all on function public.learn_slack_recurring_thread_allowed(uuid,uuid) fr
 grant execute on function public.learn_slack_recurring_thread_allowed(uuid,uuid) to service_role;
 
 -- Follow explicit recovery lineage while retaining every earlier approval.
-create function public.learn_slack_recurring_thread_window_complete(p_window uuid) returns boolean
+create function public.learn_slack_recurring_thread_window_progress(p_window uuid) returns jsonb
 language sql stable security definer set search_path=pg_catalog as $$
  with recursive lineage(root,id,tenant_id,account_id,scope,definition,checkpoint,approved_at) as (
   select m.thread_import_id,t.id,t.tenant_id,t.account_id,t.scope,t.definition,t.checkpoint,t.approved_at
@@ -94,13 +100,36 @@ language sql stable security definer set search_path=pg_catalog as $$
   and t.scope->>'parentTimestamp'=l.scope->>'parentTimestamp'
   and t.scope->>'oldest'=l.scope->>'oldest' and t.scope->>'latest'=l.scope->>'latest'
  ), latest as (select distinct on(root) * from lineage order by root,approved_at desc,id desc)
- select exists(select 1 from public.slack_recurring_thread_windows where history_import_id=p_window and discovery_complete)
- and not exists(select 1 from latest t where t.checkpoint->'complete' is distinct from 'true'::jsonb or not exists(
+ select jsonb_build_object('discoveryComplete',(select discovery_complete from public.slack_recurring_thread_windows where history_import_id=p_window),
+ 'observed',(select count(*) from latest),'completed',(select count(*) from latest t where t.checkpoint->'complete'='true'::jsonb and exists(
   select 1 from public.platform_jobs j where j.tenant_id=t.tenant_id and j.job_type='slack.thread_sync' and j.status='succeeded'
   and j.payload->>'thread_import_id'=t.id::text and j.metadata->'slack_page_v1'->'next'=t.checkpoint
-  and j.metadata->'slack_page_v1'->>'thread_import_id'=t.id::text));
+  and j.metadata->'slack_page_v1'->>'thread_import_id'=t.id::text)));
+$$;
+revoke all on function public.learn_slack_recurring_thread_window_progress(uuid) from public,anon,authenticated,service_role;
+create function public.learn_slack_recurring_thread_window_complete(p_window uuid) returns boolean
+language sql stable security definer set search_path=pg_catalog as $$
+ select coalesce(p->'discoveryComplete'='true'::jsonb and p->'observed'=p->'completed',false)
+ from public.learn_slack_recurring_thread_window_progress(p_window) p;
 $$;
 revoke all on function public.learn_slack_recurring_thread_window_complete(uuid) from public,anon,authenticated,service_role;
+create function public.learn_slack_recurring_threads_status(p_account uuid) returns jsonb
+language sql stable security definer set search_path=pg_catalog as $$
+ select jsonb_build_object('enabled',coalesce(s.include_threads,false),'canEnable',coalesce(s.enabled and w.history_import_id is null,false),
+ 'discoveryComplete',case when w.history_import_id is not null then w.discovery_complete else null end,
+ 'observed',case when w.history_import_id is not null then progress->'observed' else 'null'::jsonb end,
+ 'completed',case when w.history_import_id is not null then progress->'completed' else 'null'::jsonb end)
+ from (select 1) seed left join public.slack_recurring_channels s on s.account_id=p_account
+ left join public.slack_recurring_thread_windows w on w.history_import_id=s.current_import
+ left join lateral public.learn_slack_recurring_thread_window_progress(w.history_import_id) progress on true;
+$$;
+revoke all on function public.learn_slack_recurring_threads_status(uuid) from public,anon,authenticated,service_role;
+-- Only the existing tenant-scoped reader exposes this non-secret summary.
+do $patch$declare d text;needle text:='   ''pausedWindow'',coalesce';begin
+ d:=pg_get_functiondef('public.learn_slack_recurring_read(uuid,uuid)'::regprocedure);
+ if length(d)-length(replace(d,needle,''))<>length(needle) then raise exception 'Reviewed recurring reader changed';end if;
+ execute replace(d,needle,'   ''threads'',public.learn_slack_recurring_threads_status(a.id),'||chr(10)||needle);
+end $patch$;
 
 -- Called under the existing scheduler's subscription/account locks. At most twenty
 -- observed parents are queued per pass. Numeric timestamps deduplicate equivalent IDs.

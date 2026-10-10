@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-10T18:21:00.377415+00:00",
+  "state": "local_verified_not_deployed",
+  "databaseChecks": [
+    "owner approval, request replay and service-only scheduler",
+    "viewer and View-As denial",
+    "atomic bounded window enqueue, replay and previous-checkpoint retention",
+    "opt-in control and stable retry receipt",
+    "viewer/preview cannot change thread approval and channel reapproval cannot skip pending replies",
+    "read-only receipt checks and cancellation fence delayed copies; absent window counts remain unknown",
+    "bounded discovery revisits old threads, retains broadcast parents and deduplicates timestamp aliases",
+    "tenant-scoped summary shows retained observed/completed counts",
+    "channel progression holds while observed replies are unfinished",
+    "paused recurring capture blocks actual credential/publication RPCs; channel revision changes preserve thread approval",
+    "owner revocation denies reads; actual recovery lineage and durable completion release next window without rewriting the original import",
+    "conflicting recovery lock is skipped promptly; concurrent schedulers retain one import per parent/window"
+  ],
+  "clientTests": 8,
+  "browser": {
+    "actualComponent": true,
+    "transport": "synthetic RPC",
+    "lostResponseThenFullReload": true,
+    "receiptCheckClearedSavedRequest": true,
+    "totalApplyCount": 1,
+    "olderBackendOmitsThreadControl": true,
+    "readOnlyAccessOmitsWrites": true,
+    "mobileWidth": 390,
+    "mobileDocumentWidth": 390
+  },
+  "typescript": "passed",
+  "fullApplicationBuild": "passed",
+  "screenshot": "learn-slack-thread-controls-2026-10-10.png",
+  "limitations": [
+    "No hosted migration, endpoint/frontend release or activation in this turn",
+    "Synthetic browser data does not establish real Slack access or hosted client-role acceptance",
+    "Only retained observed parents are covered"
+  ]
+}

@@ -32,6 +32,18 @@ do $$declare denied boolean:=false;begin
 end $$;
 reset role;
 select 'PASS: viewer/preview cannot change thread approval and channel reapproval cannot skip pending replies';
+set test.role='authenticated';set role authenticated;
+do $$declare request uuid:=gen_random_uuid();account uuid:=(select account_id from verify.fixture);r jsonb;again jsonb;begin
+ r:=learn_slack_recurring_threads_control('00000000-0000-4000-8000-000000000010',request,account,2,false,'Pending pause','check');
+ if r->>'state'<>'pending' then raise exception 'Check applied thread pause';end if;
+ r:=learn_slack_recurring_threads_control('00000000-0000-4000-8000-000000000010',request,account,2,false,'Pending pause','cancel');
+ again:=learn_slack_recurring_threads_control('00000000-0000-4000-8000-000000000010',request,account,2,false,'Pending pause','apply');
+ if r<>again or r->>'state'<>'cancelled' then raise exception 'Delayed thread request applied after cancellation';end if;
+ r:=learn_slack_recurring_read('00000000-0000-4000-8000-000000000010')->'channels'->0->'threads';
+ if r is null or r->'enabled'<>'true'::jsonb or r->'observed'<>'null'::jsonb then raise exception 'Initial thread summary incorrect';end if;
+end $$;
+reset role;
+select 'PASS: read-only receipt checks and cancellation fence delayed copies; absent window counts remain unknown';
 -- Twenty-three old observed parents, including a broadcast and timestamp aliases.
 insert into slack_messages(id,tenant_id,source_external_id,team_id,channel_id,provider_timestamp,thread_timestamp,message_text,provider_payload,source_version,source_updated_at)
  select gen_random_uuid(),'00000000-0000-4000-8000-000000000010','parent-'||n,'TSETUP','CSETUP',(100+n)::text||'.1',null,'Synthetic parent',jsonb_build_object('reply_count',1),repeat('a',64),100+n from generate_series(1,22)n;
@@ -51,6 +63,13 @@ do $$begin
 end $$;
 reset role;
 select 'PASS: bounded discovery revisits old threads, retains broadcast parents and deduplicates timestamp aliases';
+set test.role='authenticated';set role authenticated;
+do $$declare r jsonb;begin
+ r:=learn_slack_recurring_read('00000000-0000-4000-8000-000000000010')->'channels'->0->'threads';
+ if r->>'observed'<>'23' or r->>'completed'<>'0' or r->'discoveryComplete'<>'true'::jsonb then raise exception 'Thread progress summary incorrect: %',r;end if;
+end $$;
+reset role;set test.role='service_role';
+select 'PASS: tenant-scoped summary shows retained observed/completed counts';
 -- Main scheduler cannot skip the window while thread evidence is unfinished.
 update slack_recurring_channels set next_check_at=clock_timestamp();
 set role service_role;

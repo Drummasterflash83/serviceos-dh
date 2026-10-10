@@ -901,3 +901,37 @@ exhaustion and expired approvals can hold a window for explicit recovery. File
 content, historical edits/deletions and private/shared channels remain separate
 work. Slack's [reply pagination contract](https://docs.slack.dev/reference/methods/conversations.replies/)
 is the provider reference; actual workspace access still needs verification.
+
+## Recurring thread controls and progress — local UI, 10 October
+
+The shared client/OpenFolk recurring panel now offers separate channel and thread
+reply actions. The new scoped read summary reports whether thread capture is
+enabled, whether a fresh approval can be enabled, whether retained-parent
+discovery has finished, and observed/completed counts for the current window.
+A missing window displays unknown counts. An older backend has no thread controls
+and is labelled unavailable for this feature; its ordinary channel controls remain
+usable. The summary cannot be called directly by browser roles outside the existing
+tenant-scoped reader.
+
+Thread changes use the same durable per-backend/actor/company request outbox as
+channel changes, with an explicit request kind. One cannot overwrite an unresolved
+request of the other kind. The separate thread RPC now supports read-only receipt
+checks and cancellation; cancellation records a receipt so a delayed copy cannot
+apply. It verifies the actor, reason, revision and existing owner/admin/operator
+authority. Old saved channel requests retain their original format and endpoint.
+
+Eight client tests and the PostgreSQL scenarios passed, including thread-request
+recovery, cancellation, delayed apply, absent-window summaries, observed counts,
+viewer/preview denial, worker gates, actual recovery lineage and scheduler
+concurrency. Browser verification used the actual component and synthetic RPC:
+a response was lost after one applied change, full reload retained the request,
+and checking its receipt cleared it without a second apply. Viewer access removed
+edit controls; an older backend omitted thread actions. A 390-pixel viewport fit
+without horizontal scrolling. The full application build and TypeScript passed.
+
+[Verification record](evidence/learn-slack-thread-controls-local-2026-10-10.json) ·
+[synthetic browser preview](evidence/learn-slack-thread-controls-2026-10-10.png).
+
+This remains **local, not deployed or activated**. The coordinated TEST database,
+Slack worker and frontend release and real-provider acceptance remain outstanding.
+The feature covers observed threads, not all workspace history.

@@ -1,7 +1,15 @@
 export type RecurringClient = {
   rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: any; error: any }>;
 };
+export type RecurringThreads = {
+  enabled: boolean;
+  canEnable: boolean;
+  discoveryComplete: boolean | null;
+  observed: number | null;
+  completed: number | null;
+};
 export type RecurringChannel = {
+  threads: RecurringThreads | null;
   accountId: string;
   name: string;
   teamId: string | null;
@@ -23,6 +31,7 @@ export type RecurringPage = {
   next: string | null;
 };
 export type RecurringRequest = {
+  kind?: "threads";
   tenantId: string;
   actorId: string;
   requestId: string;
@@ -114,8 +123,33 @@ export async function readRecurringChannels(
         (c.enabled && c.revision === 0)
       )
         throw Error();
+      let threads: RecurringThreads | null = null;
+      if (c.threads !== undefined) {
+        const t = c.threads;
+        if (
+          !object(t) ||
+          typeof t.enabled !== "boolean" ||
+          typeof t.canEnable !== "boolean" ||
+          !(t.discoveryComplete === null || typeof t.discoveryComplete === "boolean") ||
+          ![t.observed, t.completed].every(
+            (n) => n === null || (Number.isSafeInteger(n) && n >= 0),
+          ) ||
+          (t.discoveryComplete === null
+            ? t.observed !== null || t.completed !== null
+            : t.observed === null || t.completed === null || t.completed > t.observed)
+        )
+          throw Error();
+        threads = {
+          enabled: t.enabled,
+          canEnable: t.canEnable,
+          discoveryComplete: t.discoveryComplete,
+          observed: t.observed,
+          completed: t.completed,
+        };
+      }
       last = c.accountId;
       return {
+        threads,
         accountId: c.accountId,
         name: c.name,
         teamId: c.teamId,
@@ -141,8 +175,12 @@ export async function readRecurringChannels(
 function validate(r: RecurringRequest) {
   if (
     !object(r) ||
-    Object.keys(r).sort().join() !==
-      "accountId,actorId,enabled,reason,requestId,revision,tenantId" ||
+    ![
+      "accountId,actorId,enabled,reason,requestId,revision,tenantId",
+      "accountId,actorId,enabled,kind,reason,requestId,revision,tenantId",
+    ].includes(Object.keys(r).sort().join()) ||
+    (Object.hasOwn(r, "kind") && r.kind !== "threads") ||
+    (r.kind === "threads" && r.revision < 1) ||
     ![r.tenantId, r.actorId, r.requestId, r.accountId].every(uuid) ||
     !Number.isSafeInteger(r.revision) ||
     r.revision < 0 ||
@@ -161,16 +199,21 @@ export async function resolveRecurring(
   validate(r);
   if (!["apply", "check", "cancel"].includes(mode)) throw Error("Invalid request action.");
   try {
-    const { data: d, error } = await db.rpc("learn_slack_recurring_control", {
-      p_tenant: r.tenantId,
-      p_actor: r.actorId,
-      p_request: r.requestId,
-      p_account: r.accountId,
-      p_revision: r.revision,
-      p_enabled: r.enabled,
-      p_reason: r.reason,
-      p_mode: mode,
-    });
+    const { data: d, error } = await db.rpc(
+      r.kind === "threads"
+        ? "learn_slack_recurring_threads_control"
+        : "learn_slack_recurring_control",
+      {
+        p_tenant: r.tenantId,
+        p_actor: r.actorId,
+        p_request: r.requestId,
+        p_account: r.accountId,
+        p_revision: r.revision,
+        p_enabled: r.enabled,
+        p_reason: r.reason,
+        p_mode: mode,
+      },
+    );
     if (
       error ||
       !object(d) ||

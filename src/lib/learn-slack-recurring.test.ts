@@ -210,3 +210,87 @@ test("mismatched result keeps recovery; actor change after the response does not
   );
   assert.equal(g.saved.size, 1);
 });
+
+test("thread requests share durable recovery but use their own RPC and cannot replace pending channel work", async () => {
+  const t: SavedRecurring = {
+    ...draft,
+    request: { ...draft.request, kind: "threads", revision: 1 },
+  };
+  const f = fixture();
+  f.lose();
+  const original = f.db.rpc;
+  f.db.rpc = async (name, args) => {
+    const r = await original(name, args);
+    if (r.data && "state" in r.data && r.data.state === "recorded")
+      r.data = { ...r.data, revision: 2 };
+    return r;
+  };
+  await assert.rejects(f.run("apply", t));
+  assert.equal(readSavedRecurring(f.store, scope)?.request.kind, "threads");
+  assert.equal((await f.run("check", t)).state, "recorded");
+  assert.equal(f.calls.filter((c) => c.args.p_mode === "apply").length, 1);
+  assert.ok(
+    f.calls
+      .filter((c) => c.args.p_mode)
+      .every((c) => c.name === "learn_slack_recurring_threads_control"),
+  );
+  const pending = fixture();
+  await pending.run("check");
+  await assert.rejects(pending.run("apply", t), /existing/);
+  const cancelled = fixture();
+  assert.equal((await cancelled.run("cancel", t)).state, "cancelled");
+  assert.equal((await cancelled.run("apply", t)).state, "cancelled");
+  assert.ok(!cancelled.calls.some((c) => c.args.p_mode === "apply"));
+  for (const bad of [
+    { ...t, request: { ...t.request, kind: "unknown" } },
+    { ...t, request: { ...t.request, revision: 0 } },
+  ]) {
+    const g = fixture();
+    await assert.rejects(g.run("apply", bad as SavedRecurring));
+    assert.equal(g.calls.length, 0);
+  }
+});
+test("thread status is unknown on old backends and strictly validates coverage before displaying counts", async () => {
+  const f = fixture();
+  assert.equal((await readRecurringChannels(f.db, scope.tenantId)).channels[0].threads, null);
+  const status = {
+    enabled: true,
+    canEnable: false,
+    discoveryComplete: false,
+    observed: 23,
+    completed: 4,
+  };
+  const page = (threads: any) => ({
+    rpc: async () => ({ error: null, data: { ...f.page, channels: [{ ...channel, threads }] } }),
+  });
+  assert.deepEqual(
+    (await readRecurringChannels(page({ ...status, secret: "PRIVATE" }), scope.tenantId))
+      .channels[0].threads,
+    status,
+  );
+  for (const bad of [
+    null,
+    {},
+    { ...status, observed: -1 },
+    { ...status, completed: 24 },
+    { ...status, completed: null },
+    { ...status, discoveryComplete: null },
+    { ...status, enabled: 1 },
+  ])
+    await assert.rejects(readRecurringChannels(page(bad), scope.tenantId));
+  assert.deepEqual(
+    (
+      await readRecurringChannels(
+        page({
+          enabled: false,
+          canEnable: true,
+          discoveryComplete: null,
+          observed: null,
+          completed: null,
+        }),
+        scope.tenantId,
+      )
+    ).channels[0].threads,
+    { enabled: false, canEnable: true, discoveryComplete: null, observed: null, completed: null },
+  );
+});
