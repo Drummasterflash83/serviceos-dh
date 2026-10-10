@@ -19,6 +19,16 @@ first attempt. These observations do not establish which access layer denied the
 request, whether the key is usable, or whether the described account is its actual
 data account. Do not work around this by guessing hosts or authentication modes.
 
+A subsequent read-only review confirmed both visible read scopes and the still-empty
+API log. The current [authentication documentation](https://developer.commusoft.com/authentication-1985209m0)
+matches the requested UK base and `x-api-key` header. The
+[response documentation](https://developer.commusoft.com/requests-and-responses-1985359m0)
+describes JSON error objects; the observed HTML response does not identify a
+specific permission or credential fault. No further provider requests were made
+during this review. The operator access-denied message now reflects that uncertainty
+and points to API logs, read permissions and account/network restrictions before
+another deliberate check. Do not regenerate the existing key based only on this 403.
+
 The bounded diagnostic journals attempts before sending, makes no automatic
 retry, reads at most one record per collection and reports no source values.
 Three tests verify request bounds, denied/throttled stopping, source-value

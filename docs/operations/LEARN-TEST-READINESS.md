@@ -1,5 +1,29 @@
 # Existing TEST environment: verified release gaps
 
+## Hosted operator acceptance session — prepared, approval pending
+
+The read-only preflight for run `0be31171-a302-4840-80fd-f433726a7300` passed
+against release 034. It rechecked the exact health catalog, existing Auth contract,
+absence of `chris@openfolk.ai` in TEST Auth/profiles, and 64 aggregate preservation
+fingerprints. No account or grant has been created for this run.
+
+`scripts/verify/learn-hosted-operator-session.mjs` prepares, activates, inspects and
+retires the bounded session. Activation requires explicit approval of this new run;
+the previous contacts fixture approval does not apply. The plan creates the TEST
+login required by the existing frontend gate and one archived synthetic company,
+with a 30-minute `platform.controlplane.admin` grant. That grant can access all TEST
+clients; acceptance changes are restricted to the marked company. No provider
+credential, import, schedule or email is included.
+
+The private plan is `.verification-results/hosted-operator-session.json`. Activation
+rechecks identity absence and unchanged retained sources, journals before creating
+Auth, and refuses replay after an attempted activation. Retirement ends database
+authority before banning the login, so an Auth outage cannot leave the grant active.
+The account and synthetic evidence remain retained. The tool reports only explicit
+safe fields; passwords and source fingerprints remain local and ignored. Six session
+tests and nine existing connection-outbox tests pass. Actual hosted signed-in
+acceptance remains pending; the preflight does not count as a successful login.
+
 ## Operator backend and shared health foundation — installed in TEST, 10 October 2026
 
 The recovered **openfolk-control-plane** endpoint is deployed in TEST at version 1.

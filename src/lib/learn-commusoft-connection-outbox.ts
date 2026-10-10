@@ -180,7 +180,7 @@ export function connectionResultMessage(result: ConnectionResult): string {
     authentication_required:
       "Commusoft did not accept the stored credential. Review or replace it, then run a new check.",
     access_denied:
-      "The credential does not have access to this Commusoft read. Review private-application permissions.",
+      "The Commusoft read was denied. Access remains unverified; check the application API logs, read permissions and account or network restrictions before running a new check. This result alone does not prove the stored key is wrong.",
     authority_changed:
       "The connection or operator authority changed during the check. Refresh status before starting a new check.",
     authority_unavailable:
