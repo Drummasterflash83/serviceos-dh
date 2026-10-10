@@ -1,0 +1,45 @@
+{
+  "version": "learn-commusoft-verification-local/1",
+  "observedAt": "2026-10-10T11:10:35.783356+00:00",
+  "state": "passed",
+  "checks": [
+    "Exact authenticated actor, effective platform administrator grant, current tenant/connection/binding, View As denial, grant revocation and private API-role permissions.",
+    "Immutable request/permit/result history; exact replay and cancellation, expiry, stale revision, changed definition/tenant and one-time credential release under concurrent acquisitions.",
+    "Actual ingestion and verification acquisition share the same credential quota across different synthetic tenant Vault entries; late throttling still extends quota after cancellation.",
+    "Credential rotation at unchanged Vault ID and newer connection configuration refuse old verification; failed checks clear old verification without erasing history.",
+    "Injected late result failure rolls back verification, connection audit and receipt; repeated finalization recovers the same retained outcome.",
+    "Production executor against actual SQL with intercepted synthetic provider transport: one-read success, duplicate refusal, lost success reply recovery and in-flight cancellation. Actual SQL receipts pass the application parser.",
+    "Thirteen transport, HTTP guard, receipt and application adapter tests passed. No provider payload or credential returned from execution or HTTP responses.",
+    "Application and strict shared-module/test TypeScript checks passed. New Deno entrypoint bundled in memory using installed Rolldown; remote Supabase import externalized."
+  ],
+  "localSqlEvidence": {
+    "permits": 13,
+    "results": 13,
+    "requests": 14,
+    "fixture_jobs": 0,
+    "concurrent_acquisition": "passed",
+    "rollback": "passed",
+    "production_executor_sql_bridge": "passed"
+  },
+  "sourceSha256": {
+    "supabase/migrations/20261031180000_learn_commusoft_connection_verification.sql": "3fcc0a13ab229daa36ebe2f1d592079dae55cd15bcc4a245cdf11c55624bee02",
+    "supabase/functions/_shared/commusoft/verification_contract.ts": "0bda1ad4541f311b56d01c3e185a0e450124e83ca989d19205c177fc276f2243",
+    "supabase/functions/_shared/commusoft/verification_http.ts": "6862e08cde64e86539987b25b1b512e81ccc71b699e1c310c8e18649ddbdc9df",
+    "supabase/functions/_shared/commusoft/verification_http.test.ts": "36bf291a7aa92aa425874d09d33a5a08d297c8c14036254c5ca4f202dd7bf69a",
+    "supabase/functions/_shared/commusoft/verify_connection.ts": "120853cc48bbcfb04bc74410bbb677f24b312d2df10452dd02697f56e01b7c85",
+    "supabase/functions/_shared/commusoft/verify_connection.test.ts": "bb21d129e28aa0fa522c4f07501d210e94f0d9b4478dddf464884483f713fb8d",
+    "supabase/functions/learn-commusoft-verify/index.ts": "5cd273c2daf753be2c95ba099c0527b45df7e001575e8da0d1a7063b0ffb3950",
+    "supabase/config.toml": "5101c77bb22349c88af683f5a4296f22835ae34b343b1ab1ca7b72ae3588a245",
+    "src/lib/learn-commusoft-verification.ts": "d1cc2c0ab6da8d453d0cd753b06a4799e73505a2afd935a4d9913520e4a6663c",
+    "scripts/verify/learn-commusoft-verification.py": "c68de38fd56d5fea8dc12f29e98e77cb7b4630891e8d077c4fda2aa285dc8853",
+    "scripts/verify/learn-commusoft-verification.assert.sql": "20aed2945e4de5d75148edb00a4ddd98c41820e8b1d573ed81f96c6b56e05b2f",
+    "scripts/verify/learn-commusoft-verification-bridge.mjs": "d8c9a379615f17b630dd70d18c4ace445bac1d208bbab7648128a9b940d5a0a1"
+  },
+  "limitations": [
+    "Local only: disposable PostgreSQL 15 supporting tables and Vault stand-ins do not establish hosted catalog or encrypted Vault compatibility.",
+    "Edge Auth and RPC HTTP acceptance remain to be performed against TEST. The endpoint is not deployed; local handler authentication was simulated, while SQL executed actual authenticated/service roles.",
+    "No real Commusoft request or hosted/production change was made. A properties access check alone does not prove provider account identity, contact/job permissions or complete source coverage.",
+    "Operator setup/recovery UI, hosted packaging and signed-in acceptance remain. Existing worker deployed bundle and runtime were not changed."
+  ],
+  "cleanup": "Disposable database container removed. Database had no network or host mounts; source transport intercepted with synthetic responses."
+}

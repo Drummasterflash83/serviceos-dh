@@ -11,8 +11,10 @@ the frontend release are unchanged.
 
 The local OpenFolk screen includes durable request recovery and read-only viewer
 controls. Atomic connection configuration is now implemented and tested locally,
-using the existing tenant Vault broker; it is not yet released to TEST. Its setup
-screen and connection verification operation remain to be completed.
+using the existing tenant Vault broker; it is not yet released to TEST. The bounded
+connection verification protocol, signed-in Edge entrypoint and client adapter
+are also implemented and tested locally. The setup/recovery screen, hosted
+compatibility checks and TEST release remain to be completed.
 
 The metadata-only discovery earlier today found no configured Drummonds Commusoft
 connection or Commusoft-named project secret. Checked local environment variable

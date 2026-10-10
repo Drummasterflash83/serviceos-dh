@@ -1603,3 +1603,44 @@ Next: the bounded connection verification operation and setup/recovery screen,
 then TEST packaging and signed-in acceptance. Real Drummonds access is still
 unconfirmed. Evidence:
 [local connection setup](../operations/evidence/learn-commusoft-connection-local-2026-10-10.json).
+
+## Bounded Commusoft connection verification — local, 10 October
+
+The new verification operation accepts a retained, explicit administrator request
+for one properties read with a maximum of one record. Its current actor grant,
+company status, connection revision, source identity and tenant Vault binding are
+checked before releasing a credential and again before recording verification.
+One immutable permit can release the key only once. It shares the existing
+credential quota gate with ingestion, including when the same key is held in two
+separate tenant Vault entries. No provider payload is retained by this operation.
+
+Requests and results remain recoverable after lost replies. Cancellation prevents
+late verification; expiry never silently restarts a request. A changed credential,
+connection, administrator grant or View As context invalidates the operation.
+Success updates verification, audit and result atomically; a failed access check
+clears prior verification without erasing its history. Configuration changes after
+approval cannot be overwritten by a late result. Late throttling responses can
+still extend the shared quota after cancellation.
+
+The local signed-in Edge entrypoint authenticates a real user before requesting
+SQL approval. Only explicit apply can execute a check; receipt reads, cancellation
+and running/expired/settled replays cannot. The client can read/cancel receipts
+through the authenticated RPC even when the execution endpoint is unavailable.
+The operation does not enable modules, start imports or claim account identity,
+job/contact permission or complete source coverage from a properties access check.
+
+Disposable PostgreSQL checks passed authority, one-permit concurrency, shared
+actual ingestion quota, cancellation/expiry, Vault key rotation, retained results
+and injected late-failure rollback. The production executor ran against these
+actual SQL functions with simulated provider responses: success, a deliberately
+lost final reply, duplicate refusal and in-flight cancellation passed. Actual SQL
+receipts passed the application contract. Thirteen transport/HTTP/client tests,
+application typechecking and strict shared-module typechecking passed.
+
+This is local evidence only. The Vault implementation and supporting schema in
+this isolated fixture are stand-ins. The Deno entrypoint has not been deployed or
+verified with hosted Auth; no real Commusoft call, credential change, hosted schema
+change or production deployment occurred. Next is the operator setup/recovery UI,
+then exact TEST packaging and signed-in acceptance of configuration and verification.
+Real Drummonds API access remains unconfirmed. Evidence:
+[local verification](../operations/evidence/learn-commusoft-verification-local-2026-10-10.json).
