@@ -1,0 +1,17 @@
+{
+  "version": "learn-investment-progress-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "cbc7cf46053bb28828f798466e1976ed0107b8724cc4a5d348ec568ab3fcb663",
+  "priorFingerprint": "432a8b9ef794cd0f517b27b2091b170d",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261023130000_receptionist_review_desk.sql",
+      "sha256": "3862e4ccaa5c82ca701560c61a91a08116737a6bb42ea81eb9f69fc612e12ec7"
+    },
+    {
+      "path": "supabase/migrations/20261023190000_serviceos_build_investment.sql",
+      "sha256": "fd2186d3cb87c355be6c9f1ee962e8b0cf7c979f555366e424bc419c2f36726e"
+    }
+  ],
+  "preservedDataSets": 69
+}

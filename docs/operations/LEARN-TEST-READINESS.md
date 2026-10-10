@@ -1,5 +1,31 @@
 # Existing TEST environment: verified release gaps
 
+## Private build estimate — TEST release 037 installed
+
+The controller estimate error was traced to absent `openfolk_build_investment()`
+and `care_desk_operator()` functions. Release **037** restored their original
+source at **18:07:14 UTC on 10 October 2026**, after a matching rollback rehearsal.
+It retains the existing Chris-email plus active platform-admin requirement and
+blocks active client preview. No users, admin grants or wider care tables were
+created. The estimate remains the original low-confidence, dated retrospective
+snapshot; it is not a timesheet and does not count upwards automatically.
+
+Six isolated PostgreSQL scenarios exercised the actual gate and RPC: anonymous,
+ordinary user, wrong-email admin, view-only permission, authorized Chris/admin,
+active/expired/ended preview, grant expiry/future activation and missing profile.
+Eight release/source tests passed. Hosted denial checks passed for anonymous
+execution, unassigned identity and service access without a user. Function
+security/search-path metadata matched, and all **69** monitored datasets retained
+their original fingerprints after independent read-back. Production is unchanged.
+
+**Still unverified:** successful signed-in hosted/browser retrieval. The previous
+TEST login remains banned and its grant retired; this release does not reactivate
+it. Wider care workflow, invoice dependencies and full LEARN acceptance remain
+outstanding. Evidence: [release record](evidence/learn-build-investment-hosted-2026-10-10.json).
+Package SHA-256: `cbc7cf46053bb28828f798466e1976ed0107b8724cc4a5d348ec568ab3fcb663`.
+Post-release catalog: `3c4fc752381e782cfa947f032c8fcb7a` (38 ledger entries).
+Previous exact-state release/session tools must be reviewed before reuse.
+
 ## Delivery progress and audit — TEST release 036 installed
 
 The hosted controller's delivery error was traced to two absent dependencies:
@@ -23,8 +49,8 @@ The restored tables remain empty; no users or platform grants were created.
 **Still unverified:** positive signed-in hosted publication and client rendering.
 The earlier operator TEST login remains retired. The frontend implementation is
 already in the hosted candidate, but this backend installation alone is not a
-successful browser acceptance. Build estimates, care and invoice dependencies
-remain separate work. Production is unchanged.
+successful browser acceptance. The build estimate backend is restored by release
+037 above; care and invoice dependencies remain separate work. Production is unchanged.
 
 [Release and preservation evidence](evidence/learn-delivery-hosted-2026-10-10.json).
 The exact package checksum is

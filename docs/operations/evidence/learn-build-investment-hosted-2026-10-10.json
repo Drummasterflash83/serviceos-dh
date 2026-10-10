@@ -1,0 +1,71 @@
+{
+  "observedAt": "2026-10-10T18:07:41.792Z",
+  "state": "installed_with_hosted_denials_positive_signed_in_acceptance_pending",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "local": {
+    "version": "learn-build-investment-local/1",
+    "state": "passed",
+    "checks": [
+      "Anonymous, service-without-user and ordinary authenticated accounts cannot retrieve the private estimate.",
+      "A view-only Chris grant and another email with platform admin are both denied.",
+      "The existing Chris/admin gate returns the original dated estimate and its uncertainty without recomputing it.",
+      "Active client preview denies the private estimate; ended or expired preview does not block the authorized operator.",
+      "Expired and not-yet-effective grants cannot retain private estimate access.",
+      "An email and grant without the existing profile do not establish operator authority."
+    ],
+    "limits": [
+      "Synthetic isolated PostgreSQL with the observed TEST operator predicate; hosted sign-in and browser acceptance remain separate."
+    ]
+  },
+  "rehearsal": {
+    "version": "learn-investment-progress/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "cbc7cf46053bb28828f798466e1976ed0107b8724cc4a5d348ec568ab3fcb663",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T18:06:58.528Z",
+    "priorFingerprint": "432a8b9ef794cd0f517b27b2091b170d",
+    "expectedFingerprint": "3c4fc752381e782cfa947f032c8fcb7a",
+    "afterFingerprint": "432a8b9ef794cd0f517b27b2091b170d",
+    "preservedDataSets": 69,
+    "receipt": {
+      "fingerprint": "3c4fc752381e782cfa947f032c8fcb7a",
+      "tables": 3,
+      "functions": 2
+    }
+  },
+  "installation": {
+    "version": "learn-investment-progress/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "cbc7cf46053bb28828f798466e1976ed0107b8724cc4a5d348ec568ab3fcb663",
+    "mode": "apply",
+    "state": "installed_needs_signed_in_acceptance",
+    "observedAt": "2026-10-10T18:07:14.519Z",
+    "priorFingerprint": "432a8b9ef794cd0f517b27b2091b170d",
+    "expectedFingerprint": "3c4fc752381e782cfa947f032c8fcb7a",
+    "afterFingerprint": "3c4fc752381e782cfa947f032c8fcb7a",
+    "preservedDataSets": 69,
+    "receipt": {
+      "fingerprint": "3c4fc752381e782cfa947f032c8fcb7a",
+      "tables": 3,
+      "functions": 2
+    }
+  },
+  "hostedChecks": {
+    "marker": "learn-build-investment-hosted/1",
+    "unassigned_read_denied": true,
+    "service_without_user_denied": true,
+    "anon_execute_denied": true,
+    "functions_stable_and_search_path_fixed": true
+  },
+  "preservation": {
+    "datasets": 69,
+    "unchanged": true
+  },
+  "limits": [
+    "Only the original Chris/admin-gated estimate and gate were restored.",
+    "No Auth identities, authority grants, care records or private estimate values were created or returned.",
+    "Positive hosted signed-in/browser acceptance remains pending.",
+    "No production, source data, provider or notification changes."
+  ]
+}
