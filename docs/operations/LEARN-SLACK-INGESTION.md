@@ -729,3 +729,9 @@ browser checks for lost-response reload/retry, restart, rejected reviews, viewer
 access and complete-window restrictions. Hosted release/acceptance remains next.
 TEST remains release 020/runtime v4. See
 [contract, evidence and limits](LEARN-SLACK-THREAD-RECOVERY.md).
+
+Release 021 subsequently passed hosted rollback rehearsal and installation at
+03:45 UTC on 10 October, preserving the preceding catalog. TEST now has the thread
+recovery functions/indexes; worker runtime remains v4. Signed-in RPC/browser
+acceptance and live provider capture remain next. Installation queued no imports
+and changed no existing source rows. See the linked contract for release evidence.

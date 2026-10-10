@@ -968,3 +968,13 @@ restart, rejected-review clearing, viewer access and completed-window restrictio
 passed synthetic browser acceptance. All 46 Slack tests, both typechecks and both
 builds passed. Hosted release/acceptance remains next. See
 [implementation and evidence](../operations/LEARN-SLACK-THREAD-RECOVERY.md).
+
+## Slack thread recovery TEST release — 10 October
+
+Release 021 is installed in TEST after an unchanged hosted rollback rehearsal and
+isolated DDL/receipt-failure checks. It adds three functions and two indexes; all
+preceding catalog definitions remain verified. The local TEST UI/fixture tools now
+require 021. Installation starts no import and changes no stored communications,
+provider credentials, worker runtime (still v4), schedules or production state.
+Actual signed-in recovery RPC/browser acceptance and live capture remain incomplete.
+See [release evidence](../operations/evidence/learn-slack-thread-recovery-test-release-2026-10-10.json).

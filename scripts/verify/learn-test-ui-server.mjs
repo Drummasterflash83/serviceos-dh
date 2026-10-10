@@ -1,11 +1,11 @@
 /** Actual application, fixed TEST backend, loopback only. No simulated API client. */
 import {spawn} from 'node:child_process';
-import {installedAssessments} from './learn-test-assessments-release.mjs';
-import {readAssessmentCatalog} from './learn-assessments-catalog.mjs';
+import {installedThreadRecovery} from './learn-test-thread-recovery-release.mjs';
+import {readThreadRecoveryCatalog} from './learn-slack-thread-recovery-catalog.mjs';
 import {TEST_PROJECT,savedCliToken} from './learn-test-readiness.mjs';
 if(process.argv.slice(2).join(' ')!=='--serve --existing-cli-login'||process.env.LEARN_TEST_ALLOW_PROJECT_REF!==TEST_PROJECT)throw Error('Explicit TEST local UI and saved login required');
-const token=savedCliToken(),catalog=await readAssessmentCatalog({allowProjectRef:TEST_PROJECT,token});
-if(!installedAssessments(catalog))throw Error('Verified TEST release 020 and reviewed endpoints required');
+const token=savedCliToken(),catalog=await readThreadRecoveryCatalog({allowProjectRef:TEST_PROJECT,token});
+if(!installedThreadRecovery(catalog))throw Error('Verified TEST release 021 and reviewed endpoints required');
 const response=await fetch(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/api-keys?reveal=true`,{headers:{Authorization:`Bearer ${token}`},redirect:'error',signal:AbortSignal.timeout(30000)});
 if(!response.ok)throw Error('Existing TEST public key unavailable');
 const rows=(await response.json()).filter(r=>r.name==='anon'&&typeof r.api_key==='string');

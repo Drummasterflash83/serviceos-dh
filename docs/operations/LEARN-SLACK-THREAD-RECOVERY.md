@@ -1,9 +1,10 @@
 # Slack thread recovery
 
-Local implementation, 10 October 2026. This adds reviewed recovery of an existing
+TEST release 021, 10 October 2026. This adds reviewed recovery of an existing
 incomplete thread window, with a locally verified recovery screen and durable
-browser requests. It has not been installed in TEST or production. TEST remains
-release 020 and Slack worker runtime v4.
+browser requests. The backend is installed in TEST; actual signed-in acceptance
+remains outstanding. Slack worker runtime remains v4. No production or frontend
+deployment has occurred.
 
 ## Retained approval chain
 
@@ -125,3 +126,38 @@ UI is verified separately with synthetic fixtures; pinned release packaging,
 hosted rollback/install and actual signed-in acceptance remain required. No live
 source read/write, provider fetch, credential
 change, hosted deployment, schedule or production mutation occurred in this step.
+
+## TEST release 021
+
+The release wraps the tested migration body without modification. It requires the
+exact release-020 catalog, pins its SQL and expected metadata hashes, adds three
+functions/two indexes, and records `learn_slack_thread_recovery_v1`. Installation
+starts no jobs and changes no source rows or existing worker functions.
+
+The local release check used five current TEST table definitions in an isolated
+PostgreSQL 17 container, without source rows. It verified installation under the
+non-superuser deployment owner, full rollback, receipt-failure rollback, execution
+rights and unchanged table metadata except the two indexes. Four release tests
+passed, including prior assessment-release regression checks; wrong/stale targets,
+schema drift and uncertain write outcomes cannot trigger an automatic repeat.
+
+At 03:45:33 UTC on 10 October, the hosted rehearsal rolled back with identical
+before/after fingerprints. At 03:45:52 UTC, the hosted installation was acknowledged
+and the catalog matched all expected additions while preserving the preceding
+catalog. The resulting fingerprint is
+`d43c705d217934f0d69506425b703b7734b9a49f1ac32e912bbdd66166b2f042`.
+The local TEST application server and fixture tools now require this release.
+
+```sh
+python3 scripts/verify/learn-thread-recovery-release.py .verification-results/learn-thread-release-before.json
+node --test scripts/verify/learn-test-thread-recovery-release.test.mjs scripts/verify/learn-test-assessments-release.test.mjs
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy node scripts/verify/learn-test-thread-recovery-release.mjs --rehearse --existing-cli-login
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy node scripts/verify/learn-test-thread-recovery-release.mjs --apply --existing-cli-login --rehearsal-report .verification-results/learn-thread-recovery-hosted-rehearsal.json
+```
+
+The installer returns `already_installed` on a matching current installation. An
+uncertain outcome requires inspection rather than replay. See the
+[release evidence](evidence/learn-slack-thread-recovery-test-release-2026-10-10.json).
+This is schema installation evidence, not authenticated RPC/browser acceptance or
+real Slack capture. Those checks remain next. No provider credential, active fixture,
+source content, worker schedule or production state was changed by release 021.

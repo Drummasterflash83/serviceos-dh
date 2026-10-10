@@ -1,0 +1,75 @@
+{
+  "version": "learn-slack-thread-recovery-test-release/1",
+  "recordedAt": "2026-10-10T03:46:38.745633+00:00",
+  "state": "installed_needs_authenticated_acceptance",
+  "sourceHashes": {
+    "supabase/release/learn-test/021_slack_thread_recovery.sql": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+    "supabase/release/learn-test/021_slack_thread_recovery.expected.json": "9d7890ebd06d919e89f490580f1820aee6601a3f918dfe51fc5c8c8bb9ca386d",
+    "scripts/verify/learn-test-thread-recovery-release.mjs": "f16dfdadbb1cb1dea623db26b44b6561b73dd3230091802bb690c4ab1518df96",
+    "scripts/verify/learn-slack-thread-recovery-catalog.mjs": "133c1c8fe5d2fe795faed6c6abc1db10a4238666e5f0a9c355d8c5b7d62e25ee",
+    "scripts/verify/learn-thread-recovery-release.py": "556f18dc2bf206ba22878786292153b3353aa48d0b09aa39a2379b5eded21592"
+  },
+  "localDDL": {
+    "state": "passed",
+    "sourceSha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+    "checks": [
+      "Exact release DDL installs under a non-superuser deployment owner using current TEST reference-column types.",
+      "Explicit rollback removes all new objects; receipt failure atomically rolls back all three functions and two indexes.",
+      "Only two indexes change table metadata; private helper and authenticated RPC execution rights match the intended contract."
+    ],
+    "limitations": [
+      "Five referenced tables restored without customer rows; no helper substitutions. Functional behavior was checked separately; full hosted compatibility and signed-in acceptance remain."
+    ]
+  },
+  "hostedRehearsal": {
+    "version": "learn-test-thread-recovery/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+    "observedAt": "2026-10-10T03:45:33.343Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "rehearsed_and_rolled_back",
+    "beforeFingerprint": "2df764c87ceb3e7af775ffdc76b5be6036cf6107df767797484866ac6ca4a568",
+    "afterFingerprint": "2df764c87ceb3e7af775ffdc76b5be6036cf6107df767797484866ac6ca4a568",
+    "scope": "Three additive recovery functions and two indexes. No import started, source-row edits, provider traffic, Edge changes, schedules or production changes."
+  },
+  "hostedInstall": {
+    "version": "learn-test-thread-recovery/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+    "observedAt": "2026-10-10T03:45:52.634Z",
+    "writeAttempted": true,
+    "acknowledged": true,
+    "state": "installed_needs_authenticated_acceptance",
+    "beforeFingerprint": "2df764c87ceb3e7af775ffdc76b5be6036cf6107df767797484866ac6ca4a568",
+    "afterFingerprint": "d43c705d217934f0d69506425b703b7734b9a49f1ac32e912bbdd66166b2f042",
+    "scope": "Three additive recovery functions and two indexes. No import started, source-row edits, provider traffic, Edge changes, schedules or production changes."
+  },
+  "releaseTests": {
+    "passed": 4,
+    "newThreadRecoveryTests": 2,
+    "assessmentRegressionTests": 2
+  },
+  "preRelease": {
+    "tables": 91,
+    "receipts": 21,
+    "assessmentFingerprint": "5973de929f6c7989c9b98bf6fd7271e608821eb969f25bc3debb504fc33cde5b"
+  },
+  "changes": {
+    "functions": 3,
+    "indexes": 2,
+    "tables": 0,
+    "jobsStarted": 0,
+    "workerRuntime": "v4 unchanged"
+  },
+  "limitations": [
+    "Schema verification does not prove authenticated RPC or browser acceptance.",
+    "No real provider fetch or production operation.",
+    "No new production preservation scan; latest complete scan remains the previously recorded 00:40 UTC baseline."
+  ],
+  "remaining": [
+    "Actual signed-in recovery API and browser acceptance",
+    "Live Slack credential/provider capture",
+    "Broader LEARN V1 completion"
+  ]
+}
