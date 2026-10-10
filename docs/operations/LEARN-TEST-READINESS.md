@@ -1,17 +1,19 @@
 # Existing TEST environment: verified release gaps
 
-## Phone atomic page publication — local candidate only
+## Phone atomic page publication — TEST release 039, sync v5
 
-The local Phone sync handlers now save pages through a service-only transaction
-that checks capture/account authority and records a durable receipt alongside
-source writes. Concurrent local PostgreSQL tests prove pause ordering, rollback
-and one-new-recording classification while preserving existing audio pointers.
-Forty-two actual-handler tests and ten account/completeness tests pass, with strict
-TypeScript checks. Hosted TEST remains v4; the additive migration and dependent
-handlers still require coordinated TEST packaging and acceptance. Final run/cursor
-persistence and durable follow-on recovery remain separate work.
-[Details and evidence](LEARN-PHONE-ACCOUNT-BINDING.md#atomic-page-publication--local-candidate-not-deployed).
+The additive schema installed at **18:49 UTC, 10 October** after a rollback
+rehearsal; both Phone sync endpoints are now **v5** with JWT verification. Real
+TEST service-role SQL proved publication/replay, pause/account denial, audio-pointer
+retention and whole-page rollback. Synthetic fixtures were entirely rolled back.
+All **74** monitored datasets remain unchanged, including source history and storage
+metadata. Ten actual HTTP checks and 23 downloaded-handler tests pass; 14 release/
+deployment tests also pass. No provider credentials, grants or schedules were added.
 
+Final run/cursor persistence and durable recording-processing recovery remain
+separate work. Real provider-to-client capture and production release are still
+unverified. Production remains unchanged.
+[Release details](LEARN-PHONE-ACCOUNT-BINDING.md#atomic-page-publication--test-release-039-and-sync-v5-installed).
 
 ## Phone per-page controls — TEST v4, 10 October 18:33 UTC
 

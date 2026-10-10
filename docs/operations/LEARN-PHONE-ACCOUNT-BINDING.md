@@ -218,3 +218,37 @@ exactly-once audio download/transcription. Real provider acceptance, TEST hosted
 acceptance and production promotion remain outstanding.
 
 [Local evidence](evidence/learn-phone-publication-local-2026-10-10.json).
+
+
+## Atomic page publication — TEST release 039 and sync v5 installed
+
+Release **039** installed at **18:49:30 UTC on 10 October**, after a successful
+rollback rehearsal. The call and recording handlers were replaced with **v5** at
+**18:51 UTC**, retaining JWT verification. Both now use the atomic page RPC.
+The earlier local-only deployment status above is superseded by this release.
+
+Hosted service-role SQL acceptance exercised real page writes and receipts,
+exact/conflicting replay, sequence and tenant denial, pause/account checks,
+existing recording storage-pointer retention, immutable receipts, and a bad
+second record rolling back the whole page. Every synthetic fixture was rolled
+back; the receipt table remains empty. No identities, grants or credentials were
+created and no real provider was contacted.
+
+All **74** monitored datasets retained their full-row fingerprints, including
+existing calls, recordings, transcripts, run/audit history, source registries,
+Slack thread windows and stored-object metadata. Ten HTTP checks passed across
+both handlers and the new REST RPC: JWT/anonymous denial, wrong-method handling,
+archived-company pause and missing-run rejection. The downloaded published
+handlers pass **23** relevant synthetic-port tests. Fourteen release/deployment
+tests pass, in addition to the previous 42 local handler and 10 pure tests.
+
+Package SHA-256: `fd2625a9d31f8cf7a99d89b4915796d601ac3b8505ee7da72f03f26185585ee4`.
+Post-release Phone catalog: `0fb6d70902c76e37549ef65c157b8be9` (40 ledger entries).
+Runtime dependency bundle: `7bc5b81b3770806e975b9dc742f1b05e295a38fddbc9ab319b7916165171f285`.
+Earlier exact-state release wrappers are now historical and must not be reused.
+
+**Still required:** durable recovery of newly captured recordings after an
+interrupted/uncertain run, confirmed final run/cursor persistence, and real
+provider-to-client acceptance. These tests prove atomic metadata publication,
+not exactly-once audio/transcription or a complete live Phone service. Production
+is unchanged. [Hosted evidence](evidence/learn-phone-publication-hosted-2026-10-10.json).

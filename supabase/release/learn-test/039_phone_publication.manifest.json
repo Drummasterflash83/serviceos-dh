@@ -1,0 +1,13 @@
+{
+  "version": "learn-phone-publication-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "fd2625a9d31f8cf7a99d89b4915796d601ac3b8505ee7da72f03f26185585ee4",
+  "priorFingerprint": "fba05bc356364719a4b613b4e7905060",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101006000_learn_phone_page_publication.sql",
+      "sha256": "9f5d1d66667212cb148ceb30020da3fbd1ff3e3769da7f9f3ca5718f7bac24aa"
+    }
+  ],
+  "preservedDataSets": 74
+}
