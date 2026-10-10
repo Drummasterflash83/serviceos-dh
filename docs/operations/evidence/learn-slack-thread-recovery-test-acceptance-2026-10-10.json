@@ -1,0 +1,216 @@
+{
+  "version": "learn-slack-thread-recovery-test-acceptance/1",
+  "recordedAt": "2026-10-10T03:53:42.450701+00:00",
+  "state": "passed_retained_synthetic_acceptance",
+  "api": {
+    "version": "learn-test-thread-recovery-acceptance/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "16d639506c5a7626b6cc3563798b44303e8cf922c9d776e6752c1c80fcd03344",
+    "observedAt": "2026-10-10T03:48:44.379Z",
+    "runId": "5c9c5ef2-6620-40b4-be28-eeb26d48c807",
+    "state": "passed_retained_synthetic_acceptance",
+    "checks": [
+      "Actual Auth owner/viewer/company/anonymous/service boundaries and safe reader; independent competing requests queue once; exact replay, fresh consent and retained predecessor checked.",
+      "Actual thread continuation and page replay deduplicate replies; restart retains prior approvals and checkpoint; deployed worker v4 refuses nonexistent credentials; subsequent recovery completes only the approved thread window.",
+      "Pre-existing TEST email/call/recording/transcript/Slack/version/interaction and both approval-ledger counts/fingerprints unchanged."
+    ],
+    "completionRefusal": {
+      "httpStatus": 500,
+      "code": "55000"
+    },
+    "lastOperation": "pre-existing evidence preservation",
+    "sourceBefore": [
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "interactions",
+        "count": 29,
+        "fingerprint": "bf1f6b5be0a73b6264abd42c3343a59f"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "slack_history_imports",
+        "count": 24,
+        "fingerprint": "628b7815b6edd6bf9a228a880ddb3552"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 13,
+        "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 17,
+        "fingerprint": "77d11d177fbb30561b3ad49c15f3c4e8"
+      },
+      {
+        "name": "slack_thread_imports",
+        "count": 5,
+        "fingerprint": "7796ff34dea4338fb78eea0fdd82a5c7"
+      }
+    ],
+    "sourceAfter": [
+      {
+        "name": "email_messages",
+        "count": 4,
+        "fingerprint": "710422b98ef862a81fc9b10a48a1b61d"
+      },
+      {
+        "name": "interactions",
+        "count": 29,
+        "fingerprint": "bf1f6b5be0a73b6264abd42c3343a59f"
+      },
+      {
+        "name": "phone_calls",
+        "count": 6,
+        "fingerprint": "eaaaaa0e9c992c77b771b0700f076023"
+      },
+      {
+        "name": "phone_recordings",
+        "count": 8,
+        "fingerprint": "bae3ed9b48af96556a851a9976e42626"
+      },
+      {
+        "name": "phone_transcripts",
+        "count": 0,
+        "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "slack_history_imports",
+        "count": 24,
+        "fingerprint": "628b7815b6edd6bf9a228a880ddb3552"
+      },
+      {
+        "name": "slack_message_versions",
+        "count": 13,
+        "fingerprint": "6f1841a1aa9b8317ef0d5ff908ff773f"
+      },
+      {
+        "name": "slack_messages",
+        "count": 17,
+        "fingerprint": "77d11d177fbb30561b3ad49c15f3c4e8"
+      },
+      {
+        "name": "slack_thread_imports",
+        "count": 5,
+        "fingerprint": "7796ff34dea4338fb78eea0fdd82a5c7"
+      }
+    ],
+    "failure": null,
+    "cleanupErrors": [],
+    "loginsAndApprovalRevoked": true,
+    "retained": {
+      "messages": 3,
+      "versions": 3,
+      "interactions": 3,
+      "approvals": 1,
+      "thread_approvals": 4,
+      "active_jobs": 0,
+      "active_connections": 0,
+      "active_reservations": 0
+    },
+    "fixtureManifest": "/private/tmp/serviceos-learn-thread-recovery-5c9c5ef2-6620-40b4-be28-eeb26d48c807.json",
+    "limitations": [
+      "Random synthetic TEST companies/workspace, nonexistent credential reference; no real Slack fetch or production change.",
+      "Fixture pacing deadlines explicitly advanced; renewed expiry verified without modifying an immutable approval. Hosted concurrency uses independent HTTP requests; controlled blocking was verified separately in isolated SQL.",
+      "Worker v4 exercised recovery binding and missing-credential refusal, not live ingestion. Sources and approvals retained; fixture logins banned/passwords rotated, roles revoked and active jobs/connections stopped.",
+      "Actual signed-in recovery browser acceptance, continuous/multi-window capture and full LEARN V1 remain incomplete."
+    ]
+  },
+  "browser": {
+    "fixtureRunId": "86451c31-7089-4267-aa10-c5a158257af4",
+    "tenant": "f89c185c-74e2-4d77-9bcc-0a8ea3ccb124",
+    "surface": "Actual local application on loopback 47872; installed TEST release 021; ordinary signed-in Auth user",
+    "checks": [
+      "Read stored parent and incomplete approval via actual hosted RPCs",
+      "Owner approved continue with two-page budget and reason",
+      "Recovery panel and thread list both refreshed to new queued approval",
+      "Full reload retained queued progress and original approved bounds",
+      "No further recovery approval shown for active import",
+      "Read-only database inspection found exactly one new recovery, retained original approval and two original message/version rows",
+      "Fixture Slack queue cancelled and connections disabled; login banned/password rotated and role demoted; browser signed out"
+    ],
+    "before": {
+      "messages": 2,
+      "versions": 2,
+      "approvals": [
+        {
+          "id": "53b2e966-5a1a-4268-95e4-05ea167ea0c0",
+          "mode": null,
+          "pages": 1,
+          "complete": false,
+          "previous": null
+        }
+      ],
+      "active_jobs": 0
+    },
+    "after": {
+      "messages": 2,
+      "versions": 2,
+      "approvals": [
+        {
+          "id": "53b2e966-5a1a-4268-95e4-05ea167ea0c0",
+          "mode": null,
+          "pages": 1,
+          "complete": false,
+          "previous": null
+        },
+        {
+          "id": "cabb38a5-2824-4da0-98a9-520e79d9c9d2",
+          "mode": "continue",
+          "pages": 0,
+          "complete": false,
+          "previous": "53b2e966-5a1a-4268-95e4-05ea167ea0c0"
+        }
+      ],
+      "active_jobs": 1
+    },
+    "retired": {
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "runId": "86451c31-7089-4267-aa10-c5a158257af4",
+      "accessRevoked": true,
+      "retained": {
+        "work_items": 1,
+        "captures": 2,
+        "measurements": 0,
+        "receipts": 0
+      }
+    },
+    "slackRetired": true,
+    "consoleErrors": 0,
+    "screenshot": ".verification-results/learn-thread-recovery-hosted-browser.jpg",
+    "limitations": [
+      "Workspace home showed an unavailable state for this synthetic TEST company; LEARN navigation and thread workflow worked.",
+      "Browser acceptance covered successful continuation/reload. Lost-response, rejection and viewer browser cases have separate synthetic-preview evidence.",
+      "No live provider ingestion or production/frontend deployment."
+    ]
+  },
+  "sourceHashes": {
+    "scripts/verify/learn-test-thread-recovery-acceptance.mjs": "7b5e66b207d35842ac27f32de3a512bdeb4f1147147386bf2af64bb6931440e5",
+    "scripts/verify/learn-test-ui-slack-fixture.mjs": "334239762871d686705182b0dd2c21c21ce27882279ba5a7685e0e966273427c",
+    "scripts/verify/learn-test-ui-fixture.mjs": "27c8a3afff36432366200bd6d71357fe4dbc7113142b9d2b8a47539cb8aad856"
+  },
+  "cleanup": {
+    "ownedBrowserTabClosed": true,
+    "ownedLoopbackServerStopped": true,
+    "syntheticPasswordFileRemoved": true,
+    "evidenceRetained": true
+  }
+}

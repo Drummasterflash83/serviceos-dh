@@ -735,3 +735,12 @@ Release 021 subsequently passed hosted rollback rehearsal and installation at
 recovery functions/indexes; worker runtime remains v4. Signed-in RPC/browser
 acceptance and live provider capture remain next. Installation queued no imports
 and changed no existing source rows. See the linked contract for release evidence.
+
+Actual signed-in recovery acceptance subsequently passed for release 021, including
+competing approvals, exact retries, retained checkpoints/messages, thread continuation
+and restart, service publication deduplication, missing-credential refusal and
+completed-window restrictions. The real app passed continuation, list refresh and
+full reload checks. Existing TEST source/approval fingerprints stayed unchanged;
+synthetic users, queues and connections were retired with evidence retained. Live
+Slack provider capture remains unverified. See
+[acceptance evidence](evidence/learn-slack-thread-recovery-test-acceptance-2026-10-10.json).

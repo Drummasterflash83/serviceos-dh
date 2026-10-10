@@ -2,8 +2,8 @@
 
 TEST release 021, 10 October 2026. This adds reviewed recovery of an existing
 incomplete thread window, with a locally verified recovery screen and durable
-browser requests. The backend is installed in TEST; actual signed-in acceptance
-remains outstanding. Slack worker runtime remains v4. No production or frontend
+browser requests. The backend is installed in TEST; actual signed-in API and
+browser continuation acceptance passed. Slack worker runtime remains v4. No production or frontend
 deployment has occurred.
 
 ## Retained approval chain
@@ -161,3 +161,49 @@ uncertain outcome requires inspection rather than replay. See the
 This is schema installation evidence, not authenticated RPC/browser acceptance or
 real Slack capture. Those checks remain next. No provider credential, active fixture,
 source content, worker schedule or production state was changed by release 021.
+
+## Signed-in TEST acceptance
+
+At 03:48:44 UTC on 10 October, actual Auth/RPC acceptance passed against release
+021. Independent competing owner requests produced one recovery and one conflict.
+Exact retries retained their receipt after later completion. Viewer, foreign-company,
+anonymous and service callers could not approve recovery; the public progress
+reader withheld private scope/cursor data. Active and completed windows refused
+recovery. The completed-window database code is `55000` (PostgREST HTTP 500); the
+application adapter treats that explicit code as unavailable rather than uncertain.
+
+Actual service publication and exact page replay retained one root and two replies,
+with three source versions/interactions. Four thread approvals and one channel
+approval remain. Continue deduplicated the earlier reply, restart retained the
+predecessor unchanged, and the channel checkpoint remained unchanged. The deployed
+worker v4 rejected the synthetic nonexistent credential before provider access.
+All nine pre-existing TEST communication/approval table counts and row fingerprints
+were unchanged. Both test logins were banned/rotated/demoted; no active fixture job,
+connection or workspace reservation remains.
+
+A separate ordinary signed-in browser used the real app and TEST backend. It read
+an incomplete thread, approved a two-page continuation, refreshed both progress
+and the thread list, and retained the result after a full reload. Database inspection
+confirmed exactly one new recovery and retained original message/version rows and
+approval. The queued fixture job was cancelled only during retirement; all evidence
+remains. The browser signed out, its login was retired and the owned local server
+was stopped. No browser console errors were captured. Workspace home showed an
+unavailable state for this synthetic company; LEARN navigation worked. This does
+not establish general workspace-home acceptance.
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy node scripts/verify/learn-test-thread-recovery-acceptance.mjs --retained-synthetic-test --existing-cli-login
+```
+
+Browser preparation uses `learn-test-ui-fixture.mjs create`, followed by
+`learn-test-ui-slack-fixture.mjs prepare`, with the same synthetic password supplied
+on stdin. Both require an explicit TEST target and a marked private fixture
+manifest. Preparation refuses an existing Slack fixture; uncertain outcomes require
+inspection. The normal UI fixture `retire` now also stops its marked Slack work and
+revokes its connection while preserving all source rows and approvals.
+
+See [authenticated and browser evidence](evidence/learn-slack-thread-recovery-test-acceptance-2026-10-10.json).
+Actual browser acceptance covers successful continuation/reload; lost-response,
+rejection and viewer browser cases retain their separate local-preview evidence.
+Provider permission, real Slack capture, continuous/multi-window ingestion and the
+broader LEARN requirements remain incomplete. No production operation occurred.

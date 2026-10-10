@@ -978,3 +978,18 @@ require 021. Installation starts no import and changes no stored communications,
 provider credentials, worker runtime (still v4), schedules or production state.
 Actual signed-in recovery RPC/browser acceptance and live capture remain incomplete.
 See [release evidence](../operations/evidence/learn-slack-thread-recovery-test-release-2026-10-10.json).
+
+## Slack thread recovery signed-in acceptance — 10 October
+
+TEST 021 now has actual Auth/RPC acceptance for recovery, competing review conflicts,
+exact retry, viewer/company boundaries, retained predecessors, continuation/restart,
+reply deduplication and completion refusal. Existing worker v4 refused the nonexistent
+fixture credential before Slack access. Pre-existing communications and approval
+ledger fingerprints were unchanged.
+
+The real signed-in app also passed continuation, refreshed-thread-list and reload
+checks. Temporary users/connections/jobs were retired with evidence retained; the
+owned browser/server were closed. Workspace home remained unavailable for the
+synthetic company, so this proves the LEARN thread flow only. Real provider capture,
+continuous ingestion, voicemail, Commusoft and broader V1 acceptance remain open.
+See [API/browser evidence](../operations/evidence/learn-slack-thread-recovery-test-acceptance-2026-10-10.json).
