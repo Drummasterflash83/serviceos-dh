@@ -1,0 +1,17 @@
+{
+  "version": "learn-phone-health-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3",
+  "priorFingerprint": "c3f304e4d18046f74600cd28e51f24c8",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101010000_learn_phone_operator_evidence.sql",
+      "sha256": "59429a28c3cee3f5010877a61fd99815ddfa481170d75f1efa0770724cafc1e5"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-phone-health-hosted.assert.sql",
+    "sha256": "49a40049da3d354892c112faddbcdd95d04c2b45cc6c99cad809321a61d9ca3b"
+  },
+  "preservedDataSets": 78
+}

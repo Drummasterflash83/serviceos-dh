@@ -39,7 +39,8 @@ insert into phone_sync_runs(id,tenant_id,sync_type,status,started_at,completed_a
 insert into learn_phone_schedule_settlements(run_id,tenant_id,definition,receipt) values
 (fixture_id(700),fixture_id(100),'{}',jsonb_build_object('version','learn-phone-schedule/1','tenantId',fixture_id(100),'runId',fixture_id(700),
  'accountId',fixture_id(305),'connectorId',fixture_id(303),'customerId','PRIVATE_ACCOUNT_KEY','outcome','success','jobId',fixture_id(701),
- 'cursorAdvanced',true,'from',now()-interval '6 minutes','to',now()-interval '2 minutes','callsProcessed',20,'recordingsProcessed',8));
+ 'cursorAdvanced',true,'from','2026-10-10T10:00:00Z','to','2026-10-10T10:05:00Z','callsProcessed',20,'recordingsProcessed',8));
+update platform_jobs set completed_at=(select completed_at from phone_sync_runs where id=fixture_id(700)) where id=fixture_id(701);
 set role authenticated;
 do $$declare e jsonb;begin
  e:=fixture_health_phone()->'phone_evidence';assert e->'latest_attempt'->'confirmed'='true'::jsonb;
@@ -48,6 +49,26 @@ do $$declare e jsonb;begin
 end$$;
 reset role;
 -- Receipt/registry/job mismatches cannot promote the run to confirmed.
+begin;
+update phone_sync_runs set metadata=metadata||'{"from":"2026-10-10T09:00:00Z"}' where id=fixture_id(700);
+set local role authenticated;
+do $$declare e jsonb;begin e:=fixture_health_phone()->'phone_evidence';assert e->'latest_attempt'->'confirmed'='false'::jsonb and e->'last_confirmed'='null'::jsonb;end$$;
+rollback;
+begin;
+update platform_jobs set payload=payload||'{"to":"2026-10-10T10:10:00Z"}' where id=fixture_id(701);
+set local role authenticated;
+do $$begin assert fixture_health_phone()->'phone_evidence'->'latest_attempt'->'confirmed'='false'::jsonb;end$$;
+rollback;
+begin;
+update platform_jobs set completed_at=completed_at+interval '1 minute' where id=fixture_id(701);
+set local role authenticated;
+do $$begin assert fixture_health_phone()->'phone_evidence'->'latest_attempt'->'confirmed'='false'::jsonb;end$$;
+rollback;
+begin;
+update platform_jobs set connector_id='other',attempt_count=2 where id=fixture_id(701);
+set local role authenticated;
+do $$begin assert fixture_health_phone()->'phone_evidence'->'latest_attempt'->'confirmed'='false'::jsonb;end$$;
+rollback;
 begin;
 update connector_accounts set settings=settings||'{"include_local_calls":true}' where id=fixture_id(305);
 set local role authenticated;

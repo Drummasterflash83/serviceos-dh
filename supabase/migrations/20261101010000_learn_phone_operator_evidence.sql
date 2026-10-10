@@ -49,6 +49,11 @@ returns jsonb language sql stable set search_path=pg_catalog as $$
     and r.metadata->>'tenant_connector_id'=a.connector::text
     and r.metadata->'include_local'=to_jsonb(coalesce(a.settings->'include_local_calls'='true'::jsonb,false))
     and s.receipt->>'outcome'=r.status and s.receipt->>'jobId'=q.id::text
+    and q.connector_id='simwood' and q.attempt_count=1
+    and q.payload->>'provider_customer_id'=r.metadata->>'provider_customer_id'
+    and q.payload->>'from'=r.metadata->>'from' and q.payload->>'to'=r.metadata->>'to'
+    and s.receipt->>'from'=r.metadata->>'from' and s.receipt->>'to'=r.metadata->>'to'
+    and q.completed_at=r.completed_at
     and r.completed_at is not null and r.completed_at>=r.started_at
     and ((r.status='success' and q.status='succeeded' and s.receipt->'cursorAdvanced'='true'::jsonb)
      or (r.status='failed' and q.status='failed' and s.receipt->'cursorAdvanced'='false'::jsonb)

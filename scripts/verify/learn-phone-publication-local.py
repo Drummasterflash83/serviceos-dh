@@ -108,6 +108,13 @@ try:
  assert settlements[0]==settlements[1]
  assert sql("select count(*) from learn_phone_schedule_settlements where run_id=fixture_id(430)")=='1'
  print('PASS: real concurrent scheduler CAS, pause-first and identical replay',flush=True)
+ # Run the exact hosted evidence probe against actual publication/settlement writers.
+ health=source('supabase/migrations/20261101010000_learn_phone_operator_evidence.sql')
+ sql(health[:health.index('create or replace function public.learn_operator_capture_health')]+"\ncommit;")
+ sql("alter table tenants add column slug text,add column display_name text,add column metadata jsonb;")
+ sql("begin;"+source('scripts/verify/learn-phone-health-hosted.assert.sql')+"rollback;")
+ print('PASS: exact hosted Phone evidence probe after actual source publication and scheduler settlement',flush=True)
+
 
 
  report={'observedAt':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'state':'passed','scope':'Actual SQL and original source/registry tables in networkless PostgreSQL 15 with synthetic rows.','checks':['migration rollback','exact replay and conflicting definitions','tenant/run/page validation','recording storage retention and new-recording classification','pause/account denial','atomic rollback on receipt failure','page bounds and browser/service privileges','immutable receipts','concurrent pause-first and publication-first','concurrent account disable','concurrent insertion returns exactly one new recording ID','interrupted publication remains recoverable through existing backlog selector','per-recording retry holds preserve history and pause visibility','stored stage progression and tenant isolation','atomic import completion and rollback','completion scope, page totals, empty window and immutable replay','concurrent completion pause-first, completion-first, account disable and exact replay','atomic scheduler cursor, run, job and connector health settlement','durable child completion/window/filter verification and cursor merge','stale account, lost owner and expired lease denial','paused/failed outcomes keep cursor; multiaccount health remains truthful','concurrent scheduler CAS, pause-first and exact replay'],'limits':['No hosted deployment, real provider, application UI or complete source-pipeline acceptance.','Existing controller uses the same lock; its full authorization RPC is separately tested, not loaded in this fixture.']}
