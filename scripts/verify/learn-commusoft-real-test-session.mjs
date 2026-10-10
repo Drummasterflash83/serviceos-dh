@@ -203,6 +203,8 @@ export async function runRealTestSession(
   if (writeModes.includes(mode))
     check(approvedRun === p.runId, "Explicit approval of this exact run required");
   if (writeModes.includes(mode))
+    check(!["retired", "grant_retired"].includes(p.state), "This TEST session is retired");
+  if (writeModes.includes(mode))
     check(p.preserved !== false, "Resolve the preservation mismatch before continuing");
   const snapshot = async () => {
     const rows = await sql(preservationQuery(p));

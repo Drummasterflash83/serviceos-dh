@@ -1,5 +1,30 @@
 # Commusoft read-only API adapter
 
+## Commusoft review fixes — TEST release 043 installed at 21:12 UTC
+
+Customer discovery across additional contact endpoints and the actual v2.1 job
+status mapping are now installed in TEST. Existing function grants/owners are
+unchanged. Populated timestamps without a zone remain held with a specific reason;
+no completion time or performance duration is invented.
+
+The hosted rollback rehearsal passed before installation. All 78 monitored datasets,
+including the 12,418 real source records and paused job checkpoint, are preserved.
+Four HTTP checks confirm anonymous/service-role refusal. Local positive-owner
+PostgreSQL coverage, five release tests and ten session-boundary tests pass.
+No new login/grant, provider request, canonical record, schedule or production
+change occurred during this release. The retired run cannot dispatch new work,
+even before its original expiry time.
+
+The matching [protected TEST frontend](https://serviceos-learn-test-7axttf8tx-allkin.vercel.app)
+is READY from Git commit `ba40dccf8dd81aed504e409dd6ba67a3f1012bb2`, with its TEST
+backend binding and three protected routes verified. A fresh browser-connection
+attempt timed out; visual and signed-in tenant-owner acceptance are **not proved**.
+Capture remains paused and the temporary login remains banned.
+[Release evidence](evidence/learn-commusoft-mapping-test-2026-10-10.json).
+
+Earlier sections retain dated implementation history; this release supersedes
+local-only statements about these two mapping functions.
+
 ## Real Drummonds TEST capture — approved run retired at 21:06 UTC
 
 The existing private-app credential now works through the hosted setup,
@@ -19,14 +44,14 @@ still unconfirmed. [Run evidence](evidence/learn-commusoft-real-test-result-2026
 
 Compatibility checks found 18 missing customer references for work addresses and
 1,306 missing property references among the captured jobs. Actual job statuses
-need the tested local mapping correction; 9,940 completion timestamps lack a zone
+are handled by the installed mapping correction; 9,940 completion timestamps lack a zone
 and 60 are empty. Unresolved relationships and unzoned populated timestamps must
-remain held. Customer discovery and job-lifecycle corrections are verified locally
-and backed up, but not deployed. A
+remain held. Customer discovery and job-lifecycle corrections are now deployed to TEST
+as release 043; signed-in owner acceptance remains pending. A
 [provider clarification draft](COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt) is prepared,
 not sent. [Shape counts](evidence/learn-commusoft-real-shapes-2026-10-10.json).
 
-## Real job lifecycle formats — local correction, not deployed
+## Earlier job lifecycle validation — now installed in TEST release 043
 
 The approved hosted capture exposed a difference between the response example and
 real v2.1 records. Responses contain lowercase `ongoing`, `completed` and `on_hold`;
@@ -46,7 +71,7 @@ without explaining the observed unzoned format. A
 Missing property references remain held; endpoint exhaustion alone does not prove
 coverage of dormant/deleted records or complete historical company relationships.
 
-## Secondary contact discovery — local candidate, not deployed
+## Earlier secondary contact validation — now installed in TEST release 043
 
 Customer review now considers both the source telephone and mobile, plus existing
 people's additional email addresses and phone numbers. Shared endpoints return
@@ -58,8 +83,8 @@ No customer, card, contact consent or source record is changed by discovery.
 The migration preserves existing grants and ownership. Disposable PostgreSQL
 checks cover real source publication, shared identities, pagination, access
 boundaries, source/canonical preservation and rollback. Sixteen focused Node tests,
-application TypeScript and the build pass. Hosted rollout and visual acceptance
-remain pending. [Local evidence](evidence/learn-customer-candidate-endpoints-local-2026-10-10.json).
+application TypeScript and the build pass. Hosted rollout is now verified above; visual acceptance
+remains pending. [Local evidence](evidence/learn-customer-candidate-endpoints-local-2026-10-10.json).
 
 ## Property-scoped contacts — TEST schema and runtime installed
 

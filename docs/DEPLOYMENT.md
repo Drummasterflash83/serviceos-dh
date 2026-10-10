@@ -50,19 +50,20 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-co4c837m5-allkin.vercel.app](https://serviceos-learn-test-co4c837m5-allkin.vercel.app),
-built remotely from GitHub commit `767582d0c4aaea2585079f02f956a8fd753b7a78`.
+[serviceos-learn-test-7axttf8tx-allkin.vercel.app](https://serviceos-learn-test-7axttf8tx-allkin.vercel.app),
+built remotely from GitHub commit `ba40dccf8dd81aed504e409dd6ba67a3f1012bb2`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
 login stays on the current origin; production keeps the canonical login URL.
-The refreshed candidate includes per-property Commusoft contact progress and continuation.
+The refreshed candidate includes per-property Commusoft contact progress, secondary-contact
+matching explanations and the specific unresolved-timezone review hold.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
 login and client routes pass. Fresh visual acceptance is unconfirmed because the
 browser connection timed out. Signed-in hosted control acceptance remains pending;
 a successful build is not that acceptance. The Phone evidence panel has a compatible
 fallback, but its separate SQL evidence migration is not installed yet.
-See [deployment evidence](operations/evidence/learn-commusoft-contact-traversal-test-2026-10-10.json).
+See [deployment evidence](operations/evidence/learn-commusoft-mapping-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
 `vercel.json` disables that branch. Verify and deploy a pinned Git commit explicitly.

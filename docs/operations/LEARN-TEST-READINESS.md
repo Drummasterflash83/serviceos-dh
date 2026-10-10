@@ -1,5 +1,30 @@
 # Existing TEST environment: verified release gaps
 
+## Commusoft review fixes — TEST release 043 installed at 21:12 UTC
+
+Customer discovery across additional contact endpoints and the actual v2.1 job
+status mapping are now installed in TEST. Existing function grants/owners are
+unchanged. Populated timestamps without a zone remain held with a specific reason;
+no completion time or performance duration is invented.
+
+The hosted rollback rehearsal passed before installation. All 78 monitored datasets,
+including the 12,418 real source records and paused job checkpoint, are preserved.
+Four HTTP checks confirm anonymous/service-role refusal. Local positive-owner
+PostgreSQL coverage, five release tests and ten session-boundary tests pass.
+No new login/grant, provider request, canonical record, schedule or production
+change occurred during this release. The retired run cannot dispatch new work,
+even before its original expiry time.
+
+The matching [protected TEST frontend](https://serviceos-learn-test-7axttf8tx-allkin.vercel.app)
+is READY from Git commit `ba40dccf8dd81aed504e409dd6ba67a3f1012bb2`, with its TEST
+backend binding and three protected routes verified. A fresh browser-connection
+attempt timed out; visual and signed-in tenant-owner acceptance are **not proved**.
+Capture remains paused and the temporary login remains banned.
+[Release evidence](evidence/learn-commusoft-mapping-test-2026-10-10.json).
+
+Earlier sections retain dated implementation history; this release supersedes
+local-only statements about these two mapping functions.
+
 ## Real Drummonds TEST capture — approved run retired at 21:06 UTC
 
 The existing private-app credential now works through the hosted setup,
@@ -19,10 +44,10 @@ still unconfirmed. [Run evidence](evidence/learn-commusoft-real-test-result-2026
 
 Compatibility checks found 18 missing customer references for work addresses and
 1,306 missing property references among the captured jobs. Actual job statuses
-need the tested local mapping correction; 9,940 completion timestamps lack a zone
+are handled by the installed mapping correction; 9,940 completion timestamps lack a zone
 and 60 are empty. Unresolved relationships and unzoned populated timestamps must
-remain held. Customer discovery and job-lifecycle corrections are verified locally
-and backed up, but not deployed. A
+remain held. Customer discovery and job-lifecycle corrections are now deployed to TEST
+as release 043; signed-in owner acceptance remains pending. A
 [provider clarification draft](COMMUSOFT-DATA-SHAPE-QUESTIONS-2026-10-10.txt) is prepared,
 not sent. [Shape counts](evidence/learn-commusoft-real-shapes-2026-10-10.json).
 
@@ -81,9 +106,9 @@ The actual SQL migration passes rollback, source isolation, operator-only author
 receipt mismatch, job/lease, pause and exact stage/retry-count checks in disposable
 PostgreSQL. Every returned page passes the application parser. Seven model tests,
 strict app TypeScript, the app build and synthetic preview build pass. The existing
-Phone publication/recovery/settlement regression suite also passes. The UI and
-migration are **not deployed**; a fresh visual check and reviewed TEST release are
-still required. [Evidence](evidence/learn-phone-operator-evidence-local-2026-10-10.json).
+Phone publication/recovery/settlement regression suite also passes. The migration is **not deployed**. The protected frontend includes its compatible
+UI fallback; confirmed Phone evidence still requires the reviewed backend release
+and a fresh visual check. [Evidence](evidence/learn-phone-operator-evidence-local-2026-10-10.json).
 
 
 ## Phone import/scheduler settlement — TEST release 041 and runtime deployed

@@ -1,0 +1,131 @@
+{
+  "checkedAt": "2026-10-10T21:14:55.079024+00:00",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "043_commusoft_mapping",
+  "status": "installed_with_unauthorized_http_acceptance",
+  "rehearsal": {
+    "version": "learn-commusoft-mapping/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "d712f8432c2dd9dabe3f66a316e8ec66f2cd1250a690faceb67e5970f99fa598",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-10T21:11:16.365Z",
+    "priorFingerprint": "da73fc753a5441dc5332cf38ef16ecc9",
+    "expectedFingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+    "afterFingerprint": "da73fc753a5441dc5332cf38ef16ecc9",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+      "functions": 3
+    }
+  },
+  "application": {
+    "version": "learn-commusoft-mapping/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "d712f8432c2dd9dabe3f66a316e8ec66f2cd1250a690faceb67e5970f99fa598",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-10T21:12:12.638Z",
+    "priorFingerprint": "da73fc753a5441dc5332cf38ef16ecc9",
+    "expectedFingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+    "afterFingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+    "preservedDataSets": 78,
+    "receipt": {
+      "fingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+      "functions": 3
+    }
+  },
+  "http": {
+    "checkedAt": "2026-10-10T21:12:52.892Z",
+    "project": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "function": "learn_commusoft_customer_candidates",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "function": "learn_commusoft_confirm_work_record",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_commusoft_customer_candidates",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "function": "learn_commusoft_confirm_work_record",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "preservationAfterHttp": {
+    "checkedAt": "2026-10-10T21:14:19.913Z",
+    "fingerprint": "d4e496d7c200b4a218fdaca0e2a9af65",
+    "preserved": true,
+    "datasets": 78
+  },
+  "frontend": {
+    "observedAt": "2026-10-10T21:14:16.711Z",
+    "id": "dpl_HUNYjpDYRyFfFsQJxkyjgEPSPQWv",
+    "url": "serviceos-learn-test-7axttf8tx-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "ba40dccf8dd81aed504e409dd6ba67a3f1012bb2"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "scope": [
+    "Two review functions replaced; previous grants and ownership retained",
+    "All 78 monitored datasets preserved, including real Drummonds source records and the paused checkpoint",
+    "No login, user grant, provider request, canonical publication, schedule or production change"
+  ],
+  "verification": {
+    "localPostgres": "Positive review behavior, shared endpoints, pagination, tenant/role boundaries, job lifecycle, replay, source/canonical preservation, concurrency, migration rollback and exact hosted denial probe passed.",
+    "releaseTests": 5,
+    "browser": "Fresh cua.getState timed out after 31 seconds and reset its kernel; no visual/signed-in owner claim.",
+    "formatting": "15 whitespace-only lines in generated SQL are retained to preserve the exact rehearsed and applied package checksum; hand-authored changes pass formatting checks.",
+    "retiredSessionTests": 10,
+    "retiredSessionGuard": "A retired or partially retired session refuses all privileged phases before external access, even while its originally scheduled expiry is still in the future."
+  },
+  "remaining": [
+    "Signed-in tenant-owner review acceptance",
+    "Full jobs and contacts capture",
+    "Historical missing-property resolution and unzoned timestamp clarification",
+    "Production readiness/promotion"
+  ],
+  "frontendProtection": {
+    "observedAt": "2026-10-10T21:14:55.009Z",
+    "base": "https://serviceos-learn-test-7axttf8tx-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  }
+}

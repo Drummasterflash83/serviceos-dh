@@ -177,3 +177,23 @@ test("a known preservation mismatch blocks further mutations before external acc
     /preservation mismatch/,
   );
 });
+test("retired access cannot dispatch another worker even before the original expiry", async () => {
+  for (const state of ["retired", "grant_retired"]) {
+    const p = {
+      ...plan(),
+      state,
+      preserved: true,
+      expiresAt: new Date(Date.now() + 900000).toISOString(),
+    };
+    await assert.rejects(
+      runRealTestSession("worker-step", {
+        read: () => p,
+        approvedRun: p.runId,
+        fetcher: forbidden,
+        sql: forbidden,
+        save: forbidden,
+      }),
+      /session is retired/,
+    );
+  }
+});
