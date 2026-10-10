@@ -1,0 +1,91 @@
+{
+  "version": "learn-email-enqueue-local/1",
+  "observedAt": "2026-10-10T15:26:08.661813+00:00",
+  "state": "local_verified_not_deployed",
+  "databaseScenarios": 55,
+  "databaseTestResults": 56,
+  "requestAndUiTests": 7,
+  "frontendTypeScript": "passed",
+  "frontendBuild": "passed",
+  "sharedEdgeTypeScript": "passed_with_local_runtime_ambient_declarations",
+  "files": [
+    {
+      "path": "supabase/migrations/20261101001500_learn_email_enqueue.sql",
+      "sha256": "7fb1ffa5955a20b03963416c49dc1cf4264c5b662cce9c2ffb9fc134c42b114e"
+    },
+    {
+      "path": "supabase/functions/_shared/email_enqueue.ts",
+      "sha256": "f326fd3f68ace755c3536f6a9cb97b3ede1dfeef72177bdaec94d357efb88dbf"
+    },
+    {
+      "path": "supabase/functions/_shared/email_enqueue.test.ts",
+      "sha256": "0bdc88d6a1b085750ef30bd4b1b363b32d9320d74d3090b2b152d45ed8de585d"
+    },
+    {
+      "path": "supabase/functions/_shared/email_pipeline.ts",
+      "sha256": "cd34d870bd6dcebf4ae2676a6ee844be5e9905936b7975e18bb0dd23ab6d3fe8"
+    },
+    {
+      "path": "supabase/functions/gmail-sync-messages/index.ts",
+      "sha256": "e1a044913e8c9016e9a12e3e2cdbdbd851c3393f1d267baf85218c1274eca88b"
+    },
+    {
+      "path": "supabase/functions/gmail-workspace-sync-messages/index.ts",
+      "sha256": "7cf565077eff3fce0a775a0d1dc57bc0c8f45014cb89c5a796bd7fced4e92129"
+    },
+    {
+      "path": "supabase/functions/gmail-workspace-backfill-messages/index.ts",
+      "sha256": "0ca979ca096e8efdeab6f3dd0cc958b616bf16a0b17127415650bcec715b6b8a"
+    },
+    {
+      "path": "src/lib/email-queue-result.ts",
+      "sha256": "9e629627b99af989c2a3c3d37ecc513fa06d1f582168972381addd6994b664c4"
+    },
+    {
+      "path": "src/lib/api.ts",
+      "sha256": "44267bdaa5440e36e2126f0eb033c5149a400428e980e1932ce232860bb490bc"
+    },
+    {
+      "path": "src/lib/types.ts",
+      "sha256": "7b088c76f5b805f03278333d575b3d264e2b4d80d47b12d8678e586b4202e40b"
+    },
+    {
+      "path": "src/lib/runtime/ConnectorActionRunner.ts",
+      "sha256": "32af08d9c8bdcfc8ca44b559449147e56b804aec508d6a9cbd567e989f3b45c6"
+    },
+    {
+      "path": "src/components/app/admin/EmailOperations.tsx",
+      "sha256": "099f1044ca1a11f5293cd3d8a061e0b8107511197bfce0e29d4ca9d8aa3dcd70"
+    },
+    {
+      "path": "src/components/app/admin/StatusPanel.tsx",
+      "sha256": "b0fc754b7e3c3a4bb634b7ccb0a95796d449f4466c5ce920d03c26a5685feea2"
+    },
+    {
+      "path": "scripts/verify/learn-email-enqueue-cases.mjs",
+      "sha256": "9ab0b95d1d9f52b64fbc3b46e5e86e8f90b98f643076215d19e8cc59a04bede1"
+    },
+    {
+      "path": "scripts/verify/learn-email-protocol-client.test.mjs",
+      "sha256": "1dc3879ecbdf4b2a3647ef86980eeb8e5e9678b5f4b6504bdb669a1f43d1753e"
+    }
+  ],
+  "verified": [
+    "Three manual endpoints submit to the service-only queue RPC using existing tenant-bound owner/admin/ops and internal-service authorization.",
+    "Queue submission does not open sync runs, resolve provider credentials, alter mailbox progress or write source messages.",
+    "Concurrent matching submissions retain one active job; conflicting force or page-size intent is rejected without changing the saved job.",
+    "Paused capture, unavailable accounts, wrong methods and restart requests do not enqueue or reset cursors.",
+    "All three queue job types bind to the existing durable email attempt protocol.",
+    "Unknown or malformed RPC responses return unconfirmed without automatic retries or raw private diagnostics.",
+    "Frontend validates the queued contract; actual StatusPanel render distinguishes Queued, Needs attention and ordinary Success.",
+    "Connector quick actions and the internal email helper no longer interpret queue acceptance as imported message counts."
+  ],
+  "limitations": [
+    "Local tests only. The SQL fixture uses recorded TEST contracts and the previously documented dependency omissions.",
+    "Requires coordinated migrations, worker/shared modules, all three endpoints and frontend release; old endpoint callers or clients expect synchronous processing.",
+    "Existing active job deduplication applies while that job is active; no permanent manual-request idempotency token is introduced. Uncertain responses require inspecting job history before resubmission.",
+    "Source eligibility at enqueue is preliminary; the worker must recheck live credential/Workspace authority before provider access.",
+    "Shared Edge TypeScript uses ambient runtime declarations, not a Deno deployment/runtime check.",
+    "No real mailbox provider requests, hosted schema changes, secrets, access grants, scheduler changes or production deployment occurred."
+  ]
+}

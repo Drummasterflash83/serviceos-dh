@@ -16,8 +16,14 @@ export function StatusPanel<T>({
   result,
   renderOk,
   renderExtra,
+  successLabel = "Success",
+  runningLabel = "Running",
+  errorLabel = "Failed",
 }: {
   running: boolean;
+  successLabel?: string;
+  runningLabel?: string;
+  errorLabel?: string;
   result: ApiResult<T> | null;
   renderOk: (data: T) => StatusRow[];
   renderExtra?: (data: T) => ReactNode;
@@ -30,17 +36,17 @@ export function StatusPanel<T>({
     tone === "ok"
       ? {
           cls: "bg-success/10 text-success border-success/20",
-          label: "Success",
+          label: successLabel,
           Icon: CheckCircle2,
         }
       : tone === "error"
         ? {
             cls: "bg-destructive/10 text-destructive border-destructive/20",
-            label: "Failed",
+            label: errorLabel,
             Icon: XCircle,
           }
         : tone === "running"
-          ? { cls: "bg-accent/10 text-accent border-accent/20", label: "Running", Icon: Loader2 }
+          ? { cls: "bg-accent/10 text-accent border-accent/20", label: runningLabel, Icon: Loader2 }
           : {
               cls: "bg-surface-alt text-muted-foreground border-hairline",
               label: "Not run",

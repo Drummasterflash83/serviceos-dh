@@ -553,26 +553,14 @@ export interface GoogleWorkspaceMailboxWithAccount extends GoogleWorkspaceMailbo
 /** Input to the `gmail-workspace-backfill-messages` Edge Function. */
 export interface GmailWorkspaceBackfillInput {
   emailAccountId: string;
-  /** Reset paging + counters and start from the beginning. */
+  /** Legacy option: true is refused; restart requires operator recovery. */
   restart?: boolean;
-  /** Messages to list per page/run (default 100, clamped 1–500 server-side). */
+  /** Messages per page (1–500); omitted uses the durable traversal default. */
   maxResults?: number;
 }
 
-/** Safe summary from `gmail-workspace-backfill-messages`. */
-export interface GmailWorkspaceBackfillResult {
-  success: boolean;
-  provider: string;
-  email_account_id: string;
-  mailbox: string | null;
-  records_processed: number;
-  threads_processed: number;
-  total_fetched: number;
-  /** True while more pages remain (call Continue again). */
-  has_more: boolean;
-  backfill_status: string;
-  sync_run_id: string | null;
-}
+/** Queue acknowledgement; processing results arrive through run/job history. */
+export type GmailWorkspaceBackfillResult = EmailCaptureQueuedResult;
 
 /** Input to the `google-workspace-update-mailboxes` Edge Function. */
 export interface GoogleWorkspaceUpdateMailboxesInput {
@@ -618,20 +606,21 @@ export interface GmailSyncMessagesInput {
   emailAccountId: string;
   /** Re-fetch and re-upsert messages even if already stored. */
   force?: boolean;
-  /** Max message ids to list per label (INBOX, SENT). Clamped 1–100 server-side. */
+  /** Messages per page (integer 1–500, default 25 for new recent traversals). */
   maxResults?: number;
 }
 
-/** Safe summary returned by `gmail-sync-messages` (no tokens, no bodies). */
-export interface GmailSyncMessagesResult {
-  success: boolean;
-  provider: string;
+/** Safe queue acknowledgement, never a claim that messages were imported. */
+export interface EmailCaptureQueuedResult {
+  version: "learn-email-enqueue/1";
+  success: true;
+  state: "queued";
+  provider: "gmail";
   email_account_id: string;
-  records_processed: number;
-  threads_processed: number;
-  mailbox: string | null;
-  sync_run_id: string | null;
+  job_id: string;
+  duplicate: boolean;
 }
+export type GmailSyncMessagesResult = EmailCaptureQueuedResult;
 
 /** Filters for the tenant-scoped email feed (client-side RLS reads). */
 export interface EmailFeedInput {

@@ -1,5 +1,52 @@
 # Existing TEST environment: verified release gaps
 
+## Manual email queue submissions — local implementation, 10 October 2026
+
+The Gmail, Workspace sync and Workspace backfill endpoints now use the shared
+authenticated `email_enqueue.ts` handler. It binds the tenant from the existing
+owner/admin/ops authorization path, validates account/options, and calls the
+service-only `learn_email_enqueue` RPC. These requests never resolve Google
+credentials, open sync runs, write messages or update mailbox progress. A valid
+acknowledgement returns HTTP 202 with the queue job ID and duplicate indicator.
+
+`20261101001500_learn_email_enqueue.sql` checks current capture policy under the
+existing shared operator-control lock and checks account/provider/sync-method
+eligibility. The worker still verifies current OAuth or Workspace authority
+before obtaining credentials. The active-job unique key arbitrates concurrent
+submissions. Matching work is reused; differing payloads or connector identity
+are rejected without overwriting that job. Recent requests default to 25 messages
+per page, matching the schedulers; historical requests preserve the existing
+omitted-page-size shape. False force/restart flags are omitted from saved payloads.
+Restart=true is refused and requires explicit operator recovery instead of
+resetting retained cursors. No implicit request retry occurs after uncertainty.
+
+The frontend accepts only the new validated 202 queue contract. Email controls
+show Queued/Queueing and job references, not imported-message counts; unknown
+responses direct the operator to inspect jobs and use Needs attention. The
+historical-import button starts or continues using saved progress. The old reset
+shortcut is removed. Connector quick actions and the legacy internal email helper
+also report queue acceptance rather than invented processing totals. Other
+operations retain the StatusPanel's existing Success/Failed defaults.
+
+**55 database scenarios / 56 Node results** and **seven request/UI tests** pass,
+including concurrent matching and conflicting requests, unchanged source progress,
+all mailbox types binding to the durable worker protocol, tenant/role isolation,
+internal service authorization, malformed/lost replies and actual rendered status
+labels. Frontend TypeScript and the production build pass. The shared Edge handler
+passes TypeScript with local Deno/Supabase ambient declarations; no Deno runtime
+deployment check is claimed. See
+[local evidence](evidence/learn-email-enqueue-local-2026-10-10.json).
+
+**Not deployed.** Next is coordinated hosted TEST installation and acceptance:
+capture-control prerequisites, outbox/job binding/page storage/failure/recovery/
+enqueue migrations, the generic worker and its shared modules, all three manual
+endpoints, and matching frontend must be treated as one release. Old clients
+expect synchronous totals and old workers call these endpoints to perform capture;
+mixing versions would misreport acceptance or fail to run capture. Schedulers,
+expired-lease recovery and real mailbox authorization still need hosted verification.
+No production changes, real provider requests, credentials, access grants or
+schedules were made in this checkpoint.
+
 ## Paused email recovery — local implementation, 10 October 2026
 
 `20261101000500_learn_email_paused_recovery.sql` closes the queue admission gap
@@ -29,9 +76,8 @@ capture-control functions; the separate full controls fixture covers operator,
 Slack and phone dependencies. See
 [local evidence](evidence/learn-email-paused-recovery-local-2026-10-10.json).
 
-**Not deployed.** Direct sync endpoints still use their old paths and must become
-authenticated queue submissions with truthful queued UI feedback before the
-coordinated email runtime release. Hosted migration/deployment acceptance and
+**Not deployed.** The later local queue-submission change above adapts the direct
+sync endpoints and their UI. Hosted migration/deployment acceptance and
 real mailbox authorization remain outstanding. No hosted data, credentials,
 permissions, provider traffic or schedules changed in this checkpoint.
 
@@ -81,8 +127,8 @@ declarations; this is not a Deno deployment build. See
 credential values or mailbox data. Credential tests use synthetic database and
 provider ports; real Drummonds authorization has not been exercised here. Queue
 claim filtering's paused-recovery gap is addressed by the later local migration
-above. Direct sync endpoints still use their old paths and must be
-adapted before coordinated runtime installation. No hosted credentials, data,
+above. The later manual-submission change also adapts the direct sync endpoints;
+coordinated runtime installation remains outstanding. No hosted credentials, data,
 permissions or schedules changed, and no provider request was made.
 
 ## Mailbox page engine — local implementation, 10 October 2026

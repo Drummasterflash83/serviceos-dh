@@ -377,11 +377,11 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
     null,
   );
 
-  async function runBackfill(restart: boolean) {
+  async function runBackfill() {
     if (!soleSyncable?.account_id) return;
     setWsBackfilling(true);
     setWsBackfill(
-      await backfillGmailWorkspaceMessages({ emailAccountId: soleSyncable.account_id, restart }),
+      await backfillGmailWorkspaceMessages({ emailAccountId: soleSyncable.account_id }),
     );
     setWsBackfilling(false);
     if (wsConnectionId) await loadWsMailboxes(wsConnectionId);
@@ -896,29 +896,20 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   disabled={wsSyncing || !soleSyncable}
                   title={
                     soleSyncable
-                      ? "Recovery override: sync this mailbox now (automatic every 5 min)"
+                      ? "Queue this mailbox for capture using saved progress"
                       : "Select exactly one enabled DWD mailbox"
                   }
                 >
-                  {wsSyncing ? "Syncing…" : "Sync selected"}
+                  {wsSyncing ? "Queueing…" : "Queue selected sync"}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => runBackfill(true)}
+                  onClick={runBackfill}
                   disabled={wsBackfilling || !soleSyncable}
-                  title="Admin override: start historical backfill from the beginning (lower priority than live sync)"
+                  title="Queue historical import using saved progress"
                 >
-                  Start backfill
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => runBackfill(false)}
-                  disabled={wsBackfilling || !soleSyncable}
-                  title="Admin override: continue historical backfill (next page)"
-                >
-                  {wsBackfilling ? "Backfilling…" : "Continue backfill"}
+                  {wsBackfilling ? "Queueing…" : "Queue historical import"}
                 </Button>
               </div>
             </div>
@@ -992,21 +983,29 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
             <StatusPanel
               running={wsSyncing}
               result={wsSync}
+              successLabel="Queued"
+              errorLabel="Needs attention"
+              runningLabel="Queueing"
               renderOk={(d) => [
-                { label: "Mailbox", value: d.mailbox ?? "—" },
-                { label: "Messages", value: String(d.records_processed) },
-                { label: "Threads", value: String(d.threads_processed) },
-                { label: "Sync run", value: d.sync_run_id ?? "—" },
+                {
+                  label: "Request",
+                  value: d.duplicate ? "Existing work retained" : "Accepted for processing",
+                },
+                { label: "Queue job", value: d.job_id },
               ]}
             />
             <StatusPanel
               running={wsBackfilling}
               result={wsBackfill}
+              successLabel="Queued"
+              errorLabel="Needs attention"
+              runningLabel="Queueing"
               renderOk={(d) => [
-                { label: "Backfill", value: d.backfill_status },
-                { label: "This run", value: String(d.records_processed) },
-                { label: "Total fetched", value: String(d.total_fetched) },
-                { label: "More pages", value: d.has_more ? "yes — continue" : "no — done" },
+                {
+                  label: "Request",
+                  value: d.duplicate ? "Existing work retained" : "Accepted for processing",
+                },
+                { label: "Queue job", value: d.job_id },
               ]}
             />
           </div>
@@ -1211,17 +1210,21 @@ export function EmailOperations({ focus, focusNonce }: ConnectorSurfaceProps = {
                   onClick={runGmailSync}
                   disabled={syncingGmail || emailAccountId.trim() === ""}
                 >
-                  {syncingGmail ? "Syncing…" : "Sync Gmail messages"}
+                  {syncingGmail ? "Queueing…" : "Queue Gmail sync"}
                 </Button>
               </div>
               <StatusPanel
                 running={syncingGmail}
                 result={gmailSync}
+                successLabel="Queued"
+                errorLabel="Needs attention"
+                runningLabel="Queueing"
                 renderOk={(d) => [
-                  { label: "Mailbox", value: d.mailbox ?? "—" },
-                  { label: "Messages", value: String(d.records_processed) },
-                  { label: "Threads", value: String(d.threads_processed) },
-                  { label: "Sync run", value: d.sync_run_id ?? "—" },
+                  {
+                    label: "Request",
+                    value: d.duplicate ? "Existing work retained" : "Accepted for processing",
+                  },
+                  { label: "Queue job", value: d.job_id },
                 ]}
               />
             </div>

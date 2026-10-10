@@ -33,6 +33,7 @@ import { bindEmailJobAttempt } from "../../supabase/functions/_shared/email_job_
 import { verifyEmailPageStore } from "./learn-email-page-store-cases.mjs";
 import { verifyEmailCaptureEngine } from "./learn-email-capture-engine-cases.mjs";
 import { verifyEmailPausedRecovery } from "./learn-email-paused-recovery-cases.mjs";
+import { verifyEmailEnqueue } from "./learn-email-enqueue-cases.mjs";
 const docker = "/usr/local/bin/docker",
   name = "learn-email-protocol-" + randomUUID().slice(0, 8);
 const source = readFileSync(
@@ -63,6 +64,28 @@ function sql(s) {
     ],
     { input: s, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 20000 },
   ).trim();
+}
+async function sqlAsync(s) {
+  const { stdout } = await promisify(execFile)(
+    docker,
+    [
+      "exec",
+      "-i",
+      name,
+      "psql",
+      "-h",
+      "127.0.0.1",
+      "-U",
+      "postgres",
+      "-XAtq",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-c",
+      s,
+    ],
+    { encoding: "utf8", timeout: 20000 },
+  );
+  return stdout.trim();
 }
 const db = {
   async rpc(fn, args) {
@@ -1016,6 +1039,7 @@ test("email client preserves the existing hosted progress protocol", async (t) =
     await verifyEmailPageStore({ t, sql, db, queueJob, q, i });
     await verifyEmailCaptureEngine({ t, sql, db, queueJob, q, reference });
     await verifyEmailPausedRecovery({ t, sql, db, queueJob, q, reference });
+    await verifyEmailEnqueue({ t, sql, sqlAsync, db, queueJob, q });
   } finally {
     if (created) execFileSync(docker, ["rm", "-f", name], { stdio: "pipe", timeout: 30000 });
     rmSync(dir, { recursive: true, force: true });

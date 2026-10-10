@@ -56,12 +56,12 @@ async function runGmailSync(): Promise<ActionRunResult> {
       message: "No OAuth mailbox connected. Use Reconnect to connect one.",
     };
   }
-  let messages = 0;
+  let queued = 0;
   let failed = 0;
   let firstError: string | null = null;
   for (const acct of oauth) {
     const res = await syncGmailMessages({ emailAccountId: acct.id });
-    if (res.ok) messages += res.data.records_processed;
+    if (res.ok) queued += 1;
     else {
       failed += 1;
       firstError = firstError ?? res.error.message;
@@ -72,8 +72,8 @@ async function runGmailSync(): Promise<ActionRunResult> {
     ok,
     title: "Gmail sync",
     message: ok
-      ? `Synced ${oauth.length} mailbox(es) · ${messages} messages imported`
-      : `${failed} of ${oauth.length} mailbox(es) failed${firstError ? `: ${firstError}` : ""}`,
+      ? `Sync queued for ${queued} mailbox(es). Processing results will appear in email history.`
+      : `${queued} mailbox(es) queued; ${failed} requests not confirmed${firstError ? `: ${firstError}` : ""}`,
   };
 }
 

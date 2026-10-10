@@ -10,6 +10,7 @@
  * here yet. Not imported by the UI.
  */
 
+import { isEmailCaptureQueued } from "./email-queue-result";
 import { supabaseConfig, getAccessToken } from "./supabase";
 import type {
   ApiError,
@@ -1056,12 +1057,7 @@ export async function updateGoogleWorkspaceMailboxes(
   };
 }
 
-/**
- * Sync recent Gmail messages for a connected OAuth mailbox via the
- * `gmail-sync-messages` Edge Function (Email Phase-2). The OAuth token is
- * loaded/refreshed server-side and never exposed; this only passes the account
- * id + options. Idempotent server-side. Admin/diagnostic use for now.
- */
+/** Submit mailbox capture to the durable queue; no provider work occurs in this request. */
 export async function syncGmailMessages(
   input: GmailSyncMessagesInput,
 ): Promise<ApiResult<GmailSyncMessagesResult>> {
@@ -1094,38 +1090,45 @@ export async function syncGmailMessages(
       body: JSON.stringify(payload),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Network request failed";
-    return { ok: false, error: toApiError("network", message) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+      ),
+    };
   }
 
   let body: (Partial<GmailSyncMessagesResult> & { error?: ApiError }) | null;
   try {
     body = await response.json();
   } catch {
-    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+        response.status,
+      ),
+    };
   }
 
-  if (response.ok && body?.success) {
-    return { ok: true, data: body as GmailSyncMessagesResult };
+  if (response.status === 202 && isEmailCaptureQueued(body, input.emailAccountId)) {
+    return { ok: true, data: body };
   }
 
   return {
     ok: false,
     error: toApiError(
-      body?.error?.code ?? `http_${response.status}`,
-      body?.error?.message ?? "Gmail message sync failed",
+      body?.error?.code ?? "queue_unconfirmed",
+      body?.error?.message ??
+        "Queue response unconfirmed. Check email jobs before submitting again.",
       response.status,
     ),
   };
 }
 
-/**
- * Sync a Workspace DWD mailbox via the `gmail-workspace-sync-messages` Edge
- * Function (owner/admin/ops). Uses domain-wide delegation server-side (the
- * service-account key never touches the client) — for mailboxes registered as
- * `pending_tokenless_dwd` / `active_dwd`, not OAuth mailboxes. Same input/result
- * shape as `syncGmailMessages`. Idempotent server-side; diagnostic use for now.
- */
+/** Submit mailbox capture to the durable queue; no provider work occurs in this request. */
 export async function syncGmailWorkspaceMessages(
   input: GmailSyncMessagesInput,
 ): Promise<ApiResult<GmailSyncMessagesResult>> {
@@ -1152,37 +1155,45 @@ export async function syncGmailWorkspaceMessages(
       body: JSON.stringify(payload),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Network request failed";
-    return { ok: false, error: toApiError("network", message) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+      ),
+    };
   }
 
   let body: (Partial<GmailSyncMessagesResult> & { error?: ApiError }) | null;
   try {
     body = await response.json();
   } catch {
-    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+        response.status,
+      ),
+    };
   }
 
-  if (response.ok && body?.success) {
-    return { ok: true, data: body as GmailSyncMessagesResult };
+  if (response.status === 202 && isEmailCaptureQueued(body, input.emailAccountId)) {
+    return { ok: true, data: body };
   }
 
   return {
     ok: false,
     error: toApiError(
-      body?.error?.code ?? `http_${response.status}`,
-      body?.error?.message ?? "Workspace mailbox sync failed",
+      body?.error?.code ?? "queue_unconfirmed",
+      body?.error?.message ??
+        "Queue response unconfirmed. Check email jobs before submitting again.",
       response.status,
     ),
   };
 }
 
-/**
- * Run one page of historical backfill for a Workspace DWD mailbox via the
- * `gmail-workspace-backfill-messages` Edge Function (owner/admin/ops). `restart`
- * resets paging to the beginning; otherwise it continues from the stored page
- * token. Idempotent server-side; `has_more` indicates whether to call again.
- */
+/** Submit mailbox capture to the durable queue; no provider work occurs in this request. */
 export async function backfillGmailWorkspaceMessages(
   input: GmailWorkspaceBackfillInput,
 ): Promise<ApiResult<GmailWorkspaceBackfillResult>> {
@@ -1209,26 +1220,39 @@ export async function backfillGmailWorkspaceMessages(
       body: JSON.stringify(payload),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Network request failed";
-    return { ok: false, error: toApiError("network", message) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+      ),
+    };
   }
 
   let body: (Partial<GmailWorkspaceBackfillResult> & { error?: ApiError }) | null;
   try {
     body = await response.json();
   } catch {
-    return { ok: false, error: toApiError("parse", "Failed to parse response", response.status) };
+    return {
+      ok: false,
+      error: toApiError(
+        "queue_unconfirmed",
+        "Queue response unconfirmed. Check email jobs before submitting again.",
+        response.status,
+      ),
+    };
   }
 
-  if (response.ok && body?.success) {
-    return { ok: true, data: body as GmailWorkspaceBackfillResult };
+  if (response.status === 202 && isEmailCaptureQueued(body, input.emailAccountId)) {
+    return { ok: true, data: body };
   }
 
   return {
     ok: false,
     error: toApiError(
-      body?.error?.code ?? `http_${response.status}`,
-      body?.error?.message ?? "Workspace backfill failed",
+      body?.error?.code ?? "queue_unconfirmed",
+      body?.error?.message ??
+        "Queue response unconfirmed. Check email jobs before submitting again.",
       response.status,
     ),
   };
