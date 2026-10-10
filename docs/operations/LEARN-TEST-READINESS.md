@@ -1,17 +1,28 @@
 # Existing TEST environment: verified release gaps
 
-## Resumable work collection — local backend and card UI verified, not deployed
+## Resumable work collection — TEST release 049 and paired frontend installed
 
-A read-only production count found 14,394 retained work items, beyond the existing
-2,000-item collector cap. The local replacement freezes the population and history,
-processes 100 items per batch and retains proof by item. The 14,500-item offline
-suite, concurrent retries, preservation/access checks, full proof traversal and
-actual SQL-to-card/scorer parsing pass. Cards now retain interrupted requests,
-resume the original dates/rules and expose paged full evidence. Forty-five focused
-tests, app/preview typechecks and builds, and actual synthetic browser recovery,
-review, paging, pause and incomplete-coverage checks pass. A pinned paired TEST
-release and hosted owner acceptance remain required. The TEST site below remains
-on 048. [Contract, local verification and limits](LEARN-RESUMABLE-WORK-COLLECTION.md).
+The replacement freezes the population and history, processes 100 items per batch
+and retains proof by item. It addresses the existing 2,000-item cap; a prior
+read-only production count found 14,394 retained work items. Cards retain interrupted
+requests, resume their original dates/rules and expose full evidence in pages.
+The 14,500-item offline suite, 45 focused tests, actual SQL-to-card/scorer parsing,
+app/preview builds and synthetic browser recovery, paging and review checks pass.
+Incomplete history remains unscored even after confirmation.
+
+Hosted rollback rehearsal and installation passed at 23:43/23:44 UTC on 10 October
+(00:43/00:44 local, 11 October). All 92 preserved dataset fingerprints remained
+unchanged; all 14 anon/service HTTP-denial checks passed and both new ledgers remain
+empty. The protected frontend is READY from Git
+`c35336ae449504989e49b15b4eba5eb393d91071` at
+[the release 049 TEST candidate](https://serviceos-learn-test-owo3hwtky-allkin.vercel.app).
+TEST binding, deployment protection and actual unauthenticated sign-in redirect
+pass. Signed-in hosted owner acceptance and real population latency/coverage remain
+open. No production changes, provider traffic or new operator grants occurred.
+The Commusoft continuation remains prepared/preserved with zero requests or active
+grants and still awaits its separate approval.
+[Contract and limits](LEARN-RESUMABLE-WORK-COLLECTION.md) ·
+[release evidence](evidence/learn-resumable-work-test-2026-10-11.json).
 
 ## Team workload calculation — TEST release 048 and paired frontend installed
 

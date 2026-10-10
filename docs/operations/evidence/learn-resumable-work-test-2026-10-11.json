@@ -1,0 +1,208 @@
+{
+  "version": "learn-resumable-work-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "049_resumable_work",
+  "backend": {
+    "rehearsal": {
+      "version": "learn-resumable-work/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "c02b8b9e3245d19216601bd45b66251d407828305c095e1dd850fdcc01addd03",
+      "mode": "rehearse",
+      "state": "rehearsed_rolled_back",
+      "observedAt": "2026-10-10T23:43:45.840Z",
+      "priorFingerprint": "ab06df8a18d4cb0d87be87a0421fd6ff",
+      "expectedFingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+      "afterFingerprint": "ab06df8a18d4cb0d87be87a0421fd6ff",
+      "preservedDataSets": 92,
+      "receipt": {
+        "fingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+        "functions": 12
+      }
+    },
+    "installation": {
+      "version": "learn-resumable-work/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "c02b8b9e3245d19216601bd45b66251d407828305c095e1dd850fdcc01addd03",
+      "mode": "apply",
+      "state": "installed_needs_hosted_acceptance",
+      "observedAt": "2026-10-10T23:44:22.015Z",
+      "priorFingerprint": "ab06df8a18d4cb0d87be87a0421fd6ff",
+      "expectedFingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+      "afterFingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+      "preservedDataSets": 92,
+      "receipt": {
+        "fingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+        "functions": 12
+      }
+    },
+    "http": {
+      "observedAt": "2026-10-10T23:44:37.239Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "checks": [
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_begin",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_step",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_status",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_abandon",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_evidence",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_collection_runs?select=id&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_collection_items?select=run_id&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_begin",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_step",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_status",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_abandon",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_evidence",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_collection_runs?select=id&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_collection_items?select=run_id&limit=1",
+          "status": 403,
+          "code": "42501"
+        }
+      ],
+      "signedInOwnerAcceptance": false
+    },
+    "afterHttp": {
+      "observedAt": "2026-10-10T23:44:52.073Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "fingerprint": "dcbd094e77774e5f068bd5ea5162f89b",
+      "ledger": 50,
+      "preservedDataSets": 92,
+      "newLedgerRows": 0,
+      "continuationSchemaFingerprint": "de4d4cba80ed42ee83bc9e466dd50ce7"
+    }
+  },
+  "localEvidence": "learn-resumable-work-local-2026-10-11.json",
+  "releaseGuardTests": 6,
+  "continuationGuardTests": 12,
+  "frontend": {
+    "state": "READY",
+    "deploymentId": "dpl_HoqM4pqgU8DRvdFTDrFEy2fFZ93b",
+    "url": "https://serviceos-learn-test-owo3hwtky-allkin.vercel.app",
+    "gitSha": "c35336ae449504989e49b15b4eba5eb393d91071",
+    "target": "staging",
+    "testBackendBindingVerified": true,
+    "deployment": {
+      "observedAt": "2026-10-10T23:46:13.197Z",
+      "id": "dpl_HoqM4pqgU8DRvdFTDrFEy2fFZ93b",
+      "url": "serviceos-learn-test-owo3hwtky-allkin.vercel.app",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "readyState": "READY",
+      "target": "staging",
+      "gitSource": {
+        "type": "github",
+        "repoId": 1285975013,
+        "ref": "codex/learn-v1-test",
+        "sha": "c35336ae449504989e49b15b4eba5eb393d91071"
+      },
+      "framework": "tanstack-start",
+      "nodeVersion": "24.x"
+    },
+    "protection": {
+      "observedAt": "2026-10-10T23:46:28.256Z",
+      "base": "https://serviceos-learn-test-owo3hwtky-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "browser": {
+      "observedAt": "2026-10-10T23:47:21.202827+00:00",
+      "clientToSameOriginLogin": true,
+      "url": "https://serviceos-learn-test-owo3hwtky-allkin.vercel.app/login?redirect=%2Fclient%3Fsection%3Dlearn",
+      "consoleErrors": 0,
+      "signedInAcceptance": false
+    }
+  },
+  "signedInHostedOwnerAcceptance": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "captureActivation": false,
+  "newOperatorGrants": 0,
+  "continuation": {
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "newProviderRequests": 0,
+    "activeGrants": 0,
+    "schemaFingerprint": "de4d4cba80ed42ee83bc9e466dd50ce7",
+    "approvalStillRequired": true
+  }
+}

@@ -1,8 +1,11 @@
 # Resumable collection for retained work
 
-Local backend and card UI candidate, 11 October 2026. **Wired and verified locally;
-not deployed.** The protected TEST site still uses release 048 and the
-existing bounded collectors. Production remains unchanged.
+TEST backend release **049 installed**, 11 October 2026. The paired protected
+frontend is READY from Git `c35336ae449504989e49b15b4eba5eb393d91071` at
+[serviceos-learn-test-owo3hwtky-allkin.vercel.app](https://serviceos-learn-test-owo3hwtky-allkin.vercel.app).
+TEST configuration, Vercel protection and actual browser same-origin sign-in redirect pass.
+Signed-in hosted owner acceptance remains open. Production remains unchanged.
+[Hosted release evidence](evidence/learn-resumable-work-test-2026-10-11.json).
 
 A read-only count at 10 October 23:09:09 UTC found **14,394 intelligence objects**
 in the production company. The existing 2,000-item cap therefore prevents those
@@ -149,13 +152,37 @@ node --test src/lib/learn-work-collection-outbox.test.ts src/lib/learn-resumable
 node node_modules/typescript/bin/tsc --noEmit
 ```
 
-## Required before release
+## Hosted TEST release
 
-1. Pin an additive TEST release against 048, preserving its 91 datasets plus the
-   existing team receipt ledger and all existing function/table access contracts.
-2. Rehearse rollback, install, deploy the paired frontend and verify hosted owner
-   acceptance. Do not deploy frontend calls before the backend exists.
-3. Observe real population latency and history coverage before production promotion;
+Package `049_resumable_work.sql` is pinned to SHA-256
+`c02b8b9e3245d19216601bd45b66251d407828305c095e1dd850fdcc01addd03`.
+It matches the installed 048 catalog and preserves 92 datasets, adding the team
+receipt ledger to the preceding 91. The only existing function change is the
+exact completed-run evidence allowlist extension and unfinished-run rejection in
+`learn_performance_append`; all other dependency definitions, owners, ACLs, source
+table policies, constraints and triggers remain unchanged.
+
+The hosted rehearsal rolled back at 10 October 23:43:45 UTC. Installation completed
+at 23:44:22 UTC with the exact rehearsed catalog fingerprint
+`dcbd094e77774e5f068bd5ea5162f89b` and 50 total ledger entries. The role probe exercises
+all five public RPCs and both evidence tables without creating a user. Fourteen
+HTTP checks deny anon and service-role access, and a separate post-HTTP readback
+confirms all 92 fingerprints unchanged and both new ledgers empty. No capture,
+provider request, new operator grant or production mutation was performed.
+
+The Commusoft continuation's schema pin now matches the installed catalog; its
+run identity, requested approval, limits and inactive state are unchanged. Its
+read-only status check confirms prepared/preserved, zero worker invocations,
+zero new provider permits and zero active grants.
+
+## Required before production
+
+1. Complete signed-in hosted owner collection/recovery/review acceptance. The paired
+   deployment, TEST binding, protection and unauthenticated redirect checks pass;
+   those checks do not establish signed-in owner acceptance.
+2. Observe real population latency and history coverage before production promotion;
    the synthetic offline and browser checks do not establish production readiness.
+3. Finish the broader LEARN input, data quality and owner/operator launch gates
+   recorded in TEST readiness. This collector release is not LEARN V1 completion.
 
 Commusoft continuation approval and its retained credentials/scope are unchanged.

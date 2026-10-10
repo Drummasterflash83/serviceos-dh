@@ -50,8 +50,8 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-azk73jaeg-allkin.vercel.app](https://serviceos-learn-test-azk73jaeg-allkin.vercel.app),
-built remotely from GitHub commit `54f4acd24568352b4a0960155ee4dedcab7d578b`.
+[serviceos-learn-test-owo3hwtky-allkin.vercel.app](https://serviceos-learn-test-owo3hwtky-allkin.vercel.app),
+built remotely from GitHub commit `c35336ae449504989e49b15b4eba5eb393d91071`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
@@ -68,18 +68,25 @@ by TEST release 048 (10 October 23:04 UTC / 11 October 00:04 local). Its hosted
 rollback rehearsal, installation and four HTTP-denial checks passed, preserving
 91 monitored datasets and every existing collection guard except the exact addition
 of the team evidence type. No provider request or capture activation occurred.
+Resumable collection is now backed by TEST release 049 (10 October 23:44 UTC /
+11 October 00:44 local). It freezes the full work population, processes batches of
+100, retains individual proof and supports durable browser recovery and original-rule
+review. Its rollback rehearsal, installation and 14 HTTP-denial checks passed;
+all 92 monitored datasets were preserved and both new ledgers remain empty. The
+existing append function changed only to accept completed runs and reject unfinished
+ones. No provider traffic, capture activation or operator access was created.
 History paging is a frontend-only change with no new backend migration. Release 046
 preserved all 87 monitored datasets, including assessment and scoring ledgers, and
 existing assessment privileges.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
 login and client routes pass. This candidate rendered the login screen and passed the actual browser
-unauthenticated client redirect check. Signed-in hosted team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
+unauthenticated client redirect check. Signed-in hosted resumable collection/recovery/review, team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
 and control acceptance remain pending;
 a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-team-workload-test-2026-10-11.json) and
+See [current deployment evidence](operations/evidence/learn-resumable-work-test-2026-10-11.json) and
 [047 backend evidence](operations/evidence/learn-job-details-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because
