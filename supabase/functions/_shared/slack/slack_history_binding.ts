@@ -23,8 +23,13 @@ export async function readStoredHistoryScope(ctx:WorkerHandlerContext,clock:()=>
  let threadImportId:string|undefined;
  if(thread){
   if(!uuid(job.data.payload?.thread_import_id))return null;threadImportId=job.data.payload.thread_import_id;
-  const approval=await db.from('slack_thread_imports').select('id,tenant_id,account_id,scope,checkpoint').eq('tenant_id',ctx.tenantId).eq('id',threadImportId).maybeSingle();
+  const approval=await db.from('slack_thread_imports').select('id,tenant_id,account_id,scope,checkpoint,definition').eq('tenant_id',ctx.tenantId).eq('id',threadImportId).maybeSingle();
   if(approval.error||approval.data?.id!==threadImportId||approval.data?.tenant_id!==ctx.tenantId||approval.data?.account_id!==accountId)return null;
+  // Ongoing thread approvals can be paused independently of a retained page.
+  if(approval.data.definition && Object.hasOwn(approval.data.definition,'recurringHistoryImportId')){
+   const gate=await db.rpc('learn_slack_recurring_thread_allowed',{p_tenant:ctx.tenantId,p_import:threadImportId});
+   if(gate.error||gate.data!==true)return null;
+  }
   cfg=approval.data.scope;saved=approval.data.checkpoint;
   if(typeof cfg?.parentTimestamp!=='string'||!/^\d{1,12}\.\d{1,6}$/.test(cfg.parentTimestamp)||Number(cfg.parentTimestamp)>Number(cfg.latest))return null;
  }

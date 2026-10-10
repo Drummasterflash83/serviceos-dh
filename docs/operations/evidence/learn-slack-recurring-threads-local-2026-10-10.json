@@ -1,0 +1,24 @@
+{
+  "observedAt": "2026-10-10T18:16:03.399103+00:00",
+  "state": "local_verified_not_deployed",
+  "checks": [
+    "owner approval, request replay and service-only scheduler",
+    "viewer and View-As denial",
+    "atomic bounded window enqueue, replay and previous-checkpoint retention",
+    "opt-in control and stable retry receipt",
+    "viewer/preview cannot change thread approval and channel reapproval cannot skip pending replies",
+    "bounded discovery revisits old threads, retains broadcast parents and deduplicates timestamp aliases",
+    "channel progression holds while observed replies are unfinished",
+    "paused recurring capture blocks actual credential/publication RPCs; channel revision changes preserve thread approval",
+    "owner revocation denies reads; actual recovery lineage and durable completion release next window without rewriting the original import",
+    "conflicting recovery lock is skipped promptly; concurrent schedulers retain one import per parent/window"
+  ],
+  "nodeTests": 67,
+  "typescript": "passed",
+  "limits": [
+    "Synthetic PostgreSQL with minimal Auth/queue fixtures and reference-guard stub",
+    "No real provider requests, hosted changes or activation",
+    "Opt-in UI, coordinated TEST release and full provider/worker acceptance remain outstanding",
+    "Only retained observed parents are scanned; no claim of all Slack history"
+  ]
+}

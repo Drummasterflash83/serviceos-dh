@@ -63,6 +63,7 @@ export const recurringStates: Record<string, string> = {
   account_unavailable: "Channel account needs attention",
   connection_changed: "Connection needs review",
   connector_paused: "Slack connection is paused",
+  threads_pending: "Thread replies pending — review progress or recovery",
   window_active: "Processing the approved window",
   window_incomplete: "Window incomplete — review recovery",
   completion_unverified: "Completion needs verification",

@@ -858,3 +858,46 @@ full reload checks. Existing TEST source/approval fingerprints stayed unchanged;
 synthetic users, queues and connections were retired with evidence retained. Live
 Slack provider capture remains unverified. See
 [acceptance evidence](evidence/learn-slack-thread-recovery-test-acceptance-2026-10-10.json).
+
+## Automatic observed-thread windows — local implementation, 10 October
+
+The new additive `20261101005000_learn_slack_recurring_threads.sql` keeps existing
+subscriptions unchanged (`include_threads=false`). A separate owner/admin or
+OpenFolk admin control records the opt-in with reason, revision and idempotent
+request receipt. Viewer and client-preview changes are denied. UI controls and
+the coordinated hosted migration/worker release remain outstanding; nothing is
+activated by this local checkpoint.
+
+For opted-in channels, each durably completed recurring channel window now
+discovers retained thread parents in batches of twenty. It revisits older observed
+parents for replies in the new time window, includes parents identified by
+broadcasts, deduplicates numeric timestamp aliases and excludes other channels.
+Each parent uses the existing ten-page, fenced `slack.thread_sync` protocol and
+shared workspace pacing. The channel cannot advance until discovered threads have
+matching completed checkpoints and successful page-publication receipts. A new
+channel approval cannot accidentally discard pending replies. Explicitly disabling
+thread capture allows channel-only progression again.
+
+The worker rechecks ongoing approval before credential access and after provider
+responses; SQL also checks it before credential return and page publication. A
+channel pause, thread disable, LEARN pause, changed connection or lost approver
+authority stops the recurring path. Channel pause/resume has a separate revision
+from thread approval, preserving the interrupted window. Explicit thread recovery
+retains the old approval and checkpoint; completion follows its recovery lineage.
+The scheduler skips a contended recovery lock instead of waiting while holding
+the account lock.
+
+Verification used actual SQL controls, scheduler, credential/publication gates and
+thread recovery in disposable networkless PostgreSQL, with synthetic Auth/queue
+fixtures and a stub reference trigger. Concurrent calls produced one import per
+parent/window. The existing server/worker/client suites passed **67 tests**,
+including provider-response-time revocation, and TypeScript passed. This is not
+provider or hosted acceptance, nor proof of the full reference-trigger/worker
+round trip. [Local evidence](evidence/learn-slack-recurring-threads-local-2026-10-10.json).
+
+Coverage remains **observed threads in approved windows**: a thread whose parent
+was never captured is not discovered by this scan. Large backlogs, ten-page
+exhaustion and expired approvals can hold a window for explicit recovery. File
+content, historical edits/deletions and private/shared channels remain separate
+work. Slack's [reply pagination contract](https://docs.slack.dev/reference/methods/conversations.replies/)
+is the provider reference; actual workspace access still needs verification.

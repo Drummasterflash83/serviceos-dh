@@ -76,6 +76,7 @@ function fixture() {
         messages: [{ ts: "123.1", text: "Synthetic message", user: "U123" }],
         response_metadata: { next_cursor: "next" },
       },
+      recurringAllowed: true as boolean | null,
       override: null as null | ((method: string) => Response | Promise<Response> | undefined),
     };
   const db: any = {
@@ -100,6 +101,7 @@ function fixture() {
     },
     rpc: async (name: string, args: any) => {
       rpc.push({ name, args });
+      if (name === "learn_slack_recurring_thread_allowed") return {data:state.recurringAllowed,error:null};
       if (name === "learn_slack_read_credential" || name === "learn_slack_read_thread_credential") return { data: token, error: null };
       if (name === "slack_thread_commit_page") {
         rows.slack_thread_imports.checkpoint = args.p_next;
@@ -383,3 +385,17 @@ test('worker commits channel broadcasts through the real adapter and transport w
  assert.ok(!denied.rpc.some(r=>r.name==='slack_history_commit_page'));
  assert.deepEqual(denied.rows.connector_accounts.sync_cursor,{});
 });
+
+ test('recurring thread gate is checked before credential access and again after provider reads',async()=>{
+  for(const allowed of [false,null]){
+   const f=threadFixture();f.rows.slack_thread_imports.definition={recurringHistoryImportId:id(9)};f.state.recurringAllowed=allowed;
+   const result=await f.run();assert.equal(result.success,false);assert.equal(f.requests.length,0);
+   assert.ok(!f.rpc.some(r=>r.name==='learn_slack_read_thread_credential'));
+  }
+  const active=threadFixture();active.rows.slack_thread_imports.definition={recurringHistoryImportId:id(9)};
+  assert.equal((await active.run()).success,true);
+  const paused=threadFixture();paused.rows.slack_thread_imports.definition={recurringHistoryImportId:id(9)};
+  paused.state.override=(method)=>{if(method==='conversations.replies'){paused.state.recurringAllowed=false;return new Response(JSON.stringify(paused.state.history),{status:200});}};
+  assert.equal((await paused.run()).success,false);
+  assert.ok(!paused.rpc.some(r=>r.name==='slack_thread_commit_page'));
+ });
