@@ -56,18 +56,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // email-workspace-scheduled-sync and are excluded by status here).
   const { data: accounts, error } = await supabase
     .from("email_accounts")
-    .select("id, tenant_id")
+    .select("id, tenant_id, auth_state")
     .eq("provider", PROVIDER)
     .eq("status", "active");
   if (error) return fail("db_error", "Could not list Gmail accounts", 500);
 
   let queued = 0;
   let duplicates = 0;
+  let skippedAuthRequired = 0;
   // Per-tenant tallies so each tenant gets a truthful scheduler heartbeat.
-  const perTenant = new Map<string, { queued: number; duplicates: number }>();
+  const perTenant = new Map<
+    string,
+    { queued: number; duplicates: number; skippedAuthRequired: number }
+  >();
   for (const acc of accounts ?? []) {
     const tid = acc.tenant_id as string;
-    const t = perTenant.get(tid) ?? { queued: 0, duplicates: 0 };
+    const t = perTenant.get(tid) ?? { queued: 0, duplicates: 0, skippedAuthRequired: 0 };
+    perTenant.set(tid, t);
+    // Match the capture engine's OAuth admission. A revoked/expired connection
+    // needs reconnection, not a fresh doomed job on every scheduler tick. Keep a
+    // scheduler heartbeat even when all this tenant's accounts need attention.
+    if (!["ok", "unknown"].includes(acc.auth_state)) {
+      skippedAuthRequired += 1;
+      t.skippedAuthRequired += 1;
+      continue;
+    }
     const r = await enqueueJob(supabase, {
       tenantId: tid,
       jobType: "email.gmail_sync",
@@ -92,7 +105,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // provider content is written; this only proves the tick executed.
   const nowIso = new Date().toISOString();
   for (const [tid, counts] of perTenant) {
-    await supabase.from("email_sync_runs").insert({
+    const { error: heartbeatError } = await supabase.from("email_sync_runs").insert({
       tenant_id: tid,
       provider: PROVIDER,
       sync_type: "scheduled_sync",
@@ -100,9 +113,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
       started_at: nowIso,
       completed_at: nowIso,
       records_processed: counts.queued,
-      metadata: { heartbeat: true, queued: counts.queued, duplicates: counts.duplicates },
+      metadata: {
+        heartbeat: true,
+        queued: counts.queued,
+        duplicates: counts.duplicates,
+        skipped_auth_required: counts.skippedAuthRequired,
+      },
     });
+    if (heartbeatError)
+      return fail(
+        "heartbeat_unconfirmed",
+        "Scheduler results could not be recorded. Check queued jobs before retrying.",
+        503,
+      );
   }
 
-  return json({ success: true, accounts: (accounts ?? []).length, queued, duplicates });
+  return json({
+    success: true,
+    accounts: (accounts ?? []).length,
+    queued,
+    duplicates,
+    skipped_auth_required: skippedAuthRequired,
+  });
 });

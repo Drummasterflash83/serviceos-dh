@@ -1,5 +1,9 @@
 # Existing TEST environment: verified release gaps
 
+For the current cross-component launch requirements, delivery order and remaining
+acceptance gates, use [LEARN V1 completion checklist](LEARN-V1-COMPLETION.md).
+The sections below retain detailed, dated component history.
+
 ## Microsoft 365 mail — local page engine, recovery and queue completion verified
 
 The new page engine joins Graph readers to the source journal. Fifty-four unit

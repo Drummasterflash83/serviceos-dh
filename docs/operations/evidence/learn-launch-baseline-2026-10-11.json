@@ -1,0 +1,330 @@
+{
+  "contract": "learn-launch-baseline/1",
+  "production": {
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "sources": {
+      "jobs": 0,
+      "calls": 4328,
+      "emails": 18511,
+      "customers": 3160,
+      "recordings": 2882
+    },
+    "emailJobs": [
+      {
+        "jobs": 3,
+        "status": "cancelled",
+        "job_type": "email.gmail_sync"
+      },
+      {
+        "jobs": 4485,
+        "status": "dead_letter",
+        "job_type": "email.gmail_sync"
+      },
+      {
+        "jobs": 1,
+        "status": "queued",
+        "job_type": "email.gmail_sync"
+      },
+      {
+        "jobs": 592,
+        "status": "succeeded",
+        "job_type": "email.gmail_sync"
+      },
+      {
+        "jobs": 2371,
+        "status": "succeeded",
+        "job_type": "email.mailbox_discovery"
+      },
+      {
+        "jobs": 1158,
+        "status": "dead_letter",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "jobs": 25,
+        "status": "queued",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "jobs": 2,
+        "status": "retrying",
+        "job_type": "email.workspace_sync"
+      },
+      {
+        "jobs": 111331,
+        "status": "succeeded",
+        "job_type": "email.workspace_sync"
+      }
+    ],
+    "observedAt": "2026-10-11T06:07:25.59617+00:00",
+    "tenantExists": true,
+    "emailAccounts": [
+      {
+        "status": "active",
+        "accounts": 1,
+        "provider": "gmail",
+        "auth_state": "revoked"
+      },
+      {
+        "status": "active_dwd",
+        "accounts": 29,
+        "provider": "gmail",
+        "auth_state": "unknown"
+      }
+    ],
+    "recentEmailRuns": [
+      {
+        "runs": 562,
+        "status": "failed",
+        "sync_type": "messages",
+        "lateststarted": "2026-10-11T06:01:02.545+00:00",
+        "latestcompleted": "2026-10-11T06:01:02.809+00:00"
+      },
+      {
+        "runs": 2,
+        "status": "running",
+        "sync_type": "messages",
+        "lateststarted": "2026-10-11T03:47:30.704+00:00",
+        "latestcompleted": null
+      },
+      {
+        "runs": 1781,
+        "status": "success",
+        "sync_type": "scheduled_sync",
+        "lateststarted": "2026-10-11T06:05:01.784+00:00",
+        "latestcompleted": "2026-10-11T06:05:01.784+00:00"
+      },
+      {
+        "runs": 595,
+        "status": "success",
+        "sync_type": "workspace_backfill_scheduled",
+        "lateststarted": "2026-10-11T06:00:03.308+00:00",
+        "latestcompleted": "2026-10-11T06:00:03.308+00:00"
+      },
+      {
+        "runs": 320,
+        "status": "success",
+        "sync_type": "workspace_discover",
+        "lateststarted": "2026-10-11T06:02:06.58+00:00",
+        "latestcompleted": "2026-10-11T06:02:08.19+00:00"
+      },
+      {
+        "runs": 1802,
+        "status": "failed",
+        "sync_type": "workspace_messages",
+        "lateststarted": "2026-10-11T06:06:01.735+00:00",
+        "latestcompleted": "2026-10-11T06:06:01.851+00:00"
+      },
+      {
+        "runs": 4,
+        "status": "running",
+        "sync_type": "workspace_messages",
+        "lateststarted": "2026-10-11T03:46:29.117+00:00",
+        "latestcompleted": null
+      },
+      {
+        "runs": 12998,
+        "status": "success",
+        "sync_type": "workspace_messages",
+        "lateststarted": "2026-10-11T06:07:01.783+00:00",
+        "latestcompleted": "2026-10-11T06:07:02.495+00:00"
+      },
+      {
+        "runs": 1777,
+        "status": "success",
+        "sync_type": "workspace_scheduled_sync",
+        "lateststarted": "2026-10-11T06:05:07.46+00:00",
+        "latestcompleted": "2026-10-11T06:05:07.46+00:00"
+      }
+    ],
+    "recordingStorage": {
+      "objects": 2888,
+      "knownBytes": 601004261,
+      "knownSizeObjects": 2888,
+      "objectsCreatedLast30Days": 1516,
+      "knownBytesCreatedLast30Days": 312897776
+    },
+    "workspaceMailboxes": [
+      {
+        "status": "active",
+        "mailboxes": 30,
+        "mailbox_type": "user",
+        "sync_enabled": true
+      },
+      {
+        "status": "pending",
+        "mailboxes": 1,
+        "mailbox_type": "suspended",
+        "sync_enabled": true
+      },
+      {
+        "status": "pending",
+        "mailboxes": 12,
+        "mailbox_type": "user",
+        "sync_enabled": true
+      }
+    ],
+    "workspaceConnections": [
+      {
+        "status": "active",
+        "connections": 2,
+        "latestverification": "2026-10-11T06:02:07.31+00:00"
+      }
+    ]
+  },
+  "test": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T06:07:25.297037+00:00",
+    "latestReleases": [
+      {
+        "source_sha256": "6efd1515cc92f91af5ff67a9f3e4ba4978c1aee7deaa48b9be794f5a58079083",
+        "migration_name": "learn_card_search_v1",
+        "project_ref": "saatxzwxvdvqevbnskxy",
+        "applied_at": "2026-10-11 02:16:27.422357+00"
+      },
+      {
+        "source_sha256": "80b346d0c402a97c188324583dcd53cc29892c62c94bfb961ab9931d299de034",
+        "migration_name": "learn_measurement_receipt_guards_v1",
+        "project_ref": "saatxzwxvdvqevbnskxy",
+        "applied_at": "2026-10-11 04:41:32.638209+00"
+      },
+      {
+        "source_sha256": "584948b52e0a2ca6b0c81c05f73bdc3c59b60375070903aa467d7747b47f3343",
+        "migration_name": "learn_correction_recovery_v1",
+        "project_ref": "saatxzwxvdvqevbnskxy",
+        "applied_at": "2026-10-11 05:03:41.792758+00"
+      }
+    ],
+    "microsoftTables": [],
+    "workers": [
+      {
+        "slug": "learn-launch-status",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "learn-slack-worker",
+        "status": "ACTIVE",
+        "version": 8
+      },
+      {
+        "slug": "simwood-sync-calls",
+        "status": "ACTIVE",
+        "version": 6
+      },
+      {
+        "slug": "simwood-sync-recordings",
+        "status": "ACTIVE",
+        "version": 6
+      },
+      {
+        "slug": "simwood-download-recording",
+        "status": "ACTIVE",
+        "version": 3
+      },
+      {
+        "slug": "simwood-test-connection",
+        "status": "ACTIVE",
+        "version": 3
+      },
+      {
+        "slug": "learn-data-import",
+        "status": "ACTIVE",
+        "version": 5
+      },
+      {
+        "slug": "learn-commusoft-worker",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "learn-commusoft-verify",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "platform-worker",
+        "status": "ACTIVE",
+        "version": 5
+      },
+      {
+        "slug": "gmail-sync-messages",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "gmail-workspace-sync-messages",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "gmail-workspace-backfill-messages",
+        "status": "ACTIVE",
+        "version": 4
+      },
+      {
+        "slug": "learn-slack-schedule",
+        "status": "ACTIVE",
+        "version": 1
+      },
+      {
+        "slug": "phone-process-pending",
+        "status": "ACTIVE",
+        "version": 1
+      },
+      {
+        "slug": "phone-scheduled-sync",
+        "status": "ACTIVE",
+        "version": 1
+      }
+    ],
+    "requiredRpcs": [
+      {
+        "name": "learn_scorecard_read_draft",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_scorecard_save_draft",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_scorecard_publish",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_scorecard_policy_for_period",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_performance_review",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_work_history_read",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_member_history_read",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_work_handoffs_collect",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_work_residence_collect",
+        "state": "needs_signature_and_authority_verification"
+      },
+      {
+        "name": "learn_slack_start_import",
+        "state": "needs_signature_and_authority_verification"
+      }
+    ]
+  },
+  "limitations": [
+    "Aggregate inventory only: not source preservation, provider completeness, capture health or signed-in acceptance.",
+    "Storage metadata sizes are not byte checksums, playable audio or a backup.",
+    "Recent object creation includes backfills and is not a prediction of ongoing growth.",
+    "No writes, provider calls, audio downloads, new access grants or deployments."
+  ]
+}

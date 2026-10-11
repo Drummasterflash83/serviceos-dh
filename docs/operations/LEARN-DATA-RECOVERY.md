@@ -43,6 +43,14 @@ change or audio download was performed during this observation.
 
 ## Proposed independent recording backup — not configured
 
+The 11 October 06:07 UTC read-only production metadata audit measured 2,888
+Drummonds recording objects totalling 601,004,261 bytes (about 601 MB / 0.560 GiB).
+Every inventoried object has a known metadata size. The 1,516 objects created in
+the previous 30 days total 312,897,776 bytes; this can include backfill and is not
+a forecast. No file bytes were downloaded or checksummed. The next proposal step
+is a current region-specific total-cost estimate and agreed retention/recovery
+targets. [Aggregate evidence](evidence/learn-launch-baseline-2026-10-11.json).
+
 On 11 October Chris confirmed that no separate recorded-call backup destination
 exists and asked for a recommendation. Proposed destination: a Drummonds-owned AWS
 account with a private S3 Standard bucket in Europe (London), `eu-west-2`, separate
@@ -67,7 +75,8 @@ to provision paid infrastructure or copy recordings.
   failures and last restore test in OpenFolk with actionable operator diagnostics.
 - Size the initial inventory and daily growth before quoting costs. Include old
   versions, S3 requests, source egress, backup execution and restore traffic as
-  well as storage. Neither byte volume nor monthly budget is established yet.
+  well as storage. Initial metadata volume is measured above; monthly budget and
+  reliable ongoing growth are not established yet.
 
 Official sources checked on 11 October: [London S3 region](https://docs.aws.amazon.com/general/latest/gr/s3.html),
 [encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html),
