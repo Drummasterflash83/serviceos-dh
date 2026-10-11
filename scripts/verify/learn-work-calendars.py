@@ -1,4 +1,4 @@
-"""Integration-check elapsed ownership observations using a local schema-only clone.
+"""Verify company calendars and optional approved delays in a schema-only clone.
 
 The source container is READ ONLY. No table rows, auth credentials, storage
 objects, or role passwords are dumped. Verification runs with synthetic data in
@@ -8,6 +8,7 @@ This verifies integration with that schema, not a fresh replay of every project
 migration. Do not point this tool at a hosted database.
 """
 import shutil
+import sys
 import subprocess
 import uuid
 import time
@@ -171,6 +172,60 @@ try:
             assert settled.returncode == 0
             assert json.loads(next(line for line in settled.stdout.decode().splitlines() if line.startswith('{'))) == outcome
         print(f'Concurrent calendar {kind}/cancel has one stable terminal outcome: PASS')
+
+    if '--include-delays' in sys.argv:
+        delay_sql=(ROOT/'supabase/migrations/20261101110000_learn_work_delays.sql').read_bytes()
+        apply(b'begin;'+delay_sql+b'rollback;', 'Delay review migration rollback rehearsal')
+        apply(delay_sql, 'Delay review migration')
+        apply((ROOT/'scripts/verify/learn-work-delays.assert.sql').read_bytes(), 'Delay approval, reversal, recovery, scope and preservation assertions')
+        sql="""set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';
+        select jsonb_build_object('request',payload,'page',learn_work_delay_read('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001',0,null),
+          'snapshot',first_snapshot,'current',learn_work_delay_snapshot('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001',starts,ends,clock_timestamp()),
+          'evidence',learn_work_delay_evidence('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001','de1a0000-0000-4000-8000-000000000011'),
+          'resolution',learn_work_delay_resolve('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000011',payload,false),
+          'union',(select value from delay_union_snapshot)) from delay_fixture;"""
+        data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc',sql).stdout
+        parsed=subprocess.run(['node',str(ROOT/'scripts/verify/learn-work-delays-readback.mjs')],input=data,capture_output=True)
+        if parsed.returncode:
+            print(parsed.stderr.decode()[-1600:]);raise RuntimeError('Delay SQL-to-client parsing failed')
+        print(parsed.stdout.decode().strip())
+
+        delay_tenant='aaa40000-0000-0000-0000-000000000004'
+        delay_object='de1a0000-0000-4000-8000-000000000001'
+        def delay_head():
+            return int(calendar_query(f"select max(revision) from learn_work_delay_events where tenant_id='{delay_tenant}' and object_id='{delay_object}'"))
+        expected=delay_head()
+        def same_head_approval(request_id):
+            return competing_call(f"learn_work_delay_record('{delay_tenant}','{request_id}',(select payload from delay_fixture)||jsonb_build_object('expectedRevision',{expected}))")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            results=list(pool.map(same_head_approval,[str(uuid.uuid4()),str(uuid.uuid4())]))
+        assert sum(r.returncode==0 for r in results)==1, 'Only one same-head delay review may win'
+        assert any(b'Delay review history changed' in r.stderr for r in results)
+        print('Concurrent same-head delay approvals retain one next revision: PASS')
+        for decision in ['approve','reverse']:
+            request_id=str(uuid.uuid4())
+            if decision=='reverse':
+                fresh_id=str(uuid.uuid4())
+                prepared=competing_call(f"learn_work_delay_record('{delay_tenant}','{fresh_id}',(select payload from delay_fixture)||jsonb_build_object('expectedRevision',{delay_head()}))")
+                assert prepared.returncode==0
+                payload=f"jsonb_build_object('objectId','{delay_object}','expectedRevision',{delay_head()},'decision','reverse','approvalId','{fresh_id}','period',null,'label',null,'evidenceIds','[]'::jsonb,'reason','Concurrent reversal recovery')"
+            else:
+                payload=f"((select payload from delay_fixture)||jsonb_build_object('expectedRevision',{delay_head()}))"
+            record=f"learn_work_delay_record('{delay_tenant}','{request_id}',{payload})"
+            cancel=f"learn_work_delay_resolve('{delay_tenant}','{request_id}',{payload},true)"
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                write_result,cancel_result=list(pool.map(competing_call,[record,cancel]))
+            assert cancel_result.returncode==0
+            outcome=json.loads(next(line for line in cancel_result.stdout.decode().splitlines() if line.startswith('{')))
+            if outcome['state']=='cancelled':
+                assert write_result.returncode!=0 and b'Delay request cancelled' in write_result.stderr
+            else:
+                assert outcome['state']=='recorded' and write_result.returncode==0
+            assert calendar_query(f"select (select count(*) from learn_work_delay_events where id='{request_id}')+(select count(*) from learn_work_delay_cancellations where id='{request_id}')")=='1'
+            settled=competing_call(cancel)
+            assert settled.returncode==0 and json.loads(next(line for line in settled.stdout.decode().splitlines() if line.startswith('{')))==outcome
+            print(f'Concurrent delay {decision}/cancel has one stable terminal outcome: PASS')
+        apply(b"do $$begin assert (select history=(select md5(string_agg(to_jsonb(x)::text,'' order by capture_sequence)) from object_state_history x) from delay_source_before);assert (select measurements=(select md5(string_agg(to_jsonb(x)::text,'' order by id)) from measurements x) from delay_before);end $$;",'Post-concurrency work history and measurement preservation')
 
 finally:
     subprocess.run([DOCKER, 'rm', '-f', TARGET], capture_output=True)

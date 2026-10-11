@@ -1,0 +1,38 @@
+{
+  "version": "learn-work-delays-local/1",
+  "observedAt": "2026-10-11T00:39:08.422583+00:00",
+  "source": "supabase/migrations/20261101110000_learn_work_delays.sql",
+  "sha256": "2317137b438c2b6d1f3003d9b235e4f29b150b7a8f98da59c4c427d91973bd91",
+  "deployed": false,
+  "ownerUi": false,
+  "collectionAdapter": false,
+  "durableClientRecovery": true,
+  "verification": {
+    "rollbackRehearsal": "passed",
+    "offlineSql": "passed",
+    "sameHeadApprovalConcurrency": "one next revision",
+    "approvalCancellationConcurrency": "one stable terminal outcome",
+    "reversalCancellationConcurrency": "one stable terminal outcome",
+    "fixedHeadPaging": "105 entries; later reversal excluded from pinned continuation",
+    "intervalUnion": "nested, overlapping, adjacent and disjoint intervals preserve the expected two windows",
+    "snapshotBound": "1001 active approvals explicitly refused",
+    "preciseProof": "microsecond timestamps retained; one-microsecond coverage gap rejected",
+    "authority": "actual tenant/actor/owner role, revoked owner, View-As and four RPCs across three no-identity roles",
+    "immutableDecisionsAndCancellations": "passed",
+    "sourceMeasurementsCalendarAndCollectionPreservation": "passed",
+    "actualSqlClientAndDeskTimeIntegration": "passed",
+    "delayClientAndRecoveryTests": 21,
+    "combinedDelayCalendarScorerTests": 56,
+    "appTypecheck": "passed"
+  },
+  "hostedReleaseUnchanged": "049",
+  "hostedOwnerAcceptance": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "remaining": [
+    "Owner delay review and retained-proof screen",
+    "Actual browser recovery and reversal acceptance",
+    "Working-time resumable collector integration",
+    "Pinned paired TEST release and hosted owner acceptance"
+  ]
+}
