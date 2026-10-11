@@ -1,5 +1,10 @@
 import { captureAdmission } from "../_shared/learn_capture_control.ts";
 import {
+  capturePhoneRecordingVersion,
+  reconcilePhoneRecordingVersion,
+} from "../_shared/phone-download-version.ts";
+import { confirmPhonePipelineCompletion } from "../_shared/phone-pipeline-completion.ts";
+import {
   resolveSimwoodAccount,
   boundSimwoodRecordingUrl,
   simwoodRecordingCustomer,
@@ -8,7 +13,7 @@ import {
 //
 // Downloads a single recording's WAV audio from Simwood/Sipcentric (server-side
 // only) and stores it in the PRIVATE Supabase Storage bucket `phone-recordings`.
-// Idempotent: the storage path is deterministic and, unless force=true, an
+// New downloads use immutable attempt-specific paths; unless force=true, an
 // already-downloaded recording returns without re-downloading. Every attempt is
 // logged to phone_sync_runs and mirrored to audit_logs.
 //
@@ -20,7 +25,8 @@ import {
 //   {
 //     "tenant_id": "uuid",       // required
 //     "recording_id": "uuid",    // required — phone_recordings.id
-//     "force": boolean?          // optional — re-download even if stored
+//     "force": boolean?,         // optional — re-download even if stored
+//     "resume_run_id": "uuid"?   // owner/admin: verify and finish this existing attempt only
 //   }
 
 import {
@@ -35,17 +41,10 @@ import {
 } from "../_shared/simwood.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
-const STORAGE_BUCKET = "phone-recordings";
-
 // Provider recording retention window. A 404 on a recording younger than this is
 // treated as "not ready yet" (retryable); older than this, the audio is gone for
 // good (non-retryable). Simwood/Sipcentric retention is conservative here.
 const PROVIDER_RETENTION_DAYS = 45;
-
-/** Keep storage keys safe/deterministic: only [A-Za-z0-9._-], others -> "_". */
-function safeSegment(value: string): string {
-  return value.replace(/[^A-Za-z0-9._-]/g, "_");
-}
 
 /**
  * Map a raw provider fetch failure to a SAFE, retry-aware error code (§5). The
@@ -100,6 +99,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return failResponse("invalid_force", "force must be a boolean", 400);
   }
   const force = body.force === true;
+  const resumeRunId = body.resume_run_id;
+  if (resumeRunId !== undefined && (!isUuid(resumeRunId) || force))
+    return failResponse(
+      "invalid_resume",
+      "resume_run_id must be a UUID and cannot be combined with force",
+      400,
+    );
 
   // --- DB client (required: we must be able to log + read + write) ---------
   const configuredClient = createSupabaseAdmin();
@@ -112,7 +118,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const auth = await requireTenantUser(
     req,
     supabase,
-    force ? ["owner", "admin"] : ["owner", "admin", "ops"],
+    force || resumeRunId !== undefined ? ["owner", "admin"] : ["owner", "admin", "ops"],
   );
   if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
   const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
@@ -134,6 +140,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
   if (!recording) {
     return failResponse("not_found", "Recording not found for this tenant", 404);
+  }
+
+  if (resumeRunId !== undefined) {
+    const reconciled = await reconcilePhoneRecordingVersion(supabase, {
+      tenantId,
+      runId: resumeRunId as string,
+      recordingId: recordingId as string,
+    });
+    if (!reconciled.ok)
+      return failResponse(reconciled.code, reconciled.message, reconciled.httpStatus, {
+        sync_run_id: resumeRunId,
+        recording_id: recordingId,
+      });
+    return jsonResponse({
+      success: true,
+      provider: PROVIDER,
+      recording_id: recordingId,
+      storage_path: reconciled.storagePath,
+      reconciled: true,
+      sync_run_id: resumeRunId,
+    });
   }
 
   // Stored audio remains usable while capture is paused. Only a new download
@@ -189,23 +216,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
     recordsProcessed: number,
     metaExtra: Record<string, unknown>,
     errorMessage: string | null,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const metadata = { ...baseMetadata, ...metaExtra };
-    try {
-      await supabase
-        .from("phone_sync_runs")
-        .update({
-          status,
-          completed_at: new Date().toISOString(),
-          records_processed: recordsProcessed,
-          error_message: errorMessage,
-          metadata,
-        })
-        .eq("id", syncRunId);
-    } catch (_e) {
-      // ignore
-    }
+    const confirmed = await confirmPhonePipelineCompletion(supabase, {
+      runKind: "download",
+      tenantId,
+      runId: syncRunId,
+      status,
+      recordsProcessed,
+      errorMessage,
+      metadata,
+    });
+    if (!confirmed) return false;
     await writeAudit(status, { ...metadata, ...(errorMessage ? { message: errorMessage } : {}) });
+    return true;
   }
 
   async function finishFailed(
@@ -214,7 +238,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     httpStatus: number,
     metaExtra: Record<string, unknown> = {},
   ): Promise<Response> {
-    await finish("failed", 0, { ...metaExtra, error_code: code }, message);
+    if (!(await finish("failed", 0, { ...metaExtra, error_code: code }, message)))
+      return failResponse(
+        "phone_download_unconfirmed",
+        "The saved download status needs review.",
+        503,
+        { sync_run_id: syncRunId, recording_id: recordingId },
+      );
     return failResponse(code, message, httpStatus, {
       sync_run_id: syncRunId,
       recording_id: recordingId,
@@ -240,11 +270,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? Date.now() - Date.parse(recordedAtIso)
       : null;
 
-  const storagePath = `${tenantId}/${PROVIDER}/recordings/${safeSegment(providerRecordingId)}.wav`;
-
   // --- short-circuit if already downloaded --------------------------------
   if (recording.storage_path && !force) {
-    await finish(
+    const confirmed = await finish(
       "success",
       0,
       {
@@ -254,6 +282,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
       null,
     );
+    if (!confirmed)
+      return failResponse(
+        "phone_download_unconfirmed",
+        "The saved download status needs review.",
+        503,
+        { sync_run_id: syncRunId, recording_id: recordingId },
+      );
     return jsonResponse({
       success: true,
       provider: PROVIDER,
@@ -294,82 +329,43 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return await finishFailed("config_error", "Simwood credentials are not configured", 500);
   }
 
-  // --- download the WAV (server-side only) --------------------------------
-  const audio = await simwoodGetBinary(downloadUrl, creds, "audio/wav");
-  if (!audio.ok) {
-    // Reclassify to a safe, retry-aware code (§5). A 404 within retention is
-    // "not ready" (retryable); past retention it is "missing" (dead-letter).
-    const mapped = classifyDownloadError(audio.code, recordingAgeMs);
-    return await finishFailed(mapped.code, audio.message, audio.httpStatus, {
-      provider_recording_id: providerRecordingId,
-      retryable: mapped.retryable,
-    });
-  }
-  if (audio.bytes.byteLength === 0) {
-    return await finishFailed("empty_audio", "Downloaded audio was empty", 502, {
-      provider_recording_id: providerRecordingId,
-    });
-  }
-
-  // --- store in the private bucket ----------------------------------------
-  const { error: uploadErr } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(storagePath, new Blob([audio.bytes.slice().buffer], { type: "audio/wav" }), {
-      contentType: "audio/wav",
-      upsert: true,
-    });
-  if (uploadErr) {
-    // Storage hiccup — transient, retryable (§5).
-    return await finishFailed(
-      "storage_failed",
-      `Failed to store audio: ${uploadErr.message}`,
-      500,
-      {
-        provider_recording_id: providerRecordingId,
-        storage_path: storagePath,
+  const downloaded = await capturePhoneRecordingVersion({
+    db: supabase,
+    scope: { tenantId, runId: syncRunId, recordingId: recordingId as string },
+    definition: {
+      accountId: account.accountId,
+      connectorId: account.connectorId,
+      customerId: account.customerId,
+      source: {
+        providerRecordingId,
+        recordingUri: recording.recording_uri ?? null,
+        storagePath: recording.storage_path ?? null,
+        fileSize: recording.file_size ?? null,
       },
-    );
-  }
-
-  // --- record the storage pointer -----------------------------------------
-  const { error: updateErr } = await supabase
-    .from("phone_recordings")
-    .update({ storage_path: storagePath })
-    .eq("id", recordingId)
-    .eq("tenant_id", tenantId);
-  if (updateErr) {
-    return await finishFailed("db_error", `Failed to update recording: ${updateErr.message}`, 500, {
-      provider_recording_id: providerRecordingId,
-      storage_path: storagePath,
-    });
-  }
-
-  // --- success -------------------------------------------------------------
-  const downloadedBytes = audio.bytes.byteLength;
-  const expectedSize = typeof recording.file_size === "number" ? recording.file_size : null;
-  const sizeMismatch =
-    expectedSize !== null && expectedSize > 0 && expectedSize !== downloadedBytes;
-
-  await finish(
-    "success",
-    1,
-    {
-      provider_recording_id: providerRecordingId,
-      storage_path: storagePath,
-      already_downloaded: false,
-      downloaded_bytes: downloadedBytes,
-      expected_bytes: expectedSize,
-      size_mismatch: sizeMismatch,
     },
-    null,
-  );
-
+    fetchAudio: async () => {
+      const audio = await simwoodGetBinary(downloadUrl, creds, "audio/wav");
+      return audio.ok
+        ? audio
+        : { ok: false, code: classifyDownloadError(audio.code, recordingAgeMs).code };
+    },
+  });
+  if (!downloaded.ok)
+    return failResponse(downloaded.code, downloaded.message, downloaded.httpStatus, {
+      sync_run_id: syncRunId,
+      recording_id: recordingId,
+    });
+  await writeAudit("success", {
+    ...baseMetadata,
+    downloaded_bytes: downloaded.bytes,
+    sha256: downloaded.sha256,
+  });
   return jsonResponse({
     success: true,
     provider: PROVIDER,
     recording_id: recordingId,
     provider_recording_id: providerRecordingId,
-    storage_path: storagePath,
+    storage_path: downloaded.storagePath,
     already_downloaded: false,
     sync_run_id: syncRunId,
   });

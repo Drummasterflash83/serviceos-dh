@@ -226,10 +226,13 @@ export async function handlePhoneProcessPending(
               message: lastError ?? "one or more recordings failed",
               // A child may have completed its processing and committed its run.
               // Review the retained evidence before starting another pipeline.
-              retryable:
-                lastErrorCode === "phone_pipeline_completion_unconfirmed"
-                  ? false
-                  : isRetryable(lastErrorCode),
+              retryable: [
+                "phone_pipeline_completion_unconfirmed",
+                "phone_download_unconfirmed",
+                "phone_recording_processing_held",
+              ].includes(lastErrorCode ?? "")
+                ? false
+                : isRetryable(lastErrorCode),
               failedStep: lastFailedStep ?? undefined,
             },
           }

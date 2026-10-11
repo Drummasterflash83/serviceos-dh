@@ -1,6 +1,7 @@
 /** Confirm this pipeline run's terminal write; a lost reply is not success. */
 type Db = { from: (table: string) => any };
 type Completion = {
+  runKind?: "pipeline" | "download";
   tenantId: string;
   runId: string;
   status: "success" | "failed";
@@ -20,6 +21,8 @@ const canonical = (value: unknown): string =>
   );
 
 export async function confirmPhonePipelineCompletion(db: Db, input: Completion): Promise<boolean> {
+  const provider = input.runKind === "download" ? "simwood" : "pipeline";
+  const syncType = input.runKind === "download" ? "recording_download" : "pipeline";
   const completedAt = new Date().toISOString();
   const patch = {
     status: input.status,
@@ -35,8 +38,8 @@ export async function confirmPhonePipelineCompletion(db: Db, input: Completion):
       row &&
       row.id === input.runId &&
       row.tenant_id === input.tenantId &&
-      row.provider === "pipeline" &&
-      row.sync_type === "pipeline" &&
+      row.provider === provider &&
+      row.sync_type === syncType &&
       row.status === input.status &&
       row.records_processed === input.recordsProcessed &&
       row.error_message === input.errorMessage &&
@@ -49,8 +52,8 @@ export async function confirmPhonePipelineCompletion(db: Db, input: Completion):
       .update(patch)
       .eq("id", input.runId)
       .eq("tenant_id", input.tenantId)
-      .eq("provider", "pipeline")
-      .eq("sync_type", "pipeline")
+      .eq("provider", provider)
+      .eq("sync_type", syncType)
       .eq("status", "running")
       .select(fields)
       .maybeSingle();
@@ -64,8 +67,8 @@ export async function confirmPhonePipelineCompletion(db: Db, input: Completion):
       .select(fields)
       .eq("id", input.runId)
       .eq("tenant_id", input.tenantId)
-      .eq("provider", "pipeline")
-      .eq("sync_type", "pipeline")
+      .eq("provider", provider)
+      .eq("sync_type", syncType)
       .maybeSingle();
     return !observed.error && matches(observed.data);
   } catch {

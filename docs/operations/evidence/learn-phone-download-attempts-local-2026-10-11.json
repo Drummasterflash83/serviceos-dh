@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-11",
+  "verifiedAt": "2026-10-11T09:16:48Z",
+  "state": "local_verified_hosted_processing_incomplete",
+  "change": "Exclusive recording download ownership, immutable audio versions and no-provider reconciliation",
+  "local": {
+    "actualHandlerChecks": 62,
+    "helperAndRecoveryChecks": 21,
+    "strictTypeScript": "passed",
+    "postgresql": "15, disposable network-disabled synthetic fixture",
+    "databaseChecks": [
+      "exclusive same-recording ownership and real concurrent claims",
+      "scope and exact immutable receipt replay",
+      "prepared audio remains private until atomic pointer/run/receipt publication",
+      "uncertain upload stays held after expiry and excluded from selection",
+      "source changes, capture pause and account disablement prevent publication",
+      "same-owner reconciliation only",
+      "injected completion failure rolls back pointer and run",
+      "role restrictions",
+      "migration rollback preserves original readiness body, owner and ACL"
+    ],
+    "runtimeChecks": [
+      "forced download uses a new path and never overwrites retained audio",
+      "stored byte count and SHA-256 verified before publication",
+      "lost upload acknowledgement recovered only through exact readback",
+      "lost completion acknowledgement replays exact completion, never provider or upload",
+      "oversized declared and streamed bodies cancelled before storage",
+      "held claims perform no provider work",
+      "resume verifies journal path/hash/size and original attempt without credentials/provider/upload/new run",
+      "missing, corrupt, foreign or conflicting recovery evidence cannot publish"
+    ],
+    "applicationTypeScript": "passed",
+    "applicationBuild": "passed"
+  },
+  "limitations": [
+    "Local synthetic ports and isolated SQL fixture, not full-schema/hosted acceptance",
+    "Transcription and analysis do not yet claim this ownership journal",
+    "Derived output version provenance and operator recovery UI remain unfinished",
+    "Running attempts without prepared bytes remain held for explicit investigation",
+    "Absent hosted processing endpoints require a coordinated release",
+    "No real Phone provider request or production change from this milestone"
+  ],
+  "hostedWrites": 0,
+  "productionChanges": false
+}

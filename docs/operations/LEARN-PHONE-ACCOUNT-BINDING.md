@@ -504,3 +504,50 @@ In particular, child transcription/analysis terminal-write handling and per-reco
 concurrency still need review; this change does not assert their durability.
 No TEST/production runtime, data, credentials, schedules or permissions changed.
 [Local and TEST inventory evidence](evidence/learn-phone-pipeline-completion-local-2026-10-11.json).
+
+
+## Download ownership, retained versions and recovery — local, 11 October
+
+A forced download previously uploaded to the existing path with overwrite enabled.
+The candidate now records exclusive ownership before the provider request, prepares
+an immutable attempt-specific path and SHA-256, uploads with `upsert: false`, then
+reads and hashes that exact object. Only verified bytes may advance the recording
+pointer. One SQL transaction publishes that pointer, finishes the run and records
+an immutable completion receipt containing the previous path. Prior audio stays
+in storage. Cached returns and preflight failures also require a confirmed run write.
+Provider bodies are bounded while streaming, including when Content-Length is absent.
+
+An upload with an uncertain outcome retains ownership in `needs_review`; expiry
+never permits another attempt to take over. The pending selector excludes held
+incomplete recordings in later manual/scheduled batches. New claim, preparation
+and publication recheck the company capture switch, account registry and source
+snapshot. Completed receipt replay does not restart capture and remains readable
+while capture is paused. Private attempt definitions are service-only; application
+roles cannot read or change this journal.
+
+The download endpoint accepts `resume_run_id` for owner/admin recovery. It requires
+the matching authenticated company and recording, loads the server journal's file
+path/hash/size, reads and verifies that file, and completes only the original attempt.
+It creates no run, obtains no provider credential, calls no provider and uploads no
+file. Missing/corrupt bytes, changed source, paused capture or unavailable account
+leave publication unconfirmed. `force` cannot be combined with resume. A running
+attempt without a prepared file cannot be resumed this way and stays held for
+operator investigation; no unsafe automatic abandonment or lease stealing is added.
+
+**83 focused local checks pass:** 62 actual-handler checks and 21 helper/recovery
+checks, plus strict TypeScript. A disposable, network-disabled PostgreSQL 15 run
+verifies real SQL concurrency, tenant isolation, exact receipt replay, paused and
+changed-source refusal before publication, account disablement, held selection,
+atomic rollback on injected failure, restricted privileges, and migration rollback
+including the prior readiness function body/owner/ACL. The fixture uses current
+readiness semantics; it is not a full hosted-schema release rehearsal.
+
+Still required before coordinated Phone TEST activation: equivalent transcription
+and analysis ownership/completion and output history; links between derived results
+and their precise audio version; full-schema integration; operator UI for inspecting
+and reconciling attempts, including forced downloads of otherwise completed records;
+real-provider, signed-in and recurring-capture acceptance. The journal supports stage
+names for future integration, but existing transcription/analysis handlers do not
+claim it yet. This must not be represented as full pipeline concurrency protection.
+TEST/production runtimes, source data, credentials and capture schedules are unchanged.
+[Download evidence](evidence/learn-phone-download-attempts-local-2026-10-11.json).

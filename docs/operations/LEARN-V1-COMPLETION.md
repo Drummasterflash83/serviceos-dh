@@ -203,11 +203,17 @@ succeeded after that failure; no worker was invoked and no source record changed
   Fresh TEST inventory confirms the pipeline/transcription/analysis endpoints are
   absent, so sync worker deployment alone cannot prove the full Phone journey.
   The local pipeline now verifies terminal storage and recovers lost acknowledgements;
-  uncertain completion stops the current recovery job's automatic retry. A durable
-  recording-level hold across later jobs is still missing. All 71 focused
-  checks and strict TypeScript pass. Child completion/concurrency, the complete
-  processing runtime release and real-provider acceptance remain open.
-  [Evidence](evidence/learn-phone-pipeline-completion-local-2026-10-11.json).
+  uncertain completion stops the current recovery job's automatic retry. The local
+  download step now owns a durable per-recording attempt, retains old audio, checks
+  the new stored file's hash, and publishes its pointer and completion atomically.
+  An owner/admin recovery request can verify and finish that exact saved attempt
+  without another provider download/upload. Held downloads cannot be selected by
+  later batches merely because they timed out. All 83 focused checks, isolated
+  PostgreSQL checks and strict TypeScript pass. These protections are local only;
+  transcription/analysis still need equivalent ownership and source/output history.
+  The complete processing runtime release, operator recovery UI, full-schema and
+  real-provider acceptance remain open.
+  [Latest evidence](evidence/learn-phone-download-attempts-local-2026-10-11.json).
 - [ ] **Slack:** verify authorised workspace/channel scope, history plus replies,
   files/unsupported-content limits, incremental schedule, revocation/recovery and
   source-to-card visibility. Local synthetic history and deployed worker status

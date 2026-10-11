@@ -66,6 +66,9 @@ async function harness(
     pauseWriteThrow = false,
     pauseWriteTarget = "phone_sync_runs",
     pipelineCompletionFault,
+    downloadAttemptResponse,
+    binaryResponse,
+    initialAudio = [],
   } = {},
 ) {
   const requests = [],
@@ -74,8 +77,27 @@ async function harness(
   let handler;
   let scheduleHeartbeatCount = 0;
   let pipelineTerminalRow = null;
+  const storedAudio = new Map(initialAudio);
   const db = {
     async rpc(name, args) {
+      if (name === "learn_phone_download_attempt") {
+        writes.push({ table: name, op: "rpc", v: args });
+        if (downloadAttemptResponse) return downloadAttemptResponse(args);
+        return {
+          data: {
+            version: "learn-phone-download-attempt/1",
+            tenantId: args.p_tenant,
+            runId: args.p_run,
+            recordingId: args.p_recording,
+            replayed: false,
+            state: { claim: "running", prepare: "prepared", complete: "succeeded", fail: "failed" }[
+              args.p_phase
+            ],
+            ...(["prepare", "complete"].includes(args.p_phase) ? { prepared: args.p_data } : {}),
+          },
+          error: null,
+        };
+      }
       if (name === "learn_phone_settle_schedule") {
         writes.push({ table: name, op: "rpc", v: args });
         const metadata = writes.find((w) => w.table === "phone_sync_runs" && w.op === "insert").v
@@ -156,20 +178,25 @@ async function harness(
       let patch;
       let many = false;
       const result = () => {
-        if (table === "phone_sync_runs" && name === "phone-process-pipeline") {
+        if (
+          table === "phone_sync_runs" &&
+          ["phone-process-pipeline", "simwood-download-recording"].includes(name)
+        ) {
+          const provider = name === "phone-process-pipeline" ? "pipeline" : "simwood";
+          const syncType = name === "phone-process-pipeline" ? "pipeline" : "recording_download";
           if (op === "update" && ["success", "failed"].includes(patch?.status)) {
             assert.deepEqual(filters, [
               ["id", id(4)],
               ["tenant_id", tenant],
-              ["provider", "pipeline"],
-              ["sync_type", "pipeline"],
+              ["provider", provider],
+              ["sync_type", syncType],
               ["status", "running"],
             ]);
             pipelineTerminalRow = {
               id: id(4),
               tenant_id: tenant,
-              provider: "pipeline",
-              sync_type: "pipeline",
+              provider,
+              sync_type: syncType,
               ...patch,
             };
             if (pipelineCompletionFault === "conflict") pipelineTerminalRow.status = "paused";
@@ -281,8 +308,10 @@ async function harness(
       from: () => ({
         upload: async (...args) => {
           uploads.push(args);
+          storedAudio.set(args[0], args[1]);
           return { error: null };
         },
+        download: async (path) => ({ data: storedAudio.get(path) ?? null, error: null }),
       }),
     },
   };
@@ -332,9 +361,11 @@ async function harness(
       if (name === "simwood-test-connection")
         return Response.json({ id: providerAccount, name: "Synthetic company" });
       if (name === "simwood-download-recording")
-        return new Response(new Uint8Array([1, 2, 3]), {
-          headers: { "content-type": "audio/wav" },
-        });
+        return binaryResponse
+          ? binaryResponse()
+          : new Response(new Uint8Array([1, 2, 3]), {
+              headers: { "content-type": "audio/wav" },
+            });
       return Response.json(providerPage ? await providerPage(String(url)) : { items: [] });
     },
   });
@@ -1198,4 +1229,115 @@ test("pipeline failure distinguishes a confirmed failure from an uncertain saved
       fault === "not_saved" ? 0 : 1,
     );
   }
+});
+
+test("download handler rejects held ownership before provider access and force saves a separate verified version", async () => {
+  const blocked = await harness("simwood-download-recording", {
+    downloadAttemptResponse: () => ({
+      data: null,
+      error: { message: "phone_recording_processing_held" },
+    }),
+  });
+  const denied = await blocked.run({ recording_id: id(5) });
+  assert.equal(denied.status, 409);
+  assert.equal((await denied.json()).error.code, "phone_recording_processing_held");
+  assert.equal(blocked.requests.length, 0);
+  assert.equal(blocked.uploads.length, 0);
+  const forced = await harness("simwood-download-recording", { alreadyStored: true });
+  const response = await forced.run({ recording_id: id(5), force: true });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.success, true);
+  assert.notEqual(result.storage_path, "retained.wav");
+  assert.equal(forced.uploads[0][2].upsert, false);
+  const phases = forced.writes.filter((w) => w.table === "learn_phone_download_attempt");
+  assert.deepEqual(
+    phases.map((w) => w.v.p_phase),
+    ["claim", "prepare", "complete"],
+  );
+  assert.equal(phases[0].v.p_data.source.storagePath, "retained.wav");
+  assert.equal(phases[1].v.p_data.bytes, 3);
+  assert.equal(
+    forced.writes.filter((w) => w.table === "phone_recordings").length,
+    0,
+    "pointer only changes in fenced RPC",
+  );
+});
+test("cached download still requires confirmed run completion and never invokes the provider", async () => {
+  const h = await harness("simwood-download-recording", {
+    alreadyStored: true,
+    pipelineCompletionFault: "not_saved",
+  });
+  const response = await h.run({ recording_id: id(5) });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error.code, "phone_download_unconfirmed");
+  assert.equal(h.requests.length, 0);
+  assert.equal(h.uploads.length, 0);
+});
+
+test("oversized declared and streamed provider audio is cancelled without upload or publication", async () => {
+  for (const declared of [true, false]) {
+    let cancelled = false;
+    const chunk = new Uint8Array(1024 * 1024);
+    const h = await harness("simwood-download-recording", {
+      binaryResponse: () =>
+        new Response(
+          new ReadableStream({
+            pull(controller) {
+              controller.enqueue(chunk);
+            },
+            cancel() {
+              cancelled = true;
+            },
+          }),
+          { headers: declared ? { "content-length": String(64 * 1024 * 1024 + 1) } : {} },
+        ),
+    });
+    const r = await h.run({});
+    assert.equal(r.status, 502);
+    assert.equal((await r.json()).error.code, "audio_too_large");
+    assert.equal(cancelled, true);
+    assert.equal(h.uploads.length, 0);
+    assert.ok(
+      !h.writes.some(
+        (w) => w.table === "learn_phone_download_attempt" && w.v.p_phase === "complete",
+      ),
+    );
+  }
+});
+
+test("reconciliation uses the saved attempt and audio, without credentials, new runs or provider requests", async () => {
+  const path = `${tenant}/simwood/recordings/versions/${id(5)}/${id(8)}.wav`;
+  const prepared = {
+    storagePath: path,
+    bytes: 3,
+    sha256: "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+  };
+  const h = await harness("simwood-download-recording", {
+    credentials: false,
+    initialAudio: [[path, new Blob([new Uint8Array([1, 2, 3])])]],
+    downloadAttemptResponse: (a) => ({
+      error: null,
+      data: {
+        version: "learn-phone-download-attempt/1",
+        tenantId: tenant,
+        recordingId: id(5),
+        runId: id(8),
+        state: a.p_phase === "inspect" ? "needs_review" : "succeeded",
+        prepared,
+      },
+    }),
+  });
+  const r = await h.run({ resume_run_id: id(8) });
+  assert.equal(r.status, 200);
+  assert.equal((await r.json()).reconciled, true);
+  assert.equal(h.requests.length, 0);
+  assert.equal(h.uploads.length, 0);
+  assert.ok(!h.writes.some((w) => w.table === "phone_sync_runs"));
+  assert.deepEqual(
+    h.writes.filter((w) => w.table === "learn_phone_download_attempt").map((w) => w.v.p_phase),
+    ["inspect", "complete"],
+  );
+  for (const body of [{ resume_run_id: "invalid" }, { resume_run_id: id(8), force: true }])
+    assert.equal((await h.run(body)).status, 400);
 });

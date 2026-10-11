@@ -249,8 +249,46 @@ export async function simwoodGetBinary(
   }
 
   try {
-    const buf = await resp.arrayBuffer();
-    return { ok: true, bytes: new Uint8Array(buf), contentType: resp.headers.get("content-type") };
+    const maximum = 64 * 1024 * 1024;
+    if (Number(resp.headers.get("content-length")) > maximum) {
+      await resp.body?.cancel();
+      return {
+        ok: false,
+        code: "audio_too_large",
+        message: "Recording exceeds the download limit",
+        httpStatus: 422,
+      };
+    }
+    if (!resp.body) throw Error("missing_body");
+    const reader = resp.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > maximum) {
+          await reader.cancel();
+          return {
+            ok: false,
+            code: "audio_too_large",
+            message: "Recording exceeds the download limit",
+            httpStatus: 422,
+          };
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return { ok: true, bytes, contentType: resp.headers.get("content-type") };
   } catch {
     return {
       ok: false,
