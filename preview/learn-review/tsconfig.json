@@ -124,6 +124,12 @@
       ],
       "@/lib/learn-work-calendar-outbox": [
         "../../src/lib/learn-work-calendar-outbox.ts"
+      ],
+      "@/lib/learn-work-delays": [
+        "../../src/lib/learn-work-delays.ts"
+      ],
+      "@/lib/learn-work-delay-outbox": [
+        "../../src/lib/learn-work-delay-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,

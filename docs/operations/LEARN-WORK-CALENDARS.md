@@ -9,8 +9,8 @@ The existing desk-time function accepts explicit ownership, business-hour window
 and approved exclusions. It did not have governed company calendars behind those
 windows. This candidate supplies versioned calendar definitions and publication
 history. [Approved-delay evidence](LEARN-WORK-DELAYS.md) now has a separate local
-backend/API candidate; its owner screen, employee working-hours policies and the
-finished working-time measurement adapter remain outstanding.
+backend/API and browser-verified owner review candidate. Employee working-hours
+policies and the finished working-time measurement adapter remain outstanding.
 
 ## Calendar definition and publication
 
@@ -145,13 +145,10 @@ npx --no-install tsc --noEmit
 
 ## Required integration
 
-1. Connect the implemented delay approval/reversal ledger to an owner review screen
-   and verify its browser recovery. A waiting or blocked work state must not
-   automatically become an approved exclusion.
-2. Connect calendar snapshots, selected work states and approved exclusions to the
+1. Connect calendar snapshots, selected work states and approved exclusions to the
    resumable collector using a distinct working-time contract. Preserve existing
    elapsed ownership/handoff meanings, freeze all inputs, retain full proof and
    withhold unknown history. Keep collection separate from human score review.
-3. Verify the finished scoring adapter and its browser flows, prepare an additive pinned
+2. Verify the finished scoring adapter and its browser flows, prepare an additive pinned
    TEST release against 049, preserve existing datasets/access, and perform hosted
    owner acceptance before any production promotion.

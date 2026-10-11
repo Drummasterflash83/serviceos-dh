@@ -1,15 +1,19 @@
 # Existing TEST environment: verified release gaps
 
-## Approved delays — local backend/API/recovery candidate, not deployed
+## Approved delays — local owner UI/recovery candidate, not deployed
 
 Explicit owner/admin approvals retain a completed work interval, selected captured
 history, reason and actor. Reversals append to that history; waiting states alone
 exclude nothing. Exact request recovery and cancellation prevent duplicate or late
 changes. Fixed-head review pagination and per-item interval unions are verified,
 including unchanged earlier snapshots after reversal. Offline SQL, concurrent
-approval/reversal/cancellation tests, actual SQL-to-client/scorer parsing and all
-56 focused delay/calendar/scorer tests pass. The delay owner screen, browser
-acceptance and working-time collector are still to build. No real approvals or
+approval/reversal/cancellation tests and actual SQL-to-client/scorer parsing pass.
+Owners can select a captured whole/shorter interval, review retained proof and
+reverse an approval with a reason. Browser approval, reversal, reload/recovery,
+cancellation, failed-page retry, later-page reversal and viewer checks pass locally.
+The actual shorter client descriptor also passes a SQL approval/proof round trip.
+All 72 focused delay/calendar/history/scorer tests, both typechecks and builds pass.
+The working-time collector and hosted acceptance remain outstanding. No real approvals or
 source/score changes were made; TEST remains release 049.
 [Contract, evidence and remaining integration](LEARN-WORK-DELAYS.md).
 
@@ -22,8 +26,8 @@ cancelling interrupted saves/publications; retained server cancellations prevent
 late writes. Offline SQL/DST/authority/preservation checks, concurrent save/cancel
 and publish/cancel races, actual SQL-to-client parsing, 35 focused client/scorer
 tests, app/preview typechecks/builds and synthetic browser recovery/preview checks
-pass. Approved-delay backend evidence is now implemented locally; its owner review
-screen and the working-time measurement adapter remain to build. TEST remains on 049; hosted owner acceptance is outstanding. No Drummonds
+pass. Approved-delay evidence and its owner review screen are now implemented
+locally; the working-time measurement adapter remains to build. TEST remains on 049; hosted owner acceptance is outstanding. No Drummonds
 hours, scores, source records or production settings have been changed.
 [Contract, verification and integration work](LEARN-WORK-CALENDARS.md).
 

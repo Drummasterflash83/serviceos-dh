@@ -234,13 +234,15 @@ export function parseDelayPage(
     throw Error("Delay history contains a gap or changed ordering.");
   return { ...d, entries };
 }
-function failure(error: any) {
+function failure(error: any, reading = false) {
   return Error(
     error?.code === "42501"
       ? "Only a current company owner or admin outside preview can review delays."
       : error?.code === "PT409"
         ? "Delay review history changed or this request already ended. Check the saved request before making another change."
-        : "Delay evidence or outcome could not be confirmed. Keep the original request and check again.",
+        : reading
+          ? "Delay records could not be read. Retry when the connection is available."
+          : "The delay request outcome could not be confirmed. Keep the original request and check again.",
   );
 }
 export async function readDelayPage(
@@ -263,7 +265,7 @@ export async function readDelayPage(
     p_after: after,
     p_through: through,
   });
-  if (error) throw failure(error);
+  if (error) throw failure(error, true);
   return parseDelayPage(data, tenantId, objectId, after, through);
 }
 export async function recordWorkDelay(
@@ -333,7 +335,10 @@ export async function resolveWorkDelay(
 }
 /** Validate retained capture at its original microsecond precision. The general
  * timeline display rounds to milliseconds and cannot prove sub-millisecond gaps. */
-function verifyDelayCapture(capture: any, approval: DelayEntry) {
+function verifyDelayCapture(
+  capture: any,
+  approval: Pick<DelayEntry, "tenantId" | "objectId" | "period" | "evidenceIds">,
+) {
   const object = (v: any) => !!v && typeof v === "object" && !Array.isArray(v);
   const owner = (v: any) =>
     v === null || (object(v) && bounded(v.kind, 500) && bounded(v.ref, 500));
@@ -424,7 +429,7 @@ export async function readDelayEvidence(
     p_object: objectId,
     p_approval: approvalId,
   });
-  if (error) throw failure(error);
+  if (error) throw failure(error, true);
   if (
     !d ||
     d.contract !== "work-delay-evidence@1" ||
@@ -511,4 +516,167 @@ export function parseDelaySnapshot(
   if (JSON.stringify(d.windows.map(period)) !== JSON.stringify(windows))
     throw Error("Delay windows differ from the union of their retained approvals.");
   return { ...d, observedAt: at, period: expected, approvals, windows };
+}
+
+export type DelayCandidate = {
+  period: TimeWindow;
+  state: string;
+  responsible: { kind: string; ref: string } | null;
+  waitingOn: { kind: string; ref: string } | null;
+  /** Opening state record, followed by the closing boundary record if captured. */
+  evidenceIds: string[];
+};
+export type DelayCandidates = {
+  period: TimeWindow;
+  observedAt: string;
+  coverageStart: string | null;
+  intervals: DelayCandidate[];
+};
+/** Read original capture timestamps for approval selection. Display-rounded
+ * timeline boundaries must not be reused as exact evidence boundaries. */
+export async function readDelayCandidates(
+  db: DelayClient,
+  tenantId: string,
+  objectId: string,
+  requested: TimeWindow,
+): Promise<DelayCandidates> {
+  if (!delayUuid(tenantId) || !delayUuid(objectId)) throw Error("Company and work item required.");
+  const window = period(requested);
+  const { data: d, error } = await db.rpc("learn_work_history_read", {
+    p_tenant: tenantId,
+    p_object: objectId,
+    p_start: window.start,
+    p_end: window.end,
+  });
+  if (error) throw failure(error, true);
+  if (
+    !d ||
+    d.contract !== "work-capture@1" ||
+    d.tenantId !== tenantId ||
+    d.objectId !== objectId ||
+    JSON.stringify(period(d.period)) !== JSON.stringify(window) ||
+    instant(d.observedAt) < instant(window.end) ||
+    !Number.isInteger(d.count) ||
+    d.count < 0 ||
+    d.count > 1000 ||
+    !Array.isArray(d.events) ||
+    d.count !== d.events.length
+  )
+    throw Error("Captured delay intervals could not be verified.");
+  const observedAt = delayStamp(d.observedAt),
+    coverageStart = d.coverageStart === null ? null : delayStamp(d.coverageStart);
+  if (coverageStart === null) {
+    if (d.sourceThrough !== null || d.count !== 0)
+      throw Error("Missing capture has inconsistent evidence.");
+    return { period: window, observedAt, coverageStart, intervals: [] };
+  }
+  if (
+    instant(d.sourceThrough) < instant(window.end) ||
+    instant(d.sourceThrough) > instant(observedAt) ||
+    instant(coverageStart) > instant(d.sourceThrough)
+  )
+    throw Error("Captured delay coverage could not be verified.");
+  if (instant(coverageStart) >= instant(window.end)) {
+    // The reader includes an event exactly at the exclusive end boundary.
+    if (d.events.some((e: any) => instant(e.occurredAt) !== instant(window.end)))
+      throw Error("Unexpected history before capture began.");
+    return { period: window, observedAt, coverageStart, intervals: [] };
+  }
+  const known = {
+    start: instant(coverageStart) > instant(window.start) ? coverageStart : window.start,
+    end: window.end,
+  };
+  verifyDelayCapture(d, { tenantId, objectId, period: known, evidenceIds: [] });
+  const intervals: DelayCandidate[] = [];
+  d.events.forEach((event: any, i: number) => {
+    const next = d.events[i + 1],
+      at = delayStamp(event.occurredAt),
+      until = next ? delayStamp(next.occurredAt) : window.end;
+    const start = instant(at) < instant(known.start) ? known.start : at,
+      end = instant(until) > instant(window.end) ? window.end : until;
+    if (instant(end) > instant(start))
+      intervals.push({
+        period: { start, end },
+        state: event.after.status,
+        responsible: event.after.responsible_ref,
+        waitingOn: event.after.waiting_on_ref,
+        evidenceIds: next ? [event.id, next.id] : [event.id],
+      });
+  });
+  return { period: window, observedAt, coverageStart, intervals };
+}
+export function delayApprovalPayload(
+  objectId: string,
+  expectedRevision: number,
+  candidate: DelayCandidate,
+  selected: TimeWindow | null,
+  label: string,
+  reason: string,
+): DelayPayload {
+  const window = period(selected ?? candidate.period),
+    source = period(candidate.period);
+  if (instant(window.start) < instant(source.start) || instant(window.end) > instant(source.end))
+    throw Error("Keep the delay within the selected captured interval.");
+  return normalizeDelayPayload({
+    objectId,
+    expectedRevision,
+    decision: "approve",
+    approvalId: null,
+    period: window,
+    label,
+    // A shorter end excludes the original closing event from its captured proof.
+    // The opening state remains the predecessor even when the start moves forward.
+    evidenceIds:
+      instant(window.end) < instant(source.end)
+        ? candidate.evidenceIds.slice(0, 1)
+        : candidate.evidenceIds,
+    reason,
+  });
+}
+export type DelayHistory = Omit<DelayPage, "after" | "contract">;
+export function mergeDelayHistory(previous: DelayHistory | null, page: DelayPage): DelayHistory {
+  if (
+    page.after !== (previous?.next ?? 0) ||
+    (previous &&
+      (page.tenantId !== previous.tenantId ||
+        page.objectId !== previous.objectId ||
+        page.through !== previous.through ||
+        !previous.hasMore ||
+        previous.next !== previous.entries.length))
+  )
+    throw Error("Delay history page no longer belongs to this review.");
+  const entries = [...(previous?.entries ?? []), ...page.entries];
+  const approvals = new Map<string, DelayEntry>(),
+    reversed = new Set<string>(),
+    ids = new Set<string>();
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    if (
+      ids.has(entry.id) ||
+      entry.revision !== i + 1 ||
+      (i > 0 && instant(entry.recordedAt) <= instant(entries[i - 1].recordedAt))
+    )
+      throw Error("Delay review has a duplicate, gap or changed order.");
+    ids.add(entry.id);
+    if (entry.decision === "approve") approvals.set(entry.id, entry);
+    else {
+      const original = approvals.get(entry.approvalId!);
+      if (
+        !original ||
+        reversed.has(original.id) ||
+        entry.label !== original.label ||
+        JSON.stringify(entry.period) !== JSON.stringify(original.period)
+      )
+        throw Error("A reversal differs from its retained approval.");
+      reversed.add(original.id);
+    }
+  }
+  return {
+    tenantId: page.tenantId,
+    objectId: page.objectId,
+    through: page.through,
+    next: page.next,
+    hasMore: page.hasMore,
+    entries,
+  };
 }

@@ -1,8 +1,9 @@
 # Evidenced delay approvals and reversals
 
-Local backend/API and durable request-recovery candidate, 11 October 2026.
-**Not deployed, not yet exposed in an owner review screen, and not connected to
-working-time card collection.** TEST remains release 049; production and real
+Local owner review, backend/API and durable request-recovery candidate, 11 October 2026.
+**Not deployed and not connected to working-time card collection.**
+The owner screen is verified in the local synthetic browser preview.
+TEST remains release 049; production and real
 communications/capture are unchanged. This adds the governed exclusion evidence
 needed alongside [company calendars](LEARN-WORK-CALENDARS.md).
 
@@ -91,6 +92,31 @@ source IDs per approval, 200-character label, 1,000-character reason, 32 KiB req
 snapshot. Over-limit snapshots fail explicitly, rather than omit exclusions or
 claim a partial set is complete.
 
+## Owner review screen
+
+Each card finding's **Ownership & time on this work** panel includes **Review
+approved delays on this work**, available to actual company owners/admins. It
+reads original capture timestamps and offers only known intervals. An owner can
+select the whole interval or a shorter interval, enter a label and explain the
+evidence reviewed. Shortening the end removes the later closing event from the
+selected source IDs; the opening record still establishes the state. Current
+directory names help identify owners, while captured references remain available.
+
+Saved approvals and reversals use fixed-head server pages of 100, displayed in
+groups of 20. New changes and active/reversed status require the complete current
+history, including reversals on later pages. Page-read failure preserves earlier
+decisions and retries the same cursor. Reversal requires a separate reason and
+keeps the approval and its original proof. The proof viewer pages all retained
+source events, including exact timestamps, sequence numbers and full recorded
+fields.
+
+Approval/reversal recovery persists the exact request before contacting the server.
+Reload exposes check, retry and cancel controls. A cancellation after a committed
+decision reports that decision; it cannot erase it. Capture-read failure does not
+remove recovery or existing review history. Role/tenant/actor/work changes unmount
+the review and stop subsequent request steps. Waiting alone is never an exclusion,
+and the screen explicitly says working-time collection is still being connected.
+
 ## Verified locally
 
 - Offline PostgreSQL 17 schema-only clone, synthetic fixtures, network isolation:
@@ -113,9 +139,22 @@ claim a partial set is complete.
 - Actual SQL pages, proof, resolution and snapshots pass the production client
   parsers. Those exclusion windows feed the existing desk-time function: overlapping
   approvals exclude the interval once; the later reversed snapshot excludes none.
-- Twenty-one delay API/outbox tests pass; combined with calendar and scorer tests,
-  all 56 focused tests pass. Application TypeScript passes. This is backend/client
-  verification, not a claim of browser or hosted acceptance for delay review.
+- Twenty-seven delay API/outbox tests pass; with calendar, work-history and scorer
+  tests, all 72 focused tests pass. Application/preview TypeScript and both builds
+  pass, including the 47 required prebuild checks.
+- The offline SQL harness was rerun against the UI helpers. Actual SQL capture
+  supplies review choices; the client-generated shorter approval is submitted to
+  PostgreSQL in a rollback transaction. Its retained proof excludes the closing
+  event outside that shorter window. Existing concurrency, access and preservation
+  checks also pass.
+- Local browser: whole/shorter approval, reversal with retained proof, lost approval
+  reply and reload/retry without duplication, lost reversal reply and reload/cancel
+  returning the recorded reversal, unrecorded check/cancel, 106-decision history
+  with a page-read failure and a reversal beyond page one, proof-read retry,
+  unavailable capture, current owner names and viewer restriction pass. No browser
+  console errors were observed. These are synthetic checks, not hosted acceptance.
+
+[Owner UI verification record](evidence/learn-work-delay-owner-ui-2026-10-11.json).
 
 ```sh
 python3 scripts/verify/learn-work-delays.py
@@ -125,12 +164,8 @@ npx --no-install tsc --noEmit
 
 ## Remaining work
 
-1. Add the owner review screen beside work history, with exact interval/source
-   selection, readable approval/reversal history and complete retained proof.
-   Integrate durable recovery without allowing a changed draft to replace an
-   uncertain request. Verify real browser save/reload/reversal/cancellation flows.
-2. Connect frozen calendar and delay snapshots to a distinct resumable working-time
+1. Connect frozen calendar and delay snapshots to a distinct resumable working-time
    collection contract. Preserve the meanings of existing elapsed-residence and
    handoff observations, and withhold incomplete ownership/calendar history.
-3. Prepare a paired, pinned additive TEST release with data/access preservation,
+2. Prepare a paired, pinned additive TEST release with data/access preservation,
    hosted owner acceptance and separately reviewed production promotion.

@@ -6,6 +6,9 @@ import {
   parseDelaySnapshot,
   readDelayEvidence,
   resolveWorkDelay,
+  readDelayCandidates,
+  delayApprovalPayload,
+  mergeDelayHistory,
 } from "../../src/lib/learn-work-delays.ts";
 import { measureDeskTime } from "../../src/lib/learn-scorecards.ts";
 const d = JSON.parse(
@@ -42,6 +45,35 @@ const evidence = await readDelayEvidence(
 );
 assert.equal(evidence.capture.events.length, 2);
 assert.equal(evidence.approval.period.start, request.period.start);
+const review = mergeDelayHistory(null, page);
+assert.equal(review.hasMore, false);
+const choices = await readDelayCandidates(
+  { rpc: async () => ({ data: d.evidence.capture, error: null }) },
+  tenant,
+  object,
+  request.period,
+);
+assert.equal(choices.intervals.length, 2);
+const candidate = choices.intervals[0];
+assert.equal(candidate.period.start, request.period.start);
+assert.equal(candidate.evidenceIds.length, 2);
+const selectedApproval = delayApprovalPayload(
+  object,
+  page.through,
+  candidate,
+  {
+    start: candidate.period.start,
+    end: new Date(
+      (Date.parse(candidate.period.start) + Date.parse(candidate.period.end)) / 2,
+    ).toISOString(),
+  },
+  "Shorter reviewed delay",
+  "Synthetic exact client-selected interval",
+);
+assert.equal(selectedApproval.evidenceIds.length, 1);
+// Returned only to the isolated harness, which submits the actual UI descriptor
+// to PostgreSQL inside a rollback transaction and checks its retained proof.
+console.log(JSON.stringify({ selectedApproval }));
 const resolved = await resolveWorkDelay(
   { rpc: async () => ({ data: d.resolution, error: null }) },
   tenant,

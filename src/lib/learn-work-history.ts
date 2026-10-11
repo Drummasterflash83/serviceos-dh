@@ -262,10 +262,22 @@ export async function loadWorkOwnerLabels(
   db: { from(table: string): any },
   timeline: WorkTimeline,
 ): Promise<Record<string, string>> {
-  const refs = timeline.intervals
-    .flatMap((i) => [i.responsible, i.accountable, i.waitingOn])
-    .concat(timeline.handoffs.flatMap((h) => [h.from, h.to]))
-    .filter((r): r is WorkOwnerRef => !!r && uuid(r.ref));
+  return loadWorkReferenceLabels(
+    db,
+    timeline.tenantId,
+    timeline.intervals
+      .flatMap((i) => [i.responsible, i.accountable, i.waitingOn])
+      .concat(timeline.handoffs.flatMap((h) => [h.from, h.to])),
+  );
+}
+/** Current directory labels for captured references; never historical scoring identities. */
+export async function loadWorkReferenceLabels(
+  db: { from(table: string): any },
+  tenantId: string,
+  references: (WorkOwnerRef | null)[],
+): Promise<Record<string, string>> {
+  if (!uuid(tenantId)) throw Error("Company scope is required for owner labels");
+  const refs = references.filter((r): r is WorkOwnerRef => !!r && uuid(r.ref));
   const labels: Record<string, string> = {};
   for (const [kind, column] of [
     ["member", "id"],
@@ -277,7 +289,7 @@ export async function loadWorkOwnerLabels(
     const { data, error, count } = await db
       .from("team_members")
       .select("id,tenant_id,profile_id,display_name", { count: "exact" })
-      .eq("tenant_id", timeline.tenantId)
+      .eq("tenant_id", tenantId)
       .in(column, ids)
       .limit(501);
     if (
@@ -288,8 +300,7 @@ export async function loadWorkOwnerLabels(
       count > 500 ||
       count !== data.length ||
       data.some(
-        (r: any) =>
-          !r || r.tenant_id !== timeline.tenantId || !uuid(r.id) || !ids.includes(r[column]),
+        (r: any) => !r || r.tenant_id !== tenantId || !uuid(r.id) || !ids.includes(r[column]),
       )
     )
       throw Error("Current owner labels could not be verified");

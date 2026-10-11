@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { LearnWorkDelays } from "./LearnWorkDelays";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   loadWorkTimeline,
@@ -14,10 +15,12 @@ const date = (s: string) =>
   new Date(s).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" });
 export function LearnWorkHistory({
   tenantId,
+  actorId,
   objectId,
   canReview,
 }: {
   tenantId: string;
+  actorId: string;
   objectId: string;
   canReview: boolean;
 }) {
@@ -27,14 +30,27 @@ export function LearnWorkHistory({
       <summary>Ownership & time on this work</summary>
       {open &&
         (canReview ? (
-          <HistoryQuery key={`${tenantId}:${objectId}`} tenantId={tenantId} objectId={objectId} />
+          <HistoryQuery
+            key={`${tenantId}:${actorId}:${objectId}`}
+            tenantId={tenantId}
+            actorId={actorId}
+            objectId={objectId}
+          />
         ) : (
           <p>Work history review is available to your company’s owner and admins.</p>
         ))}
     </details>
   );
 }
-function HistoryQuery({ tenantId, objectId }: { tenantId: string; objectId: string }) {
+function HistoryQuery({
+  tenantId,
+  actorId,
+  objectId,
+}: {
+  tenantId: string;
+  actorId: string;
+  objectId: string;
+}) {
   const today = new Date().toISOString().slice(0, 10);
   const [from, setFrom] = useState(() =>
     new Date(Date.parse(today) - 7 * 86400000).toISOString().slice(0, 10),
@@ -62,11 +78,21 @@ function HistoryQuery({ tenantId, objectId }: { tenantId: string; objectId: stri
       >
         <label>
           Start date (UTC)
-          <input type="date" value={from} max={until} onChange={(e) => setFrom(e.target.value)} />
+          <input
+            type="date"
+            value={from}
+            max={until}
+            onInput={(e) => setFrom(e.currentTarget.value)}
+          />
         </label>
         <label>
           End date, not included (UTC)
-          <input type="date" value={until} max={today} onChange={(e) => setUntil(e.target.value)} />
+          <input
+            type="date"
+            value={until}
+            max={today}
+            onInput={(e) => setUntil(e.currentTarget.value)}
+          />
         </label>
         <button type="submit" disabled={!valid}>
           Read work history
@@ -77,6 +103,12 @@ function HistoryQuery({ tenantId, objectId }: { tenantId: string; objectId: stri
           Choose a completed period of up to 366 days, with the end after the start.
         </p>
       )}
+      <LearnWorkDelays
+        tenantId={tenantId}
+        actorId={actorId}
+        objectId={objectId}
+        period={{ start: query.from + "T00:00:00Z", end: query.until + "T00:00:00Z" }}
+      />
       <HistoryResult
         key={`${query.from}:${query.until}:${query.revision}`}
         scope={{

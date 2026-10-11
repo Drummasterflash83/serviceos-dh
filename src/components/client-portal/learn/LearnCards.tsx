@@ -442,7 +442,12 @@ function CardDetail({
                     </dd>
                   </div>
                 </dl>
-                <LearnWorkHistory tenantId={tenantId} objectId={f.id} canReview={canReview} />
+                <LearnWorkHistory
+                  tenantId={tenantId}
+                  actorId={actorId}
+                  objectId={f.id}
+                  canReview={canReview}
+                />
                 <div className="lc-evidence-links">
                   {f.evidenceIds.map((ref, i) => (
                     <a key={ref} href={`#learn-evidence-${ref}`}>

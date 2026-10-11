@@ -188,7 +188,20 @@ try:
         parsed=subprocess.run(['node',str(ROOT/'scripts/verify/learn-work-delays-readback.mjs')],input=data,capture_output=True)
         if parsed.returncode:
             print(parsed.stderr.decode()[-1600:]);raise RuntimeError('Delay SQL-to-client parsing failed')
-        print(parsed.stdout.decode().strip())
+        lines=parsed.stdout.decode().splitlines()
+        selected=json.loads(next(line for line in lines if line.startswith('{')))['selectedApproval']
+        print('\n'.join(line for line in lines if not line.startswith('{')))
+        selected_json=json.dumps(selected).replace("'", "''")
+        apply(f"""begin;
+          set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';set role authenticated;
+          do $$declare p jsonb:='{selected_json}'::jsonb;r jsonb;e jsonb;begin
+            r:=learn_work_delay_record('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000620',p);
+            assert (r->'entry'->>'revision')::int=(p->>'expectedRevision')::int+1;
+            e:=learn_work_delay_evidence('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001','de1a0000-0000-4000-8000-000000000620');
+            assert e->'capture'->>'count'='1','Shorter approval must not capture its excluded closing event';
+            assert e->'approval'->'evidenceIds'=p->'evidenceIds';
+            assert (e->'approval'->'period'->>'end')::timestamptz=(p->'period'->>'end')::timestamptz;
+          end $$;rollback;""".encode(), 'Actual browser selection descriptor through SQL approval and retained shorter proof')
 
         delay_tenant='aaa40000-0000-0000-0000-000000000004'
         delay_object='de1a0000-0000-4000-8000-000000000001'

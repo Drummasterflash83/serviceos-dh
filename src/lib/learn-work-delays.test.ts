@@ -10,6 +10,9 @@ import {
   recordWorkDelay,
   resolveWorkDelay,
   readDelayEvidence,
+  readDelayCandidates,
+  delayApprovalPayload,
+  mergeDelayHistory,
   type DelayPayload,
 } from "./learn-work-delays.ts";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -458,5 +461,262 @@ test("sub-millisecond delay proof preserves precise boundaries and refuses a one
       object,
       approval,
     ),
+  );
+});
+
+const capturedState = {
+  status: "ready",
+  version: 1,
+  responsible_ref: null,
+  accountable_ref: null,
+  waiting_on_ref: null,
+  attributes: {},
+};
+const capturedWaiting = { ...capturedState, status: "waiting", version: 2 };
+const candidateCapture = {
+  contract: "work-capture@1",
+  tenantId: tenant,
+  objectId: object,
+  period,
+  observedAt: "2026-10-05T11:00:00Z",
+  sourceThrough: "2026-10-05T11:00:00Z",
+  coverageStart: "2026-10-05T09:00:00.000001Z",
+  count: 2,
+  events: [
+    {
+      id: source,
+      tenantId: tenant,
+      objectId: object,
+      sequence: "9007199254740993",
+      kind: "baseline",
+      occurredAt: "2026-10-05T09:00:00.000001Z",
+      before: capturedState,
+      after: capturedState,
+    },
+    {
+      id: id(9),
+      tenantId: tenant,
+      objectId: object,
+      sequence: "9007199254740994",
+      kind: "update",
+      occurredAt: "2026-10-05T09:30:00.000002Z",
+      before: capturedState,
+      after: capturedWaiting,
+    },
+  ],
+};
+const candidatesFrom = (data: any) =>
+  readDelayCandidates({ rpc: async () => ({ data, error: null }) }, tenant, object, period);
+test("delay selection keeps precise captured boundaries and does not approve unknown history", async () => {
+  const result = await candidatesFrom(candidateCapture);
+  assert.equal(result.coverageStart, "2026-10-05T09:00:00.000001Z");
+  assert.equal(result.intervals.length, 2);
+  assert.deepEqual(
+    result.intervals.map((v) => v.period),
+    [
+      { start: "2026-10-05T09:00:00.000001Z", end: "2026-10-05T09:30:00.000002Z" },
+      { start: "2026-10-05T09:30:00.000002Z", end: "2026-10-05T10:00:00.000000Z" },
+    ],
+  );
+  assert.deepEqual(result.intervals[0].evidenceIds, [source, id(9)]);
+  assert.equal(result.intervals[1].state, "waiting");
+  assert.throws(
+    () =>
+      delayApprovalPayload(
+        object,
+        0,
+        result.intervals[0],
+        { start: period.start, end: "2026-10-05T09:20:00Z" },
+        "Delay",
+        "Checked",
+      ),
+    /within/,
+  );
+  const empty = {
+    ...candidateCapture,
+    coverageStart: null,
+    sourceThrough: null,
+    count: 0,
+    events: [],
+  };
+  assert.deepEqual((await candidatesFrom(empty)).intervals, []);
+  await assert.rejects(candidatesFrom({ ...empty, sourceThrough: candidateCapture.sourceThrough }));
+});
+test("shortened approval uses only records available in its exact selected capture", async () => {
+  const candidate = (await candidatesFrom(candidateCapture)).intervals[0];
+  const shorter = delayApprovalPayload(
+    object,
+    2,
+    candidate,
+    { start: "2026-10-05T09:05:00Z", end: "2026-10-05T09:20:00Z" },
+    "Parts",
+    "Checked receipt",
+  );
+  assert.deepEqual(shorter.evidenceIds, [source]);
+  const full = delayApprovalPayload(object, 2, candidate, null, "Parts", "Checked receipt");
+  assert.deepEqual(full.evidenceIds, [source, id(9)]);
+  const shifted = delayApprovalPayload(
+    object,
+    2,
+    candidate,
+    { start: "2026-10-05T09:05:00Z", end: candidate.period.end },
+    "Parts",
+    "Checked receipt",
+  );
+  assert.deepEqual(shifted.evidenceIds, [source, id(9)]);
+  assert.throws(() =>
+    delayApprovalPayload(
+      object,
+      2,
+      candidate,
+      { start: candidate.period.start, end: "2026-10-05T09:30:00.000003Z" },
+      "Parts",
+      "Checked",
+    ),
+  );
+  assert.throws(() =>
+    delayApprovalPayload(
+      object,
+      2,
+      candidate,
+      { start: candidate.period.end, end: candidate.period.end },
+      "Parts",
+      "Checked",
+    ),
+  );
+});
+test("selection clips predecessor states and preserves same-time transition ordering", async () => {
+  const first = { ...candidateCapture.events[0], occurredAt: "2026-10-05T08:00:00Z" };
+  const intermediate = { ...capturedState, version: 2 };
+  const result = await candidatesFrom({
+    ...candidateCapture,
+    coverageStart: first.occurredAt,
+    count: 3,
+    events: [
+      first,
+      { ...candidateCapture.events[1], occurredAt: period.start, after: intermediate },
+      {
+        ...candidateCapture.events[1],
+        id: id(10),
+        sequence: "9007199254740995",
+        occurredAt: period.start,
+        before: intermediate,
+        after: { ...capturedWaiting, version: 3 },
+      },
+    ],
+  });
+  assert.equal(result.intervals.length, 1);
+  assert.equal(result.intervals[0].state, "waiting");
+  assert.equal(result.intervals[0].period.start, delayStamp(period.start));
+  assert.deepEqual(result.intervals[0].evidenceIds, [id(10)]);
+});
+test("invalid capture, unavailable source and disconnected history cannot become review choices", async () => {
+  for (const patch of [
+    { tenantId: id(99) },
+    { count: 1 },
+    { sourceThrough: period.start },
+    { observedAt: period.start },
+    { coverageStart: "2026-10-05T09:00:00.000002Z" },
+    {
+      events: [
+        candidateCapture.events[0],
+        { ...candidateCapture.events[1], before: capturedWaiting },
+      ],
+    },
+    { events: [candidateCapture.events[0], { ...candidateCapture.events[1], id: source }] },
+    {
+      events: [
+        candidateCapture.events[0],
+        { ...candidateCapture.events[1], sequence: "9007199254740992" },
+      ],
+    },
+  ])
+    await assert.rejects(candidatesFrom({ ...candidateCapture, ...patch }));
+  await assert.rejects(
+    readDelayCandidates(
+      { rpc: async () => ({ data: null, error: { code: "42501" } }) },
+      tenant,
+      object,
+      period,
+    ),
+  );
+  const boundary = { ...candidateCapture.events[0], occurredAt: period.end };
+  assert.deepEqual(
+    (
+      await candidatesFrom({
+        ...candidateCapture,
+        count: 1,
+        coverageStart: period.end,
+        events: [boundary],
+      })
+    ).intervals,
+    [],
+  );
+});
+test("complete fixed-head review joins a reversal on the second page without hiding the original approval", () => {
+  const rows = Array.from({ length: 100 }, (_, i) => ({
+    ...entry,
+    id: id(100 + i),
+    revision: i + 1,
+    recordedAt: new Date(Date.parse(entry.recordedAt) + i + 1).toISOString(),
+  }));
+  const raw = {
+    contract: "work-delay-page@1",
+    tenantId: tenant,
+    objectId: object,
+    after: 0,
+    through: 101,
+    next: 100,
+    hasMore: true,
+    entries: rows,
+  };
+  const first = mergeDelayHistory(null, parseDelayPage(raw, tenant, object, 0, null));
+  assert.equal(first.hasMore, true);
+  const reversal = { ...reversed, revision: 101, approvalId: rows[0].id };
+  const last = parseDelayPage(
+    { ...raw, after: 100, next: 101, hasMore: false, entries: [reversal] },
+    tenant,
+    object,
+    100,
+    101,
+  );
+  const full = mergeDelayHistory(first, last);
+  assert.equal(full.hasMore, false);
+  assert.equal(full.entries.length, 101);
+  assert.equal(full.entries.at(-1)?.approvalId, full.entries[0].id);
+  for (const patch of [
+    { id: rows[0].id },
+    { revision: 102 },
+    { recordedAt: rows[99].recordedAt },
+    { approvalId: id(999) },
+    { label: "Changed label" },
+    { period: { ...period, start: "2026-10-05T09:05:00Z" } },
+  ])
+    assert.throws(() =>
+      mergeDelayHistory(first, { ...last, entries: [{ ...last.entries[0], ...patch }] }),
+    );
+  for (const patch of [{ after: 99 }, { through: 102 }, { tenantId: id(9) }, { objectId: id(9) }])
+    assert.throws(() => mergeDelayHistory(first, { ...last, ...patch }));
+  assert.throws(() => mergeDelayHistory(full, last));
+  assert.equal(first.entries.length, 100, "failed continuation leaves retained first page intact");
+});
+test("review history rejects repeated reversal even when every individual page entry is valid", () => {
+  const raw = {
+    contract: "work-delay-page@1",
+    tenantId: tenant,
+    objectId: object,
+    after: 0,
+    through: 3,
+    next: 3,
+    hasMore: false,
+    entries: [
+      entry,
+      reversed,
+      { ...reversed, id: id(8), revision: 3, recordedAt: "2026-10-05T12:00:00Z" },
+    ],
+  };
+  assert.throws(
+    () => mergeDelayHistory(null, parseDelayPage(raw, tenant, object, 0, null)),
+    /reversal/,
   );
 });

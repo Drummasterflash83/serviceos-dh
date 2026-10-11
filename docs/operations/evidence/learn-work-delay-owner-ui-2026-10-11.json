@@ -1,0 +1,60 @@
+{
+  "version": "learn-work-delay-owner-ui/1",
+  "observedAt": "2026-10-11T00:55:16.325738+00:00",
+  "scope": "Local synthetic browser and isolated PostgreSQL schema-only clone",
+  "sourceSha256": {
+    "src/components/client-portal/learn/LearnWorkDelays.tsx": "7b119ece49e29ca846d8a875e5585ecca17333ca17f0feefd6b5e4a3b32eb7dc",
+    "src/lib/learn-work-delays.ts": "141d45c4219090fffdfbf3a1639d997dc4003aabe64c3a54111d67805ddbc15d",
+    "src/lib/learn-work-history.ts": "d14284a3594865ea9e908fb04eefc33845a23e0d170ae5083ef85ee21dc15d73",
+    "scripts/verify/learn-work-delays-readback.mjs": "5fefd41290541a389e16893fa96b78f936a758a9a7feabe072b58535f1add1fd",
+    "scripts/verify/learn-work-calendars.py": "2b4223cbc07628aeb50dbed9ecdf30ea5900f1d536122c903ad36fa13577ce41"
+  },
+  "ownerUi": true,
+  "deployed": false,
+  "hostedReleaseUnchanged": "049",
+  "hostedOwnerAcceptance": false,
+  "collectionAdapter": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "verification": {
+    "focusedTests": {
+      "passed": 72,
+      "failed": 0,
+      "suites": [
+        "delay API",
+        "delay recovery",
+        "work history",
+        "scorecards",
+        "calendars",
+        "calendar recovery"
+      ]
+    },
+    "appTypecheck": "passed",
+    "previewTypecheck": "passed",
+    "appBuild": "passed",
+    "previewBuild": "passed",
+    "prebuildTests": 47,
+    "offlineSql": "passed, including existing calendar/resumable/delay concurrency, authority and source/measurement preservation",
+    "actualSqlSelection": "SQL capture parsed into exact review choices; generated shorter UI descriptor recorded in rollback transaction; retained proof excludes later boundary",
+    "browser": {
+      "shorterApproval": "one-hour interval retained with opening source only",
+      "reversal": "reason retained, approval marked reversed, original proof still readable",
+      "lostApprovalReply": "same request after reload/retry; one retained approval",
+      "lostReversalReply": "reload/cancel reports recorded reversal; original decision retained",
+      "unrecordedRequest": "check reports pending; cancel confirmed with zero approvals",
+      "fixedHeadPaging": "100/106 decisions prevents active status and changes; failed page preserves prior rows; retry loads reversal106; six display pages expose all entries",
+      "proofRetry": "first read failed, retry displayed retained source events",
+      "sourceUnavailable": "existing delay-review panel remains accessible; no capture invented",
+      "viewer": "delay review controls absent",
+      "directoryNames": "current company names displayed; original references retained",
+      "consoleErrors": 0
+    }
+  },
+  "screenshot": ".verification-results/learn-delay-review-2026-10-11.png (ignored local synthetic artifact)",
+  "remaining": [
+    "Frozen resumable working-time collection with calendars, delay snapshots and coverage",
+    "Hosted paired TEST release and owner acceptance",
+    "Direct supporting communication references and employee working-hours policies",
+    "Remaining LEARN connector/coverage and production acceptance work"
+  ]
+}
