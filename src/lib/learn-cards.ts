@@ -51,27 +51,6 @@ export interface LearnCardPage {
   hasMore: boolean;
   page: number;
 }
-export interface LearnTeamGroup {
-  id: string;
-  name: string;
-}
-export async function readLearnTeamGroups(
-  db: LearnReadClient,
-  tenant: string,
-): Promise<LearnTeamGroup[]> {
-  scope(tenant, "member");
-  const result = await rows(
-    db
-      .from("org_units")
-      .select("id,tenant_id,name")
-      .eq("tenant_id", tenant)
-      .order("name", { ascending: true })
-      .limit(201),
-    tenant,
-  );
-  if (result.length > 200) throw new Error("Team group list exceeds the current window");
-  return result.map((r) => ({ id: r.id, name: text(r.name) ?? "Unnamed group" }));
-}
 export interface LearnEvidence {
   id: string;
   source: string;
@@ -170,6 +149,8 @@ export async function readLearnCards(
       .range(page * CARD_PAGE_SIZE, (page + 1) * CARD_PAGE_SIZE),
     tenant,
   );
+  if (result.length > CARD_PAGE_SIZE + 1 || new Set(result.map((r) => r.id)).size !== result.length)
+    throw new Error("Invalid card page");
   return {
     cards: result.slice(0, CARD_PAGE_SIZE).map((r) => card(r, kind, now)),
     hasMore: result.length > CARD_PAGE_SIZE,

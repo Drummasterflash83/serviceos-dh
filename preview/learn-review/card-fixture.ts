@@ -227,6 +227,10 @@ function records(): Record<string, any[]> {
     ],
     graph_nodes: [],
   };
+  if(new URLSearchParams(location.search).has('groupPicker')) {
+    data.org_units.push(...Array.from({length:253},(_,i)=>row(2000+i,{name:`Service team ${String(i+1).padStart(3,'0')} · synthetic`,kind:'Service team'})),row(2300,{name:'Literal 100%_* (A,B) group · synthetic'}));
+    data.team_members.push(row(2400,{display_name:'Member in team 253 · synthetic',org_unit_id:id(2252),effective_to:null}));
+  }
   if(new URLSearchParams(location.search).has('cardSearch')) {
     data.customer_cards.push(...Array.from({length:61},(_,i)=>row(1000+i,{title:`Search customer ${String(i+1).padStart(3,'0')} · synthetic`})),row(1100,{title:'Literal 100%_* (A,B) "quoted" customer · synthetic'}));
     data.jobs.push(row(1200,{title:'Search installation · synthetic',job_number:'DH-2048',verified:false}));
@@ -234,6 +238,7 @@ function records(): Record<string, any[]> {
   return data;
 }
 let cardSearchFailed=false;
+let groupPickerFailed=false;
 export async function searchCardFixture(args:any){
  const scenario=new URLSearchParams(location.search).get('cardSearch');
  if(scenario==='retry'&&!cardSearchFailed){cardSearchFailed=true;return {data:null,error:{code:'synthetic_read_failure'}};}
@@ -324,8 +329,10 @@ export function cardFixture(table: string) {
     then: (resolve: any) => {
       const failPage=table==='learn_assessments'&&olderPage&&!historyPageFailed&&new URLSearchParams(location.search).get('assessmentHistory')==='retry';
       if(failPage)historyPageFailed=true;
+      const failGroup=table==='org_units'&&!groupPickerFailed&&new URLSearchParams(location.search).get('groupPicker')==='retry';
+      if(failGroup)groupPickerFailed=true;
       return Promise.resolve(
-        scenario === "error" || failPage
+        scenario === "error" || failPage || failGroup
           ? { data: null, error: { message: "Synthetic denied read" } }
           : { data, count: exactCount ?? data.length, error: null },
       ).then(resolve);

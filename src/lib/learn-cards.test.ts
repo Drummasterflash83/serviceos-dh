@@ -4,7 +4,6 @@ import {
   projectLearnDetail,
   readLearnCardDetail,
   readLearnCards,
-  readLearnTeamGroups,
   referenceLabel,
 } from "./learn-cards.ts";
 
@@ -306,16 +305,19 @@ test("team groups come from tenant configuration and filter current members only
       row(6, { org_unit_id: id(2), effective_to: "2026-10-01" }),
     ],
   });
-  assert.deepEqual(await readLearnTeamGroups(db, T), [
-    { id: id(1), name: "Office" },
-    { id: id(2), name: "Engineers" },
-  ]);
+  assert.deepEqual(
+    (await readLearnCards(db, T, "team")).cards.map((c) => ({ id: c.id, name: c.title })),
+    [
+      { id: id(1), name: "Office" },
+      { id: id(2), name: "Engineers" },
+    ],
+  );
   assert.deepEqual(
     (await readLearnCards(db, T, "member", 0, now, id(2))).cards.map((c) => c.id),
     [id(5)],
   );
   await assert.rejects(readLearnCards(db, T, "member", 0, now, "bad-filter"));
-  await assert.rejects(readLearnTeamGroups(database({}, ["org_units"]), T));
+  await assert.rejects(readLearnCards(database({}, ["org_units"]), T, "team"));
   assert.ok(db.calls.every((c) => c.tenant === T));
 });
 
@@ -342,6 +344,42 @@ test("team cards read tenant org units, filter one team and keep bounded paginat
   await assert.rejects(readLearnCards(db, T, "job", 0, now, id(2)));
   await assert.rejects(readLearnCards(database({}, ["org_units"]), T, "team", 0, now));
   assert.ok(db.calls.every((c) => c.tenant === T));
+});
+
+test("team selection pages beyond the previous 200-group limit and scopes members by selected ID", async () => {
+  const groups = Array.from({ length: 253 }, (_, i) => row(i + 1, { name: `Group ${i + 1}` }));
+  const db = database({
+    org_units: [...groups, row(999, { tenant_id: OTHER, name: "Foreign" })],
+    team_members: [
+      row(1000, { display_name: "Last team member", org_unit_id: id(253) }),
+      row(1001, { org_unit_id: id(1) }),
+      row(1002, { org_unit_id: id(253), effective_to: "2026-10-01" }),
+    ],
+  });
+  const seen: string[] = [];
+  for (let page = 0; ; page++) {
+    const result = await readLearnCards(db, T, "team", page, now);
+    assert.ok(result.cards.length <= 24);
+    seen.push(...result.cards.map((c) => c.id));
+    if (!result.hasMore) {
+      assert.equal(page, 10);
+      break;
+    }
+    assert.ok(page < 11);
+  }
+  assert.deepEqual(
+    seen,
+    groups.map((g) => g.id),
+  );
+  assert.equal(new Set(seen).size, 253);
+  assert.deepEqual(
+    (await readLearnCards(db, T, "member", 0, now, id(253))).cards.map((c) => c.id),
+    [id(1000)],
+  );
+  await assert.rejects(
+    readLearnCards(database({ org_units: [groups[0], groups[0]] }), T, "team"),
+    /Invalid card page/,
+  );
 });
 
 test("team detail joins explicit typed team ownership, never current member work or other tenants", async () => {

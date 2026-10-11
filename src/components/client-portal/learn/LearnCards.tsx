@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
+import { LearnTeamGroupPicker } from "./LearnTeamGroupPicker";
 import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnWorkHistory } from "./LearnWorkHistory";
 import { LearnWorkCalendarSettings } from "./LearnWorkCalendarSettings";
@@ -11,8 +12,6 @@ import {
   searchLearnCards,
   CARD_SEARCH_MAX_LENGTH,
   readLearnCardDetail,
-  readLearnTeamGroups,
-  type LearnTeamGroup,
   type LearnCardKind,
   type LearnCardPage,
   type LearnCardDetail,
@@ -62,28 +61,11 @@ function CardWorkspace({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [kind, setKind] = useState<LearnCardKind>("customer");
   const [group, setGroup] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
   const [searchInvalid, setSearchInvalid] = useState(false);
-  const [groups, setGroups] = useState<LearnTeamGroup[] | null>(null);
-  const [groupsFailed, setGroupsFailed] = useState(false);
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      try {
-        const value = await readLearnTeamGroups(getSupabaseClient(), tenantId);
-        if (active) {
-          setGroups(value);
-          setGroupsFailed(false);
-        }
-      } catch {
-        if (active) setGroupsFailed(true);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [tenantId]);
   const [page, setPage] = useState(0),
     [revision, setRevision] = useState(0);
   const [result, setResult] = useState<{
@@ -162,6 +144,8 @@ function CardWorkspace({
             onClick={() => {
               setKind(value);
               setGroup("");
+              setGroupName("");
+              setGroupPickerOpen(false);
               setSettingsOpen(false);
               setPage(0);
               setSelected(null);
@@ -242,32 +226,51 @@ function CardWorkspace({
         </p>
       )}
       {["member", "team"].includes(kind) && (
-        <label className="lc-group">
-          Company team group{" "}
-          <select
-            value={group}
-            onChange={(e) => {
-              setGroup(e.target.value);
-              setPage(0);
-              setSelected(null);
-            }}
-          >
-            <option value="">{kind === "team" ? "All teams" : "All team members"}</option>
-            {groups?.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-          {groups === null && (
-            <span>
-              {groupsFailed
-                ? "Group list unavailable; showing accessible records."
-                : "Reading team groups…"}
-            </span>
+        <div className="lc-group" aria-label="Company team group">
+          <span>
+            Company team group:{" "}
+            <strong>
+              {group ? groupName : kind === "team" ? "All teams" : "All team members"}
+            </strong>
+          </span>
+          <button type="button" className="cp-secondary" onClick={() => setGroupPickerOpen(true)}>
+            {group ? "Change team group" : "Choose team group"}
+          </button>
+          {group && (
+            <button
+              type="button"
+              className="cp-secondary"
+              onClick={() => {
+                setGroup("");
+                setGroupName("");
+                setPage(0);
+                setSelected(null);
+                setSettingsOpen(false);
+              }}
+            >
+              Clear team group
+            </button>
           )}
-        </label>
+        </div>
       )}
+      <Dialog open={groupPickerOpen} onOpenChange={setGroupPickerOpen}>
+        <DialogContent className="lc-dialog" overlayClassName="lc-overlay">
+          {groupPickerOpen && (
+            <LearnTeamGroupPicker
+              tenantId={tenantId}
+              selectedId={group}
+              onSelect={(choice) => {
+                setGroup(choice.id);
+                setGroupName(choice.name);
+                setPage(0);
+                setSelected(null);
+                setSettingsOpen(false);
+                setGroupPickerOpen(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       {!current && (
         <p className="lc-empty" role="status">
           {failed
@@ -393,6 +396,7 @@ function CardWorkspace({
             <DialogTitle>Performance scorecard settings</DialogTitle>
             <DialogDescription>
               Versioned draft rules. Saving does not activate scoring or change anyone's pay.
+              {group && ["member", "team"].includes(kind) && <> Selected group: {groupName}.</>}
             </DialogDescription>
           </DialogHeader>
           {settingsOpen && (

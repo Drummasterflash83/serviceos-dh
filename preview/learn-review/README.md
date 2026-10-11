@@ -1,5 +1,10 @@
 # Local LEARN design review
 
+11 October team chooser: add `&groupPicker=volume` or `&groupPicker=retry` to the
+launch preview for 256 synthetic groups, a member in team 253, literal punctuation
+search and an optional initial group-read failure. The chooser pages/searches
+through the real card readers with synthetic transport only.
+
 10 October channel recovery: Slack imports now opens **Progress & recovery**.
 The actual component reads the channel window, approval-specific page count and
 queue status, with continue/restart review and a saved pending request. Recovery
