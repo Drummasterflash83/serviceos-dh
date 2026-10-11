@@ -101,6 +101,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       ...args,
       binding,
       signal,
+      onProgress: (progress) => console.log(JSON.stringify({ state: 'recording_backup_verifying', ...progress, backupComplete: false })),
       createPorts: () => createLivePorts(signal),
     });
     console.log(JSON.stringify(result, null, 2));

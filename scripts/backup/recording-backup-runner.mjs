@@ -71,6 +71,7 @@ export async function runRecordingBackup({
   maxObjects = 25,
   maxBytes = 32 * 1024 * 1024,
   signal,
+  onProgress,
 }) {
   let lock,
     ports,
@@ -126,7 +127,9 @@ export async function runRecordingBackup({
     let result = batch;
     if (mode === "finalize") {
       if (signal?.aborted) fail("runner_cancelled");
-      const final = await finalizeRecordingInventory(inventory, context, ports);
+      const final = await finalizeRecordingInventory(inventory, context, {
+        ...ports, signal, verificationConcurrency: 4, onProgress,
+      });
       result = {
         state: final.state,
         runId: inventory.runId,

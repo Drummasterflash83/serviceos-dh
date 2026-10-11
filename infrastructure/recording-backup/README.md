@@ -9,7 +9,10 @@ The approved London foundation reached CREATE_COMPLETE on 11 October 2026 at
 the separate access stack completed at 08:35:18 UTC. Both restricted identities
 have one active key stored separately in this Mac's login Keychain; live STS and
 S3 protection checks passed for both. The first real recording was copied and
-verified; the full 2,888-object copy is in progress. A separate Restore-key
+verified; the full 2,888-object copy pass is complete. Whole-inventory verification
+is in progress after the sequential finalizer reached its 30-minute deadline.
+The finalizer now checks at most four objects concurrently and reports aggregate
+progress, without weakening byte, version or source checks. A separate Restore-key
 receipt rehearsal recovered that file and decoded 66.96 seconds of real audio.
 Full-inventory manifest and database restore acceptance remain open.
 The $5 monthly cost alert awaits recipient email verification.

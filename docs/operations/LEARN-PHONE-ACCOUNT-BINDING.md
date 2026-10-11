@@ -688,3 +688,29 @@ resubmission; inspect current state after any uncertain response. Production sti
 requires its separate migration/rollback review and promotion approval.
 
 [Release and HTTP evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).
+
+## Operator attempt review — local and rolled-back TEST, 11 October
+
+The new operator panel lists held and completed processing attempts, including
+replacement attempts whose older result remains usable. It exposes safe metadata
+only. Existing OpenFolk viewers can inspect; current administrators can reconcile
+a saved transcription/analysis result after a reason and explicit review. The
+server rechecks authority, source and capture permission. Result publication and
+the immutable operator receipt are atomic. Cancellation leaves a request tombstone
+and preserves the original processing hold. An uncertain provider outcome with no
+saved result cannot be released by this action.
+
+The browser retains requests before submission, scopes them by backend, actor and
+tenant, and checks the original receipt after a lost reply. Six client tests and
+the offline PostgreSQL suite pass. The actual local component verified lost-reply
+recovery and read-only controls; application TypeScript/build passed. At 10:31 UTC,
+the same SQL assertions passed against the complete hosted TEST schema in a
+rolled-back transaction, preserving 111 datasets including Auth users/sessions.
+Synthetic identities had no password/session and were never committed.
+
+This is not installed in TEST or production. A pinned TEST release and signed-in
+hosted acceptance remain required. Download recovery still requires the existing
+server-side audio verification path; its operator UI and the governed disposition
+of no-output uncertain attempts are unfinished.
+
+[Sanitized evidence](evidence/learn-phone-operator-rehearsal-2026-10-11.json).

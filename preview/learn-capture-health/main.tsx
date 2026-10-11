@@ -151,7 +151,7 @@ createRoot(document.getElementById("root")!).render(
       >
         Simulate unavailable service
       </button>
-      <OperatorCaptureHealth tenantId={id(100)} actorId={id(182)} client={client} />
+      <OperatorCaptureHealth backend="https://synthetic.invalid" tenantId={id(100)} actorId={id(182)} client={client} />
     </main>
   </React.StrictMode>,
 );

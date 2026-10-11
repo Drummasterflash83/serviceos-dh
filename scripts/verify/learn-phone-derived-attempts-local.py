@@ -61,6 +61,21 @@ try:
  assert sql("select count(*) from information_schema.columns where table_name='phone_transcripts' and column_name='source_storage_path'")=='0'
  sql(derived)
  print(sql(source('scripts/verify/learn-phone-derived-attempts.assert.sql')),flush=True)
+ sql("""create schema auth;create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create function auth.role() returns text language sql stable as $$select current_setting('request.jwt.claim.role',true)$$;
+ grant usage on schema auth to authenticated,anon,service_role;
+ create table profiles(id uuid primary key);create table platform_authority_grants(profile_id uuid,permission text,effective_from timestamptz,effective_to timestamptz);
+ create table view_as_context(actor_user_id uuid,ended_at timestamptz,expires_at timestamptz);""")
+ resolver=source('supabase/migrations/20260822120000_platform_authority_decoupled_from_role.sql')
+ sql(resolver[resolver.index('create or replace function current_user_is_openfolk_operator('):resolver.index('-- ── Governed record')])
+ guard=source('supabase/migrations/20261031160000_learn_operator_inputs.sql')
+ sql(guard[guard.index('create function public.learn_operator_input_access('):guard.index('-- Explicit booleans only.')])
+ review=source('supabase/migrations/20261101220000_learn_phone_operator_attempts.sql')
+ sql(review.replace('\ncommit;','\nrollback;'))
+ assert sql("select to_regclass('learn_phone_operator_reconciliations') is null")=='t'
+ sql(review)
+ review_output=sql(source('scripts/verify/learn-phone-operator-attempts.assert.sql'))
+ print('\n'.join(line for line in review_output.splitlines() if line.startswith('PASS:')),flush=True)
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
   outcomes=list(pool.map(lambda n:sql(f"set role service_role;do $$$$begin begin perform fixture_derived({n},'claim');exception when sqlstate 'PT409' then assert SQLERRM='phone_recording_processing_held';end;end$$$$;".replace('$$$$','$$')),[105,201]))
  assert sql("select count(*) from learn_phone_processing_attempts where run_id in(fixture_id(105),fixture_id(201)) and state='running'")=='1'

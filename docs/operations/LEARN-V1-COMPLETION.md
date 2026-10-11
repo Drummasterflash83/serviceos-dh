@@ -217,8 +217,16 @@ succeeded after that failure; no worker was invoked and no source record changed
   forced work remained paused. Authentication, tenant mismatch and method checks
   passed. No users or access grants were created. This proves retained-result reuse,
   not new audio capture, model processing or customer-card delivery.
-  Operator history/recovery UI, customer-facing stale-result indicators, signed-in
-  journeys, live-provider and recurring-capture acceptance remain open.
+  Operator history and saved-result recovery are now implemented locally. At
+  10:31 UTC, their positive assertions passed against the full hosted TEST schema
+  inside a rolled-back transaction; 111 datasets, including Auth identities and
+  sessions, remained unchanged. No login, grant or candidate schema persisted.
+  The actual local UI verified lost-response receipt recovery and disabled writes
+  for a read-only operator. Six client tests and the offline SQL/concurrency suite
+  pass. TEST installation, signed-in hosted acceptance, download verification UI
+  and unknown-outcome disposition remain open, along with customer-facing stale
+  indicators, live-provider and recurring-capture acceptance.
+  [Operator recovery evidence](evidence/learn-phone-operator-rehearsal-2026-10-11.json).
   Chris authorised a dedicated TEST OpenAI key; the secure Platform picker is open
   and awaiting its selection. No TEST OpenAI secret has been provisioned yet.
   [Latest evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).
@@ -288,7 +296,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   disk checkpoints, separate attempt status, exclusive locking and exact Writer
   credential/principal selection. Thirty-nine local tests passed before activation;
   the first live recording copy verified 108,870 bytes. Bounded full-inventory
-  copy pass has now verified all 2,888 files; whole-inventory finalization is running. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+  copy pass has now verified all 2,888 files. Sequential whole-inventory finalization
+  stopped at its 30-minute deadline at 10:29:51 UTC; no complete manifest was confirmed.
+  The runner now verifies at most four objects concurrently, preserving both source
+  checks, exact S3-version byte hashes, ordering and failure draining. All 44 backup
+  tests pass. A new finalization attempt is running with aggregate progress; no audio
+  is recopied. Full coverage must still be established from its final receipt.
+  [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
   The separate Restore-only command now validates the immutable manifest and restores
   an exact object version without Supabase access, preserving record links and checking
   local audio decoding. Forty-three tests pass, including actual macOS decoding of

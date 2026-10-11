@@ -73,8 +73,14 @@ Both keys passed live STS identity/account checks and S3 protection inspection:
 London, private bucket, TLS, AES256, versioning, 30-day GOVERNANCE retention and
 conditional writes. The first bounded recording copy verified **108,870 bytes**
 against the source and pinned destination version. The complete **2,888-object /
-601,004,261-byte** inventory is now being copied in bounded resumable batches.
-This is partial verified coverage, not a completed backup. No source records,
+601,004,261-byte** inventory has completed its bounded copy pass. The sequential
+finalizer hit its 30-minute deadline at 10:29:51 UTC. Its failure evidence and
+completed copy checkpoint are retained; a full manifest is not yet confirmed.
+The revised finalizer, covered by 44 passing backup tests, checks at most four
+objects concurrently, then rechecks source metadata before writing its immutable
+manifest. Any failure drains active checks and prevents manifest publication.
+A new finalization attempt is running; no audio upload is repeated.
+This is individually verified coverage, not a completed backup. No source records,
 files or permissions were modified. At **08:46:46 UTC**, an independent receipt-only
 rehearsal using the Restore key recovered the first exact S3 version, verified
 all 108,870 bytes and decoded **66.96 seconds** of real audio. It retained one

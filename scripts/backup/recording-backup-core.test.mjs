@@ -141,6 +141,42 @@ function fixture() {
 }
 const isCode = (code) => (e) =>
   e instanceof RecordingBackupError && e.code === code && !e.message.includes("PRIVATE");
+test('bounded finalization verifies every version, preserves order and drains failures before returning',async()=>{
+ const {finalizeRecordingInventory}=await import('./recording-backup-core.mjs');
+ const fixtures=Array.from({length:9},(_,i)=>{
+   const f=fixture();f.entry.objectId=`00000000-0000-4000-8000-${String(100+i).padStart(12,'0')}`;
+   f.entry.sourceKey=`PRIVATE/${i}.wav`;return f;
+ });
+ for(const f of fixtures)await backupRecording(f.entry,f.context,f);
+ const receipts=new Map(fixtures.flatMap(f=>[...f.receipts]));
+ const owner=key=>fixtures.find(f=>f.objects.has(key));
+ let active=0,peak=0,reads=0,saves=0,failOne=false;const counts=new Map(),progress=[];
+ const ports={now,verificationConcurrency:4,onProgress:p=>progress.push(p),
+   source:{metadata:async(entry)=>{counts.set(entry.objectId,(counts.get(entry.objectId)??0)+1);return entry;}},
+   destination:{inspect:fixtures[0].destination.inspect,
+     version:async(key,id)=>owner(key).destination.version(key,id),
+     read:async(key,id)=>{active++;peak=Math.max(peak,active);try{
+       await new Promise(resolve=>setTimeout(resolve,5));reads++;
+       if(failOne&&key===[...fixtures[0].objects.keys()][0])throw Error('PRIVATE network failure');
+       return await owner(key).destination.read(key,id);
+     }finally{active--;}}},
+   journal:{loadManifest:async()=>null,load:async id=>receipts.get(id),saveManifestIfAbsent:async(_id,m)=>{saves++;return m;}}
+ };
+ const inventory={contract:'recording-inventory/1',runId:'00000000-0000-4000-8000-000000000400',tenantId:tenant,
+   sourceProjectRef:fixtures[0].context.sourceProjectRef,observedAt:new Date(now()).toISOString(),listingComplete:true,sourceSnapshot:'non_atomic',objects:fixtures.map(f=>f.entry).reverse()};
+ const result=await finalizeRecordingInventory(inventory,fixtures[0].context,ports);
+ assert.equal(peak,4);assert.equal(active,0);assert.equal(reads,9);assert.equal(saves,1);
+ assert.deepEqual([...counts.values()],Array(9).fill(2));
+ assert.deepEqual(result.manifest.objects.map(x=>x.source.objectId),fixtures.map(f=>f.entry.objectId));
+ assert.deepEqual(progress.map(p=>[p.phase,p.verifiedObjects]),[['destination_bytes',9],['source_recheck',9]]);
+ failOne=true;reads=0;counts.clear();progress.length=0;
+ await assert.rejects(finalizeRecordingInventory(inventory,fixtures[0].context,ports),isCode('manifest_unconfirmed'));
+ assert.equal(active,0);assert.equal(saves,1);assert.ok(reads<=4);assert.equal(progress.length,0);
+ assert.ok([...counts.values()].every(n=>n===1));
+ await assert.rejects(finalizeRecordingInventory(inventory,fixtures[0].context,{...ports,verificationConcurrency:5}),isCode('verification_concurrency_invalid'));
+ await assert.rejects(finalizeRecordingInventory(inventory,fixtures[0].context,{...ports,signal:AbortSignal.abort()}),isCode('runner_cancelled'));
+ assert.equal(saves,1);
+});
 test("copy verifies streamed bytes and pinned S3 version; isolated restore retains references and private permissions", async () => {
   const f = fixture();
   const copied = await backupRecording(f.entry, f.context, f);

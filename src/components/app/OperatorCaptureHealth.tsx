@@ -1,3 +1,4 @@
+import { OperatorPhoneAttempts } from "./OperatorPhoneAttempts";
 import { phoneProcessingSignal } from "@/lib/learn-phone-operator-evidence";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -13,10 +14,12 @@ export function OperatorCaptureHealth({
   tenantId,
   actorId,
   client,
+  backend,
 }: {
   tenantId: string;
   actorId: string;
   client?: OperatorInputClient;
+  backend?: string;
 }) {
   const [page, setPage] = useState<CaptureHealthPage | null>(null),
     [rows, setRows] = useState<CaptureHealthRow[]>([]),
@@ -146,6 +149,13 @@ export function OperatorCaptureHealth({
               backlog as empty.
             </p>
           )}
+          <OperatorPhoneAttempts
+            key={`${tenantId}:${actorId}`}
+            tenantId={tenantId}
+            actorId={actorId}
+            client={client}
+            backend={backend}
+          />
           <div className="grid gap-3 lg:grid-cols-2">
             {rows.map((r) => {
               const signal = captureHealthSignal(r, now);

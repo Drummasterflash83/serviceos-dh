@@ -1,0 +1,39 @@
+{
+  "version": "learn-phone-operator-rehearsal-evidence/1",
+  "date": "2026-10-11",
+  "scope": "local implementation and rolled-back hosted TEST rehearsal; not deployed",
+  "hostedRehearsal": {
+    "state": "rehearsed_rolled_back",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T10:31:02.858Z",
+    "migration": "supabase/migrations/20261101220000_learn_phone_operator_attempts.sql",
+    "sourceSha256": "74c13bb6713a1fb44e53067762da20467092dec3cca7ee9ebbac244227c09383",
+    "probeSha256": "4006f339c7283d5df8466ac808e6d8610b9fc562166ca3d2dc8f654adf962753",
+    "schemaBefore": "7d31c2f3169a9a3da7298a131a7058eb",
+    "preservedDataSets": 111,
+    "schemaUnchanged": true,
+    "retainedSourcesUnchanged": true,
+    "candidateAbsent": true,
+    "completedAt": "2026-10-11T10:31:06.165Z"
+  },
+  "localVerification": {
+    "clientTests": 6,
+    "offlinePostgres": "passed, including actual concurrent claims and audit-insertion rollback",
+    "typescript": "passed",
+    "applicationBuild": "passed",
+    "prebuildTests": 47,
+    "browser": [
+      "saved-result review confirmation",
+      "lost publication reply retained for receipt check",
+      "receipt check resolves without a second apply",
+      "read-only operator recovery button disabled"
+    ]
+  },
+  "limitations": [
+    "TEST migration and frontend not installed",
+    "no signed-in hosted UI acceptance",
+    "no model/provider calls",
+    "download recovery UI and uncertain paid-outcome disposition unfinished",
+    "no production changes"
+  ]
+}

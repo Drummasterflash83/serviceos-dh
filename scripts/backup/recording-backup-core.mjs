@@ -327,9 +327,29 @@ export async function restoreRecording(receipt, binding, { destination, now = Da
 export async function finalizeRecordingInventory(
   input,
   binding,
-  { source, destination, journal, now = Date.now },
+  { source, destination, journal, now = Date.now, verificationConcurrency = 1, signal, onProgress },
 ) {
   try {
+    requireValue(Number.isInteger(verificationConcurrency) && verificationConcurrency >= 1 && verificationConcurrency <= 4, 'verification_concurrency_invalid');
+    // Bound network/stream use and drain active workers on any failure. Never
+    // publish a partial manifest or let checks continue beyond the runner lock.
+    const verifyAll = async (entries, phase, verify) => {
+      let next=0,completed=0,failure;
+      const workers=Array.from({length:Math.min(verificationConcurrency,entries.length)},async()=>{
+        while(!failure){
+          try{
+            if(signal?.aborted)throw new RecordingBackupError('runner_cancelled');
+            const index=next++;
+            if(index>=entries.length)return;
+            await verify(entries[index],index);
+            completed++;
+            if(completed%100===0||completed===entries.length)onProgress?.({phase,verifiedObjects:completed,totalObjects:entries.length});
+          }catch(e){failure??=e;}
+        }
+      });
+      await Promise.all(workers);
+      if(failure)throw failure;
+    };
     const context = recordingContext(binding);
     requireValue(
       input &&
@@ -380,17 +400,17 @@ export async function finalizeRecordingInventory(
           Number.isFinite(Date.parse(prior.verifiedAt)),
         "manifest_conflict",
       );
-    const receipts = [];
-    for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
+    const receipts = new Array(entries.length);
+    await verifyAll(entries,'destination_bytes',async(entry,i)=>{
       if (!prior) await unchanged(entry, source);
       const receipt = prior ? prior.objects[i] : await journal.load(sourceDigest(entry, context));
       await verifyVersion(receipt, entry, context, destination, now);
-      receipts.push(structuredClone(receipt));
-    }
+      receipts[i]=structuredClone(receipt);
+    });
     // Receipt recovery retains its original time/coverage even if source objects
     // have since changed or disappeared; it never claims those current sources.
-    if (!prior) for (const entry of entries) await unchanged(entry, source);
+    if (!prior) await verifyAll(entries,'source_recheck',entry=>unchanged(entry,source));
+    if(signal?.aborted)throw new RecordingBackupError('runner_cancelled');
     const manifest = {
       contract: "recording-backup-manifest/1",
       runId: input.runId,
