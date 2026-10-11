@@ -54,6 +54,32 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Remaining launch work — 11 October, 20:17 UTC
+
+| Requirement | Evidence now | What still closes the gate |
+|---|---|---|
+| Google and Commusoft input coverage | TEST runtime and retained-source pipelines verified; existing real capture/import history retained | Approve the prepared Google credential destination and bounded Commusoft continuation; finish real historical/incremental coverage and reconciliation |
+| Phone, voicemail and Slack | Phone source pipeline/playback tested; real recording inventory backed up; Slack adapter exists | Recover authorised provider credentials, verify real Phone processing, establish voicemail contract, connect authorised Slack workspace/channels |
+| Customer cards and scoring | Hosted synthetic source-to-card refresh and isolation pass; configurable scoring and review are implemented | Signed-in Drummonds review, reliable staff/job evidence, calendar/criteria approval and legacy derived-data reconciliation |
+| OpenFolk controller | Scoped controls, diagnostics and recovery tested locally/TEST | Approve ongoing TEST owner access; verify real signed-in operation and customer branding |
+| Recovery and recurring operation | Recorded audio inventory and independent restore verified | Real database restore with record links, confirmed scheduled runs and durable operational ownership |
+| Release | Git backups and staged TEST backend complete; frontend release is being updated | All above acceptance, development dependency review, concrete production approval, deployment and live monitoring |
+
+The frontend release checks passed (`npm install`, `npx tsc --noEmit`, `npm run build`).
+Compatible transitive dependency updates reduce the production-dependency audit
+from five findings to zero. The full audit drops from 15 to nine findings, all in
+development tooling. This is not a complete security assessment; the remaining
+build-tool chain still needs review. The pinned Lovable configuration stays at
+2.6.4 and its packages remain installed. TypeScript/build passed again after updates.
+[Dependency evidence](evidence/learn-dependency-patch-audit-2026-10-11.json).
+
+The existing stable TEST alias `serviceos-learn-test-allkin.vercel.app` was verified
+to point to the READY TEST deployment and preserve Vercel protection on home/login/
+LEARN routes. TEST recovery now points to its exact `/login?reset=1` path; previous
+exact recovery URLs remain allowed. All other Auth settings are unchanged. No
+account, grant, password or email was created or changed. Browser/sign-in acceptance
+and the existing owner-access decision remain pending.
+
 ### Existing draft influence and card refresh — TEST 070, 11 October, 20:11 UTC
 
 The read-only production impact audit at **19:57 UTC** found 55 enriched draft
