@@ -148,7 +148,7 @@ export function deriveHonestState(card: ProjectedCard): HonestCardState {
         ? "Recent sentiment is negative"
         : "Recent activity needs a response");
     if (differentiatedUrgent.length > 0 && conf >= 0.6) {
-      return { state: "critical", label: "Verified critical", reason: top, ...base };
+      return { state: "critical", label: "Recorded urgent signal", reason: top, ...base };
     }
     return { state: "attention", label: "Needs attention", reason: top, ...base };
   }
@@ -164,7 +164,7 @@ export function deriveHonestState(card: ProjectedCard): HonestCardState {
       ...base,
     };
   }
-  return { state: "normal", label: "Normal", reason: "No open issues", ...base };
+  return { state: "normal", label: "No issues recorded", reason: "No differentiated open issues in the saved snapshot", ...base };
 }
 
 export interface CustomerCardSummary {

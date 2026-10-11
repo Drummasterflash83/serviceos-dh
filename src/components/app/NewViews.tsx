@@ -50,6 +50,7 @@ import {
   type ProjectedCard,
   type HonestState,
 } from "@/lib/customer-cards";
+import { describeCustomerCardSnapshot } from "@/lib/customer-card-snapshot";
 import { listRecommendations, type Recommendation } from "@/lib/recommendations";
 
 /* ───── Shared bits ───── */
@@ -1917,6 +1918,7 @@ export function Customers() {
           {cards.map((c) => {
             const p = c.projection;
             const hs = deriveHonestState(c);
+            const snapshot = describeCustomerCardSnapshot(p?.generated_at, c.latest_activity_at);
             const displayName = p?.identity.display_name ?? c.title ?? "Unresolved contact";
             return (
               <button
@@ -1947,6 +1949,10 @@ export function Customers() {
                 </div>
                 <div className="mt-4 border-t border-hairline pt-3 text-[11px]">
                   <div className="text-muted-foreground">{hs.reason}</div>
+                  <div className="mt-2 text-muted-foreground">
+                    <div>{snapshot.label}</div>
+                    <div>{snapshot.note}</div>
+                  </div>
                   <div className="mt-2 flex items-center gap-2 text-muted-foreground tabular">
                     <span>
                       {hs.interactionCount} interaction{hs.interactionCount === 1 ? "" : "s"}
@@ -1987,7 +1993,9 @@ export function Customers() {
                 </div>
                 <DialogDescription>
                   {proj?.identity.company_name ? `${proj.identity.company_name} · ` : ""}Read-only
-                  projection of the Business Graph.
+                  summary of saved business records.
+                  {" "}{describeCustomerCardSnapshot(proj?.generated_at, open.latest_activity_at).label}.
+                  {" "}{describeCustomerCardSnapshot(proj?.generated_at, open.latest_activity_at).note}
                 </DialogDescription>
               </DialogHeader>
 
@@ -2191,7 +2199,7 @@ export function Customers() {
                     </div>
                   )}
                   <div className="text-[10px] text-muted-foreground">
-                    Projected {fmtWhen(proj.generated_at)} · read-only.
+                    Saved snapshot · read-only.
                   </div>
                 </div>
               )}

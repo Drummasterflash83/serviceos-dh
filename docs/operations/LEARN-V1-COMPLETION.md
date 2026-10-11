@@ -245,6 +245,25 @@ bounded-window activity calculations and legacy job persistence helpers are not
 made complete by this correction. Production remains unchanged.
 [Card preservation evidence](evidence/learn-card-refresh-test-2026-10-11.json).
 
+### Customer snapshot labels — local frontend acceptance, 11 October
+
+The legacy Customers list/detail now show the saved summary's exact preparation
+date beside its finding. Missing, malformed and future dates say freshness is
+unverified. A later recorded activity timestamp explicitly warns that the saved
+summary does not yet include it. A recent snapshot still does not imply provider
+coverage. The old confidence-derived “Verified critical” label is now “Recorded
+urgent signal”; “Normal / No open issues” is scoped to issues recorded in the saved
+snapshot. Existing urgent findings remain visible.
+
+Three date-boundary checks, application TypeScript and the complete application
+build pass. The actual Customers component rendered synthetic older and undated
+snapshots in a local browser; list/detail notices and zero console errors/warnings
+were verified. This is not deployed to hosted TEST yet: keep the approved TEST
+login destination stable during owner access setup, then coordinate the next
+frontend release and its reset URL. The newer LEARN detail already distinguishes
+read time from provider coverage. No production or source data changed.
+[Local UI evidence](evidence/learn-customer-snapshot-ui-2026-10-11.json).
+
 ## Working and verified in production
 
 - [x] Retained source inventory and recording object-size metadata observed at the

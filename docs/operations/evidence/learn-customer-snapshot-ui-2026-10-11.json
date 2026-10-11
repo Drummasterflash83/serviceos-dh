@@ -1,0 +1,23 @@
+{
+  "version": "learn-customer-snapshot-ui/1",
+  "observedAt": "2026-10-11T15:19:18.806265+00:00",
+  "state": "local_actual_component_verified",
+  "dateChecks": 3,
+  "typescriptPassed": true,
+  "applicationBuildPassed": true,
+  "actualBrowser": {
+    "olderSnapshotShowsExactUtcDate": true,
+    "newerActivityNoticeInListAndDetail": true,
+    "invalidDateExplicitlyUnverified": true,
+    "urgentSignalDoesNotClaimVerified": true,
+    "consoleErrorsOrWarnings": 0
+  },
+  "hostedFrontendChanged": false,
+  "productionChanged": false,
+  "providerRequests": 0,
+  "limitations": [
+    "Legacy Customers screen only; new LEARN card detail already separates read time and provider coverage.",
+    "Snapshot date does not verify provider completeness or last successful end-to-end capture.",
+    "Real signed-in acceptance and next coordinated TEST frontend release pending."
+  ]
+}
