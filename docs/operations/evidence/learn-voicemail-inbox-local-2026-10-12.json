@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-10-11T23:45:50.389193+00:00",
+  "scope": "Local actual components and synthetic transport only",
+  "changes": [
+    "LEARN opens existing private owner/manager inbox",
+    "Strict scoped response/count validation",
+    "Discard private UI state on company/account change and unused cache on unmount"
+  ],
+  "verification": {
+    "tests": 15,
+    "typeScriptExitCode": 0,
+    "buildExitCode": 0,
+    "browser": [
+      "21 messages across two pages",
+      "private detail and transcript",
+      "recording failure remains visible",
+      "missing count fails instead of showing empty",
+      "unavailable mailbox summary exposes retry",
+      "delayed prior actor response absent after actor switch"
+    ],
+    "browserErrors": 0,
+    "screenshot": ".verification-results/voicemail-private-inbox-synthetic.png"
+  },
+  "sourceSha256": {
+    "src/components/client-portal/learn/LearnVoicemails.tsx": "f49a49f5d618823cb3043521c840a2fa0c08b6c94e5d5bc2856178e63a155821",
+    "src/components/client-portal/learn/LearnLaunchPortal.tsx": "dbfb69b68bb67513adca5e001423302b24c1350344a726318df1c554d076900e",
+    "src/components/receptionist/VoicemailInbox.tsx": "7efa56302af6a3e6b38ccc823786968186b7c5b5bd8fbf728edeb31fe7ab1708",
+    "src/lib/voicemail-reader.ts": "eca1a0f6449ab67851b7c86b337d2c47a4f788627012528a081972062cd08d9c",
+    "src/lib/voicemail-reader.test.ts": "a779b3dced67be4e9709e3eeb1436b3a9833c15eb5842f90a0b7f7f5a9df3bad"
+  },
+  "productionChanged": false,
+  "grantsCreated": 0,
+  "limitations": [
+    "No signed-in hosted acceptance or successful audio playback.",
+    "No real provider capture or route authority established.",
+    "No private messages published into shared cards or scoring.",
+    "Historical owner access after mailbox reassignment still requires verification."
+  ]
+}

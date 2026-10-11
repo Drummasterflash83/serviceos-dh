@@ -12,6 +12,11 @@ import {
   type VoicemailMessage,
 } from "@/lib/voicemails";
 import "./voicemails.css";
+import {
+  parseVoicemailMailboxes,
+  parseVoicemailMessages,
+  VOICEMAIL_MESSAGE_FIELDS,
+} from "@/lib/voicemail-reader";
 
 // Synthetic, explicitly labelled design preview. No real messages or playback URLs.
 const demoMailboxes: Mailbox[] = [
@@ -55,15 +60,17 @@ const demoMessages: VoicemailMessage[] = [
   },
 ];
 
-export default function VoicemailInbox({
-  tenant,
-  userId,
-  demo = false,
-}: {
-  tenant: string;
-  userId?: string;
-  demo?: boolean;
-}) {
+type InboxProps = { tenant: string; userId?: string; demo?: boolean };
+export default function VoicemailInbox(props: InboxProps) {
+  // A changed account/company must discard selection, message details and playback state.
+  return (
+    <ScopedVoicemailInbox
+      key={`${props.tenant}:${props.userId ?? ""}:${!!props.demo}`}
+      {...props}
+    />
+  );
+}
+function ScopedVoicemailInbox({ tenant, userId, demo = false }: InboxProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const mailboxes = useQuery({
@@ -71,12 +78,13 @@ export default function VoicemailInbox({
     enabled: !!userId && !demo,
     initialData: demo ? demoMailboxes : undefined,
     retry: false,
+    gcTime: 0,
     queryFn: async () => {
       const { data, error } = await getSupabaseClient().rpc("voicemail_mailbox_summary", {
         p_tenant: tenant,
       });
       if (error) throw error;
-      return (data ?? []) as Mailbox[];
+      return parseVoicemailMailboxes(data);
     },
   });
   const connectionNotice = voicemailConnectionNotice(mailboxes.data ?? []);
@@ -86,20 +94,18 @@ export default function VoicemailInbox({
     enabled: !!userId && !!mailbox && !demo,
     initialData: demo ? { rows: demoMessages, count: demoMessages.length } : undefined,
     retry: false,
+    gcTime: 0,
     queryFn: async () => {
       const { data, error, count } = await getSupabaseClient()
         .from("receptionist_voicemails")
-        .select(
-          "id,mailbox_id,caller_number,caller_name,received_at,duration_seconds,transcript,email_status,email_evidence_at,email_recipient,recording_available",
-          { count: "exact" },
-        )
+        .select(VOICEMAIL_MESSAGE_FIELDS, { count: "exact" })
         .eq("tenant_id", tenant)
         .eq("mailbox_id", selected!)
         .order("received_at", { ascending: false })
         .order("id", { ascending: false })
         .range(page * 20, page * 20 + 19);
       if (error) throw error;
-      return { rows: (data ?? []) as VoicemailMessage[], count: count ?? 0 };
+      return parseVoicemailMessages(data, count, tenant, selected!, page);
     },
   });
   return (
@@ -123,14 +129,16 @@ export default function VoicemailInbox({
           </p>
         </section>
       )}
-      {mailboxes.isPending ? (
+      {!userId && !demo ? (
+        <p role="status">Sign in to see the mailboxes your account can access.</p>
+      ) : mailboxes.isPending ? (
         <p role="status">Loading your mailboxes…</p>
       ) : mailboxes.isError ? (
         <section className="rw-panel" role="alert">
-          <h3>Voicemail access is awaiting setup</h3>
+          <h3>Mailboxes could not be checked</h3>
           <p>
-            We can’t load your mailboxes yet. OpenFolk needs to verify the Birchills message
-            connection and mailbox permissions. This does not mean you have no messages.
+            Refresh to try again, or ask OpenFolk to check the connection and your mailbox access.
+            This does not mean you have no messages.
           </p>
           <button
             className="rw-btn rw-btn-light"
@@ -222,7 +230,8 @@ export default function VoicemailInbox({
                   </p>
                   <small>
                     Counts cover messages saved in OpenFolk. Notification settings alone do not
-                    confirm an email was sent.
+                    confirm an email was sent. Saved messages do not establish complete provider
+                    history.
                   </small>
                 </div>
                 {messages.isPending ? (
@@ -231,16 +240,18 @@ export default function VoicemailInbox({
                   <p role="alert">Messages could not be loaded. Please try Refresh.</p>
                 ) : !messages.data?.rows.length ? (
                   <p>
-                    {mailbox.sync_state === "current"
-                      ? "No saved messages in this mailbox."
-                      : "Messages will appear after the provider connection is verified."}
+                    {page > 0
+                      ? "No saved messages on this page. Use Newer to return to earlier pages."
+                      : mailbox.sync_state === "current"
+                        ? "No saved messages in this mailbox."
+                        : "Messages will appear after the provider connection is verified."}
                   </p>
                 ) : (
                   messages.data.rows.map((message) => (
                     <Message key={message.id} message={message} tenant={tenant} />
                   ))
                 )}
-                {!!messages.data && messages.data.count > 20 && (
+                {!messages.isError && !!messages.data && (messages.data.count > 20 || page > 0) && (
                   <div className="vm-pages">
                     <button
                       className="rw-btn rw-btn-light"
@@ -250,7 +261,7 @@ export default function VoicemailInbox({
                       Newer
                     </button>
                     <span>
-                      Page {page + 1} of {Math.ceil(messages.data.count / 20)}
+                      Page {page + 1} · {messages.data.count} saved messages
                     </span>
                     <button
                       className="rw-btn rw-btn-light"

@@ -20,6 +20,7 @@ import {
 } from "@/lib/learn-launch";
 import "@/styles/learn-launch.css";
 import { LearnCards } from "./LearnCards";
+import { LearnVoicemails } from "./LearnVoicemails";
 import { LearnSlackSetup } from "./LearnSlackSetup";
 import { LearnFileImports } from "./LearnFileImports";
 import { LearnCommusoftCustomers } from "./LearnCommusoftCustomers";
@@ -171,6 +172,7 @@ export function LearnLaunchPortal({ tenantId }: { tenantId: string }) {
         </section>
       )}
       <LearnCards key={cardRevision} tenantId={tenantId} />
+      <LearnVoicemails key={`${user?.id}:${tenantId}`} tenantId={tenantId} actorId={user?.id} />
       <section className="cp-card">
         <h2>Customer and job systems</h2>
         <p>

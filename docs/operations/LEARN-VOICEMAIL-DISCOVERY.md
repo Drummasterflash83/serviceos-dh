@@ -1,5 +1,27 @@
 # Birchills voicemail: discovery before capture
 
+## Private inbox entry from LEARN — 12 October, local acceptance
+
+`LearnVoicemails` opens the existing `VoicemailInbox` from LEARN. It uses the same
+signed-in SECURITY INVOKER mailbox summary, message RLS and audited playback
+endpoint as Receptionist. No schema, mailbox grant or storage permission changes
+are involved. Private messages are not inserted into shared customer cards or
+performance observations. Operator aggregate visibility does not provide inbox access.
+
+The reader now verifies response shape, unique identities, company/mailbox binding,
+timestamps, counts and exact page size. Null/error responses do not become an empty
+inbox; a changed population can leave an empty later page with a Newer action.
+Account/company changes remount the inbox and discard selection, details and audio
+state. Private queries have zero unused-cache retention. Source failures still allow
+retained messages to be displayed when their own read succeeds. Saved-message counts
+do not attest complete provider history.
+
+Local browser verification uses controlled synthetic RPC/query responses, including
+a delayed old-account read. It proves frontend behaviour, not hosted permissions or
+successful audio playback. Real mailbox access, historical ownership/reassignment,
+private context linkage and signed-in acceptance still need verification.
+[Local evidence](evidence/learn-voicemail-inbox-local-2026-10-12.json).
+
 
 ## Recurring dispatch and operator status — 12 October, 00:29 BST
 

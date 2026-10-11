@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 00:46 BST — LEARN private voicemail entry and reader verified locally.**
+LEARN now opens the existing owner/manager inbox directly, without copying private
+messages into shared customer cards or scoring. The reader rejects unavailable
+summaries, unknown counts, truncated pages and company/mailbox mismatches. Account
+or company changes discard selection/details/playback state; unused private query
+data is removed from the query cache. The actual dialog was exercised locally with
+synthetic responses: paging, details, recording failure, mailbox failure, missing
+count and a delayed response after account switching all behaved as expected, with
+no browser console errors. Fifteen tests, full-project TypeScript and build passed.
+This is frontend/local evidence only; hosted signed-in playback, provider capture,
+historical mailbox ownership and private customer-context linkage remain open.
+[Evidence](evidence/learn-voicemail-inbox-local-2026-10-12.json).
+
 **11 October, 23:39 UTC (12 October, 00:39 BST) — matching voicemail controller frontend deployed to protected TEST.**
 Vercel deployment `dpl_HguNFttZTsfCoj6ZzHtpCqf9knNM` is READY from Git commit
 `89c44585824c2effc06a485be608f7cc13db7fbd`. The stable TEST alias points to this
