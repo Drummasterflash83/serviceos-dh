@@ -442,8 +442,11 @@ remains the separate reader with retained provenance checks.
   provider calls, new users or grants occurred.
 - Signed-in positive hosted acceptance of this older call screen and review flow
   **remains outstanding**. The completed playback run is separate evidence and
-  must not be reused after retirement. Frontend publication follows this source
-  checkpoint; see the deployment record for its final READY status.
+  must not be reused after retirement. The matching protected TEST frontend
+  `serviceos-learn-test-fpzgfbxtu-allkin.vercel.app` is READY at 12:56 UTC from
+  `a5f2329369b50194be4bcad59f29d31157d2717a`. Exact TEST backend binding and
+  three Vercel-protected routes passed. The actual `/app#communications` entry
+  redirects to same-origin sign-in, with zero observed browser errors.
 
 [Sanitized evidence](evidence/learn-call-detail-test-2026-10-11.json).
 

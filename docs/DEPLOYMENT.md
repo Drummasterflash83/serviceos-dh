@@ -50,6 +50,20 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The latest staging candidate is
+[serviceos-learn-test-fpzgfbxtu-allkin.vercel.app](https://serviceos-learn-test-fpzgfbxtu-allkin.vercel.app),
+built remotely from GitHub commit `a5f2329369b50194be4bcad59f29d31157d2717a`
+and READY at 12:56 UTC on 11 October. It fixes exact transcript linkage and
+unverified saved-analysis messaging in the older `/app#communications` detail.
+TEST `phone-call-detail` v1 is ACTIVE, JWT verified and serves response contract
+`phone-call-detail/2`; this endpoint must precede the matching frontend because
+its client rejects unversioned responses. Source readback and eight handler cases
+passed, three hosted access denials passed and all 113 retained datasets matched.
+No database migration, credential, account, grant, schedule or production change.
+The frontend's TEST binding, three protected routes, actual app login redirect
+and zero browser errors pass. Positive signed-in detail/review acceptance remains
+open. [Release evidence](operations/evidence/learn-call-detail-test-2026-10-11.json).
+
+The previous saved-results staging candidate is
 [serviceos-learn-test-ea944wgld-allkin.vercel.app](https://serviceos-learn-test-ea944wgld-allkin.vercel.app),
 built remotely from GitHub commit `508dc13172f80fa565e52802105951e01a6687b5`
 and READY at 12:32 UTC on 11 October. It adds paged saved transcripts and advisory

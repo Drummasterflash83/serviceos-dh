@@ -75,6 +75,43 @@
     "consoleErrors": 0
   },
   "frontend": {
-    "state": "pending_matching_protected_deployment"
+    "observedAt": "2026-10-11T12:56:47.901Z",
+    "id": "dpl_2oJThAzsis5g5mzTPFbZVa4E615R",
+    "url": "serviceos-learn-test-fpzgfbxtu-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "a5f2329369b50194be4bcad59f29d31157d2717a"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "backend": "saatxzwxvdvqevbnskxy",
+    "protectionChecks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ],
+    "actualBrowser": {
+      "requestedPath": "/app#communications",
+      "landedPath": "/login?redirect=%2Fapp",
+      "consoleErrors": 0,
+      "signedInAcceptance": false
+    }
   }
 }
