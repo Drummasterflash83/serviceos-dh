@@ -428,6 +428,41 @@ This milestone proves source-to-event publication. The next section adds hosted
 synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
+### Operator initial identity review installed — 11 October, 17:50 UTC
+
+- TEST release **065** adds a paged held-interaction list, tenant-scoped contact
+  search, exact source/contact/company comparison and audited operator decision.
+  The existing OpenFolk admin grant is required; no accounts, grants or schedules
+  were added. The unchanged automatic delivery API delegates to a private engine;
+  only the governed review action can supply an explicit contact choice.
+- Initial ambiguous/conflicting matches can be attributed to the chosen existing
+  contact and their displayed company. Card enrichment, event consumption and
+  immutable audit commit together. Previous canonical/contact/company snapshots
+  and the operator's reason are retained privately. Global contact verification,
+  raw sources, manual card locks and rejected suggestions are preserved.
+- Source/contact/company changes invalidate the review. Revoked access, tenant-only
+  membership, View-As and cross-client selections are denied. Offline PostgreSQL
+  checks prove late-audit failure rolls back all publication, identical concurrent
+  decisions share one receipt and competing contact choices cannot both publish.
+  The existing automatic identity/card assertion suite also passes.
+- Full TEST-schema and exact-package rehearsals passed and removed all fixtures.
+  Installation preserved **118 existing datasets** and added an empty private audit
+  table. Eight hosted anonymous/service endpoint denials preserved all **119
+  datasets** and the schema. No new session, provider request or production change.
+- The component is **local/Git only**: eight client tests, application TypeScript
+  and build pass. The actual local browser exercised unavailable reads, tenant
+  switching during a delayed comparison, the prior-rejection warning and a lost
+  reply recovered through the original receipt with exactly one apply. No console
+  errors were observed. This is synthetic UI acceptance, not signed-in hosted UAT.
+- **Still open:** frontend deployment and positive signed-in hosted review; broader
+  correction of previously delivered interactions/old cards and graph/history;
+  duplicate-contact merging, company edits, invalid/internal-source investigation;
+  real provider coverage and production acceptance. A new source revision can
+  require a new identity review; this is not a global verified-person override.
+
+[Operator procedure](LEARN-IDENTITY-REVIEW.md) ·
+[Sanitized TEST evidence](evidence/learn-identity-review-test-2026-10-11.json).
+
 ### Operator projection review backend installed — 11 October, 17:30 UTC
 
 - TEST release **064** adds an authenticated OpenFolk review list, exact source
@@ -455,7 +490,7 @@ synthetic card delivery; real-provider and signed-in acceptance remain open.
   account/grant/session, provider call or production change occurred. The current
   protected frontend URL was not replaced.
 - **Outstanding:** matching frontend deployment and positive signed-in hosted
-  review; identity-match resolution; operator workflows for the explicitly held
+  review; broader identity correction (initial holds addressed by 065 above); operator workflows for the explicitly held
   exceptional cases; real-provider capture/coverage and unattended recovery.
 
 [Sanitized TEST evidence](evidence/learn-projection-review-test-2026-10-11.json).
@@ -522,7 +557,7 @@ bundler. No differing runtime module remains after accounting for equivalent
 logical grouping and the optional block around a for-of statement.
 
 **Still open:** real-provider/data-coverage and signed-in acceptance; an authorised
-review/requeue UI for `identity_review` cases (their events remain pending); legacy
+signed-in review of initial `identity_review` cases (065 above) and broader attribution corrections; legacy
 projection review acceptance (063/064 above); and generic queue-loss recovery. The manually
 invoked `identity-resolve` wrapper now reports partial failures correctly locally,
 but is absent from TEST and needs job-admission/settlement hardening before deployment.

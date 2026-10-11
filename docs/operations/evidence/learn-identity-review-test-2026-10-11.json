@@ -1,0 +1,94 @@
+{
+  "state": "backend_installed_in_test_frontend_verified_locally",
+  "observedAt": "2026-10-11T17:50:42.740Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "065",
+  "packageSha256": "c78ccc8d65cebe5428055286de0fdc6aa32043a6754b25ef246578d9c3468007",
+  "sourceSha256": "5944b4e61b2a6e82b1cf8f49e470a1a23afe11ba60d13d2b3dafcbcd06177e1b",
+  "catalogFingerprint": "d6a28f8f2e3cf36b9660ba0386077eb6",
+  "preservedDatasetsAtInstallation": 118,
+  "preservedDatasetsAfterHttp": 119,
+  "newPersistentUsers": 0,
+  "newGrants": 0,
+  "newSessions": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "frontendDeployed": false,
+  "positiveSignedInHostedAcceptance": false,
+  "httpDenials": [
+    {
+      "role": "anon",
+      "name": "learn_operator_identity_reviews",
+      "status": 401
+    },
+    {
+      "role": "anon",
+      "name": "learn_operator_identity_review_detail",
+      "status": 401
+    },
+    {
+      "role": "anon",
+      "name": "learn_operator_identity_people",
+      "status": 401
+    },
+    {
+      "role": "anon",
+      "name": "learn_operator_identity_review",
+      "status": 401
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_identity_reviews",
+      "status": 403
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_identity_review_detail",
+      "status": 403
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_identity_people",
+      "status": 403
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_identity_review",
+      "status": 403
+    }
+  ],
+  "verification": {
+    "fullSchemaRollback": true,
+    "exactPackageRollback": true,
+    "clientTests": 8,
+    "applicationTypeScript": true,
+    "applicationBuild": true,
+    "databaseChecks": [
+      "Original automatic identity/card delivery regression assertions pass with the private engine wrapper",
+      "Initial ambiguous contact selection delivers card, event and immutable audit atomically",
+      "Original canonical row and reviewed contact/company snapshots are retained privately",
+      "Existing rejected suggestions, unverified contact status and manually locked card fields are preserved",
+      "Changed source, chosen contact and company invalidate the reviewed revision",
+      "Late audit failure rolls back card, event, attribution and delivery receipt",
+      "Exact replay, cancellation, tenant isolation, viewer/tenant-only/actor/View-As/revocation checks pass",
+      "Service and browser roles cannot invoke the private attribution engine or read its raw audit",
+      "Paged contact/hold searches are bounded",
+      "Overlapping identical decisions return one receipt; competing contact selections cannot both commit",
+      "Previously delivered interactions require separate broader reconciliation"
+    ],
+    "localBrowser": [
+      "Failed reads show unavailable, not an empty healthy state",
+      "Delayed comparison is discarded after switching companies",
+      "Source/contact/company and prior rejection are visible before explicit reason and confirmation",
+      "Lost apply response retains the saved request",
+      "Retry obtains the recorded result with exactly one apply",
+      "Zero console errors observed"
+    ]
+  },
+  "remaining": [
+    "Deploy matching frontend and complete positive signed-in hosted acceptance",
+    "Reconcile previous cards, recommendations, graph and history when correcting existing attribution",
+    "Duplicate-person merging, company editing and invalid/internal-source investigation",
+    "Real provider coverage, unattended operations and production release acceptance"
+  ]
+}
