@@ -31,6 +31,7 @@ import {
 import { getCardsSummary, type CardsSummary } from "@/lib/cards";
 import { getMatchSummary, type MatchSummary } from "@/lib/matching";
 import { getSchedulerHealth, type SchedulerHealthItem } from "@/lib/scheduler-health";
+import { schedulerStatusLabels } from "@/lib/scheduler-outcome";
 import { getLiveCallOpsSummary, type LiveCallOpsSummary } from "@/lib/live-calls";
 import { getIdentitySummary, type IdentitySummary } from "@/lib/identity";
 import { getPhonePipelineStatus, getEmailConnectorStatus } from "@/lib/api";
@@ -673,7 +674,7 @@ export function OperationsOverview({
         <div className="rounded-2xl border border-hairline bg-white p-6">
           <div className="text-sm font-semibold">Scheduler health</div>
           <div className="text-xs text-muted-foreground">
-            Automatic processing cadence — “never” means the cron isn’t configured yet.
+            Scheduling activity and recorded outcomes. Capture completion is checked separately.
           </div>
           {!schedulerItems ? (
             <p className="mt-3 text-xs text-muted-foreground">Scheduler status unavailable.</p>
@@ -690,14 +691,12 @@ export function OperationsOverview({
                       className={
                         s.status === "healthy"
                           ? "text-success"
-                          : s.status === "stale"
+                          : ["stale", "failed", "paused"].includes(s.status)
                             ? "text-warning"
-                            : s.status === "never"
-                              ? "text-muted-foreground"
-                              : "text-destructive"
+                            : "text-muted-foreground"
                       }
                     >
-                      {s.status}
+                      {schedulerStatusLabels[s.status]}
                     </span>
                   </span>
                 </li>

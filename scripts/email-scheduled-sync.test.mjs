@@ -6,7 +6,7 @@ import ts from "typescript";
 
 // Execute the real Edge handler with synthetic database/queue ports. No provider
 // tokens, live scheduling, network requests or source messages are involved.
-function harness(accounts, { readError = false, writeError = false } = {}) {
+function harness(accounts, { readError = false, writeError = false, enqueueResult } = {}) {
   let handler;
   const jobs = [],
     heartbeats = [],
@@ -56,11 +56,25 @@ function harness(accounts, { readError = false, writeError = false } = {}) {
     Date,
     require(name) {
       if (name.includes("@supabase/")) return { createClient: () => db };
+      if (name.endsWith("email_scheduler_health.ts")) {
+        const exports = {};
+        runInNewContext(
+          ts.transpileModule(
+            readFileSync(
+              new URL("../supabase/functions/_shared/email_scheduler_health.ts", import.meta.url),
+              "utf8",
+            ),
+            { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
+          ).outputText,
+          { exports, Date },
+        );
+        return exports;
+      }
       if (name.endsWith("platform_queue.ts"))
         return {
           enqueueJob: async (_db, input) => {
             jobs.push(input);
-            return { id: "synthetic-job", duplicate: false };
+            return enqueueResult ?? { id: "synthetic-job", duplicate: false };
           },
         };
       throw Error("Unexpected dependency");
@@ -101,6 +115,26 @@ const account = (id, auth_state, tenant_id = "tenant-a", status = "active") => (
   tenant_id,
   status,
   provider: "gmail",
+});
+test("queue uncertainty fails the heartbeat; an intentional pause is explicit", async () => {
+  for (const enqueueResult of [
+    { id: null, duplicate: false },
+    { id: null, duplicate: true },
+    { id: null, duplicate: false, captureWaiting: "unavailable" },
+  ]) {
+    const h = harness([account("eligible", "ok")], { enqueueResult });
+    const result = await h.run();
+    assert.equal(result.status, 503);
+    assert.equal(h.heartbeats[0].status, "failed");
+    assert.equal(h.heartbeats[0].records_processed, 0);
+    assert.equal(h.heartbeats[0].metadata.enqueue_unconfirmed, 1);
+  }
+  const paused = harness([account("eligible", "ok")], {
+    enqueueResult: { id: null, duplicate: false, captureWaiting: "paused" },
+  });
+  assert.equal((await paused.run()).body.capture_paused, 1);
+  assert.equal(paused.heartbeats[0].metadata.capture_paused, 1);
+  assert.equal(paused.heartbeats[0].records_processed, 0);
 });
 test("revoked, expired and missing auth state never enqueue; eligible OAuth continues across tenants", async () => {
   const h = harness([

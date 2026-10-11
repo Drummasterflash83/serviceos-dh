@@ -11,6 +11,12 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import {
+  emptySchedulerCounts,
+  recordSchedulerHeartbeat,
+  scheduleAndCount,
+} from "../_shared/email_scheduler_health.ts";
+import type { SchedulerCounts } from "../_shared/email_scheduler_health.ts";
 
 const PROVIDER = "gmail";
 // Bounded per tick so a large backfill drains gradually without flooding the queue.
@@ -57,8 +63,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
   if (!supabase) return fail("config_error", "Supabase admin client is not configured", 500);
 
-  // Mailboxes with an in-progress backfill, oldest-touched first (no starvation).
-  const { data: accounts, error } = await supabase
+  const { data: conns, error: connectionError } = await supabase
+    .from("google_workspace_connections")
+    .select("tenant_id")
+    .neq("status", "disabled");
+  if (connectionError) return fail("db_error", "Could not list Workspace connections", 500);
+  // Only explicitly running backfills; this never starts a historical import.
+  const { data: accounts, error: accountError } = await supabase
     .from("email_accounts")
     .select("id, tenant_id")
     .eq("provider", PROVIDER)
@@ -66,48 +77,70 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq("backfill_status", "running")
     .order("updated_at", { ascending: true })
     .limit(MAX_MAILBOXES);
-  if (error) return fail("db_error", "Could not list backfill mailboxes", 500);
-
-  let queued = 0;
-  let duplicates = 0;
-  for (const acc of accounts ?? []) {
-    const r = await enqueueJob(supabase, {
-      tenantId: acc.tenant_id as string,
-      jobType: "email.workspace_backfill",
-      jobKey: `email.workspace_backfill:${acc.id}`,
-      connectorId: "google-workspace",
-      moduleId: "communications.email",
-      priority: BACKFILL_PRIORITY,
-      payload: { email_account_id: acc.id },
-    });
-    if (r.duplicate) duplicates += 1;
-    else if (r.id) queued += 1;
+  const perTenant = new Map<string, SchedulerCounts>();
+  for (const conn of conns ?? []) perTenant.set(conn.tenant_id, emptySchedulerCounts());
+  if (!accountError) {
+    for (const acc of accounts ?? []) {
+      const tid = acc.tenant_id as string;
+      const counts = perTenant.get(tid) ?? emptySchedulerCounts();
+      perTenant.set(tid, counts);
+      await scheduleAndCount(
+        supabase,
+        {
+          tenantId: tid,
+          jobType: "email.workspace_backfill",
+          jobKey: `email.workspace_backfill:${acc.id}`,
+          connectorId: "google-workspace",
+          moduleId: "communications.email",
+          priority: BACKFILL_PRIORITY,
+          payload: { email_account_id: acc.id },
+        },
+        counts,
+        enqueueJob,
+      );
+    }
   }
-
-  // Scheduler-acceptance HEARTBEAT per configured Workspace tenant — backfill is
-  // idle most of the time (admin-initiated), and an idle tick is HEALTHY, not
-  // stale. Heartbeat every tenant with a Workspace connection so scheduler-health
-  // ('workspace_backfill_scheduled') is truthful even with zero running backfills.
-  const { data: conns } = await supabase
-    .from("google_workspace_connections")
-    .select("tenant_id")
-    .neq("status", "disabled");
-  const tenantIds = Array.from(
-    new Set(((conns ?? []) as { tenant_id: string }[]).map((c) => c.tenant_id)),
+  let heartbeatConfirmed = true;
+  for (const [tid, counts] of perTenant) {
+    if (
+      !(await recordSchedulerHeartbeat(
+        supabase,
+        tid,
+        "workspace_backfill_scheduled",
+        counts,
+        { running_backfills_enqueued: counts.queued },
+        !!accountError,
+      ))
+    )
+      heartbeatConfirmed = false;
+  }
+  if (!heartbeatConfirmed)
+    return fail(
+      "heartbeat_unconfirmed",
+      "Scheduler results could not be recorded. Check queued jobs before retrying.",
+      503,
+    );
+  if (accountError) return fail("db_error", "Could not list backfill mailboxes", 500);
+  const totals = [...perTenant.values()].reduce(
+    (all, c) => ({
+      queued: all.queued + c.queued,
+      duplicates: all.duplicates + c.duplicates,
+      paused: all.paused + c.paused,
+      unconfirmed: all.unconfirmed + c.unconfirmed,
+    }),
+    emptySchedulerCounts(),
   );
-  const hbIso = new Date().toISOString();
-  for (const tid of tenantIds) {
-    await supabase.from("email_sync_runs").insert({
-      tenant_id: tid,
-      provider: PROVIDER,
-      sync_type: "workspace_backfill_scheduled",
-      status: "success",
-      started_at: hbIso,
-      completed_at: hbIso,
-      records_processed: queued,
-      metadata: { heartbeat: true, running_backfills_enqueued: queued },
-    });
-  }
-
-  return json({ success: true, mailboxes: (accounts ?? []).length, queued, duplicates });
+  if (totals.unconfirmed)
+    return fail(
+      "enqueue_unconfirmed",
+      "Some scheduling results are uncertain. Check queued jobs before retrying.",
+      503,
+    );
+  return json({
+    success: true,
+    mailboxes: (accounts ?? []).length,
+    queued: totals.queued,
+    duplicates: totals.duplicates,
+    capture_paused: totals.paused,
+  });
 });

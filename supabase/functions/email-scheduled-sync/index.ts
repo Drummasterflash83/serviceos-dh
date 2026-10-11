@@ -11,6 +11,12 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import {
+  emptySchedulerCounts,
+  recordSchedulerHeartbeat,
+  scheduleAndCount,
+} from "../_shared/email_scheduler_health.ts";
+import type { SchedulerCounts } from "../_shared/email_scheduler_health.ts";
 
 const PROVIDER = "gmail";
 const MAX_RESULTS = 25;
@@ -61,17 +67,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq("status", "active");
   if (error) return fail("db_error", "Could not list Gmail accounts", 500);
 
-  let queued = 0;
-  let duplicates = 0;
   let skippedAuthRequired = 0;
   // Per-tenant tallies so each tenant gets a truthful scheduler heartbeat.
-  const perTenant = new Map<
-    string,
-    { queued: number; duplicates: number; skippedAuthRequired: number }
-  >();
+  const perTenant = new Map<string, SchedulerCounts & { skippedAuthRequired: number }>();
   for (const acc of accounts ?? []) {
     const tid = acc.tenant_id as string;
-    const t = perTenant.get(tid) ?? { queued: 0, duplicates: 0, skippedAuthRequired: 0 };
+    const t = perTenant.get(tid) ?? { ...emptySchedulerCounts(), skippedAuthRequired: 0 };
     perTenant.set(tid, t);
     // Match the capture engine's OAuth admission. A revoked/expired connection
     // needs reconnection, not a fresh doomed job on every scheduler tick. Keep a
@@ -81,58 +82,61 @@ Deno.serve(async (req: Request): Promise<Response> => {
       t.skippedAuthRequired += 1;
       continue;
     }
-    const r = await enqueueJob(supabase, {
-      tenantId: tid,
-      jobType: "email.gmail_sync",
-      jobKey: `email.gmail_sync:${acc.id}`,
-      connectorId: "gmail",
-      moduleId: "communications.email",
-      payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
-    });
-    if (r.duplicate) {
-      duplicates += 1;
-      t.duplicates += 1;
-    } else if (r.id) {
-      queued += 1;
-      t.queued += 1;
-    }
+    await scheduleAndCount(
+      supabase,
+      {
+        tenantId: tid,
+        jobType: "email.gmail_sync",
+        jobKey: `email.gmail_sync:${acc.id}`,
+        connectorId: "gmail",
+        moduleId: "communications.email",
+        payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
+      },
+      t,
+      enqueueJob,
+    );
     perTenant.set(tid, t);
   }
 
-  // Scheduler-acceptance HEARTBEAT: scheduler-health.ts reads the latest
-  // email_sync_runs row of sync_type='scheduled_sync'. A no-op run (0 accounts /
-  // 0 enqueued) is still SUCCESS — the scheduler ran, so it is not "stale". No
-  // provider content is written; this only proves the tick executed.
-  const nowIso = new Date().toISOString();
+  // This proves scheduling only, never completed email capture. Paused work is
+  // explicit; an uncertain queue or heartbeat write cannot claim success.
+  let heartbeatConfirmed = true;
   for (const [tid, counts] of perTenant) {
-    const { error: heartbeatError } = await supabase.from("email_sync_runs").insert({
-      tenant_id: tid,
-      provider: PROVIDER,
-      sync_type: "scheduled_sync",
-      status: "success",
-      started_at: nowIso,
-      completed_at: nowIso,
-      records_processed: counts.queued,
-      metadata: {
-        heartbeat: true,
-        queued: counts.queued,
-        duplicates: counts.duplicates,
+    if (
+      !(await recordSchedulerHeartbeat(supabase, tid, "scheduled_sync", counts, {
         skipped_auth_required: counts.skippedAuthRequired,
-      },
-    });
-    if (heartbeatError)
-      return fail(
-        "heartbeat_unconfirmed",
-        "Scheduler results could not be recorded. Check queued jobs before retrying.",
-        503,
-      );
+      }))
+    )
+      heartbeatConfirmed = false;
   }
+  if (!heartbeatConfirmed)
+    return fail(
+      "heartbeat_unconfirmed",
+      "Scheduler results could not be recorded. Check queued jobs before retrying.",
+      503,
+    );
+  const totals = [...perTenant.values()].reduce(
+    (all, c) => ({
+      queued: all.queued + c.queued,
+      duplicates: all.duplicates + c.duplicates,
+      paused: all.paused + c.paused,
+      unconfirmed: all.unconfirmed + c.unconfirmed,
+    }),
+    emptySchedulerCounts(),
+  );
+  if (totals.unconfirmed)
+    return fail(
+      "enqueue_unconfirmed",
+      "Some scheduling results are uncertain. Check queued jobs before retrying.",
+      503,
+    );
 
   return json({
     success: true,
     accounts: (accounts ?? []).length,
-    queued,
-    duplicates,
+    queued: totals.queued,
+    duplicates: totals.duplicates,
+    capture_paused: totals.paused,
     skipped_auth_required: skippedAuthRequired,
   });
 });

@@ -134,6 +134,43 @@ succeeded after that failure; no worker was invoked and no source record changed
 [Release evidence](evidence/learn-email-diagnostic-test-2026-10-11.json) and
 [HTTP evidence](evidence/learn-email-diagnostic-http-2026-10-11.json).
 
+### Scheduler outcomes — local correction, 11 October, 14:03 UTC
+
+The OAuth and Workspace schedulers could report a successful no-op when queue
+submission or capture admission was unconfirmed. The backfill heartbeat also
+copied its global queued count into every configured company's receipt. The
+legacy health reader selected only a timestamp, so even a fresh failed receipt
+could appear healthy.
+
+The local candidate now records per-company confirmed new jobs, confirmed
+duplicates, paused attempts and unconfirmed outcomes separately. A failed or
+unknown enqueue marks that company's heartbeat failed and returns HTTP 503;
+heartbeat-write failure also returns an uncertain result while attempting other
+companies' receipts. Connection/account/discovery reads no longer silently become
+empty successful inventories, and raw database error prose is withheld. The
+existing OAuth auth-state guard, five-mailbox backfill bound, explicit-running
+backfill requirement and discovery throttle remain. No historical import is
+started automatically.
+
+The client evaluates outcome as well as freshness: **Needs attention**, **Includes
+paused inputs**, **On schedule**, **Overdue**, **Not observed** and **Unverified**
+are distinct. Scheduling evidence is not described as completed capture.
+Twenty-four focused checks pass, including actual scheduler-handler receipts fed
+to the client verdict, two-company isolation, failed reads/enqueues, pause,
+duplicate uncertainty, discovery and heartbeat failure. Strict Edge and application
+TypeScript checks and the production build (47 prebuild checks) pass.
+
+**Not deployed.** The 14:01 read-only TEST inventory confirms all three email
+scheduler endpoints and their trigger-secret names are absent. The 14:03 TEST
+permission check also denies authenticated SELECT of the legacy reader's status/
+metadata columns. A bounded, tenant-scoped reader is required for hosted acceptance;
+do not solve this by broadly exposing scheduler/source tables. Secure trigger
+provisioning, reviewed runtime installation, signed-in acceptance and explicit
+schedule activation remain. The fresh combined production/TEST aggregate audit
+failed and produced no replacement baseline; it does not prove a source loss or
+service failure. No production, provider, credential, schedule or access change
+occurred. [Evidence](evidence/learn-email-scheduler-outcomes-local-2026-10-11.json).
+
 ## Working and verified in production
 
 - [x] Retained source inventory and recording object-size metadata observed at the

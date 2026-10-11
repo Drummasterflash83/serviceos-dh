@@ -360,6 +360,24 @@ limit 20;
 
 ### 3. `email-scheduled-sync`
 
+**LEARN V1 candidate update, 11 October 2026 — local only:** OAuth, Workspace
+recent-mail and Workspace backfill schedulers now preserve per-company scheduling
+outcomes. Successful scheduling does not attest completed mail capture. Confirmed
+duplicates are distinct from new jobs; paused inputs are explicit. Queue/admission
+uncertainty records a failed heartbeat and returns `enqueue_unconfirmed` (503).
+An unconfirmed heartbeat write returns `heartbeat_unconfirmed` (503); inspect
+existing queue entries before retrying. Account/connection inventory failure is
+not an empty success. Backfill counts are scoped to each company, never copied
+from a global total. Existing authenticated scheduler secrets remain required.
+
+TEST currently has none of these three endpoints or their trigger secrets. This
+candidate is not active there or in production. The current legacy health reader
+also needs a bounded tenant-scoped read contract for TEST; existing column grants
+do not permit its direct reads. See the
+[current acceptance checklist](LEARN-V1-COMPLETION.md#scheduler-outcomes--local-correction-11-october-1403-utc)
+for evidence and remaining installation/acceptance steps. Older response examples
+below describe historical deployments, not the candidate's verified contract.
+
 - **Purpose:** ingest recent Gmail (OAuth) messages for each connected mailbox.
 - **Cadence:** every **5 minutes**. **Secret:** `EMAIL_SCHEDULE_SECRET`.
 

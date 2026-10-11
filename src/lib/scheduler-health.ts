@@ -6,11 +6,12 @@
  * "never" rather than a fake healthy state.
  */
 
-import { CADENCE_SEC, staleAfterSec } from "./health-model";
+import { CADENCE_SEC } from "./health-model";
+import { schedulerOutcome, type SchedulerStatus } from "./scheduler-outcome";
 import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import type { ApiResult } from "./types";
 
-export type SchedulerStatus = "healthy" | "stale" | "never" | "unknown";
+export type { SchedulerStatus } from "./scheduler-outcome";
 
 export interface SchedulerHealthItem {
   name: string;
@@ -125,15 +126,6 @@ const SCHEDULERS: SchedulerDef[] = [
   },
 ];
 
-function statusFor(lastRunAt: string | null, expectedIntervalSec: number): SchedulerStatus {
-  if (!lastRunAt) return "never";
-  const t = Date.parse(lastRunAt);
-  if (Number.isNaN(t)) return "unknown";
-  const ageSec = (Date.now() - t) / 1000;
-  // Single source of truth: cadence × HEALTH_STALE_MULTIPLIER (see health-model).
-  return ageSec <= staleAfterSec(expectedIntervalSec) ? "healthy" : "stale";
-}
-
 /** Per-scheduler last-run + freshness. Best-effort per item (read error → unknown). */
 export async function getSchedulerHealth(): Promise<ApiResult<SchedulerHealthItem[]>> {
   if (!isSupabaseConfigured()) {
@@ -146,7 +138,13 @@ export async function getSchedulerHealth(): Promise<ApiResult<SchedulerHealthIte
       try {
         const { data, error } = await supabase
           .from(def.table)
-          .select(def.tsColumn)
+          .select(
+            `${def.tsColumn},status${
+              def.table === "email_sync_runs"
+                ? ",capture_paused:metadata->capture_paused,enqueue_unconfirmed:metadata->enqueue_unconfirmed,inventory_unavailable:metadata->inventory_unavailable"
+                : ""
+            }`,
+          )
           .eq(def.typeColumn, def.typeValue)
           .order(def.tsColumn, { ascending: false, nullsFirst: false })
           .limit(1)
@@ -160,14 +158,16 @@ export async function getSchedulerHealth(): Promise<ApiResult<SchedulerHealthIte
             status: "unknown",
           };
         }
-        const row = data as Record<string, string | null> | null;
-        const lastRunAt = row ? (row[def.tsColumn] ?? null) : null;
+        const outcome = schedulerOutcome(
+          data as Record<string, unknown> | null,
+          def.tsColumn,
+          def.expectedIntervalSec,
+        );
         return {
           name: def.name,
           label: def.label,
           expectedIntervalSec: def.expectedIntervalSec,
-          lastRunAt,
-          status: statusFor(lastRunAt, def.expectedIntervalSec),
+          ...outcome,
         };
       } catch {
         return {

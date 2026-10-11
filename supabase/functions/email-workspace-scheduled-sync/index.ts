@@ -10,6 +10,12 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { enqueueJob } from "../_shared/platform_queue.ts";
+import {
+  emptySchedulerCounts,
+  recordSchedulerHeartbeat,
+  scheduleAndCount,
+} from "../_shared/email_scheduler_health.ts";
+import type { SchedulerCounts } from "../_shared/email_scheduler_health.ts";
 
 const PROVIDER = "gmail";
 const DWD_STATUSES = ["pending_tokenless_dwd", "active_dwd"];
@@ -56,104 +62,124 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
   if (!supabase) return fail("config_error", "Supabase admin client is not configured", 500);
 
-  // 1) Enqueue a discovery job per configured Workspace tenant (throttled) so
-  //    mailboxes stay current WITHOUT anyone clicking "Discover".
-  const { data: conns } = await supabase
+  // Establish both inventories before scheduling; failed reads are not empty lists.
+  const { data: conns, error: connectionError } = await supabase
     .from("google_workspace_connections")
     .select("tenant_id")
     .neq("status", "disabled");
+  if (connectionError) return fail("db_error", "Could not list Workspace connections", 500);
   const tenantIds = Array.from(
     new Set(((conns ?? []) as { tenant_id: string }[]).map((c) => c.tenant_id)),
   );
-  let discoveryQueued = 0;
-  let queued = 0;
-  let duplicates = 0;
-  let mailboxCount = 0;
-  let enqueueError: string | null = null;
-  const perTenant = new Map<string, number>();
-  const nowMs = Date.now();
-
-  try {
-    for (const tenantId of tenantIds) {
-      // Throttle: skip if a discovery succeeded within the interval.
-      const { data: lastDisc } = await supabase
+  const { data: accounts, error: accountError } = await supabase
+    .from("email_accounts")
+    .select("id, tenant_id")
+    .eq("provider", PROVIDER)
+    .in("status", DWD_STATUSES);
+  const perTenant = new Map<string, SchedulerCounts>();
+  const mailboxQueued = new Map<string, number>();
+  const discoveryCounts = new Map<string, number>();
+  for (const tid of tenantIds) perTenant.set(tid, emptySchedulerCounts());
+  for (const acc of accountError ? [] : (accounts ?? [])) {
+    if (!perTenant.has(acc.tenant_id)) perTenant.set(acc.tenant_id, emptySchedulerCounts());
+  }
+  let discoveryQueued = 0,
+    queued = 0,
+    duplicates = 0;
+  if (!accountError) {
+    for (const tid of tenantIds) {
+      const counts = perTenant.get(tid)!;
+      const { data: lastDisc, error: discoveryError } = await supabase
         .from("email_sync_runs")
         .select("completed_at")
-        .eq("tenant_id", tenantId)
+        .eq("tenant_id", tid)
         .eq("sync_type", "workspace_discover")
         .eq("status", "success")
         .order("completed_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      const lastMs = lastDisc?.completed_at ? Date.parse(lastDisc.completed_at as string) : 0;
-      if (lastMs && nowMs - lastMs < DISCOVERY_MIN_INTERVAL_MS) continue;
-      const r = await enqueueJob(supabase, {
-        tenantId,
-        jobType: "email.mailbox_discovery",
-        jobKey: `email.mailbox_discovery:${tenantId}`,
-        connectorId: "google-workspace",
-        moduleId: "communications.email",
-      });
-      if (r.id && !r.duplicate) discoveryQueued += 1;
+      const lastMs = lastDisc?.completed_at ? Date.parse(lastDisc.completed_at as string) : null;
+      if (discoveryError || (lastMs !== null && !Number.isFinite(lastMs))) {
+        counts.unconfirmed++;
+        continue;
+      }
+      if (lastMs !== null && Date.now() - lastMs < DISCOVERY_MIN_INTERVAL_MS) continue;
+      const before = counts.queued;
+      await scheduleAndCount(
+        supabase,
+        {
+          tenantId: tid,
+          jobType: "email.mailbox_discovery",
+          jobKey: `email.mailbox_discovery:${tid}`,
+          connectorId: "google-workspace",
+          moduleId: "communications.email",
+        },
+        counts,
+        enqueueJob,
+      );
+      discoveryQueued += counts.queued - before;
+      discoveryCounts.set(tid, counts.queued - before);
     }
-
-    // 2) Enqueue one live-sync job per enabled DWD mailbox across all tenants.
-    const { data: accounts, error } = await supabase
-      .from("email_accounts")
-      .select("id, tenant_id")
-      .eq("provider", PROVIDER)
-      .in("status", DWD_STATUSES);
-    if (error) throw new Error(`Could not list DWD mailboxes: ${error.message}`);
-    mailboxCount = (accounts ?? []).length;
-
     for (const acc of accounts ?? []) {
-      const tid = acc.tenant_id as string;
-      const r = await enqueueJob(supabase, {
-        tenantId: tid,
-        jobType: "email.workspace_sync",
-        jobKey: `email.workspace_sync:${acc.id}`,
-        connectorId: "google-workspace",
-        moduleId: "communications.email",
-        payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
-      });
-      if (r.duplicate) duplicates += 1;
-      else if (r.id) queued += 1;
-      if (r.id || r.duplicate) perTenant.set(tid, (perTenant.get(tid) ?? 0) + 1);
-    }
-  } catch (e) {
-    // A slow/failing enqueue phase must NOT starve the freshness heartbeat below.
-    enqueueError = e instanceof Error ? e.message : String(e);
-  } finally {
-    // Scheduler-acceptance HEARTBEAT per configured Workspace tenant (sync-health
-    // reads the latest 'workspace_scheduled_sync' row). It proves the scheduler
-    // EXECUTED and is servicing the connector — a no-op run is SUCCESS. Written in
-    // `finally` so a single bad tick never ages the connector into STALE. Sync
-    // success/failure of actual mail is recorded separately by the worker jobs
-    // (workspace_messages rows), so this never masks a real sync failure.
-    const hbIso = new Date().toISOString();
-    for (const tid of tenantIds) {
-      await supabase.from("email_sync_runs").insert({
-        tenant_id: tid,
-        provider: PROVIDER,
-        sync_type: "workspace_scheduled_sync",
-        status: "success",
-        started_at: hbIso,
-        completed_at: hbIso,
-        records_processed: perTenant.get(tid) ?? 0,
-        metadata: { heartbeat: true, mailboxes_enqueued: perTenant.get(tid) ?? 0 },
-      });
+      const tid = acc.tenant_id as string,
+        counts = perTenant.get(tid)!;
+      const before = { ...counts };
+      await scheduleAndCount(
+        supabase,
+        {
+          tenantId: tid,
+          jobType: "email.workspace_sync",
+          jobKey: `email.workspace_sync:${acc.id}`,
+          connectorId: "google-workspace",
+          moduleId: "communications.email",
+          payload: { email_account_id: acc.id, max_results: MAX_RESULTS },
+        },
+        counts,
+        enqueueJob,
+      );
+      queued += counts.queued - before.queued;
+      duplicates += counts.duplicates - before.duplicates;
+      mailboxQueued.set(tid, (mailboxQueued.get(tid) ?? 0) + counts.queued - before.queued);
     }
   }
-
-  // Surface a real enqueue failure (NOT masked) — the heartbeat already recorded
-  // that the scheduler ran, so this won't false-flag the connector as stale.
-  if (enqueueError) return fail("db_error", enqueueError, 500);
-
+  let heartbeatConfirmed = true;
+  for (const [tid, counts] of perTenant) {
+    if (
+      !(await recordSchedulerHeartbeat(
+        supabase,
+        tid,
+        "workspace_scheduled_sync",
+        counts,
+        {
+          mailboxes_enqueued: mailboxQueued.get(tid) ?? 0,
+          discovery_enqueued: discoveryCounts.get(tid) ?? 0,
+        },
+        !!accountError,
+      ))
+    ) {
+      heartbeatConfirmed = false;
+    }
+  }
+  if (!heartbeatConfirmed)
+    return fail(
+      "heartbeat_unconfirmed",
+      "Scheduler results could not be recorded. Check queued jobs before retrying.",
+      503,
+    );
+  if (accountError) return fail("db_error", "Could not list DWD mailboxes", 500);
+  const counts = [...perTenant.values()];
+  if (counts.some((c) => c.unconfirmed))
+    return fail(
+      "enqueue_unconfirmed",
+      "Some scheduling results are uncertain. Check queued jobs before retrying.",
+      503,
+    );
   return json({
     success: true,
-    mailboxes: mailboxCount,
+    mailboxes: (accounts ?? []).length,
     queued,
     duplicates,
     discovery_queued: discoveryQueued,
+    capture_paused: counts.reduce((n, c) => n + c.paused, 0),
   });
 });

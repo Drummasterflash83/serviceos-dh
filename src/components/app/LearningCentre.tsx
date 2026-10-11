@@ -88,7 +88,7 @@ export function LearningCentre() {
           <Metric label="Enriched interactions" value={String(data.learning.enriched)} />
           <Metric label="Oldest pending" value={ago(data.learning.oldestPendingAt)} small />
           <Metric
-            label="Schedulers healthy"
+            label="Schedulers on schedule"
             value={`${healthySchedulers}/${data.schedulers.length}`}
           />
         </div>

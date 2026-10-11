@@ -1,0 +1,45 @@
+{
+  "scope": "local-actual-scheduler-handlers-and-client-outcome-projection",
+  "observedDate": "2026-10-11",
+  "focusedTests": { "passed": 24, "failed": 0 },
+  "strictEdgeTypeScript": "passed-with-existing-edge-declarations",
+  "applicationTypeScript": "passed",
+  "applicationBuild": "passed",
+  "prebuildTests": { "passed": 47, "failed": 0 },
+  "verified": [
+    "Unconfirmed queue/admission outcomes cannot become successful no-op heartbeats",
+    "New queued work and confirmed duplicates are separately counted per company",
+    "Paused capture stays distinct from scheduling failure",
+    "Connection, account and discovery read errors are not empty successful inventories",
+    "Heartbeat failures do not prevent other companies receiving receipts",
+    "Raw errors are withheld from responses and saved heartbeats",
+    "Revoked OAuth accounts are skipped",
+    "Backfill requires a running import and remains limited to five mailboxes",
+    "Actual handler receipts feed the same outcome calculation used by the client"
+  ],
+  "testMetadataObservation": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T14:01:36.519Z",
+    "projectStatus": "ACTIVE_HEALTHY",
+    "emailSchedulerEndpointsPresent": 0,
+    "emailSchedulerTriggerSecretNamesPresent": 0,
+    "secretValuesRead": false,
+    "columnPrivilegeObservedAt": "2026-10-11T14:03:20.151637Z",
+    "authenticatedEmailStatusSelect": false,
+    "authenticatedEmailMetadataSelect": false,
+    "authenticatedPhoneStatusSelect": false,
+    "authenticatedJobStatusSelect": false
+  },
+  "combinedLaunchAggregateAudit": "failed-no-new-baseline",
+  "providerCalls": 0,
+  "deployments": 0,
+  "newCredentials": 0,
+  "accessChanges": 0,
+  "productionWrites": 0,
+  "limitations": [
+    "Handler verification uses synthetic database and queue ports; no real mail capture is proven",
+    "TEST needs a bounded tenant-scoped health reader, secure trigger setup and reviewed scheduler installation",
+    "Signed-in hosted acceptance and schedule activation remain unverified",
+    "No production readiness or full input coverage is established"
+  ]
+}
