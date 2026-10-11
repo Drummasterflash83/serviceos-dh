@@ -50,8 +50,8 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-owo3hwtky-allkin.vercel.app](https://serviceos-learn-test-owo3hwtky-allkin.vercel.app),
-built remotely from GitHub commit `c35336ae449504989e49b15b4eba5eb393d91071`.
+[serviceos-learn-test-hl5br2wcl-allkin.vercel.app](https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app),
+built remotely from GitHub commit `411d2fc8fcfefe92b5b23a6076fdfab74a2aa728`.
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage
@@ -75,18 +75,27 @@ review. Its rollback rehearsal, installation and 14 HTTP-denial checks passed;
 all 92 monitored datasets were preserved and both new ledgers remain empty. The
 existing append function changed only to accept completed runs and reject unfinished
 ones. No provider traffic, capture activation or operator access was created.
+Working-time package release 050 is installed (11 October 01:57 UTC / 02:57 local).
+It adds company calendar revisions/publication, approved-delay history and frozen
+member/team working-time collection, with explicit scoring states and retained
+input evidence. Hosted rehearsal/install/readback preserved 94 monitored datasets
+and existing authority; 40 HTTP access-denial checks passed and seven new tables
+remain empty. The paired frontend above is READY; binding, protection and actual
+same-origin sign-in redirect pass. Signed-in owner acceptance, real company
+configuration and hosted large-evidence transport remain open. No identities,
+operator grants, provider requests or capture activation were created.
 History paging is a frontend-only change with no new backend migration. Release 046
 preserved all 87 monitored datasets, including assessment and scoring ledgers, and
 existing assessment privileges.
 Vercel reports READY; TEST environment binding and anonymous protection on homepage,
 login and client routes pass. This candidate rendered the login screen and passed the actual browser
-unauthenticated client redirect check. Signed-in hosted resumable collection/recovery/review, team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
+unauthenticated client redirect check. Signed-in hosted calendar/delay/working-time acceptance, resumable collection/recovery/review, team workload collection/review, team-card/scoring-scope, job-detail, history, card recovery
 and control acceptance remain pending;
 a successful build is not that acceptance. The Phone evidence panel is backed by TEST release 044, installed at 21:24 UTC
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-resumable-work-test-2026-10-11.json) and
+See [current deployment evidence](operations/evidence/learn-working-time-test-2026-10-11.json) and
 [047 backend evidence](operations/evidence/learn-job-details-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because

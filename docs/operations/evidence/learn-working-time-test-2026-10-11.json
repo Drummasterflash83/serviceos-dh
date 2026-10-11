@@ -336,7 +336,57 @@
   "localEvidence": "learn-working-acceptance-local-2026-10-11.json",
   "releaseGuardTests": 7,
   "frontend": {
-    "state": "pending_paired_deployment"
+    "state": "READY",
+    "deploymentId": "dpl_9sxXS5szpf44YeqfaWiVj1ZFJy9y",
+    "url": "https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app",
+    "gitSha": "411d2fc8fcfefe92b5b23a6076fdfab74a2aa728",
+    "target": "staging",
+    "testBackendBindingVerified": true,
+    "deployment": {
+      "observedAt": "2026-10-11T02:00:28.909Z",
+      "id": "dpl_9sxXS5szpf44YeqfaWiVj1ZFJy9y",
+      "url": "serviceos-learn-test-hl5br2wcl-allkin.vercel.app",
+      "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+      "readyState": "READY",
+      "target": "staging",
+      "gitSource": {
+        "type": "github",
+        "repoId": 1285975013,
+        "ref": "codex/learn-v1-test",
+        "sha": "411d2fc8fcfefe92b5b23a6076fdfab74a2aa728"
+      },
+      "framework": "tanstack-start",
+      "nodeVersion": "24.x"
+    },
+    "protection": {
+      "observedAt": "2026-10-11T02:00:47.503Z",
+      "base": "https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    },
+    "browser": {
+      "observedAt": "2026-10-11T02:01:30.542135+00:00",
+      "clientToSameOriginLogin": true,
+      "url": "https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app/login?redirect=%2Fclient%3Fsection%3Dlearn",
+      "renderedSignInForm": true,
+      "consoleErrors": 0,
+      "signedInAcceptance": false
+    }
   },
   "signedInHostedOwnerAcceptance": false,
   "hostedLargeEvidenceTransportAcceptance": false,

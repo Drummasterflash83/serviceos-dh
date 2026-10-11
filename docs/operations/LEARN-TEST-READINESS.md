@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Working-time package — TEST release 050 installed; paired frontend pending
+## Working-time package — TEST release 050 and paired frontend installed
 
 Hosted rollback rehearsal and installation passed on 11 October at 01:56/01:57 UTC.
 Company calendars, approved-delay history and frozen person/team working-time
@@ -11,7 +11,11 @@ access probe pass. A metadata-query timeout during the initial rehearsal was fix
 by evaluating the catalog once; unchanged schema/data and no active transaction
 were verified before the revised rehearsal.
 
-The paired protected frontend, signed-in hosted owner acceptance and hosted large
+The paired protected frontend is READY from Git
+`411d2fc8fcfefe92b5b23a6076fdfab74a2aa728` at
+[the release 050 TEST candidate](https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app).
+TEST binding, Vercel protection and actual browser same-origin sign-in redirect
+pass with no console errors. Signed-in hosted owner acceptance and hosted large
 evidence transport remain outstanding. No provider requests, capture activation,
 new operator grants or production changes occurred. The separate Commusoft
 continuation remains subject to its existing approval. Earlier local candidate

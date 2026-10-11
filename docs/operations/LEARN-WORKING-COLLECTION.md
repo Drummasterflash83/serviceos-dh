@@ -1,8 +1,8 @@
 # Working-time collection — TEST backend 050
 
 11 October 2026. Connected locally to scorecard settings, resumable collection and
-retained-evidence review. **Hosted TEST backend release 050 is installed; the paired
-frontend and signed-in hosted acceptance remain pending. Production is unchanged.** This is an additive continuation of the
+retained-evidence review. **Hosted TEST release 050 and its paired protected frontend are installed.
+Signed-in hosted acceptance remains pending. Production is unchanged.** This is an additive continuation of the
 [working-time calculator](LEARN-WORKING-TIME.md), company calendar and delay reviews.
 
 ## Rules and meaning
@@ -122,8 +122,7 @@ it exposes no host port and cannot contact a provider.
 
 ## Still required
 
-Paired hosted TEST deployment, hosted gateway/transport checks and signed-in owner
-acceptance. Real Drummonds company hours and scoring states require deliberate
+Hosted gateway/large-evidence transport checks and signed-in owner acceptance. Real Drummonds company hours and scoring states require deliberate
 configuration. Employee shifts/leave remain outside the company-calendar calculation.
 This checkpoint does not finish provider imports, voicemail, Slack activation,
 operational rollout or production readiness for LEARN V1.
@@ -142,3 +141,8 @@ The initial rehearsal timed out without changing retained state. Materializing t
 metadata catalog once resolved repeated evaluation in the release guard; the revised
 package has its own checksum and successful rehearsal/install/readback.
 [Release evidence](evidence/learn-working-time-test-2026-10-11.json).
+
+The paired protected [TEST frontend](https://serviceos-learn-test-hl5br2wcl-allkin.vercel.app)
+is READY from Git `411d2fc8fcfefe92b5b23a6076fdfab74a2aa728`. Its TEST binding,
+Vercel protection and actual same-origin sign-in redirect pass. The rendered login
+has no console errors. These checks do not establish signed-in owner acceptance.
