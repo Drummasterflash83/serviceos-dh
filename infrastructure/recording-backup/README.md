@@ -368,3 +368,55 @@ finalization failure, exact credential selection and wrong-principal rejection.
 They use synthetic AWS transports; live Keychain access, effective IAM permissions,
 real recording transfer, daily scheduling and restore acceptance remain pending.
 [Evidence](../../docs/operations/evidence/learn-recording-runner-local-2026-10-11.json).
+
+
+## Independent restore command and local playback check — 11 October
+
+`run-drummonds-recording-restore.mjs` now provides a deliberate one-file rehearsal
+using only the **Restore** Keychain item. Its JSON format is the same as Writer's,
+but `principalArn` must identify the generated Restore user. The command has no
+Supabase credential lookup, database connection or Writer fallback. Actual role
+permissions and real AWS acceptance are still unverified; the command has not
+been activated against Drummonds.
+
+After the real backup manifest has been verified, select its run ID and one
+object ID from the private inventory:
+
+```sh
+node scripts/backup/run-drummonds-recording-restore.mjs --restore-drummonds '<MANIFEST_RUN_UUID>' '<OBJECT_UUID>'
+```
+
+The restore validates the manifest's destination, inventory digest, all receipt
+identities, unique object/source identities, byte/reference totals and time scope.
+It then reads the chosen exact S3 version into a new private temporary directory
+and verifies every byte against the recorded SHA-256. No production files or
+records are written. Immutable-manifest retention is still a historical inventory
+claim; restoring one object is not proof that the current database or all audio
+can be recovered.
+
+On macOS, `/usr/bin/afconvert` performs a full decode to temporary 16-bit PCM WAV.
+The checker validates PCM structure, nonempty frame count and duration. Input is
+bounded to 8 MiB for this first rehearsal; larger or empty files are explicitly
+not checked. Conversion is time-limited to 30 seconds. A 100 ms output-size guard
+stops conversion above 64 MiB (transient overshoot is possible), and the completed
+file must also be within that bound. Decoded scratch audio is removed afterward.
+Unsupported/corrupt formats remain unconfirmed rather than being called playable.
+Successful decoding does not claim a human has listened or verified call content.
+
+A new ignored 0700 `.verification-results/recording-restore-*` directory holds
+0600 `evidence.json`, including the restored private path, original recording IDs,
+source identity, manifest hash/time and safe rehearsal summary. The original
+restored audio remains in its separate 0700 temporary directory for controlled
+listening and database-link verification. Locate evidence by the summary's
+`rehearsalId`; do not print or commit the private file. Remove that exact restored
+directory after the rehearsal; retain only the necessary private audit evidence.
+The CLI prints counts/status, never the recording links, private paths or keys.
+Non-decoded playback produces a nonzero exit while retaining verified byte-copy
+evidence. `databaseRestore` and `backupComplete` remain explicitly unverified/false.
+
+Forty-three local tests pass, including an actual macOS decode of a generated
+800-frame WAV (0.1 seconds), source-independent SDK restore with original record
+links, invalid-audio handling, manifest tampering refusal and separate Restore
+credential selection. Synthetic AWS transport verifies that the restore issues
+only GET/HEAD requests after setup. This is not a real Drummonds restore.
+[Evidence](../../docs/operations/evidence/learn-recording-restore-local-2026-10-11.json).

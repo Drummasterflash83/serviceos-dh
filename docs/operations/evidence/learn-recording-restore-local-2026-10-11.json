@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-11",
+  "scope": "local synthetic AWS transport; actual macOS audio decoding",
+  "change": "Source-independent Restore-only command with private evidence and bounded local decode",
+  "checks": {
+    "node --test scripts/backup/*.test.mjs": {
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "verified": [
+    "Generated 800-frame 8000 Hz mono PCM WAV copied, manifest-verified, restored byte-exact and decoded locally to 0.1 seconds",
+    "Restore succeeds with no source port or Supabase credential access",
+    "Original recording IDs and source identity retained in private evidence",
+    "Private evidence mode 0600 and restored directory mode 0700",
+    "Decoded scratch file removed; original restored artifact retained for inspection",
+    "Altered inventory digest, totals, duplicate object or absent selection rejected before object reads",
+    "Invalid audio retains byte-verified evidence while playback remains unconfirmed",
+    "Restore credential service/account exact and Writer principal rejected",
+    "Restore path performs GET/HEAD only after synthetic setup"
+  ],
+  "activation": {
+    "realAWSRequests": 0,
+    "realKeychainReads": 0,
+    "realDrummondsCopies": 0,
+    "realDrummondsRestores": 0,
+    "backupComplete": false
+  },
+  "limits": [
+    "Actual IAM permissions and real transfer/restore pending approval and activation",
+    "Human listening and database restore not verified",
+    "Decoder accepts at most 8 MiB input, 30 seconds and 64 MiB output with possible transient polling overshoot",
+    "Non-macOS or empty/oversized audio explicitly remains unchecked",
+    "One restored object does not prove full database/storage recoverability"
+  ]
+}

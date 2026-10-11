@@ -431,3 +431,71 @@ export async function finalizeRecordingInventory(
     throw new RecordingBackupError("manifest_unconfirmed");
   }
 }
+
+/** Source-independent restore selected from a verified immutable manifest.
+ * Validates every receipt's identity and the inventory digest before selection. */
+export async function restoreRecordingFromManifest(manifest, runId, objectId, binding, ports) {
+  const context = recordingContext(binding),
+    now = (ports.now ?? Date.now)();
+  requireValue(
+    uuid(runId) &&
+      uuid(objectId) &&
+      manifest?.contract === "recording-backup-manifest/1" &&
+      manifest.runId === runId &&
+      manifest.coverage === "verified_inventory_only" &&
+      manifest.sourceSnapshot === "non_atomic" &&
+      canonicalJson(recordingContext(manifest.destination)) === canonicalJson(context) &&
+      Number.isFinite(Date.parse(manifest.inventoryObservedAt)) &&
+      Number.isFinite(Date.parse(manifest.verifiedAt)) &&
+      Date.parse(manifest.inventoryObservedAt) <= Date.parse(manifest.verifiedAt) &&
+      Date.parse(manifest.verifiedAt) <= now + 60000 &&
+      Array.isArray(manifest.objects) &&
+      manifest.objects.length > 0 &&
+      manifest.objects.length <= 10000,
+    "restore_manifest_unverified",
+  );
+  const entries = manifest.objects
+    .map((r) => {
+      const entry = recordingIdentity(r?.source);
+      requireValue(
+        entry.tenantId === context.tenantId && entry.sourceKey.startsWith(`${context.tenantId}/`),
+        "restore_manifest_unverified",
+      );
+      privateReceipt(r, entry, context);
+      return entry;
+    })
+    .sort((a, b) => a.objectId.localeCompare(b.objectId));
+  requireValue(
+    new Set(entries.map((e) => e.objectId)).size === entries.length &&
+      new Set(entries.map((e) => e.sourceKey)).size === entries.length &&
+      manifest.totalBytes === entries.reduce((n, e) => n + e.size, 0) &&
+      manifest.recordingReferences === entries.reduce((n, e) => n + e.recordingIds.length, 0),
+    "restore_manifest_unverified",
+  );
+  const inventory = {
+    contract: "recording-inventory/1",
+    runId,
+    tenantId: context.tenantId,
+    sourceProjectRef: context.sourceProjectRef,
+    observedAt: manifest.inventoryObservedAt,
+    listingComplete: true,
+    sourceSnapshot: "non_atomic",
+    objects: entries,
+  };
+  requireValue(
+    digest(JSON.stringify(inventory)) === manifest.inventorySha256,
+    "restore_manifest_unverified",
+  );
+  const receipt = manifest.objects.find((r) => r.source.objectId === objectId);
+  requireValue(receipt, "restore_object_not_in_manifest");
+  const restored = await restoreRecording(receipt, context, ports);
+  return {
+    ...restored,
+    manifestRunId: runId,
+    inventorySha256: manifest.inventorySha256,
+    inventoryObservedAt: manifest.inventoryObservedAt,
+    backupVerifiedAt: manifest.verifiedAt,
+    source: structuredClone(receipt.source),
+    databaseRestore: "not_verified",
+  };
+}

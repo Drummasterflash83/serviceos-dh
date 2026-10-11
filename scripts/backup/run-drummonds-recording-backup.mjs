@@ -1,7 +1,6 @@
+import { binding, loadRecordingCredential } from "./drummonds-recording-backup-access.mjs";
 /** Explicit, bounded live-copy entry point. Do not activate until the reviewed
  * AWS identity/key provisioning is approved and verified. Never prints secrets. */
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 import { savedCliToken } from "../verify/learn-test-readiness.mjs";
 import { createRecordingSource } from "./recording-backup-source.mjs";
@@ -11,14 +10,7 @@ import { RecordingBackupError } from "./recording-backup-core.mjs";
 const fail = (code) => {
   throw new RecordingBackupError(code);
 };
-export const binding = Object.freeze({
-  tenantId: "00000000-0000-0000-0000-000000000001",
-  sourceProjectRef: "tgbnakbxwcqjeimygroz",
-  accountId: "235099643372",
-  region: "eu-west-2",
-  bucket: "openfolk-drummonds-recordings-235099643372-eu-west-2",
-  prefix: "tenants/00000000-0000-0000-0000-000000000001/",
-});
+export { binding };
 export function parseRunArgs(args) {
   if (args.length !== 3 && args.length !== 5) fail("runner_arguments_invalid");
   const [action, directory, inventoryFileSha256, count, bytes] = args;
@@ -40,32 +32,7 @@ export function parseRunArgs(args) {
     maxBytes,
   };
 }
-export async function loadWriterCredential(execute = promisify(execFile)) {
-  // This reads only the exact approved service/account. No fallback to root,
-  // AWS environment variables, other profiles or the Restore credential.
-  const { stdout } = await execute(
-    "/usr/bin/security",
-    [
-      "find-generic-password",
-      "-s",
-      "OpenFolk.ServiceOS.RecordingBackup.Writer",
-      "-a",
-      binding.accountId,
-      "-w",
-    ],
-    { encoding: "utf8", timeout: 15000, maxBuffer: 4096 },
-  );
-  const value = JSON.parse(stdout);
-  if (
-    !/^AKIA[A-Z0-9]{16}$/.test(value?.accessKeyId ?? "") ||
-    !/^[A-Za-z0-9/+=]{40}$/.test(value?.secretAccessKey ?? "") ||
-    !/^arn:aws:iam::235099643372:user\/serviceos\/recording-backup\/openfolk-drummonds-recording-access-Writer-[A-Za-z0-9]+$/.test(
-      value?.principalArn ?? "",
-    )
-  )
-    fail("runner_writer_credential_unverified");
-  return value;
-}
+export const loadWriterCredential = (execute) => loadRecordingCredential("Writer", execute);
 async function createLivePorts(signal) {
   const writer = await loadWriterCredential();
   const token = savedCliToken();

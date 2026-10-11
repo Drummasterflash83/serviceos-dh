@@ -16,7 +16,7 @@ export const time = Date.parse("2026-10-11T12:00:00Z");
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const xml = (root, body) =>
   `<${root} xmlns="http://s3.amazonaws.com/doc/2006-03-01/">${body}</${root}>`;
-export function fixture({ expectedPrincipalArn } = {}) {
+export function fixture({ expectedPrincipalArn, audioBytes } = {}) {
   const calls = [],
     objects = new Map();
   let serial = 0,
@@ -178,7 +178,7 @@ export function fixture({ expectedPrincipalArn } = {}) {
     expectedPrincipalArn,
     now: () => clock,
   });
-  const bytes = Buffer.from("RIFF-synthetic-SDK-wire-recording");
+  const bytes = audioBytes ?? Buffer.from("RIFF-synthetic-SDK-wire-recording");
   const entry = {
     tenantId: tenant,
     objectId: "00000000-0000-4000-8000-000000000002",

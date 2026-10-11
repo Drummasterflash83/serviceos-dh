@@ -90,6 +90,11 @@ The durable local command now saves atomic disk checkpoints and attempt status,
 resumes from verified receipts, loads only the proposed Writer Keychain credential
 and pins its exact AWS principal. Thirty-nine local tests pass; the command has
 not been activated. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+A separate Restore-only command now recovers an exact S3 version without accessing
+Supabase, retains record-link evidence privately and checks local audio decoding.
+The suite passes 43 tests, including a real macOS decode of synthetic WAV audio.
+No real Drummonds transfer/restore has been run.
+[Restore command evidence](evidence/learn-recording-restore-local-2026-10-11.json).
 AWS transfer acceptance, daily scheduling, operator monitoring,
 real copies, playback and database restore remain unfinished.
 [Inventory and batch evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).

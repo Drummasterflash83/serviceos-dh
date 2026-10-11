@@ -258,6 +258,11 @@ succeeded after that failure; no worker was invoked and no source record changed
   disk checkpoints, separate attempt status, exclusive locking and exact Writer
   credential/principal selection. Thirty-nine local tests pass; the command remains
   unactivated pending access approval. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+  The separate Restore-only command now validates the immutable manifest and restores
+  an exact object version without Supabase access, preserving record links and checking
+  local audio decoding. Forty-three tests pass, including actual macOS decoding of
+  synthetic WAV audio. [Restore evidence](evidence/learn-recording-restore-local-2026-10-11.json).
+  Real Drummonds playback and isolated database recovery remain unverified.
   Restricted Writer/Restore IAM access is prepared as an unexecuted change set;
   action-time approval is needed for the new identities/keys. AWS transfers,
   scheduling, monitoring and database/audio restore acceptance remain open.
