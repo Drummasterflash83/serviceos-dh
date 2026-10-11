@@ -82,7 +82,9 @@ async function call(body = {}, options = {}) {
           ? { createClient: () => db }
           : path.endsWith("controlplane/authz.ts")
             ? authExports
-            : {},
+            : path.endsWith("controlplane/store.ts")
+              ? (options.store ?? {})
+              : {},
     }),
   );
   const response = await handler(
@@ -444,4 +446,33 @@ test("actual workspace store wires the complete roster into the operator respons
   assert.equal(result.authorityGrants[0].id, rosterId(2));
   assert.equal(result.summary.people, 1);
   assert.equal(result.identityResolution.suggestions.length, 0);
+});
+
+test("operator resolve forwards the explicit historical time and subject type without writing", async () => {
+  let captured;
+  const r = await call(
+    {
+      action: "resolve",
+      evidence: { channel: "phone", extension: "101" },
+      now_ms: 1234,
+      subject_ref: "same-ref",
+      subject_type: "interaction",
+    },
+    {
+      store: {
+        resolveForEvidence: async (_db, tenantId, evidence, at, opts) => {
+          captured = { tenantId, evidence, at, opts };
+          return { matched: false };
+        },
+      },
+    },
+  );
+  assert.equal(r.status, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(captured)), {
+    tenantId: tenant,
+    evidence: { channel: "phone", extension: "101" },
+    at: 1234,
+    opts: { subjectRef: "same-ref", subjectType: "interaction" },
+  });
+  assert.equal(r.writes.length, 0);
 });

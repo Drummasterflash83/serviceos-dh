@@ -221,6 +221,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const res = await resolveForEvidence(admin, tenantId, body.evidence ?? {}, now, {
           subjectRef: body.subject_ref ?? null,
+          subjectType: body.subject_type ?? null,
         });
         return json({ ok: true, data: res });
       }

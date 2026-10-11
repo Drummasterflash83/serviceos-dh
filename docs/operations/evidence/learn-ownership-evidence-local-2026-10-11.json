@@ -1,0 +1,30 @@
+{
+  "version": "learn-ownership-evidence-local/1",
+  "runtimeSourceSha256": "55530404e70a3eaf74a12587155d02ebf93f7fce05b3c3ee31283b38db8b3304",
+  "runtimeDependencyFiles": 21,
+  "ownershipTests": 10,
+  "healthTests": 8,
+  "rosterAuthorizationAndRouteTests": 11,
+  "identityInventoryTests": 8,
+  "pureResolverVerificationCases": 12,
+  "deploymentGuardTests": 8,
+  "ownershipAndHealthTypecheck": true,
+  "isolatedHTTP": {
+    "state": "passed",
+    "endpoints": 2503,
+    "handoffs": 2503,
+    "serverRowLimit": 137,
+    "requests": 49,
+    "exactCountHeads": 6,
+    "emptyTerminalPages": 3,
+    "foreignRowsExcluded": true,
+    "futureAndOtherSubjectHandoffsExcluded": true,
+    "lateHandoffTargetVerifiedWithinTenant": true,
+    "accountableAndVersionPreserved": true,
+    "sourceFingerprintsPreserved": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "newOwnershipOrIdentityWrites": 0,
+  "providerRequests": 0,
+  "productionChanges": false
+}

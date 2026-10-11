@@ -48,6 +48,8 @@ export interface EndpointRow {
   provider_external_ref?: string | null;
   is_shared: boolean;
   status: string;
+  effective_from?: string | null;
+  effective_to?: string | null;
 }
 
 export interface AssignmentRow {
@@ -65,6 +67,7 @@ export interface AssignmentRow {
 }
 
 export interface HandoffRow {
+  subject_type?: string | null;
   to_party?: { kind?: string; ref?: string | null; label?: string | null } | null;
   occurred_at?: string | null;
   observed_state?: string | null;
@@ -98,12 +101,15 @@ function norm(s: string | null | undefined): string {
   return (s ?? "").toString().trim().toLowerCase();
 }
 
-function ownerOf(a: AssignmentRow): OwnerRef {
+function ownerOf(a: AssignmentRow): OwnerRef | null {
+  if (a.owner_kind === "person" && !a.owner_member_id?.trim()) return null;
+  if (a.owner_kind === "team" && !a.owner_org_unit_id?.trim()) return null;
+  if (a.owner_kind === "role" && !a.owner_role?.trim()) return null;
   if (a.owner_kind === "person") return { kind: "person", ref: a.owner_member_id ?? null };
   if (a.owner_kind === "team") return { kind: "team", ref: a.owner_org_unit_id ?? null };
   if (a.owner_kind === "role")
     return { kind: "role", ref: a.owner_role ?? null, label: a.owner_role };
-  return { kind: "shared", ref: null };
+  return a.owner_kind === "shared" ? { kind: "shared", ref: null } : null;
 }
 
 /** Endpoints matching the evidence for a given step. */
@@ -111,14 +117,29 @@ function matchByStep(
   step: MatchStep,
   ev: EndpointEvidence,
   endpoints: EndpointRow[],
+  nowMs: number,
 ): EndpointRow[] {
-  const active = endpoints.filter((e) => e.status === "active");
+  const active = endpoints.filter((e) => {
+    if (
+      norm(e.channel) !== norm(ev.channel) ||
+      (ev.provider && norm(e.provider) !== norm(ev.provider))
+    )
+      return false;
+    const from = e.effective_from == null ? -Infinity : Date.parse(e.effective_from);
+    const to = e.effective_to == null ? Infinity : Date.parse(e.effective_to);
+    // An inactive endpoint is historical evidence only when its ending is recorded.
+    return (
+      from <= nowMs &&
+      nowMs < to &&
+      (e.status === "active" || (e.status === "inactive" && Number.isFinite(to)))
+    );
+  });
   switch (step) {
     case "provider_ref":
       if (!ev.providerExternalRef) return [];
       return active.filter(
         (e) =>
-          norm(e.provider_external_ref) === norm(ev.providerExternalRef) &&
+          String(e.provider_external_ref ?? "").trim() === ev.providerExternalRef.trim() &&
           (!ev.provider || norm(e.provider) === norm(ev.provider)),
       );
     case "ddi":
@@ -148,7 +169,7 @@ function matchByStep(
 }
 
 function effectiveAt(a: AssignmentRow, nowMs: number): boolean {
-  if (a.review_state === "rejected") return false;
+  if (a.review_state !== "confirmed") return false;
   const from = Date.parse(a.effective_from);
   const to = a.effective_to ? Date.parse(a.effective_to) : Infinity;
   return Number.isFinite(from) && from <= nowMs && nowMs < to;
@@ -184,15 +205,23 @@ export function resolveEndpointOwnership(input: {
     matchStep: null,
   });
 
+  if (!Number.isFinite(nowMs) || Math.abs(nowMs) > 8.64e15 || !norm(ev.channel))
+    return empty("Valid channel and observation time are required for ownership resolution.");
+
   // ── Phase A: match the endpoint (config-driven order; first match wins). ──
   let endpoint: EndpointRow | null = null;
   let matchStep: MatchStep | null = null;
   for (const step of order) {
-    const hits = matchByStep(step, ev, endpoints);
+    const hits = matchByStep(step, ev, endpoints, nowMs);
     if (hits.length > 0) {
+      if (hits.length > 1) {
+        warnings.push("ambiguous_endpoint_match");
+        return empty(
+          "Several configured endpoints match this evidence — operator review required.",
+        );
+      }
       endpoint = hits[0];
       matchStep = step;
-      if (hits.length > 1) warnings.push("ambiguous_endpoint_match");
       break;
     }
   }
@@ -202,8 +231,28 @@ export function resolveEndpointOwnership(input: {
 
   // ── Phase B: resolve owners from assignments EFFECTIVE AT the interaction time. ──
   const live = assignments.filter((a) => a.endpoint_id === endpoint!.id && effectiveAt(a, nowMs));
-  const byRole = (r: AssignmentRow["assignment_role"]) =>
-    live.find((a) => a.assignment_role === r) ?? null;
+  const byRole = (r: AssignmentRow["assignment_role"]) => {
+    const matches = live.filter((a) => a.assignment_role === r);
+    if (matches.length > 1) {
+      warnings.push(`ambiguous_${r}_assignment`);
+      return null;
+    }
+    if (matches.length === 1 && !ownerOf(matches[0])) {
+      warnings.push(`invalid_${r}_owner`);
+      return null;
+    }
+    return matches[0] ?? null;
+  };
+  if (
+    assignments.some(
+      (a) =>
+        a.endpoint_id === endpoint!.id &&
+        ["proposed", "conflicted"].includes(a.review_state) &&
+        Date.parse(a.effective_from) <= nowMs &&
+        (a.effective_to == null || nowMs < Date.parse(a.effective_to)),
+    )
+  )
+    warnings.push("unconfirmed_assignment");
 
   const accountableA = byRole("accountable");
   const handlerA = byRole("primary_handler");
@@ -214,48 +263,93 @@ export function resolveEndpointOwnership(input: {
   const primaryHandler = handlerA ? ownerOf(handlerA) : null;
   const cover = coverA ? ownerOf(coverA) : null;
   const escalation = escalationA ? ownerOf(escalationA) : null;
+  const accountableBlocked =
+    warnings.includes("ambiguous_accountable_assignment") ||
+    warnings.includes("invalid_accountable_owner");
+  const fallbacks = [handlerA, coverA, escalationA]
+    .filter((a): a is AssignmentRow => !!a && ["team", "role"].includes(a.owner_kind))
+    .map((a) => ownerOf(a)!);
+  const uniqueFallbacks = new Map(fallbacks.map((o) => [JSON.stringify([o.kind, o.ref]), o]));
   const teamOrRole =
-    accountable && (accountable.kind === "team" || accountable.kind === "role")
+    accountable && ["team", "role"].includes(accountable.kind)
       ? accountable
-      : live.find((a) => a.owner_kind === "team" || a.owner_kind === "role")
-        ? ownerOf(live.find((a) => a.owner_kind === "team" || a.owner_kind === "role")!)
+      : !accountable && !accountableBlocked && uniqueFallbacks.size === 1
+        ? [...uniqueFallbacks.values()][0]
         : null;
+  if (!accountable && uniqueFallbacks.size > 1) warnings.push("ambiguous_team_role_fallback");
 
-  // Dynamic: an observed handoff changes the LIKELY CURRENT HANDLER only — never accountable.
-  const recentHandoff = (input.handoffs ?? [])
-    .filter((h) => h.to_party?.ref && h.observed_state !== "rejected")
-    .sort((a, b) => Date.parse(a.occurred_at ?? "") - Date.parse(b.occurred_at ?? ""))
-    .at(-1);
-  let likelyCurrentHandler: OwnerRef | null = primaryHandler ?? null;
-  if (recentHandoff?.to_party?.ref) {
-    likelyCurrentHandler = {
-      kind: (recentHandoff.to_party.kind as OwnerRef["kind"]) ?? "person",
-      ref: recentHandoff.to_party.ref,
-      label: recentHandoff.to_party.label ?? null,
-    };
-    warnings.push("handler_from_observed_handoff");
+  // A later handoff must never rewrite a historical answer. Reject unsupported
+  // target kinds and keep equally recent conflicting targets unresolved.
+  const handoffs = (input.handoffs ?? []).filter((h) => {
+    const at = Date.parse(h.occurred_at ?? "");
+    return (
+      Number.isFinite(at) &&
+      at <= nowMs &&
+      ["observed", "confirmed"].includes(h.observed_state ?? "")
+    );
+  });
+  const subjects = new Set(handoffs.map((h) => h.subject_type ?? null));
+  let likelyCurrentHandler: OwnerRef | null = primaryHandler;
+  if (subjects.size > 1) {
+    likelyCurrentHandler = null;
+    warnings.push("ambiguous_handoff_subject");
+  } else if (handoffs.length) {
+    const latest = Math.max(...handoffs.map((h) => Date.parse(h.occurred_at!)));
+    const recent = handoffs.filter((h) => Date.parse(h.occurred_at!) === latest);
+    const targets = new Map(
+      recent.map((h) => [JSON.stringify([h.to_party?.kind, h.to_party?.ref]), h.to_party]),
+    );
+    if (targets.size !== 1) {
+      likelyCurrentHandler = null;
+      warnings.push("ambiguous_handoff_target");
+    } else {
+      const target = [...targets.values()][0];
+      if (
+        !target ||
+        !["person", "team", "role"].includes(target.kind ?? "") ||
+        typeof target.ref !== "string" ||
+        !target.ref.trim()
+      ) {
+        likelyCurrentHandler = null;
+        warnings.push("invalid_handoff_target");
+      } else {
+        likelyCurrentHandler = {
+          kind: target.kind as OwnerRef["kind"],
+          ref: target.ref,
+          label: target.label ?? null,
+        };
+        warnings.push("handler_from_observed_handoff");
+      }
+    }
   }
 
   let unresolvedReason: string | null = null;
   let confidence = 0.9;
   if (!accountable && !teamOrRole) {
-    unresolvedReason = "Endpoint is mapped but has no owner effective at the interaction time.";
+    unresolvedReason =
+      accountableBlocked || warnings.includes("ambiguous_team_role_fallback")
+        ? "Configured ownership is ambiguous or invalid at this time — operator review required."
+        : "Endpoint is mapped but has no confirmed owner effective at the interaction time.";
     warnings.push("no_effective_owner");
-    confidence = 0.3;
+    confidence = accountableBlocked || warnings.includes("ambiguous_team_role_fallback") ? 0 : 0.3;
   } else if (!accountable && teamOrRole) {
     confidence = 0.6; // team/role fallback, no specific accountable person
     warnings.push("team_or_role_fallback");
   } else {
-    confidence = Math.min(0.95, accountableA?.confidence ?? 0.9);
+    const value = accountableA?.confidence ?? 0.9;
+    confidence = Number.isFinite(value) && value >= 0 && value <= 1 ? Math.min(0.95, value) : 0;
+    if (confidence === 0) warnings.push("ownership_confidence_unavailable");
   }
   if (endpoint.is_shared) warnings.push("shared_endpoint");
 
   const label = endpoint.display_value ?? endpoint.normalized_value;
-  const explanation = accountable
-    ? `${endpoint.endpoint_kind} ${label} → accountable ${accountable.kind}${accountable.ref ? ` ${accountable.ref}` : ""}${cover ? " (cover configured)" : ""}.`
-    : teamOrRole
-      ? `${endpoint.endpoint_kind} ${label} → ${teamOrRole.kind} ${teamOrRole.ref ?? ""} (no specific accountable person).`
-      : `${endpoint.endpoint_kind} ${label} is mapped but unowned at this time.`;
+  const explanation =
+    unresolvedReason ??
+    (accountable
+      ? `${endpoint.endpoint_kind} ${label} → accountable ${accountable.kind}${accountable.ref ? ` ${accountable.ref}` : ""}${cover ? " (cover configured)" : ""}.`
+      : teamOrRole
+        ? `${endpoint.endpoint_kind} ${label} → ${teamOrRole.kind} ${teamOrRole.ref ?? ""} (no specific accountable person).`
+        : `${endpoint.endpoint_kind} ${label} is mapped but unowned at this time.`);
 
   return {
     matched: true,

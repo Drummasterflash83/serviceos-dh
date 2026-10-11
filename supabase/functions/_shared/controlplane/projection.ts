@@ -80,7 +80,7 @@ export async function deriveOwnershipForEvidence(
   tenantId: string,
   evidence: EndpointEvidence,
   nowMs: number,
-  opts: { subjectRef?: string | null } = {},
+  opts: { subjectRef?: string | null; subjectType?: string | null } = {},
 ): Promise<DerivedOwnership> {
   const resolution = await resolveForEvidence(admin, tenantId, evidence, nowMs, opts);
 

@@ -363,3 +363,19 @@ test("actual summary and quality store propagate failures rather than substituti
     /Complete operator health/,
   );
 });
+
+test("overlapping confirmed accountable rows remain a health issue instead of looking uniquely owned", async () => {
+  const f = fixture();
+  f.endpoint_ownership_assignments.push({
+    ...f.endpoint_ownership_assignments[0],
+    id: id(39),
+    owner_member_id: id(2),
+  });
+  const h = await health.loadOperatorHealth(database(f), tenant, now),
+    counts = health.operatorHealthCounts(h);
+  assert.equal(counts.endpoints_unmapped, 2);
+  assert.equal(counts.ambiguous_assignments, 2);
+  assert.deepEqual(issuesFor(health.operatorHealthIssues(h), "ambiguous_accountable_ownership"), [
+    id(11),
+  ]);
+});

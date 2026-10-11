@@ -1,3 +1,4 @@
+import { resolveCheckedOwnership } from "./ownership_inventory.ts";
 import {
   loadIdentityInventory,
   buildEmailIdentityResolution,
@@ -19,14 +20,7 @@ import { loadRoster } from "./roster.ts";
 // ownership at all.
 
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import {
-  type AssignmentRow,
-  type EndpointEvidence,
-  type EndpointRow,
-  type HandoffRow,
-  type OwnershipResolution,
-  resolveEndpointOwnership,
-} from "./resolver.ts";
+import { type EndpointEvidence, type OwnershipResolution } from "./resolver.ts";
 import { providerCapabilities } from "../telephony/capabilities.ts";
 import { emailDomain, loadApprovedEmailDomains } from "./discovery.ts";
 import {
@@ -36,8 +30,6 @@ import {
 } from "./identity_resolution.ts";
 import { computeTelephonyIdentityResolution } from "./telephony_discovery.ts";
 
-const EP_COLS =
-  "id, tenant_id, channel, endpoint_kind, normalized_value, display_value, provider, provider_external_ref, is_shared, status, source, updated_at";
 const ASG_COLS =
   "id, endpoint_id, owner_kind, owner_member_id, owner_org_unit_id, owner_role, assignment_role, effective_from, effective_to, confidence, review_state, updated_at";
 
@@ -47,33 +39,9 @@ export async function resolveForEvidence(
   tenantId: string,
   evidence: EndpointEvidence,
   nowMs: number,
-  opts: { subjectRef?: string | null } = {},
+  opts: { subjectRef?: string | null; subjectType?: string | null } = {},
 ): Promise<OwnershipResolution> {
-  const { data: endpoints } = await admin
-    .from("communication_endpoints")
-    .select(EP_COLS)
-    .eq("tenant_id", tenantId)
-    .eq("status", "active");
-  const epIds = (endpoints ?? []).map((e) => e.id as string);
-  const { data: assignments } = epIds.length
-    ? await admin.from("endpoint_ownership_assignments").select(ASG_COLS).in("endpoint_id", epIds)
-    : { data: [] as AssignmentRow[] };
-  let handoffs: HandoffRow[] = [];
-  if (opts.subjectRef) {
-    const { data: h } = await admin
-      .from("responsibility_handoffs")
-      .select("to_party, occurred_at, observed_state")
-      .eq("tenant_id", tenantId)
-      .eq("subject_ref", opts.subjectRef);
-    handoffs = (h ?? []) as HandoffRow[];
-  }
-  return resolveEndpointOwnership({
-    evidence,
-    endpoints: (endpoints ?? []) as EndpointRow[],
-    assignments: (assignments ?? []) as AssignmentRow[],
-    handoffs,
-    nowMs,
-  });
+  return resolveCheckedOwnership(admin, tenantId, evidence, nowMs, opts);
 }
 
 export interface TenantSummary {

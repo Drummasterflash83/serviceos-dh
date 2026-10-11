@@ -63,17 +63,26 @@ export type OperatorHealthInventory = Awaited<ReturnType<typeof loadOperatorHeal
 const accepted = (r: any) => r.review_state === "confirmed";
 
 export function operatorHealthCounts(h: OperatorHealthInventory) {
-  const mapped = new Set(
-    h.ownership
-      .filter((r) => accepted(r) && r.assignment_role === "accountable")
-      .map((r) => r.endpoint_id),
+  const accountable = new Map<string, any[]>();
+  const ambiguousIds = new Set(
+    h.ownership.filter((o) => o.review_state === "conflicted").map((o) => o.id),
   );
+  for (const o of h.ownership.filter((o) => accepted(o) && o.assignment_role === "accountable")) {
+    const rows = accountable.get(o.endpoint_id) ?? [];
+    rows.push(o);
+    accountable.set(o.endpoint_id, rows);
+  }
+  const mapped = new Set<string>();
+  for (const [endpoint, rows] of accountable) {
+    if (rows.length === 1) mapped.add(endpoint);
+    else for (const row of rows) ambiguousIds.add(row.id);
+  }
   return {
     people: h.activeMembers.length,
     endpoints_total: h.activeEndpoints.length,
     endpoints_unmapped: h.activeEndpoints.filter((e) => !mapped.has(e.id)).length,
     identities_unverified: h.identities.filter((i) => i.verification_state !== "verified").length,
-    ambiguous_assignments: h.ownership.filter((o) => o.review_state === "conflicted").length,
+    ambiguous_assignments: ambiguousIds.size,
   };
 }
 
@@ -142,6 +151,12 @@ export function operatorHealthIssues(h: OperatorHealthInventory) {
   for (const e of h.activeEndpoints) {
     const assigned = owners.get(e.id) ?? [];
     const accountable = assigned.filter((o) => o.assignment_role === "accountable");
+    if (accountable.length > 1)
+      add(
+        "ambiguous_accountable_ownership",
+        `${e.normalized_value} has ${accountable.length} confirmed accountable assignments — review required`,
+        e.id,
+      );
     if (!accountable.length)
       add(
         "unmapped_endpoint",
