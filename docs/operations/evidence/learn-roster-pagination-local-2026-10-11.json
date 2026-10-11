@@ -1,0 +1,49 @@
+{
+  "version": "learn-roster-pagination-local/1",
+  "observedAt": "2026-10-11T02:51:28.943454+00:00",
+  "sourceGitSha": "27113d072fa88a7b15e8054f2acf7e36cdc1bfbd",
+  "endpointAndRosterTests": 10,
+  "navigationTests": 23,
+  "initialDeploymentGuardTests": 2,
+  "replacementDeploymentGuardTests": 3,
+  "applicationPrebuildTests": 47,
+  "applicationTypecheck": true,
+  "previewTypecheck": true,
+  "applicationBuild": true,
+  "previewBuild": true,
+  "isolatedHTTP": {
+    "state": "passed",
+    "server": "PostgREST v14.5",
+    "serverRowLimit": 137,
+    "members": 2503,
+    "responsibilities": 2503,
+    "authorityGrants": 2503,
+    "requests": 66,
+    "exactCountHeads": 6,
+    "emptyTerminalPages": 3,
+    "sourceFingerprintsPreserved": true,
+    "scope": "synthetic table shapes and installed PostgrestClient; not hosted schema or signed-in operator acceptance"
+  },
+  "browser": {
+    "synthetic": true,
+    "activeMembers": 2500,
+    "formerMembers": 3,
+    "renderedPageSize": 24,
+    "pageTwoStartsAtMember": 25,
+    "distantMemberSearchAndTitleEdit": 2499,
+    "reasonRequired": true,
+    "formerMemberSearch": true,
+    "literalRoleSearch": true,
+    "clearAndEmptyStates": true,
+    "consoleErrors": 0
+  },
+  "limits": {
+    "maxRowsPerTable": 20000,
+    "maxSerializedBytesPerTable": 8388608,
+    "maxRequestsPerTable": 100,
+    "transactionalSnapshot": false,
+    "otherOperatorInventoryCoverageVerified": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0
+}

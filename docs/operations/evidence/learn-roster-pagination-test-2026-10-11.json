@@ -1,0 +1,121 @@
+{
+  "version": "learn-roster-pagination-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "27113d072fa88a7b15e8054f2acf7e36cdc1bfbd",
+  "backend": {
+    "observedAt": "2026-10-11T02:49:46.101Z",
+    "endpoint": "openfolk-control-plane",
+    "version": 2,
+    "status": "ACTIVE",
+    "sourceBundleSha256": "de14f293d049b87020494d10c0ee48bab9bbb4a2938fe297806d6b402b1d9a58",
+    "dependencyFiles": 17,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 101,
+    "rosterInventoryPreserved": true
+  },
+  "http": {
+    "observedAt": "2026-10-11T02:50:15.856Z",
+    "state": "boundary_checks_passed",
+    "checks": [
+      {
+        "name": "preflight",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "method",
+        "status": 405,
+        "code": "method_not_allowed",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      }
+    ],
+    "sourcesPreserved": true,
+    "schemaPreserved": true
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T02:51:37.248Z",
+    "id": "dpl_2uMmb2V9Sexs7gvMSQp7MzNxmfTg",
+    "url": "https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "27113d072fa88a7b15e8054f2acf7e36cdc1bfbd"
+    },
+    "anonymousProtection": {
+      "observedAt": "2026-10-11T02:52:03.714Z",
+      "base": "https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  },
+  "browser": {
+    "observedAt": "2026-10-11T02:55:19.359Z",
+    "operatorRosterRedirectsToSameOriginLogin": true,
+    "emailPasswordAndSignInRendered": true,
+    "consoleErrors": 0,
+    "signedInOperatorAcceptance": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "No positive signed-in hosted roster read or write was exercised.",
+    "Large-volume transport was verified separately against synthetic isolated tables.",
+    "Other operator inventories retain separately documented coverage limits."
+  ]
+}

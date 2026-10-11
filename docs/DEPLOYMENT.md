@@ -50,9 +50,15 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-er2xaypr5-allkin.vercel.app](https://serviceos-learn-test-er2xaypr5-allkin.vercel.app),
-built remotely from GitHub commit `5562c29deff36dac1add8ef58308e4591ec73d01`.
-The 11 October 02:36 UTC candidate adds the searchable/paginated team-group
+[serviceos-learn-test-j27tmt2pc-allkin.vercel.app](https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app),
+built remotely from GitHub commit `27113d072fa88a7b15e8054f2acf7e36cdc1bfbd`.
+The 11 October 02:51 UTC candidate adds searchable, paginated operator rosters,
+paired with operator endpoint v2 installed at 02:49 UTC. All 101 monitored
+datasets, schema and other endpoints were preserved; eight HTTP boundary checks
+pass. Protection and browser same-origin operator login redirect pass, with zero
+console errors. Signed-in hosted roster acceptance remains outstanding.
+[Roster deployment evidence](operations/evidence/learn-roster-pagination-test-2026-10-11.json).
+The earlier 11 October 02:36 UTC candidate added the searchable/paginated team-group
 chooser, retaining backend release 051. Local browser checks cover 256 groups,
 retry, selection and scoring scope; hosted signed-in acceptance remains pending.
 [Chooser deployment evidence](operations/evidence/learn-team-group-picker-test-2026-10-11.json).
@@ -106,7 +112,8 @@ a successful build is not that acceptance. The Phone evidence panel is backed by
 on 10 October with rollback service-path and HTTP-denial checks. Fresh signed-in
 visual acceptance and real scheduled capture remain pending. See the
 [Phone release evidence](operations/evidence/learn-phone-operator-evidence-test-2026-10-10.json).
-See [current deployment evidence](operations/evidence/learn-card-search-test-2026-10-11.json) and
+See [current deployment evidence](operations/evidence/learn-roster-pagination-test-2026-10-11.json),
+[card-search deployment evidence](operations/evidence/learn-card-search-test-2026-10-11.json) and
 [047 backend evidence](operations/evidence/learn-job-details-test-2026-10-10.json).
 
 Backup pushes to `codex/learn-v1-test` do **not** automatically deploy because

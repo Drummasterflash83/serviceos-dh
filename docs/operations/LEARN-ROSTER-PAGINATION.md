@@ -44,7 +44,16 @@ The new TEST replacement runner requires operator endpoint v1, runtime catalog
 `b17378ba1c6cc511f6a35b63bb22e9be` and release-051 catalog
 `3edc2be235c00489aa86aa396fd88878`. It journals all 101 preservation fingerprints
 before submitting once and rechecks catalog/data/other endpoints afterward.
-This source checkpoint precedes the paired runtime/frontend deployment.
+The replacement completed on 11 October at 02:49 UTC: operator endpoint v2 is
+ACTIVE, with all 101 monitored datasets, schema and other endpoints preserved.
+Eight hosted HTTP boundary checks passed at 02:50 UTC. The paired protected
+[TEST frontend](https://serviceos-learn-test-j27tmt2pc-allkin.vercel.app) is READY
+from Git `27113d072fa88a7b15e8054f2acf7e36cdc1bfbd` at 02:51 UTC. Anonymous
+Vercel protection and browser same-origin operator sign-in redirect pass, with
+zero console errors. Positive signed-in hosted roster read/write acceptance
+remains outstanding. No new grants, provider requests or production changes
+occurred. See [local evidence](evidence/learn-roster-pagination-local-2026-10-11.json)
+and [TEST deployment evidence](evidence/learn-roster-pagination-test-2026-10-11.json).
 
 The inventory remains bounded: 20,000 rows, 8 MiB serialized row data and 100
 requests per table. Exceeding a limit or any incomplete read fails explicitly;

@@ -51,6 +51,7 @@ hosted chooser acceptance remains pending; production is unchanged.
 Pages reflect current accessible canonical groups, ordered by update time and ID.
 They are not a frozen directory snapshot; concurrent edits can move rows between
 pages. Search is literal name matching, not fuzzy matching. The existing page
-bound is retained (0–10,000). Team-group selection does not remove the separate
-2,000-record limit in the OpenFolk operator roster inventory or establish
-historical membership coverage for scoring.
+bound is retained (0–10,000). Team-group selection does not establish historical membership coverage for
+scoring. The separate [operator roster pagination](LEARN-ROSTER-PAGINATION.md)
+increment replaces its former 2,000-record limit; its own inventory budgets and
+release requirements remain distinct.

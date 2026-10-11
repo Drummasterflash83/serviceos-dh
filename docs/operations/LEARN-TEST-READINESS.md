@@ -1,5 +1,22 @@
 # Existing TEST environment: verified release gaps
 
+## Operator roster pagination — paired TEST runtime and frontend installed
+
+The roster reads checked keyset pages beyond the former 2,000-row ceiling and
+shows searchable active/former people in pages of 24. The actual isolated HTTP
+check retrieves 2,503 people, responsibilities and grants each despite a 137-row
+server limit; browser checks cover distant people, reason-required edits and
+literal role search. Typechecks, builds and targeted guards pass.
+
+Operator endpoint v2 is ACTIVE at 02:49 UTC on 11 October. All 101 monitored
+datasets, schema and other endpoints are preserved; eight hosted boundary checks
+pass. The paired protected frontend is READY from Git
+`27113d072fa88a7b15e8054f2acf7e36cdc1bfbd` at 02:51 UTC. Anonymous protection
+and same-origin operator sign-in redirect pass, with zero console errors.
+Positive signed-in hosted acceptance and coverage of other operator inventories
+remain outstanding. No new grants, provider calls or production changes occurred.
+See [roster behaviour and evidence](LEARN-ROSTER-PAGINATION.md).
+
 ## Team-group chooser — paired TEST frontend installed
 
 The 200-group dropdown limit is replaced by a searchable, paginated chooser with
