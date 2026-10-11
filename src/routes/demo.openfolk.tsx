@@ -1,3 +1,4 @@
+import type { HistoryLoader } from "@/components/app/OpenfolkDiscoveryHistory";
 /**
  * OpenFolk Control Plane workspace — presentation demo (/demo/openfolk).
  *
@@ -307,6 +308,58 @@ const AUDIT: AuditEntry[] = [
   },
 ];
 
+const demoHistory: HistoryLoader = async (query) => {
+  if (query.provider === "simulate-read-error")
+    return {
+      ok: false,
+      error: {
+        code: "synthetic_failure",
+        message: "Synthetic history read failed; no previous results are shown.",
+      },
+    };
+  const rows = Array.from({ length: 57 }, (_, index) => ({
+    run_id: `demo-run-${index + 1}`,
+    connection_id: null,
+    provider: ["sipcentric", "google_workspace", "csv"][index % 3],
+    capability: index % 3 === 2 ? "contacts" : "discovery",
+    source: ["phone_sync_runs", "email_sync_runs", "data_imports"][index % 3],
+    trigger: "synthetic",
+    actor: null,
+    status: index % 4 === 0 ? "failed" : "success",
+    started_at: new Date(Date.UTC(2026, 9, 10, 12) - index * 60000).toISOString(),
+    completed_at: new Date(Date.UTC(2026, 9, 10, 12) - index * 60000 + 1000).toISOString(),
+    scanned: index + 1,
+    created: null,
+    updated: null,
+    unchanged: null,
+    excluded: null,
+    ambiguous: null,
+    failed: null,
+    warnings: null,
+    error: index % 4 === 0 ? "Synthetic timeout recorded for operator review." : null,
+    correlation_id: null,
+  })).filter(
+    (r) =>
+      (!query.provider || r.provider === query.provider) &&
+      (!query.status || r.status === query.status),
+  );
+  const page = query.cursor ? Number(query.cursor.replace("demo-history-", "")) : 0;
+  const size = query.page_size ?? 25,
+    more = (page + 1) * size < rows.length;
+  return {
+    ok: true,
+    data: {
+      runs: rows.slice(page * size, (page + 1) * size),
+      page,
+      page_size: size,
+      total: rows.length,
+      has_more: more,
+      next_cursor: more ? `demo-history-${page + 1}` : null,
+      as_of: "2026-10-11T00:00:00Z",
+    },
+  };
+};
+
 let demoSeq = 1000;
 
 function DemoOpenfolk() {
@@ -556,6 +609,7 @@ function DemoOpenfolk() {
         onSelectEndpoint={setEndpoint}
         actions={{ onAssign, onReviewIdentity }}
         delegatedActions={delegatedActions}
+        discoveryHistory={demoHistory}
       />
     </OpenfolkShell>
   );

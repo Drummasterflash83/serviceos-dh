@@ -17,6 +17,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OpenfolkDiscoveryHistory, type HistoryLoader } from "./OpenfolkDiscoveryHistory";
 import {
   projectConnections,
   type CapabilityState,
@@ -96,12 +97,14 @@ export function OpenfolkConnections({
   selectedId,
   onSelect,
   delegated,
+  history,
 }: {
   connections?: Connections;
   workspace: Pick<Workspace, "endpoints" | "identities">;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   delegated?: DelegatedActions;
+  history?: HistoryLoader;
 }) {
   const views = useMemo(() => projectConnections(connections, workspace), [connections, workspace]);
   const selected = views.find((v) => v.id === selectedId) ?? null;
@@ -136,6 +139,7 @@ export function OpenfolkConnections({
 
       {selected && <ConnectionDetail v={selected} onClose={() => onSelect(null)} />}
 
+      {history && <OpenfolkDiscoveryHistory load={history} />}
       {delegated && <SetupRequests actions={delegated} />}
     </div>
   );
@@ -728,7 +732,7 @@ function renderTab(tab: DetailTab, v: ConnectionView): ReactNode {
           />
           <Row k="Raw evidence records" v={String(v.evidenceCount)} />
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Full run history is in the Discovery history panel below the connection cards.
+            Recorded runs are shown in the discovery and sync history panel when available.
           </p>
         </dl>
       );

@@ -611,7 +611,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       case "connections.discovery_history": {
         if (!tenantId) return fail("bad_request", "tenant_id required", 400);
         const data = await loadDiscoveryHistory(admin, tenantId, {
-          page: typeof body.page === "number" ? body.page : 0,
+          page: typeof body.page === "number" ? body.page : undefined,
+          cursor: typeof body.cursor === "string" ? body.cursor : null,
           page_size: typeof body.page_size === "number" ? body.page_size : 25,
           provider: body.provider ? String(body.provider) : null,
           status: body.status ? String(body.status) : null,

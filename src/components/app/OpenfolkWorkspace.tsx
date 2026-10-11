@@ -1,3 +1,4 @@
+import type { HistoryLoader } from "./OpenfolkDiscoveryHistory";
 /**
  * OpenFolk Control Plane — tenant workspace (presentational).
  *
@@ -255,6 +256,7 @@ export function OpenfolkWorkspace({
   selectedPerson = null,
   onSelectPerson,
   delegatedActions,
+  discoveryHistory,
 }: {
   tenantName: string;
   workspace: Workspace;
@@ -275,6 +277,7 @@ export function OpenfolkWorkspace({
   selectedPerson?: string | null;
   onSelectPerson?: (memberId: string | null) => void;
   delegatedActions?: DelegatedActions;
+  discoveryHistory?: HistoryLoader;
 }) {
   const [localSection, setLocalSection] = useState<Section>(controlledSection ?? "overview");
   const section = controlledSection ?? localSection;
@@ -642,6 +645,7 @@ export function OpenfolkWorkspace({
             selectedId={selectedConn}
             onSelect={setSelectedConn}
             delegated={delegatedActions}
+            history={discoveryHistory}
           />
         )}
 

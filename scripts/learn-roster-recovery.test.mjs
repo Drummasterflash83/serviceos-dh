@@ -480,3 +480,35 @@ test("operator resolve forwards the explicit historical time and subject type wi
   });
   assert.equal(r.writes.length, 0);
 });
+
+test("operator discovery history forwards cursor and exact filters without writes; tenant owner alone is denied", async () => {
+  let captured;
+  const store = {
+    loadDiscoveryHistory: async (_db, tenantId, opts) => {
+      captured = { tenantId, opts };
+      return { runs: [], total: 0 };
+    },
+  };
+  const r = await call(
+    {
+      action: "connections.discovery_history",
+      cursor: "opaque",
+      page_size: 25,
+      provider: "sipcentric",
+      status: "failed",
+    },
+    { store },
+  );
+  assert.equal(r.status, 200);
+  assert.equal(captured.tenantId, tenant);
+  assert.equal(captured.opts.cursor, "opaque");
+  assert.equal(captured.opts.page, undefined);
+  assert.equal(captured.opts.provider, "sipcentric");
+  assert.equal(captured.opts.status, "failed");
+  assert.equal(r.writes.length, 0);
+  const denied = await call(
+    { action: "connections.discovery_history" },
+    { store, tables: { platform_authority_grants: { data: [], error: null } } },
+  );
+  assert.equal(denied.status, 403);
+});

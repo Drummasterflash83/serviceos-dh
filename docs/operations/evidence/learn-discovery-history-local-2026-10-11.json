@@ -1,0 +1,26 @@
+{
+  "state": "local_checks_passed",
+  "runtimeSourceSha256": "2ae3d36d9ab0c8e371febcf9490f6ed429363f61ca4a8bc303181d9b9cb7f9c1",
+  "runtimeFiles": 24,
+  "targetedAndReleaseTests": 83,
+  "applicationTypecheck": "passed",
+  "moduleTypecheck": "passed",
+  "applicationBuild": "passed",
+  "prebuildTests": 47,
+  "isolatedHttp": {
+    "phoneRuns": 2203,
+    "emailRuns": 200,
+    "imports": 100,
+    "total": 2503,
+    "pages": 26,
+    "serverRowLimit": 37,
+    "requests": 362,
+    "exactCountHeads": 241,
+    "filteredFailedPhoneTotal": 314,
+    "sourceFingerprintsPreserved": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "hostedDeployment": "not_yet_claimed",
+  "browserAcceptance": "not_yet_claimed",
+  "productionChanges": false
+}

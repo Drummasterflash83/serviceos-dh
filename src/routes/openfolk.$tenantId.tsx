@@ -1,3 +1,4 @@
+import { getDiscoveryHistory, type DiscoveryHistoryQuery } from "@/lib/openfolk";
 /**
  * OpenFolk Control Plane — tenant workspace (/openfolk/$tenantId). PLATFORM-OPERATOR ONLY.
  *
@@ -183,6 +184,10 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
   // fetchAll refreshes data IN PLACE. It never toggles `loading`, so the workspace is
   // not unmounted on a mutation refetch — the durable section/endpoint, expanded role
   // form, and scroll position all survive. Only the first load gates the render.
+  const discoveryHistory = useCallback(
+    (query: DiscoveryHistoryQuery) => getDiscoveryHistory(tenantId, query),
+    [tenantId],
+  );
   const fetchGeneration = useRef(0);
   const fetchAll = useCallback(async () => {
     const generation = ++fetchGeneration.current;
@@ -398,6 +403,7 @@ function TenantWorkspace({ tenantId, tenantName }: { tenantId: string; tenantNam
           selectedPerson={search.person ?? null}
           onSelectPerson={setPerson}
           delegatedActions={delegatedActions}
+          discoveryHistory={discoveryHistory}
         />
       </Suspense>
     </OperatorShell>

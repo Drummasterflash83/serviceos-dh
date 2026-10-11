@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Discovery history — verified local candidate
+
+The controller now merges checked cursor pages for Phone/Email runs and file
+imports, retaining old runs and untimed imports without reporting truncated totals.
+The missing history panel is implemented with filters, next/previous, refresh and
+explicit failures. Eighty-three targeted checks, TypeScript, the build and an
+actual 26-page / 2,503-run isolated traversal pass. Deployment and browser acceptance
+are not yet claimed by this local checkpoint.
+See [discovery history](LEARN-DISCOVERY-HISTORY.md).
+
 ## Connection inventory — TEST controller v7 and paired frontend installed
 
 The operator no longer infers connected/healthy status from retained inventory

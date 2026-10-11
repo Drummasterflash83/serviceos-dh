@@ -710,17 +710,23 @@ export const rosterEndAuthority = (p: { tenant_id: string; grant_id: string; rea
   invoke<{ id: string }>({ action: "roster.authority_end", ...p });
 
 // ── Connections: discovery history + delegated setup tasks (operator) ──
-export const getDiscoveryHistory = (
-  tenant_id: string,
-  opts: { page?: number; page_size?: number; provider?: string; status?: string } = {},
-) =>
-  invoke<{
-    runs: DiscoveryRun[];
-    page: number;
-    page_size: number;
-    total: number;
-    has_more: boolean;
-  }>({ action: "connections.discovery_history", tenant_id, ...opts });
+export interface DiscoveryHistoryPage {
+  runs: DiscoveryRun[];
+  page: number;
+  page_size: number;
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  as_of: string;
+}
+export interface DiscoveryHistoryQuery {
+  page_size?: number;
+  provider?: string;
+  status?: string;
+  cursor?: string | null;
+}
+export const getDiscoveryHistory = (tenant_id: string, opts: DiscoveryHistoryQuery = {}) =>
+  invoke<DiscoveryHistoryPage>({ action: "connections.discovery_history", tenant_id, ...opts });
 export const listDelegatedTasks = (tenant_id: string) =>
   invoke<{ tasks: DelegatedTask[] }>({ action: "delegated.list", tenant_id });
 export const issueDelegatedTask = (p: {
