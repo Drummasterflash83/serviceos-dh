@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-11",
+  "scope": "local synthetic verification only",
+  "change": "Resolve typed team and member ownership labels in LEARN customer/job findings",
+  "verified": [
+    "Customer and job findings resolve team/org_unit owner and waiting-on names",
+    "Member/profile identities remain distinct from team identities, including UUID collisions",
+    "Missing, failed or foreign-only team lookups show unavailable labels and an assignment-review gap",
+    "Foreign team responses are rejected by projection scope validation",
+    "All 150 typed references on a full 50-finding page can resolve",
+    "Ambiguous profile mappings and oversized lookup responses withhold names",
+    "Synthetic local customer card visibly displays Office instead of org_unit UUID"
+  ],
+  "checks": {
+    "node --test src/lib/learn-cards.test.ts src/lib/learn-card-communications.test.ts": {
+      "passed": 19,
+      "failed": 0
+    },
+    "npx tsc --noEmit": "passed",
+    "npx tsc --noEmit -p preview/learn-review/tsconfig.json": "passed",
+    "npx vite build --config preview/learn-review/vite.config.mjs": "passed; existing chunk-size/dynamic-import warnings",
+    "npm run build": "passed",
+    "git diff --check": "passed"
+  },
+  "browser": {
+    "url": "http://127.0.0.1:47871/client?tenant=11111111-1111-4111-8111-111111111111&section=learn&launch=1&sourceRead=retry",
+    "finding": "Review team dispatch queue \u00b7 synthetic",
+    "owner": "Office",
+    "private_screenshot": ".verification-results/learn-owner-labels-local-2026-10-11.jpg"
+  },
+  "limitations": [
+    "No hosted TEST deployment or signed-in real-tenant acceptance in this checkpoint",
+    "No production changes",
+    "No AWS access or recording copies in this checkpoint"
+  ]
+}

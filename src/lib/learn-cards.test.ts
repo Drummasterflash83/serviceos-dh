@@ -213,7 +213,7 @@ test("member card joins typed ownership without conflating people, and includes 
   assert.match(detail.gaps.join(" "), /does not establish all/);
   assert.equal(
     referenceLabel({ kind: "company", ref: id(1) }, [row(1, { display_name: "Wrong name" })]),
-    `company: ${id(1)}`,
+    "Owner name unavailable",
   );
 });
 
@@ -427,4 +427,132 @@ test("team detail joins explicit typed team ownership, never current member work
   );
   assert.equal(denied.findings.length, 0);
   assert.match(denied.gaps.join(" "), /could not be read/);
+});
+
+test("customer and job findings resolve typed team ownership and waiting-on names", async () => {
+  for (const kind of ["customer", "job"] as const) {
+    const db = database({
+      [kind === "customer" ? "customer_cards" : "jobs"]: [row(1)],
+      graph_nodes: [
+        row(2, { source_table: kind === "customer" ? "customer_cards" : "jobs", source_id: id(1) }),
+      ],
+      intelligence_objects: [
+        row(3, {
+          source_entities: [id(2)],
+          responsible_ref: { kind: "team", ref: id(4) },
+          waiting_on_ref: { kind: "org_unit", ref: id(5) },
+        }),
+      ],
+      org_units: [
+        row(4, { name: "Office" }),
+        row(5, { name: "Engineering" }),
+        row(4, { tenant_id: OTHER, name: "Foreign team" }),
+      ],
+      team_members: [row(4, { display_name: "Person with same UUID" })],
+    });
+    const detail = await readLearnCardDetail(db, T, kind, id(1), now);
+    assert.equal(detail.findings[0].owner, "Office");
+    assert.equal(detail.findings[0].waitingOn, "Engineering");
+    assert.ok(!detail.gaps.some((g) => g.includes("names could not")));
+    assert.ok(db.calls.every((c) => c.tenant === T));
+    assert.ok(!db.calls.some((c) => c.table === "team_members"));
+  }
+});
+
+test("missing, inaccessible and foreign-only teams stay visible as unresolved assignments", async () => {
+  for (const failures of [[], ["org_units"]]) {
+    const db = database(
+      {
+        jobs: [row(1)],
+        graph_nodes: [row(2, { source_table: "jobs", source_id: id(1) })],
+        intelligence_objects: [
+          row(3, {
+            source_entities: [id(2)],
+            accountable_ref: { kind: "team", ref: id(4) },
+            waiting_on_ref: { kind: "org_unit", ref: id(5) },
+          }),
+        ],
+        org_units: [row(4, { tenant_id: OTHER, name: "Foreign team" })],
+      },
+      failures,
+    );
+    const detail = await readLearnCardDetail(db, T, "job", id(1), now);
+    assert.equal(detail.findings[0].owner, "Team name unavailable");
+    assert.equal(detail.findings[0].waitingOn, "Team name unavailable");
+    assert.ok(detail.gaps.some((g) => g.includes("assignments need review")));
+    assert.ok(!JSON.stringify(detail.findings).includes(id(4)));
+    assert.ok(!JSON.stringify(detail).includes("Foreign team"));
+    assert.ok(!JSON.stringify(detail).includes("private provider error"));
+  }
+  assert.throws(
+    () =>
+      projectLearnDetail({
+        tenant: T,
+        kind: "job",
+        record: row(1),
+        interactions: [],
+        findings: [],
+        members: [],
+        teams: [row(4, { tenant_id: OTHER })],
+        now,
+      }),
+    /scope/,
+  );
+});
+
+test("all 150 ownership references on a full findings page can resolve", async () => {
+  const findings = Array.from({ length: 50 }, (_, i) =>
+    row(1000 + i, {
+      source_entities: [id(2)],
+      accountable_ref: { kind: "member", ref: id(100 + i * 3) },
+      responsible_ref: { kind: "member", ref: id(101 + i * 3) },
+      waiting_on_ref: { kind: "profile", ref: id(500 + i) },
+    }),
+  );
+  const members = Array.from({ length: 150 }, (_, i) =>
+    row(100 + i, {
+      display_name: `Person ${i}`,
+      profile_id: i % 3 === 2 ? id(500 + Math.floor(i / 3)) : null,
+    }),
+  );
+  const detail = await readLearnCardDetail(
+    database({
+      jobs: [row(1)],
+      graph_nodes: [row(2, { source_table: "jobs", source_id: id(1) })],
+      intelligence_objects: findings,
+      team_members: members,
+    }),
+    T,
+    "job",
+    id(1),
+    now,
+  );
+  assert.equal(detail.findings.length, 50);
+  assert.equal(detail.findings[49].owner, "Person 147");
+  assert.equal(detail.findings[49].waitingOn, "Person 149");
+  assert.ok(!detail.gaps.some((g) => g.includes("names could not")));
+});
+
+test("ambiguous profile mappings never pick an arbitrary person, including truncated lookup", async () => {
+  for (const count of [2, 151]) {
+    const detail = await readLearnCardDetail(
+      database({
+        jobs: [row(1)],
+        graph_nodes: [row(2, { source_table: "jobs", source_id: id(1) })],
+        intelligence_objects: [
+          row(3, { source_entities: [id(2)], responsible_ref: { kind: "profile", ref: id(4) } }),
+        ],
+        team_members: Array.from({ length: count }, (_, i) =>
+          row(100 + i, { display_name: `Person ${i}`, profile_id: id(4) }),
+        ),
+      }),
+      T,
+      "job",
+      id(1),
+      now,
+    );
+    assert.equal(detail.findings[0].owner, "Owner name unavailable");
+    assert.ok(detail.gaps.some((g) => g.includes("assignments need review")));
+    if (count > 150) assert.ok(detail.gaps.some((g) => g.includes("exceeded its limit")));
+  }
 });

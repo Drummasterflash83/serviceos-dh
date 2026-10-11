@@ -218,19 +218,28 @@ export async function searchLearnCards(
   return { cards: r.rows.map((x: Row) => card(x, kind, now)), hasMore: r.hasMore, page };
 }
 
-/** References are typed: a profile UUID is not a team-member UUID. */
-export function referenceLabel(value: unknown, members: Row[]): string | null {
+/** Resolve only a unique, typed identity; a profile UUID is not a member UUID. */
+function resolvedReferenceName(value: unknown, members: Row[], teams: Row[]): string | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const r = value as Row;
+  if (!uuid(r.ref)) return null;
+  const isTeam = ["team", "org_unit"].includes(r.kind);
+  const matches = (isTeam ? teams : members).filter((m) =>
+    isTeam || ["member", "team_member"].includes(r.kind)
+      ? m.id === r.ref
+      : ["user", "profile"].includes(r.kind) && m.profile_id === r.ref,
+  );
+  return matches.length === 1 ? text(isTeam ? matches[0].name : matches[0].display_name) : null;
+}
+
+export function referenceLabel(value: unknown, members: Row[], teams: Row[] = []): string | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const r = value as Row;
   if (!text(r.ref)) return null;
-  const match = members.find((m) =>
-    r.kind === "member" || r.kind === "team_member"
-      ? m.id === r.ref
-      : r.kind === "user" || r.kind === "profile"
-        ? m.profile_id === r.ref
-        : false,
+  return (
+    resolvedReferenceName(value, members, teams) ??
+    (["team", "org_unit"].includes(r.kind) ? "Team name unavailable" : "Owner name unavailable")
   );
-  return text(match?.display_name) ?? `${text(r.kind) ?? "Reference"}: ${r.ref}`;
 }
 
 export function projectLearnDetail(input: {
@@ -240,6 +249,7 @@ export function projectLearnDetail(input: {
   interactions: Row[];
   findings: Row[];
   members: Row[];
+  teams?: Row[];
   gaps?: string[];
   moreEvidence?: boolean;
   moreFindings?: boolean;
@@ -249,9 +259,13 @@ export function projectLearnDetail(input: {
   scope(tenant, kind, record.id);
   if (
     !Number.isFinite(now) ||
-    [record, ...input.interactions, ...input.findings, ...input.members].some(
-      (r) => r.tenant_id !== tenant,
-    )
+    [
+      record,
+      ...input.interactions,
+      ...input.findings,
+      ...input.members,
+      ...(input.teams ?? []),
+    ].some((r) => r.tenant_id !== tenant)
   )
     throw new Error("Invalid card scope");
   const evidence = [
@@ -272,11 +286,18 @@ export function projectLearnDetail(input: {
       excerpt: text(r.body_preview),
     }))
     .sort((a, b) => (Date.parse(b.occurredAt ?? "") || 0) - (Date.parse(a.occurredAt ?? "") || 0));
+  const gaps = [...(input.gaps ?? [])];
+  const teams =
+    kind === "team"
+      ? [record, ...(input.teams ?? []).filter((r) => r.id !== record.id)]
+      : (input.teams ?? []);
   const labelReference = (ref: unknown) => {
-    const r = ref as Row | null;
-    return kind === "team" && r && ["team", "org_unit"].includes(r.kind) && r.ref === record.id
-      ? (text(record.name) ?? referenceLabel(ref, input.members))
-      : referenceLabel(ref, input.members);
+    const label = referenceLabel(ref, input.members, teams);
+    if (label && !resolvedReferenceName(ref, input.members, teams))
+      gaps.push(
+        "Some owner or waiting-on names could not be resolved. These assignments need review.",
+      );
+    return label;
   };
   const visible = new Set(evidence.map((e) => e.id));
   const terminal = new Set(["complete", "completed", "cancelled", "resolved", "closed", "done"]);
@@ -309,7 +330,7 @@ export function projectLearnDetail(input: {
     card: card(record, kind, now),
     findings,
     evidence,
-    gaps: [...new Set(input.gaps ?? [])],
+    gaps: [...new Set(gaps)],
     observedAt: new Date(now).toISOString(),
     validUntil: new Date(now + 60000).toISOString(),
     moreEvidence: input.moreEvidence ?? false,
@@ -461,31 +482,68 @@ export async function readLearnCardDetail(
         { ids: missing.slice(0, DETAIL_LIMIT) },
       )
     : [];
-  const memberRefs = [
-    ...new Set(
-      findings
-        .flatMap((r) => [r.accountable_ref?.ref, r.responsible_ref?.ref, r.waiting_on_ref?.ref])
-        .filter(uuid),
+  const ownershipRefs = findings.flatMap((r) => [
+    r.accountable_ref,
+    r.responsible_ref,
+    r.waiting_on_ref,
+  ]);
+  const refsFor = (kinds: string[]) => [
+    ...new Set<string>(
+      ownershipRefs.filter((r) => r && kinds.includes(r.kind) && uuid(r.ref)).map((r) => r.ref),
     ),
   ];
-  const members = memberRefs.length
-    ? await optional(
-        "Some owner names could not be resolved.",
-        db
-          .from("team_members")
-          .select("id,tenant_id,display_name,profile_id")
-          .eq("tenant_id", tenant)
-          .or(`id.in.(${memberRefs.join(",")}),profile_id.in.(${memberRefs.join(",")})`)
-          .is("effective_to", null)
-          .limit(DETAIL_LIMIT + 1),
-      )
-    : [];
+  const memberIds = refsFor(["member", "team_member"]);
+  const profileIds = refsFor(["user", "profile"]);
+  const teamIds = refsFor(["team", "org_unit"]);
+  const memberFilter = [
+    memberIds.length ? `id.in.(${memberIds.join(",")})` : null,
+    profileIds.length ? `profile_id.in.(${profileIds.join(",")})` : null,
+  ]
+    .filter(Boolean)
+    .join(",");
+  // At most three references per visible finding. Read a sentinel as well so
+  // unexpectedly duplicated profile mappings cannot produce arbitrary attribution.
+  const ownerLimit = DETAIL_LIMIT * 3;
+  let [members, teams] = await Promise.all([
+    memberFilter
+      ? optional(
+          "Some owner names could not be resolved.",
+          db
+            .from("team_members")
+            .select("id,tenant_id,display_name,profile_id")
+            .eq("tenant_id", tenant)
+            .or(memberFilter)
+            .is("effective_to", null)
+            .limit(ownerLimit + 1),
+        )
+      : Promise.resolve([]),
+    teamIds.length
+      ? optional(
+          "Some team names could not be resolved.",
+          db
+            .from("org_units")
+            .select("id,tenant_id,name")
+            .eq("tenant_id", tenant)
+            .in("id", teamIds)
+            .limit(ownerLimit + 1),
+        )
+      : Promise.resolve([]),
+  ]);
+  if (members.length > ownerLimit) {
+    gaps.push("Owner name lookup exceeded its limit; assignments need review.");
+    members = [];
+  }
+  if (teams.length > ownerLimit) {
+    gaps.push("Team name lookup exceeded its limit; assignments need review.");
+    teams = [];
+  }
   return projectLearnDetail({
     tenant,
     kind,
     record,
     findings,
     members,
+    teams,
     interactions: [...direct.slice(0, DETAIL_LIMIT), ...extra],
     gaps,
     now,

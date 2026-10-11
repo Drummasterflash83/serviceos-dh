@@ -170,7 +170,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   tests, both TypeScript checks and builds passed. The matching frontend is now
   deployed to TEST with release 054 above; signed-in source acceptance is pending.
   [Evidence and limits](LEARN-CARD-SOURCES.md#customer-timeline-integration--11-october-2026-local-only).
-  Team ownership labels still expose UUIDs in customer findings and need resolution.
+- [x] Local customer/job findings now resolve typed team owner and waiting-on names.
+  Unavailable or ambiguous identities show a clear unresolved assignment and a gap;
+  they never display an internal UUID as the owner label. All 150 references on a
+  full findings page are supported within a bounded lookup. Nineteen card/communication
+  checks, both TypeScript checks and both builds passed. Synthetic browser verification
+  shows “Office” for the customer finding. Hosted TEST and production acceptance remain
+  pending. [Evidence](evidence/learn-owner-labels-local-2026-10-11.json).
 
 ## Implemented but not fully verified — acceptance gates
 
