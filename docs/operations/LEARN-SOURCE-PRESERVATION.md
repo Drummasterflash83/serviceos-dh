@@ -58,7 +58,7 @@ proof of preservation. Matching passes cover the selected inventory fields, not 
 source columns. They cannot exclude every concurrent edit, prove complete provider
 capture, establish playable audio, or replace a tested backup/restore process.
 
-## Verification and current live limit — 10 October
+## Earlier availability failure — 10 October, 03:12 UTC
 
 Eighteen focused checks passed, including the six new regression cases for omitted
 page counts, short-page exhaustion, matching double scans, same-count replacement,
@@ -75,14 +75,57 @@ not established as the cause of the live failure, and the new scan mode is not
 claimed to restore database availability. A full double scan was not started after
 the pilot failed; no database session or setting was changed.
 
-The last complete large-source preservation comparison remains the successful
-00:40–00:41 run: 18,456 emails, 4,324 calls and 2,882 recordings. The later partial
+At that time, the last complete large-source preservation comparison was the
+successful 00:40–00:41 run: 18,456 emails, 4,324 calls and 2,882 recordings. The later partial
 run verified small registries but could not verify those larger sources or storage.
-No missing historical record is established by the failures. Further live auditing
-requires source reads to become available; independent LEARN implementation can
-continue without treating those failures as complete or empty input.
+No missing historical record is established by the failures. Later source reads
+recovered, as recorded below. These earlier failures remain
+unverified observations, not evidence of empty input or missing history.
 
 Evidence: [small-page pilot](evidence/learn-source-keyset-pilot-2026-10-10.json),
 [local verification](evidence/learn-source-preservation-reader-2026-10-10.json),
 [earlier complete comparison](evidence/learn-preservation-phone-binding-2026-10-10.json),
 and [later partial comparison](evidence/learn-preservation-voicemail-email-2026-10-10.json).
+## Current production preservation — 11 October, 02:22 UTC
+
+The read-only 100-row email pilot passed. A complete `double_keyset` scan used
+149 requests with no read errors, cutoff 02:22:24.756 UTC and completion
+02:22:49.217 UTC. All previous IDs from the complete 10 October 18:30:41 UTC
+manifest remained across all eleven sources. No recording pointer changed and
+no inventoried storage object was missing or changed in size/update metadata.
+
+| Stored source | Current count | Previous count |
+|---|---:|---:|
+| Emails | 18,511 | 18,501 |
+| Calls | 4,328 | 4,328 |
+| Recording rows | 2,882 | 2,882 |
+| Transcript rows | 2,882 | 2,882 |
+| Interactions | 22,851 | 22,841 |
+| Customer cards | 3,160 | 3,159 |
+| Canonical jobs | 0 | 0 |
+| Team members | 8 | 8 |
+| Receptionist voicemails | 0 | 0 |
+| Email accounts | 30 | 30 |
+| Tenant connectors | 3 | 3 |
+
+Of the transcripts, 2,876 are completed and six failed. Storage enumeration found
+2,888 objects in the referenced folders; all 2,882 recording pointers matched
+objects larger than 44 bytes. These are retained database records and object
+metadata, not proof of full provider capture, playable audio or complete content
+integrity. The six failed transcripts and zero captured voicemail rows remain
+unresolved. The zero canonical jobs here describes production, not the separate
+retained Commusoft TEST import.
+
+The private ID/hash manifest remains ignored and permission-restricted. The
+[public aggregate evidence](evidence/learn-preservation-live-2026-10-11.json)
+contains no message bodies, customer IDs, transcript text or recording paths.
+This check made no production writes or provider requests.
+
+## Backup and recovery evidence
+
+A separate read-only management observation at 02:25 UTC found eight production
+physical database backups marked `COMPLETED`, newest inserted at
+11 October 00:32:06.770 UTC. PITR is disabled. TEST returned an empty backup list.
+This establishes the provider's backup metadata, not a completed restore or
+recoverable audio. Storage file bytes need separate backup coverage.
+See [recovery coverage and remaining acceptance](LEARN-DATA-RECOVERY.md).

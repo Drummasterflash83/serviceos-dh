@@ -1,0 +1,74 @@
+{
+  "version": "learn-backup-metadata-observation/1",
+  "observedAt": "2026-10-11T02:25:53.787Z",
+  "projects": {
+    "production": {
+      "projectRef": "tgbnakbxwcqjeimygroz",
+      "state": "metadata_observed",
+      "pitrEnabled": false,
+      "walgEnabled": true,
+      "backups": [
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-11T00:32:06.770Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-10T00:43:26.108Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-09T00:27:22.839Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-08T00:32:57.646Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-07T00:25:08.590Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-06T04:04:33.546Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-05T00:27:28.220Z",
+          "physical": true
+        },
+        {
+          "status": "COMPLETED",
+          "insertedAt": "2026-10-04T00:33:37.285Z",
+          "physical": true
+        }
+      ],
+      "physicalWindow": {
+        "earliest": null,
+        "latest": null
+      }
+    },
+    "test": {
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "state": "metadata_observed",
+      "pitrEnabled": false,
+      "walgEnabled": true,
+      "backups": [],
+      "physicalWindow": {
+        "earliest": null,
+        "latest": null
+      }
+    }
+  },
+  "productionChanges": false,
+  "testChanges": false,
+  "restorePerformed": false,
+  "storageBytesBackedUpByThisCheck": false,
+  "completedAt": "2026-10-11T02:25:54.477Z"
+}

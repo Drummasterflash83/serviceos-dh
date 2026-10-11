@@ -270,3 +270,9 @@ This permits source backup while a separately configured TEST frontend remains
 unpublished. Do not point it at production Supabase. Promoting `main` and deploying
 backend changes remain separate operations. A source-code backup is not a backup
 of hosted email, phone audio or database records.
+
+The 11 October read-only backup check found eight completed production database
+backups and an empty TEST backup list. Database backups exclude Storage file
+bytes; independent recording backup and an isolated restore are still unverified.
+See [data recovery coverage](operations/LEARN-DATA-RECOVERY.md) before claiming
+that a GitHub checkpoint or database backup protects all retained customer data.

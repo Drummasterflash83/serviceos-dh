@@ -1,5 +1,21 @@
 # Existing TEST environment: verified release gaps
 
+## Production preservation and recovery observation — 11 October
+
+The 02:22 UTC production comparison preserves every prior ID across eleven
+sources: 18,511 emails, 4,328 calls, 2,882 recordings and 3,160 customer cards.
+All 2,882 recording pointers match storage objects; no prior pointer or inventoried
+object metadata changed. Six failed transcripts remain. This is an ID/storage
+metadata comparison, not proof of playback or complete provider capture.
+
+The separate 02:25 UTC backup-list read found eight completed production physical
+database backups, newest inserted at 00:32 UTC today. PITR is disabled. TEST's
+backup list is empty. Recording-byte backup and isolated restore remain unverified;
+GitHub source checkpoints do not cover retained customer data. No production or
+TEST writes, provider calls, restores or backup configuration changes occurred.
+See [preservation evidence](LEARN-SOURCE-PRESERVATION.md) and
+[recovery coverage and acceptance](LEARN-DATA-RECOVERY.md).
+
 ## Canonical card search — TEST release 051 and paired frontend installed
 
 Company-scoped literal search now covers customer titles, job titles/numbers,
