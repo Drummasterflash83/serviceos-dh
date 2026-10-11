@@ -1,5 +1,19 @@
 # Existing TEST environment: verified release gaps
 
+## Working-time collection — local connected candidate, not deployed
+
+Saved person/team rules now require explicit work states and connect to resumable
+working-time collection. Frozen company hours, per-item delay heads and retained
+source inputs support exact arithmetic and an owner-readable breakdown. The local
+SQL verifier covers 205-item member/team runs, late-commit isolation, concurrent
+checkpoints, missing hours, access denials and original collector regression. Browser
+checks cover rule save, paging, failed-read recovery and retained original scope.
+
+Full working-time population/transport tests, additional race/correction review and
+paired hosted acceptance remain. TEST remains 049; no production/provider changes.
+See [working-time collection](LEARN-WORKING-COLLECTION.md) for evidence and limits.
+
+
 ## Working-time calculation — local private candidate, not deployed
 
 The separate calculation now intersects captured member/team ownership in explicit
@@ -8,10 +22,9 @@ exact microsecond subtotals, counts overlapping delays once, and withholds final
 values for absent/partial calendars or ownership. Team changes, direct team
 assignment, daylight-saving expansion and retained actual source readers are
 verified locally. Twelve SQL outputs pass an independent TypeScript verifier;
-81 focused tests and application TypeScript pass. No public collector or scorecard
-setting uses this calculation yet. Resumable integration must freeze committed
-delay heads and calendar evidence, persist complete proof and receive hosted
-acceptance. TEST remains 049; production and source records are unchanged.
+81 focused tests and application TypeScript passed at the private-calculator
+checkpoint. The newer collection candidate above now connects settings, frozen
+inputs and retained proof locally; full-volume and hosted acceptance remain. TEST remains 049; production and source records are unchanged.
 [Calculation contract and remaining integration](LEARN-WORKING-TIME.md).
 
 ## Approved delays — local owner UI/recovery candidate, not deployed
@@ -27,7 +40,7 @@ reverse an approval with a reason. Browser approval, reversal, reload/recovery,
 cancellation, failed-page retry, later-page reversal and viewer checks pass locally.
 The actual shorter client descriptor also passes a SQL approval/proof round trip.
 All 72 focused delay/calendar/history/scorer tests, both typechecks and builds pass.
-The working-time collector and hosted acceptance remain outstanding. No real approvals or
+The working-time collector is now connected locally; hosted acceptance remains outstanding. No real approvals or
 source/score changes were made; TEST remains release 049.
 [Contract, evidence and remaining integration](LEARN-WORK-DELAYS.md).
 
@@ -41,7 +54,7 @@ late writes. Offline SQL/DST/authority/preservation checks, concurrent save/canc
 and publish/cancel races, actual SQL-to-client parsing, 35 focused client/scorer
 tests, app/preview typechecks/builds and synthetic browser recovery/preview checks
 pass. Approved-delay evidence and its owner review screen are now implemented
-locally; the working-time measurement adapter remains to build. TEST remains on 049; hosted owner acceptance is outstanding. No Drummonds
+locally; the working-time adapter is now connected locally. TEST remains on 049; hosted owner acceptance is outstanding. No Drummonds
 hours, scores, source records or production settings have been changed.
 [Contract, verification and integration work](LEARN-WORK-CALENDARS.md).
 

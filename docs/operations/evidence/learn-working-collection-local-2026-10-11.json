@@ -1,0 +1,60 @@
+{
+  "version": "learn-working-collection-local/1",
+  "observedAt": "2026-10-11T01:33:55.844553+00:00",
+  "scope": "Local connected candidate; isolated synthetic PostgreSQL and browser fixtures only",
+  "deployed": false,
+  "hostedReleaseUnchanged": "049",
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newHostedAuthority": false,
+  "sourceSha256": {
+    "supabase/migrations/20261101130000_learn_working_time_collection.sql": "3ff14495fab91b5b7826b4e7a8bf4fc3113a03c368f002a76c445f7e72dcb984",
+    "src/lib/learn-scorecards.ts": "42da736f1c6d58d75f05c47855334256a04cfe9685cef5013bcb7fa29ddda342",
+    "src/lib/learn-work-collection.ts": "4bbd6a3de49d469a57b72df7d4b3392d4bf243bc86b3abbbaf73c1cef928bd8d",
+    "src/lib/learn-resumable-work.ts": "ea6756485258d160a35b2dbe6ad9442773402e2f6d56e319209596091dc0eaf8",
+    "src/components/client-portal/learn/LearnScorecardSettings.tsx": "7e5790bc49f20190357d5c5ef88b2d3f7166c1eda6ad566b729f31f0f82089fb",
+    "src/components/client-portal/learn/LearnWorkCollectionEvidence.tsx": "a36921c67e59110e7b988609a2e2ceda056876800652609c30431e7389a8677a",
+    "scripts/verify/learn-work-calendars.py": "718dc74a91ce6f9b432ebb07a25f2fb1e89ccc28b8cadf27ecee121c063f7754",
+    "scripts/verify/learn-working-collection.py": "a9bac0409d3d649d8b524cb7e7668f436e3cd3af748e1ee58428a179b0deebda",
+    "scripts/verify/learn-working-collection.assert.sql": "f8ca72c4be4e9c525484c7e6f4c2d137a4e91d80fc225cff42a46c9ec6cfd9f2",
+    "scripts/verify/learn-working-collection-concurrency.py": "719fb5632f3ac123778bae3474b37044ae08d3e325d6ede405523030d3b8c71b",
+    "scripts/verify/learn-working-collection-readback.mjs": "ba7a737dc81acaf232dc66fc29f68707a3809733c09219be566b9987bfc2204e"
+  },
+  "verification": {
+    "rollbackRehearsal": "passed",
+    "memberAndTeamPopulationEach": 205,
+    "actualSQLResultsParsed": 410,
+    "completeInputReceiptsIndependentlyChecked": 6,
+    "exactAggregateMicroseconds": "sum before rounding once; reconciled with stored measurement",
+    "lateCommit": "Approval recorded before snapshot, committed afterward, excluded by frozen committed revision",
+    "competingCheckpoints": "two concurrent step(0) calls advance once to 100",
+    "laterChanges": "reversal, ownership, membership and new-object changes excluded",
+    "missingCalendars": "partial and absent periods withhold; zero eligible population still withholds",
+    "legacyCollectors": "all three original kinds execute after migration with their coverage behavior preserved",
+    "authority": "viewer/foreign-owner/View-As RPC denied; direct writes/private helper execution revoked",
+    "sourcePreservation": "prior measurement/run/history fingerprints unchanged by working-time fixture",
+    "browser": [
+      "Empty/duplicate states cannot save; explicit valid state list saved as revision 2",
+      "Member collection completes 250 items and pages 100/100/50",
+      "Failed per-item input read preserves displayed evidence; retry verifies arithmetic",
+      "Reload retains original request; completed receipt restores original rules and dates",
+      "Team lost-step response recovered at committed checkpoint 100; resumes to 250; item arithmetic verifies",
+      "Completed inferred observation remains unassessed until separate human confirmation",
+      "No browser console errors"
+    ],
+    "focusedTests": 47,
+    "buildPrechecks": 47,
+    "failedTests": 0,
+    "appAndPreviewTypechecks": "passed",
+    "appAndPreviewBuilds": "passed",
+    "pythonSyntax": "AST parse passed"
+  },
+  "screenshot": ".verification-results/learn-working-collection-2026-10-11.png",
+  "remaining": [
+    "Full working-time company-volume and transport-bound verification",
+    "Additional begin/abandon and policy-change races",
+    "Governed automatic-source and correction-path review",
+    "Paired hosted TEST release and signed-in owner acceptance",
+    "Real company calendar/state configuration and broader provider/production launch requirements"
+  ]
+}

@@ -43,6 +43,28 @@ export const WORK_COLLECTORS = {
       "Add elapsed item-minutes from direct team assignments and members’ observed team affiliations. Concurrent items add separately, including waiting and closed states. This describes workload, not hours worked, speed or productivity; no calendar or delay exclusion is applied.",
     collected: "Team ownership evidence has been collected for this period.",
   },
+  workingTime: {
+    subjectKind: "member",
+    metric: "work.working_item_minutes",
+    unit: "working_item_minutes",
+    source: "serviceos.work.working-time@1",
+    rpc: null,
+    title: "Collect working-time ownership evidence",
+    description:
+      "Count each item’s ownership time in the selected work states during published company hours, less approved delays. Concurrent items add separately. This measures item-time, not hours worked or pay entitlement.",
+    collected: "Working-time ownership evidence has been collected for this period.",
+  },
+  teamWorkingTime: {
+    subjectKind: "team",
+    metric: "work.team_working_item_minutes",
+    unit: "working_item_minutes",
+    source: "serviceos.work.team-working-time@1",
+    rpc: null,
+    title: "Collect team working-time ownership evidence",
+    description:
+      "Count direct team assignments and members’ observed team affiliations in selected work states during published company hours, less approved delays. Concurrent items add separately. This measures team item-time, not hours worked or pay entitlement.",
+    collected: "Team working-time ownership evidence has been collected for this period.",
+  },
 } as const;
 export type WorkCollectionKind = keyof typeof WORK_COLLECTORS;
 export function canCollectWork(policy: ScorecardPolicy, kind: WorkCollectionKind) {
@@ -79,6 +101,7 @@ export async function collectWorkEvidence(
   if (
     validateScorecardPolicy(policy).length ||
     !spec ||
+    !spec.rpc ||
     !canCollectWork(policy, kind) ||
     !uuid(subjectId) ||
     (spec.subjectKind === "team" ? memberId !== undefined : teamId !== undefined) ||

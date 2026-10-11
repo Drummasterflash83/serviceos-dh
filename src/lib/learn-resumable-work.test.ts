@@ -292,3 +292,71 @@ test("overview and frozen identity responses bind tenant, contract and complete 
   response.data.tenantId = id(9);
   await assert.rejects(readWorkCollectionEvidence(db, id(2), id(5), "membership"));
 });
+
+test("working-time collection requires explicit saved states and never accepts mismatched subject rules", async () => {
+  for (const [kind, subjectKind, metric, source] of [
+    ["workingTime", "member", "work.working_item_minutes", "serviceos.work.working-time@1"],
+    [
+      "teamWorkingTime",
+      "team",
+      "work.team_working_item_minutes",
+      "serviceos.work.team-working-time@1",
+    ],
+  ]) {
+    const working = {
+      ...policy,
+      subjectKind,
+      metrics: [
+        {
+          ...policy.metrics[0],
+          key: metric,
+          sourceSystems: [source],
+          unit: "working_item_minutes",
+          workStates: ["ready", "waiting"],
+        },
+      ],
+    };
+    const r = createWorkCollectionRequest({ ...input, kind, policy: working } as any);
+    let count = 0;
+    const db = {
+      rpc: async (name: string, args: any) => {
+        count++;
+        assert.equal(name, "learn_work_collection_begin");
+        assert.equal(args.p_kind, kind);
+        assert.equal(args.p_states, undefined, "Only retained policy supplies chosen states");
+        return { data: status({ ...r }), error: null };
+      },
+    };
+    await beginWorkCollection(db, r);
+    assert.equal(count, 1);
+    for (const workStates of [
+      undefined,
+      [],
+      ["ready", "ready"],
+      [" ready"],
+      [""],
+      [1],
+      ["a".repeat(201)],
+    ])
+      assert.throws(() =>
+        createWorkCollectionRequest({
+          ...input,
+          kind,
+          policy: {
+            ...working,
+            metrics: [{ ...working.metrics[0], workStates }],
+          },
+        } as any),
+      );
+    assert.throws(() =>
+      createWorkCollectionRequest({
+        ...input,
+        kind,
+        policy: {
+          ...working,
+          subjectKind: subjectKind === "team" ? "member" : "team",
+        },
+      } as any),
+    );
+  }
+});

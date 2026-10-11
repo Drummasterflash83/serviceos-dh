@@ -25,7 +25,10 @@ const residencePolicy={...performancePolicy,name:"Synthetic elapsed ownership",m
  label:"Elapsed owned item-minutes (all states)",unit:"item_minutes",weight:1,zeroAt:480,fullAt:60,minSamples:1,minCoverage:1,
  maxAgeHours:72,sourceSystems:["serviceos.work.residence@1"]}]};
 const teamResidencePolicy={...residencePolicy,name:"Synthetic team ownership",subjectKind:"team",metrics:[{...residencePolicy.metrics[0],key:"work.team_owned_item_minutes",label:"Team-owned item-minutes",sourceSystems:["serviceos.work.team-residence@1"]}]};
-export const selectedPolicy=()=>new URLSearchParams(location.search).has("teamResidence")?teamResidencePolicy:new URLSearchParams(location.search).has("residence")?residencePolicy:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+const workingPolicy={...performancePolicy,name:"Synthetic working-time ownership",metrics:[{...residencePolicy.metrics[0],key:"work.working_item_minutes",label:"Owned work during company hours",unit:"working_item_minutes",sourceSystems:["serviceos.work.working-time@1"],workStates:["ready","waiting"]}]};
+const teamWorkingPolicy={...workingPolicy,name:"Synthetic team working-time ownership",subjectKind:"team",metrics:[{...workingPolicy.metrics[0],key:"work.team_working_item_minutes",sourceSystems:["serviceos.work.team-working-time@1"]}]};
+const initialPolicy=()=>new URLSearchParams(location.search).has("teamWorkingTime")?teamWorkingPolicy:new URLSearchParams(location.search).has("workingTime")?workingPolicy:new URLSearchParams(location.search).has("teamResidence")?teamResidencePolicy:new URLSearchParams(location.search).has("residence")?residencePolicy:new URLSearchParams(location.search).has("handoffs")?handoffPolicy:performancePolicy;
+export const selectedPolicy=()=>drafts.find(d=>d.scope_ref===`${initialPolicy().subjectKind}:all`)?.value??initialPolicy();
 export function collectHandoffFixture(args:any,residence=false,team=false){
  const metric=team?"work.team_owned_item_minutes":residence?"work.owned_item_minutes":"work.recorded_handoffs",source=team?"serviceos.work.team-residence@1":residence?"serviceos.work.residence@1":"serviceos.work.handoffs@1",unit=residence?"item_minutes":"handoffs",value=residence?120:2;
  const prior=handoffRows.find(r=>r.id===args.p_request);
@@ -94,7 +97,7 @@ const fixtureMicros=(s:string)=>BigInt(Date.parse(s.replace(/\.\d+(?=Z|[+-])/,''
 const performanceCorrections:any[]=[];
 const performanceReviews:any[]=workFixture.reviews;
 export function correctPerformanceFixture(args:any){
- const rows=(new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
+ const rows=(new URLSearchParams(location.search).has("workingTime")||new URLSearchParams(location.search).has("teamWorkingTime")||new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
  const prior=performanceCorrections.find(r=>r.id===args.p_request);
  if(prior)return {data:{measurementId:prior.id,predecessorId:prior.predecessor_id,reused:true},error:null};
  const parent=rows.find(r=>r.id===args.p_measurement);
@@ -120,7 +123,8 @@ export function reviewPerformanceFixture(args:any){
 
 export async function saveDraftFixture(args: any) {
   const scope = `${args.p_definition.subjectKind}:${args.p_definition.groupId ?? "all"}`;
-  const previous = drafts.find((d) => d.scope_ref === scope);
+  const previous = drafts.find((d) => d.scope_ref === scope) ??
+    (new URLSearchParams(location.search).has("performance") && `${initialPolicy().subjectKind}:all` === scope ? {value:initialPolicy()} : undefined);
   if (args.p_expected_version !== (previous?.value.version ?? 0))
     return { data: null, error: { code: "PT409" } };
   const value = {
@@ -147,7 +151,7 @@ function records(): Record<string, any[]> {
     learn_scorecard_publications: publicationFixtureRows(),
     learn_work_measurement_runs: handoffRuns.filter(r=>r.source_system!=="serviceos.work.team-residence@1"),
     learn_team_work_measurement_runs:handoffRuns.filter(r=>r.source_system==="serviceos.work.team-residence@1"),
-    measurements: (new URLSearchParams(location.search).has("teamResidence") || new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? performanceRows : [],
+    measurements: (new URLSearchParams(location.search).has("workingTime") || new URLSearchParams(location.search).has("teamWorkingTime") || new URLSearchParams(location.search).has("teamResidence") || new URLSearchParams(location.search).has("handoffs") || new URLSearchParams(location.search).has("residence")) ? handoffRows : new URLSearchParams(location.search).has("performance") ? performanceRows : [],
     learn_performance_reviews: performanceReviews,
     learn_performance_corrections: performanceCorrections,
     learn_assessments: assessmentRows,
@@ -342,7 +346,7 @@ export function saveAssessmentFixture(args:any){
  if(prior)return prior.request!==assessmentIdentity(args)?{data:null,error:{code:'PT409'}}:{data:{assessmentId:prior.id,recordedAt:prior.recorded_at,reused:true},error:null};
  const policy=publishedPeriodFixture(args).data;
  if(!policy||policy.publication.id!==args.p_publication)return {data:null,error:{code:"PT409"}};
- const available=(new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
+ const available=(new URLSearchParams(location.search).has("workingTime")||new URLSearchParams(location.search).has("teamWorkingTime")||new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
  const measurements=available.filter(m=>m.subject_id===args.p_subject&&m.policy_id===policy.id&&m.policy_revision===policy.version&&Date.parse(m.window_start)===Date.parse(args.p_start)&&Date.parse(m.window_end)===Date.parse(args.p_end));
  const ids=measurements.map(m=>m.id),reviews=performanceReviews.filter(r=>ids.includes(r.measurement_id)),corrections=performanceCorrections.filter(r=>ids.includes(r.id));
  const expected=measurements.map(m=>({id:m.id,reviewRevision:reviews.filter(r=>r.measurement_id===m.id).length})).sort((a,b)=>a.id.localeCompare(b.id));

@@ -1,3 +1,4 @@
+import { workingCollectionFixture } from "./working-collection-fixture";
 // Synthetic browser scenarios only; no provider or database access.
 import { handoffRows, persistWorkFixture, selectedPolicy } from "./card-fixture";
 import { WORK_COLLECTORS, type WorkCollectionKind } from "../../src/lib/learn-work-collection";
@@ -66,6 +67,9 @@ async function run(name: string, a: any) {
   const p = r.progress;
   const spec = WORK_COLLECTORS[p.kind as WorkCollectionKind];
   const partial = scenario === "partial" || params.get(p.kind) === "partial";
+  const working = ["workingTime", "teamWorkingTime"].includes(p.kind)
+    ? workingCollectionFixture(p, r.policy, spec, partial)
+    : null;
   if (name.endsWith("_begin")) {
     if (scenario === "lost-start" && !r.failures.start) {
       r.failures.start = true;
@@ -102,7 +106,7 @@ async function run(name: string, a: any) {
             policy_id: p.policyId,
             policy_revision: p.policyVersion,
             metric_key: spec.metric,
-            value: partial ? null : p.kind === "handoffs" ? 2 : 120,
+            value: working ? working.value : partial ? null : p.kind === "handoffs" ? 2 : 120,
             unit: spec.unit,
             window_start: p.period.start,
             window_end: p.period.end,
@@ -160,9 +164,22 @@ async function run(name: string, a: any) {
           processed: p.processed,
           eligibleItems: p.eligible,
           coveredItems: p.covered,
-          value: partial ? null : p.kind === "handoffs" ? 2 : 120,
+          ...(working?.proof ?? {}),
+          value: working ? working.value : partial ? null : p.kind === "handoffs" ? 2 : 120,
         },
       });
+    if (working && ["calendar", "workingItem"].includes(a.p_part)) {
+      if (scenario === "input-error" && a.p_part === "workingItem" && !r.failures.inputs) {
+        r.failures.inputs = true;
+        persist();
+        return fail("synthetic_read_failure");
+      }
+      return ok({
+        ...base,
+        snapshotAt: p.snapshotAt,
+        data: a.p_part === "calendar" ? working.calendar : working.inputs(a.p_after),
+      });
+    }
     if (a.p_part === "items") {
       if (scenario === "paging-error" && a.p_after === 100 && !r.failures.page) {
         r.failures.page = true;
@@ -178,6 +195,7 @@ async function run(name: string, a: any) {
         items: Array.from({ length: end - a.p_after }, (_, i) => {
           const ordinal = a.p_after + i + 1,
             id = objectId(ordinal);
+          if (working) return working.item(ordinal);
           return {
             ordinal,
             object_id: id,

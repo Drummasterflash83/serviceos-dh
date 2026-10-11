@@ -21,6 +21,20 @@ export interface ScoreMetricRule {
   minCoverage: number;
   maxAgeHours: number;
   sourceSystems: string[];
+  /** Explicit captured states for working-time measures; no inferred defaults. */
+  workStates?: string[];
+}
+export const WORKING_TIME_RULES = {
+  "work.working_item_minutes": { subjectKind: "member", source: "serviceos.work.working-time@1" },
+  "work.team_working_item_minutes": {
+    subjectKind: "team",
+    source: "serviceos.work.team-working-time@1",
+  },
+} as const;
+export function workingTimeRule(key: string) {
+  return Object.hasOwn(WORKING_TIME_RULES, key)
+    ? WORKING_TIME_RULES[key as keyof typeof WORKING_TIME_RULES]
+    : null;
 }
 export interface ScorecardPolicy {
   tenantId: string;
@@ -158,6 +172,25 @@ export function validateScorecardPolicy(policy: ScorecardPolicy): string[] {
       errors.push(`${m.key}: freshness limit must be positive`);
     if (!Array.isArray(m.sourceSystems) || !m.sourceSystems.length || !m.sourceSystems.every(named))
       errors.push(`${m.key}: choose accepted evidence sources`);
+    const working = workingTimeRule(m.key);
+    if (working) {
+      if (
+        policy.subjectKind !== working.subjectKind ||
+        m.unit !== "working_item_minutes" ||
+        !Array.isArray(m.sourceSystems) ||
+        !m.sourceSystems.includes(working.source)
+      )
+        errors.push(`${m.key}: use the matching subject, working-time unit and source`);
+      if (
+        !Array.isArray(m.workStates) ||
+        !m.workStates.length ||
+        m.workStates.length > 50 ||
+        m.workStates.some((s) => !named(s) || s.trim() !== s) ||
+        new Set(m.workStates).size !== m.workStates.length
+      )
+        errors.push(`${m.key}: choose 1–50 unique captured work states`);
+    } else if (m.workStates !== undefined)
+      errors.push(`${m.key}: work states apply only to working-time measures`);
   }
   if (!policy.metrics.some((m) => m?.weight > 0))
     errors.push("At least one measure needs a positive weight");

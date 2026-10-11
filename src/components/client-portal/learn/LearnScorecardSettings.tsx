@@ -4,12 +4,29 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { loadScorecardDraft, saveScorecardDraft } from "@/lib/learn-scorecard-settings";
 import {
   validateScorecardPolicy,
+  workingTimeRule,
   type ScorecardPolicy,
   type ScoreMetricRule,
   type ScoreSubject,
 } from "@/lib/learn-scorecards";
 
 const suggestions = [
+  {
+    key: "work.working_item_minutes",
+    label: "Owned work during company hours, after approved delays",
+    unit: "working_item_minutes",
+    zeroAt: 480,
+    fullAt: 60,
+    source: "serviceos.work.working-time@1",
+  },
+  {
+    key: "work.team_working_item_minutes",
+    label: "Team-owned work during company hours, after approved delays",
+    unit: "working_item_minutes",
+    zeroAt: 480,
+    fullAt: 60,
+    source: "serviceos.work.team-working-time@1",
+  },
   {
     key: "work.team_owned_item_minutes",
     label: "Team-owned item-minutes (all states, not hours worked)",
@@ -249,15 +266,17 @@ export function LearnScorecardSettings({
             </button>
             {suggestions
               .filter((s) =>
-                s.key === "work.team_owned_item_minutes"
-                  ? kind === "team"
-                  : kind === "member" ||
-                    ![
-                      "work.owned_item_minutes",
-                      "work.recorded_handoffs",
-                      "work.desk_minutes",
-                      "driving.provider_score",
-                    ].includes(s.key),
+                workingTimeRule(s.key)
+                  ? workingTimeRule(s.key)!.subjectKind === kind
+                  : s.key === "work.team_owned_item_minutes"
+                    ? kind === "team"
+                    : kind === "member" ||
+                      ![
+                        "work.owned_item_minutes",
+                        "work.recorded_handoffs",
+                        "work.desk_minutes",
+                        "driving.provider_score",
+                      ].includes(s.key),
               )
               .map((s) => (
                 <button
@@ -281,6 +300,7 @@ export function LearnScorecardSettings({
                           minCoverage: 1,
                           maxAgeHours: 24,
                           sourceSystems: [s.source],
+                          ...(workingTimeRule(s.key) ? { workStates: [] } : {}),
                         },
                       ],
                     })
@@ -363,6 +383,25 @@ export function LearnScorecardSettings({
                   />
                 </label>
               </div>
+              {workingTimeRule(m.key) && (
+                <div className="ls-rule">
+                  <label>
+                    Included work states (one per line)
+                    <textarea
+                      value={(m.workStates ?? []).join("\n")}
+                      onChange={(e) => update(i, { workStates: e.target.value.split("\n") })}
+                    />
+                  </label>
+                  <p>
+                    Choose exact state names from captured work history. No states are included by
+                    default. For included states, waiting delays are subtracted only after approval.
+                  </p>
+                  <p>
+                    This measures time that items remained owned inside published company hours.
+                    Concurrent items add separately; it is not hours worked or productivity.
+                  </p>
+                </div>
+              )}
               <button
                 type="button"
                 className="cp-secondary"

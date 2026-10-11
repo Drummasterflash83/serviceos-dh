@@ -1,3 +1,4 @@
+import { parseWorkingTimeItem } from "./learn-working-time.ts";
 import {
   canCollectWork,
   WORK_COLLECTORS,
@@ -230,7 +231,8 @@ export async function abandonWorkCollection(
     throw Error("Ending this collection could not be confirmed");
   return result;
 }
-export type WorkEvidencePart = "overview" | "membership" | "teams" | "items";
+export type WorkEvidencePart =
+  "overview" | "membership" | "teams" | "items" | "calendar" | "workingItem";
 export async function readWorkCollectionEvidence(
   db: WorkCollectionClient,
   tenantId: string,
@@ -241,9 +243,9 @@ export async function readWorkCollectionEvidence(
   if (
     !uuid(tenantId) ||
     !uuid(requestId) ||
-    !["overview", "membership", "teams", "items"].includes(part) ||
+    !["overview", "membership", "teams", "items", "calendar", "workingItem"].includes(part) ||
     !integer(after) ||
-    (part !== "items" && after !== 0)
+    (part === "workingItem" ? after < 1 : part !== "items" && after !== 0)
   )
     throw Error("Invalid evidence page");
   const { data: d, error } = await db.rpc("learn_work_collection_evidence", {
@@ -291,7 +293,12 @@ export async function readWorkCollectionEvidence(
         proof.knownValue < 0 ||
         !Array.isArray(proof.eventIds) ||
         !proof.eventIds.every(uuid) ||
-        !Array.isArray(proof.credited)
+        (proof.contract === "work-working-time-item@1"
+          ? proof.tenantId !== tenantId ||
+            !Array.isArray(proof.segments) ||
+            !integer(proof.delayThrough) ||
+            !/^\d+$/.test(proof.assessedMicros)
+          : !Array.isArray(proof.credited))
       )
         throw Error("Retained item proof could not be verified");
     }
@@ -323,6 +330,63 @@ export async function readWorkCollectionEvidence(
       typeof d.metricKey !== "string"
     )
       throw Error("Completed evidence overview could not be verified");
+    if (["workingTime", "teamWorkingTime"].includes(d.proof.kind)) {
+      const states = d.policy.metrics.find((m: any) => m.key === d.metricKey)?.workStates;
+      if (
+        d.proof.calculation !== "work-working-time-item@1" ||
+        !instant(d.proof.snapshotAt) ||
+        Date.parse(d.proof.snapshotAt) > Date.parse(d.observedAt) ||
+        typeof d.proof.calendarComplete !== "boolean" ||
+        typeof d.proof.assessedMicros !== "string" ||
+        !/^\d+$/.test(d.proof.assessedMicros) ||
+        !Array.isArray(states) ||
+        !Array.isArray(d.proof.states) ||
+        states.length !== d.proof.states.length ||
+        new Set(d.proof.states).size !== states.length ||
+        states.some((s: string) => !d.proof.states.includes(s))
+      )
+        throw Error("Working-time overview differs from its saved rules");
+    }
+  } else if (part === "calendar") {
+    const c = d.data?.calendar;
+    if (
+      !instant(d.snapshotAt) ||
+      c?.contract !== "work-calendar-snapshot@1" ||
+      c.tenantId !== tenantId ||
+      !sameTime(c.observedAt, d.snapshotAt) ||
+      typeof c.complete !== "boolean" ||
+      !Array.isArray(c.versions) ||
+      !Array.isArray(c.windows) ||
+      !Array.isArray(c.missing) ||
+      !Array.isArray(d.data.states) ||
+      !d.data.states.length ||
+      d.data.states.length > 50 ||
+      d.data.states.some(
+        (s: unknown) => typeof s !== "string" || !s.trim() || s.trim() !== s || s.length > 200,
+      ) ||
+      new Set(d.data.states).size !== d.data.states.length ||
+      typeof d.data.assessedMicros !== "string" ||
+      !/^\d+$/.test(d.data.assessedMicros)
+    )
+      throw Error("Frozen working calendar could not be verified");
+  } else if (part === "workingItem") {
+    const i = d.data;
+    if (
+      !instant(d.snapshotAt) ||
+      i?.ordinal !== after ||
+      !uuid(i.objectId) ||
+      !integer(i.delayThrough) ||
+      i.history?.objectId !== i.objectId ||
+      !Array.isArray(i.history.events) ||
+      i.history.events.length !== i.history.count ||
+      i.delays?.contract !== "work-delay-snapshot@1" ||
+      i.delays.tenantId !== tenantId ||
+      i.delays.objectId !== i.objectId ||
+      i.delays.through !== i.delayThrough ||
+      !sameTime(i.delays.observedAt, d.snapshotAt) ||
+      !Array.isArray(i.delays.approvals)
+    )
+      throw Error("Frozen working-time item inputs could not be verified");
   } else if (
     !instant(d.snapshotAt) ||
     (part === "membership"
@@ -333,4 +397,60 @@ export async function readWorkCollectionEvidence(
   )
     throw Error("Frozen identity evidence could not be verified");
   return d;
+}
+
+/** Verify one retained result against its own frozen calendar and delay inputs.
+ * This checks arithmetic; ownership provenance remains in the retained history
+ * and membership evidence. It does not approve a measurement or score. */
+export async function readWorkingCollectionItem(
+  db: WorkCollectionClient,
+  tenantId: string,
+  requestId: string,
+  overview: any,
+  item: any,
+) {
+  if (
+    overview?.tenantId !== tenantId ||
+    overview.runId !== requestId ||
+    !["workingTime", "teamWorkingTime"].includes(overview.proof?.kind) ||
+    !integer(item?.ordinal) ||
+    item.ordinal < 1 ||
+    item.ordinal > overview.proof.populationCount
+  )
+    throw Error("Choose an item from this working-time collection");
+  const calendar = await readWorkCollectionEvidence(db, tenantId, requestId, "calendar");
+  const inputs = await readWorkCollectionEvidence(
+    db,
+    tenantId,
+    requestId,
+    "workingItem",
+    item.ordinal,
+  );
+  const states = overview.policy.metrics.find((m: any) => m.key === overview.metricKey)?.workStates;
+  if (
+    inputs.data.objectId !== item.object_id ||
+    !sameTime(calendar.snapshotAt, overview.proof.snapshotAt) ||
+    !sameTime(inputs.snapshotAt, overview.proof.snapshotAt) ||
+    calendar.data.assessedMicros !== overview.proof.assessedMicros ||
+    !Array.isArray(states) ||
+    states.length !== calendar.data.states.length ||
+    states.some((s: string) => !calendar.data.states.includes(s)) ||
+    inputs.data.delayThrough !== item.result?.delayThrough
+  )
+    throw Error("Working-time inputs differ from the retained collection");
+  const result = parseWorkingTimeItem(
+    item.result,
+    {
+      tenantId,
+      objectId: item.object_id,
+      subject: overview.subject,
+      period: overview.period,
+      observedAt: overview.proof.snapshotAt,
+      states,
+    },
+    { calendar: calendar.data.calendar, delays: inputs.data.delays },
+  );
+  if (!result.eventIds.every((id) => inputs.data.history.events.some((e: any) => e.id === id)))
+    throw Error("Working-time references are missing from retained history");
+  return { result, calendar: calendar.data, inputs: inputs.data };
 }

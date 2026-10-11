@@ -1,7 +1,8 @@
 # Working-time calculation for LEARN cards
 
-Local private calculation candidate, 11 October 2026. **Not deployed, not connected
-to resumable collection or scorecard settings, and not a live performance measure.**
+Local calculation candidate, 11 October 2026. **Not deployed or a live performance
+measure.** The subsequent [working-time collection candidate](LEARN-WORKING-COLLECTION.md)
+now connects saved rules, resumable batches and the evidence screen locally.
 TEST remains release 049. This advances the integration of captured ownership,
 [published company calendars](LEARN-WORK-CALENDARS.md) and
 [approved delays](LEARN-WORK-DELAYS.md). No real data, scores, permissions or
@@ -38,7 +39,7 @@ moves split a segment at observed membership boundaries. Direct team assignment
 counts once. Current directory names and member score percentages do not determine
 historical team attribution; ambiguous/unconfirmed identities withhold assessment.
 The selected work states must be explicit and unique (1–50), with no default list.
-They still need to be included in the saved scoring-rule contract and editor.
+The subsequent collection migration includes them in saved scoring rules and the editor.
 
 ## Missing history and exact time
 
@@ -51,8 +52,8 @@ period end is ineligible, rather than unknown work before its creation.
 PostgreSQL multiranges perform union, intersection and subtraction at native
 microsecond precision. Exact elapsed/selected/calendar/excluded/assessed totals
 are decimal integer strings. The displayed minute value is rounded once per item
-to 12 decimal places. The eventual aggregate must sum the integer microseconds
-across items and round once for the measurement; summing rounded per-item minute
+to 12 decimal places. The collection aggregate sums the integer microseconds
+across items and rounds once for the measurement; summing rounded per-item minute
 values would introduce drift. Existing JavaScript millisecond interval routines
 are not used to verify these boundaries.
 
@@ -65,9 +66,9 @@ establish roster/work provenance or turn supplied JSON into trusted evidence.
 
 ## Private integration contract
 
-The migration adds four private functions and no table mutation or public RPC.
+The calculation migration adds four private functions and no table mutation or public RPC.
 Anonymous, authenticated and service roles cannot execute the calculation helpers.
-Only a future governed collector should supply their inputs, using the already
+The subsequent governed collection candidate supplies their inputs, using the already
 verified frozen-history reader, member history, team directory and snapshots.
 The caller must retain those exact inputs as the evidence receipt.
 
@@ -78,7 +79,9 @@ coverage must reconcile with its version intervals and missing periods. Delay
 windows must equal the union of their retained approvals. Input/segment bounds
 fail explicitly; item proof over 2 MiB is refused, never silently truncated.
 
-The future resumable integration must:
+The integration requirements below are now implemented locally as described in
+[the collection checkpoint](LEARN-WORKING-COLLECTION.md); full-volume and hosted
+acceptance remain outstanding:
 
 - Freeze the work population, work heads, membership/team inputs, calendar receipt
   and each item's committed delay revision in the same database snapshot at begin.

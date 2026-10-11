@@ -251,5 +251,22 @@ try:
             print(f'Concurrent delay {decision}/cancel has one stable terminal outcome: PASS')
         apply(b"do $$begin assert (select history=(select md5(string_agg(to_jsonb(x)::text,'' order by capture_sequence)) from object_state_history x) from delay_source_before);assert (select measurements=(select md5(string_agg(to_jsonb(x)::text,'' order by id)) from measurements x) from delay_before);end $$;",'Post-concurrency work history and measurement preservation')
 
+    if '--include-working-collection' in sys.argv:
+        collection_sql=(ROOT/'supabase/migrations/20261101130000_learn_working_time_collection.sql').read_bytes()
+        apply(b'begin;'+collection_sql+b'rollback;', 'Working-time collector rollback rehearsal')
+        apply(collection_sql, 'Working-time collector and rule validation')
+        apply((ROOT/'scripts/verify/learn-working-collection.assert.sql').read_bytes(), 'Frozen working-time collection, exact recovery and preserved source evidence')
+        collection_data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc', """set request.jwt.claim.sub='bbb50000-0000-4000-8000-000000000001';set role authenticated;
+          select jsonb_agg(jsonb_build_object('overview',learn_work_collection_evidence(tenant_id,id,'overview',0),
+          'calendar',learn_work_collection_evidence(tenant_id,id,'calendar',0),
+          'pages',(select jsonb_agg(learn_work_collection_evidence(r.tenant_id,r.id,'items',n)) from unnest(array[0,100,200]) n),
+          'inputs',(select jsonb_agg(learn_work_collection_evidence(r.tenant_id,r.id,'workingItem',n)) from unnest(array[1,204,205]) n)))
+          from learn_work_collection_runs r where id in ('ff150000-0000-4000-8000-000000000001','ff150000-0000-4000-8000-000000000002');""").stdout
+        parsed=subprocess.run(['node',str(ROOT/'scripts/verify/learn-working-collection-readback.mjs')],input=collection_data,capture_output=True)
+        if parsed.returncode: raise RuntimeError(parsed.stderr.decode())
+        print(parsed.stdout.decode().strip())
+        import runpy
+        runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-concurrency.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})
+
 finally:
     subprocess.run([DOCKER, 'rm', '-f', TARGET], capture_output=True)

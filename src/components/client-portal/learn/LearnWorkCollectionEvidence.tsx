@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { readWorkCollectionEvidence, type WorkEvidencePart } from "@/lib/learn-resumable-work";
+import {
+  readWorkCollectionEvidence,
+  readWorkingCollectionItem,
+  type WorkEvidencePart,
+} from "@/lib/learn-resumable-work";
 export function LearnWorkCollectionEvidence({
   tenantId,
   requestId,
@@ -89,6 +93,34 @@ export function LearnWorkCollectionEvidence({
       }
     }
   }
+  async function readWorkingItem(item: any) {
+    if (pending.current) return;
+    const g = generation.current;
+    pending.current = true;
+    setBusy(true);
+    setMessage("");
+    try {
+      const data = await readWorkingCollectionItem(
+        getSupabaseClient(),
+        tenantId,
+        requestId,
+        overview,
+        item,
+      );
+      if (g === generation.current) setIdentity({ part: "workingItem", data });
+    } catch (e) {
+      if (g === generation.current)
+        setMessage(
+          `${e instanceof Error ? e.message : "Evidence unavailable"}. Displayed evidence is kept; retry this item read.`,
+        );
+    } finally {
+      if (g === generation.current) {
+        pending.current = false;
+        setBusy(false);
+      }
+    }
+  }
+  const working = ["workingTime", "teamWorkingTime"].includes(overview?.proof.kind);
   return (
     <details onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>Retained collection calculation</summary>
@@ -106,6 +138,25 @@ export function LearnWorkCollectionEvidence({
                 The overview is a summary. Inspect item pages and frozen membership to see the
                 complete calculation evidence.
               </p>
+              {working && (
+                <>
+                  <p>
+                    Selected work states: {overview.proof.states.join(", ")}. Company hours{" "}
+                    {overview.proof.calendarComplete
+                      ? "cover the period"
+                      : "are incomplete; the value is withheld"}
+                    .
+                  </p>
+                  <button
+                    type="button"
+                    className="cp-secondary"
+                    disabled={busy}
+                    onClick={() => void read("calendar")}
+                  >
+                    Read frozen company hours
+                  </button>
+                </>
+              )}
               <details>
                 <summary>Calculation overview</summary>
                 <pre>{JSON.stringify(overview.proof, null, 2)}</pre>
@@ -144,9 +195,45 @@ export function LearnWorkCollectionEvidence({
           {identity && (
             <details open>
               <summary>
-                {identity.part === "membership" ? "Frozen membership" : "Frozen team directory"}
+                {identity.part === "membership"
+                  ? "Frozen membership"
+                  : identity.part === "calendar"
+                    ? "Frozen company hours and selected states"
+                    : identity.part === "workingItem"
+                      ? `Item ${identity.data.inputs.ordinal}: frozen working-time inputs`
+                      : "Frozen team directory"}
               </summary>
-              <pre>{JSON.stringify(identity.data, null, 2)}</pre>
+              {identity.part === "workingItem" && (
+                <dl>
+                  {[
+                    ["Elapsed ownership", "elapsedOwnedMicros"],
+                    ["In selected work states", "selectedOwnedMicros"],
+                    ["Within company hours", "calendarMicros"],
+                    ["Approved delays subtracted", "excludedMicros"],
+                    ["Assessed working item-minutes", "assessedMicros"],
+                  ].map(([label, key]) => (
+                    <div key={key}>
+                      <dt>{label}</dt>
+                      <dd>
+                        {(Number(identity.data.result[key]) / 60000000).toLocaleString(undefined, {
+                          maximumFractionDigits: 6,
+                        })}{" "}
+                        item-minutes
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {identity.part === "workingItem" && (
+                <p>
+                  Interval arithmetic matches the retained hours and approved delays. Review the
+                  source history and membership separately before confirming this evidence.
+                </p>
+              )}
+              <details>
+                <summary>Complete retained source data</summary>
+                <pre>{JSON.stringify(identity.data, null, 2)}</pre>
+              </details>
             </details>
           )}
           {page && (
@@ -165,8 +252,22 @@ export function LearnWorkCollectionEvidence({
                         : "Incomplete history"
                       : "Outside the period"}{" "}
                     · {item.result.knownValue} known{" "}
-                    {overview?.proof.kind === "handoffs" ? "handoffs" : "item-minutes"}
+                    {overview?.proof.kind === "handoffs"
+                      ? "handoffs"
+                      : working
+                        ? "working item-minutes"
+                        : "item-minutes"}
                   </summary>
+                  {working && (
+                    <button
+                      type="button"
+                      className="cp-secondary"
+                      disabled={busy}
+                      onClick={() => void readWorkingItem(item)}
+                    >
+                      Read and check item {item.ordinal} hours and delays
+                    </button>
+                  )}
                   <pre>{JSON.stringify(item, null, 2)}</pre>
                 </details>
               ))}

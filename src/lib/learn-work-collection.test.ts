@@ -268,3 +268,28 @@ test("team proof is scoped to its receipt table and retains all attributed segme
   record = { ...record, tenant_id: id(99) };
   await assert.rejects(loadPerformanceEvidence(db, id(2), ref), /access/);
 });
+
+test("working-time measures cannot accidentally call a legacy one-shot collector", async () => {
+  let calls = 0;
+  const db = {
+    rpc: async () => {
+      calls++;
+      return { data: null, error: null };
+    },
+  };
+  const working = {
+    ...policy,
+    metrics: [
+      {
+        ...policy.metrics[0],
+        key: "work.working_item_minutes",
+        unit: "working_item_minutes",
+        sourceSystems: ["serviceos.work.working-time@1"],
+        workStates: ["ready"],
+      },
+    ],
+  };
+  assert.equal(canCollectWork(working, "workingTime"), true);
+  await assert.rejects(collectWorkEvidence(db, { ...input, policy: working, kind: "workingTime" }));
+  assert.equal(calls, 0);
+});
