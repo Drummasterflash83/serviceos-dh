@@ -210,8 +210,14 @@ succeeded after that failure; no worker was invoked and no source record changed
   preserving 112 data sets. Endpoint v1 is ACTIVE with JWT protection; runtime
   deployment and nine anonymous/service HTTP denials preserved 113 data sets.
   All three downloaded source files matched transpiled syntax and downloaded
-  handler tests passed. No new users or grants were created. TEST frontend update,
-  real retained audio playback and signed-in hosted acceptance remain open.
+  handler tests passed. No new users or grants were created. The protected TEST
+  frontend is READY from Git commit `0a8d7eab2eeede40d368a9e5b66508ddd954abeb`
+  at https://serviceos-learn-test-qu7dogqm4-allkin.vercel.app; the actual browser
+  reached its same-origin login with no observed warnings/errors. Isolated
+  signed-in acceptance run `73e083fe` is prepared but activation was rejected by
+  automatic approval review: this new owner login needs explicit user approval.
+  [Exact run and retirement plan](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).
+  Real retained audio playback and signed-in hosted acceptance remain open.
   [Candidate checks](evidence/learn-phone-playback-candidate-2026-10-11.json).
   [Hosted backend evidence](evidence/learn-phone-playback-test-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,

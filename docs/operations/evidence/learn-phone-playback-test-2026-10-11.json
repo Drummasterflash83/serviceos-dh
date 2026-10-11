@@ -139,5 +139,55 @@
   "scope": "Hosted TEST only; signed-in positive playback and production acceptance remain open",
   "downloadedHandlerTests": 3,
   "newPersistentUsers": 0,
-  "productionChanges": 0
+  "productionChanges": 0,
+  "frontend": {
+    "observedAt": "2026-10-11T11:12:17.319Z",
+    "id": "dpl_EJNjfGyUYjm4vYyTxtxRKXWG46w6",
+    "url": "serviceos-learn-test-qu7dogqm4-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "0a8d7eab2eeede40d368a9e5b66508ddd954abeb"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x"
+  },
+  "frontendProtection": {
+    "observedAt": "2026-10-11T11:14:57.711Z",
+    "base": "https://serviceos-learn-test-qu7dogqm4-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "browser": {
+    "customerRoute": "redirected to same-origin sign-in with intended LEARN redirect",
+    "warningsOrErrorsObserved": 0,
+    "signedIn": false,
+    "screenshotPrivate": ".verification-results/phone-playback-test-login.png"
+  },
+  "acceptanceRun": {
+    "runId": "73e083fe-4195-49fb-89a2-7679b6eab517",
+    "state": "prepared_not_executed",
+    "activationRejectedByAutomaticReview": true,
+    "reason": "Explicit approval required for this new TEST owner account and company access",
+    "userApprovalRequested": true
+  }
 }
