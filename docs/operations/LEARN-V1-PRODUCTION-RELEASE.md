@@ -123,3 +123,29 @@ an explicit reviewed recovery action, with preservation evidence. For rollback,
 pause affected capture before reverting matching runtime; retain new binding and
 conflict evidence instead of dropping columns after they have been populated.
 Positive hosted real-data acceptance remains open.
+
+## TEST 068 mailbox-wide email prerequisite — 11 October, 19:24 UTC
+
+TEST 068 and worker v14 now read message additions without an Inbox/Sent filter.
+The first v3 recent generation reconciles the mailbox, including Spam/Trash;
+existing in-flight v2 pages remain unchanged. See the
+[verified TEST evidence](evidence/learn-email-mailbox-coverage-test-2026-10-11.json).
+This is not production promotion approval or real mailbox coverage acceptance.
+
+The pinned TEST package uses the existing postgres administrator's ADMIN membership
+only inside its migration transaction: a temporary grant enables protocol-owner
+inheritance for replacement, is revoked before assertions, and original memberships,
+function owners and ACLs must compare exactly. No lasting permission is added.
+Production must first prove the corresponding original function hashes, authority
+and full source preservation; do not execute the TEST-targeted package there.
+
+Deploy the matching worker before allowing new v3 capture. For rollback after v3
+checkpoints exist, pause new Email capture and keep a worker capable of both v2/v3
+recovery. Do not downgrade the transition function or reinterpret ALL page tokens
+as Inbox/Sent. Preserve v3 receipts and checkpoints and recover forward; any older
+code rollback requires a separately reviewed compatible recovery plan. No data
+or cursor reset is an acceptable rollback shortcut.
+
+Real-provider initial reconciliation, subsequent capture, source-to-card acceptance,
+score eligibility (including draft/spam treatment), and operator recovery still
+need acceptance before this change can be part of an approved production release.

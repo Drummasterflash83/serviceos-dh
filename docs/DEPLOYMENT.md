@@ -55,10 +55,13 @@ built remotely from GitHub commit `1af32a493633b73f5f3fa127d4e47712b27e89fb`
 and observed READY at **18:26 UTC on 11 October**. It includes the password-reset
 flow, saved-snapshot freshness, projection/identity review and queued manual
 processing messages, initially paired with TEST schema release 066 and worker v12.
-The backend now has additive release 067, worker v13 and Workspace discovery v3
-for directory-verified alias profile identities; the protected frontend is unchanged.
-No real alias binding is inferred or capture activated by this release. See
-[the current acceptance evidence](operations/evidence/learn-workspace-profile-identity-test-2026-10-11.json).
+The backend now has release **068**, worker **v14** and Workspace discovery **v3**.
+Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
+Gmail capture with a mandatory reconciliation when upgrading old label-limited
+cursors. The protected frontend is unchanged. Neither release inferred real alias
+bindings or activated capture. See the
+[mailbox coverage evidence](operations/evidence/learn-email-mailbox-coverage-test-2026-10-11.json)
+and [identity evidence](operations/evidence/learn-workspace-profile-identity-test-2026-10-11.json).
 The exact TEST project, Git SHA, preview-only backend binding and Vercel protection
 were verified. Homepage, login and LEARN routes remain protected. Browser approval
 for this new origin and positive signed-in acceptance are pending.

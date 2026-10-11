@@ -1,0 +1,71 @@
+{
+  "version": "learn-email-mailbox-coverage-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "installed_and_runtime_verified_real_capture_pending",
+  "schema": {
+    "release": "068_email_mailbox_coverage",
+    "installedAt": "2026-10-11T19:22:46.142Z",
+    "fingerprint": "a857c9a1556d4c5db53f063f30c19d33",
+    "transitionDigest": "86e7d695a88d91a22472882e15d2de0d",
+    "packageSha256": "ccb31394a7e482321c5a3c72dc78604692c57f5d5371617301881c763b1f4c10",
+    "preservedDatasets": 121,
+    "authorityRestored": true,
+    "persistentRoleGrantsCreated": 0,
+    "temporaryMembershipsRevoked": 1
+  },
+  "runtime": {
+    "deployedAt": "2026-10-11T19:23:42.353Z",
+    "workerVersion": 14,
+    "sourceBundleSha256": "6eb6c7c205ff224c1087dc3aee6ed7c834d0a661fef39ef8bf10a2d35bf5049d",
+    "dependencyFiles": 95,
+    "matchingRuntimeModules": 92,
+    "differentRuntimeModules": [],
+    "prunedNonRuntimeDependencies": [
+      "_shared/intelligence/reason_codes.ts",
+      "_shared/intelligence/types.ts",
+      "_shared/worker_contract.ts"
+    ],
+    "emittedImportsChecked": 145,
+    "omittedModulesHaveNoEmittedImporters": true,
+    "unsignedHttp": [
+      {
+        "endpoint": "platform-worker",
+        "method": "POST",
+        "status": 403,
+        "code": "forbidden"
+      }
+    ],
+    "preservedDatasets": 121
+  },
+  "verification": {
+    "actualEngineAndDurableSqlTestsPassed": 64,
+    "pageReaderTestsPassed": 13,
+    "downloadedPageReaderTestsPassed": 13,
+    "strictTypes": "Installed SDK declarations and Deno env/serve shim; not native Deno check",
+    "fullSchemaRollback": true,
+    "exactPackageRollback": true
+  },
+  "behavior": [
+    "New and completed legacy recent generations reconcile all mailbox messages before using history.",
+    "Mailbox listing explicitly includes Spam/Trash and retains provider labels.",
+    "Incremental messageAdded history omits the label filter.",
+    "In-flight v2 continuation pages, original account identity and immutable receipts remain intact.",
+    "No cursor advances until all pages of the captured generation settle; lost replies recover without new provider reads."
+  ],
+  "providerRequests": 0,
+  "credentialsCreated": 0,
+  "usersCreated": 0,
+  "schedulesActivated": 0,
+  "productionChanged": false,
+  "limitations": [
+    "Google credential destination approval and real mailbox acceptance remain pending.",
+    "Signed-in owner access and new preview browser approval remain pending.",
+    "Historical backfill retains its legacy scope; v3 recent reconciliation fills that coverage gap.",
+    "Message additions are captured; current label/deletion state is not mirrored. Already purged provider messages cannot be recovered by this change.",
+    "Retaining a message does not prove it should contribute to a staff score; draft/spam eligibility and representative scoring acceptance remain required."
+  ],
+  "references": [
+    "https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.history/list",
+    "https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/list"
+  ]
+}

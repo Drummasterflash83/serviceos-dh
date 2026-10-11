@@ -54,7 +54,7 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
-### Mailbox-wide Gmail capture — candidate rehearsed, 11 October, 19:21 UTC
+### Mailbox-wide Gmail capture — installed in TEST, 11 October, 19:24 UTC
 
 The recent Gmail reader previously filtered both reconciliation and incremental
 history by Inbox/Sent. That could omit automatically archived/filed communications.
@@ -75,9 +75,18 @@ before assertions, with original role memberships, function owners and ACLs veri
 identical. No application access was created. Package SHA-256:
 `ccb31394a7e482321c5a3c72dc78604692c57f5d5371617301881c763b1f4c10`.
 
-Persistent TEST installation and matching worker deployment are next. Real-provider
+TEST release **068** is installed with **worker v14**, preserving all 121 datasets.
+Downloaded runtime comparison matched all 92 runtime modules; three pruned modules
+have no emitted runtime importers. The downloaded Gmail reader passes the same 13
+checks, and an unsigned worker POST returns 403 without processing a job. Original
+memberships, function owners and ACLs match after installation. Real-provider
 Google acceptance remains blocked by the pending credential-destination approval.
 No production change or claim of complete real mailbox coverage is made.
+[Evidence](evidence/learn-email-mailbox-coverage-test-2026-10-11.json).
+
+Source retention and score eligibility are separate acceptance requirements:
+draft/spam messages must not silently become staff performance evidence. Current
+label/deletion mirroring and representative score acceptance remain unfinished.
 
 ### Matching TEST frontend deployed — 11 October, 18:26 UTC
 
