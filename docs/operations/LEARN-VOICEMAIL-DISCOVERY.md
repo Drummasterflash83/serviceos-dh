@@ -1,5 +1,33 @@
 # Birchills voicemail: discovery before capture
 
+## Local parser verified — 11 October 2026, 21:18 UTC
+
+The new `birchills_voicemail_email.ts` parser handles the observed subject/body
+format, matching extension/caller fields, the system reference and provider
+transcript. It labels the result `candidate_requires_verification`; email receipt
+time is explicitly not the time the caller left the message. A bounded MIME
+selector requires one MP3 attachment and rejects ambiguous or unsupported files.
+The content fingerprint includes the audio hash and excludes email receipt time
+so duplicate recipient copies can be compared later within a verified tenant and
+mailbox. Durable deduplication is still to be implemented.
+
+Six local tests and strict TypeScript passed. Three fresh read-only Gmail metadata
+responses passed the real parser/MIME selector using retained source text plus
+the freshly retrieved subject, receipt time and attachment metadata. This check
+did not refetch email bodies or download more audio. The diagnostic's explicit
+`--validate-parser` option uses a separate exclusive journal to preserve the
+earlier observations.
+
+The read-only stored binding audit found one extension match per sample, no
+current owner and two explicit managers for each matching mailbox. It did not
+establish a notification-recipient match or historical ownership. Missing stored
+notification settings must not be interpreted as disabled provider notifications.
+Do not infer ownership from an extension or give an old message to a new owner.
+Sender verification, durable private import and owner/manager acceptance remain
+unfinished; no production data, provider settings or access changed.
+
+Evidence: [parser and binding checks](evidence/learn-voicemail-email-parser-2026-10-11.json).
+
 ## Verified email route — 11 October 2026, 21:06 UTC
 
 **The earlier subject-only zero result did not exclude existing voicemail

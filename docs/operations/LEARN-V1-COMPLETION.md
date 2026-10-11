@@ -56,6 +56,13 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
 ### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
 
+**Local implementation update, 21:18 UTC:** the notification parser and bounded
+MP3 metadata selector passed six local checks, strict types and all three real
+Gmail metadata samples against retained source text. The stored mailbox bindings
+have explicit managers but no current owner, and do not establish historical
+ownership or the notification recipient. No importer was deployed or activated.
+[Parser evidence](evidence/learn-voicemail-email-parser-2026-10-11.json).
+
 A broader audit found 77 retained Birchills-domain “New message” notification
 candidates with voicemail body and attachment hints. The previous voicemail-only
 subject search missed that format. Three direct Gmail metadata reads verified

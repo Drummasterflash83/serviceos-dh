@@ -3,9 +3,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { savedCliToken } from "./learn-test-readiness.mjs";
 import { getDelegatedToken } from "../../supabase/functions/_shared/google_workspace.ts";
+import {
+  parseBirchillsVoicemailEmail,
+  selectVoicemailAudioPart,
+} from "../../supabase/functions/_shared/birchills_voicemail_email.ts";
 const project = "tgbnakbxwcqjeimygroz",
   tenant = "00000000-0000-0000-0000-000000000001";
-if (process.argv.slice(2).join(" ") !== "--read-only-production-and-google")
+const parserCheck = process.argv.includes("--validate-parser");
+if (process.argv.slice(2).join(" ") !==
+  "--read-only-production-and-google" + (parserCheck ? " --validate-parser" : ""))
   throw Error("Explicit read-only scope required");
 const key = JSON.parse(
     readFileSync("/Users/chrisdrummond/Downloads/ServiceOS Workspace Connector.json", "utf8"),
@@ -48,7 +54,9 @@ const candidates = await query(`select m.id,m.provider_message_id,m.body_text,
  (select jsonb_agg(jsonb_build_object('id',a.id,'email',a.email_address)) from email_accounts a where a.tenant_id=m.tenant_id and a.provider='gmail' and a.status='active_dwd' and lower(split_part(a.email_address,'@',2))=lower(${q(connection.domain)}) and exists(select 1 from jsonb_array_elements_text(m.to_emails) e where lower(e)=lower(a.email_address))) as recipient_accounts
  from email_messages m where m.tenant_id=${q(tenant)} and m.provider='gmail' and lower(trim(split_part(m.from_email,'@',2))) ~ '(^|\\.)birchills\\.net$' and m.subject ~* 'new message' and coalesce(m.body_text,'') ~* '(voice[ -]?mail|mailbox|voice message)' and m.raw_payload->'has_attachments'='true'::jsonb order by m.received_at desc nulls last,m.id limit 3`);
 if (candidates.length !== 3) throw Error("Expected bounded candidate sample missing");
-const stem = ".verification-results/voicemail-gmail-sample";
+const stem = parserCheck
+  ? ".verification-results/voicemail-gmail-parser-sample"
+  : ".verification-results/voicemail-gmail-sample";
 writeFileSync(
   stem + "-journal.json",
   JSON.stringify(
@@ -99,7 +107,7 @@ for (const c of candidates) {
       ["https://www.googleapis.com/auth/gmail.readonly"],
     );
     const partFields = (depth) =>
-      "mimeType,filename,body(attachmentId,size)" +
+      "partId,mimeType,filename,body(attachmentId,size)" +
       (depth > 0 ? `,parts(${partFields(depth - 1)})` : "");
     const url = new URL(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(c.provider_message_id)}`,
@@ -144,6 +152,27 @@ for (const c of candidates) {
       (p) => /^audio\//i.test(p.mimeType ?? "") || /\.(wav|mp3|gsm|ogg|m4a)$/i.test(p.filename),
     );
     const authText = auth.map((h) => h.value).join("\n");
+    let parserValidation;
+    if (parserCheck) {
+      const subjects = headers.filter((h) => h.name.toLowerCase() === "subject");
+      if (subjects.length !== 1) throw Error("Subject ambiguous");
+      const candidate = parseBirchillsVoicemailEmail({
+        subject: subjects[0].value,
+        text: c.body_text,
+        internalDate: data.internalDate,
+      });
+      const selected = selectVoicemailAudioPart(data.payload);
+      parserValidation = {
+        state: candidate.state,
+        parserVersion: candidate.version,
+        reportedDurationSeconds: candidate.reportedDurationSeconds,
+        transcriptPresent: candidate.providerTranscript !== null,
+        timestampBasis: candidate.timestampBasis,
+        selectedAudioBytes: selected.declaredBytes,
+        selectedAudioMime: selected.declaredMime,
+        bodyBasis: "retained_source_text_not_refetched",
+      };
+    }
     const summary = {
       fingerprint,
       state: "provider_metadata_read",
@@ -161,6 +190,7 @@ for (const c of candidates) {
       newMessageSubject: headers.some(
         (h) => h.name.toLowerCase() === "subject" && /new message/i.test(h.value),
       ),
+      ...(parserValidation ? { parserValidation } : {}),
     };
     results.push(summary);
     privateSamples.push({
@@ -171,6 +201,7 @@ for (const c of candidates) {
       headers,
       parts,
       retainedBody: c.body_text,
+      ...(parserCheck ? { internalDate: data.internalDate, mimeMetadata: data.payload } : {}),
     });
   } catch (e) {
     results.push({

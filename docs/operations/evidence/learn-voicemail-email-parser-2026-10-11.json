@@ -1,0 +1,71 @@
+{
+  "version": "learn-voicemail-email-parser/1",
+  "state": "local_parser_verified_against_three_real_samples_not_deployed",
+  "observedAt": "2026-10-11T21:18:39.296Z",
+  "checks": {
+    "unitTestsPassed": 6,
+    "strictTypeScript": "passed",
+    "gmailMetadata": [
+      {
+        "fingerprint": "c611b8ed260f870a0db96143af1f178bd363789cc08866e557d947a2a82dbbd7",
+        "state": "candidate_requires_verification",
+        "parserVersion": "birchills-voicemail-email/1",
+        "reportedDurationSeconds": 28,
+        "transcriptPresent": true,
+        "timestampBasis": "gmail_internal_date",
+        "selectedAudioBytes": 57285,
+        "selectedAudioMime": "application/octet-stream",
+        "bodyBasis": "retained_source_text_not_refetched"
+      },
+      {
+        "fingerprint": "b830a14d689f89b402cddb659fbe3839de322f99738bb1c307673d8d44eacc45",
+        "state": "candidate_requires_verification",
+        "parserVersion": "birchills-voicemail-email/1",
+        "reportedDurationSeconds": 41,
+        "transcriptPresent": true,
+        "timestampBasis": "gmail_internal_date",
+        "selectedAudioBytes": 82629,
+        "selectedAudioMime": "application/octet-stream",
+        "bodyBasis": "retained_source_text_not_refetched"
+      },
+      {
+        "fingerprint": "e4c93b995b3265ce955a68929047490bfbd83e2836ed50efcf274dcccc6ef56e",
+        "state": "candidate_requires_verification",
+        "parserVersion": "birchills-voicemail-email/1",
+        "reportedDurationSeconds": 19,
+        "transcriptPresent": true,
+        "timestampBasis": "gmail_internal_date",
+        "selectedAudioBytes": 38997,
+        "selectedAudioMime": "application/octet-stream",
+        "bodyBasis": "retained_source_text_not_refetched"
+      }
+    ],
+    "bindingSnapshot": {
+      "observedAt": "2026-10-11T21:12:36.097Z",
+      "sampleCount": 3,
+      "allHaveSingleExtensionMatch": true,
+      "samplesWithCurrentOwner": 0,
+      "explicitManagerCounts": [
+        2,
+        2,
+        2
+      ],
+      "verifiedNotificationRecipientMatches": 0,
+      "historicalOwnershipVerified": false
+    }
+  },
+  "providerMessageRequests": 3,
+  "providerAudioRequests": 0,
+  "productionWrites": 0,
+  "storageUploads": 0,
+  "accessChanges": 0,
+  "credentialUploads": 0,
+  "limitations": [
+    "Parser consumes retained source text plus freshly read Gmail subject, receipt time and MIME metadata. It does not refetch message body content.",
+    "Authentication-results hints are not sender authentication. Automatic acceptance is not implemented.",
+    "Stored recipient bindings did not establish a match; this check does not distinguish absent configuration from a differing address. It does not establish provider notification settings.",
+    "Current extension matches and manager counts are not historical ownership evidence. No staff assignment or import occurred.",
+    "Content fingerprint excludes email receipt time; durable tenant/mailbox-scoped deduplication is not yet implemented.",
+    "No importer, scheduled capture or signed-in voicemail acceptance is proven by these checks."
+  ]
+}
