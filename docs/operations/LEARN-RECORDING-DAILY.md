@@ -1,10 +1,13 @@
 # Drummonds daily recording backup operations
 
-Status on 11 October 2026: implemented; 53 local backup checks pass. First real
-repeat run started at 11:22 UTC and remains in progress. Recurrence is **not yet
-enabled**. Initial coverage of the explicitly observed 2,888 files and a separate
-manifest-selected restore already passed; this repeat run has not yet proven
-fresh coverage. Database restore remains separate and incomplete.
+Status on 11 October 2026: implemented; 54 local backup checks pass. First real
+repeat run started at 11:22 UTC and failed during the final source comparison
+when its 20,000-request ceiling was reached. All 2,888 destination byte checks
+passed, but no fresh successful manifest was claimed. The earlier complete
+inventory and manifest-selected restore remain verified. Recurrence is **not yet
+enabled**. A revised live repeat started at 11:38:53 UTC; its terminal result is
+pending. Database restore remains separate
+and incomplete. [Failure and fix](evidence/learn-recording-daily-first-attempt-2026-10-11.json).
 
 ## Scope and execution
 
@@ -29,7 +32,10 @@ byte digest, with source identities checked before and after verification. Only
 then may a new immutable remote manifest support a successful inventory result.
 
 Limits are 10,000 inventory objects, 400 objects/256 MiB of newly considered audio
-per run, four concurrent operations and a one-hour deadline. Exceeding a limit
+per run, four concurrent operations, 100,000 source requests across inventory,
+copying and both verification passes, and a one-hour deadline. This includes
+per-file reference pagination rather than counting only storage metadata calls.
+The separate initial-copy CLI retains its 20,000-request ceiling. Exceeding a limit
 fails visibly; it never silently truncates coverage. Missing source files and
 recordings without storage pointers are separate capture/reconciliation gaps.
 Later arrivals require a later run. The inventory remains non-atomic and does
@@ -41,9 +47,9 @@ not establish database consistency, transcription quality or universal playback.
 mode 0600, checked for ownership and symlinks. It contains no saved credentials.
 Inventories and reconciliation files contain private source paths and record
 references: never print or commit them. Only aggregate reports may enter Git.
-The initial live verification started before the source-reconciliation summary
-was added to the local result; that summary addition is locally tested but is
-not evidence of the running process's loaded version.
+The failed first repeat loaded an earlier wrapper without the source-reconciliation
+summary. The revised run includes that summary and records source-request usage;
+its live outcome remains to be verified.
 
 `last-success.json` changes only after manifest verification. A later failure
 updates `last-attempt.json` while preserving the earlier success. `--health`

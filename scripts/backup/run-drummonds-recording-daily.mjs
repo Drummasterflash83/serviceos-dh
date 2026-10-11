@@ -14,6 +14,9 @@ import { RecordingBackupError } from "./recording-backup-core.mjs";
 const fail = (code) => {
   throw new RecordingBackupError(code);
 };
+// Inventory plus two complete metadata/reference passes and up to 400 new copies.
+// The source adapter enforces this ceiling across the entire daily run.
+export const dailySourceRequestBudget = 100000;
 async function privateDir(path) {
   await mkdir(path, { recursive: true, mode: 0o700 });
   const s = await lstat(path);
@@ -99,7 +102,7 @@ export async function runDailyBackup({
       startedAt,
       backupComplete: false,
     });
-    ports = await createPorts(signal);
+    ports = await createPorts(signal, { requestBudget: dailySourceRequestBudget });
     if (signal.aborted) fail("daily_cancelled");
     const listed = await ports.source.inventory();
     if (signal.aborted) fail("daily_cancelled");
@@ -139,6 +142,7 @@ export async function runDailyBackup({
       unreferencedObjects: reconciliation.unreferencedObjects,
       missingObjectReferences: reconciliation.missingObjectReferences.length,
     };
+    result.sourceUsage = ports.source.usage?.() ?? null;
     await writePrivate(runDir, "result.json", result);
     // Publish last success only after the immutable remote manifest has verified.
     await writePrivate(directory, "last-success.json", result);
@@ -160,6 +164,7 @@ export async function runDailyBackup({
         finishedAt: new Date().toISOString(),
         runDirectory: runDir ?? null,
         code,
+        sourceUsage: ports?.source.usage?.() ?? null,
         backupComplete: false,
       }).catch(() => {});
     fail(code);

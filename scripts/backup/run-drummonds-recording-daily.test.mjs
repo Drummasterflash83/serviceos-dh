@@ -39,7 +39,14 @@ test("daily runner saves private fresh manifests and preserves last success afte
   const directory = await realpath(await mkdtemp(join(tmpdir(), "daily-run-"))),
     f = ports();
   try {
-    const a = await runDailyBackup({ directory, binding: context, createPorts: async () => f });
+    const a = await runDailyBackup({
+      directory,
+      binding: context,
+      createPorts: async (_signal, options) => {
+        assert.deepEqual(options, { requestBudget: 100000 });
+        return f;
+      },
+    });
     assert.equal(a.newObjectsCopied, 1);
     assert.equal((await stat(join(directory, "last-success.json"))).mode & 0o777, 0o600);
     const before = await readFile(join(directory, "last-success.json"), "utf8");

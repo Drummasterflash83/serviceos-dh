@@ -33,7 +33,9 @@ export function parseRunArgs(args) {
   };
 }
 export const loadWriterCredential = (execute) => loadRecordingCredential("Writer", execute);
-export async function createLiveRecordingPorts(signal) {
+export async function createLiveRecordingPorts(signal, { requestBudget = 20000 } = {}) {
+  if (!Number.isSafeInteger(requestBudget) || requestBudget < 1 || requestBudget > 100000)
+    fail("runner_source_budget_invalid");
   const writer = await loadWriterCredential();
   const token = savedCliToken();
   const readManagement = async (suffix) => {
@@ -67,7 +69,7 @@ export async function createLiveRecordingPorts(signal) {
   if (typeof key !== "string" || !key) fail("runner_source_credential_unavailable");
   const source = createRecordingSource(binding, {
     credentials: async () => ({ apikey: key, token: key }),
-    requestBudget: 20000,
+    requestBudget,
     fetcher: (url, options) =>
       fetch(url, { ...options, signal: AbortSignal.any([signal, options.signal]) }),
   });

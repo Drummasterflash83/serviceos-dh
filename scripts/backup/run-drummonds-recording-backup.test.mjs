@@ -1,6 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseRunArgs, loadWriterCredential, binding } from "./run-drummonds-recording-backup.mjs";
+import {
+  parseRunArgs,
+  loadWriterCredential,
+  binding,
+  createLiveRecordingPorts,
+} from "./run-drummonds-recording-backup.mjs";
+test("source request ceiling is validated before opening live credentials", async () => {
+  for (const requestBudget of [0, -1, 100001, Infinity, 1.5])
+    await assert.rejects(createLiveRecordingPorts(AbortSignal.abort(), { requestBudget }), {
+      code: "runner_source_budget_invalid",
+    });
+});
 test("live CLI requires exact Drummonds action, pinned inventory and bounded copy limits", () => {
   const args = ["--copy-drummonds", "/private/inventory", "a".repeat(64)];
   assert.equal(parseRunArgs(args).mode, "copy");

@@ -55,8 +55,8 @@ The previous browser file chooser failure was resolved using Template studio;
 the saved editor JSON matched the prepared template before execution. AWS also
 created a template-storage bucket/object. No recordings or secrets were uploaded
 with the template. The separate access activation and first recording copy are
-now verified as described below. Scheduling, full-manifest restore and database
-recovery remain unfinished.
+now verified as described below. Full-manifest audio restore subsequently passed;
+scheduled operation and isolated database recovery remain unfinished.
 [Cloud evidence](evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
 Account/resource identifiers and screenshots are retained in ignored private
 runtime evidence. Cloudflare infrastructure and OpenFolk hosting are unchanged.
@@ -75,7 +75,7 @@ conditional writes. The first bounded recording copy verified **108,870 bytes**
 against the source and pinned destination version. The complete **2,888-object /
 601,004,261-byte** inventory has completed its bounded copy pass. The sequential
 finalizer hit its 30-minute deadline at 10:29:51 UTC. Its failure evidence and
-completed copy checkpoint are retained; a full manifest is not yet confirmed.
+completed copy checkpoint are retained; that attempt did not confirm a full manifest.
 The revised finalizer, covered by 44 passing backup tests, checks at most four
 objects concurrently, then rechecks source metadata before writing its immutable
 manifest. Any failure drains active checks and prevents manifest publication.
@@ -145,6 +145,39 @@ approval boundary.
 [Local evidence](evidence/learn-recording-backup-local-2026-10-11.json).
 
 ## Verified observation — 11 October 2026
+
+### Database credential recovery and 1Password handoff
+
+Chris has authorised sorting out the forgotten production database password and
+will save it in 1Password. The reset has **not** been performed or verified.
+The production Database Settings page was opened in the in-app browser and
+redirected to Supabase sign-in. Owner password entry and reset submission remain
+with Chris; never request the password in chat.
+
+Save an item named **OpenFolk — ServiceOS Production Database**, with project
+`tgbnakbxwcqjeimygroz`, database `postgres`, direct username `postgres`, and the
+new generated password. Store the verified connection parameters from the
+dashboard's **Connect** panel in the same item. A session-pooler username differs
+from the direct username, and its hostname must come from that panel. Do not
+guess it. Record the reset date only after the dashboard confirms success.
+
+The repository search of `src`, `supabase`, `scripts` and `infrastructure` found
+no runtime references to the common direct-connection/password environment names;
+only historical test commands use `DATABASE_URL`. This is a code observation,
+not proof about every deployed secret or external consumer. Before relying on the
+new credential, verify the intended connection and existing app/API health. API
+credentials and database connection credentials are separate mechanisms.
+
+After Chris confirms the reset/save, arrange secure local access to that exact
+1Password item, verify a read-only connection, then perform the isolated database
+restore rehearsal. Do not recreate the Supabase project or restore over production.
+Neither possession of the password nor a successful connection proves recoverability.
+
+Official references checked 11 October:
+[database password reset](https://supabase.com/docs/guides/troubleshooting/how-do-i-reset-my-supabase-database-password-oTs5sB)
+and [connection methods and parameters](https://supabase.com/docs/guides/database/connecting-to-postgres).
+
+### Backup metadata observation
 
 The read-only Supabase Management API observation completed at 02:25:54 UTC.
 Each project identity was checked before its fixed GET backup-list request.

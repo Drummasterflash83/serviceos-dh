@@ -1,0 +1,34 @@
+{
+  "version": "learn-recording-daily-evidence/1",
+  "date": "2026-10-11",
+  "runId": "fb552aff-782f-464b-a905-44d00f41e877",
+  "startedAt": "2026-10-11T11:22:10.393Z",
+  "finishedAt": "2026-10-11T11:36:37.155Z",
+  "state": "failed",
+  "code": "source_request_budget_exhausted",
+  "sourceRequestBudget": 20000,
+  "allDestinationBytesVerified": true,
+  "freshManifestVerified": false,
+  "backupComplete": false,
+  "inventory": {
+    "objects": 2888,
+    "totalBytes": 601004261,
+    "recordingRows": 2882,
+    "rowsWithoutStoragePointer": 0,
+    "unreferencedObjects": 6,
+    "missingObjectReferences": 0
+  },
+  "cause": "The shared 20000-request budget omitted the complete inventory cost plus two per-object metadata/reference passes. The final source comparison exhausted it; the runner failed without publishing success.",
+  "fix": {
+    "dailySourceRequestCeiling": 100000,
+    "perCopyCliCeiling": 20000,
+    "maxConcurrentObjects": 4,
+    "deadlineMinutes": 60,
+    "newObjectsLimit": 400,
+    "newBytesLimit": 268435456,
+    "localTests": 54
+  },
+  "recurrence": "not_enabled",
+  "databaseRestore": "not_verified",
+  "priorVerifiedInventory": "a03f8be7-f092-4c0a-802e-029440d4be37"
+}

@@ -452,7 +452,11 @@ only GET/HEAD requests after setup. This is not a real Drummonds restore.
 
 ## Repeat runs and local monitoring
 
-The daily runner is implemented and locally tested. The first real repeat run
-started on 11 October 2026 at 11:22 UTC; its terminal result is still pending.
+The daily runner is implemented with 54 passing local checks. Its first real
+repeat failed at 11:36 UTC after exhausting the original source-request allowance
+during the final comparison. All destination bytes passed; no new complete
+manifest was claimed. The bounded daily allowance now includes the complete
+inventory and both per-file metadata/reference passes. A revised run started at
+11:38:53 UTC; its terminal result is pending.
 No recurring task has been enabled yet. See
 [the runbook](../../docs/operations/LEARN-RECORDING-DAILY.md).
