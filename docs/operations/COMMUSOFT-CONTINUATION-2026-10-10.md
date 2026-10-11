@@ -1,5 +1,47 @@
 # Drummonds TEST continuation — prepared, not activated
 
+## Latest readiness — 11 October, 12:07 UTC
+
+The same prepared run now passes a fresh **read-only preflight** against the
+installed TEST release 057 environment. The original 60-minute grant proposal,
+login, tenant, 4,000-request cap, collection order and 100-page jobs checkpoint
+are unchanged. No access or provider request has been activated; the pending
+explicit approval is still required.
+
+Later Phone acceptance retained two archived synthetic companies. They added two
+recordings, two transcripts, two insights, six sync runs and eight audit rows.
+Removing only those two exactly identified fixtures from the comparison reproduced
+**all 78 original fingerprints**, with no remaining difference. The one-time
+compatibility refresh preserved the original private journal and original
+baseline, then captured a new baseline which **includes and protects** the added
+fixtures. It does not permanently exclude them. Unknown additions, changed old
+rows, fixture identity changes and drift between scans all reject the refresh.
+The completed refresh must not be rerun or replaced with a blanket rebaseline.
+
+The continuation reader now pins `147379faf1b523f103ceac7abc52c615`. Its older Auth
+fixture check also needed to recognise the exact three nullable transcript
+provenance columns and recording-run foreign key installed by release 055.
+The new matcher validates each addition and then applies every original Auth and
+work-authority trigger check. All other contract fields matched. The prepared
+Phone playback runner uses the same strict compatibility check, with its separate
+activation approval unchanged.
+
+Twenty focused checks pass. Hosted preflight verified the schema, Auth contract,
+Commusoft worker/verification v4 with JWT checks, original credential binding,
+two paused capture flags, unchanged jobs checkpoint and all 78 current baseline
+fingerprints. There are zero continuation provider requests and active grants.
+[Sanitized evidence](evidence/learn-commusoft-continuation-refresh-2026-10-11.json).
+
+To recheck without activating anything:
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
+  node scripts/verify/learn-commusoft-continuation-session.mjs preflight
+```
+
+This updates only the private local readiness journal. Every activation still
+reruns its own checks and requires the exact approved run ID.
+
 Run `d764008e-8c8f-4837-999a-8d38b5e6e2d5` is prepared against TEST
 `saatxzwxvdvqevbnskxy`. Read-only preparation passed at 21:30 UTC, 10 October.
 No new user, grant, provider request, queue job or database write has occurred.

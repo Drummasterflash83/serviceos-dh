@@ -10,7 +10,7 @@ import {
   PHONE_PLAYBACK_PRESERVED,
 } from "./learn-phone-playback-catalog.mjs";
 import { AUTH_CONTRACT_QUERY } from "./learn-test-auth-contract.mjs";
-import { actionAuthContractMatches } from "./learn-test-actions-acceptance.mjs";
+import { phoneProcessingAuthContractMatches } from "./learn-phone-processing-auth-contract.mjs";
 import { readLearnCardDetail } from "../../src/lib/learn-cards.ts";
 import {
   readRetainedRecordings,
@@ -134,7 +134,7 @@ const storage = createClient(base, service, {
 if (mode === "--activate") {
   const catalog = await readPhonePlaybackCatalog(token);
   check(catalog.fingerprint === "a6f5cfa886fe094cc5318ecbb75b472c");
-  check(actionAuthContractMatches((await sql(AUTH_CONTRACT_QUERY))[0]?.contract));
+  check(phoneProcessingAuthContractMatches((await sql(AUTH_CONTRACT_QUERY))[0]?.contract));
   const bucket = await storage.storage.getBucket("phone-recordings");
   check(!bucket.error && bucket.data?.public === false);
   p.baseline = await snapshot();

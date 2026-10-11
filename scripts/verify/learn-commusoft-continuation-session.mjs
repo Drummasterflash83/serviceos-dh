@@ -9,12 +9,13 @@ import { TEST_PROJECT, savedCliToken } from "./learn-test-readiness.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
 import { readPhoneHealthCatalog, PHONE_HEALTH_PRESERVED } from "./learn-phone-health-catalog.mjs";
 import { AUTH_CONTRACT_QUERY } from "./learn-test-auth-contract.mjs";
-import { actionAuthContractMatches } from "./learn-test-actions-acceptance.mjs";
+import { phoneProcessingAuthContractMatches } from "./learn-phone-processing-auth-contract.mjs";
 import { readOperatorInputs, resolveOperatorInput } from "../../src/lib/learn-operator-inputs.ts";
 const base = `https://${TEST_PROJECT}.supabase.co`;
 const file = ".verification-results/commusoft-continuation-session.json";
 const priorFile = ".verification-results/commusoft-real-test-session.json";
-const schema = "a54a575f7348416acf6000ef8b289871";
+export const CONTINUATION_SCHEMA = "147379faf1b523f103ceac7abc52c615";
+const schema = CONTINUATION_SCHEMA;
 const origin = "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d";
 const tenant = "f8c114fa-fee7-4983-8970-f6e7f5fd3129";
 const connection = "59484382-d380-4362-b031-19db133e6d3a";
@@ -207,6 +208,7 @@ export function publicContinuationSummary(p) {
     workerInvocations: p.workerInvocations,
     preserved: p.preserved ?? null,
     startingJobPages: p.startPages ?? null,
+    preflightVerifiedAt: p.preflightVerifiedAt ?? null,
     boundary: p.boundary ?? null,
     inputs: Object.fromEntries(
       Object.entries(p.inputRequests ?? {}).map(([k, v]) => [
@@ -240,7 +242,9 @@ export async function runContinuation(
   } = {},
 ) {
   check(
-    ["prepare", ...writes, "check-input", "check-worker", "status", "retire"].includes(mode),
+    ["prepare", "preflight", ...writes, "check-input", "check-worker", "status", "retire"].includes(
+      mode,
+    ),
     "Explicit phase required",
   );
   const p = mode === "prepare" ? newContinuationPlan() : await read();
@@ -314,7 +318,7 @@ export async function runContinuation(
     check((await catalog()).fingerprint === schema, "TEST release changed");
     const rows = await sql(AUTH_CONTRACT_QUERY);
     check(
-      rows.length === 1 && actionAuthContractMatches(rows[0].contract),
+      rows.length === 1 && phoneProcessingAuthContractMatches(rows[0].contract),
       "Auth contract changed",
     );
     const endpoints = await req(`https://api.supabase.com/v1/projects/${TEST_PROJECT}/functions`, {
@@ -351,7 +355,17 @@ export async function runContinuation(
     );
     return s;
   }
-  if (mode === "prepare") {
+  if (mode === "preflight") {
+    check(p.state === "prepared", "Only prepared access can be checked");
+    const s = await preflight();
+    check(
+      sameCheckpoint(s.account.checkpoint, p.checkpoint) &&
+        s.last_job === p.lastJob &&
+        JSON.stringify(await snapshot()) === JSON.stringify(p.before),
+      "Prepared boundary changed",
+    );
+    p.preflightVerifiedAt = new Date().toISOString();
+  } else if (mode === "prepare") {
     const old = await prior();
     check(
       old.state === "retired" &&

@@ -1,0 +1,78 @@
+{
+  "version": "learn-commusoft-continuation-refresh-evidence/1",
+  "date": "2026-10-11",
+  "compatibility": {
+    "state": "prepared",
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checkedAt": "2026-10-11T12:04:01.436Z",
+    "schemaFingerprint": "147379faf1b523f103ceac7abc52c615",
+    "originalPreservedDatasets": 78,
+    "currentPreservedDatasets": 78,
+    "expectedAddedRows": {
+      "public.phone_recordings": 2,
+      "public.phone_transcripts": 2,
+      "public.tenants": 2,
+      "public.phone_sync_runs": 6,
+      "public.phone_ai_insights": 2,
+      "public.audit_logs": 8
+    },
+    "priorBaselineSha256": "2c235f8eb8b2402fe40b664ca3b9fca6681a2d0f343d03cf1b6b52b8ad6d35e4",
+    "currentBaselineSha256": "55e625046d498332f910cee67f4d45d88cc7614990ba5cac15312b7cb0fee836",
+    "originalDataMatched": true,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "approval": "still_required_for_activation"
+  },
+  "preflight": {
+    "version": "commusoft-continuation-session/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+    "state": "prepared",
+    "tenant": "f8c114fa-fee7-4983-8970-f6e7f5fd3129",
+    "connection": "59484382-d380-4362-b031-19db133e6d3a",
+    "account": "b0609b8b-8a12-4dc2-afdc-0e0f28a29079",
+    "email": "learn-continuation-d764008e@example.invalid",
+    "durationMinutes": 60,
+    "maxProviderRequests": 4000,
+    "limits": {
+      "additionalJobPages": 500,
+      "customerContactPages": 2000,
+      "workaddressContactPages": 1500
+    },
+    "expiresAt": null,
+    "workerInvocations": 0,
+    "preserved": true,
+    "startingJobPages": 100,
+    "preflightVerifiedAt": "2026-10-11T12:07:46.603Z",
+    "boundary": {
+      "requests": 0,
+      "active_grants": 0,
+      "banned": 0
+    },
+    "inputs": {}
+  },
+  "originalPlanScopeUnchanged": true,
+  "originalPrivateJournalRetained": true,
+  "exactAuthChange": {
+    "migration": "20261101210000_learn_phone_derived_versions.sql",
+    "columns": [
+      "source_storage_path text nullable",
+      "source_sha256 text nullable",
+      "processing_run_id uuid nullable"
+    ],
+    "foreignKey": "processing_run_id references phone_sync_runs(id)",
+    "otherContractFields": "matched original Auth contract plus previously reviewed work-authority triggers",
+    "appliesTo": [
+      "Commusoft continuation preflight",
+      "prepared Phone playback acceptance"
+    ]
+  },
+  "localFocusedTests": 20,
+  "hostedWrites": 0,
+  "providerRequests": 0,
+  "newUsers": 0,
+  "newGrants": 0,
+  "stillRequired": "Explicit approval of prepared continuation access before activation; no continuation import or signed-in playback acceptance performed"
+}

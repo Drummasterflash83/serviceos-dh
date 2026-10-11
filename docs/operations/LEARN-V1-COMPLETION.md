@@ -279,6 +279,14 @@ succeeded after that failure; no worker was invoked and no source record changed
   retired. The prepared continuation needs its own approval; earlier approvals
   must not be reused. Provider data-shape questions remain an explicit diagnostic
   task, not permission to assume timestamps or missing relationships.
+  At 12:07 UTC on 11 October, the same prepared run passed fresh read-only schema,
+  Auth, runtime, credential-binding, paused-capture and retained-checkpoint checks.
+  All 78 original source fingerprints matched after isolating the two documented
+  synthetic Phone fixtures; a preserved one-time baseline refresh now protects
+  those additions too. Exact release-055 transcript additions are accepted by the
+  Auth checker without removing the old guards. Twenty focused tests pass.
+  No user, grant or provider request was created; the original approval remains
+  pending. [Readiness evidence](evidence/learn-commusoft-continuation-refresh-2026-10-11.json).
 - [ ] **Voicemail:** establish the actual supported message/audio contract and
   mailbox scope, then implement and verify ingestion, private access, replay,
   transcription and scheduling. Existing voicemail tables are not an ingester.

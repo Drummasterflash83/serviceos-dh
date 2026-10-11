@@ -110,6 +110,21 @@ test("uncertain activation is never repeated", async () => {
     /replayed/,
   );
 });
+test("read-only preflight refuses non-prepared sessions before external access", async () => {
+  for (const state of ["active", "activation_started", "retired", "grant_retired"]) {
+    const p = { ...fixture().p, state };
+    await assert.rejects(
+      runContinuation("preflight", {
+        read: () => p,
+        sql: forbidden,
+        fetcher: forbidden,
+        catalog: forbidden,
+        save: forbidden,
+      }),
+      /Only prepared/,
+    );
+  }
+});
 test("resume keeps the original approval, exact checkpoint and collection, allowing 500 further pages", async () => {
   const { p, overview } = fixture(),
     definition = continuationDefinition("resume-jobs", p, overview);
