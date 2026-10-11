@@ -1,0 +1,29 @@
+{
+  "version": "commusoft-continuation-session/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "runId": "d764008e-8c8f-4837-999a-8d38b5e6e2d5",
+  "state": "prepared",
+  "preflightVerifiedAt": "2026-10-11T13:17:18.302Z",
+  "durationMinutes": 60,
+  "maxProviderRequests": 4000,
+  "limits": {
+    "additionalJobPages": 500,
+    "customerContactPages": 2000,
+    "workaddressContactPages": 1500
+  },
+  "workerInvocations": 0,
+  "preserved": true,
+  "boundary": {
+    "requests": 0,
+    "active_grants": 0,
+    "banned": 0
+  },
+  "schemaFingerprint": "2be2b5f2e08de7901b487f43fa3e9b17",
+  "protectedDatasets": 78,
+  "baselineChanged": false,
+  "providerRequests": 0,
+  "newUsers": 0,
+  "newGrants": 0,
+  "approval": "still_required_for_activation",
+  "focusedTestsPassed": 17
+}

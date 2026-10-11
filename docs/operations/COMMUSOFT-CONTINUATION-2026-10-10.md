@@ -1,6 +1,23 @@
 # Drummonds TEST continuation — prepared, not activated
 
-## Latest readiness — 11 October, 12:38 UTC
+## Latest readiness — 11 October, 13:17 UTC
+
+Release 059 changes only the job review projection and preserves every source
+row. The same prepared continuation passed its full read-only preflight at
+13:17:18 UTC against catalog `2be2b5f2e08de7901b487f43fa3e9b17`.
+All 78 protected dataset fingerprints still match the retained baseline; no
+rebaseline or historical fixture refresh was needed. Current worker/Auth checks,
+credential binding, paused capture and the 100-page incomplete jobs checkpoint
+passed. Seventeen focused continuation/playback-refresh tests pass. The historical
+058 playback refresh remains pinned to 058 and must not be rerun.
+
+No account or grant has been created, and no provider request has been made.
+The same identity, 60-minute duration and 4,000-request cap remain proposed.
+**The existing access approval request remains pending. No import was activated.**
+
+[Sanitized readiness](evidence/learn-commusoft-continuation-059-2026-10-11.json).
+
+## Earlier readiness — 11 October, 12:38 UTC
 
 The original continuation now passes its full read-only preflight against TEST
 release 058. All 78 original dataset fingerprints match after a narrowly scoped

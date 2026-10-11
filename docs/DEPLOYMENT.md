@@ -50,6 +50,19 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The latest staging candidate is
+[serviceos-learn-test-c7irm9j5p-allkin.vercel.app](https://serviceos-learn-test-c7irm9j5p-allkin.vercel.app),
+built remotely from GitHub commit `a084b97a7a21f8377c04e054b893a18e69b3bfb9`
+and observed READY at 13:20 UTC on 11 October. It exposes Commusoft job timing
+limitations without withholding otherwise reviewable job identity/status.
+TEST release 059 was installed at 13:16 UTC; the existing review function retains
+its owner and execution grants, and all 113 monitored datasets matched. No real
+Drummonds records were published. The frontend retains the prior call-detail
+contract fix. Three HTTP routes remain Vercel protected. Browser inspection of
+this new origin awaits explicit permission after automatic approval review
+rejected opening it; no signed-in acceptance is claimed.
+[Release evidence](operations/evidence/learn-commusoft-partial-times-test-2026-10-11.json).
+
+The previous call-detail staging candidate is
 [serviceos-learn-test-fpzgfbxtu-allkin.vercel.app](https://serviceos-learn-test-fpzgfbxtu-allkin.vercel.app),
 built remotely from GitHub commit `a5f2329369b50194be4bcad59f29d31157d2717a`
 and READY at 12:56 UTC on 11 October. It fixes exact transcript linkage and

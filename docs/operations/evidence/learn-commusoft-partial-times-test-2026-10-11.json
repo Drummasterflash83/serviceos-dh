@@ -24,8 +24,47 @@
     "completionTimezoneWarning": true,
     "consoleErrors": 0
   },
-  "installation": "prepared_not_installed",
-  "frontend": "not_yet_published",
+  "installation": {
+    "state": "installed_test_projection_verified",
+    "observedAt": "2026-10-11T13:16:34.778Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "c5e3fbf27b6c5f07a7a96dc2693855e285c3679c8763c8c3eddc29f0959bfdac",
+    "sourceSha256": "95ca7fd3ef48c2d76ed73998019018d6f429978077f48c00aa03a161a44ea60f",
+    "catalogFingerprint": "968d483ec625195527b5853cba6ecf8d",
+    "preservedDataSets": 113,
+    "providerRequests": 0,
+    "committedUsers": 0,
+    "newPlatformGrants": 0,
+    "realRecordsPublished": 0,
+    "productionChanged": false
+  },
+  "frontend": {
+    "url": "https://serviceos-learn-test-c7irm9j5p-allkin.vercel.app",
+    "deploymentId": "dpl_8dd7zKYA7SxpJQ2XMPnmPjFhXxfY",
+    "state": "READY",
+    "observedAt": "2026-10-11T13:20:47.762Z",
+    "gitSha": "a084b97a7a21f8377c04e054b893a18e69b3bfb9",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "target": "staging",
+    "protectedRoutes": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ],
+    "browserCheck": "pending_origin_permission_after_automatic_approval_review_rejection"
+  },
   "realDrummondsPublication": false,
   "signedInHostedBrowserAcceptance": false
 }

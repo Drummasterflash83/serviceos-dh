@@ -404,7 +404,7 @@ succeeded after that failure; no worker was invoked and no source record changed
   recording inventory and one manifest-selected restore are verified; later
   arrivals, scheduled coverage and database recovery still require acceptance.
 
-## Commusoft jobs with unresolved times — 11 October, 13:15 UTC
+## Commusoft jobs with unresolved times — 11 October, 13:21 UTC
 
 The captured-data audit found 9,940 of the first 10,000 jobs had completion strings
 without a timezone. Previously a valid unzoned timestamp held the entire job at
@@ -439,9 +439,16 @@ Nothing assigns a timezone, marks the job verified, attributes staff or awards p
   helper; correction did not alter application permissions. No real records were
   published and no provider requests or production changes occurred.
 - Actual LEARN card browser verification with a simulated backend shows the
-  completion-time warning, with zero console errors. Protected frontend release
-  and persistent TEST function installation are recorded in the release evidence.
-  Real Drummonds publication and signed-in hosted browser acceptance remain open.
+  completion-time warning, with zero console errors. TEST release 059 installed at
+  13:16 UTC with all 113 datasets unchanged. The matching Git-built frontend was
+  observed READY at 13:20 UTC; all three checked HTTP routes remain protected.
+  Browser inspection of its new origin awaits explicit permission after automatic
+  approval review rejected opening it. Real Drummonds publication and signed-in
+  hosted browser acceptance remain open.
+- The unchanged prepared Commusoft continuation passed read-only preflight against
+  release 059 at 13:17 UTC. All 78 protected datasets still match the original
+  refreshed baseline. No further baseline refresh, account, grant or provider
+  request occurred. Its separate access approval is still pending.
 
 [Evidence](evidence/learn-commusoft-partial-times-test-2026-10-11.json).
 
