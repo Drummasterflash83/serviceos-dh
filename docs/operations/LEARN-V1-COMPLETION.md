@@ -232,12 +232,14 @@ succeeded after that failure; no worker was invoked and no source record changed
   The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
-  isolated restore acceptance. Chris approved setup/copy and changed account ownership to OpenFolk. No AWS
-  account exists yet. AWS London remains recommended after checking Cloudflare
-  R2 location/versioning differences; account setup/access is still required.
+  isolated restore acceptance. Chris approved setup/copy and changed account ownership to OpenFolk. The OpenFolk AWS account is now verified in Arc, with London selected. Owner
+  MFA is not yet assigned, and the free-plan expiry requires the requested
+  paid-plan transition. Scoped runtime access remains to be configured.
   Local CloudFormation foundation and streamed copy/restore/inventory core now
-  pass schema lint and eleven synthetic tests. Real adapters, scheduling,
-  monitoring, byte copies and database/audio restore acceptance remain open.
+  pass schema lint and eleven synthetic tests. The official AWS SDK destination
+  and encrypted journal add eight signed-wire synthetic tests (19 combined).
+  Actual AWS acceptance, the source adapter, scheduling, monitoring, byte copies
+  and database/audio restore acceptance remain open.
   No paid resource or recording transfer occurred.
 
 ## Release and completion gates

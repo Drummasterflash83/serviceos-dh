@@ -1,0 +1,52 @@
+{
+  "version": "learn-recording-backup-s3-local/1",
+  "observedAt": "2026-10-11T07:35:14.141662+00:00",
+  "sourceSha256": {
+    "scripts/backup/recording-backup-s3.mjs": "359196a7c209dbbfbd2e042acb87e0e73f1caff14e8fd48fd00668b63fd64753",
+    "scripts/backup/recording-backup-s3.test.mjs": "6325d48267ab4e493e3fc020bac4a693aac7a7b9c5199d4e6e69f788b29b7aee",
+    "scripts/backup/package.json": "ed2d3ba3a82f4cf6bf8e1608538bdcf21a74515159de91a491aab0e600142a13",
+    "scripts/backup/package-lock.json": "eeacb1bd45393438f53b2f4affa27f77b0bc51e57130ac1b3f9fe211f436cb2a"
+  },
+  "validation": {
+    "command": "npm test --prefix scripts/backup",
+    "passed": 19,
+    "failed": 0,
+    "sdkTransportTests": 8,
+    "transport": "Actual official AWS SDK signing, serialization and parsing with synthetic HTTP handler; no AWS network access"
+  },
+  "verifiedLocally": [
+    "Streamed recording copy, encrypted receipt and manifest, isolated byte-exact restore through SDK adapter",
+    "Fixed AWS London endpoints, ExpectedBucketOwner, one-minute destination inspection, no automatic retry or redirect",
+    "STS account, bucket region, public access, ownership, encryption, versioning, retention and conditional-write policy checks",
+    "Exact-key bounded prefix listing for missing objects under scoped ListBucket permission",
+    "Lost write acknowledgement recovered without duplicate object write",
+    "Foreign scope, denied listing, null versions, corrupt bytes and corrupt JSON journals rejected"
+  ],
+  "accountReadiness": {
+    "accountObservedInArc": true,
+    "londonConsoleSelected": true,
+    "ownerMFA": "not_assigned",
+    "plan": "Free",
+    "freePlanExpires": "2027-04-11 or credit exhaustion",
+    "ownerActionsRequested": [
+      "Assign MFA",
+      "Move to paid plan for ongoing backups"
+    ]
+  },
+  "limits": {
+    "journalBytes": 33554432,
+    "objectBytes": 268435456,
+    "requests": "120 second abort; STS 30 seconds; streamed read absolute 120 seconds",
+    "destinationInspectionCacheSeconds": 60
+  },
+  "cloudResourcesCreated": false,
+  "realRecordingsCopied": 0,
+  "productionChanged": false,
+  "remaining": [
+    "Owner MFA and paid-plan transition",
+    "Scoped access and actual AWS IAM/configuration acceptance",
+    "Source inventory/read adapter, private inventory persistence and daily scheduler",
+    "Operator monitoring, real copying and reconciliation",
+    "Isolated database restore and playable audio acceptance"
+  ]
+}

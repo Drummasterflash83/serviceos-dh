@@ -30,12 +30,14 @@ OpenFolk, so its R2 alternative was checked against current official documentati
   need to be counted. Price alone does not close the recovery requirements.
   [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
 
-No additional approval of the same AWS recording-copy scope is needed. The next
-external dependency is the OpenFolk AWS account: Chris must complete account
-signup, billing/identity verification, terms and owner MFA. Then provide the
-account ID and secure access route only, never passwords or keys in chat. Scoped
-backup/restore access and the reviewed source-read mechanism remain to be set up;
-no account, bucket, identity, recording copy or verified restore exists yet.
+No additional approval of the same AWS recording-copy scope is needed. Chris has now completed OpenFolk AWS account signup. The account name and ID
+were verified in Arc and the console was switched from Stockholm to London.
+The security-credentials page reports **MFA (0)** and no root access keys. The
+console reports a **Free plan ending 11 April 2027 or when credits run out**.
+Owner MFA and the paid-plan transition are requested; neither has been performed
+by the agent. Scoped backup/restore access and the reviewed source-read mechanism
+remain to be set up. No backup bucket, identity, recording copy or verified
+restore has been created. Account details remain in private runtime evidence.
 Cloudflare infrastructure and OpenFolk hosting have not been changed.
 
 ## Local backup implementation — 11 October 2026
@@ -51,8 +53,12 @@ Eleven synthetic tests pass for streamed SHA-256 copy, exact-version readback,
 private isolated restore, changed-source/corrupt-byte rejection, lost upload and
 journal acknowledgement recovery, and whole-inventory completion. Manifest
 recovery retains its original scope/time; it does not claim current source coverage.
-Real S3/source/journal adapters, daily scheduling, operator monitoring, real
-recording copies, playback and database restore remain unfinished. The scoped
+The official AWS SDK destination and encrypted S3 journal are now implemented;
+eight additional synthetic HTTP tests exercise real SDK signing, serialization
+and response parsing across copy, receipt, manifest and isolated restore (19
+combined tests pass). Actual AWS acceptance, the scoped source adapter, daily
+scheduling, operator monitoring, real copies, playback and database restore
+remain unfinished. [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). The scoped
 source-read mechanism remains behind its applicable production approval boundary.
 [Local evidence](evidence/learn-recording-backup-local-2026-10-11.json).
 

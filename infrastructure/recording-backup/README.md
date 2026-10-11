@@ -1,8 +1,8 @@
 # OpenFolk recording backup foundation
 
 Local implementation for the approved Drummonds recording backup. Nothing in
-this directory creates resources automatically. The AWS account is not yet
-available, and no real recording has been copied or restored.
+this directory creates resources automatically. The OpenFolk AWS account has been observed in the console; owner MFA and
+the paid-plan transition remain pending. No real recording has been copied or restored.
 
 ## Infrastructure
 
@@ -55,8 +55,9 @@ AWS references:
 ## Copy, inventory completion and isolated restore
 
 `scripts/backup/recording-backup-core.mjs` implements the byte-copy protocol through
-injected source, S3 and durable-journal ports. The ports are not yet implemented
-against production services. They must enforce the approved account/tenant/project,
+injected source, S3 and durable-journal ports. The S3 destination and durable journal now have an official AWS SDK implementation
+(`recording-backup-s3.mjs`); the source port remains unimplemented. Live service
+acceptance has not occurred. All ports must enforce the approved account/tenant/project,
 TLS, bounded requests/timeouts and private create-only storage; they cannot be
 populated with browser-supplied URLs, tokens or arbitrary source paths.
 
@@ -102,11 +103,13 @@ never audio, signed URLs, paths, credentials or customer identities.
 
 ## Acceptance still required
 
-1. Owner completes OpenFolk AWS signup, billing/identity verification, terms and MFA.
+1. OpenFolk AWS signup is observed complete. Owner completes MFA and the paid-plan
+   transition: the console currently reports free access ending 11 April 2027 or
+   when credits run out. Neither step was performed by the agent.
 2. Verify account/region, create the reviewed foundation and inspect actual state;
    attach narrowly scoped writer/restore identities through the authorised flow.
-3. Implement the S3 and durable-journal adapters and the reviewed Drummonds-only
-   source inventory/read mechanism. Do not export a production-wide service key
+3. Verify the implemented S3/durable-journal adapter against real AWS, then complete
+   the reviewed Drummonds-only source inventory/read mechanism. Do not export a production-wide service key
    into AWS. Keep source permission changes within the production release gate.
 4. Implement daily resumable scheduling, bounded batches, monitoring, budget
    delivery and monthly restore checks. Source growth and initial metadata listings
@@ -120,7 +123,8 @@ never audio, signed URLs, paths, credentials or customer identities.
 Local checks:
 
 ```sh
-node --test scripts/backup/recording-backup-core.test.mjs
+npm ci --prefix scripts/backup --ignore-scripts
+npm test --prefix scripts/backup
 cfn-lint infrastructure/recording-backup/foundation.cloudformation.json
 ```
 
@@ -129,3 +133,45 @@ They exercise actual streaming, hashing, private files, lost acknowledgements,
 source changes, truncated/oversized/corrupt content, destination/scope rejection,
 retention/version checks, complete inventory and isolated restore. They do not
 prove real AWS access, an independent Drummonds backup, playback or database restore.
+
+## AWS SDK destination and encrypted journals
+
+The isolated `scripts/backup` package pins the official AWS SDK and has its own
+lockfile; the frontend dependency graph is unchanged. Construct `createRecordingS3`
+with the approved context and a server-side credentials-provider function.
+Construction performs no AWS calls. No default credential export, environment
+secret, access key, browser token or access grant is created by this module.
+
+Before object work it checks the STS account, London bucket location, all four
+public-access blocks, enforced bucket ownership, AES256 encryption, versioning,
+30-day governance retention and the required bucket-policy deny conditions.
+Inspection expires after 60 seconds; every S3 request includes ExpectedBucketOwner.
+The endpoint is fixed to AWS London, region redirects are disabled, SDK retries
+are disabled, and requests/stream consumption have bounded deadlines. SDK logs
+are suppressed in favour of safe error codes. Effective IAM-policy acceptance
+still requires actual cloud tests under the eventual writer/restore identities.
+
+Object absence is checked using `ListObjectsV2` with the exact key prefix and
+`MaxKeys: 1`, compatible with tenant-prefix listing permission. HEAD alone can
+return 403 for missing objects when bucket listing is restricted. Permission
+failures, redirects and uncertain responses stop the operation. Once present,
+HEAD/GET and post-upload verification use exact version IDs; bytes are still
+independently hashed by the copy core.
+
+Receipts and manifests use private encrypted, retained, conditional-write JSON
+objects inside the same tenant prefix. JSON reads are capped at 32 MiB and checked
+against their stored SHA-256 before parsing. An uncertain write is recovered by
+a later invocation, never blindly retried. No deletion or retention-change
+operation exists in this adapter. Source inventory persistence, scheduled runtime,
+alert integration and isolated database/audio acceptance are still outstanding.
+
+Eight SDK transport tests use the actual AWS signing/serialization/parsing stack
+with a synthetic HTTP handler. The combined suite has 19 passing tests. It covers
+copy → encrypted receipt → whole-inventory manifest → isolated restore, response
+loss, incorrect destination configuration, denied listing, version rejection and
+corrupt journals. No network request reaches AWS in these tests.
+
+References: [HEAD permissions](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html),
+[bounded listing](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html),
+[versioned reads](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html),
+[official SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-s3/Class/S3Client).
