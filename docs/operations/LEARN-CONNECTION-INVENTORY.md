@@ -77,5 +77,6 @@ are intentional single-row, provider-scoped reads with deterministic timestamp/I
 ordering, not truncated inventories. Reads are not transactionally frozen.
 Multiple Google domain histories cannot be individually attributed because legacy
 sync rows lack a domain connection ID. The legacy connection view does not verify
-LEARN connector schedules/capture. Discovery-history pagination, signed-in hosted
+LEARN connector schedules/capture. [Discovery-history pagination and its panel](LEARN-DISCOVERY-HISTORY.md)
+were subsequently deployed with controller v8 and frontend v22. Signed-in hosted
 acceptance, live provider tests and recovery remain separate work.

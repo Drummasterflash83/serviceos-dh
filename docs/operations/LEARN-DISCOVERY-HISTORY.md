@@ -49,9 +49,21 @@ cached Docker images, no external network, host mounts or published ports.
 
 Reviewed runtime: 24 files,
 `2ae3d36d9ab0c8e371febcf9490f6ed429363f61ca4a8bc303181d9b9cb7f9c1`.
-The prepared TEST replacement requires controller v7 and the installed catalogs,
-journals 101 preservation fingerprints before one submission, and checks afterward.
-This local checkpoint does not yet claim deployment or browser acceptance.
+TEST controller v8 is ACTIVE from Git `523d1abf5583516c68b0e38673794ec78fc11ba0`
+at 04:10 UTC on 11 October. The replacement required controller v7 and the installed
+catalogs. All 101 monitored datasets, schema and other endpoints were preserved;
+32 hosted access-boundary checks passed, including the history action.
+
+The paired protected [TEST frontend](https://serviceos-learn-test-fs74fmg09-allkin.vercel.app)
+is READY from the same commit at 04:11 UTC. Anonymous deployment protection and
+the same-origin operator sign-in redirect pass. Browser checks traverse all 57
+synthetic runs in pages of 25, 25 and 7, navigate back, filter five failed Phone
+runs, show an honest empty result, clear populated results on read failure and
+recover through clear/refresh. No console errors were recorded. These fixtures
+do not prove positive signed-in hosted operator acceptance. No new grants, provider
+requests, source writes or production changes occurred.
+See [local evidence](evidence/learn-discovery-history-local-2026-10-11.json) and
+[TEST evidence](evidence/learn-discovery-history-test-2026-10-11.json).
 
 The first-page response retains existing fields and adds `next_cursor`/`as_of`.
 Subsequent navigation requires the returned cursor; arbitrary page-number jumps

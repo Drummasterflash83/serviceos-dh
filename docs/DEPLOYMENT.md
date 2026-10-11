@@ -50,15 +50,20 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-2nm718p5o-allkin.vercel.app](https://serviceos-learn-test-2nm718p5o-allkin.vercel.app),
-built remotely from GitHub commit `5369311a98dfb071d53d4527f07d149f4b5ef556`.
-The 11 October 03:55 UTC candidate separates retained inventory from connection
-health, shows distinct Phone providers and keeps failed/revoked states visible.
-It is paired with controller v7, deployed after the frontend. All 101 monitored
-datasets, schema and other endpoints were preserved; 26 hosted access checks pass.
-Deployment protection, same-origin operator sign-in redirect and synthetic
-connection-card details pass, with zero console errors. Positive signed-in hosted
-acceptance and actual capture/recovery remain outstanding.
+[serviceos-learn-test-fs74fmg09-allkin.vercel.app](https://serviceos-learn-test-fs74fmg09-allkin.vercel.app),
+built remotely from GitHub commit `523d1abf5583516c68b0e38673794ec78fc11ba0`.
+The 11 October 04:11 UTC candidate adds complete cursor-based discovery/sync
+history with filters, previous/next navigation and failed-read recovery. It is
+paired with controller v8 at 04:10 UTC. All 101 monitored datasets, schema and
+other endpoints were preserved; 32 hosted access checks pass. Deployment protection,
+same-origin operator sign-in redirect and the synthetic 57-run history browser
+checks pass with zero console errors. Positive signed-in hosted acceptance and
+actual capture/recovery remain outstanding.
+[Discovery history evidence](operations/evidence/learn-discovery-history-test-2026-10-11.json).
+
+The earlier 03:55 UTC candidate separated retained inventory from connection
+health, showed distinct Phone providers and retained failed/revoked states,
+paired with controller v7.
 [Connection inventory evidence](operations/evidence/learn-connection-inventory-test-2026-10-11.json).
 
 The earlier 03:43 UTC candidate corrected Phone readiness and cleared stale

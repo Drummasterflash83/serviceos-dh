@@ -1,13 +1,18 @@
 # Existing TEST environment: verified release gaps
 
-## Discovery history — verified local candidate
+## Discovery history — TEST controller v8 and paired frontend installed
 
 The controller now merges checked cursor pages for Phone/Email runs and file
 imports, retaining old runs and untimed imports without reporting truncated totals.
 The missing history panel is implemented with filters, next/previous, refresh and
 explicit failures. Eighty-three targeted checks, TypeScript, the build and an
-actual 26-page / 2,503-run isolated traversal pass. Deployment and browser acceptance
-are not yet claimed by this local checkpoint.
+actual 26-page / 2,503-run isolated traversal pass. TEST controller v8 is ACTIVE
+at 04:10 UTC on 11 October; all 101 monitored datasets, schema and other endpoints
+were preserved, with 32 hosted access checks passing. Protected frontend v22 is
+READY from Git `523d1abf5583516c68b0e38673794ec78fc11ba0` at 04:11 UTC.
+Browser checks cover all 57 synthetic runs, filters, empty/failure states, recovery,
+deployment protection and same-origin sign-in redirect, with zero console errors.
+Positive signed-in hosted acceptance and live capture/recovery remain open.
 See [discovery history](LEARN-DISCOVERY-HISTORY.md).
 
 ## Connection inventory — TEST controller v7 and paired frontend installed

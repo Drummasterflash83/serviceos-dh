@@ -1,0 +1,316 @@
+{
+  "version": "learn-discovery-history-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "523d1abf5583516c68b0e38673794ec78fc11ba0",
+  "backend": {
+    "observedAt": "2026-10-11T04:10:02.884Z",
+    "sourceBundleSha256": "2ae3d36d9ab0c8e371febcf9490f6ed429363f61ca4a8bc303181d9b9cb7f9c1",
+    "dependencyFiles": 24,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 101,
+    "sourceRecordsPreserved": true,
+    "endpoint": {
+      "slug": "openfolk-control-plane",
+      "version": 8,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "1fd6bd45343864ff44be1036a671f9381fad9cbb5b69f3db5847e4bd1be6f332"
+    }
+  },
+  "http": {
+    "observedAt": "2026-10-11T04:10:19.422Z",
+    "state": "boundary_checks_passed",
+    "checks": [
+      {
+        "name": "preflight",
+        "action": "preflight",
+        "status": 200,
+        "code": null,
+        "passed": true
+      },
+      {
+        "name": "method",
+        "action": "preflight",
+        "status": 405,
+        "code": "method_not_allowed",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "resolve",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "readiness",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "missing_user",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "missing_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "invalid_user",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "anonymous_is_not_operator",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_operator",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "invalid_auth",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "wrong_machine_key",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "workspace",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "data_quality",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "resolve",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "readiness",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      },
+      {
+        "name": "service_is_not_machine",
+        "action": "connections.discovery_history",
+        "status": 401,
+        "code": "invalid_machine_key",
+        "passed": true
+      }
+    ],
+    "sourcesPreserved": true,
+    "schemaPreserved": true
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T04:11:13.852Z",
+    "id": "dpl_7UNj7Q5KjWTEdUZZ5YUXT7jiMnUr",
+    "url": "https://serviceos-learn-test-fs74fmg09-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "523d1abf5583516c68b0e38673794ec78fc11ba0"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "anonymousProtection": {
+      "observedAt": "2026-10-11T04:15:00.874Z",
+      "base": "https://serviceos-learn-test-fs74fmg09-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  },
+  "browser": {
+    "observedAt": "2026-10-11T04:16:05.023Z",
+    "syntheticMatchingRuns": 57,
+    "pageRowCounts": [
+      25,
+      25,
+      7
+    ],
+    "lastPageNextDisabled": true,
+    "previousPageReturned25Rows": true,
+    "providerAndStatusFilterRows": 5,
+    "noMatchRows": 0,
+    "populatedToFailedReadRows": 0,
+    "clearAndRefreshRestoreFirst25Rows": true,
+    "operatorRedirectsToSameOriginSignIn": true,
+    "consoleErrors": 0,
+    "signedInOperatorAcceptance": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Browser history acceptance uses synthetic in-memory runs, not positive signed-in hosted operator access.",
+    "Large-history transport acceptance uses isolated synthetic tables.",
+    "Traversal checks counts and ordering but does not freeze a transactional snapshot.",
+    "Live source capture, schedules and recovery remain separate acceptance work."
+  ]
+}
