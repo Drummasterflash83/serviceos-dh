@@ -124,3 +124,31 @@ Evidence: [isolated release](evidence/learn-test-sources-local-release-2026-10-1
 This acceptance verifies synthetic TEST source reads. It does not establish provider
 completeness, real employee scores, live Slack/voicemail capture, playable recordings,
 transcript access or production readiness. The frontend remains undeployed.
+
+## Customer timeline integration — 11 October 2026 (local only)
+
+Customer and job timeline entries can now open the existing restricted original
+email/call/recording reader directly. Previously this reader was reachable only
+through scorecard evidence. The shared `LearnStoredEvidence` component preserves
+the same field allowlist and caller-scoped RPC; it performs no provider fetch,
+source write, permission change or raw-table fallback. Unsupported source types
+explicitly say that only the displayed interaction details are available.
+
+A failed source read offers Retry. Source/tenant changes remount the panel, and
+unmounted reads cannot deliver old results. Recording details explicitly remain
+metadata, not playback. Scorecard evidence reuses the same component.
+
+The real components were exercised in the isolated local browser fixture: open
+a customer, inspect its finding and timeline, receive simulated source denials,
+then retry to read the retained email and call metadata. The unsupported Slack
+original-source state remained visible while its interaction excerpt was retained.
+No browser warning/error was returned by the console inspection. Eighteen focused
+reader tests, application/preview TypeScript checks, both builds and 47 application
+prebuild checks passed. Existing bundling warnings remain.
+
+[Structured evidence](evidence/learn-card-source-timeline-local-2026-10-11.json)
+and [synthetic browser screenshot](evidence/learn-card-source-timeline-local-2026-10-11.jpg).
+This is not new hosted or real-provider acceptance. Hosted signed-in Drummonds
+verification, full source/audio access and timeline traversal beyond the bounded
+window remain outstanding. The browser also exposed unresolved team UUID labels
+in customer finding ownership; human-readable team attribution remains to finish.

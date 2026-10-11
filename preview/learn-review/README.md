@@ -132,3 +132,9 @@ following a recorded save, or `assessments=pending` to inspect status and cancel
 uncompleted request. Earlier retained assessments remain in history. These checks
 exercise actual UI/client code with synthetic results only, not hosted authority
 or database behavior. The separate isolated SQL verifier covers save/cancel races.
+
+11 October customer source drill-down: `?launch=1&sourceRead=retry` exercises
+first-read denial followed by successful Retry for each email/call source.
+`&sourceRead=denied` keeps reads unavailable. Open the synthetic customer and
+expand Email excerpt or Call details directly in its timeline. This uses the
+actual shared component with in-memory RPC envelopes, never a provider/database.

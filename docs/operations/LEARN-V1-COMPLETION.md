@@ -103,6 +103,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   Run `node --test scripts/email-scheduled-sync.test.mjs`. Hosted installation and
   acceptance remain required; existing queue/source rows are unchanged.
 
+- [x] Local customer/job timeline now reuses the restricted source reader already
+  used by scorecards. Browser checks verified email/call failure-to-retry recovery
+  and explicit unsupported-source messaging using synthetic data. Eighteen reader
+  tests, both TypeScript checks and builds passed; no hosted/frontend release.
+  [Evidence and limits](LEARN-CARD-SOURCES.md#customer-timeline-integration--11-october-2026-local-only).
+  Team ownership labels still expose UUIDs in customer findings and need resolution.
+
 ## Implemented but not fully verified — acceptance gates
 
 - [ ] **Google email:** reconcile every enabled mailbox against current connection

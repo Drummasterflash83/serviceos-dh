@@ -378,7 +378,13 @@ export async function communicationFixture(args:any) {
  return {data:{version:"learn-card-communications/1",tenant_id,rows},error:null};
 }
 
+const sourceReadAttempts = new Map<string, number>();
 export async function sourceFixture(args:any){
+ const scenario = new URLSearchParams(location.search).get("sourceRead");
+ const identity = `${args.p_tenant}:${args.p_table}:${args.p_id}`;
+ const attempt = (sourceReadAttempts.get(identity) ?? 0) + 1;
+ sourceReadAttempts.set(identity, attempt);
+ if(scenario === "denied" || (scenario === "retry" && attempt === 1)) return {data:null,error:{code:"42501"}};
  const names=(CARD_SOURCE_FIELDS as Record<string,readonly string[]>)[args.p_table];
  if(!names||args.p_tenant!==tenant_id||new URLSearchParams(location.search).has("viewer"))return {data:null,error:{code:"42501"}};
  const query=cardFixture(args.p_table);

@@ -37,8 +37,8 @@
 .lp-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .lp-evidence { padding: 8px 0; }
 .lp-evidence details { margin: 8px 0; font-size: .9rem; }
-.lp-evidence dd { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 8px; }
-.lp-evidence dt { color: #59695e; text-transform: capitalize; }
+.lp-evidence dd, .lc-source-evidence dd { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 8px; }
+.lp-evidence dt, .lc-source-evidence dt { color: #59695e; text-transform: capitalize; }
 .lp-panel small { overflow-wrap: anywhere; }
 .lw-panel { padding: 12px; }
 .lw-table-wrap { max-width: 100%; overflow-x: auto; margin: 12px 0; }

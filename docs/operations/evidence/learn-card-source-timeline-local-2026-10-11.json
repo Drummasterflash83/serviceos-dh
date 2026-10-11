@@ -1,0 +1,25 @@
+{
+  "version": "learn-card-source-timeline-local/1",
+  "observedAt": "2026-10-11T06:37:34.193302+00:00",
+  "environment": "isolated local synthetic browser",
+  "checks": [
+    "customer card opens findings and combined email/call/Slack interaction timeline",
+    "email original-source denial is visible and Retry renders the retained excerpt",
+    "call original-source denial is visible and Retry renders provider, direction, start, duration and outcome",
+    "unsupported Slack original-source reader is explicitly unavailable; interaction details retained",
+    "final screenshot renders email excerpt with UTC timestamps and source reference",
+    "browser console inspection returned no warnings or errors",
+    "18 focused source/card/communications tests passed",
+    "application and preview TypeScript checks passed",
+    "application build with 47 prebuild checks passed",
+    "preview build passed"
+  ],
+  "limitations": [
+    "No new hosted TEST or production changes; no real provider calls or source writes",
+    "Existing source-reader TEST acceptance is separate dated evidence",
+    "No audio playback, transcripts, full email bodies or complete history verified",
+    "Human-readable team owner resolution on customer findings is still missing",
+    "Builds retain existing bundling warnings"
+  ],
+  "screenshot": "learn-card-source-timeline-local-2026-10-11.jpg"
+}

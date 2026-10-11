@@ -13,7 +13,7 @@ import {
 import { reviewPerformanceMeasurement, type ReviewRequest } from "@/lib/learn-performance-reviews";
 import { LearnWorkCollections, type RetainedWorkReview } from "./LearnWorkCollections";
 import { LearnWorkCollectionEvidence } from "./LearnWorkCollectionEvidence";
-import { loadPerformanceEvidence } from "@/lib/learn-performance-evidence";
+import { LearnStoredEvidence } from "./LearnStoredEvidence";
 import {
   evaluateScorecard,
   type ScorecardPolicy,
@@ -552,88 +552,10 @@ function EvidenceList({ tenantId, refs }: { tenantId: string; refs: EvidenceRef[
     </div>
   );
 }
-const evidenceTitles: Record<string, string> = {
-  interactions: "Communication excerpt",
-  email_messages: "Email excerpt",
-  phone_calls: "Call details",
-  phone_recordings: "Recording details",
-  jobs: "Job details",
-  team_members: "Team member details",
-  learn_team_work_measurement_runs: "Retained team workload calculation",
-  learn_work_measurement_runs: "Calculation record",
-};
-const evidenceLabels: Record<string, string> = {
-  snippet: "Excerpt",
-  "body preview": "Excerpt",
-  summary: "Stored summary",
-  "sent at": "Sent",
-  "received at": "Received",
-  "started at": "Started",
-  "occurred at": "Occurred",
-  "source connector id": "Source",
-  direction: "Provider direction",
-  outcome: "Provider outcome",
-  "duration seconds": "Duration",
-};
-function evidenceValue(label: string, value: string) {
-  if (
-    ["sent at", "received at", "started at", "occurred at"].includes(label) &&
-    Number.isFinite(Date.parse(value))
-  )
-    return new Date(value).toLocaleString("en-GB", { timeZone: "UTC" }) + " UTC";
-  return label === "duration seconds" ? value + " seconds" : value;
-}
 function Evidence(props: { tenantId: string; reference: EvidenceRef }) {
   return props.reference.table === "learn_work_collection_runs" ? (
     <LearnWorkCollectionEvidence tenantId={props.tenantId} requestId={props.reference.id} />
   ) : (
-    <LegacyEvidence {...props} />
-  );
-}
-function LegacyEvidence({ tenantId, reference }: { tenantId: string; reference: EvidenceRef }) {
-  const [open, setOpen] = useState(false),
-    [data, setData] = useState<{ label: string; value: string }[] | null>(null),
-    [error, setError] = useState("");
-  useEffect(() => {
-    if (!open) return;
-    let active = true;
-    setData(null);
-    setError("");
-    void loadPerformanceEvidence(getSupabaseClient(), tenantId, reference).then(
-      (r) => {
-        if (active) setData(r);
-      },
-      () => {
-        if (active) setError("Source unavailable with your current access.");
-      },
-    );
-    return () => {
-      active = false;
-    };
-  }, [open, tenantId, reference.table, reference.id]);
-  return (
-    <details onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary>{evidenceTitles[reference.table] ?? "Supporting evidence"}</summary>
-      {open &&
-        (error ? (
-          <p>{error}</p>
-        ) : data?.length === 0 ? (
-          <p>This source record has no excerpt or metadata to display.</p>
-        ) : data ? (
-          <div>
-            <dl>
-              {data.map((f) => (
-                <div key={f.label}>
-                  <dt>{evidenceLabels[f.label] ?? f.label}</dt>
-                  <dd>{evidenceValue(f.label, f.value)}</dd>
-                </div>
-              ))}
-            </dl>
-            <small>Source reference: {reference.id}</small>
-          </div>
-        ) : (
-          <p>Reading source…</p>
-        ))}
-    </details>
+    <LearnStoredEvidence {...props} />
   );
 }

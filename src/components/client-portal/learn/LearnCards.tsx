@@ -3,6 +3,8 @@ import { ArrowRight, BriefcaseBusiness, Building2, RefreshCw, Users } from "luci
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LearnTeamGroupPicker } from "./LearnTeamGroupPicker";
+import { LearnStoredEvidence } from "./LearnStoredEvidence";
+import { CARD_SOURCE_FIELDS } from "../../../lib/learn-card-sources";
 import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnWorkHistory } from "./LearnWorkHistory";
 import { LearnWorkCalendarSettings } from "./LearnWorkCalendarSettings";
@@ -602,6 +604,17 @@ function CardDetail({
                     communication.
                   </p>
                 </details>
+                {e.sourceTable && e.sourceId && Object.hasOwn(CARD_SOURCE_FIELDS, e.sourceTable) ? (
+                  <LearnStoredEvidence
+                    tenantId={tenantId}
+                    reference={{ table: e.sourceTable, id: e.sourceId }}
+                  />
+                ) : (
+                  <p className="lc-missing">
+                    The original source reader is not available for this communication. Only the
+                    interaction details shown above are available here.
+                  </p>
+                )}
               </li>
             ))}
           </ol>
