@@ -66,8 +66,9 @@ platform authority and function permissions are unchanged.
 The installed TEST function and aggregate were verified against retained synthetic
 history; all 124 pre-existing datasets were preserved. Eleven client checks,
 actual isolated SQL authority/tenant/pagination checks, TypeScript and the frontend
-build passed. The frontend is built locally; deployment and signed-in acceptance
-remain pending. No actual provider requests or production changes occurred.
+build passed. The protected frontend is deployed from Git `59077dafbe1419853d971baa92aa73ec0078e549`,
+READY at 20:57 UTC. Anonymous and service-role HTTP requests correctly receive
+401/403 access denials. Positive operator HTTP and signed-in acceptance remain pending. No actual provider requests or production changes occurred.
 [Retention status evidence](evidence/learn-email-retention-health-2026-10-11.json).
 
 ### Gmail ongoing state changes — TEST 071, 11 October, 20:50 UTC
@@ -117,12 +118,12 @@ provider settings changed or audio downloaded. Portal access does not establish
 API authentication, mailbox ownership for staff access, voicemail message/audio
 API support or complete capture coverage. Those checks remain required.
 
-### Current protected TEST frontend — 11 October, 20:19 UTC
+### Current protected TEST frontend — 11 October, 20:57 UTC
 
 The stable entry is [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
-It resolves to READY deployment `dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw`, built from
-Git SHA `c03a230b48e70a06d59ddbd456f6be8e50b5d596`. The immutable preview is
-`serviceos-learn-test-1ax7l1586-allkin.vercel.app`. Both are Vercel protected; their
+It resolves to READY deployment `dpl_CrDen3D6UrzuykQgSnKZdg7ayxBg`, built from
+Git SHA `59077dafbe1419853d971baa92aa73ec0078e549`. The immutable preview is
+`serviceos-learn-test-lz3vdjsah-allkin.vercel.app`. Both are Vercel protected; their
 home, login and LEARN routes redirect to Vercel authentication. The preview-only
 backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 072/worker v17/card
 refresh v2. The frontend includes the draft advice and bounded-evidence explanation.
@@ -131,7 +132,8 @@ TEST Auth uses the stable exact `/login?reset=1` recovery target, preserving the
 previous exact recovery URLs and every other setting. This does not reactivate
 Chris's disabled TEST account or send a reset email. The prepared ongoing owner
 access request and browser acceptance remain pending. No production change occurred.
-[Frontend/configuration evidence](evidence/learn-card-frontend-test-2026-10-11.json).
+[Latest frontend evidence](evidence/learn-email-retention-health-2026-10-11.json);
+[earlier Auth configuration evidence](evidence/learn-card-frontend-test-2026-10-11.json).
 
 ### Remaining launch work — 11 October, 20:17 UTC
 

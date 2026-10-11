@@ -52,9 +52,9 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-1ax7l1586-allkin.vercel.app](https://serviceos-learn-test-1ax7l1586-allkin.vercel.app),
-built remotely from GitHub commit `c03a230b48e70a06d59ddbd456f6be8e50b5d596`
-and observed READY at **20:19 UTC on 11 October**. It includes password recovery,
+[serviceos-learn-test-lz3vdjsah-allkin.vercel.app](https://serviceos-learn-test-lz3vdjsah-allkin.vercel.app),
+built remotely from GitHub commit `59077dafbe1419853d971baa92aa73ec0078e549`
+and observed READY at **20:57 UTC on 11 October**. It includes password recovery,
 snapshot freshness, projection/identity review, queued processing messages, draft
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
@@ -91,7 +91,9 @@ repair before resuming. Production remains unchanged.
 Release 072 adds operator-only retained-email availability counts, preserving the
 health reader's existing owner and permissions. Its aggregate was verified in the
 full TEST schema against the archived synthetic history fixture; all 124 datasets
-were preserved. The corresponding frontend is built but not deployed yet.
+were preserved. The corresponding frontend is deployed to the protected TEST preview above.
+Anonymous and service-role HTTP access is denied; positive signed-in operator
+acceptance is still pending.
 [Retention status evidence](operations/evidence/learn-email-retention-health-2026-10-11.json).
 
 The exact TEST project, Git SHA, preview-only backend binding and Vercel protection
