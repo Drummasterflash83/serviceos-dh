@@ -56,6 +56,15 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
 ### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
 
+**Private intake update, 21:40 UTC:** the new service-only preparation/publication
+contract passed actual offline PostgreSQL privacy, retry, concurrency, pause,
+conflict and atomic-failure tests. The hosted TEST rehearsal needed the existing
+private-voicemail foundation, absent in TEST 072; both migrations then rehearsed
+and rolled back with all 124 existing datasets and schema preserved. No users or
+routes were seeded. The worker's upload/readback integration, route verification,
+installation, scheduling, coverage and signed-in acceptance are still unfinished.
+[Private-intake evidence](evidence/learn-voicemail-private-intake-2026-10-11.json).
+
 **Signed extraction update, 21:29 UTC:** the locally verified original message
 now supplies the parser's text and audio directly. Its signed recipient matches
 the Gmail account, and the extracted audio hash matches the earlier complete

@@ -1,5 +1,55 @@
 # Birchills voicemail: discovery before capture
 
+## Durable intake contract — local and TEST rollback verification, 21:40 UTC
+
+Migration `20261101420000_learn_voicemail_private_intake.sql` adds a private
+two-stage intake. It creates no routes or users and defaults every route to
+disabled. Route facts record a verified provider signer, existing Gmail account
+and recipient, mailbox, receipt-time interval, evidence and historical owner or
+explicit manager-only access. Those facts are immutable; only the enabled switch
+can change. A new historical route is required for changed ownership. No owner
+is inferred from the current extension assignment.
+
+`voicemail_intake_prepare` admits only service-role work under an enabled route,
+active matching Gmail account and both Email/Phone capture controls. It retains a
+canonical candidate and hashes with a stable reserved message ID. Separate email
+copies retain separate original-source receipts but share the voicemail identity.
+Changed content, hashes, owner snapshot, source-email reuse across routes or a
+different provider reference raises a conflict rather than replacing evidence.
+Prepared records and their source receipts have no client/operator SELECT grant.
+
+The server must upload the original message to `learn-voicemail-sources` and audio
+to the existing private `receptionist-voicemails` bucket, without overwrite; read
+back both objects and verify their actual digests and sizes. Only then may it call
+`voicemail_intake_publish`. SQL verifies receipt/digest agreement, private buckets,
+object paths/sizes/MIME metadata, route and capture controls, then inserts the
+voicemail and publishes the journal atomically. **SQL metadata is not a substitute
+for hashing the stored bytes.** The upload/readback coordinator is not implemented
+yet, so this contract is not a working ingestion worker. Original-message size is
+currently capped at 1 MiB; larger messages need an explicit supported path rather
+than silent skipping. The new source bucket must join recovery/backup acceptance.
+
+Offline PostgreSQL verified actual DDL, permissions, concurrent preparation and
+publication, exact and conflicting replay, distinct source copies, missing or
+changed storage metadata, wrong digests, Email/Phone pause, forced publication
+failure rollback, owner reassignment, manager revocation, tenant isolation and
+private storage even with a broad unrelated storage-read policy. Existing owner
+snapshots and explicit manager access remain the only message-read routes.
+
+The first hosted TEST rehearsal exposed a missing prerequisite: TEST 072 does
+not contain the private voicemail foundation already present in production.
+Rehearsing that existing foundation together with the new intake succeeded.
+The final revision was rolled back at 21:40 UTC; all **124** existing datasets,
+the original schema and foundation metadata were preserved. No TEST migration,
+routes, users, storage objects, provider calls or credential changes persisted.
+Hosted positive ingestion and signed-in acceptance remain unverified.
+
+Evidence: [private-intake checks](evidence/learn-voicemail-private-intake-2026-10-11.json).
+Reproduce offline with `python3 scripts/verify/learn-voicemail-intake-local.py`.
+The fixed-TEST rollback runner is `scripts/verify/learn-voicemail-intake-rehearse.mjs`;
+its explicit `--include-private-foundation` mode requires the observed absent
+foundation, and records each migration digest in a separate exclusive journal.
+
 ## Signed content extracted — 11 October 2026, 21:29 UTC
 
 The same original raw notification is now verified and MIME-parsed in one local

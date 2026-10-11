@@ -1,0 +1,45 @@
+{
+  "version": "learn-voicemail-private-intake/1",
+  "state": "local_contract_verified_hosted_ddl_rolled_back_not_installed",
+  "migrationSha256": "157e2c6b0ec864a6d4e331ab2d7a7aa25388d1e04c2c1e0df14ff27c3d9e7cae",
+  "local": {
+    "database": "offline disposable PostgreSQL 15",
+    "result": "PASS: actual private intake DDL, rollback rehearsal, disabled routes, sender/time binding, permission denials, concurrent retry, distinct email evidence, conflicting replay, incomplete uploads, capture pause, atomic publication, historical owner snapshot, manager revocation, private storage, tenant isolation and retained history",
+    "syntheticFixturesOnly": true,
+    "containersRemoved": true,
+    "forcedPublicationFailureRolledBack": true,
+    "changedPublishedAudioMetadataRefused": true
+  },
+  "hosted": {
+    "version": "learn-voicemail-intake-rehearsal/1",
+    "state": "ddl_and_permission_checks_rehearsed_and_rolled_back",
+    "observedAt": "2026-10-11T21:40:25.185Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "migrationSha256": "157e2c6b0ec864a6d4e331ab2d7a7aa25388d1e04c2c1e0df14ff27c3d9e7cae",
+    "foundationSha256": "7916bc23b1e9f50747b17407bce254cda00ae97d43ab516cb1d11bd8654dac70",
+    "preservedDatasets": 124,
+    "schemaRestored": true,
+    "foundationMetadataRestored": true,
+    "candidateObjectsAbsent": true,
+    "usersCreated": 0,
+    "routesCreated": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No hosted source/audio ingestion or signed-in journey; synthetic publication and concurrency verified separately in offline PostgreSQL.",
+      "No migration installed, no credentials or source content uploaded."
+    ]
+  },
+  "earlierAttempts": [
+    "Initial hosted rehearsal failed because public.receptionist_mailboxes is absent from TEST 072. A second diagnostic attempt captured that exact prerequisite error. Neither installed objects or persisted data.",
+    "The existing private-voicemail foundation was explicitly included; a successful rehearsal preceded the final completed-replay hardening and successful final rehearsal.",
+    "Initial local shared-trigger validation raised a row-field error; corrected and rerun before final evidence."
+  ],
+  "remaining": [
+    "Worker joining verified raw extraction, bounded audio decode, immutable upload and byte-hash readback to the intake RPCs",
+    "Explicit provider-account/recipient and historical-access route verification; none inferred or activated",
+    "TEST foundation/intake installation and real bounded acceptance within approval",
+    "Voicemail source/audio recovery coverage, scheduled capture and larger-message handling",
+    "Signed-in owner/manager playback and operational controls acceptance"
+  ]
+}
