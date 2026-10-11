@@ -1,0 +1,17 @@
+{
+  "version": "learn-receipt-guards/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceSha256": "80b346d0c402a97c188324583dcd53cc29892c62c94bfb961ab9931d299de034",
+  "mode": "rehearse",
+  "state": "rehearsed_rolled_back",
+  "observedAt": "2026-10-11T04:40:40.712Z",
+  "priorFingerprint": "f7bb32f854d113491677ad084c99bc4e",
+  "expectedFingerprint": "cbbe6690e680ebf211b49bf25275c9d5",
+  "afterFingerprint": "f7bb32f854d113491677ad084c99bc4e",
+  "preservedDataSets": 101,
+  "submissionFailure": null,
+  "receipt": {
+    "fingerprint": "cbbe6690e680ebf211b49bf25275c9d5",
+    "functions": 4
+  }
+}
