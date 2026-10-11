@@ -7,6 +7,14 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**12 October, 00:47 BST — private inbox entry deployed to protected TEST.**
+Deployment `dpl_3axjgqPF1VNeXaRWzGANk7cvMzja` is READY from
+`de4bcd98dba0c70d87069ff9b554130d79b7f7b3`; the stable TEST alias points to it.
+Both hostnames' homepage, login and LEARN routes require Vercel authentication.
+The backend and private mailbox permissions did not change. This supersedes only
+the frontend deployment status below, not its outstanding provider/playback and
+signed-in acceptance limits. [Deployment evidence](evidence/learn-voicemail-inbox-test-2026-10-12.json).
+
 **12 October, 00:46 BST — LEARN private voicemail entry and reader verified locally.**
 LEARN now opens the existing owner/manager inbox directly, without copying private
 messages into shared customer cards or scoring. The reader rejects unavailable

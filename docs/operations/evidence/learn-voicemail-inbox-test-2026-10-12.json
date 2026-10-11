@@ -1,0 +1,69 @@
+{
+  "observedAt": "2026-10-11T23:47:18.059Z",
+  "scope": "Protected TEST frontend deployment only",
+  "deployment": {
+    "observedAt": "2026-10-11T23:47:06.389Z",
+    "id": "dpl_3axjgqPF1VNeXaRWzGANk7cvMzja",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "url": "serviceos-learn-test-7o36m5005-allkin.vercel.app",
+    "gitSha": "de4bcd98dba0c70d87069ff9b554130d79b7f7b3",
+    "aliases": [
+      "serviceos-learn-test-allkin.vercel.app",
+      "serviceos-learn-test-git-codex-learn-v1-test-allkin.vercel.app"
+    ],
+    "errorCode": null
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-11T23:47:16.103Z",
+    "base": "https://serviceos-learn-test-7o36m5005-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-11T23:47:18.059Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_3axjgqPF1VNeXaRWzGANk7cvMzja",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "localEvidence": "learn-voicemail-inbox-local-2026-10-12.json",
+  "productionChanged": false,
+  "backendChanged": false,
+  "grantsCreated": 0,
+  "limitations": [
+    "No signed-in hosted inbox or successful audio playback acceptance.",
+    "Real route authority, history coverage and private customer-context integration remain unfinished."
+  ]
+}
