@@ -1,5 +1,9 @@
 # Local LEARN design review
 
+11 October operator roster: `/roster-review?volume=1` loads 2,500 active and three
+former synthetic people for paging, name/role search and existing audited-action
+UI checks. Its edits stay in memory and do not prove hosted audit persistence.
+
 11 October team chooser: add `&groupPicker=volume` or `&groupPicker=retry` to the
 launch preview for 256 synthetic groups, a member in team 253, literal punctuation
 search and an optional initial group-read failure. The chooser pages/searches

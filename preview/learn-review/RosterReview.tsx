@@ -60,7 +60,23 @@ const initial: Workspace = {
   dataQuality: [],
 };
 export function RosterReview() {
-  const [workspace, setWorkspace] = useState(initial);
+  const [workspace, setWorkspace] = useState(() => {
+    if (!new URLSearchParams(location.search).has("volume")) return initial;
+    const members = Array.from({ length: 2503 }, (_, i) => ({
+      ...initial.members[0],
+      id: id(100 + i),
+      display_name: `Synthetic member ${String(i + 1).padStart(4, "0")}`,
+      formal_role: i === 2502 ? "Specialist 100%_*" : "Service coordinator",
+      effective_to: i >= 2500 ? "2026-10-01T00:00:00Z" : null,
+    }));
+    return {
+      ...initial,
+      summary: { ...initial.summary, people: 2500 },
+      members,
+      responsibilities: [],
+      authorityGrants: [],
+    };
+  });
   const [notice, setNotice] = useState(
     "Synthetic local review. Changes exist in memory only; no real staff or permissions are changed.",
   );

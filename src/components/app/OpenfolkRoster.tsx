@@ -11,7 +11,7 @@
  * Engineers are the next roster phase: adding one is this same Add-person flow (no schema
  * change); the office team is configured first per the activation brief.
  */
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Eye, Pencil, Plus, ShieldCheck, UserMinus, UserPlus, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -422,7 +422,7 @@ function MemberCard({
     <div
       className={cn(
         "rounded-xl border bg-white p-4",
-        ended ? "border-hairline opacity-60" : "border-hairline",
+        "border-hairline",
       )}
     >
       <div className="flex flex-wrap items-start gap-2">
@@ -539,9 +539,7 @@ function MemberCard({
                 <EndButton
                   label="end responsibility"
                   busy={busy}
-                  onEnd={(reason) =>
-                    actions.responsibilityEnd!({ assignment_id: r.id, reason })
-                  }
+                  onEnd={(reason) => actions.responsibilityEnd!({ assignment_id: r.id, reason })}
                 />
               )}
             </li>
@@ -877,12 +875,35 @@ export function OpenfolkRoster({
   onOpenHub: (memberId: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<"active" | "former" | "all">("active");
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    setQuery("");
+    setCategory("active");
+    setPage(0);
+    setAdding(false);
+  }, [workspace.summary.tenant_id]);
   const members = useMemo(() => workspace.members ?? [], [workspace.members]);
   const responsibilities = workspace.responsibilities ?? [];
   const grants = workspace.authorityGrants ?? [];
   const identities = workspace.identities ?? [];
   const active = useMemo(() => members.filter((m) => m.effective_to === null), [members]);
   const endedMembers = useMemo(() => members.filter((m) => m.effective_to !== null), [members]);
+  const matching = useMemo(() => {
+    const term = query.trim().toLocaleLowerCase();
+    return (category === "active" ? active : category === "former" ? endedMembers : members).filter(
+      (m) =>
+        !term ||
+        [m.display_name, m.formal_role, m.target_role].some((value) =>
+          value?.toLocaleLowerCase().includes(term),
+        ),
+    );
+  }, [query, category, active, endedMembers, members]);
+  const pageSize = 24;
+  const lastPage = Math.max(0, Math.ceil(matching.length / pageSize) - 1);
+  const currentPage = Math.min(page, lastPage);
+  const visible = matching.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
 
   return (
     <section className="rounded-xl border border-hairline bg-white p-4 sm:p-5">
@@ -916,8 +937,61 @@ export function OpenfolkRoster({
           }}
         />
       )}
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        {active.map((m) => (
+      <div
+        className="my-4 flex flex-wrap items-end gap-3"
+        role="search"
+        aria-label="Find roster members"
+      >
+        <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-muted-foreground">
+          Find a person or role
+          <input
+            type="search"
+            maxLength={120}
+            value={query}
+            disabled={busy}
+            className="min-h-10 rounded-md border border-hairline bg-white px-3 text-display"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(0);
+            }}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Membership
+          <select
+            value={category}
+            disabled={busy}
+            className="min-h-10 rounded-md border border-hairline bg-white px-3 text-display"
+            onChange={(e) => {
+              setCategory(e.target.value as typeof category);
+              setPage(0);
+            }}
+          >
+            <option value="active">Active members ({active.length})</option>
+            <option value="former">Former members ({endedMembers.length})</option>
+            <option value="all">All members ({members.length})</option>
+          </select>
+        </label>
+        {query && (
+          <button
+            type="button"
+            disabled={busy}
+            className="min-h-10 rounded-md border border-hairline px-3 text-xs"
+            onClick={() => {
+              setQuery("");
+              setPage(0);
+            }}
+          >
+            Clear roster search
+          </button>
+        )}
+      </div>
+      <p role="status" className="text-xs text-muted-foreground">
+        {matching.length} matching member(s).{" "}
+        {category === "former" && "Former members retain their history."}
+      </p>
+      <div className="mt-3 grid gap-3 lg:grid-cols-2" aria-label="Roster members">
+        {visible.map((m) => (
           <MemberCard
             key={m.id}
             member={m}
@@ -932,36 +1006,40 @@ export function OpenfolkRoster({
             onOpenHub={onOpenHub}
           />
         ))}
-        {active.length === 0 && (
+        {matching.length === 0 && (
           <p className="text-xs italic text-muted-foreground">
-            No team members yet. Add the office team to begin.
+            {query
+              ? "No people match this name or role in the selected membership group."
+              : category === "former"
+                ? "No former members recorded."
+                : "No members in this selection."}
           </p>
         )}
       </div>
-      {endedMembers.length > 0 && (
-        <div className="mt-4">
-          <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Former members (history preserved)
-          </h4>
-          <div className="grid gap-3 lg:grid-cols-2">
-            {endedMembers.map((m) => (
-              <MemberCard
-                key={m.id}
-                member={m}
-                allMembers={members}
-                responsibilities={responsibilities.filter((r) => r.member_id === m.id)}
-                grants={grants.filter((g) => g.member_id === m.id)}
-                identities={identities.filter((i) => i.team_member_id === m.id)}
-                writeCapable={writeCapable}
-                busy={busy}
-                actions={actions}
-                onPreview={onPreview}
-                onOpenHub={onOpenHub}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <div
+        className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground"
+        aria-label="Roster pages"
+      >
+        <span className="mr-auto">
+          Page {currentPage + 1} of {lastPage + 1} · up to {pageSize} people per page
+        </span>
+        <button
+          type="button"
+          className="min-h-10 rounded-md border border-hairline px-3"
+          disabled={busy || currentPage === 0}
+          onClick={() => setPage(currentPage - 1)}
+        >
+          Previous people
+        </button>
+        <button
+          type="button"
+          className="min-h-10 rounded-md border border-hairline px-3"
+          disabled={busy || currentPage >= lastPage}
+          onClick={() => setPage(currentPage + 1)}
+        >
+          Next people
+        </button>
+      </div>
     </section>
   );
 }

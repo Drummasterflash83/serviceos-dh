@@ -841,7 +841,7 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     computeTelephonyIdentityResolution(admin, tenantId),
   ]);
   return {
-    summary,
+    summary: { ...summary, people: members.filter((m) => m.effective_to === null).length },
     members: members ?? [],
     identities: identities ?? [],
     endpoints: endpoints ?? [],

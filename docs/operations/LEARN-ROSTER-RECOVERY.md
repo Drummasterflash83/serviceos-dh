@@ -52,8 +52,11 @@ workflow rather than partially ending duties early.
 
 The roster reader checks exact counts, tenant ownership and unique IDs for members,
 open/scheduled responsibilities and grants. Unavailable, truncated or oversized
-inventories fail explicitly instead of appearing to be an empty team. Each read
-is limited to 2,000 records; larger rosters need pagination before acceptance.
+inventories fail explicitly instead of appearing to be an empty team. This
+original checkpoint limited each read to 2,000 records. The subsequent
+[roster pagination increment](LEARN-ROSTER-PAGINATION.md) replaces that single-read
+limit with checked keyset reads and bounded screen pages; see its release status
+and remaining inventory limits.
 
 ## Verification and limits
 
