@@ -86,6 +86,22 @@ The password manager is locked; an unlock request is pending so existing values
 can be located without extracting production runtime secrets. No credentials,
 sources or settings changed. [Evidence](evidence/learn-phone-retained-readiness-2026-10-11.json).
 
+### Microsoft source-to-card rehearsal — 11 October, 18:36 UTC
+
+The six Microsoft capture/projection migrations passed a rolled-back rehearsal
+against the current TEST release 066. Its real card publisher and durable queue
+settlement created one card from a synthetic Microsoft message, then refreshed
+the same card from a later version without changing its person identity. Original
+source pages, exact replay and event consumption were verified. All 121 existing
+datasets and the original schema matched after rollback; no Microsoft objects,
+fixtures, users, grants, credentials or provider requests were retained. All 58
+adapter checks pass.
+
+This proves synthetic source-to-card compatibility, not a connected Microsoft
+mailbox. Token/account setup, persistent release, worker registration, recurring
+folder discovery, expired-delta recovery and real-provider acceptance remain open.
+[Evidence](evidence/learn-microsoft-card-rehearsal-2026-10-11.json).
+
 ### Existing Workspace key located — 11 October, 15:21 UTC
 
 A scoped local-file check found `ServiceOS Workspace Connector.json` in the

@@ -340,6 +340,37 @@ registration, recurring folder discovery, expired-delta recovery, canonical emai
 card publishing, operator controls and authorised real-provider acceptance remain
 required before activation. No Microsoft mailbox is currently identified for Drummonds.
 
+## Current source-to-card compatibility — 11 October, 18:36 UTC
+
+The six existing Microsoft journal, dispatch, incremental and projection migrations
+now pass a combined rollback rehearsal against TEST release **066**, using its
+actual installed identity/card publisher and durable processing settlement.
+A synthetic Graph-format message produced one enriched card. A later message
+version refreshed that same card, retained the person relationship and preserved
+both original source pages. Both ready events were consumed. Two fenced identity
+publications, two immutable identity receipts and two successful processing-job
+settlements were confirmed; exact publication replay returned the original receipt.
+
+All **121 existing datasets** and the original schema fingerprint were preserved.
+The candidate Microsoft tables, functions, fixture mailbox and jobs disappeared
+with rollback. No Auth user, session, operator grant, credential, provider request
+or production change was created. All 58 reader/engine/job regression checks pass.
+
+This closes synthetic compatibility between Microsoft projection and the current
+card path. It does not install or activate the connector, prove a real mailbox,
+exercise token lifecycle or demonstrate unattended worker registration. The
+remaining items below still apply; `adapterImplemented` remains false.
+
+```sh
+LEARN_TEST_ALLOW_PROJECT_REF=saatxzwxvdvqevbnskxy \
+  node scripts/verify/learn-microsoft-card-rehearse.mjs --rehearse --existing-cli-login
+```
+
+The rehearsal has a one-shot private journal. Inspect its exact outcome before any
+retry; do not overwrite or reuse a submitted journal. The previous 060 rehearsal
+retains its original pins and has not been silently rebased.
+[Combined evidence](evidence/learn-microsoft-card-rehearsal-2026-10-11.json).
+
 ## Remaining work to deliver the connector
 
 1. Resolve each authorized company/account to its Microsoft tenant and mailbox;
