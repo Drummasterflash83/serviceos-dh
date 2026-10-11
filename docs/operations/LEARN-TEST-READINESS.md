@@ -1,13 +1,16 @@
 # Existing TEST environment: verified release gaps
 
-## Team-group chooser — verified local candidate
+## Team-group chooser — paired TEST frontend installed
 
 The 200-group dropdown limit is replaced by a searchable, paginated chooser with
 retry, explicit selected-team labels and retained member/team scoring scope.
 Fifteen reader tests, application/preview TypeScript and builds pass. Browser
 checks cover all 256 synthetic groups, selecting team 253, literal names, retry,
 stale responses, clearing and dismissal. TEST release 051 and all 101 monitored
-datasets remain unchanged on readback; the frontend checkpoint awaits deployment.
+datasets remain unchanged on readback. The paired frontend is READY from Git
+`5562c29deff36dac1add8ef58308e4591ec73d01` at 02:36 UTC. TEST binding, Vercel
+protection and browser same-origin sign-in redirect pass, with zero console errors.
+Signed-in hosted chooser acceptance remains pending. Production is unchanged.
 See [team chooser behaviour and limits](LEARN-TEAM-GROUP-PICKER.md).
 
 ## Production preservation and recovery observation — 11 October

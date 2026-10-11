@@ -50,8 +50,12 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-qg84mga06-allkin.vercel.app](https://serviceos-learn-test-qg84mga06-allkin.vercel.app),
-built remotely from GitHub commit `7be0489598933719604b4ee6cb79322b5066d3d5`.
+[serviceos-learn-test-er2xaypr5-allkin.vercel.app](https://serviceos-learn-test-er2xaypr5-allkin.vercel.app),
+built remotely from GitHub commit `5562c29deff36dac1add8ef58308e4591ec73d01`.
+The 11 October 02:36 UTC candidate adds the searchable/paginated team-group
+chooser, retaining backend release 051. Local browser checks cover 256 groups,
+retry, selection and scoring scope; hosted signed-in acceptance remains pending.
+[Chooser deployment evidence](operations/evidence/learn-team-group-picker-test-2026-10-11.json).
 Use explicit API `target: "staging"`: the first deployment of a fresh project can
 be classified as production when target is omitted. Its default hostname and
 intermediate deployments are not the accepted TEST candidate. Preview homepage

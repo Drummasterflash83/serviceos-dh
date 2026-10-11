@@ -38,8 +38,13 @@ scoring policies or provider capture are changed.
 
 Use `&groupPicker=volume` or `&groupPicker=retry` on the existing local LEARN launch
 preview for the synthetic browser fixture. It does not verify hosted signed-in
-access. The source checkpoint awaits its paired TEST frontend deployment;
-production remains unchanged.
+access. The protected [paired TEST frontend](https://serviceos-learn-test-er2xaypr5-allkin.vercel.app) is READY from Git
+`5562c29deff36dac1add8ef58308e4591ec73d01` at 02:36 UTC. Backend binding and
+all three anonymous Vercel-protection checks pass. The actual browser redirects
+`/client?section=learn` to its own sign-in page with zero console errors. Signed-in
+hosted chooser acceptance remains pending; production is unchanged.
+[Local evidence](evidence/learn-team-group-picker-local-2026-10-11.json) and
+[TEST deployment evidence](evidence/learn-team-group-picker-test-2026-10-11.json).
 
 ## Limits
 

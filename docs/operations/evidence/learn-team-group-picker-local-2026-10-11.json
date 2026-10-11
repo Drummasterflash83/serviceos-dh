@@ -1,0 +1,46 @@
+{
+  "version": "learn-team-group-picker-local/1",
+  "observedAt": "2026-10-11T02:35:50.523375+00:00",
+  "sourceGitSha": "5562c29deff36dac1add8ef58308e4591ec73d01",
+  "readerTests": 15,
+  "applicationPrebuildTests": 47,
+  "applicationTypecheck": true,
+  "previewTypecheck": true,
+  "applicationBuild": true,
+  "previewBuild": true,
+  "browser": {
+    "synthetic": true,
+    "groupsVisited": 256,
+    "pagesVisited": 11,
+    "uniqueGroupLabels": 256,
+    "beyondFormerLimitSelection": true,
+    "memberAndTeamFilter": true,
+    "retryAfterReadFailure": true,
+    "literalNameSearch": true,
+    "staleResponseIgnored": true,
+    "clearSearch": true,
+    "clearSelection": true,
+    "emptySearchResults": true,
+    "escapePreservesSelection": true,
+    "cardTypeSwitchResetsSelection": true,
+    "selectedGroupInScoringSettings": true,
+    "consoleErrors": 0
+  },
+  "backendReadback": {
+    "observedAt": "2026-10-11T02:33:12.203Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "fingerprint": "3edc2be235c00489aa86aa396fd88878",
+    "ledger": 52,
+    "preservedDataSets": 101,
+    "continuationSchemaFingerprint": "a54a575f7348416acf6000ef8b289871"
+  },
+  "signedInHostedAcceptance": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Current-record offset pages, not a frozen directory snapshot.",
+    "OpenFolk roster inventory retains its separate 2000-record limit.",
+    "Local fixtures do not establish hosted signed-in access or historical membership coverage."
+  ]
+}
