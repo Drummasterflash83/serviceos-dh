@@ -34,6 +34,34 @@ This is a read-time binding, not a transactionally fenced lease: concurrent regi
 reconfiguration during a long run still requires a publication/claim design.
 No automatic provisioning or separate per-company credential store is added.
 
+## Full retained recording compatibility — 11 October, 18:32 UTC
+
+A fresh read-only production audit checked all **2,882 retained recording URIs**
+using the actual account resolver and recording URL guard. There is one active
+registered Drummonds account. Every URI passed its exact account/recording binding;
+none required a missing-URI fallback and none was rejected. All recording rows
+have storage pointers. Registry and recording metadata fingerprints matched
+across two reads. This closes the earlier 25-row sample limitation for the
+inventory observed here; it does not prove provider availability or playable bytes.
+
+The audit found **4,328 calls**, most recently stored on 10 October at 13:10 UTC,
+and **2,876 completed / six failed transcripts**. The latest 200 Phone sync runs
+all report success through 11 October at 18:30 UTC. The latest stored call being
+older than the latest poll does not establish missing calls: expected provider
+traffic and complete windows still need reconciliation.
+
+Production contains both `SIMWOOD_USERNAME` and `SIMWOOD_PASSWORD` secret names;
+TEST contains neither. Only presence was inspected, not values or validity. The
+existing password manager is locked, so locating reusable credential values is
+still awaiting the owner unlock. No credentials were reset or copied, and the
+audit made no provider request, storage/audio read or production write.
+
+Reproduce with `node scripts/verify/learn-phone-retained-readiness.mjs --read-only-production`.
+The management API reads are fixed to the production tenant and return only a
+sanitized aggregate report. Raw account identifiers and recording URIs are held
+in memory and are not written to disk or printed.
+[Full retained metadata evidence](evidence/learn-phone-retained-readiness-2026-10-11.json).
+
 ## Evidence
 
 The actual resolver's joined query was accepted by the current production registry

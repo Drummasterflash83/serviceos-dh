@@ -206,3 +206,19 @@ only declares an endpoint collection. These checks do not establish an alternati
 supported message feed or prove that one does not exist. No provider request,
 credential change or mailbox mutation was made. Supported message/audio discovery
 remains required; ordinary call recordings must remain distinct from voicemail.
+
+
+## Public contract recheck — 11 October 2026
+
+The provider's [archived Sipcentric API reference](https://github.com/sipcentric/pbx-api-docs/blob/master/api/v1.md)
+still documents per-extension voicemail enablement and a linked voicemail
+resource. This reference alone does not establish a complete message-list,
+pagination, retention or audio-download contract. The
+[Nimvelo/Sipcentric Python client reference](https://github.com/Nimvelo/python-client)
+lists endpoints and recordings but does not document voicemail message retrieval.
+No new provider request was made and no guessed message endpoint was implemented.
+
+A search result titled “Read Voicemail” on `pbx.readme.io` names a different
+`dashmanager.com/ns-api` service; it is not evidence for Drummonds' Sipcentric
+account and must not be used as this adapter's contract. Existing email discovery
+remains a bounded diagnostic rather than proof of complete voicemail capture.

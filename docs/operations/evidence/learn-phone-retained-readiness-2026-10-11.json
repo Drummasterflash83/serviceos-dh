@@ -1,0 +1,74 @@
+{
+  "state": "retained_phone_metadata_audited",
+  "projectRef": "tgbnakbxwcqjeimygroz",
+  "observedAt": "2026-10-11T18:32:17.108008+00:00",
+  "completedAt": "2026-10-11T18:32:20.128131+00:00",
+  "uniqueActiveRegisteredAccount": true,
+  "registeredAccounts": 1,
+  "recordingUrlCompatibility": {
+    "recordings": 2882,
+    "withStoragePointer": 2882,
+    "acceptedStoredUri": 2882,
+    "acceptedMissingUriFallback": 0,
+    "accountUnverified": 0,
+    "rejectedUri": 0
+  },
+  "metadataStableAcrossReads": true,
+  "metadataSha256": "34131753559e1919bf94ff1e1d500f81c7dcb5f57da3372fbaaa0588063614bd",
+  "calls": {
+    "count": 4328,
+    "latestStored": "2026-10-10T13:10:03.817831+00:00",
+    "latestStarted": "2026-10-10T13:07:35+00:00"
+  },
+  "transcripts": [
+    {
+      "status": "completed",
+      "records": 2876
+    },
+    {
+      "status": "failed",
+      "records": 6
+    }
+  ],
+  "recentRuns": [
+    {
+      "runs": 67,
+      "status": "success",
+      "sync_type": "calls",
+      "latest_started": "2026-10-11T18:30:02.648169+00:00",
+      "latest_completed": "2026-10-11T18:30:02.832+00:00"
+    },
+    {
+      "runs": 67,
+      "status": "success",
+      "sync_type": "recordings",
+      "latest_started": "2026-10-11T18:30:03.210848+00:00",
+      "latest_completed": "2026-10-11T18:30:03.629+00:00"
+    },
+    {
+      "runs": 66,
+      "status": "success",
+      "sync_type": "scheduled_sync",
+      "latest_started": "2026-10-11T18:30:02.411822+00:00",
+      "latest_completed": "2026-10-11T18:30:03.724+00:00"
+    }
+  ],
+  "credentialNames": {
+    "production": {
+      "SIMWOOD_USERNAME": true,
+      "SIMWOOD_PASSWORD": true
+    },
+    "test": {
+      "SIMWOOD_USERNAME": false,
+      "SIMWOOD_PASSWORD": false
+    }
+  },
+  "providerRequests": 0,
+  "recordingsDownloaded": 0,
+  "productionWrites": 0,
+  "limitations": [
+    "Full retained recording URI/registered-account compatibility only; storage pointers are not a byte, playback or provider-availability check.",
+    "Secret names confirm configuration presence, not valid credentials or access to their values.",
+    "Latest 200 sync runs are a bounded sample, not proof of provider history or voicemail coverage."
+  ]
+}

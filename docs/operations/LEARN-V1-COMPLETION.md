@@ -71,6 +71,21 @@ New-origin browser permission and the existing TEST owner-access approval remain
 pending. Positive signed-in acceptance, real-provider coverage and unattended
 operation are still required. [Evidence](evidence/learn-processing-frontend-test-2026-10-11.json).
 
+### Production Phone metadata rechecked — 11 October, 18:32 UTC
+
+All 2,882 retained recording URIs pass the actual exact-account URL guard against
+Drummonds' sole active registered account; all have storage pointers. The two
+registry/recording metadata fingerprints match. This expands the previous 25-row
+compatibility sample to the full observed inventory, without downloading audio
+or contacting the provider. Production has 4,328 calls and 2,876 completed / six
+failed transcripts. The latest 200 Phone sync runs report success through 18:30 UTC;
+coverage and the six failures still need real-provider/processing acceptance.
+
+Both required Phone credential names are present in production and absent in TEST.
+The password manager is locked; an unlock request is pending so existing values
+can be located without extracting production runtime secrets. No credentials,
+sources or settings changed. [Evidence](evidence/learn-phone-retained-readiness-2026-10-11.json).
+
 ### Existing Workspace key located — 11 October, 15:21 UTC
 
 A scoped local-file check found `ServiceOS Workspace Connector.json` in the
