@@ -164,7 +164,8 @@ npx --no-install tsc --noEmit
 
 ## Remaining work
 
-1. Connect frozen calendar and delay snapshots to a distinct resumable working-time
+1. Connect the [private working-time calculation](LEARN-WORKING-TIME.md), now
+   verified locally with frozen calendar/delay inputs, to a distinct resumable working-time
    collection contract. Preserve the meanings of existing elapsed-residence and
    handoff observations, and withhold incomplete ownership/calendar history.
 2. Prepare a paired, pinned additive TEST release with data/access preservation,

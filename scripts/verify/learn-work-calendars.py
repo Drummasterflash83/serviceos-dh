@@ -178,6 +178,17 @@ try:
         apply(b'begin;'+delay_sql+b'rollback;', 'Delay review migration rollback rehearsal')
         apply(delay_sql, 'Delay review migration')
         apply((ROOT/'scripts/verify/learn-work-delays.assert.sql').read_bytes(), 'Delay approval, reversal, recovery, scope and preservation assertions')
+        if '--include-working-time' in sys.argv:
+            working_sql=(ROOT/'supabase/migrations/20261101120000_learn_working_time_calculation.sql').read_bytes()
+            apply(b'begin;'+working_sql+b'rollback;', 'Working-time calculation rollback rehearsal')
+            apply(working_sql, 'Private working-time calculation')
+            apply((ROOT/'scripts/verify/learn-working-time.assert.sql').read_bytes(), 'Working-time interval arithmetic, attribution, missing coverage and preservation')
+            working_data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc',
+                "select jsonb_agg(to_jsonb(r) order by name) from working_time_results r").stdout
+            working_parsed=subprocess.run(['node',str(ROOT/'scripts/verify/learn-working-time-readback.mjs')],input=working_data,capture_output=True)
+            if working_parsed.returncode:
+                print(working_parsed.stderr.decode()[-1600:]);raise RuntimeError('Working-time SQL-to-client verification failed')
+            print(working_parsed.stdout.decode().strip())
         sql="""set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';
         select jsonb_build_object('request',payload,'page',learn_work_delay_read('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001',0,null),
           'snapshot',first_snapshot,'current',learn_work_delay_snapshot('aaa40000-0000-0000-0000-000000000004','de1a0000-0000-4000-8000-000000000001',starts,ends,clock_timestamp()),

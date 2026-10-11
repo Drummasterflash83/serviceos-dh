@@ -1,5 +1,19 @@
 # Existing TEST environment: verified release gaps
 
+## Working-time calculation — local private candidate, not deployed
+
+The separate calculation now intersects captured member/team ownership in explicit
+work states with published company hours and approved per-item delays. It retains
+exact microsecond subtotals, counts overlapping delays once, and withholds final
+values for absent/partial calendars or ownership. Team changes, direct team
+assignment, daylight-saving expansion and retained actual source readers are
+verified locally. Twelve SQL outputs pass an independent TypeScript verifier;
+81 focused tests and application TypeScript pass. No public collector or scorecard
+setting uses this calculation yet. Resumable integration must freeze committed
+delay heads and calendar evidence, persist complete proof and receive hosted
+acceptance. TEST remains 049; production and source records are unchanged.
+[Calculation contract and remaining integration](LEARN-WORKING-TIME.md).
+
 ## Approved delays — local owner UI/recovery candidate, not deployed
 
 Explicit owner/admin approvals retain a completed work interval, selected captured

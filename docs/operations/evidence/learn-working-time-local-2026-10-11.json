@@ -1,0 +1,68 @@
+{
+  "version": "learn-working-time-local/1",
+  "observedAt": "2026-10-11T01:10:03.660781+00:00",
+  "scope": "Private calculation and verifier only; isolated synthetic PostgreSQL 17 schema-only clone",
+  "sourceSha256": {
+    "supabase/migrations/20261101120000_learn_working_time_calculation.sql": "bf89b1cfcc9a7b2c909212a1420b423d73ee6b1d544ce668f0f44a507044fd0f",
+    "src/lib/learn-working-time.ts": "803ff4e23a9791e01dc806bdeb263c29365a2d42a95b5af3ecbc4688cc1b6f78",
+    "src/lib/learn-working-time.test.ts": "89766ac72261582d8304bb688cba1fb56d0703562c7e8267b7f229048c10bd7b",
+    "scripts/verify/learn-working-time.assert.sql": "8ef64a69157d34fdec64bf6058cfae3449bef7d68a1693975cea1c529a9da249",
+    "scripts/verify/learn-working-time-readback.mjs": "f0892f689e1ab5765a79991c076fb1fa0d7ec1fe0fd1f3997f3ab9b0a2e30cbc",
+    "scripts/verify/learn-work-calendars.py": "b4bee0a615960201102af1d03064436ca0b802afa56bdbf937fc265b0eb9d509"
+  },
+  "deployed": false,
+  "hostedReleaseUnchanged": "049",
+  "publicCollectorConnected": false,
+  "scorecardSettingsConnected": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newAuthority": false,
+  "verification": {
+    "rollbackRehearsal": "passed",
+    "privateHelperPrivileges": "anon/authenticated/service_role denied execute",
+    "memberExample": {
+      "elapsedMinutes": 600,
+      "selectedStateMinutes": 540,
+      "calendarMinutes": 360,
+      "excludedMinutes": 120,
+      "assessedMinutes": 240
+    },
+    "teamMove": {
+      "teamAMinutes": 90,
+      "teamBMinutes": 150,
+      "combinedEqualsMember": true
+    },
+    "directTeamAssignment": "240 minutes without summing member scores",
+    "overlapExclusions": "union before subtraction; outside-hours and unselected states cannot inflate exclusions",
+    "coverage": "missing and partial calendar/ownership withhold value; explicit closed calendar returns known zero",
+    "historicalIdentity": "ambiguous member reference withholds value",
+    "preciseArithmetic": {
+      "assessedMicroseconds": "5",
+      "excludedMicroseconds": "4",
+      "minuteValue": 8.3333e-08
+    },
+    "calendarCompilerIntegration": {
+      "newYorkRepeatedHourMinutes": 120,
+      "londonSkippedHourMinutes": 0
+    },
+    "actualSourceReaders": "retained work history, member history, calendar snapshot and delay snapshot accepted; reversed delays exclude zero",
+    "sqlToClientCases": 12,
+    "corruptedResultsRejected": true,
+    "invalidInputs": "scope/observation swaps, invalid states, duplicate approvals/revisions, overlapping publications, inconsistent coverage, sub-microsecond and excessive windows refused",
+    "preservation": "existing work history, measurements, calendar versions and collection receipts unchanged; existing concurrency checks pass",
+    "focusedVerifierTests": 9,
+    "combinedFocusedTests": 81,
+    "failedTests": 0,
+    "applicationTypecheck": "passed",
+    "pythonCompile": "passed",
+    "diffCheck": "passed"
+  },
+  "numericContract": "Exact decimal integer microsecond totals; minute value rounded to 12 decimals once per item. Future aggregate must sum integer totals and round once.",
+  "remaining": [
+    "Bind explicit selected states into saved scoring rules and editor",
+    "Freeze committed work and delay heads plus full calendar/roster evidence at collection begin",
+    "Connect member/team working-time calculations to resumable collection and durable recovery",
+    "Persist and page complete evidence; verify large populations and concurrent source changes",
+    "Paired TEST release, hosted owner acceptance and broader LEARN production readiness"
+  ]
+}

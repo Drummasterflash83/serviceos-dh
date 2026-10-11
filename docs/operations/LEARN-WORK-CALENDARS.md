@@ -145,7 +145,8 @@ npx --no-install tsc --noEmit
 
 ## Required integration
 
-1. Connect calendar snapshots, selected work states and approved exclusions to the
+1. Connect the [private working-time calculation](LEARN-WORKING-TIME.md), now
+   verified locally with calendar snapshots, selected work states and approved exclusions, to the
    resumable collector using a distinct working-time contract. Preserve existing
    elapsed ownership/handoff meanings, freeze all inputs, retain full proof and
    withhold unknown history. Keep collection separate from human score review.
