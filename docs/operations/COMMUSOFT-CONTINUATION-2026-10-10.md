@@ -5,7 +5,8 @@
 The separately approved playback run `73e083fe` has now added its retained
 synthetic fixtures and private generated audio to TEST, then retired its login.
 The 12:07 preflight below predates that run. Before continuation activation,
-reconcile those exact additions against the preserved baseline and rerun
+reconcile those exact additions and the subsequent additive saved-result reader
+release 058 against the preserved baseline and catalog, then rerun
 preflight; do not overwrite the original evidence or blanket-reset hashes.
 The Commusoft continuation still requires its own pending access approval.
 [Playback acceptance and retirement](LEARN-PHONE-PLAYBACK-ACCEPTANCE.md).

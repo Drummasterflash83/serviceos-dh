@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { getSupabaseClient, supabaseConfig } from "@/lib/supabase";
+import { LearnPhoneSavedResults } from "./LearnPhoneSavedResults";
 import {
   readRetainedRecordings,
   openRetainedRecording,
@@ -180,6 +181,7 @@ function ScopedPhoneAudioViewer({ tenantId, table, sourceId, client, backend }: 
               className="max-w-full"
             />
           )}
+          <LearnPhoneSavedResults tenantId={tenantId} recordingId={r.id} client={client} />
         </div>
       ))}
       {cursor && (

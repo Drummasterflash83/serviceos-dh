@@ -76,6 +76,12 @@ try:
  sql(review)
  review_output=sql(source('scripts/verify/learn-phone-operator-attempts.assert.sql'))
  print('\n'.join(line for line in review_output.splitlines() if line.startswith('PASS:')),flush=True)
+ sql('alter table profiles add column tenant_id uuid,add column role text;')
+ saved=source('supabase/migrations/20261101240000_learn_phone_saved_results.sql')
+ sql(saved.replace('\ncommit;','\nrollback;'))
+ assert sql("select to_regprocedure('public.learn_phone_saved_results_read(uuid,uuid,integer,text)') is null")=='t'
+ sql(saved)
+ print(sql('begin;'+source('scripts/verify/learn-phone-saved-results.assert.sql')+'rollback;'),flush=True)
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
   outcomes=list(pool.map(lambda n:sql(f"set role service_role;do $$$$begin begin perform fixture_derived({n},'claim');exception when sqlstate 'PT409' then assert SQLERRM='phone_recording_processing_held';end;end$$$$;".replace('$$$$','$$')),[105,201]))
  assert sql("select count(*) from learn_phone_processing_attempts where run_id in(fixture_id(105),fixture_id(201)) and state='running'")=='1'

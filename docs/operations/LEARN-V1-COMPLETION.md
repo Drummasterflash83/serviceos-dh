@@ -227,6 +227,15 @@ succeeded after that failure; no worker was invoked and no source record changed
   Real Drummonds retained audio and provider-to-card acceptance remain open.
   [Candidate checks](evidence/learn-phone-playback-candidate-2026-10-11.json).
   [Hosted backend evidence](evidence/learn-phone-playback-test-2026-10-11.json).
+  TEST release 058 installed at 12:30 UTC adds the bounded saved transcript/analysis
+  reader under existing owner/admin access. All 113 data sets are preserved.
+  Current-source provenance, stale and unverified historical results remain distinct.
+  Long transcripts paginate with a text hash so pages cannot mix edited versions.
+  Actual local component checks cover pagination, warning labels, failure recovery
+  and discarding delayed replies on company change; offline SQL and full hosted
+  rollback assertions pass. The matching frontend and positive signed-in hosted
+  acceptance remain pending at this checkpoint. Legacy `/app` call detail/feed
+  freshness remains separate work. [Saved-result evidence](evidence/learn-phone-saved-results-test-2026-10-11.json).
   Hosted TEST now has pipeline, transcription and analysis v1, download v4,
   pending processor v2 and platform worker v7, coordinated with schema release 055.
   The local candidate now confirms pipeline completion and gives downloads,

@@ -733,3 +733,41 @@ passed, with zero observed browser errors. Signed-in
 hosted operator acceptance remains open; HTTP denials do not replace it.
 
 [Release evidence](evidence/learn-phone-operator-test-2026-10-11.json).
+
+
+## Saved transcript and analysis on cards — TEST 058, 11 October
+
+The customer-card recording panel now includes an explicit saved-result reader.
+It shows a transcript and advisory AI summary without dispatching capture or model
+processing. Transcript pages contain at most 12,000 Unicode characters and bind
+continuation to the complete retained text hash. A changed transcript forces a
+fresh read instead of joining different revisions. The client admits transcripts
+up to 1,048,576 characters; larger records report unavailable rather than pretending
+completion. Summaries are bounded at 20,000 characters and explicitly marked if shortened.
+
+Each result says whether its retained provenance matches, has changed, or is
+unverified. Historical text remains visible with its warning. A matching transcript
+requires its recorded path, SHA-256 and retained publication version to agree;
+a conflicting retained download hash marks it stale. Analysis requires the exact
+current transcript identity/hash and propagates transcript uncertainty. This is
+provenance verification, not a fresh byte-level audio integrity check or a guarantee
+of model accuracy. The panel makes that limit explicit. Existing legacy `/app`
+call detail/feed surfaces still need equivalent freshness treatment.
+
+The new `learn_phone_saved_results_read` RPC checks the actual caller's current
+owner/admin profile and exact company/recording. It returns no storage path,
+provider response or raw model payload, adds no browser table grants, and refuses
+anonymous or service-role invocation. The browser clears failed reads and ignores
+late replies after company/source changes or closing the result panel.
+
+The actual migration and SQL assertions pass locally and against the full hosted
+TEST schema in a rolled-back transaction. Release 058's pinned package rehearsal
+passed at 12:29 UTC; installation passed at 12:30 UTC with 113 preserved datasets,
+59 ledger entries and catalog `6632f3df219ea27a9ccc3f668f198f00`.
+No persistent synthetic identities, provider requests or production changes.
+Nine client/release checks, application TypeScript and build pass. Local actual
+component browser verification covers full two-page text, stale/legacy labels,
+read errors and delayed-response isolation. Positive signed-in hosted and real
+Drummonds data acceptance remain outstanding.
+
+[Release and browser evidence](evidence/learn-phone-saved-results-test-2026-10-11.json).

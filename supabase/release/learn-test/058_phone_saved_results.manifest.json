@@ -1,0 +1,14 @@
+{
+  "version": "learn-phone-saved-results-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "5db1c5d77aee1c4e092e06d97d98bed6d5a0d685d769863091428d0ce9f47e9d",
+  "priorFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101240000_learn_phone_saved_results.sql",
+      "sha256": "cba74342dbc2a853307732dfc59079e41275da93a663c39afb9eea8231e3fac4"
+    }
+  ],
+  "assertionSha256": "3aef7a0ca0b3887c71382c7aa52fa406c4aee845d51f803f7fa92c6221caba7d",
+  "preservedDataSets": 113
+}

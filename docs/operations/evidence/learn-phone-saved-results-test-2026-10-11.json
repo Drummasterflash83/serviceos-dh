@@ -1,0 +1,65 @@
+{
+  "version": "learn-phone-saved-results-test/1",
+  "rehearsal": {
+    "version": "learn-phone-saved-results/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "5db1c5d77aee1c4e092e06d97d98bed6d5a0d685d769863091428d0ce9f47e9d",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T12:29:23.679Z",
+    "priorFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "expectedFingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+    "afterFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "preservedDataSets": 113,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+      "functions": 9
+    }
+  },
+  "installation": {
+    "version": "learn-phone-saved-results/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "5db1c5d77aee1c4e092e06d97d98bed6d5a0d685d769863091428d0ce9f47e9d",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T12:30:06.796Z",
+    "priorFingerprint": "a6f5cfa886fe094cc5318ecbb75b472c",
+    "expectedFingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+    "afterFingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+    "preservedDataSets": 113,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+      "functions": 9
+    }
+  },
+  "tests": {
+    "clientAndRelease": 9,
+    "offlineSql": "passed including concurrent Phone attempts",
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "browser": {
+    "environment": "local actual component, synthetic RPC responses",
+    "transcriptPagination": "12000 then 10 characters; all 12010 loaded",
+    "staleWarning": true,
+    "legacyWarning": true,
+    "readFailureClearsOldResult": true,
+    "companySwitchDiscardsDelayedResult": true,
+    "consoleErrors": 0
+  },
+  "limits": {
+    "transcriptPageCharacters": 12000,
+    "maximumTranscriptCharacters": 1048576,
+    "summaryCharacters": 20000
+  },
+  "providerRequests": 0,
+  "productionChanges": 0,
+  "newPersistentUsers": 0,
+  "remaining": [
+    "Protected frontend deployment and signed-in hosted reader acceptance",
+    "Real Drummonds provider-to-card transcript and analysis acceptance",
+    "Existing legacy /app call detail/feed freshness remains to be upgraded"
+  ]
+}
