@@ -200,6 +200,14 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow
   processing configuration. [Phone work](LEARN-PHONE-ACCOUNT-BINDING.md).
+  Fresh TEST inventory confirms the pipeline/transcription/analysis endpoints are
+  absent, so sync worker deployment alone cannot prove the full Phone journey.
+  The local pipeline now verifies terminal storage and recovers lost acknowledgements;
+  uncertain completion stops the current recovery job's automatic retry. A durable
+  recording-level hold across later jobs is still missing. All 71 focused
+  checks and strict TypeScript pass. Child completion/concurrency, the complete
+  processing runtime release and real-provider acceptance remain open.
+  [Evidence](evidence/learn-phone-pipeline-completion-local-2026-10-11.json).
 - [ ] **Slack:** verify authorised workspace/channel scope, history plus replies,
   files/unsupported-content limits, incremental schedule, revocation/recovery and
   source-to-card visibility. Local synthetic history and deployed worker status

@@ -65,6 +65,7 @@ async function harness(
     pauseWriteMissing = false,
     pauseWriteThrow = false,
     pauseWriteTarget = "phone_sync_runs",
+    pipelineCompletionFault,
   } = {},
 ) {
   const requests = [],
@@ -72,6 +73,7 @@ async function harness(
     uploads = [];
   let handler;
   let scheduleHeartbeatCount = 0;
+  let pipelineTerminalRow = null;
   const db = {
     async rpc(name, args) {
       if (name === "learn_phone_settle_schedule") {
@@ -154,6 +156,36 @@ async function harness(
       let patch;
       let many = false;
       const result = () => {
+        if (table === "phone_sync_runs" && name === "phone-process-pipeline") {
+          if (op === "update" && ["success", "failed"].includes(patch?.status)) {
+            assert.deepEqual(filters, [
+              ["id", id(4)],
+              ["tenant_id", tenant],
+              ["provider", "pipeline"],
+              ["sync_type", "pipeline"],
+              ["status", "running"],
+            ]);
+            pipelineTerminalRow = {
+              id: id(4),
+              tenant_id: tenant,
+              provider: "pipeline",
+              sync_type: "pipeline",
+              ...patch,
+            };
+            if (pipelineCompletionFault === "conflict") pipelineTerminalRow.status = "paused";
+            if (pipelineCompletionFault === "not_saved") pipelineTerminalRow = null;
+            if (pipelineCompletionFault) throw Error("PRIVATE_COMPLETION_DETAIL");
+            return { data: pipelineTerminalRow, error: null };
+          }
+          if (op === "read")
+            return {
+              data: pipelineTerminalRow,
+              error:
+                pipelineCompletionFault === "read_error"
+                  ? { message: "PRIVATE_READ_DETAIL" }
+                  : null,
+            };
+        }
         if (table === "phone_recording_pipeline_state")
           return { data: [], count: pendingRows.length, error: null };
         if (table === "platform_jobs" && op === "insert" && recoveryJobCreate)
@@ -1100,6 +1132,70 @@ test("phone scheduler never overwrites an unknown or mismatched atomic settlemen
       !h.writes.some(
         (w) => w.v.status === "succeeded" || w.v.status === "failed" || w.v.status === "cancelled",
       ),
+    );
+  }
+});
+
+const completedPipelineChildren = {
+  "simwood-download-recording": { body: { success: true } },
+  "phone-transcribe-recording": { body: { success: true, transcript_id: id(11) } },
+  "phone-analyse-transcript": { body: { success: true, insight_id: id(12) } },
+};
+test("pipeline success requires confirmed terminal storage, recovering a lost acknowledgement without replay", async () => {
+  for (const fault of [undefined, "lost_reply", "not_saved", "read_error", "conflict"]) {
+    const h = await harness("phone-process-pipeline", {
+      childResponses: completedPipelineChildren,
+      pipelineCompletionFault: fault,
+    });
+    const response = await h.run({ recording_id: id(5) });
+    const body = await response.json();
+    const confirmed = !fault || fault === "lost_reply";
+    assert.equal(response.status, confirmed ? 200 : 503);
+    assert.equal(body.success, confirmed);
+    assert.equal(
+      h.requests.length,
+      3,
+      "never replay paid/provider children on settlement uncertainty",
+    );
+    const terminalWrites = h.writes.filter(
+      (w) => w.table === "phone_sync_runs" && w.op === "update",
+    );
+    assert.equal(terminalWrites.length, 1, "never blindly retry terminal mutation");
+    assert.equal(
+      h.writes.filter((w) => w.table === "audit_logs" && w.v.status === "success").length,
+      confirmed ? 1 : 0,
+    );
+    if (!confirmed) {
+      assert.equal(body.error.code, "phone_pipeline_completion_unconfirmed");
+      assert.equal(body.completion_confirmed, false);
+      assert.equal(body.analysed, true);
+      assert.ok(!JSON.stringify(body).includes("PRIVATE"));
+    }
+  }
+});
+test("pipeline failure distinguishes a confirmed failure from an uncertain saved result", async () => {
+  for (const fault of [undefined, "lost_reply", "not_saved"]) {
+    const h = await harness("phone-process-pipeline", {
+      childResponses: {
+        "simwood-download-recording": {
+          status: 502,
+          body: { success: false, error: { code: "download_failed", message: "Download failed." } },
+        },
+      },
+      pipelineCompletionFault: fault,
+    });
+    const response = await h.run({ recording_id: id(5) });
+    const body = await response.json();
+    assert.equal(response.status, fault === "not_saved" ? 503 : 502);
+    assert.equal(
+      body.error.code,
+      fault === "not_saved" ? "phone_pipeline_completion_unconfirmed" : "download_failed",
+    );
+    assert.equal(body.failed_step, "download");
+    assert.equal(h.requests.length, 1);
+    assert.equal(
+      h.writes.filter((w) => w.table === "audit_logs").length,
+      fault === "not_saved" ? 0 : 1,
     );
   }
 });

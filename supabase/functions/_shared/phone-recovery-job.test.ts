@@ -254,3 +254,25 @@ test("paused downloads remain waiting; retained audio can proceed to transcripti
   assert.equal((await stored.invoke()).success, true);
   assert.equal(stored.requests.length, 1);
 });
+
+test("unconfirmed pipeline settlement requires review instead of automatically retrying processing", async () => {
+  const f = fixture({
+    http: 503,
+    child: {
+      success: false,
+      recording_id: recording,
+      downloaded: true,
+      transcribed: true,
+      analysed: true,
+      completion_confirmed: false,
+      error: { code: "phone_pipeline_completion_unconfirmed", message: "Review the saved run." },
+    },
+  });
+  const r = await f.invoke();
+  assert.equal(r.success, false);
+  assert.equal(r.error?.retryable, false);
+  assert.equal(r.error?.code, "phone_pipeline_completion_unconfirmed");
+  assert.equal(f.requests.length, 1);
+  await settlePhoneJob(f.db, owner, r, 5);
+  assert.equal(f.row.status, "dead_letter");
+});

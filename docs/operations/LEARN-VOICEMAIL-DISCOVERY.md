@@ -190,3 +190,19 @@ is not a backup, restore proof, full-row content audit or playable-audio check.
 Evidence: [subject audit](evidence/learn-voicemail-email-audit-2026-10-10-recheck.json)
 and [preservation comparison](evidence/learn-preservation-voicemail-email-2026-10-10-recheck.json).
 The supported provider message/audio feed remains the required next step.
+
+## Official documentation and SDK recheck — 11 October
+
+The current [Simwood API overview](https://simwood.com/api/) explicitly keeps
+Hosted PBX on the separate Direct API. The newer gateway's Bearer-token contract
+therefore does not replace this connector's documented Basic-auth contract.
+The [Direct v1 reference](https://developer.simwood.com/docs/direct/api/v1/)
+still documents mailbox email notifications and endpoint voicemail links without
+a message-list/audio schema. The [official Node client page](https://developer.simwood.com/docs/direct/clients/node/)
+links to Sipcentric's SDK. At commit `99217b20dd2ca58bffc3bf7165538106cf0cc9d0`,
+its complete file index has no voicemail-specific resource, and
+[`endpointList.js`](https://github.com/sipcentric/node-pbx-client/blob/99217b20dd2ca58bffc3bf7165538106cf0cc9d0/lib/api/endpointList.js)
+only declares an endpoint collection. These checks do not establish an alternative
+supported message feed or prove that one does not exist. No provider request,
+credential change or mailbox mutation was made. Supported message/audio discovery
+remains required; ordinary call recordings must remain distinct from voicemail.

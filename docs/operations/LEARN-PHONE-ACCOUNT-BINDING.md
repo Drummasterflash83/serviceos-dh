@@ -470,3 +470,37 @@ is unchanged. It does not establish complete Phone/voicemail coverage.
 
 Package SHA-256: `2f4ab8b1809f9227ca5978c1a136117d640bcae788444a994f0289bb86e9e5f3`.
 Catalog after installation: `9ee01e0acbf88bba5667ca80c429ea19` (45 ledger entries).
+
+## Pipeline completion acknowledgement — local verification, 11 October
+
+The pipeline previously returned success even if its terminal `phone_sync_runs`
+write failed or returned an error. It now conditions that write on the exact
+company, run, provider, pipeline type and running status. Success requires the
+returned row to match the status, timestamp, counts, error and complete metadata.
+A lost acknowledgement triggers one exact readback; it never repeats the mutation
+or any processing child. An unmatched or unavailable result returns a safe 503
+`phone_pipeline_completion_unconfirmed`, preserves completed-stage information and
+does not publish a misleading success audit. Recovery jobs treat that code as
+requiring review, rather than automatically retrying paid/provider processing within that job.
+This does not create a durable recording-level hold: a separate scheduled/manual
+job can still select an incomplete recording after the existing running timeout.
+Per-recording ownership and review/reconciliation remain release requirements.
+
+**71 focused local checks pass:** 58 actual-handler checks and 13 completion/recovery
+checks. Cases include unchanged successful processing, both success/failure writes,
+lost replies, missing/foreign/conflicting terminal rows, PostgreSQL JSON key order
+and timestamp formatting, and no automatic retry after uncertain completion.
+Strict TypeScript passes for the affected handler, helper, recovery worker and tests.
+These are synthetic database/provider checks, not hosted or live-call acceptance.
+
+A fresh read-only TEST endpoint inventory confirms an additional release gap:
+`phone-process-pipeline`, `phone-transcribe-recording` and
+`phone-analyse-transcript` are absent. Existing TEST endpoints include download v3,
+sync calls/recordings v6, scheduler v1, pending processor v1 and platform worker v6.
+Database catalogs still match diagnostic release 054. The processing handlers
+must be reviewed, tested and released together with their complete dependency
+closures and the matching recovery handlers before claiming the full journey.
+In particular, child transcription/analysis terminal-write handling and per-recording
+concurrency still need review; this change does not assert their durability.
+No TEST/production runtime, data, credentials, schedules or permissions changed.
+[Local and TEST inventory evidence](evidence/learn-phone-pipeline-completion-local-2026-10-11.json).

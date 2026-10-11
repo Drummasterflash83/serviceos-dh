@@ -24,6 +24,7 @@ import {
   ensureTranscriptAnalysed,
 } from "../_shared/phone_pipeline.ts";
 import { finalizeInteractionForRecording } from "../_shared/phone_enrich.ts";
+import { confirmPhonePipelineCompletion } from "../_shared/phone-pipeline-completion.ts";
 import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 
 const PROVIDER = "pipeline";
@@ -51,10 +52,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const force = body.force === true;
 
   // --- DB client -----------------------------------------------------------
-  const supabase = createSupabaseAdmin();
-  if (!supabase) {
+  const configuredAdmin = createSupabaseAdmin();
+  if (!configuredAdmin) {
     return failResponse("config_error", "Supabase admin client is not configured", 500);
   }
+  const supabase = configuredAdmin;
 
   // --- authz: bind tenant server-side (force ⇒ owner/admin only) -----------
   const auth = await requireTenantUser(
@@ -134,23 +136,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
     recordsProcessed: number,
     metaExtra: Record<string, unknown>,
     errorMessage: string | null,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const metadata = { ...baseMetadata, ...metaExtra };
-    try {
-      await supabase
-        .from("phone_sync_runs")
-        .update({
-          status,
-          completed_at: new Date().toISOString(),
-          records_processed: recordsProcessed,
-          error_message: errorMessage,
-          metadata,
-        })
-        .eq("id", syncRunId);
-    } catch (_e) {
-      // ignore
-    }
+    const confirmed = await confirmPhonePipelineCompletion(supabase, {
+      tenantId,
+      runId: syncRunId,
+      status,
+      recordsProcessed,
+      metadata,
+      errorMessage,
+    });
+    if (!confirmed) return false;
     await writeAudit(status, { ...metadata, ...(errorMessage ? { message: errorMessage } : {}) });
+    return true;
+  }
+
+  function completionUnconfirmed(
+    stages: Record<string, boolean>,
+    failedStep: string | null,
+  ): Response {
+    return failResponse(
+      "phone_pipeline_completion_unconfirmed",
+      "Processing stopped, but its saved run status could not be confirmed. Review this run before retrying.",
+      503,
+      {
+        sync_run_id: syncRunId,
+        recording_id: recordingId,
+        ...stages,
+        failed_step: failedStep,
+        completion_confirmed: false,
+      },
+    );
   }
 
   // Structured per-step trace so a failed run is self-diagnosing WITHOUT logging
@@ -199,12 +215,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       errorCode: code,
       errorMessageSafe: message,
     });
-    await finish(
+    const confirmed = await finish(
       "failed",
       0,
       { ...stages, ...metaExtra, error_code: code, failed_step: failedStep, trace },
       message,
     );
+    if (!confirmed) return completionUnconfirmed(stages, failedStep);
     return failResponse(code, message, httpStatus, {
       sync_run_id: syncRunId,
       recording_id: recordingId,
@@ -361,7 +378,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   });
 
   // --- Step 6: combined result --------------------------------------------
-  await finish(
+  const completionConfirmed = await finish(
     "success",
     1,
     {
@@ -378,6 +395,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     },
     null,
   );
+  if (!completionConfirmed)
+    return completionUnconfirmed({ downloaded: true, transcribed: true, analysed: true }, null);
 
   return jsonResponse({
     success: true,

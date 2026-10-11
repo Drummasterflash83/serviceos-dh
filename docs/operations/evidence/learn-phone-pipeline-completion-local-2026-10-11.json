@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-11",
+  "state": "local_verified_hosted_processing_incomplete",
+  "change": "Confirm pipeline terminal writes and stop automatic processing retry after uncertain completion",
+  "local": {
+    "actualHandlerChecks": 58,
+    "completionAndRecoveryChecks": 13,
+    "strictTypeScript": "passed",
+    "realProviderRequests": 0,
+    "liveCredentialUse": false,
+    "scenarios": [
+      "successful and failed terminal results",
+      "one readback after lost acknowledgement without mutation or child replay",
+      "missing or conflicting persistence returns 503 without success audit",
+      "exact company/run/provider/type/status/count/metadata/time matching",
+      "PostgreSQL JSON ordering and timestamp formatting",
+      "uncertain child completion is non-retryable and retained for review"
+    ]
+  },
+  "hostedTestObservation": {
+    "readOnly": true,
+    "project": "saatxzwxvdvqevbnskxy",
+    "diagnosticSchema": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+    "runtimeSchema": "fd212799ca3f6cb9624157bd9c24a90e",
+    "absentEndpoints": [
+      "phone-process-pipeline",
+      "phone-transcribe-recording",
+      "phone-analyse-transcript"
+    ],
+    "existingEndpointVersions": {
+      "simwood-download-recording": 3,
+      "simwood-sync-calls": 6,
+      "simwood-sync-recordings": 6,
+      "phone-scheduled-sync": 1,
+      "phone-process-pending": 1,
+      "platform-worker": 6
+    }
+  },
+  "limitations": [
+    "Synthetic database/provider ports; no hosted processing or live-call acceptance",
+    "Child processing completion and per-recording concurrency still require review",
+    "Missing processing endpoints require coordinated TEST release with matching recovery handlers",
+    "Non-retryable applies to the current recovery job; a later scheduled/manual job is not fenced by a durable per-recording hold"
+  ],
+  "hostedWrites": 0,
+  "productionChanges": false
+}
