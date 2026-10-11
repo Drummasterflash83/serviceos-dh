@@ -1,8 +1,6 @@
 import { LearnAssessmentHistory } from "./LearnAssessmentHistory";
-import {
-  correctPerformanceMeasurement,
-  type CorrectionRequest,
-} from "@/lib/learn-performance-corrections";
+import type { CorrectionRequest } from "@/lib/learn-performance-corrections";
+import { useCorrectionRecovery } from "./useCorrectionRecovery";
 import { assessmentPeriod, assessmentTimeField } from "@/lib/learn-assessment-period";
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -44,7 +42,10 @@ export function LearnPerformanceCard(props: Props) {
       <summary>Performance evidence & score preview</summary>
       {open &&
         (props.canReview ? (
-          <Assessment {...props} />
+          <Assessment
+            key={`${props.actorId}:${props.tenantId}:${props.kind}:${props.id}`}
+            {...props}
+          />
         ) : (
           <p>Performance evidence is currently available to your company’s owner and admins.</p>
         ))}
@@ -112,7 +113,12 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
     };
   }, [tenantId, kind, id, groupId, query, ruleMode, retainedReview]);
   const current = retainedReview || (from === query.from && until === query.until) ? loaded : null;
-  const refresh = () => setQuery({ from, until, revision: query.revision + 1 });
+  const refresh = () => setQuery((q) => ({ from, until, revision: q.revision + 1 }));
+  const correctionRecovery = useCorrectionRecovery(
+    { tenantId, actorId, subject: { kind, id } },
+    canReview,
+    refresh,
+  );
   return (
     <div className="lp-content">
       <p>
@@ -193,6 +199,7 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
         </form>
       )}
       {message && <p role="status">{message}</p>}
+      {correctionRecovery.panel}
       <LearnAssessmentHistory
         key={`${actorId}:${tenantId}:${kind}:${id}`}
         tenantId={tenantId}
@@ -337,7 +344,12 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
                     </details>
                     {!replaced.has(m.id) && canReview && (
                       <div>
-                        <CorrectionForm tenantId={tenantId} measurement={m} onRecorded={refresh} />
+                        <CorrectionForm
+                          tenantId={tenantId}
+                          measurement={m}
+                          blocked={correctionRecovery.blocked}
+                          submitRequest={correctionRecovery.submit}
+                        />
                         <ReviewForm
                           key={`${m.id}:${m.reviews.length}:${query.revision}`}
                           tenantId={tenantId}
@@ -359,45 +371,32 @@ function Assessment({ tenantId, actorId, kind, id, groupId, canReview }: Props) 
 function CorrectionForm({
   tenantId,
   measurement,
-  onRecorded,
+  blocked,
+  submitRequest,
 }: {
   tenantId: string;
   measurement: ReviewedPerformanceMeasurement;
-  onRecorded: () => void;
+  blocked: boolean;
+  submitRequest: (request: CorrectionRequest) => Promise<void>;
 }) {
   const [value, setValue] = useState(measurement.value === null ? "" : String(measurement.value));
   const [withheld, setWithheld] = useState(false);
   const [reason, setReason] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [frozen, setFrozen] = useState(false);
-  const [message, setMessage] = useState("");
-  const pending = useRef<CorrectionRequest | null>(null);
   const corrected = withheld ? null : value.trim() ? Number(value) : NaN;
   const valid =
     (corrected === null || Number.isFinite(corrected)) &&
     corrected !== measurement.value &&
     !!reason.trim();
   async function submit() {
-    if (busy || (!pending.current && !valid)) return;
-    pending.current ??= {
+    if (blocked || !valid) return;
+    await submitRequest({
       tenantId,
       measurementId: measurement.id,
       requestId: crypto.randomUUID(),
       expectedReviewRevision: measurement.reviews.at(-1)?.revision ?? 0,
       value: corrected,
       reason,
-    };
-    setFrozen(true);
-    setBusy(true);
-    setMessage("");
-    try {
-      await correctPerformanceMeasurement(getSupabaseClient(), pending.current);
-      onRecorded();
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Correction could not be confirmed.");
-    } finally {
-      setBusy(false);
-    }
+    });
   }
   return (
     <details className="lp-review">
@@ -412,7 +411,7 @@ function CorrectionForm({
           type="number"
           step="any"
           value={value}
-          disabled={frozen || withheld}
+          disabled={blocked || withheld}
           onChange={(e) => setValue(e.target.value)}
         />
       </label>
@@ -420,7 +419,7 @@ function CorrectionForm({
         <input
           type="checkbox"
           checked={withheld}
-          disabled={frozen}
+          disabled={blocked}
           onChange={(e) => setWithheld(e.target.checked)}
         />
         Withhold this value (not assessed)
@@ -430,18 +429,13 @@ function CorrectionForm({
         <textarea
           maxLength={1000}
           value={reason}
-          disabled={frozen}
+          disabled={blocked}
           onChange={(e) => setReason(e.target.value)}
         />
       </label>
-      <button
-        className="cp-secondary"
-        disabled={busy || (!frozen && !valid)}
-        onClick={() => void submit()}
-      >
-        {busy ? "Recording correction…" : frozen ? "Retry same correction" : "Record correction"}
+      <button className="cp-secondary" disabled={blocked || !valid} onClick={() => void submit()}>
+        Record correction
       </button>
-      {message && <p role="status">{message}</p>}
     </details>
   );
 }

@@ -196,11 +196,11 @@ scope and source facts against each predecessor, then applies the separate revie
 ledger. The scorer uses the original source time for freshness. Missing, malformed
 or inconsistent correction history withholds the assessment.
 
-The form freezes a submitted request for same-page retry after an uncertain reply.
-Pending correction requests are not durably saved in browser storage. After a full
-reload, reread the server history; the database's single-successor rule prevents a
-second correction of an already-replaced observation. Cross-device receipt recovery
-is not provided by this form.
+The original form froze a submitted request for same-page retry only. The later
+[local correction recovery candidate](LEARN-CORRECTION-RECOVERY.md) retains the exact
+request across reload and adds server-backed check/retry/cancellation. That paired
+frontend/database candidate is not yet deployed. Cross-device receipt recovery
+remains unavailable.
 
 Verification on 10 October:
 

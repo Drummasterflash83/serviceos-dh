@@ -162,19 +162,7 @@ export async function correctPerformanceMeasurement(
   },
   request: CorrectionRequest,
 ) {
-  if (
-    !uuid(request.tenantId) ||
-    !uuid(request.measurementId) ||
-    !uuid(request.requestId) ||
-    !Number.isSafeInteger(request.expectedReviewRevision) ||
-    request.expectedReviewRevision < 0 ||
-    request.expectedReviewRevision >= 2147483647 ||
-    !numberOrNull(request.value) ||
-    typeof request.reason !== "string" ||
-    !request.reason.trim() ||
-    request.reason.trim().length > 1000
-  )
-    throw Error("A valid corrected value or withheld value and reason are required");
+  validateCorrectionRequest(request);
   const { data, error } = await db.rpc("learn_performance_correct", {
     p_tenant: request.tenantId,
     p_measurement: request.measurementId,
@@ -199,4 +187,20 @@ export async function correctPerformanceMeasurement(
   )
     throw Error("Correction receipt could not be verified. Retry the same request.");
   return data as { measurementId: string; predecessorId: string; reused: boolean };
+}
+
+export function validateCorrectionRequest(request: CorrectionRequest) {
+  if (
+    !uuid(request.tenantId) ||
+    !uuid(request.measurementId) ||
+    !uuid(request.requestId) ||
+    !Number.isSafeInteger(request.expectedReviewRevision) ||
+    request.expectedReviewRevision < 0 ||
+    request.expectedReviewRevision >= 2147483647 ||
+    !numberOrNull(request.value) ||
+    typeof request.reason !== "string" ||
+    !request.reason.trim() ||
+    request.reason.trim().length > 1000
+  )
+    throw Error("A valid corrected value or withheld value and reason are required");
 }

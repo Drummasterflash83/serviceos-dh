@@ -67,7 +67,9 @@ export function publishedPeriodFixture(args:any){
  const row=rows.at(-1);if(!row)return {data:null,error:null};
  return {data:{...row.policy,publication:{id:row.id,effectiveFrom:row.effective_from,effectiveUntil:null}},error:null};
 }
-const performanceRows:any[]=[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)},{table:"email_messages",id:id(18)},{table:"phone_calls",id:id(19)},{table:"phone_recordings",id:id(21)}],exclusions:[],supersedes:null,group_ids:[]}];
+const correctionRecoveryKey='serviceos:synthetic:correction-recovery:1:'+new URLSearchParams(location.search).get('correctionRecovery');
+const correctionRecoveryState=JSON.parse(sessionStorage.getItem(correctionRecoveryKey)??'{"rows":null,"corrections":[],"cancelled":{},"lostBefore":false}');
+const performanceRows:any[]=correctionRecoveryState.rows??[{id:id(31),tenant_id,subject_kind:"member",subject_id:id(6),policy_id:id(30),policy_revision:1,metric_key:"response.within_target",value:80,unit:"percent",window_start:new Date(Date.parse(performanceEnd)-7*86400000).toISOString(),window_end:performanceEnd,measured_at:performanceObserved,source:"communications",source_through:performanceEnd,sample_count:10,covered_count:10,eligible_count:10,review_state:"inferred",evidence:[{table:"interactions",id:id(8)},{table:"email_messages",id:id(18)},{table:"phone_calls",id:id(19)},{table:"phone_recordings",id:id(21)}],exclusions:[],supersedes:null,group_ids:[]}];
 const assessmentFixtureKey = 'serviceos:synthetic:assessments:2';
 const assessmentFixture = JSON.parse(sessionStorage.getItem(assessmentFixtureKey) ?? '{"rows":[],"cancelled":{}}');
 const assessmentRows:any[]=assessmentFixture.rows;
@@ -94,9 +96,21 @@ if(new URLSearchParams(location.search).has('assessmentHistory')&&!assessmentRow
 }
 let historyPageFailed=false;
 const fixtureMicros=(s:string)=>BigInt(Date.parse(s.replace(/\.\d+(?=Z|[+-])/,'')))*1000n+BigInt((s.match(/\.(\d+)/)?.[1]??'').padEnd(6,'0'));
-const performanceCorrections:any[]=[];
+const performanceCorrections:any[]=correctionRecoveryState.corrections;
+const persistCorrections=()=>{persistWorkFixture();sessionStorage.setItem(correctionRecoveryKey,JSON.stringify({...correctionRecoveryState,rows:performanceRows,corrections:performanceCorrections}));};
+const correctionIdentity=(args:any)=>JSON.stringify([args.p_tenant,args.p_measurement,args.p_request,args.p_expected_review_revision,args.p_value,args.p_reason]);
+export function resolveCorrectionFixture(args:any){
+ const prior=performanceCorrections.find(r=>r.id===args.p_request),identity=correctionIdentity(args),cancelled=correctionRecoveryState.cancelled[args.p_request];
+ if(prior&&(prior.tenant_id!==args.p_tenant||prior.predecessor_id!==args.p_measurement||prior.corrected_value!==args.p_value||prior.reason!==args.p_reason||prior.expected_review_revision!==args.p_expected_review_revision))return{data:null,error:{code:'PT409'}};
+ if(cancelled&&cancelled!==identity)return{data:null,error:{code:'PT409'}};
+ if(!prior&&args.p_cancel){correctionRecoveryState.cancelled[args.p_request]=identity;persistCorrections();}
+ return{data:{state:prior?'recorded':args.p_cancel||cancelled?'cancelled':'pending',tenantId:args.p_tenant,actorId:'22222222-2222-4222-8222-222222222222',measurementId:args.p_request,predecessorId:args.p_measurement,recordedAt:prior?.created_at},error:null};
+}
 const performanceReviews:any[]=workFixture.reviews;
 export function correctPerformanceFixture(args:any){
+ if(correctionRecoveryState.cancelled[args.p_request])return{data:null,error:{code:'PT409'}};
+ if(new URLSearchParams(location.search).get('correctionRecovery')==='before'&&!correctionRecoveryState.lostBefore){correctionRecoveryState.lostBefore=true;persistCorrections();return{data:null,error:{code:'synthetic_lost_response'}};}
+
  const rows=(new URLSearchParams(location.search).has("workingTime")||new URLSearchParams(location.search).has("teamWorkingTime")||new URLSearchParams(location.search).has("teamResidence")||new URLSearchParams(location.search).has("handoffs")||new URLSearchParams(location.search).has("residence"))?handoffRows:performanceRows;
  const prior=performanceCorrections.find(r=>r.id===args.p_request);
  if(prior)return {data:{measurementId:prior.id,predecessorId:prior.predecessor_id,reused:true},error:null};
@@ -107,7 +121,9 @@ export function correctPerformanceFixture(args:any){
  const earlier=performanceCorrections.find(r=>r.id===parent.id);
  rows.push({...parent,id:args.p_request,value:args.p_value,supersedes:parent.id,measured_at:observed,review_state:"inferred",correction_request_id:args.p_request});
  performanceCorrections.push({id:args.p_request,tenant_id,predecessor_id:parent.id,previous_value:parent.value,corrected_value:args.p_value,
- source_observed_at:earlier?.source_observed_at??parent.measured_at,expected_review_revision:revision,corrected_by:id(40),reason:args.p_reason,created_at:observed});
+ source_observed_at:earlier?.source_observed_at??parent.measured_at,expected_review_revision:revision,corrected_by:'22222222-2222-4222-8222-222222222222',reason:args.p_reason,created_at:observed});
+ persistCorrections();
+ if(new URLSearchParams(location.search).get('correctionRecovery')==='lost')return{data:null,error:{code:'synthetic_lost_response'}};
  return {data:{measurementId:args.p_request,predecessorId:parent.id,reused:false},error:null};
 }
 export function reviewPerformanceFixture(args:any){

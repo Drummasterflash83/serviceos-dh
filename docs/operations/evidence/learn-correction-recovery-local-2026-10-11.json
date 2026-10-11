@@ -1,0 +1,33 @@
+{
+  "version": "learn-correction-recovery-local/1",
+  "observedAt": "2026-10-11T04:57:40.476Z",
+  "state": "local_candidate",
+  "clientTests": 46,
+  "database": {
+    "syntheticPostgres15": true,
+    "bothCancellationCorrectionRaceOrders": true,
+    "explicitRollback": true,
+    "existingEvidencePreserved": true,
+    "privateLedgerAndActorBoundaries": true,
+    "postgres17SchemaOnlyCloneWithWorkingCollectorsAndReceiptGuards": true
+  },
+  "browser": {
+    "syntheticOnly": true,
+    "lostCommittedReplyRecoveredAfterReload": true,
+    "recoveryWithoutOriginalPeriodSelection": true,
+    "originalValue": 80,
+    "correctedValue": 90,
+    "correctedValueStillInferred": true,
+    "originalSourceTimePreserved": true,
+    "uncommittedWithholdingCancelled": true,
+    "consoleErrors": 0
+  },
+  "hostedChanges": false,
+  "providerRequests": 0,
+  "productionChanges": false,
+  "limitations": [
+    "TEST target catalog rehearsal and paired deployment outstanding.",
+    "No positive signed-in hosted acceptance or real employee scoring.",
+    "Browser-local storage recovery only; Web Locks required."
+  ]
+}

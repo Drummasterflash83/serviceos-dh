@@ -261,6 +261,8 @@ try:
         apply(b'begin;'+(ROOT/'scripts/verify/learn-working-release-hosted.assert.sql').read_bytes()+b'rollback;', 'Exact hosted working-time owner and private-helper access probe')
         if '--include-receipt-guards' in sys.argv:
             apply((ROOT/'supabase/migrations/20261031020000_learn_performance_corrections.sql').read_bytes(), 'Existing correction ledger for receipt guards')
+            if '--include-correction-recovery' in sys.argv:
+                apply((ROOT/'supabase/migrations/20261101170000_learn_correction_recovery.sql').read_bytes(), 'Correction recovery with existing RPC authority')
             apply((ROOT/'supabase/migrations/20261031040000_learn_saved_assessments.sql').read_bytes(), 'Existing saved assessment ledger for receipt guards')
             apply((ROOT/'scripts/verify/learn-measurement-receipt-guards-before.assert.sql').read_bytes(), 'Retained pre-migration mismatch fixture and preservation baseline')
             receipt_sql=(ROOT/'supabase/migrations/20261101160000_learn_measurement_receipt_guards.sql').read_bytes()
@@ -285,6 +287,8 @@ try:
             apply((ROOT/'scripts/verify/learn-working-corrections.assert.sql').read_bytes(), 'Working-time correction provenance, retries and preservation')
         if '--include-receipt-guards' in sys.argv:
             apply((ROOT/'scripts/verify/learn-measurement-receipt-guards.assert.sql').read_bytes(), 'Receipt mismatch, confirmation, assessment and preservation checks')
+        if '--include-correction-recovery' in sys.argv:
+            apply((ROOT/'scripts/verify/learn-working-correction-recovery.assert.sql').read_bytes(), 'Receipt-guarded real working-time correction recovery')
         if '--include-working-volume' in sys.argv:
             apply((ROOT/'scripts/verify/learn-working-collection-volume.assert.sql').read_bytes(), 'Company-volume working-time capture and frozen begin')
             runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-volume.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})

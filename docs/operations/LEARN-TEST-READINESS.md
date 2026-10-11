@@ -1,5 +1,15 @@
 # Existing TEST environment: verified release gaps
 
+## Numerical correction recovery — local candidate
+
+Interrupted corrections now retain their exact request across reload, scoped to
+actor/company/card/backend. Check, exact retry and cancellation keep original
+observations intact. Forty-six client tests, two-session cancellation/submission
+races, rollback, the working-time schema clone and synthetic browser reload/cancel
+checks pass. No provider calls or hosted changes occurred. The new resolver and
+cancellation ledger require a paired TEST release; do not deploy its frontend alone.
+See [correction recovery](LEARN-CORRECTION-RECOVERY.md).
+
 ## Measurement receipt attribution — TEST database release 052 installed
 
 Current card reads now bind work observations to their original calculation

@@ -130,6 +130,9 @@
       ],
       "@/lib/learn-work-delay-outbox": [
         "../../src/lib/learn-work-delay-outbox.ts"
+      ],
+      "@/lib/learn-correction-outbox": [
+        "../../src/lib/learn-correction-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,
