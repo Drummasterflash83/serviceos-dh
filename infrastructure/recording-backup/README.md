@@ -16,7 +16,7 @@ progress, without weakening byte, version or source checks. A full-manifest Rest
 rehearsal recovered and decoded one real recording, retaining its record reference;
 temporary audio was removed. Daily scheduling and database restore remain open. A separate Restore-key
 receipt rehearsal recovered that file and decoded 66.96 seconds of real audio.
-Full-inventory manifest and database restore acceptance remain open.
+The initial full-inventory manifest is verified; database restore acceptance remains open.
 The $5 monthly cost alert awaits recipient email verification.
 [Cloud evidence](../../docs/operations/evidence/learn-recording-backup-foundation-aws-2026-10-11.json).
 
@@ -73,8 +73,8 @@ AWS references:
 `scripts/backup/recording-backup-core.mjs` implements the byte-copy protocol through
 injected source, S3 and durable-journal ports. The S3 destination and durable journal now have an official AWS SDK implementation
 (`recording-backup-s3.mjs`); the source port is implemented in `recording-backup-source.mjs`. Live service
-acceptance has begun with one verified real recording. Complete-inventory and
-restore acceptance remain open. All ports must enforce the approved account/tenant/project,
+acceptance verified all 2,888 observed objects and one manifest-selected restore.
+Daily execution and database restore acceptance remain open. All ports must enforce the approved account/tenant/project,
 TLS, bounded requests/timeouts and private create-only storage; they cannot be
 populated with browser-supplied URLs, tokens or arbitrary source paths.
 
@@ -448,3 +448,11 @@ links, invalid-audio handling, manifest tampering refusal and separate Restore
 credential selection. Synthetic AWS transport verifies that the restore issues
 only GET/HEAD requests after setup. This is not a real Drummonds restore.
 [Evidence](../../docs/operations/evidence/learn-recording-restore-local-2026-10-11.json).
+
+
+## Repeat runs and local monitoring
+
+The daily runner is implemented and locally tested. The first real repeat run
+started on 11 October 2026 at 11:22 UTC; its terminal result is still pending.
+No recurring task has been enabled yet. See
+[the runbook](../../docs/operations/LEARN-RECORDING-DAILY.md).

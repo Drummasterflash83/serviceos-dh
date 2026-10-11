@@ -82,6 +82,12 @@ export function recordingContext(value) {
 }
 const sourceDigest = (entry, context) =>
   digest(JSON.stringify({ sourceProjectRef: context.sourceProjectRef, ...entry }));
+/** Stable receipt lookup only; receipt presence never proves stored byte integrity. */
+export function recordingReceiptIdentity(input, binding) {
+  const entry = recordingIdentity(input), context = recordingContext(binding);
+  requireValue(entry.tenantId === context.tenantId && entry.sourceKey.startsWith(context.tenantId + '/'), 'foreign_tenant');
+  return sourceDigest(entry, context);
+}
 async function inspectDestination(context, port) {
   const state = await port.inspect();
   requireValue(

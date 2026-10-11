@@ -33,7 +33,7 @@ export function parseRunArgs(args) {
   };
 }
 export const loadWriterCredential = (execute) => loadRecordingCredential("Writer", execute);
-async function createLivePorts(signal) {
+export async function createLiveRecordingPorts(signal) {
   const writer = await loadWriterCredential();
   const token = savedCliToken();
   const readManagement = async (suffix) => {
@@ -102,7 +102,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       binding,
       signal,
       onProgress: (progress) => console.log(JSON.stringify({ state: 'recording_backup_verifying', ...progress, backupComplete: false })),
-      createPorts: () => createLivePorts(signal),
+      createPorts: () => createLiveRecordingPorts(signal),
     });
     console.log(JSON.stringify(result, null, 2));
   } catch (e) {

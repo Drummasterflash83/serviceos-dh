@@ -344,6 +344,12 @@ succeeded after that failure; no worker was invoked and no source record changed
   Restricted Writer/Restore IAM access was explicitly approved and its stack
   completed at 08:35:18 UTC. Whole-inventory verification and one manifest-selected decoded audio restore
   now pass; scheduling, monitoring and isolated database recovery remain open.
+  A repeat-run command and local health report now pass 53 backup checks. Existing
+  audio is reused; every retained version is byte-verified again before a new
+  immutable inventory manifest. The first real repeat run started at 11:22 UTC
+  and remains in progress. Recurrence is not enabled, and this local runner is
+  not yet an always-on production backup service.
+  [Daily operation runbook](LEARN-RECORDING-DAILY.md).
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
   AWS foundation and scoped access are active. The full explicitly observed
