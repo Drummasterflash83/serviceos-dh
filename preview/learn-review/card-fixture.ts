@@ -145,7 +145,7 @@ export async function saveDraftFixture(args: any) {
 }
 function records(): Record<string, any[]> {
   const time = new Date(Date.now() - 3600000).toISOString();
-  return {
+  const data:Record<string,any[]> = {
     provider_connections: new URLSearchParams(location.search).get('slack')==='empty'?[]:[row(25,{provider:'slack',status:'configured',revoked_at:null,team_id:'TFIXTURE',team_name:'Synthetic Slack workspace'})],
     operating_profile_entries: drafts.length ? drafts : new URLSearchParams(location.search).has("performance") ? [{tenant_id,scope_kind:"tenant",scope_ref:"member:all",namespace:"learn_scorecards",value:selectedPolicy()}] : [],
     learn_scorecard_publications: publicationFixtureRows(),
@@ -227,6 +227,26 @@ function records(): Record<string, any[]> {
     ],
     graph_nodes: [],
   };
+  if(new URLSearchParams(location.search).has('cardSearch')) {
+    data.customer_cards.push(...Array.from({length:61},(_,i)=>row(1000+i,{title:`Search customer ${String(i+1).padStart(3,'0')} · synthetic`})),row(1100,{title:'Literal 100%_* (A,B) "quoted" customer · synthetic'}));
+    data.jobs.push(row(1200,{title:'Search installation · synthetic',job_number:'DH-2048',verified:false}));
+  }
+  return data;
+}
+let cardSearchFailed=false;
+export async function searchCardFixture(args:any){
+ const scenario=new URLSearchParams(location.search).get('cardSearch');
+ if(scenario==='retry'&&!cardSearchFailed){cardSearchFailed=true;return {data:null,error:{code:'synthetic_read_failure'}};}
+ if(args.p_query==='slow')await new Promise(r=>setTimeout(r,1500));
+ const names:Record<string,string>={customer:'customer_cards',job:'jobs',member:'team_members',team:'org_units'};
+ const fields:Record<string,string[]>={customer:['title'],job:['title','job_number'],member:['display_name','formal_role'],team:['name']};
+ const term=args.p_query.trim();
+ const rows=(records()[names[args.p_kind]]??[]).filter(r=>r.tenant_id===args.p_tenant &&
+  (args.p_kind!=='member'||r.effective_to===null)&&(!args.p_group||(args.p_kind==='team'?r.id:r.org_unit_id)===args.p_group)&&
+  fields[args.p_kind].some(f=>String(r[f]??'').toLowerCase().includes(term.toLowerCase())))
+  .sort((a,b)=>Date.parse(b.updated_at)-Date.parse(a.updated_at)||a.id.localeCompare(b.id))
+  .slice(args.p_page*24,args.p_page*24+25);
+ return {data:{version:'learn-card-search/1',tenantId:args.p_tenant,kind:args.p_kind,query:term,page:args.p_page,groupId:args.p_group,rows:rows.slice(0,24),hasMore:rows.length>24},error:null};
 }
 export function cardFixture(table: string) {
   if (!Object.hasOwn(records(), table)) return null;

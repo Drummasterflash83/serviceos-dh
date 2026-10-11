@@ -10,6 +10,10 @@ export type Row = Record<string, any>;
 export interface LearnReadClient {
   from(table: string): any;
 }
+export interface LearnCardSearchClient {
+  rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
+}
+export const CARD_SEARCH_MAX_LENGTH = 120;
 export const CARD_PAGE_SIZE = 24;
 const DETAIL_LIMIT = 50;
 const uuid = (v: unknown): v is string =>
@@ -171,6 +175,66 @@ export async function readLearnCards(
     hasMore: result.length > CARD_PAGE_SIZE,
     page,
   };
+}
+
+/** Search the complete accessible canonical tables, never just the loaded page.
+ * SQL treats punctuation/wildcards literally and retains caller RLS permissions. */
+export async function searchLearnCards(
+  db: LearnCardSearchClient,
+  tenant: string,
+  kind: LearnCardKind,
+  query: string,
+  page = 0,
+  now = Date.now(),
+  group?: string,
+): Promise<LearnCardPage> {
+  scope(tenant, kind);
+  if (typeof query !== "string") throw Error("Invalid card search");
+  const term = query.trim();
+  if (
+    !term ||
+    term.length > CARD_SEARCH_MAX_LENGTH ||
+    /[\u0000-\u001f\u007f]/.test(term) ||
+    !Number.isSafeInteger(page) ||
+    page < 0 ||
+    page > 10000 ||
+    !Number.isFinite(now) ||
+    (group && (!["member", "team"].includes(kind) || !uuid(group)))
+  )
+    throw Error("Invalid card search");
+  const { data, error } = await db.rpc("learn_card_search", {
+    p_tenant: tenant,
+    p_kind: kind,
+    p_query: term,
+    p_page: page,
+    p_group: group || null,
+  });
+  const r = data as Record<string, any> | null;
+  if (
+    error ||
+    !r ||
+    r.version !== "learn-card-search/1" ||
+    r.tenantId !== tenant ||
+    r.kind !== kind ||
+    r.query !== term ||
+    r.page !== page ||
+    r.groupId !== (group || null) ||
+    typeof r.hasMore !== "boolean" ||
+    !Array.isArray(r.rows) ||
+    r.rows.length > CARD_PAGE_SIZE ||
+    (r.hasMore && r.rows.length !== CARD_PAGE_SIZE) ||
+    r.rows.some(
+      (x: Row) =>
+        !x ||
+        x.tenant_id !== tenant ||
+        !uuid(x.id) ||
+        (kind === "member" && (x.effective_to !== null || (group && x.org_unit_id !== group))) ||
+        (kind === "team" && group && x.id !== group),
+    ) ||
+    new Set(r.rows.map((x: Row) => x.id)).size !== r.rows.length
+  )
+    throw Error("Card search unavailable");
+  return { cards: r.rows.map((x: Row) => card(x, kind, now)), hasMore: r.hasMore, page };
 }
 
 /** References are typed: a profile UUID is not a team-member UUID. */

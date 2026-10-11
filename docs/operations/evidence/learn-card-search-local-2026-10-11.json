@@ -1,0 +1,54 @@
+{
+  "version": "learn-card-search-local/1",
+  "observedAt": "2026-10-11T02:12:34.277535+00:00",
+  "baseCheckpoint": "140e5a1212e182c633ab6dc31c170771eb5348ad",
+  "scope": "Disposable schema-only PostgreSQL 17 clone and isolated synthetic browser preview",
+  "sourceSha256": {
+    "supabase/migrations/20261101150000_learn_card_search.sql": "011790af324c8db7bf03493bbbe5ee8765f74196211747883f7707f67f65f3be",
+    "src/lib/learn-cards.ts": "af329cbbb00f0d3ab1775eb65d6613181d3d1c382f60b47429ea9ef00eeb0532",
+    "src/lib/learn-card-search.test.ts": "bd4e68df28f7dc31d7f20cf2b280bca624cb7629d56d73272d8f5aaba431f6aa",
+    "src/components/client-portal/learn/LearnCards.tsx": "3702d611521c5d6ceb668489fcae0b2a0e7421967ac60bdc6d6f5e992c0f1de9",
+    "src/styles/learn-launch.css": "dea76cf6225e397e5ba5739bc58f99a8652aa4acaa7892378a579a06e2b19427",
+    "scripts/verify/learn-card-search.py": "7e7112923d832a0f70a5389c83d16171d75c65313e573ac1563b7606250efa92",
+    "scripts/verify/learn-card-search-readback.mjs": "9b554881405aff2008d561facbc9815e7d6e6d7ff493f9d46a70d9865ea9a2eb"
+  },
+  "tests": {
+    "client": 14,
+    "allJobMatchesRead": 10000,
+    "customerPageSizes": [
+      24,
+      24,
+      13
+    ],
+    "actualSqlClientPages": 4,
+    "sourceRowsPreserved": true,
+    "tablePoliciesAndGrantsPreserved": true,
+    "rollbackVerified": true,
+    "literalPunctuationAndUnicode": true,
+    "crossTenantAndRoleChecks": true,
+    "applicationTypecheck": true,
+    "previewTypecheck": true,
+    "applicationBuild": true,
+    "previewBuild": true
+  },
+  "browser": {
+    "beyondFirstPage": true,
+    "pagination": true,
+    "literalWildcards": true,
+    "jobNumber": true,
+    "memberRoleAndGroup": true,
+    "teamName": true,
+    "cardScopeReset": true,
+    "lateReplyIgnored": true,
+    "failedReadAndRefresh": true,
+    "clearSearch": true,
+    "consoleErrors": 0,
+    "screenshot": ".verification-results/learn-card-search-2026-10-11.jpg"
+  },
+  "hostedDeployment": false,
+  "hostedReleaseUnchanged": "050",
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newHostedIdentities": 0,
+  "newOperatorGrants": 0
+}

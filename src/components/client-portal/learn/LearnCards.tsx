@@ -8,6 +8,8 @@ import { LearnWorkCalendarSettings } from "./LearnWorkCalendarSettings";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
 import {
   readLearnCards,
+  searchLearnCards,
+  CARD_SEARCH_MAX_LENGTH,
   readLearnCardDetail,
   readLearnTeamGroups,
   type LearnTeamGroup,
@@ -60,6 +62,9 @@ function CardWorkspace({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [kind, setKind] = useState<LearnCardKind>("customer");
   const [group, setGroup] = useState("");
+  const [searchDraft, setSearchDraft] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchInvalid, setSearchInvalid] = useState(false);
   const [groups, setGroups] = useState<LearnTeamGroup[] | null>(null);
   const [groupsFailed, setGroupsFailed] = useState(false);
   useEffect(() => {
@@ -86,6 +91,7 @@ function CardWorkspace({
     group: string;
     page: number;
     revision: number;
+    search: string;
     data: LearnCardPage;
   } | null>(null);
   const [failed, setFailed] = useState(false);
@@ -96,15 +102,25 @@ function CardWorkspace({
     setFailed(false);
     void (async () => {
       try {
-        const data = await readLearnCards(
-          getSupabaseClient(),
-          tenantId,
-          kind,
-          page,
-          Date.now(),
-          ["member", "team"].includes(kind) ? group : undefined,
-        );
-        if (active) setResult({ kind, group, page, revision, data });
+        const data = search
+          ? await searchLearnCards(
+              getSupabaseClient(),
+              tenantId,
+              kind,
+              search,
+              page,
+              Date.now(),
+              ["member", "team"].includes(kind) ? group : undefined,
+            )
+          : await readLearnCards(
+              getSupabaseClient(),
+              tenantId,
+              kind,
+              page,
+              Date.now(),
+              ["member", "team"].includes(kind) ? group : undefined,
+            );
+        if (active) setResult({ kind, group, page, revision, search, data });
       } catch {
         if (active) setFailed(true);
       }
@@ -112,12 +128,13 @@ function CardWorkspace({
     return () => {
       active = false;
     };
-  }, [tenantId, kind, group, page, revision]);
+  }, [tenantId, kind, group, page, revision, search]);
   const current =
     result?.kind === kind &&
     result.group === group &&
     result.page === page &&
-    result.revision === revision
+    result.revision === revision &&
+    result.search === search
       ? result.data
       : null;
   return (
@@ -148,6 +165,9 @@ function CardWorkspace({
               setSettingsOpen(false);
               setPage(0);
               setSelected(null);
+              setSearch("");
+              setSearchDraft("");
+              setSearchInvalid(false);
             }}
           >
             <Icon size={16} />
@@ -155,6 +175,72 @@ function CardWorkspace({
           </button>
         ))}
       </div>
+      <form
+        className="lc-search"
+        role="search"
+        aria-label="Search company cards"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const term = searchDraft.trim();
+          if (term.length > CARD_SEARCH_MAX_LENGTH || /[\u0000-\u001f\u007f]/.test(term)) {
+            setSearchInvalid(true);
+            return;
+          }
+          setSearchInvalid(false);
+          setSearch(term);
+          setPage(0);
+          setSelected(null);
+          setRevision((r) => r + 1);
+        }}
+      >
+        <label>
+          Search {kinds.find((k) => k.kind === kind)?.label.toLowerCase()}
+          <input
+            type="search"
+            value={searchDraft}
+            maxLength={CARD_SEARCH_MAX_LENGTH}
+            onChange={(e) => {
+              setSearchDraft(e.target.value);
+              setSearchInvalid(false);
+            }}
+            placeholder={
+              kind === "job"
+                ? "Job title or number"
+                : kind === "member"
+                  ? "Name or role"
+                  : kind === "team"
+                    ? "Team name"
+                    : "Customer name"
+            }
+          />
+        </label>
+        <button type="submit" className="cp-secondary">
+          Search cards
+        </button>
+        {(search || searchDraft) && (
+          <button
+            type="button"
+            className="cp-secondary"
+            onClick={() => {
+              setSearch("");
+              setSearchDraft("");
+              setSearchInvalid(false);
+              setPage(0);
+              setSelected(null);
+            }}
+          >
+            Clear search
+          </button>
+        )}
+        {searchInvalid && <p role="alert">Use up to 120 characters on one line.</p>}
+      </form>
+      {search && (
+        <p className="lc-search-summary" role="status">
+          Results for “{search}” across this company's stored{" "}
+          {kinds.find((k) => k.kind === kind)?.label.toLowerCase()}
+          {group ? " in the selected team group" : ""}.
+        </p>
+      )}
       {["member", "team"].includes(kind) && (
         <label className="lc-group">
           Company team group{" "}
@@ -163,6 +249,7 @@ function CardWorkspace({
             onChange={(e) => {
               setGroup(e.target.value);
               setPage(0);
+              setSelected(null);
             }}
           >
             <option value="">{kind === "team" ? "All teams" : "All team members"}</option>
@@ -184,21 +271,27 @@ function CardWorkspace({
       {!current && (
         <p className="lc-empty" role="status">
           {failed
-            ? "These cards could not be read. Your data has not been replaced with demo records. Refresh to retry."
+            ? "Cards are temporarily unavailable. Refresh cards to try again."
             : "Reading company records…"}
         </p>
       )}
       {current && current.cards.length === 0 && (
         <div className="lc-empty">
-          <h3>No {kinds.find((k) => k.kind === kind)?.label.toLowerCase()} on this page</h3>
+          <h3>
+            {search
+              ? "No matching cards on this page"
+              : `No ${kinds.find((k) => k.kind === kind)?.label.toLowerCase()} on this page`}
+          </h3>
           <p>
-            {kind === "job"
-              ? "Job cards appear when operational records are imported and linked. Communications alone do not confirm a job's status."
-              : kind === "member"
-                ? "Member cards appear as people are added to the existing company directory."
-                : kind === "team"
-                  ? "Team cards appear as groups are added to the company directory."
-                  : "Customer cards appear as the existing identity and customer-card pipeline links your communications."}
+            {search
+              ? "Try a different name or number, clear the search, or check the selected team group. Search covers stored cards; records awaiting import or linking may not have a card yet."
+              : kind === "job"
+                ? "Job cards appear when operational records are imported and linked. Communications alone do not confirm a job's status."
+                : kind === "member"
+                  ? "Member cards appear as people are added to the existing company directory."
+                  : kind === "team"
+                    ? "Team cards appear as groups are added to the company directory."
+                    : "Customer cards appear as the existing identity and customer-card pipeline links your communications."}
           </p>
         </div>
       )}
