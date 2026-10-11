@@ -228,3 +228,19 @@ async function run(name: string, a: any) {
   }
   return fail();
 }
+
+/** Stored synthetic receipt projection for the same reads used by performance cards. */
+export function workCollectionReceiptRows() {
+  return Object.values(runs).filter(r => r.progress.state === "completed").map(r => {
+    const p = r.progress, spec = WORK_COLLECTORS[p.kind as WorkCollectionKind];
+    const m = handoffRows.find(m => m.id === p.requestId);
+    return { id: p.requestId, tenant_id: p.tenantId, subject_kind: spec.subjectKind,
+      subject_id: p.subjectId, policy_id: p.policyId, policy_revision: p.policyVersion,
+      window_start: p.period.start, window_end: p.period.end, source_system: spec.source,
+      metric_key: spec.metric, unit: spec.unit, state: p.state, kind: p.kind,
+      snapshot_at: p.snapshotAt, population: p.population, processed: p.processed,
+      observed_at: m?.measured_at, proof: { contract: "work-collection@1", kind: p.kind,
+        runId: p.requestId, value: m?.value, coveredItems: p.covered, eligibleItems: p.eligible,
+        populationCount: p.population, processed: p.processed, itemCount: p.population } };
+  });
+}

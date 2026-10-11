@@ -1,0 +1,40 @@
+{
+  "version": "learn-measurement-receipts-local/1",
+  "observedAt": "2026-10-11T04:26:27.169Z",
+  "state": "local_verified_not_deployed",
+  "targetedTests": 47,
+  "newReceiptBindingTests": 9,
+  "applicationTypeScript": "passed",
+  "previewTypeScript": "passed",
+  "applicationBuild": "passed",
+  "previewBuild": "passed",
+  "transport": {
+    "engine": "isolated PostgreSQL 17 and PostgREST v14.5 with installed client",
+    "collectorShapes": 8,
+    "receiptTables": 3,
+    "readRequests": 5,
+    "jsonProjectionTypesVerified": true,
+    "microsecondMismatchRejected": true,
+    "valueMismatchRejected": true,
+    "sourceFingerprintsPreserved": true,
+    "hostedSchemaOrAuthorizationAcceptance": false
+  },
+  "browser": {
+    "environment": "rebuilt localhost synthetic preview",
+    "retainedPopulation": 250,
+    "validReceiptRead": "inferred observation, score unassessed",
+    "wrongPersonReceipt": "explicit mismatch, assessment withheld",
+    "validReceiptRecovery": true,
+    "consoleErrors": 0,
+    "olderBundleCheckExcluded": true
+  },
+  "productionChanges": false,
+  "hostedChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Current card read path only; saved snapshots and server append/save validation remain separate work.",
+    "Summary agreement does not independently verify source-item provenance or every calculation.",
+    "No real staff scores or hosted signed-in acceptance."
+  ]
+}

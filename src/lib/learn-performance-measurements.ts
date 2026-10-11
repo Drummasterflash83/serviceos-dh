@@ -1,3 +1,4 @@
+import { verifyMeasurementReceipts } from "./learn-measurement-receipts.ts";
 import {
   attachPerformanceCorrections,
   parsePerformanceCorrections,
@@ -81,6 +82,7 @@ export async function loadPerformanceMeasurements(
     measurements,
     correctionMarkers,
   );
+  await verifyMeasurementReceipts(db, policy.tenantId, corrected);
   const histories = await loadPerformanceReviews(
     db,
     policy.tenantId,

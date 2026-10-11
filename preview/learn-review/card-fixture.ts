@@ -40,9 +40,9 @@ export function collectHandoffFixture(args:any,residence=false,team=false){
  window_start:args.p_start,window_end:args.p_end,measured_at:observed,source,
  source_through:incomplete?null:args.p_end,sample_count:incomplete?1:3,covered_count:incomplete?1:3,eligible_count:3,
  review_state:"inferred",evidence:[{table:team?"learn_team_work_measurement_runs":"learn_work_measurement_runs",id:args.p_request}],exclusions:[],supersedes:null,group_ids:[]});
- handoffRuns.push({id:args.p_request,tenant_id,source_system:source,metric_key:metric,
+ handoffRuns.push({id:args.p_request,tenant_id,[team?"team_id":"member_id"]:team?args.p_team:args.p_member,request:{[team?"teamId":"memberId"]:team?args.p_team:args.p_member,policyId:args.p_policy,policyVersion:args.p_revision,start:args.p_start,end:args.p_end},source_system:source,metric_key:metric,
  observed_at:observed,explanation:incomplete?"Synthetic missing history: value withheld.":residence?"Synthetic capture: 120 item-minutes across all states; 3 of 3 retained items covered. Concurrent items add separately. No calendar or delay exclusion.":"Synthetic capture: 2 outgoing transfers; 3 of 3 retained items covered. Not speed or quality.",
- proof:{contract:team?"team-work-residence@1":residence?"work-residence@1":"work-handoffs@1",value:incomplete?null:value,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
+ proof:{contract:team?"team-work-residence@1":residence?"work-residence@1":"work-handoffs@1",value:incomplete?null:value,coveredItems:incomplete?1:3,eligibleItems:3,items:[{objectId:id(11),complete:!incomplete}],credited:[],membership:{synthetic:true}}});
  return {data:{measurementId:args.p_request,reused:false},error:null};
 }
 const publications:any[]=[];
@@ -253,9 +253,12 @@ export async function searchCardFixture(args:any){
   .slice(args.p_page*24,args.p_page*24+25);
  return {data:{version:'learn-card-search/1',tenantId:args.p_tenant,kind:args.p_kind,query:term,page:args.p_page,groupId:args.p_group,rows:rows.slice(0,24),hasMore:rows.length>24},error:null};
 }
-export function cardFixture(table: string) {
-  if (!Object.hasOwn(records(), table)) return null;
-  let data = [...records()[table]];
+export function cardFixture(table: string, supplied?: any[]) {
+  if (!supplied && !Object.hasOwn(records(), table)) return null;
+  let data = [...(supplied ?? records()[table])];
+  let selected = "";
+  if (table === "learn_work_collection_runs" && new URLSearchParams(location.search).get("receiptBinding") === "wrong-person")
+    data = data.map(r => ({ ...r, subject_id: id(999) }));
   let olderPage=false; const orders:{key:string;ascending:boolean}[]=[];
   const scenario = new URLSearchParams(location.search).get("cards");
   if (scenario === "empty") data = [];
@@ -281,7 +284,7 @@ export function cardFixture(table: string) {
   }
   let exactCount: number | undefined;
   const q: any = {
-    select: () => q,
+    select: (columns = "") => { selected = columns; return q; },
     eq: (key: string, value: unknown) => {
       data = data.filter((r) => r[key] === value);
       return q;
@@ -334,7 +337,11 @@ export function cardFixture(table: string) {
       return Promise.resolve(
         scenario === "error" || failPage || failGroup
           ? { data: null, error: { message: "Synthetic denied read" } }
-          : { data, count: exactCount ?? data.length, error: null },
+          : { data: selected && ["learn_work_measurement_runs", "learn_team_work_measurement_runs", "learn_work_collection_runs"].includes(table)
+              ? data.map(r => Object.fromEntries(selected.split(",").map(field => {
+                  const [alias, path] = field.includes(":") ? field.split(":") : [field, field];
+                  return [alias, path.split("->").reduce((v: any, k: string) => v?.[k], r) ?? null];
+                }))) : data, count: exactCount ?? data.length, error: null },
       ).then(resolve);
     },
   };
