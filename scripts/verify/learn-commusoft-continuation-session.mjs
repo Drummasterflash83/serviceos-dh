@@ -14,7 +14,7 @@ import { readOperatorInputs, resolveOperatorInput } from "../../src/lib/learn-op
 const base = `https://${TEST_PROJECT}.supabase.co`;
 const file = ".verification-results/commusoft-continuation-session.json";
 const priorFile = ".verification-results/commusoft-real-test-session.json";
-const schema = "bd1a8b1f4203a84a0b84da7db5723d71";
+const schema = "a54a575f7348416acf6000ef8b289871";
 const origin = "ef5a92ff-b2de-4dbf-ba21-1c2e0a3f7c6d";
 const tenant = "f8c114fa-fee7-4983-8970-f6e7f5fd3129";
 const connection = "59484382-d380-4362-b031-19db133e6d3a";

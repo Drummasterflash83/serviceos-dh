@@ -1,9 +1,9 @@
-# Canonical card search — local candidate
+# Canonical card search — TEST backend 051
 
 11 October 2026. Customer, job, person and team cards now have explicit search and
-clear controls. This candidate is verified locally and backed up on the TEST branch.
-**The migration and paired frontend are not deployed. Hosted TEST remains release
-050; production and provider connections are unchanged.**
+clear controls. The backend is installed in TEST after rollback rehearsal and preservation checks.
+**The paired frontend and signed-in hosted acceptance remain pending. Production
+and provider connections are unchanged.**
 
 Search covers the company's accessible canonical records, including records beyond
 the current browser page. Customer titles, job titles/numbers, member names/roles
@@ -52,8 +52,12 @@ query. Clear restores ordinary browsing. The search is not retained in local sto
 
 ## Remaining release work
 
-Prepare the exact hosted TEST release against 050, verify unchanged source/table
-access metadata and retained data, rehearse rollback, then install and deploy the
-matching protected frontend. Signed-in hosted acceptance remains separate. Search
+Release 051 passed rollback rehearsal and installation at 02:16 UTC on 11 October.
+All 101 monitored datasets and existing catalog/table permissions stayed unchanged.
+Eight HTTP denial checks cover all four kinds under anonymous and service roles.
+The exact hosted role probe also passed locally. Seven release guards cover drift,
+durable journaling, preservation failure, receipt shape, expired rehearsal and
+uncertain outcomes. The matching protected frontend and signed-in hosted owner
+acceptance remain pending. [Release evidence](evidence/learn-card-search-test-2026-10-11.json). Search
 does not complete provider imports, response/job-outcome scoring adapters, real
 company configuration, voicemail or wider LEARN V1 production acceptance.

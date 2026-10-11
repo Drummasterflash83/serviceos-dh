@@ -45,6 +45,8 @@ try:
  migration=(ROOT/'supabase/migrations/20261101150000_learn_card_search.sql').read_text()
  run(migration.replace('\ncommit;\n','\nrollback;\n'));assert run("select to_regprocedure('public.learn_card_search(uuid,text,text,integer,uuid)') is null;").stdout.strip()=='t'
  run(migration);assert run(metadata).stdout==before
+ run('begin;'+(ROOT/'scripts/verify/learn-card-search-hosted.assert.sql').read_text()+'rollback;')
+ print('Exact hosted card-search role probe: PASS',flush=True)
  assert run("select not prosecdef and provolatile='s' from pg_proc where oid='public.learn_card_search(uuid,text,text,integer,uuid)'::regprocedure;").stdout.strip()=='t'
  print('Rollback, stable invoker contract and unchanged table grants/RLS: PASS',flush=True)
  pages=[read('customer','sEaRcH customer',i) for i in range(3)]

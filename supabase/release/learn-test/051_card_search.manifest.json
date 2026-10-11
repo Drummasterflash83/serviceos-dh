@@ -1,0 +1,17 @@
+{
+  "version": "learn-card-search-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "6efd1515cc92f91af5ff67a9f3e4ba4978c1aee7deaa48b9be794f5a58079083",
+  "priorFingerprint": "e66e350d37c91a86b901e8f0ccd2b854",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101150000_learn_card_search.sql",
+      "sha256": "011790af324c8db7bf03493bbbe5ee8765f74196211747883f7707f67f65f3be"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-card-search-hosted.assert.sql",
+    "sha256": "1ea6c8500d780bb36c414c9124f892d6c8bd9fcb5f76fb7e25dd8af7282adeeb"
+  },
+  "preservedDataSets": 101
+}

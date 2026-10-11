@@ -1,0 +1,132 @@
+{
+  "version": "learn-card-search-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "051_card_search",
+  "backend": {
+    "rehearsal": {
+      "version": "learn-card-search/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "6efd1515cc92f91af5ff67a9f3e4ba4978c1aee7deaa48b9be794f5a58079083",
+      "mode": "rehearse",
+      "state": "rehearsed_rolled_back",
+      "observedAt": "2026-10-11T02:16:11.472Z",
+      "priorFingerprint": "e66e350d37c91a86b901e8f0ccd2b854",
+      "expectedFingerprint": "3edc2be235c00489aa86aa396fd88878",
+      "afterFingerprint": "e66e350d37c91a86b901e8f0ccd2b854",
+      "preservedDataSets": 101,
+      "submissionFailure": null,
+      "receipt": {
+        "fingerprint": "3edc2be235c00489aa86aa396fd88878",
+        "functions": 1
+      }
+    },
+    "installation": {
+      "version": "learn-card-search/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "6efd1515cc92f91af5ff67a9f3e4ba4978c1aee7deaa48b9be794f5a58079083",
+      "mode": "apply",
+      "state": "installed_needs_hosted_acceptance",
+      "observedAt": "2026-10-11T02:16:31.640Z",
+      "priorFingerprint": "e66e350d37c91a86b901e8f0ccd2b854",
+      "expectedFingerprint": "3edc2be235c00489aa86aa396fd88878",
+      "afterFingerprint": "3edc2be235c00489aa86aa396fd88878",
+      "preservedDataSets": 101,
+      "submissionFailure": null,
+      "receipt": {
+        "fingerprint": "3edc2be235c00489aa86aa396fd88878",
+        "functions": 1
+      }
+    },
+    "http": {
+      "observedAt": "2026-10-11T02:17:01.974Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "checks": [
+        {
+          "role": "anon",
+          "path": "rpc/learn_card_search",
+          "kind": "customer",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_card_search",
+          "kind": "job",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_card_search",
+          "kind": "member",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_card_search",
+          "kind": "team",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_card_search",
+          "kind": "customer",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_card_search",
+          "kind": "job",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_card_search",
+          "kind": "member",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_card_search",
+          "kind": "team",
+          "status": 403,
+          "code": "42501"
+        }
+      ],
+      "signedInOwnerAcceptance": false
+    },
+    "afterHttp": {
+      "observedAt": "2026-10-11T02:17:25.264Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "fingerprint": "3edc2be235c00489aa86aa396fd88878",
+      "ledger": 52,
+      "preservedDataSets": 101,
+      "continuationSchemaFingerprint": "a54a575f7348416acf6000ef8b289871"
+    }
+  },
+  "localEvidence": "learn-card-search-local-2026-10-11.json",
+  "releaseGuardTests": 7,
+  "frontend": {
+    "state": "pending_paired_deployment"
+  },
+  "signedInHostedOwnerAcceptance": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "captureActivation": false,
+  "newOperatorGrants": 0,
+  "continuationGuardTests": 12,
+  "continuation": {
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "newProviderRequests": 0,
+    "activeGrants": 0,
+    "schemaFingerprint": "a54a575f7348416acf6000ef8b289871",
+    "approvalStillRequired": true
+  }
+}

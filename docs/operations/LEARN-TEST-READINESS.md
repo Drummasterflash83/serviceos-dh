@@ -1,6 +1,6 @@
 # Existing TEST environment: verified release gaps
 
-## Canonical card search — local candidate, not deployed
+## Canonical card search — TEST release 051 installed; paired frontend pending
 
 Company-scoped literal search now covers customer titles, job titles/numbers,
 member names/roles and teams beyond the currently loaded card page. It keeps
@@ -9,7 +9,10 @@ failures. A schema-only isolated verifier reads all 10,000 synthetic jobs, check
 literal punctuation, company boundaries and source preservation, and passes actual
 SQL responses through the client. Fourteen client tests, both typechecks/builds
 and synthetic browser paging, filtering, stale-response and retry checks pass.
-The exact hosted package and paired deployment remain to do; TEST stays on 050.
+Hosted rollback rehearsal and installation passed at 02:16 UTC. All 101 monitored
+datasets and existing table access remained unchanged. Eight HTTP access-denial
+checks passed. The paired frontend and signed-in hosted acceptance remain pending.
+No providers, new operator grants or production changes were involved.
 [Search contract and evidence](LEARN-CARD-SEARCH.md).
 
 ## Working-time package — TEST release 050 and paired frontend installed
