@@ -13,7 +13,7 @@ import {
   responsiveness,
   type Health,
 } from "../customer_card.ts";
-import type { WorkerHandlerContext, WorkerHandlerResult } from "./index.ts";
+import type { WorkerHandlerContext, WorkerHandlerResult } from "../worker_contract.ts";
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;
@@ -62,12 +62,13 @@ export async function handleCustomerCardSync(
       cardQuery = cardQuery.eq("id", payload.customer_card_id as string);
     } else if (isUuid(payload.graph_node_id)) {
       // Resolve the graph node → its source person → the card for that person.
-      const { data: gnode } = await admin
+      const { data: gnode, error: graphTargetError } = await admin
         .from("graph_nodes")
         .select("node_type, source_id")
         .eq("tenant_id", tenantId)
         .eq("id", payload.graph_node_id as string)
         .maybeSingle();
+      if (graphTargetError) throw new Error("graph_target_unavailable");
       const sid = (gnode?.source_id as string | null) ?? null;
       if (gnode?.node_type === "person" && sid) cardQuery = cardQuery.eq("person_id", sid);
       else if (gnode?.node_type === "company" && sid) cardQuery = cardQuery.eq("company_id", sid);
@@ -82,7 +83,7 @@ export async function handleCustomerCardSync(
     }
 
     const { data: cardRows, error: cardErr } = await cardQuery;
-    if (cardErr) throw new Error(`cards read failed: ${cardErr.message}`);
+    if (cardErr) throw new Error("cards_unavailable");
     const cards = (cardRows ?? []) as Row[];
 
     // ── Batch-load identity rows + graph relationship counts ────────────────
@@ -95,20 +96,22 @@ export async function handleCustomerCardSync(
 
     const peopleById = new Map<string, Row>();
     if (personIds.length) {
-      const { data } = await admin
+      const { data, error } = await admin
         .from("people")
         .select("id, display_name, first_name, last_name, primary_email, primary_phone, company_id")
         .eq("tenant_id", tenantId)
         .in("id", personIds);
+      if (error) throw new Error("people_unavailable");
       for (const p of (data ?? []) as Row[]) peopleById.set(p.id as string, p);
     }
     const companyById = new Map<string, Row>();
     if (companyIds.length) {
-      const { data } = await admin
+      const { data, error } = await admin
         .from("companies")
         .select("id, name, domain, phone")
         .eq("tenant_id", tenantId)
         .in("id", companyIds);
+      if (error) throw new Error("companies_unavailable");
       for (const c of (data ?? []) as Row[]) companyById.set(c.id as string, c);
     }
 
@@ -116,24 +119,26 @@ export async function handleCustomerCardSync(
     const personNodeId = new Map<string, string>(); // person_id → graph node id
     const relationshipCount = new Map<string, number>(); // graph node id → edge count
     if (personIds.length) {
-      const { data: nodes } = await admin
+      const { data: nodes, error: nodesError } = await admin
         .from("graph_nodes")
         .select("id, source_id")
         .eq("tenant_id", tenantId)
         .eq("node_type", "person")
         .eq("source_table", "people")
         .in("source_id", personIds);
+      if (nodesError) throw new Error("graph_nodes_unavailable");
       const nodeIds: string[] = [];
       for (const n of (nodes ?? []) as Row[]) {
         personNodeId.set(n.source_id as string, n.id as string);
         nodeIds.push(n.id as string);
       }
       if (nodeIds.length) {
-        const { data: edges } = await admin
+        const { data: edges, error: edgesError } = await admin
           .from("graph_edges")
           .select("from_node_id, to_node_id")
           .eq("tenant_id", tenantId)
           .or(`from_node_id.in.(${nodeIds.join(",")}),to_node_id.in.(${nodeIds.join(",")})`);
+        if (edgesError) throw new Error("graph_edges_unavailable");
         for (const e of (edges ?? []) as Row[]) {
           const f = e.from_node_id as string;
           const t = e.to_node_id as string;
@@ -145,7 +150,7 @@ export async function handleCustomerCardSync(
     }
 
     let cardsProjected = 0;
-    const skipped = 0; // v1 projects every target card — no skip path yet
+    let skipped = 0;
     let failed = 0;
     const healthCounts: Record<Health, number> = {
       excellent: 0,
@@ -163,6 +168,11 @@ export async function handleCustomerCardSync(
         const person = personId ? peopleById.get(personId) : null;
         const company = companyId ? companyById.get(companyId) : null;
 
+        // Missing linked identity may be a concurrent deletion or an incomplete
+        // read. Preserve the prior card rather than replacing it with invented zeroes.
+        if ((personId && !person) || (companyId && !company))
+          throw new Error("linked_identity_unavailable");
+
         // Guard: never (re)project synthetic fixtures — demo/test contacts on the
         // reserved @example.invalid domain must not reappear in a live tenant view.
         // (RFC 6761 reserves .invalid; it can never be a real customer address.)
@@ -170,16 +180,22 @@ export async function handleCustomerCardSync(
         if (personEmail && /@example\.invalid$/i.test(personEmail)) {
           // Skip synthetic fixtures, but bump updated_at so the sweep cursor advances
           // past them (a stale synthetic card must never stall a full sweep).
-          if (isSweep)
-            await admin
+          if (isSweep) {
+            const { error } = await admin
               .from("customer_cards")
               .update({ status: card.status })
               .eq("tenant_id", tenantId)
               .eq("id", cardId);
+            if (error) throw new Error("synthetic_cursor_unconfirmed");
+          }
+          skipped += 1;
           continue;
         }
         // Respect an operator archive: never resurrect a card explicitly archived.
-        if (card.status === "archived") continue;
+        if (card.status === "archived") {
+          skipped += 1;
+          continue;
+        }
 
         // Interactions for this person or company (recent window, ascending).
         const filters: string[] = [];
@@ -187,19 +203,20 @@ export async function handleCustomerCardSync(
         if (companyId) filters.push(`related_company_id.eq.${companyId}`);
         let interactions: Row[] = [];
         if (filters.length) {
-          const { data } = await admin
+          const { data, error } = await admin
             .from("interactions")
             .select("id, interaction_type, direction, occurred_at, sentiment, source_type")
             .eq("tenant_id", tenantId)
             .or(filters.join(","))
             .order("occurred_at", { ascending: false, nullsFirst: false })
             .limit(INTERACTION_WINDOW);
+          if (error) throw new Error("interactions_unavailable");
           interactions = (data ?? []) as Row[];
         }
         const ascending = [...interactions].reverse();
 
         // Open recommendations for this card.
-        const { data: recRows } = await admin
+        const { data: recRows, error: recError } = await admin
           .from("recommendations")
           .select("id, type, title, severity, status, recommended_action, created_at")
           .eq("tenant_id", tenantId)
@@ -207,6 +224,7 @@ export async function handleCustomerCardSync(
           .eq("status", "open")
           .order("created_at", { ascending: false })
           .limit(50);
+        if (recError) throw new Error("recommendations_unavailable");
         const recs = (recRows ?? []) as Row[];
 
         // ── Communication ────────────────────────────────────────────────
@@ -408,11 +426,13 @@ export async function handleCustomerCardSync(
           }
         : {}),
     };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "customer-card-sync failed";
+  } catch {
+    // Database/provider prose can contain private source details. Keep it out of
+    // durable job results and preserve the existing projection for retry.
+    const message = "Required customer-card data could not be read. Existing cards were retained.";
     return {
       success: false,
-      error: { code: "card_sync_error", message: message.slice(0, 500), retryable: true },
+      error: { code: "card_sync_error", message, retryable: true },
     };
   }
 }

@@ -1,0 +1,77 @@
+{
+  "version": "learn-email-card-refresh-runtime/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "6276d20c5ca352ab1a580f5aa71d1e418937ee27607ac80dd490496d44946477",
+  "observedAt": "2026-10-11T15:13:42.858Z",
+  "state": "installed_http_denials_and_downloaded_regressions_verified",
+  "attempts": [
+    {
+      "name": "platform-worker",
+      "cliExitStatus": 0
+    },
+    {
+      "name": "customer-card-sync",
+      "cliExitStatus": 0
+    }
+  ],
+  "writeAttempted": true,
+  "priorSchemaAndEndpointsPreserved": true,
+  "preservedDataSets": 52,
+  "endpoints": [
+    {
+      "name": "customer-card-sync",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "name": "platform-worker",
+      "version": 8,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    }
+  ],
+  "dependencyFiles": 98,
+  "fullPreservedDatasets": 113,
+  "fullSchemaUnchanged": true,
+  "secretsCreated": 0,
+  "schedulesActivated": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "httpAcceptance": {
+    "observedAt": "2026-10-11T15:14:14.740Z",
+    "state": "unauthenticated_http_boundary_verified",
+    "checks": [
+      {
+        "endpoint": "platform-worker",
+        "method": "POST",
+        "status": 403,
+        "code": "forbidden"
+      },
+      {
+        "endpoint": "customer-card-sync",
+        "method": "POST",
+        "status": 401
+      }
+    ],
+    "fullPreservedDatasets": 113,
+    "schemaUnchanged": true,
+    "providerRequests": 0,
+    "secretsCreated": 0,
+    "schedulesActivated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No positive hosted card refresh; signed-in acceptance remains pending.",
+      "No jobs invoked or source records changed."
+    ]
+  },
+  "localHandlerAndWrapperChecks": 6,
+  "downloadedHandlerAndWrapperChecks": 6,
+  "deploymentMechanismChecks": 7,
+  "strictTypescript": true,
+  "limitations": [
+    "Database failure cases use deterministic fixtures around the actual handler and wrapper, including the downloaded code.",
+    "No positive hosted customer-card refresh, provider-to-card acceptance or customer-facing stale-state acceptance.",
+    "No schema, account, grant, credentials, source, schedule or production change."
+  ]
+}

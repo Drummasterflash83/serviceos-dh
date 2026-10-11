@@ -67,7 +67,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: body as Record<string, unknown>,
   });
 
-  if (res.result) {
+  if (res.success) {
     if (jobId) {
       await completePlatformJob(admin, jobId, {
         recordsProcessed: res.recordsProcessed ?? 0,
@@ -77,6 +77,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ success: res.success, ...res.result });
   }
   const message = res.error?.message ?? "customer-card-sync failed";
-  if (jobId) await failPlatformJob(admin, jobId, message);
+  if (jobId) await failPlatformJob(admin, jobId, message, res.result);
   return failResponse(res.error?.code ?? "card_sync_error", message, 500);
 });

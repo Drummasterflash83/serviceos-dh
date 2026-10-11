@@ -222,6 +222,29 @@ existing Workspace service-account access and signed-in acceptance remain requir
 The live production schedulers are unchanged.
 [Deployment and boundary evidence](evidence/learn-email-schedulers-test-2026-10-11.json).
 
+### Card refresh preservation — hosted TEST, 11 October, 15:14 UTC
+
+The shared card-refresh handler previously ignored identity, graph, interaction
+and recommendation read errors. Failed reads could become empty facts and
+replace a retained card with misleading health/activity values. It now preserves
+cards on required read failure, reports a retryable safe failure, and allows
+unaffected cards to refresh. A missing linked identity also preserves its card.
+Synthetic sweep cursor failures are reported; successful skips are counted.
+Locked fields and manual context remain intact. The manual HTTP wrapper previously
+completed partial-failure jobs whenever counts were present; it now records those
+jobs as failed, retains their counts and returns an error response.
+
+Six actual-handler/wrapper tests and strict TypeScript passed. The fix is installed
+in TEST `platform-worker` v8 and `customer-card-sync` v1 with existing worker auth
+and JWT-protected customer entrypoint. The pinned 98-file bundle preserves all
+other endpoints, schema and 113 tracked datasets. The downloaded handler/wrapper
+passed the same six regression checks; anonymous HTTP requests returned 403/401
+and preserved the full baseline. No positive hosted refresh was invoked. Real
+provider-to-card and signed-in currentness acceptance remain open. Existing
+bounded-window activity calculations and legacy job persistence helpers are not
+made complete by this correction. Production remains unchanged.
+[Card preservation evidence](evidence/learn-card-refresh-test-2026-10-11.json).
+
 ## Working and verified in production
 
 - [x] Retained source inventory and recording object-size metadata observed at the
