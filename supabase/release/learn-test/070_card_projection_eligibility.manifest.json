@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "08051f6a44b38f3087ef63bf71cbdaf69fad8cd49cc7f7d1474ce7b22a00ddf7",
+  "migrations": [
+    {
+      "file": "20261101390000_learn_card_projection_eligibility.sql",
+      "sha256": "b14c9e3ec74f36d0b140d39a70fcff8d436cbd00348922f644a4efda6c9dca02"
+    }
+  ],
+  "probeSha256": "a0c573ed51d368a5a35a4d9e8ddddf2428923e1ed8ffc07017a0dfa1ad2465a7",
+  "priorFingerprint": "db53a9b09d1cf3b70dea70278c1b7338",
+  "preservedDatasets": 121
+}
