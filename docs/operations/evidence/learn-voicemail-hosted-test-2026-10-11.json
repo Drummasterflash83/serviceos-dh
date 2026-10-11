@@ -1,0 +1,189 @@
+{
+  "rehearsal": {
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T22:14:08.084Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "bd7e8bd175d21827b40bcc2eb511c7118f48ef0f3fe85bbf6fdc3209ce069cba",
+    "expected": {
+      "marker": "voicemail-installed/1",
+      "fingerprint": "f22d6c92600ca36b82360239594d4286",
+      "private_fingerprint": "717c6402853f09f3b0b480b6ca650e19"
+    },
+    "afterFingerprint": "eeef5ce039c2d799323c66e48c297603",
+    "preservedDatasets": 127,
+    "existingAudioBucketPreserved": true,
+    "usersCreated": 0,
+    "mailboxesCreated": 0,
+    "routesCreated": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No hosted voicemail import, Storage byte verification, queue scheduling or signed-in acceptance. No credentials uploaded."
+    ]
+  },
+  "schema": {
+    "state": "installed_empty_private_schema_verified",
+    "observedAt": "2026-10-11T22:14:39.601Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "bd7e8bd175d21827b40bcc2eb511c7118f48ef0f3fe85bbf6fdc3209ce069cba",
+    "expected": {
+      "marker": "voicemail-installed/1",
+      "fingerprint": "f22d6c92600ca36b82360239594d4286",
+      "private_fingerprint": "717c6402853f09f3b0b480b6ca650e19"
+    },
+    "afterFingerprint": "f22d6c92600ca36b82360239594d4286",
+    "preservedDatasets": 127,
+    "existingAudioBucketPreserved": true,
+    "usersCreated": 0,
+    "mailboxesCreated": 0,
+    "routesCreated": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No hosted voicemail import, Storage byte verification, queue scheduling or signed-in acceptance. No credentials uploaded."
+    ]
+  },
+  "runtime": {
+    "version": "learn-voicemail-runtime/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "379a6b2a4d371638f474efbf657e4777f79f74b599e0d07df1bd98a6288bd7c6",
+    "observedAt": "2026-10-11T22:15:56.771Z",
+    "state": "deployed_needs_http_acceptance",
+    "attempts": [
+      {
+        "name": "learn-voicemail-import",
+        "cliExitStatus": 0
+      }
+    ],
+    "writeAttempted": true,
+    "priorSchemaAndEndpointsPreserved": true,
+    "preservedDataSets": 52,
+    "endpoints": [
+      {
+        "id": "5934333d-5c9a-425a-90f7-255e77cf1578",
+        "slug": "learn-voicemail-import",
+        "name": "learn-voicemail-import",
+        "status": "ACTIVE",
+        "version": 1,
+        "created_at": 1791756955319,
+        "updated_at": 1791756955319,
+        "verify_jwt": false,
+        "import_map": false,
+        "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_5934333d-5c9a-425a-90f7-255e77cf1578_1/source/supabase/functions/learn-voicemail-import/index.ts",
+        "ezbr_sha256": "0ee25770479f8a905e3013bbaf54d58a964f41ea5294b857583ddfce74f9ec9d"
+      }
+    ],
+    "dependencyFiles": 24,
+    "fullPreservedDatasets": 134,
+    "fullSchemaUnchanged": true,
+    "routesCreated": 0,
+    "credentialsUploaded": 0,
+    "schedulesActivated": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "http": {
+    "state": "hosted_internal_boundaries_verified",
+    "observedAt": "2026-10-11T22:17:08.538Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "endpointVersion": 1,
+    "checks": [
+      {
+        "name": "missing_auth",
+        "status": 403,
+        "code": "voicemail_internal_auth_required"
+      },
+      {
+        "name": "anon_auth",
+        "status": 403,
+        "code": "voicemail_internal_auth_required"
+      },
+      {
+        "name": "invalid_internal_request",
+        "status": 400,
+        "code": "voicemail_request_invalid"
+      },
+      {
+        "name": "missing_route_before_credentials",
+        "status": 503,
+        "code": "voicemail_route_unconfirmed"
+      }
+    ],
+    "failure": null,
+    "preservedDatasets": 134,
+    "providerRequests": 0,
+    "usersCreated": 0,
+    "routesCreated": 0,
+    "credentialsStored": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No successful hosted voicemail import, Storage byte transport, live DNS/provider token mint or signed-in acceptance."
+    ]
+  },
+  "sourceReadback": {
+    "observedAt": "2026-10-11T22:18:31.833Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "downloaded_runtime_source_verified",
+    "sourceBundleSha256": "379a6b2a4d371638f474efbf657e4777f79f74b599e0d07df1bd98a6288bd7c6",
+    "reports": [
+      {
+        "endpoint": "learn-voicemail-import",
+        "version": 1,
+        "matchingRuntimeModules": 19,
+        "omittedModules": [
+          "_shared/email_capture_engine.ts",
+          "_shared/email_ingestion_outbox.ts",
+          "_shared/email_ingestion_protocol.ts",
+          "_shared/email_job_attempt.ts",
+          "_shared/gmail_page_store.ts"
+        ],
+        "emittedImportsChecked": 23,
+        "omittedModulesHaveNoEmittedImporters": true,
+        "differentRuntimeModules": []
+      }
+    ],
+    "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+    "limitations": [
+      "Syntax/import comparison; does not verify real provider or Storage transport."
+    ],
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "storage": {
+    "state": "hosted_private_storage_verified",
+    "observedAt": "2026-10-11T22:20:04.074Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "bucket": "receptionist-voicemails",
+        "bytes": 56304,
+        "sha256": "782a76362731d87a5d1608107758a25e86e36afa28e6dba183b8ce45d06694e1",
+        "immutableUploadAcknowledged": true,
+        "readbackMatches": true,
+        "anonymousStatus": 404,
+        "publicStatus": 400
+      },
+      {
+        "bucket": "learn-voicemail-sources",
+        "bytes": 76391,
+        "sha256": "4b078d03b1cb1d91ff90907932c24986a0ed64435cb2326bf52de8019eeec892",
+        "immutableUploadAcknowledged": true,
+        "readbackMatches": true,
+        "anonymousStatus": 404,
+        "publicStatus": 400
+      }
+    ],
+    "failure": null,
+    "preservedDatasets": 134,
+    "syntheticObjectsRetained": 2,
+    "syntheticPrefix": "ce730001-aaaa-4000-8000-000000000001",
+    "providerRequests": 0,
+    "usersCreated": 0,
+    "routesCreated": 0,
+    "voicemailRowsCreated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Synthetic byte transport only; not a published voicemail, signed-in playback, provider coverage or independent backup acceptance."
+    ]
+  }
+}

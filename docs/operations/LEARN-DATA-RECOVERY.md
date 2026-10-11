@@ -521,3 +521,15 @@ must distinguish **records preserved**, **database backups listed**, **recording
 backup verified**, and **restore verified**. All 2,888 objects in the explicitly
 observed inventory and one manifest-selected audio restore/decode are verified.
 Subsequent arrivals, scheduled coverage and isolated database recovery remain unverified.
+
+### Voicemail buckets — TEST acceptance, 11 October 22:20 UTC
+
+TEST release 073 now contains private `receptionist-voicemails` and
+`learn-voicemail-sources` buckets. Two synthetic acceptance files (132,695 bytes
+total) are retained under `ce730001-aaaa-4000-8000-000000000001`; there are no
+corresponding tenant, route or voicemail rows. Hosted byte/hash readback and
+anonymous/public denial pass. This is not independent backup or restore evidence.
+Before real voicemail activation, extend the approved source/audio inventory and
+backup/restore acceptance to these buckets and their intake/source/publication
+relationships. No customer voicemail files have been imported by this TEST release.
+See [hosted evidence](evidence/learn-voicemail-hosted-test-2026-10-11.json).

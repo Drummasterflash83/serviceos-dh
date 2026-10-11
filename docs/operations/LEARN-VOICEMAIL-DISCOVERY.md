@@ -1,5 +1,67 @@
 # Birchills voicemail: discovery before capture
 
+## Hosted TEST foundation, endpoint and private storage — verified, 22:20 UTC
+
+TEST **073** is installed in `saatxzwxvdvqevbnskxy`: the existing private voicemail
+foundation plus the new private intake schema. The pinned release package is
+`supabase/release/learn-test/073_voicemail_private_intake.sql`, SHA256
+`bd7e8bd175d21827b40bcc2eb511c7118f48ef0f3fe85bbf6fdc3209ce069cba`.
+The exact package first passed a rollback rehearsal, then installed with **127
+existing datasets preserved**, unchanged existing audio bucket, and no new roles,
+role memberships, Auth users, mailbox grants, mailboxes or routes. All seven new
+tables remained empty. Client/anonymous intake and private-source reads are denied;
+service calls with an unknown route are denied. The installed voicemail-inclusive
+catalog fingerprint is **f22d6c92600ca36b82360239594d4286**. The legacy 072 reader's
+fingerprint also changes because its release ledger now includes 073; do not
+reuse older pinned deployment prerequisites without a fresh review.
+
+`learn-voicemail-import` **version 1** is deployed in TEST, with source bundle SHA256
+`379a6b2a4d371638f474efbf657e4777f79f74b599e0d07df1bd98a6288bd7c6`.
+Gateway JWT verification is disabled because the handler requires an exact existing
+server key; ordinary user JWT claims never grant intake access. No secrets were
+uploaded, no queue handler was registered and no schedule was activated. Other
+endpoints and all **134 datasets**, now including the seven empty voicemail tables,
+were preserved during deployment and boundary acceptance.
+
+Actual hosted HTTP checks confirmed: no auth **403**, anon key **403**, malformed
+internal request **400**, and authenticated nonexistent route **503 / route
+unconfirmed**, before credential/provider loading. This is refusal evidence, not a
+successful provider import. Downloaded source matches all **19 emitted modules**
+and **23 runtime imports**. Five type-only modules were correctly omitted by the
+compiler. An initial readback-verifier false positive counted imports inside those
+absent type-only modules; inspection of the same downloaded artifact corrected the
+comparison without redeployment. No deployed source difference was found.
+
+Actual hosted Storage received exactly two generated synthetic objects, uploaded
+with overwrite disabled: a **56,304-byte MP3 tone** and its **76,391-byte signed
+notification email**. Service readbacks matched exact sizes/SHA256; anonymous reads
+returned **404** and public URLs **400** for both private buckets. They remain under
+synthetic prefix **ce730001-aaaa-4000-8000-000000000001** for acceptance evidence.
+There is no corresponding tenant, mailbox, route or voicemail row; do not treat
+these files as customer data or evidence of publication. Preservation checks excluded
+only these two planned object paths and confirmed all other 134 datasets unchanged.
+No real recording or provider credential was copied and no provider request occurred.
+
+[Combined hosted evidence](evidence/learn-voicemail-hosted-test-2026-10-11.json).
+Reproducible tooling: `learn-voicemail-release.mjs`,
+`learn-voicemail-runtime-deploy.mjs`, `learn-voicemail-runtime-http.mjs`,
+`learn-voicemail-runtime-readback.mjs` and `learn-voicemail-storage-http.mjs` in
+`scripts/verify`. Completed mutation journals must not be rerun. Unknown submissions
+require inventory inspection, not resubmission. Storage fixtures must not be overwritten.
+
+**Still required:** a successful integrated hosted import/publication with verified
+route ownership, exact hosted provider/DNS/credential acceptance, durable queue
+admission and settlement, enumeration/coverage and ongoing scheduling, larger-source
+handling, backup of source/audio buckets and signed-in mailbox/card/playback journeys.
+The current endpoint is a one-message internal operation, not completed ingestion.
+Capture remains off because no routes exist. Production is unchanged.
+
+**Rollback:** while TEST acceptance is incomplete, leave routes absent/disabled and
+stop invoking the isolated endpoint; retain the private tables/buckets and evidence.
+Do not drop storage/source tables or reset TEST. Subsequent fixes use new pinned
+releases. Production already has its own voicemail foundation and must not receive
+this TEST prerequisite package wholesale; production promotion remains separate.
+
 ## Workspace source bridge and internal entry point — local only, 22:09 UTC
 
 Prepared `supabase/functions/learn-voicemail-import/index.ts` connects the shared

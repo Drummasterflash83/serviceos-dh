@@ -1,0 +1,17 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "bd7e8bd175d21827b40bcc2eb511c7118f48ef0f3fe85bbf6fdc3209ce069cba",
+  "priorFingerprint": "deb440d53e7a0a47cc4273214b2ce777",
+  "priorPrivateFingerprint": "eeef5ce039c2d799323c66e48c297603",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261023210000_receptionist_voicemails.sql",
+      "sha256": "7916bc23b1e9f50747b17407bce254cda00ae97d43ab516cb1d11bd8654dac70"
+    },
+    {
+      "path": "supabase/migrations/20261101420000_learn_voicemail_private_intake.sql",
+      "sha256": "157e2c6b0ec864a6d4e331ab2d7a7aa25388d1e04c2c1e0df14ff27c3d9e7cae"
+    }
+  ],
+  "preservedDatasets": 127
+}

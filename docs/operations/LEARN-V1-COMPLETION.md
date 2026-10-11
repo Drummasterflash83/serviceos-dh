@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:20 UTC — voicemail foundation/runtime/storage verified in hosted TEST.**
+Release 073 installed empty private tables after rollback rehearsal, preserving 127
+existing datasets. The internal endpoint v1 deployed with 134 datasets and all other
+endpoints preserved. Hosted checks deny unauthenticated/anonymous intake, malformed
+internal calls and unknown routes; source readback matches 19 emitted modules and
+23 imports. Two synthetic files (generated MP3 plus signed email) round-trip through
+private hosted Storage with exact hashes and anonymous/public denial. They are retained
+as marked TEST evidence, with no tenant/mailbox/route/voicemail row. No provider request,
+credential upload, user access grant, schedule or production change occurred. Integrated
+publication, real mailbox ownership/provider acceptance, queue/discovery/coverage,
+backup and signed-in journeys remain required. [Evidence](evidence/learn-voicemail-hosted-test-2026-10-11.json)
+and [release/rollback scope](LEARN-VOICEMAIL-DISCOVERY.md).
+
 **22:09 UTC — voicemail provider bridge and internal endpoint prepared, local only.**
 The importer now reuses the existing Workspace credential checks, verifies Gmail
 profile identity and loads one bounded original message after route/capture admission.
