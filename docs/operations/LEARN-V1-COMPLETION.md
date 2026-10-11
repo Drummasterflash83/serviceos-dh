@@ -424,12 +424,43 @@ The fixture is archived; all 115 non-fixture datasets and the schema matched.
 eight downloaded pipeline-related checks and strict backend TypeScript. All seven
 deployed modules match the tested closure in the syntax-tree comparison.
 
-**Still open:** real-provider and signed-in acceptance; identity/card completion;
-source-revision-safe downstream settlement; and compatibility of the separate
-legacy repair projector. Current identity code can mark enriched before card
-writes complete and consume a newer event without a source-version check. This
-TEST milestone proves source-to-event publication, not completed card delivery.
+This milestone proves source-to-event publication. The next section adds hosted
+synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
+
+### Atomic identity/card delivery installed in TEST — 11 October, 16:40 UTC
+
+TEST release **062** and `platform-worker` **v9** replace the early enriched marker
+and unchecked card writes with one exact-revision database transaction. Contact
+resolution, provisional identities, card updates, recommendations, the enriched
+marker, matched-event consumption and an immutable receipt commit together. Card
+or event errors roll all of them back; a lost reply is inspected without repeating
+the publication. A worker holding an older source revision cannot finish newer
+content. Existing source rows, manual locks and human match decisions are retained.
+
+The actual hosted chain passed using one synthetic cached call: pipeline v2
+confirmed its transcript/analysis and ready event; worker v9 created one useful
+card with the source summary and provisional customer, linked the interaction,
+consumed exactly that event, saved its delivery receipt and finished its queue job.
+The fixture is archived. No users/grants/credentials, real provider calls, storage
+objects or production changes. All 116 non-fixture datasets and the schema matched.
+
+Eight actual-handler checks, eight downloaded-handler checks, one manual-wrapper
+partial-failure check, strict backend TypeScript, real PostgreSQL concurrency and
+lost-response tests passed. Full-schema and exact-package rollback rehearsals
+preserved 115 pre-existing datasets before adding the receipt table. The downloaded
+worker has 92 matching runtime modules; three type dependencies were pruned by the
+bundler. No differing runtime module remains after accounting for equivalent
+logical grouping and the optional block around a for-of statement.
+
+**Still open:** real-provider/data-coverage and signed-in acceptance; an authorised
+review/requeue UI for `identity_review` cases (their events remain pending); legacy
+repair-projector compatibility; and generic queue-loss recovery. The manually
+invoked `identity-resolve` wrapper now reports partial failures correctly locally,
+but is absent from TEST and needs job-admission/settlement hardening before deployment.
+The calculated customer-card priority is an operational queue aid with recorded
+inputs and an explicit UTC daily window, not staff performance/pay scoring.
+[Release and hosted journey evidence](evidence/learn-identity-card-test-2026-10-11.json).
 
 ## Implemented but not fully verified — acceptance gates
 

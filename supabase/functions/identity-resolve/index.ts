@@ -13,7 +13,7 @@ import {
   failResponse,
   jsonResponse,
 } from "../_shared/simwood.ts";
-import { requireTenantUser } from "../_shared/authz.ts";
+import { assertSameTenant, requireTenantUser } from "../_shared/authz.ts";
 import {
   completePlatformJob,
   createPlatformJob,
@@ -33,12 +33,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!auth.ok) return failResponse(auth.error.code, auth.error.message, auth.error.httpStatus);
   const tenantId = auth.ctx.tenantId;
 
-  let body: { limit?: unknown } = {};
+  let body: { limit?: unknown; tenant_id?: unknown } = {};
   try {
     body = ((await req.json()) ?? {}) as typeof body;
   } catch {
     body = {};
   }
+
+  const mismatch = assertSameTenant(auth.ctx, body.tenant_id);
+  if (mismatch) return failResponse(mismatch.code, mismatch.message, mismatch.httpStatus);
 
   const job = await createPlatformJob(admin, {
     tenantId,
@@ -59,7 +62,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     payload: body as Record<string, unknown>,
   });
 
-  if (res.result) {
+  if (res.success) {
     if (jobId) {
       await completePlatformJob(admin, jobId, {
         recordsProcessed: res.recordsProcessed ?? 0,
@@ -69,6 +72,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({ success: res.success, ...res.result });
   }
   const message = res.error?.message ?? "identity-resolve failed";
-  if (jobId) await failPlatformJob(admin, jobId, message);
+  if (jobId) await failPlatformJob(admin, jobId, message, res.result);
   return failResponse(res.error?.code ?? "resolve_error", message, 500);
 });

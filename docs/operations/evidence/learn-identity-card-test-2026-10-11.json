@@ -1,0 +1,143 @@
+{
+  "version": "learn-identity-delivery/1",
+  "state": "test_installed_cached_phone_to_card_verified",
+  "observedAt": "2026-10-11T16:40:47.861Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "rehearsal": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "full_schema_rehearsed_and_rolled_back",
+    "observedAt": "2026-10-11T16:34:09.398Z",
+    "sourceSha256": "da3e034eef9f7b84e19673b2baee1830f4efdd0f90b8e93e635c44622b2db587",
+    "probeSha256": "f1032038abac2cd82798c6fa47343162218519f06ba45ff738abd1ac3d650a50",
+    "preservedDatasets": 115,
+    "originalSchemaRestored": true,
+    "candidateAndFixturesRemoved": true,
+    "newUsers": 0,
+    "newGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "database": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "installed_needs_runtime_and_acceptance",
+    "completedAt": "2026-10-11T16:38:41.929Z",
+    "packageSha256": "952603e1b8c48721ece91e904a027167c14fd6f1304992a1c545afe1e9197b30",
+    "expectedFingerprint": "851ab50d52a8d36ea1ee728c0a3f3ecf",
+    "afterFingerprint": "851ab50d52a8d36ea1ee728c0a3f3ecf",
+    "preservedDatasets": 115,
+    "installedPreservationDatasets": 116,
+    "persistentFixtureUsers": 0,
+    "newSessions": 0,
+    "newPlatformGrants": 0,
+    "providerRequests": 0,
+    "productionChanged": false
+  },
+  "runtime": {
+    "endpoint": "platform-worker",
+    "version": 9,
+    "status": "ACTIVE",
+    "verifyJwt": false,
+    "applicationAuthority": "Existing worker secret/service-key gate retained; unauthorised calls are not enabled.",
+    "bundleSha256": "a8f639ff57f282bf51b074672c73b7bf72fad168cb4aa5d01ea4d47a20dc33c7",
+    "dependencyFiles": 95,
+    "preservedDatasets": 116,
+    "otherEndpointsPreserved": true
+  },
+  "hosted": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "state": "hosted_cached_phone_to_customer_card_verified",
+    "newUsers": 0,
+    "newAccessGrants": 0,
+    "productionChanged": false,
+    "providerAcceptance": false,
+    "checks": [
+      {
+        "name": "unsigned request denied",
+        "status": 401
+      }
+    ],
+    "pipeline": {
+      "status": 200,
+      "success": true,
+      "downloaded": true,
+      "transcribed": true,
+      "analysed": true,
+      "errorCode": null,
+      "interactionReady": true
+    },
+    "worker": {
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    "cardDelivery": {
+      "cards": 1,
+      "sourceSummaryPresent": true,
+      "provisionalContact": true,
+      "interactionLinked": true,
+      "consumedEvents": 1,
+      "pendingEvents": 0,
+      "deliveryReceipts": 1,
+      "jobCompletionVerified": true
+    },
+    "providerRequests": 0,
+    "terminalRuns": 4,
+    "fixtureArchived": true,
+    "preservedNonFixtureDatasets": 116,
+    "schemaUnchanged": true,
+    "observedAt": "2026-10-11T16:40:47.861Z",
+    "limitations": [
+      "Synthetic cached source data and existing internal TEST authority; no real provider, storage-file or signed-in browser acceptance.",
+      "Card creation and event/job completion verified in hosted TEST using synthetic source records. Real data coverage, signed-in card review and held-identity operator recovery remain open.",
+      "Synthetic rows and receipts are retained in an archived fixture tenant."
+    ],
+    "publisherStage": {
+      "readyInteractions": 1,
+      "pendingEvents": 1,
+      "handoffReceipts": 1,
+      "note": "Counts immediately after phone publication, before the identity worker. cardDelivery contains the verified final state."
+    }
+  },
+  "verification": {
+    "actualHandlerChecks": 8,
+    "downloadedActualHandlerChecks": 8,
+    "manualWrapperPartialFailureCheck": 1,
+    "strictBackendTypeScript": true,
+    "offlineDatabase": [
+      "Exact revision delivery and historical receipt replay",
+      "Atomic rollback of person/card/link/recommendation on card or event failure",
+      "Concurrent deliveries retain one identity/card",
+      "Actual TypeScript handler recovers a committed receipt after lost response",
+      "Concurrent source mutation rejected after waiting for its row lock",
+      "Manual card title/priority and newer summary/activity preserved",
+      "Duplicate/conflicting contacts held for review; no arbitrary first match",
+      "Internal traffic not attributed to an external customer",
+      "Rejected match decision preserved",
+      "Outbound customer identity does not inherit tenant sender name",
+      "Cross-tenant link and receipt access denied",
+      "Only the matched pending phone event is consumed; changed fingerprint rejected",
+      "Authenticated RPC and raw receipt access denied; receipts immutable"
+    ],
+    "downloadedSource": {
+      "runtimeModulesMatched": 92,
+      "differentRuntimeModules": [],
+      "prunedTypeDependencies": [
+        "_shared/intelligence/reason_codes.ts",
+        "_shared/intelligence/types.ts",
+        "_shared/worker_contract.ts"
+      ],
+      "method": "Compare transpiled syntax trees excluding comments, source positions, punctuation and redundant parenthesis nodes. Runtime-relevant identifier/literal text, operators, declaration kind and child structure are retained. Also normalizes associative logical operators preserving operand order and the optional enclosing block around a sole for-of statement. This is a review aid, not formal equivalence proof.",
+      "typePruningCheck": "No runtime imports of the three omitted modules remain in downloaded source; they are type dependencies of this closure."
+    }
+  },
+  "limitations": [
+    "Hosted check uses synthetic cached source text and existing internal TEST authority; no real provider, recording download, speech/model processing or signed-in browser acceptance.",
+    "Ambiguous/missing/internal contact cases are retained in identity_review with pending events; an authorised operator review/requeue flow still needs delivery and UI acceptance.",
+    "Generic platform-worker queue settlement remains separate from per-interaction atomic delivery; the hosted check verified its actual successful terminal job, not all queue-loss cases.",
+    "Manual identity-resolve HTTP wrapper correction is local/Git only; that endpoint is absent from TEST. Its job admission/settlement must be hardened before deployment.",
+    "Legacy interaction repair projector can still overwrite canonical state and requires compatibility review before capture activation.",
+    "No production changes or real source backfill."
+  ]
+}

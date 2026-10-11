@@ -873,3 +873,23 @@ unconfirmed success, so repair forward or disable the affected TEST input. Produ
 promotion and its separately verified rollback plan remain outside this TEST release.
 
 [Sanitized release evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
+
+
+## Phone-to-card TEST acceptance — 11 October, 16:40 UTC
+
+The next dependency is now installed: release 062 plus platform-worker v9 performs
+identity resolution, provisional contact/card/recommendation writes and exact-event
+acknowledgement in a single revision-bound transaction. The prior early enriched
+marker and unchecked identity worker writes are superseded in TEST. Receipt replay
+is historical evidence; currentness is separately checked before new work.
+
+The hosted pipeline-to-worker check passed: cached synthetic call results produced
+one card containing the source summary, a provisional contact, an enriched linked
+interaction, one consumed event and a confirmed terminal queue job. The fixture is
+archived, and all 116 non-fixture datasets remain unchanged. This demonstrates the
+hosted stored-source-to-card path, without claiming real provider/audio/AI processing
+or signed-in acceptance. Unresolved identities remain retained for operator review;
+the operator requeue journey and legacy repair-projector compatibility still need
+completion before activating real capture.
+
+[Detailed evidence and limitations](evidence/learn-identity-card-test-2026-10-11.json).
