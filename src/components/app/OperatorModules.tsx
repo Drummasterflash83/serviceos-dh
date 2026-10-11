@@ -40,6 +40,9 @@ const OperatorDelivery = lazy(() =>
 const OperatorCaptureHealth = lazy(() =>
   import("./OperatorCaptureHealth").then((m) => ({ default: m.OperatorCaptureHealth })),
 );
+const OperatorProjectionReview = lazy(() =>
+  import("./OperatorProjectionReview").then((m) => ({ default: m.OperatorProjectionReview })),
+);
 const OperatorCaptureControls = lazy(() =>
   import("./OperatorCaptureControls").then((m) => ({ default: m.OperatorCaptureControls })),
 );
@@ -155,6 +158,11 @@ function OperatorModuleContent({
               />
               <OperatorCaptureHealth
                 key={`capture:${tenantId}:${user.id}:${captureRevision}`}
+                tenantId={tenantId}
+                actorId={user.id}
+              />
+              <OperatorProjectionReview
+                key={`projection-review:${tenantId}:${user.id}:${captureRevision}`}
                 tenantId={tenantId}
                 actorId={user.id}
               />

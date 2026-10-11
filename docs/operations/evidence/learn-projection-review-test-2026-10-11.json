@@ -1,0 +1,85 @@
+{
+  "state": "backend_installed_in_test_frontend_verified_locally",
+  "observedAt": "2026-10-11T17:30:59.663Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "064",
+  "packageSha256": "b304afabfb748823eb87f47274dcb838a653eb1a494271a51b1a47c831919c92",
+  "sourceSha256": "57b66390fbd57d77f43dfd6390799365c5b0501557182352dba8d4a28a969a49",
+  "catalogFingerprint": "9a5ecae2a6ecf97950e36b1e1dc87132",
+  "preservedDatasetsAtInstallation": 117,
+  "preservedDatasetsAfterHttp": 118,
+  "newPersistentUsers": 0,
+  "newGrants": 0,
+  "newSessions": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "frontendDeployed": false,
+  "positiveSignedInHostedAcceptance": false,
+  "httpDenials": [
+    {
+      "role": "anon",
+      "name": "learn_operator_projection_reviews",
+      "status": 401
+    },
+    {
+      "role": "anon",
+      "name": "learn_operator_projection_review_detail",
+      "status": 401
+    },
+    {
+      "role": "anon",
+      "name": "learn_operator_projection_review",
+      "status": 401
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_projection_reviews",
+      "status": 403
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_projection_review_detail",
+      "status": 403
+    },
+    {
+      "role": "service_role",
+      "name": "learn_operator_projection_review",
+      "status": 403
+    }
+  ],
+  "verification": {
+    "fullSchemaRollback": true,
+    "exactPackageRollback": true,
+    "clientTests": 7,
+    "applicationTypeScript": true,
+    "applicationBuild": true,
+    "databaseChecks": [
+      "email and phone source reconciliation with one pending event",
+      "full previous canonical record retained in immutable private audit",
+      "identity link and unrelated metadata preserved",
+      "audit failure rolls back ownership stamp, publication and event",
+      "exact replay and cancellation prevent delayed duplicate application",
+      "changed canonical/source comparisons rejected",
+      "pause, viewer, tenant-only, actor mismatch, View-As and revoked authority denied",
+      "raw audit access and service impersonation denied",
+      "bounded review pagination with no duplicate rows",
+      "campaign linkage and unexpected canonical type require separate investigation"
+    ],
+    "localBrowser": [
+      "failed list is unavailable, never an empty healthy state",
+      "delayed detail discarded after company switch",
+      "comparison and reason/confirmation precede apply",
+      "lost apply reply retains a saved request",
+      "retry checks stored receipt without a second apply",
+      "recorded publication explicitly leaves customer-card processing pending"
+    ],
+    "localBrowserConsoleErrors": 0
+  },
+  "verificationScriptCorrection": "The first exact-package readback expected the new table to exist after rollback. Independent inspection confirmed the original schema, all 117 datasets and absent fixtures. The corrected absence-aware readback then passed the same exact package.",
+  "remaining": [
+    "Deploy matching frontend and verify signed-in operator review with existing approved TEST authority.",
+    "Identity-match resolution remains separate and unfinished.",
+    "Large comparisons, invalid source addresses, campaign relations and unexpected canonical types require investigation rather than a generic replacement.",
+    "Verify real-provider capture, unattended processing and source coverage; production promotion requires separate approval."
+  ]
+}

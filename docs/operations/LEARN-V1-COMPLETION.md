@@ -428,6 +428,38 @@ This milestone proves source-to-event publication. The next section adds hosted
 synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
+### Operator projection review backend installed — 11 October, 17:30 UTC
+
+- TEST release **064** adds an authenticated OpenFolk review list, exact source
+  comparison and audited action for legacy/unowned or manually changed canonical
+  communication records. Existing effective platform grants govern access; no
+  user, grant, credential or schedule was added. Raw review history remains private.
+- An administrator can explicitly apply the displayed retained source values.
+  The previous full canonical record, actor, reason and exact receipt are retained
+  in immutable audit history. Source messages/calls, identity links and unrelated
+  metadata remain intact. Publication, event and audit commit together; card
+  processing is reported **pending**, not complete.
+- Changed comparisons, paused inputs, revoked grants, viewers, tenant-only users,
+  actor impersonation and View-As are refused. Check/retry uses the same durable
+  request; cancellation prevents delayed application. Failed audit insertion
+  rolls back the publication. Unexpected canonical types, campaign relationships,
+  invalid addresses and oversized comparisons require separate investigation.
+- The matching OpenFolk module screen is **local/Git only**. Seven client tests,
+  actual local browser checks, application TypeScript and production build passed.
+  Browser checks covered failure/recovery, delayed cross-company comparison and
+  a lost reply recovered with exactly one apply; zero console errors were observed.
+  It labels projection holds separately from identity matching/provider reviews.
+- Full TEST-schema and exact-package rollback rehearsals passed. Installation
+  preserved all **117 existing datasets**; all **118 datasets** matched after six
+  hosted anonymous/service access denials (401/403). No persistent synthetic
+  account/grant/session, provider call or production change occurred. The current
+  protected frontend URL was not replaced.
+- **Outstanding:** matching frontend deployment and positive signed-in hosted
+  review; identity-match resolution; operator workflows for the explicitly held
+  exceptional cases; real-provider capture/coverage and unattended recovery.
+
+[Sanitized TEST evidence](evidence/learn-projection-review-test-2026-10-11.json).
+
 ### Retained Phone/Email to cards installed in TEST — 11 October, 17:10 UTC
 
 - TEST release **063** and **platform-worker v10** are installed. The repair and
@@ -455,8 +487,8 @@ synthetic card delivery; real-provider and signed-in acceptance remain open.
   job admission. That wrapper is **local/Git only**, not deployed. Its legacy
   best-effort start/settlement remains a separate hardening gate.
 - Unowned legacy canonical rows and manually changed projected fields are held
-  visibly for review; they are not overwritten. Operator resolution/requeue is
-  **still missing**. Outstanding holds make the batch report review required;
+  visibly for review; they are not overwritten. Release 064 above adds audited projection reconciliation; signed-in acceptance
+  and identity review remain open. Outstanding holds make the batch report review required;
   successful clean full batches request bounded continuation (20 default, 50 max).
   Generic queue continuation remains best effort and needs final operational
   acceptance before unattended historical import is called complete. Email
@@ -491,7 +523,7 @@ logical grouping and the optional block around a for-of statement.
 
 **Still open:** real-provider/data-coverage and signed-in acceptance; an authorised
 review/requeue UI for `identity_review` cases (their events remain pending); legacy
-repair-projector compatibility; and generic queue-loss recovery. The manually
+projection review acceptance (063/064 above); and generic queue-loss recovery. The manually
 invoked `identity-resolve` wrapper now reports partial failures correctly locally,
 but is absent from TEST and needs job-admission/settlement hardening before deployment.
 The calculated customer-card priority is an operational queue aid with recorded
