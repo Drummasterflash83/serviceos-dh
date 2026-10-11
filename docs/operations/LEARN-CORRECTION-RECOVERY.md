@@ -1,7 +1,7 @@
 # Interrupted numerical correction recovery
 
-Local candidate, 11 October 2026. Hosted TEST remains database release 052 and
-frontend v23; this candidate has not been deployed to TEST or production.
+TEST database release 053 installed on 11 October 2026 at 05:03 UTC.
+Paired protected frontend v24 is READY at 05:05 UTC. Production is unchanged.
 
 The card previously kept an uncertain numerical correction only in component
 memory. Reloading lost its request identity. The card now saves the exact value
@@ -67,11 +67,27 @@ python3 scripts/verify/learn-work-calendars.py --include-delays --include-workin
 
 [Local evidence](evidence/learn-correction-recovery-local-2026-10-11.json).
 
-## Remaining release work
+## TEST release and remaining acceptance
 
-Pin and rehearse the additive migration against the current TEST catalog, verify
-source preservation and access boundaries, then deploy the paired frontend.
-Do not deploy the frontend alone: correction submission first calls the new resolver.
+The exact package passed rollback rehearsal at 05:02 UTC and installed at 05:03 UTC.
+Its observed catalog matched the rehearsed fingerprint. All 101 monitored datasets
+were preserved; the existing correction writer changed only by its guarded
+cancellation check, retaining prior authority. No users, operator grants, provider
+calls or production changes were made. The new cancellation ledger is empty at
+installation. Eight hosted HTTP checks at 05:04 UTC verify denied anonymous/service
+access to correction submission, status/cancellation and direct ledger reads.
+These denials do not constitute positive signed-in acceptance.
+
+[Rollback evidence](evidence/learn-correction-recovery-test-rehearsal-2026-10-11.json) and
+[installation evidence](evidence/learn-correction-recovery-test-install-2026-10-11.json).
+
+The frontend requires this database release because submission first calls its resolver.
 Positive signed-in hosted acceptance, cross-device recovery, complete source
 coverage and production promotion remain separate work. Source emails, calls,
 recordings and existing assessment snapshots are unchanged by this candidate.
+
+The paired frontend was built from backed-up Git commit
+`1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a` and reported READY at 05:05 UTC.
+TEST backend binding, anonymous protection on homepage/login/client routes and
+actual same-origin client/operator sign-in redirects pass, with zero console errors.
+[Paired deployment evidence](evidence/learn-correction-recovery-test-2026-10-11.json).

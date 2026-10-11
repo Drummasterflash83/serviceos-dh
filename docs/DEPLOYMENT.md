@@ -50,17 +50,24 @@ Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
 The current verified staging candidate is
-[serviceos-learn-test-k9hzxdyni-allkin.vercel.app](https://serviceos-learn-test-k9hzxdyni-allkin.vercel.app),
-built remotely from GitHub commit `5bfdc822c4ab5865ab3876ecb2c2c013002939ce`.
-The 11 October 04:46 UTC candidate adds receipt attribution checks before performance
-scoring. It is paired with database release 052, installed at 04:41 UTC after a
-successful rollback rehearsal. All 101 monitored datasets and existing RPC access
-were preserved. Four private helpers and three deferred constraints protect new
-observations, confirmations and assessments. Controller v8 is unchanged.
-Deployment protection and actual client/operator same-origin sign-in redirects pass
-with zero browser console errors. Positive signed-in hosted acceptance remains open;
-the follow-up aggregate audit could not execute the private checker through the
-read-only management endpoint and does not prove historical receipt compatibility.
+[serviceos-learn-test-428847jna-allkin.vercel.app](https://serviceos-learn-test-428847jna-allkin.vercel.app),
+built remotely from GitHub commit `1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a`.
+The 11 October 05:05 UTC candidate adds durable numerical-correction recovery:
+check, exact retry and cancellation after an interrupted request or reload. It is
+paired with TEST database release 053, installed at 05:03 UTC after successful
+rollback rehearsal. All 101 monitored datasets and prior writer authority were
+preserved; the writer adds only its cancellation check. Eight hosted HTTP access-denial
+checks pass. Controller v8 remains unchanged. Deployment protection and actual
+client/operator same-origin sign-in redirects pass with zero browser console errors.
+Positive signed-in hosted recovery acceptance remains open.
+[Correction recovery evidence](operations/evidence/learn-correction-recovery-test-2026-10-11.json).
+
+The earlier 04:46 UTC candidate added receipt attribution checks before performance
+scoring, paired with database release 052 at 04:41 UTC. All 101 monitored datasets
+and prior RPC access were preserved. Four private helpers and three deferred
+constraints guard new observations, confirmations and assessments. The read-only
+management audit cannot execute the private checker and does not prove historical
+receipt compatibility. Positive signed-in hosted acceptance remains open.
 [Receipt release evidence](operations/evidence/learn-measurement-receipts-test-2026-10-11.json).
 
 The earlier 04:11 UTC candidate added complete cursor-based discovery/sync

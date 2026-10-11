@@ -1,0 +1,133 @@
+{
+  "version": "learn-correction-recovery-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceGitSha": "1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a",
+  "backend": {
+    "version": "learn-correction-recovery/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "584948b52e0a2ca6b0c81c05f73bdc3c59b60375070903aa467d7747b47f3343",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T05:03:54.700Z",
+    "priorFingerprint": "b0fb35158b23263826fe6ebe70d0d041",
+    "expectedFingerprint": "a0444e093a188b5d35c9bfd3d2d7ff21",
+    "afterFingerprint": "a0444e093a188b5d35c9bfd3d2d7ff21",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "a0444e093a188b5d35c9bfd3d2d7ff21",
+      "functions": 2
+    }
+  },
+  "http": {
+    "observedAt": "2026-10-11T05:04:12.959Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "role": "anon",
+        "path": "rpc/learn_performance_correction_resolve",
+        "cancel": false,
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "rpc/learn_performance_correction_resolve",
+        "cancel": true,
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "rpc/learn_performance_correct",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "anon",
+        "path": "learn_correction_cancellations?select=id&limit=1",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_performance_correction_resolve",
+        "cancel": false,
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_performance_correction_resolve",
+        "cancel": true,
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "rpc/learn_performance_correct",
+        "status": 403,
+        "code": "42501"
+      },
+      {
+        "role": "service_role",
+        "path": "learn_correction_cancellations?select=id&limit=1",
+        "status": 403,
+        "code": "42501"
+      }
+    ],
+    "signedInOwnerAcceptance": false
+  },
+  "frontend": {
+    "observedAt": "2026-10-11T05:05:28.492Z",
+    "id": "dpl_7gCYyqQDqge4mwkqoEGHK6wSdSGi",
+    "url": "https://serviceos-learn-test-428847jna-allkin.vercel.app",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "target": "staging",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1285975013,
+      "ref": "codex/learn-v1-test",
+      "sha": "1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a"
+    },
+    "framework": "tanstack-start",
+    "nodeVersion": "24.x",
+    "anonymousProtection": {
+      "observedAt": "2026-10-11T05:05:40.907Z",
+      "base": "https://serviceos-learn-test-428847jna-allkin.vercel.app",
+      "checks": [
+        {
+          "path": "/",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/login?redirect=%2Fclient",
+          "status": 302,
+          "protectedByVercel": true
+        },
+        {
+          "path": "/client?section=learn",
+          "status": 302,
+          "protectedByVercel": true
+        }
+      ]
+    }
+  },
+  "browser": {
+    "observedAt": "2026-10-11T05:06:10.178Z",
+    "clientRedirectsToSameOriginSignIn": true,
+    "operatorRedirectsToSameOriginSignIn": true,
+    "consoleErrors": 0,
+    "signedInOwnerAcceptance": false
+  },
+  "productionChanges": false,
+  "providerRequests": 0,
+  "newOperatorGrants": 0,
+  "limitations": [
+    "Recovery/cancellation positive behavior verified using isolated SQL and synthetic browser fixtures; positive signed-in hosted acceptance remains outstanding.",
+    "Recovery remains local to the same browser/account; Web Locks and storage required.",
+    "Complete provider coverage, real staff acceptance and production promotion remain outstanding."
+  ]
+}

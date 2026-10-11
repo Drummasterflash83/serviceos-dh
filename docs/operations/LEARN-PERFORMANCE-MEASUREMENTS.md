@@ -197,9 +197,10 @@ ledger. The scorer uses the original source time for freshness. Missing, malform
 or inconsistent correction history withholds the assessment.
 
 The original form froze a submitted request for same-page retry only. The later
-[local correction recovery candidate](LEARN-CORRECTION-RECOVERY.md) retains the exact
-request across reload and adds server-backed check/retry/cancellation. That paired
-frontend/database candidate is not yet deployed. Cross-device receipt recovery
+[correction recovery release](LEARN-CORRECTION-RECOVERY.md) retains the exact
+request across reload and adds server-backed check/retry/cancellation. Database release 053 and
+paired protected frontend v24 are installed in TEST; positive signed-in recovery acceptance
+remains outstanding. Cross-device receipt recovery
 remains unavailable.
 
 Verification on 10 October:

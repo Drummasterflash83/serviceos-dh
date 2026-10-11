@@ -1,13 +1,18 @@
 # Existing TEST environment: verified release gaps
 
-## Numerical correction recovery — local candidate
+## Numerical correction recovery — TEST database release 053 installed
 
 Interrupted corrections now retain their exact request across reload, scoped to
 actor/company/card/backend. Check, exact retry and cancellation keep original
 observations intact. Forty-six client tests, two-session cancellation/submission
 races, rollback, the working-time schema clone and synthetic browser reload/cancel
-checks pass. No provider calls or hosted changes occurred. The new resolver and
-cancellation ledger require a paired TEST release; do not deploy its frontend alone.
+checks pass. Hosted rollback rehearsal and installation passed at 05:02–05:03 UTC,
+preserving all 101 monitored datasets and existing writer authority. Eight hosted
+HTTP access-denial checks pass. No users, operator grants, provider calls or production
+changes occurred. Paired protected frontend v24 is READY at 05:05 UTC from Git
+`1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a`; binding, authentication protection
+and client/operator sign-in redirects pass with zero console errors. Positive
+signed-in owner acceptance remains open.
 See [correction recovery](LEARN-CORRECTION-RECOVERY.md).
 
 ## Measurement receipt attribution — TEST database release 052 installed
