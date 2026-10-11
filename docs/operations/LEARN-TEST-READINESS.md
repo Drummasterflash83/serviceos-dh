@@ -1,5 +1,16 @@
 # Existing TEST environment: verified release gaps
 
+## Microsoft 365 mail — local transport foundation only
+
+A new Microsoft Graph reader passes 19 synthetic transport tests and strict
+TypeScript checks. It preserves partial updates, duplicates and folder-removal
+history, validates scoped continuation URLs, and reports throttling/expired tokens
+without advancing storage. No real provider requests or hosted changes occurred.
+Microsoft 365 remains an unimplemented connector in the controller: authorization,
+folder discovery, atomic page/cursor storage, shared evidence materialization,
+scheduling and real mailbox acceptance are still required.
+See [Microsoft mail implementation and remaining work](LEARN-MICROSOFT-MAIL.md).
+
 ## Numerical correction recovery — TEST database release 053 installed
 
 Interrupted corrections now retain their exact request across reload, scoped to
