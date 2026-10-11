@@ -225,6 +225,64 @@ Official references checked 11 October:
 [database password reset](https://supabase.com/docs/guides/troubleshooting/how-do-i-reset-my-supabase-database-password-oTs5sB)
 and [connection methods and parameters](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
+### Isolated logical-restore destination — 11 October, 13:51 UTC
+
+**Local synthetic acceptance only. No production or retained TEST database was
+exported or restored.** The reusable destination in
+`scripts/backup/database_restore_sandbox.py` creates a fresh, disposable official
+Supabase PostgreSQL 17 container. It accepts reviewed private SQL files in order;
+it has no source URL or existing-target option. The cached image is resolved to an
+immutable image ID before launch; this run used
+`sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518`.
+
+Before any restore it verifies Docker network `none`, zero host mounts/ports,
+no extra capabilities or privileged mode, private process/IPC namespaces and no
+Docker log capture. PostgreSQL starts with only `pg_cron` preloaded and
+`cron.launch_active_jobs=off`; listeners are restricted to container loopback.
+Those settings are checked again after each SQL file. No Edge Function, application
+worker or hosted scheduler is started. Do not attach the container to a network,
+enable other background workers or change its server settings during a rehearsal.
+
+The actual separate source-to-target `pg_dump`/SQL restore passed row fingerprints,
+recording pointers and retained failed/pending transcript states, composite
+customer/tenant foreign keys and RLS tests for two tenants and missing tenant
+context. An active every-second cron entry and its sequence were exported and
+restored while its effects and run history remained empty. This caught a real
+export omission: `pg_dump --data-only --schema cron` did not include the
+extension-owned `cron.job` data on this image. Explicit table and sequence selection
+did. The eventual real export must inventory extension configuration rather than
+assuming a selected schema includes all of it.
+
+An invalid SQL restore also stopped immediately, withheld raw SQL/error contents
+and removed the partial destination. All rehearsal containers and temporary SQL
+files were removed. [Sanitized evidence](evidence/learn-database-restore-isolation-2026-10-11.json).
+Reproduce using `python3 scripts/backup/verify_database_restore_isolation.py`;
+Docker and the already-installed image are required. This command is entirely
+synthetic and does not need provider credentials.
+
+For the real rehearsal, call `RestoreSandbox` as a context manager, apply the
+reviewed role/schema/data/history files with `restore_sql_files`, and perform the
+source-baseline/relationship checks before leaving that context. SQL files must
+be private regular files (0600), not symlinks. Successful file-load receipts record
+bytes and SHA-256 only. Any SQL failure stops the run; do not skip failing statements
+to produce a green result. Ordinary errors and interrupts clean up the exact
+run-labelled target. A killed host/process can leave a container: identify it by
+the `serviceos-db-recovery-` name and matching
+`ai.openfolk.serviceos.database-recovery` label before removing it. Never run a
+blanket Docker prune as cleanup.
+
+**Still required:** securely obtain database access; acquire a real consistent
+backup and its private comparison baseline; reconcile roles, platform schemas,
+extensions, migration history and encrypted Vault/key dependencies; restore actual
+retained data; compare IDs, relationships and recording manifest digests; and
+verify application/auth behaviour and controlled resumption separately. The
+synthetic fixture is not the full ServiceOS schema, a physical-backup restore,
+proof of Vault decryptability or a measured production recovery time.
+Supabase's [logical backup/restore procedure](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore)
+and pg_cron's [scheduler settings](https://github.com/citusdata/pg_cron#extension-settings)
+remain the reference; the isolation runner does not replace those compatibility
+and recovery checks.
+
 ### Backup metadata observation
 
 The read-only Supabase Management API observation completed at 02:25:54 UTC.

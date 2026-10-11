@@ -1,0 +1,34 @@
+{
+  "scope": "isolated-local-synthetic-dump-and-restore",
+  "productionAccessed": false,
+  "testAccessed": false,
+  "realDatabaseRecoveryProven": false,
+  "checks": {
+    "separateSourceAndTarget": true,
+    "sqlDumpRestored": true,
+    "allRowFingerprintsEqual": true,
+    "recordingPointersAndFailedTranscriptStatePreserved": true,
+    "relationshipsPreserved": true,
+    "crossTenantForeignKeyEnforced": true,
+    "tenantRlsEnforced": true,
+    "missingTenantDenied": true,
+    "activeCronRetainedButDidNotRun": true,
+    "restoreFailureStopsAndCleans": true,
+    "privateErrorContentsWithheld": true,
+    "allContainersRemoved": true,
+    "temporaryDumpRemoved": true
+  },
+  "imageId": "sha256:28f0e16a019e648089fc1a6d333549a55548f6019c15ae4bd7cd58b989027518",
+  "containment": {
+    "network": "none",
+    "hostMounts": 0,
+    "publishedPorts": 0,
+    "cronLaunchActiveJobs": false,
+    "preloadedWorkers": [
+      "pg_cron"
+    ],
+    "containerLogging": "none"
+  },
+  "completedAt": "2026-10-11T13:51:38.713783+00:00",
+  "elapsedSeconds": 8.54
+}

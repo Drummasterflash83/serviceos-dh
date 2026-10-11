@@ -335,6 +335,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   Verify bytes and isolated restore/playback, record duration and recovery point.
   [Recovery plan](LEARN-DATA-RECOVERY.md). The complete observed file inventory and one manifest-selected
   audio restore are verified; database restore and recurring operation remain open.
+  At 13:51 UTC, a reusable offline logical-restore destination passed a separate
+  synthetic PostgreSQL dump/restore: retained row/pointer fingerprints, tenant RLS,
+  cross-tenant foreign keys, an imported active cron job prevented from running,
+  failure redaction and complete disposable-target cleanup. This is preparation,
+  not a real ServiceOS database recovery. Database credentials and real export,
+  restored relationships/audio matching and platform/Vault recovery remain open.
+  [Local restore evidence](evidence/learn-database-restore-isolation-2026-10-11.json).
   The costed proposal now includes 601 MB / 2,888 objects, verified London AWS
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
