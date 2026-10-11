@@ -26,6 +26,7 @@ import {
   type InteractionSummary,
 } from "@/lib/interactions";
 import type { ApiResult } from "@/lib/types";
+import { processingRequestMessage } from "@/lib/learn-processing-request";
 
 function fmtDateTime(iso: string | null): string {
   if (!iso) return "—";
@@ -80,6 +81,7 @@ export function UnifiedTimeline() {
   const [summary, setSummary] = useState<ApiResult<InteractionSummary> | null>(null);
   const [loading, setLoading] = useState(false);
   const [building, setBuilding] = useState(false);
+  const [buildNotice, setBuildNotice] = useState<string | null>(null);
   const [buildError, setBuildError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -97,12 +99,14 @@ export function UnifiedTimeline() {
   async function build() {
     setBuilding(true);
     setBuildError(null);
+    setBuildNotice(null);
     const res = await syncInteractions("all");
     setBuilding(false);
     if (!res.ok) {
       setBuildError(`${res.error.code}: ${res.error.message}`);
       return;
     }
+    setBuildNotice(processingRequestMessage(res.data));
     await load();
   }
 
@@ -129,7 +133,7 @@ export function UnifiedTimeline() {
               className="inline-flex items-center gap-1.5 rounded-full border border-foreground bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90 disabled:opacity-50"
             >
               <Sparkles className={cn("h-3.5 w-3.5", building && "animate-pulse")} />
-              {building ? "Building…" : "Build / refresh"}
+              {building ? "Requesting…" : "Build / refresh"}
             </button>
             <button
               onClick={load}
@@ -152,6 +156,11 @@ export function UnifiedTimeline() {
             <span>Pending: {summ.pending_processing}</span>
             <span>Latest: {fmtDateTime(summ.latest_interaction_at)}</span>
           </div>
+        )}
+        {buildNotice && (
+          <p role="status" className="mt-3 text-xs text-muted-foreground">
+            {buildNotice}
+          </p>
         )}
         {buildError && (
           <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -193,7 +202,7 @@ export function UnifiedTimeline() {
             className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-foreground bg-foreground px-4 py-2 text-xs font-medium text-background transition hover:opacity-90 disabled:opacity-50"
           >
             <Sparkles className={cn("h-3.5 w-3.5", building && "animate-pulse")} />
-            {building ? "Building…" : "Build timeline from existing calls and emails"}
+            {building ? "Requesting…" : "Build timeline from existing calls and emails"}
           </button>
         </div>
       )}

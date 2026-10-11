@@ -1,0 +1,215 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "hosted_manual_admission_to_card_refresh_verified",
+  "newUsers": 0,
+  "newAccessGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "workerRuns": [
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    }
+  ],
+  "admissions": [
+    {
+      "type": "interactions.sync",
+      "status": 202,
+      "duplicate": false,
+      "queueState": "queued"
+    },
+    {
+      "type": "interactions.sync",
+      "status": 202,
+      "duplicate": true,
+      "queueState": "queued"
+    },
+    {
+      "type": "identity.resolve",
+      "status": 202,
+      "duplicate": false,
+      "queueState": "queued"
+    },
+    {
+      "type": "identity.resolve",
+      "status": 202,
+      "duplicate": true,
+      "queueState": "queued"
+    },
+    {
+      "type": "interactions.sync",
+      "status": 202,
+      "duplicate": false,
+      "queueState": "queued"
+    },
+    {
+      "type": "interactions.sync",
+      "status": 202,
+      "duplicate": true,
+      "queueState": "queued"
+    },
+    {
+      "type": "identity.resolve",
+      "status": 202,
+      "duplicate": false,
+      "queueState": "queued"
+    },
+    {
+      "type": "identity.resolve",
+      "status": 202,
+      "duplicate": true,
+      "queueState": "queued"
+    }
+  ],
+  "denials": [
+    {
+      "endpoint": "interactions-sync",
+      "unsigned": 401,
+      "foreignTenant": 403
+    },
+    {
+      "endpoint": "identity-resolve",
+      "unsigned": 401,
+      "foreignTenant": 403
+    }
+  ],
+  "unsignedStatus": 403,
+  "delivery": {
+    "cards": 2,
+    "refreshed_cards": 1,
+    "enriched": 2,
+    "pending": 0,
+    "consumed": 3,
+    "projection_receipts": 3,
+    "identity_receipts": 3,
+    "fenced_publications": 6,
+    "queue_settlements": 10,
+    "provider_runs": 0,
+    "recordings": 0,
+    "actual_provider": 1
+  },
+  "identityAndCardLinksPreserved": true,
+  "fixtureArchived": true,
+  "fixtureAbsent": false,
+  "preservedNonFixtureDatasets": 121,
+  "schemaUnchanged": true,
+  "observedAt": "2026-10-11T18:22:26.156Z",
+  "limitations": [
+    "Synthetic retained Phone/Email sources and existing internal TEST authority; no real provider or signed-in browser acceptance.",
+    "Synthetic records remain in an archived fixture tenant. Broader queue types and signed-in operator acceptance are separate gates.",
+    "Both manual endpoints were exercised with existing internal authority; human sign-in and unattended worker scheduling remain separate acceptance gates."
+  ],
+  "sourceBundleSha256": "3fc4bbbc2b146921b984dafdce70dc609218c728c81d4ffc14bf15d60ba7e402",
+  "endpoints": [
+    {
+      "name": "identity-resolve",
+      "version": 1,
+      "verifyJwt": true
+    },
+    {
+      "name": "interactions-sync",
+      "version": 1,
+      "verifyJwt": true
+    },
+    {
+      "name": "platform-worker",
+      "version": 12,
+      "verifyJwt": false
+    }
+  ],
+  "frontendDeployed": false,
+  "verification": {
+    "strictLocalWorkerTypecheck": true,
+    "typecheckUsesInstalledSdkAndDenoShim": true,
+    "applicationTypecheck": true,
+    "applicationBuild": true,
+    "marketingRegressionTests": 39,
+    "policyAssertions": 29,
+    "manualAdmissionClientTests": 8,
+    "downloadedQueueAndAdmissionTests": 41,
+    "matchingWorkerRuntimeModules": 92,
+    "matchingManualEndpointModulesEach": 5,
+    "browserStates": [
+      "queued",
+      "retrying",
+      "unconfirmed clears earlier queued notice"
+    ],
+    "browserConsoleErrors": 0
+  }
+}

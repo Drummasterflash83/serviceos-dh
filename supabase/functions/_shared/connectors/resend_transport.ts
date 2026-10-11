@@ -55,7 +55,7 @@ export interface ResendSendOptions {
 // A genuine Resend secret key looks like `re_` + a long token. Anything else
 // (blank, "fixture", a placeholder, a publishable key) is NOT a send key and is
 // refused BEFORE any network work — no simulation, no success.
-export function isPlausibleResendKey(key: string | null | undefined): boolean {
+export function isPlausibleResendKey(key: string | null | undefined): key is string {
   return typeof key === "string" && /^re_[A-Za-z0-9_-]{16,}$/.test(key);
 }
 

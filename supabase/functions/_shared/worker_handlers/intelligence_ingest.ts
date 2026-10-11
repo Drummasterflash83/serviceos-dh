@@ -26,9 +26,7 @@ import {
 import { shouldCreateIntelligence, type EligibilityDecision } from "../intelligence/eligibility.ts";
 
 const INTERACTION_COLUMNS =
-  "id, tenant_id, source_type, source_connector_id, source_table, source_id, source_external_id, " +
-  "interaction_type, direction, processing_status, occurred_at, subject, summary, body_preview, " +
-  "from_name, from_address, sentiment, priority, related_person_id, related_company_id";
+  "id, tenant_id, source_type, source_connector_id, source_table, source_id, source_external_id, interaction_type, direction, processing_status, occurred_at, subject, summary, body_preview, from_name, from_address, sentiment, priority, related_person_id, related_company_id";
 
 function parseIds(payload: Record<string, unknown> | null | undefined): string[] {
   if (!payload) return [];

@@ -40,7 +40,7 @@ function resolveOperand(
   profile: EffectiveProfile,
 ): unknown {
   if (typeof operand === "number" || typeof operand === "string") return operand;
-  if ("field" in operand) return (object as Record<string, unknown>)[operand.field];
+  if ("field" in operand) return object[operand.field as keyof IntelligenceObject];
   if ("attr" in operand) return object.attributes?.[operand.attr];
   if ("profile" in operand) return profileValue(profile, operand.profile);
   if ("const" in operand) return operand.const;

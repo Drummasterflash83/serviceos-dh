@@ -370,7 +370,7 @@ export const marketingEmailAdapter: AutomationConnectorAdapter = {
       // FAIL CLOSED: a missing / placeholder / malformed key is an honest,
       // retryable operator-config gap — nothing is sent, no network call, and
       // a simulated value can never become a success.
-      if (!isPlausibleResendKey(apiKey ?? null)) {
+      if (!isPlausibleResendKey(apiKey)) {
         return transient(
           "resend_not_configured",
           "RESEND_API_KEY is missing or not a valid Resend key",

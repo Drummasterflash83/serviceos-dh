@@ -302,6 +302,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           }
           return {
             outcome: "succeeded",
+            retryable: false,
             externalReference: `${env.action_type}:${tagId}`,
             result: { action: env.action_type, tag_id: tagId, applied: r.data ?? null },
           };
@@ -333,6 +334,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           if (cur.row && cur.row.lifecycle_stage_key === stageKey) {
             return {
               outcome: "succeeded",
+              retryable: false,
               externalReference: `lifecycle:${stageKey}`,
               result: { action: env.action_type, stage_key: stageKey, converged: true },
             };
@@ -369,6 +371,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           }
           return {
             outcome: "succeeded",
+            retryable: false,
             externalReference: `lifecycle:${stageKey}`,
             result: { action: env.action_type, stage_key: stageKey, converged: false },
           };
@@ -400,6 +403,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           if (curOwner.row && curOwner.row.owner_id === ownerId) {
             return {
               outcome: "succeeded",
+              retryable: false,
               externalReference: `owner:${ownerId}`,
               result: { action: env.action_type, owner_profile_id: ownerId, converged: true },
             };
@@ -430,6 +434,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           }
           return {
             outcome: "succeeded",
+            retryable: false,
             externalReference: `owner:${ownerId}`,
             result: { action: env.action_type, owner_profile_id: ownerId, converged: false },
           };
@@ -467,6 +472,7 @@ export const marketingActionsAdapter: AutomationConnectorAdapter = {
           const out = (r.data ?? {}) as Record<string, unknown>;
           return {
             outcome: "succeeded",
+            retryable: false,
             externalReference: `follow_up:${String(out.work_item_id ?? "")}`,
             result: {
               action: env.action_type,

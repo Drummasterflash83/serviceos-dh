@@ -428,6 +428,40 @@ This milestone proves source-to-event publication. The next section adds hosted
 synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
+### Manual processing joins the durable queue — 11 October, 18:22 UTC
+
+- TEST `platform-worker` **v12**, `interactions-sync` **v1** and `identity-resolve`
+  **v1** are installed against unchanged release 066. The manual endpoints require
+  the existing authenticated owner/admin/ops or internal tenant authority. They
+  confirm a tenant-bound queued job and return HTTP 202; they never run an
+  unclaimed handler or mark its work complete. Duplicate active requests reuse
+  the confirmed job. Unsupported options and malformed batch limits are rejected.
+- Hosted synthetic acceptance entered through both real manual HTTP endpoints:
+  four original requests and four duplicate retries, followed by ten worker runs.
+  Two customer cards were delivered and one updated after a retained source change;
+  identity/card links, all 121 non-fixture datasets and schema were preserved.
+  Unsigned calls received 401 and foreign-tenant requests 403. No user, grant,
+  credential, capture schedule, provider request or production write was added.
+- The timeline now explains request acceptance, retry, cancellation and failure
+  without calling the full backlog complete when only one batch has finished.
+  The actual component passed local browser checks, including clearing an earlier
+  queued notice after a failed request, with zero observed console errors. This
+  frontend change is **local/Git only**; the hosted preview has not changed.
+- The nine earlier worker type errors are corrected. The full worker and both
+  manual endpoints pass `node scripts/verify/learn-worker-typecheck.mjs` using the
+  installed SDK declarations and a minimal Deno shim. This is not a native Deno
+  type check. Application TypeScript/build, 39 existing Marketing tests, 29 policy
+  assertions and eight new admission/client checks pass. All 41 queue/admission
+  checks also pass against downloaded TEST modules. Source comparison found 92
+  matching worker runtime modules and all five modules of each manual endpoint.
+- Remaining acceptance: matching frontend deployment, signed-in manual requests,
+  automatic worker dispatch/identity scheduling, real-provider coverage and
+  production approval. The hosted probe deliberately invokes the worker and each
+  manual endpoint; it does **not** prove unattended processing. Other generic
+  queue types remain outside this durable settlement change.
+
+[Manual processing evidence](evidence/learn-processing-request-test-2026-10-11.json).
+
 ### Durable retained-input queue verified — 11 October, 18:11 UTC
 
 - TEST release **066** and **platform-worker v11** now fence queued
@@ -452,12 +486,13 @@ synthetic card delivery; real-provider and signed-in acceptance remain open.
 - Strict checking of changed helper/identity modules passed. The wider worker
   dependency check still reports **nine pre-existing errors** in unchanged
   Marketing/Intelligence code, reproduced against the previous Git checkpoint.
-  Resolve these before claiming a clean full-worker type check.
+  This historical failure is resolved by the subsequent manual-processing release above.
 - No users, grants, credentials, capture schedules, real provider requests or
   production changes. This is queued synthetic TEST acceptance, not real-provider
   coverage or signed-in customer acceptance. Manual `interactions-sync` and
   `identity-resolve` endpoints remain undeployed pending lifecycle hardening;
-  other generic queue types still need their own recovery review.
+  other generic queue types still need their own recovery review. The subsequent
+  manual-processing release above replaces these manual endpoints with queue admission.
 
 [Release evidence](evidence/learn-processing-queue-test-2026-10-11.json).
 
@@ -593,7 +628,7 @@ logical grouping and the optional block around a for-of statement.
 signed-in review of initial `identity_review` cases (065 above) and broader attribution corrections; legacy
 projection review acceptance (063/064 above); and recovery for other generic queue types (queued identity/projection addressed by 066 above). The manually
 invoked `identity-resolve` wrapper now reports partial failures correctly locally,
-but is absent from TEST and needs job-admission/settlement hardening before deployment.
+and has since been replaced by the queued TEST manual endpoint described above.
 The calculated customer-card priority is an operational queue aid with recorded
 inputs and an explicit UTC daily window, not staff performance/pay scoring.
 [Release and hosted journey evidence](evidence/learn-identity-card-test-2026-10-11.json).

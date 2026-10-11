@@ -1,3 +1,7 @@
+import {
+  processingRequestReceipt,
+  type ProcessingRequestReceipt,
+} from "./learn-processing-request";
 /**
  * Canonical Interactions — tenant-scoped reads (RLS browser client) + a sync
  * trigger (Edge Function). The `interactions` table is the shared business
@@ -59,12 +63,7 @@ export interface InteractionSummary {
   latest_interaction_at: string | null;
 }
 
-export interface InteractionsSyncResult {
-  success: boolean;
-  phone_processed: number;
-  email_processed: number;
-  interactions_upserted: number;
-}
+export type InteractionsSyncResult = ProcessingRequestReceipt;
 
 const INTERACTION_COLUMNS =
   "id, tenant_id, source_connector_id, source_type, source_table, source_id, source_external_id, interaction_type, direction, occurred_at, subject, summary, body_preview, from_address, from_name, to_addresses, cc_addresses, phone_from, phone_to, status, processing_status, sentiment, priority, related_thread_id, created_at, updated_at";
@@ -177,5 +176,14 @@ export async function syncInteractions(
   if (error) {
     return { ok: false, error: { code: "sync_failed", message: error.message } };
   }
-  return { ok: true, data: data as InteractionsSyncResult };
+  const receipt = processingRequestReceipt(data, source);
+  if (!receipt)
+    return {
+      ok: false,
+      error: {
+        code: "job_unconfirmed",
+        message: "We could not confirm the processing request. Please retry.",
+      },
+    };
+  return { ok: true, data: receipt };
 }
