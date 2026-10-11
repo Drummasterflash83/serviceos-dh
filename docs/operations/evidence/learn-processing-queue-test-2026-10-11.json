@@ -1,0 +1,145 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "hosted_durable_queue_drain_and_incremental_card_refresh_verified",
+  "newUsers": 0,
+  "newAccessGrants": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "workerRuns": [
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "interactions.sync",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    },
+    {
+      "type": "identity.resolve",
+      "status": 200,
+      "claimed": 1,
+      "succeeded": 1,
+      "failed": 0,
+      "unconfirmed": 0
+    }
+  ],
+  "unsignedStatus": 403,
+  "delivery": {
+    "cards": 2,
+    "refreshed_cards": 1,
+    "enriched": 2,
+    "pending": 0,
+    "consumed": 3,
+    "projection_receipts": 3,
+    "identity_receipts": 3,
+    "fenced_publications": 6,
+    "queue_settlements": 10,
+    "provider_runs": 0,
+    "recordings": 0,
+    "actual_provider": 1
+  },
+  "identityAndCardLinksPreserved": true,
+  "fixtureArchived": true,
+  "fixtureAbsent": false,
+  "preservedNonFixtureDatasets": 121,
+  "schemaUnchanged": true,
+  "observedAt": "2026-10-11T18:11:22.260Z",
+  "limitations": [
+    "Synthetic retained Phone/Email sources and existing internal TEST authority; no real provider or signed-in browser acceptance.",
+    "Synthetic records remain in an archived fixture tenant. Broader queue types and signed-in operator acceptance are separate gates.",
+    "The manual interactions-sync endpoint has not been deployed; this verifies the actual queued platform-worker path."
+  ],
+  "release": "066",
+  "workerVersion": 11,
+  "packageSha256": "2357d9fb1da4bed422f812884709ae041822825ad781608addbe9987a83f1f79",
+  "sourceSha256": "8ed9e12e939220718f9d479b904ade80c6f426b4f7bce46b934dabda581298cb",
+  "catalogFingerprint": "e7897de65753b003869960b6b054215d",
+  "preservedDatasetsAtInstall": 119,
+  "runtimeBundleSha256": "a4054f2a4a5062d0b6a54da997f2ee49862dbdff1470bc406f0b589a9ed2bd66",
+  "verification": {
+    "fullSchemaRollback": true,
+    "exactPackageRollback": true,
+    "localFocusedTests": 33,
+    "downloadedFocusedTests": 33,
+    "matchingRuntimeModules": 92,
+    "typeOnlyPrunedModules": 3,
+    "changedModulesStrictTypecheck": true,
+    "fullWorkerTypecheck": false,
+    "baselineUnchangedTypeErrors": 9,
+    "offlineLostAcknowledgementJourney": true,
+    "lateAuditFailureRollback": true,
+    "expiredLeaseRollback": true,
+    "continuationFailureRollback": true
+  },
+  "remaining": [
+    "Real provider coverage and signed-in customer/operator acceptance",
+    "Manual endpoint job admission and settlement hardening",
+    "Recovery review for other generic queue types",
+    "Nine existing Marketing/Intelligence type errors",
+    "Production release approval and acceptance"
+  ]
+}

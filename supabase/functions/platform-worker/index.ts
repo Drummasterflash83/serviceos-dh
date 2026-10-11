@@ -1,3 +1,4 @@
+import { isLearnProcessingJob, runLearnProcessingJob } from "../_shared/learn-processing-job.ts";
 import { settlePhoneJob } from "../_shared/phone-recovery-job.ts";
 import {
   captureAdmission,
@@ -93,8 +94,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!scheduleAuthorized && !serviceAuthorized)
     return fail("forbidden", "Invalid or missing worker authorization", 403);
 
-  const admin = createSupabaseAdmin();
-  if (!serviceKey || !admin) return fail("config_error", "Service role is not configured", 500);
+  const configuredAdmin = createSupabaseAdmin();
+  if (!serviceKey || !configuredAdmin)
+    return fail("config_error", "Service role is not configured", 500);
+  const admin = configuredAdmin;
 
   let body: { batch_size?: unknown; job_types?: unknown } = {};
   try {
@@ -157,14 +160,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // The one place every pipeline stage reports health: map the job to its sensor
       // component and emit healthy on success / degraded (retry) / failed (dead-letter).
       const component = healthComponentForJob(jobType);
-      const r = await handler({
+      const handlerContext = {
         supabaseAdmin: admin,
         tenantId,
         jobId: id,
         jobType,
         payload,
         claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
-      });
+      };
+      if (isLearnProcessingJob(jobType)) {
+        const settled = await runLearnProcessingJob(handlerContext, handler);
+        if (settled.state === "unconfirmed") counts.unconfirmed += 1;
+        else if (settled.state === "succeeded") counts.succeeded += 1;
+        else if (settled.state === "retrying") counts.retrying += 1;
+        else counts.dead_lettered += 1;
+        if (component && settled.state !== "unconfirmed" && !settled.historicalReceipt)
+          await recordHealthCheck(admin, {
+            tenantId,
+            component,
+            status:
+              settled.state === "succeeded"
+                ? "healthy"
+                : settled.state === "retrying"
+                  ? "degraded"
+                  : "failed",
+            ...(settled.result.error ? { error: settled.result.error.message } : {}),
+            metadata: {
+              job_type: jobType,
+              outcome: settled.state,
+              records: settled.result.recordsProcessed ?? 0,
+              continuation_job_id: settled.continuationJobId ?? null,
+            },
+          });
+        return;
+      }
+      const r = await handler(handlerContext);
       if (jobType === "phone.process_pending") {
         const outcome = await settlePhoneJob(
           admin,

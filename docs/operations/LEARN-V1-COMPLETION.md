@@ -428,6 +428,39 @@ This milestone proves source-to-event publication. The next section adds hosted
 synthetic card delivery; real-provider and signed-in acceptance remain open.
 [Release and verification evidence](evidence/learn-phone-atomic-handoff-test-2026-10-11.json).
 
+### Durable retained-input queue verified — 11 October, 18:11 UTC
+
+- TEST release **066** and **platform-worker v11** now fence queued
+  `interactions.sync` and `identity.resolve` publication to the exact tenant,
+  worker, attempt and unexpired claim. Publication and its immutable receipt
+  commit together; a stale worker cannot publish new results.
+- Finishing a batch and scheduling its continuation now commit together. A lost
+  acknowledgement is inspected using the original request, without repeating the
+  mutation. Unconfirmed settlement cannot become a generic success or fresh
+  healthy heartbeat. Persisted identity-review holds remain visible even when
+  the next inventory batch is empty.
+- Hosted synthetic Phone/Email acceptance completed **10 worker calls**, producing
+  two cards, refreshing one after a source update, and leaving zero pending
+  interaction events. Six fenced publications and ten durable job settlements
+  were verified. Identity/card links and all **121 non-fixture datasets** were
+  preserved; the synthetic tenant was archived with its evidence retained.
+- Full-schema and exact-package rollback rehearsals passed, including claim,
+  tenant, expired-lease, audit-failure, continuation-failure and retry checks.
+  The offline real-handler journey recovered deliberately lost acknowledgements.
+  All **33 focused tests** passed locally and against downloaded TEST modules;
+  92 deployed runtime modules matched the tested source after syntax normalization.
+- Strict checking of changed helper/identity modules passed. The wider worker
+  dependency check still reports **nine pre-existing errors** in unchanged
+  Marketing/Intelligence code, reproduced against the previous Git checkpoint.
+  Resolve these before claiming a clean full-worker type check.
+- No users, grants, credentials, capture schedules, real provider requests or
+  production changes. This is queued synthetic TEST acceptance, not real-provider
+  coverage or signed-in customer acceptance. Manual `interactions-sync` and
+  `identity-resolve` endpoints remain undeployed pending lifecycle hardening;
+  other generic queue types still need their own recovery review.
+
+[Release evidence](evidence/learn-processing-queue-test-2026-10-11.json).
+
 ### Operator initial identity review installed — 11 October, 17:50 UTC
 
 - TEST release **065** adds a paged held-interaction list, tenant-scoped contact
@@ -558,7 +591,7 @@ logical grouping and the optional block around a for-of statement.
 
 **Still open:** real-provider/data-coverage and signed-in acceptance; an authorised
 signed-in review of initial `identity_review` cases (065 above) and broader attribution corrections; legacy
-projection review acceptance (063/064 above); and generic queue-loss recovery. The manually
+projection review acceptance (063/064 above); and recovery for other generic queue types (queued identity/projection addressed by 066 above). The manually
 invoked `identity-resolve` wrapper now reports partial failures correctly locally,
 but is absent from TEST and needs job-admission/settlement hardening before deployment.
 The calculated customer-card priority is an operational queue aid with recorded

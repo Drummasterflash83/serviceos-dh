@@ -8,6 +8,9 @@ import vm from "node:vm";
 import ts from "typescript";
 const tenant = "00000000-0000-4000-8000-000000000001";
 async function run({
+  jobId = "job",
+  processingLost = false,
+  processingUnconfirmed = false,
   allowed = true,
   childPaused = false,
   deferError = false,
@@ -32,7 +35,7 @@ async function run({
         return {
           data: [
             {
-              id: "job",
+              id: jobId,
               tenant_id: tenant,
               job_type: jobType,
               attempt_count: 1,
@@ -61,6 +64,34 @@ async function run({
               data: { job_id: "job", state: "waiting", reason: args.p_reason, attempt_count: 0 },
               error: null,
             };
+      if (name === "learn_processing_settle") {
+        if (processingUnconfirmed) return { data: null, error: { message: "PRIVATE" } };
+        if (processingLost && args.p_phase === "settle")
+          throw Error("Synthetic lost settlement reply");
+        return {
+          data: {
+            version: "learn-processing-settlement/1",
+            tenant_id: tenant,
+            job_id: jobId,
+            job_type: jobType,
+            attempt: 1,
+            worker: args.p_worker,
+            request_id: args.p_request,
+            state: args.p_definition.success
+              ? "succeeded"
+              : args.p_definition.retryable
+                ? "retrying"
+                : "dead_letter",
+            continuation_job_id: args.p_definition.continue
+              ? "00000000-0000-4000-8000-000000000009"
+              : null,
+            records_processed: args.p_definition.records_processed,
+            publications_committed: args.p_definition.records_processed,
+            settled_at: new Date().toISOString(),
+          },
+          error: null,
+        };
+      }
       throw Error("Unexpected RPC " + name);
     },
     from: () => {
@@ -384,4 +415,39 @@ test("a completed Phone recovery check with paused capture does not report healt
   assert.equal(r.result.succeeded, 1);
   assert.equal(r.health.length, 1);
   assert.equal(r.health[0].status, "degraded");
+});
+
+test("retained-input processors use atomic settlement, not generic completion or enqueue", async () => {
+  const r = await run({
+    jobId: "00000000-0000-4000-8000-000000000002",
+    jobType: "identity.resolve",
+  });
+  assert.equal(r.result.succeeded, 1);
+  assert.equal(r.health.length, 1);
+  assert.equal(r.calls.filter((c) => c.name === "learn_processing_settle").length, 1);
+  assert.ok(r.writes.every((w) => w.status !== "succeeded" && w.completed_at === undefined));
+});
+test("lost processing settlement is recovered without fresh health or a second mutation", async () => {
+  const r = await run({
+    jobId: "00000000-0000-4000-8000-000000000002",
+    jobType: "interactions.sync",
+    processingLost: true,
+  });
+  assert.equal(r.result.succeeded, 1);
+  assert.equal(r.health.length, 0);
+  assert.deepEqual(
+    r.calls.filter((c) => c.name === "learn_processing_settle").map((c) => c.args.p_phase),
+    ["settle", "inspect"],
+  );
+});
+test("unknown processing settlement stays unconfirmed without generic completion or failure", async () => {
+  const r = await run({
+    jobId: "00000000-0000-4000-8000-000000000002",
+    jobType: "identity.resolve",
+    processingUnconfirmed: true,
+  });
+  assert.equal(r.result.succeeded, 0);
+  assert.equal(r.result.unconfirmed, 1);
+  assert.equal(r.health.length, 0);
+  assert.ok(r.writes.every((w) => w.status !== "succeeded" && w.status !== "dead_letter"));
 });
