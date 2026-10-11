@@ -87,11 +87,43 @@ network-isolated PostgreSQL 17 schema-only clone with synthetic records.
 
 [Verification record](evidence/learn-working-collection-local-2026-10-11.json).
 
+## Company-volume and API acceptance follow-up
+
+The extended verifier supports `--include-working-corrections`,
+`--include-working-volume` and `--include-working-http`. These flags can run
+together; volume acceptance finishes before the large-history HTTP fixture is added.
+All records, authentication claims and API traffic remain disposable and synthetic.
+The cached PostgREST sidecar shares the database's isolated network namespace;
+it exposes no host port and cannot contact a provider.
+
+- Person and team collections each process 14,500 items in 145 independently
+  committed 100-item batches. All 290 result pages are read, covering 29,000
+  results. Exact microsecond totals reconcile with an independent captured-history
+  calculation and the final inferred measurements. Timing is local test evidence,
+  not a promise about hosted or live response times.
+- Three actual simultaneous begin/abandon races retain a stable terminal
+  cancellation. A delayed begin cannot resurrect the request.
+- Saving a ready-only revision during a ready-and-waiting collection preserves the
+  earlier collection's original states. A new collection uses the new revision.
+- Real owner correction RPCs withhold member/team values and support a subsequent
+  correction, preserve source freshness and all original receipts/inputs, keep
+  review inferred, reject forks and reuse exact retries. Direct browser execution
+  of the generic append function is denied; only the existing trusted server path
+  can append automatic observations. No additional append authority was granted.
+- Actual local HTTP begin/step/evidence requests deliver a retained history above
+  1.8 MB intact. Anonymous and foreign-tenant reads reject. This exercises cached
+  PostgREST v14.5, not the hosted gateway or its limits.
+- Oversized frozen histories are checked before writes and return SQLSTATE `54000`,
+  which the client identifies as the supported evidence limit. The failing batch
+  must preserve the prior checkpoint, leave its item inputs unsaved and append no
+  measurement. The original request remains available for review or explicit ending.
+
+[Extended acceptance record](evidence/learn-working-acceptance-local-2026-10-11.json).
+
 ## Still required
 
-Working-time volume/transport tests at the full company population, additional
-begin/abandon and rule-change races, governed measurement-source/correction review,
-paired hosted TEST deployment and signed-in owner acceptance. Real Drummonds
-company hours and scoring states require deliberate configuration. This checkpoint
-does not finish provider imports, voicemail, Slack activation, operational rollout
-or production readiness for LEARN V1.
+Paired hosted TEST deployment, hosted gateway/transport checks and signed-in owner
+acceptance. Real Drummonds company hours and scoring states require deliberate
+configuration. Employee shifts/leave remain outside the company-calendar calculation.
+This checkpoint does not finish provider imports, voicemail, Slack activation,
+operational rollout or production readiness for LEARN V1.

@@ -360,3 +360,34 @@ test("working-time collection requires explicit saved states and never accepts m
     );
   }
 });
+
+test("an oversized retained history stops at the saved batch and remains recoverable", async () => {
+  const previous = parseWorkCollectionProgress(
+    status({ processed: 100, eligible: 100, covered: 100 }),
+    request,
+  );
+  const saved = structuredClone(previous);
+  let calls = 0;
+  const db = {
+    rpc: async (name: string, args: any) => {
+      calls++;
+      assert.equal(name, "learn_work_collection_step");
+      assert.equal(args.p_request, request.requestId);
+      assert.equal(args.p_after, 100);
+      return { data: null, error: { code: "54000" } };
+    },
+  };
+  await assert.rejects(
+    advanceWorkCollection(db, request, previous),
+    /source history exceeds the supported evidence limit/,
+  );
+  assert.equal(calls, 1);
+  assert.deepEqual(previous, saved, "A failed batch must not advance the retained checkpoint");
+  const checked = await readWorkCollectionProgress(
+    { rpc: async () => ({ data: saved, error: null }) },
+    request,
+    previous,
+  );
+  assert.equal(checked.processed, 100);
+  assert.equal(checked.state, "collecting");
+});

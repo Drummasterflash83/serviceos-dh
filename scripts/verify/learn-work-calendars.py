@@ -255,6 +255,9 @@ try:
         collection_sql=(ROOT/'supabase/migrations/20261101130000_learn_working_time_collection.sql').read_bytes()
         apply(b'begin;'+collection_sql+b'rollback;', 'Working-time collector rollback rehearsal')
         apply(collection_sql, 'Working-time collector and rule validation')
+        bounds_sql=(ROOT/'supabase/migrations/20261101140000_learn_working_collection_input_bounds.sql').read_bytes()
+        apply(b'begin;'+bounds_sql+b'rollback;', 'Working-time input bounds rollback rehearsal')
+        apply(bounds_sql, 'Explicit working-time retained-input bounds')
         apply((ROOT/'scripts/verify/learn-working-collection.assert.sql').read_bytes(), 'Frozen working-time collection, exact recovery and preserved source evidence')
         collection_data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc', """set request.jwt.claim.sub='bbb50000-0000-4000-8000-000000000001';set role authenticated;
           select jsonb_agg(jsonb_build_object('overview',learn_work_collection_evidence(tenant_id,id,'overview',0),
@@ -267,6 +270,16 @@ try:
         print(parsed.stdout.decode().strip())
         import runpy
         runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-concurrency.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})
+        apply((ROOT/'scripts/verify/learn-working-rule-change.assert.sql').read_bytes(), 'Saved state changes preserve earlier collections and govern new revisions')
+        if '--include-working-corrections' in sys.argv:
+            apply((ROOT/'supabase/migrations/20261031020000_learn_performance_corrections.sql').read_bytes(), 'Existing governed performance correction migration')
+            apply((ROOT/'scripts/verify/learn-working-corrections.assert.sql').read_bytes(), 'Working-time correction provenance, retries and preservation')
+        if '--include-working-volume' in sys.argv:
+            apply((ROOT/'scripts/verify/learn-working-collection-volume.assert.sql').read_bytes(), 'Company-volume working-time capture and frozen begin')
+            runpy.run_path(str(ROOT/'scripts/verify/learn-working-collection-volume.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET})
+        if '--include-working-http' in sys.argv:
+            apply((ROOT/'scripts/verify/learn-working-transport.assert.sql').read_bytes(), 'Large captured history for isolated HTTP acceptance')
+            runpy.run_path(str(ROOT/'scripts/verify/learn-working-transport.py'), init_globals={'DOCKER':DOCKER,'TARGET':TARGET,'docker':docker})
 
 finally:
     subprocess.run([DOCKER, 'rm', '-f', TARGET], capture_output=True)

@@ -1,0 +1,74 @@
+{
+  "version": "learn-working-acceptance-local/1",
+  "observedAt": "2026-10-11T01:44:11.442968+00:00",
+  "baseCheckpoint": "0703afd43e3469f8b7366aaacc900e3881f10e71",
+  "scope": "Disposable synthetic schema-only PostgreSQL 17 clone, cached PostgREST v14.5, no host ports or provider network",
+  "deployed": false,
+  "hostedReleaseUnchanged": "049",
+  "productionChanges": false,
+  "providerRequests": 0,
+  "sourceSha256": {
+    "supabase/migrations/20261101140000_learn_working_collection_input_bounds.sql": "eef4047164686fa4a97d5f20e25abf1bd3cf4e68b8d6d0ae781fd759d90a31af",
+    "scripts/verify/learn-work-calendars.py": "835658fc9ad43805a1776cd1e99c7cb3cc06b048a18a68774edfb59d7261518e",
+    "scripts/verify/learn-working-collection-concurrency.py": "80de9c43c5ca1a089557908479f2064ad535b1d7f4ff2185284936c9b3a0e6de",
+    "scripts/verify/learn-working-collection-volume.assert.sql": "82588dd594237924b94a8cbf36e6e24fc75779508a1b8cf45409ca78a1900e1b",
+    "scripts/verify/learn-working-collection-volume.py": "a4dff0ffc44881e4d5383f433ab1d91e589b7825fbd8dbf92770031d580ce230",
+    "scripts/verify/learn-working-corrections.assert.sql": "d7dc2a75e7d0e3a7e0cecae82bdea21eb14953d2ed7031aecfde87a6e4073fb4",
+    "scripts/verify/learn-working-rule-change.assert.sql": "bf3e4d73510d3f8d811c62dd7d03b7f290c0fc99e29feb8146e32f55121c372c",
+    "scripts/verify/learn-working-transport.assert.sql": "f3465dd6a41f3e7f084a42a1484c318fdf7aabf3f66dcd1a32977c1c633469e6",
+    "scripts/verify/learn-working-transport.py": "399395ceb7dc20d4dbf04cc98f4a4ce1da1206b43df57b798a18350706d7a791",
+    "src/lib/learn-resumable-work.test.ts": "6315a077aa2a9ed27110b345d20531541728888e862ef5664b05da7a6d353c92"
+  },
+  "command": "python3 -u scripts/verify/learn-working-collection.py --include-working-corrections --include-working-volume --include-working-http",
+  "volume": {
+    "workingTimeCompanyVolume": "passed",
+    "measurements": [
+      {
+        "kind": "member",
+        "items": 14500,
+        "committedBatches": 145,
+        "proofPages": 145,
+        "maxPageBytes": 182707,
+        "maxBatchSeconds": 0.129,
+        "totalBatchSeconds": 15.178
+      },
+      {
+        "kind": "team",
+        "items": 14500,
+        "committedBatches": 145,
+        "proofPages": 145,
+        "maxPageBytes": 193607,
+        "maxBatchSeconds": 0.181,
+        "totalBatchSeconds": 15.407
+      }
+    ]
+  },
+  "http": {
+    "workingTimeHTTP": "passed",
+    "postgrest": "v14.5",
+    "retainedItemBytes": 1801421,
+    "attributesEachPreserved": 900000,
+    "anonymousAndForeignDenied": true,
+    "directBrowserAppendDenied": true,
+    "oversizedHTTPCode": "54000",
+    "failedBatchAtomic": true
+  },
+  "verification": {
+    "previousWorkingCollectionSuite": "passed",
+    "inputBoundRollbackRehearsal": "passed",
+    "threeConcurrentBeginAbandonRaces": "stable terminal cancellation; delayed begin does not restart",
+    "midCollectionNewRuleRevision": "earlier states retained; later revision applied only to new collection",
+    "manualCorrections": "member/team withholding, correction chain, exact retries, fork denial, original source timing/counts/evidence preserved and reviews remain inferred",
+    "originalReceiptPreservation": "all pre-correction measurements, collection runs and working inputs unchanged",
+    "focusedClientTests": 23,
+    "failedTests": 0,
+    "pythonSyntax": "AST parsing passed",
+    "diffCheck": "passed"
+  },
+  "limits": [
+    "Synthetic source histories and one synthetic roster; not production workload distribution or a latency guarantee",
+    "HTTP response verified at 1,801,421 bytes and over-limit rollback; not the hosted gateway or every maximum-size combination",
+    "Hosted append/review release bodies and full selective-release dependency/role compatibility still require paired deployment rehearsal and owner acceptance",
+    "Real Drummonds company hours and state criteria not configured; broader LEARN provider and launch requirements remain"
+  ]
+}

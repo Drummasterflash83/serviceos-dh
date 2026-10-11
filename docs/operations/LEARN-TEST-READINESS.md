@@ -9,8 +9,11 @@ SQL verifier covers 205-item member/team runs, late-commit isolation, concurrent
 checkpoints, missing hours, access denials and original collector regression. Browser
 checks cover rule save, paging, failed-read recovery and retained original scope.
 
-Full working-time population/transport tests, additional race/correction review and
-paired hosted acceptance remain. TEST remains 049; no production/provider changes.
+The extended local checks now cover 14,500 items each for person and team,
+all 290 evidence pages, begin/cancel races, saved-rule changes and governed manual
+corrections. Actual isolated HTTP checks cover a large retained history and access
+denials. Hosted gateway checks and paired owner acceptance remain. TEST remains
+049; no production/provider changes.
 See [working-time collection](LEARN-WORKING-COLLECTION.md) for evidence and limits.
 
 

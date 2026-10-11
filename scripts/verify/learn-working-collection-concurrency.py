@@ -58,3 +58,20 @@ call(prefix + f"""do $$declare r jsonb;begin
  assert (select result->>'delayThrough'='0' and result->>'assessedMicros'<>'0' from learn_work_collection_items where run_id='{request}' and ordinal=1),'Late approval must not change resumed arithmetic';
  end $$;""")
 print('Uncommitted earlier-timestamp approval excluded after later commit; competing working-time checkpoints advance once: PASS')
+
+# Begin and cancel can arrive in either order. A cancelled request must never
+# resurrect when a delayed begin is delivered later.
+import json
+for attempt in range(3):
+    request=f'ff150000-0000-4000-8000-00000000007{attempt}'
+    args=f"'{tenant}','workingTime','ddd50000-0000-4000-8000-000000000001',(member_policy->>'id')::uuid,1,starts,ends-interval '{10+attempt} microseconds','{request}','Competing begin and cancel'"
+    begin=f"select learn_work_collection_begin({args}) from working_collection_fixture;"
+    abandon=f"select learn_work_collection_abandon({args},'Synthetic cancellation') from working_collection_fixture;"
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        outputs=list(pool.map(lambda sql: call(prefix+sql),[begin,abandon]))
+    state=json.loads(next(line for line in outputs[1].splitlines() if line.startswith('{')))
+    assert state['state']=='abandoned' and state['measurementId'] is None
+    retry=json.loads(next(line for line in call(prefix+begin).splitlines() if line.startswith('{')))
+    assert retry==state
+    call(f"do $$begin assert not exists(select 1 from measurements where id='{request}');end $$;")
+print('Three simultaneous working-time begin/abandon races retain one terminal cancellation; delayed begin cannot resurrect it: PASS')
