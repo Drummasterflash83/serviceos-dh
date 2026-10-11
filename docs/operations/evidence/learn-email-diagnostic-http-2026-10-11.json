@@ -1,0 +1,28 @@
+{
+  "version": "learn-email-diagnostic-http/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "observedAt": "2026-10-11T06:55:12.745Z",
+  "state": "worker_boundaries_and_empty_execution_verified",
+  "checks": [
+    {
+      "label": "missing worker credentials",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "label": "anonymous and incorrect internal key",
+      "status": 403,
+      "code": "forbidden"
+    },
+    {
+      "label": "authorised empty filtered worker",
+      "status": 200,
+      "code": null
+    }
+  ],
+  "preservedDataSets": 101,
+  "limitations": [
+    "No provider requests, source capture, user creation, new grants or production changes.",
+    "This does not establish signed-in operator access or a successful real mailbox capture."
+  ]
+}

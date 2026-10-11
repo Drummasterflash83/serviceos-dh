@@ -31,7 +31,7 @@ message bodies, audio, provider credentials or source paths. It changes nothing.
 - Recording storage metadata totals **601,004,261 bytes** across 2,888 objects;
   all objects have known metadata sizes. Objects created in the last 30 days
   total 312,897,776 bytes; backfills may be included, so this is not a growth forecast.
-- Fresh TEST ledger still ends with correction recovery release 053. Gmail
+- At the 06:07 audit, TEST ledger ended with correction recovery release 053. Gmail
   endpoints v4, platform worker v5, Slack worker v8, Commusoft workers v4 and Phone
   sync workers v6 are ACTIVE. Deployment status is not positive capture acceptance.
   Microsoft journal tables are absent in TEST; that connector remains local only.
@@ -58,11 +58,12 @@ lists multiple `invalid_grant` causes, including subject, signature and assertio
 timing. Local classification now uses `delegation_grant_invalid` instead of
 asserting `subject_invalid`; it requires review and does not trigger endless queue
 retry. Five focused handler/token tests pass, including provider-detail redaction.
-This helper change is not deployed. The local V1 worker now preserves six safe
+The helper is now installed in hosted TEST worker v6 (see the release below),
+but is not deployed to production. The V1 worker preserves six safe
 Workspace diagnostic codes through protocol failure, checkpoint and queue settlement.
 The operator reader/UI exposes only an allowlisted code, attempt ID and timestamp.
-See the local acceptance below; hosted installation and real-mailbox diagnosis
-remain outstanding. Earlier production logs cannot establish the exact grant cause.
+See the local and hosted acceptance below; the matching frontend release,
+signed-in operator acceptance and real-mailbox diagnosis remain outstanding. Earlier production logs cannot establish the exact grant cause.
 
 Production has the three Workspace credential secret names; TEST has none. No
 credential values were returned. The checked older checkout env files and current
@@ -103,11 +104,31 @@ succeeded after that failure; no worker was invoked and no source record changed
   catalog, then release the diagnostic-aware worker and frontend together. Older
   clients reject the new checkpoint codes. After any new diagnostic is persisted,
   do not roll back to an older worker or narrow the SQL allowlist; pause capture
-  and retain compatible readers while repairing forward. No hosted deployment or
-  new role/credential grant has been made by this change.
+  and retain compatible readers while repairing forward. The local acceptance itself made no hosted changes. The subsequent TEST
+  database/worker release is recorded below; no new role/credential grant was made.
 
 [Structured evidence](evidence/learn-email-diagnostic-local-2026-10-11.json) and
 [synthetic operator screenshot](evidence/learn-email-diagnostic-local-2026-10-11.jpg).
+
+### Email diagnostics — hosted TEST release 054, 11 October
+
+- Rollback rehearsal succeeded at 06:51 UTC; installation at 06:52 UTC changed
+  only the three intended function definitions and retained existing authority.
+  All 101 monitored datasets matched before and after. TEST ledger now has 55
+  entries, ending with release 054.
+- `platform-worker` v6 became ACTIVE at 06:54 UTC, using the pinned 96-file
+  dependency bundle. Other endpoints, schema and all 101 datasets were preserved.
+- HTTP acceptance at 06:55 UTC rejected missing/incorrect worker credentials
+  (403) and accepted an authorised execution filtered to no capture jobs (200,
+  zero claimed/failed). Sources remained unchanged. Ten release/deployment tests pass.
+- Matching frontend deployment and positive signed-in operator acceptance remain
+  open. These checks made no provider requests, created no access grants and do
+  not establish successful mailbox capture or resolution of production failures.
+- Production remains unchanged. Preserve compatible readers if new diagnostic
+  codes are stored; pause and repair forward instead of reverting to older readers.
+
+[Release evidence](evidence/learn-email-diagnostic-test-2026-10-11.json) and
+[HTTP evidence](evidence/learn-email-diagnostic-http-2026-10-11.json).
 
 ## Working and verified in production
 

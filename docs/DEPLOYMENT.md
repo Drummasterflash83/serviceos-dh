@@ -49,6 +49,13 @@ from the production project above. Its preview-only public configuration targets
 Supabase TEST `saatxzwxvdvqevbnskxy`. Vercel authentication protects its Vercel
 hostnames, and no custom domain or automatic Git linkage was added.
 
+TEST backend advanced independently on 11 October at 06:52–06:55 UTC to database
+release 054 and `platform-worker` v6 for safe Workspace failure diagnostics.
+Rollback/install/worker/HTTP evidence preserved all 101 monitored datasets and
+existing authority. The frontend candidate below remains the older version until
+its replacement is verified; real-mailbox and signed-in diagnostic acceptance
+remain open. [Backend evidence](operations/evidence/learn-email-diagnostic-test-2026-10-11.json).
+
 The current verified staging candidate is
 [serviceos-learn-test-428847jna-allkin.vercel.app](https://serviceos-learn-test-428847jna-allkin.vercel.app),
 built remotely from GitHub commit `1e4fc645d4b71e7ae7be8d4e29a0cfbc4092f53a`.

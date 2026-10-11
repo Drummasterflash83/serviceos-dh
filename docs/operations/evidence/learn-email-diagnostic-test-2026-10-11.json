@@ -1,0 +1,89 @@
+{
+  "version": "learn-email-diagnostic-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "database_worker_and_http_verified_frontend_pending",
+  "databaseRehearsal": {
+    "version": "learn-email-diagnostic/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "fc674dd96441f47bd2c0fdda0513591b7b56825baac12fb39248ddb46b4f4496",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T06:51:43.312Z",
+    "priorFingerprint": "756539b531c5997734e0f747baddd946",
+    "expectedFingerprint": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+    "afterFingerprint": "756539b531c5997734e0f747baddd946",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+      "functions": 3
+    }
+  },
+  "databaseInstallation": {
+    "version": "learn-email-diagnostic/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "fc674dd96441f47bd2c0fdda0513591b7b56825baac12fb39248ddb46b4f4496",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T06:52:39.122Z",
+    "priorFingerprint": "756539b531c5997734e0f747baddd946",
+    "expectedFingerprint": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+    "afterFingerprint": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+      "functions": 3
+    }
+  },
+  "runtime": {
+    "observedAt": "2026-10-11T06:54:11.606Z",
+    "sourceBundleSha256": "38e546ff13e8a0acc35588c5e8cd5629f1862fe8745a1e3f5f2466151b0182bb",
+    "state": "deployed_needs_http_acceptance",
+    "priorSchemaAndEndpointsPreserved": true,
+    "dependencyFiles": 96,
+    "diagnosticSchema": "a3b143ca0948e4f81ce1f1cfffaae3d0",
+    "fullPreservedDataSets": 101
+  },
+  "worker": {
+    "name": "platform-worker",
+    "version": 6,
+    "status": "ACTIVE",
+    "verifyJwt": false,
+    "boundary": "Existing internal credential authentication; missing or incorrect credentials rejected."
+  },
+  "httpAcceptance": {
+    "version": "learn-email-diagnostic-http/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "observedAt": "2026-10-11T06:55:12.745Z",
+    "state": "worker_boundaries_and_empty_execution_verified",
+    "checks": [
+      {
+        "label": "missing worker credentials",
+        "status": 403,
+        "code": "forbidden"
+      },
+      {
+        "label": "anonymous and incorrect internal key",
+        "status": 403,
+        "code": "forbidden"
+      },
+      {
+        "label": "authorised empty filtered worker",
+        "status": 200,
+        "code": null
+      }
+    ],
+    "preservedDataSets": 101,
+    "limitations": [
+      "No provider requests, source capture, user creation, new grants or production changes.",
+      "This does not establish signed-in operator access or a successful real mailbox capture."
+    ]
+  },
+  "limitations": [
+    "Frontend release and positive signed-in operator acceptance remain pending.",
+    "No real mailbox capture or resolution of production invalid_grant failures is established.",
+    "No new users, operator grants, provider calls or production changes.",
+    "Once new diagnostic codes are persisted, retain compatible readers and repair forward; older workers reject these codes."
+  ]
+}

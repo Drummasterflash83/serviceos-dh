@@ -1,0 +1,21 @@
+{
+  "version": "learn-email-diagnostic-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "fc674dd96441f47bd2c0fdda0513591b7b56825baac12fb39248ddb46b4f4496",
+  "priorFingerprint": "756539b531c5997734e0f747baddd946",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101190000_learn_email_safe_failures.sql",
+      "sha256": "82a333c36dc510bda5051c2eaa1ff1fc3645c659d3678fc198a2eb6639b21ee6"
+    },
+    {
+      "path": "supabase/migrations/20261101191000_learn_email_failure_health.sql",
+      "sha256": "2b07b474ebfd35b53d74ab079a89a0dd320664f50fe61def61b7870c8a18f036"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-email-diagnostic-hosted.assert.sql",
+    "sha256": "b8f603abf2a7b8cbd0d2ad4ca1fd5729da14ab027ad668f43e99ad20b39c594e"
+  },
+  "preservedDataSets": 101
+}
