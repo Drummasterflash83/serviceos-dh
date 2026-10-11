@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline actual Supabase user-worker compatibility check; no repo/secret mount."""
 import json
+import sys
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
@@ -23,14 +24,16 @@ with tempfile.TemporaryDirectory(prefix="serviceos-voicemail-edge-") as tmp:
         shutil.copy2(source / filename, stage / filename)
     shutil.copytree(source / "node_modules", stage / "node_modules")
     graph = subprocess.run(["node", "--input-type=module", "-e", 'import {edgeRuntimeBundle} from "./scripts/verify/learn-email-runtime-edge-bundle.mjs"; console.log(JSON.stringify(edgeRuntimeBundle([{name:"learn-voicemail-import"}]).files.map(x=>x.path)))'], cwd=ROOT, check=True, capture_output=True, text=True)
-    runtime_paths = json.loads(graph.stdout)
+    runtime_paths = sorted(set(json.loads(graph.stdout) + ["_shared/voicemail/queue.ts"]))
     for relative in runtime_paths:
         src = ROOT / "supabase/functions" / relative
         target = stage / "supabase/functions" / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, target)
     fixture = subprocess.run(["node", str(source / "edge-fixture.mjs")], check=True, capture_output=True, text=True)
-    (package / "fixture.json").write_text(fixture.stdout)
+    fixture_data = json.loads(fixture.stdout)
+    fixture_data["queue"] = "--queue" in sys.argv
+    (package / "fixture.json").write_text(json.dumps(fixture_data))
     (stage / "deno.json").write_text(json.dumps({"nodeModulesDir": "manual"}))
     shutil.copy2(source / "edge-runtime-probe.ts", package / "index.ts")
     main = stage / "main"

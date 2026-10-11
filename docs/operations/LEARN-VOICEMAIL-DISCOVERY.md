@@ -1,5 +1,69 @@
 # Birchills voicemail: discovery before capture
 
+
+## Durable voicemail queue — local only, 22:35 UTC
+
+Migration `20261101430000_learn_voicemail_queue.sql` and the platform-worker path
+are prepared, **not installed in hosted TEST or production**. No job, route, user,
+credential or schedule has been added. Installed TEST remains release 073, import
+endpoint v1 and platform worker v17.
+
+The job type is `phone.voicemail_import`, on the existing `platform_jobs` queue.
+The service freezes its exact route/account/Gmail-message/receipt-time payload in a
+private binding. Every route, prepare and publish call is fenced by tenant, worker,
+monotonic claim attempt and current lease. The original intake owner/privacy rules
+remain authoritative. Publication and queue success commit together. Exact saved
+receipts resolve uncertain replies without another provider read and are explicitly
+historical; they do not prove current storage integrity or complete history.
+
+Pause detection checks both Email and Phone controls plus route enablement.
+A paused attempt waits five minutes without consuming the failure budget. Claim
+attempts still increase, so an old worker cannot regain authority after a pause.
+Transient failures use bounded backoff; permanent denials need review. Dead-worker
+recovery handles at most 100 rows per invocation and uses the failure budget.
+Generic queue reclaim explicitly excludes this job type, even if the dedicated
+recovery RPC fails. No generic completion/failure writer handles voicemail results.
+Unknown publication remains unconfirmed until a saved settlement can be read.
+Only allowlisted machine codes and neutral messages enter public queue diagnostics.
+
+Local verification uses the actual queue/intake migrations in a disposable,
+network-disabled PostgreSQL container. Thirteen coordinator scenarios cover tenant,
+role and worker denial; lost success/failure replies; partial storage retry;
+pause before capture and after upload; lease expiry/reclaim; changed bindings;
+publication rollback on queue-settlement failure; retry exhaustion; false handler
+success; permanent denial; and simultaneous delivery of a single claim. Parser,
+decoder and Storage are controlled adapters in that database test. Separately,
+the actual offline Edge Runtime verifies a generated signed 28-second MP3 through
+the queued Workspace/coordinator path, loses its publication reply and recovers
+its receipt. A replay makes no provider request. The direct endpoint still passes.
+SQL/SDK/provider transports are controlled in the Edge check. Five reclaim tests,
+28 existing regressions and strict worker types pass.
+
+Reproduce locally:
+
+- `python3 scripts/verify/learn-voicemail-intake-local.py --queue`
+- `python3 scripts/verify/learn-voicemail-edge-runtime.py --queue`
+- `python3 scripts/verify/learn-voicemail-edge-runtime.py`
+- `node --test scripts/verify/learn-voicemail-queue-recovery.test.mjs`
+- `node_modules/.bin/tsc -p scripts/verify/voicemail-auth/worker-tsconfig.json`
+
+[Sanitized evidence and exact source hashes](evidence/learn-voicemail-queue-local-2026-10-11.json).
+The first fixture exposed a mismatched synthetic receipt time and the first
+immutable-trigger check exposed a shared-record field lookup; both were corrected
+and rerun. The Edge check found that a type-only worker-contract dependency tried
+to resolve a remote SDK in the offline runtime. The queue now uses the existing
+structural database boundary, and the final offline run passes without network.
+
+Before hosted use: rehearse against the full installed schema with preservation
+checks; install the queue migration before deploying the new platform worker;
+verify the complete worker bundle and authenticated hosted queue/storage flow.
+Keep real routes and scheduling inactive until historical ownership, provider
+access and acceptance are established. Enumeration, durable coverage, private
+file backup and signed-in playback are still unfinished. Reverting a worker after
+queue activation must first stop/defer voicemail jobs; an older worker lacks the
+dedicated reclaim/settlement path. Retain private bindings, receipts and source
+files during rollback. Do not drop tables or reset data.
+
 ## Hosted TEST foundation, endpoint and private storage — verified, 22:20 UTC
 
 TEST **073** is installed in `saatxzwxvdvqevbnskxy`: the existing private voicemail

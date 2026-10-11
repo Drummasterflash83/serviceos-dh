@@ -1,3 +1,4 @@
+import { runVoicemailQueueJob } from "../_shared/voicemail/queue.ts";
 import { isLearnProcessingJob, runLearnProcessingJob } from "../_shared/learn-processing-job.ts";
 import { settlePhoneJob } from "../_shared/phone-recovery-job.ts";
 import {
@@ -151,6 +152,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
         counts.waiting += 1;
         return;
       }
+    }
+
+    if (jobType === "phone.voicemail_import") {
+      const outcome = await runVoicemailQueueJob(
+        {
+          supabaseAdmin: admin,
+          tenantId,
+          jobId: id,
+          jobType,
+          payload: (job.payload as Record<string, unknown>) ?? {},
+          claim: { claimedBy: job.claimed_by as string, attemptCount: attempt },
+        },
+        async (guarded, request) => {
+          // Load signature/audio dependencies only for a bound voicemail job.
+          const [{ importWorkspaceVoicemail }, { importPrivateVoicemail }] = await Promise.all([
+            import("../_shared/voicemail/workspace-import.ts"),
+            import("../_shared/voicemail/edge.js"),
+          ]);
+          return importWorkspaceVoicemail(guarded, request, { importer: importPrivateVoicemail });
+        },
+      );
+      if (outcome.state === "succeeded") counts.succeeded += 1;
+      else if (outcome.state === "waiting") counts.waiting += 1;
+      else if (outcome.state === "retrying") counts.retrying += 1;
+      else if (outcome.state === "dead_letter") counts.dead_lettered += 1;
+      else counts.unconfirmed += 1;
+      // The private receipt is authoritative. No generic completeJob/failJob and
+      // no whole-Phone health signal from one voicemail or a recovered receipt.
+      return;
     }
 
     // Preferred: a shared handler runs the business logic IN-PROCESS (no HTTP).

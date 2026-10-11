@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:35 UTC — durable voicemail queue prepared and verified locally.** The existing
+platform worker now has a one-message voicemail path with frozen source binding,
+lease checks and atomic voicemail publication/job settlement. Thirteen actual
+PostgreSQL/coordinator scenarios pass, including lost replies, simultaneous delivery,
+partial uploads, changed payloads, pause/resume and dead workers. Five reclaim
+regressions, 28 existing regressions, strict worker types and queued/direct offline
+Edge checks pass. Queue recovery never presents an old receipt as fresh coverage.
+This change is **not installed in TEST or production**; TEST remains at 073 and
+platform worker v17. Full-schema/hosted release acceptance, enumeration/coverage,
+verified routes and real-user acceptance remain. [Evidence](evidence/learn-voicemail-queue-local-2026-10-11.json).
+
 **22:20 UTC — voicemail foundation/runtime/storage verified in hosted TEST.**
 Release 073 installed empty private tables after rollback rehearsal, preserving 127
 existing datasets. The internal endpoint v1 deployed with 134 datasets and all other

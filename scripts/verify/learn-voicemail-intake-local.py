@@ -1,5 +1,5 @@
 """Actual private-intake DDL and permissions in disposable, offline PostgreSQL."""
-import json, subprocess, shutil, uuid, time, concurrent.futures
+import json, subprocess, shutil, uuid, time, concurrent.futures, sys
 from pathlib import Path
 root=Path(__file__).resolve().parents[2]
 docker=shutil.which('docker') or '/usr/local/bin/docker'
@@ -39,6 +39,17 @@ try:
  sql(migration.replace('\ncommit;','\nrollback;'))
  assert sql("select to_regclass('receptionist_voicemail_intakes') is null")=='t'
  sql(migration)
+ if '--queue' in sys.argv:
+  sql("create function public.set_updated_at() returns trigger language plpgsql as $$begin new.updated_at=clock_timestamp();return new;end$$;")
+  sql(file('supabase/migrations/20260708130000_platform_jobs.sql'))
+  queue=file('supabase/migrations/20260710120000_platform_job_queue.sql')
+  sql(queue[:queue.index('-- ── Register the async queue worker')])
+  sql(file('supabase/migrations/20260804120000_active_job_key_include_retrying.sql'))
+  sql('grant select,insert,update on platform_jobs to service_role;')
+  queued=file('supabase/migrations/20261101430000_learn_voicemail_queue.sql')
+  sql(queued.replace('\ncommit;','\nrollback;'))
+  assert sql("select to_regclass('receptionist_voicemail_jobs') is null and to_regprocedure('voicemail_queue_recover()') is null")=='t'
+  sql(queued)
  sql('grant usage on schema storage to service_role;grant select on storage.objects,storage.buckets,email_accounts to service_role;')
  sql(f"insert into tenants(id) values('{ident(1)}'),('{ident(2)}');insert into auth.users(id) values('{ident(10)}'),('{ident(11)}'),('{ident(12)}');insert into email_accounts values('{ident(3)}','{ident(1)}','synthetic@example.invalid','gmail','active_dwd');insert into receptionist_mailboxes(id,tenant_id,provider_mailbox_id,display_name,extension,owner_user_id) values('{ident(5)}','{ident(1)}','synthetic','Synthetic mailbox','601','{ident(10)}');insert into receptionist_mailbox_managers values('{ident(1)}','{ident(5)}','{ident(12)}','{ident(12)}',now());insert into receptionist_voicemail_email_routes(id,tenant_id,mailbox_id,email_account_id,recipient_email,signing_domain,owner_user_id,access_mode,received_from,binding_evidence,verified_by) values('{ident(4)}','{ident(1)}','{ident(5)}','{ident(3)}','synthetic@example.invalid','synthetic.birchills.invalid','{ident(10)}','owner','2026-10-01','Synthetic fixture only','{ident(12)}');")
  denied('set role authenticated;'+call(source,candidate),'permission denied')
@@ -110,5 +121,6 @@ try:
  assert sql('select count(*) from receptionist_voicemails')=='1'
  print('PASS: actual private intake DDL, rollback rehearsal, disabled routes, sender/time binding, permission denials, concurrent retry, distinct email evidence, conflicting replay, incomplete uploads, capture pause, atomic publication, historical owner snapshot, manager revocation, private storage, tenant isolation and retained history')
  subprocess.run(['node','scripts/verify/learn-voicemail-import-client-probe.mjs',name],cwd=root,check=True,timeout=60)
+ if '--queue' in sys.argv:subprocess.run(['node','scripts/verify/learn-voicemail-queue-client-probe.mjs',name],cwd=root,check=True,timeout=90)
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

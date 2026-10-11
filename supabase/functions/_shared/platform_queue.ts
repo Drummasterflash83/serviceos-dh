@@ -290,6 +290,13 @@ export async function deadLetterJob(
  * 'retrying', available now, so the next claim picks them up. Returns the count.
  */
 export async function releaseExpiredLeases(client: SupabaseClient): Promise<number> {
+  let voicemailReclaimed = 0;
+  try {
+    const { data, error } = await client.rpc("voicemail_queue_recover");
+    if (!error && Number.isSafeInteger(data) && data >= 0) voicemailReclaimed = data;
+  } catch {
+    /* A failed recovery leaves voicemail jobs untouched for inspection. */
+  }
   try {
     const { data } = await client
       .from("platform_jobs")
@@ -301,11 +308,12 @@ export async function releaseExpiredLeases(client: SupabaseClient): Promise<numb
         last_error: "Worker lease expired before completion — reclaimed.",
       })
       .eq("status", "running")
+      .neq("job_type", "phone.voicemail_import")
       .lt("lease_expires_at", new Date().toISOString())
       .select("id");
-    return (data ?? []).length;
+    return voicemailReclaimed + (data ?? []).length;
   } catch {
-    return 0;
+    return voicemailReclaimed;
   }
 }
 

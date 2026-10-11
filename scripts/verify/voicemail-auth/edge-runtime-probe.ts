@@ -1,3 +1,4 @@
+import { runVoicemailQueueJob } from "../../../supabase/functions/_shared/voicemail/queue.ts";
 // Copied into an offline disposable runtime with a freshly generated fixture.
 import {
   extractSignedVoicemail,
@@ -57,8 +58,59 @@ Deno.serve(async () => {
     const rpcCalls = [];
     let uploads = 0,
       readbacks = 0;
+    const queueJobId = "abababab-abab-4bab-8bab-abababababab";
+    let queueReceipt = null,
+      queueRecovered = false;
+    const queueRequest = {
+      tenantId,
+      routeId,
+      accountId,
+      messageId: "abcdef1234",
+      internalDate: options.internalDate,
+    };
     const client = {
       rpc: async (name, args) => {
+        if (name === "voicemail_queue_step") {
+          if (
+            args.p_tenant !== tenantId ||
+            args.p_job !== queueJobId ||
+            args.p_worker !== "synthetic-edge-worker" ||
+            args.p_attempt !== 1
+          )
+            throw Error("Queue scope differs");
+          if (args.p_operation === "bind")
+            return {
+              data: queueReceipt
+                ? { state: "settled", receipt: queueReceipt }
+                : { state: "bound", request: queueRequest },
+            };
+          if (args.p_operation === "fail" || args.p_operation === "inspect") {
+            if (!queueReceipt) throw Error("No queue receipt");
+            return { data: queueReceipt };
+          }
+          const operation = {
+            route: "voicemail_intake_route",
+            prepare: "voicemail_intake_prepare",
+            publish: "voicemail_intake_publish",
+          }[args.p_operation];
+          if (!operation) throw Error("Unknown queue step");
+          const result = await client.rpc(operation, args.p_args);
+          if (args.p_operation !== "publish") return result;
+          queueReceipt = {
+            version: "voicemail-queue/1",
+            tenant_id: tenantId,
+            job_id: queueJobId,
+            worker: "synthetic-edge-worker",
+            attempt: 1,
+            state: "succeeded",
+            records_processed: 1,
+            message_id: intakeId,
+            code: null,
+            settled_at: new Date().toISOString(),
+            coverage_complete: false,
+          };
+          throw Error("Synthetic lost queue publication acknowledgement");
+        }
         rpcCalls.push(name);
         if (args.p_tenant !== tenantId) throw Error("Tenant differs");
         if (name === "voicemail_intake_route")
@@ -108,45 +160,60 @@ Deno.serve(async () => {
     };
     let providerReads = 0,
       tokenReads = 0;
-    const endpoint = createVoicemailImportHttpHandler({
-      serviceKey: "synthetic-server-secret",
-      run: (input) =>
-        importWorkspaceVoicemail(client, input, {
-          importer: importPrivateVoicemail,
-          resolver: providerKeyResolver((name) => resolver(name, "TXT")).resolve,
-          ports: () => ({
-            mailbox: async () => ({
-              tenantId,
-              accountId,
-              mailbox: options.expectedMailbox,
-              profileMailbox: options.expectedMailbox,
-            }),
-            accessToken: async () => {
-              tokenReads++;
-              return "synthetic-provider-token";
-            },
+    const importRequest = (transport, input) =>
+      importWorkspaceVoicemail(transport, input, {
+        importer: importPrivateVoicemail,
+        resolver: providerKeyResolver((name) => resolver(name, "TXT")).resolve,
+        ports: () => ({
+          mailbox: async () => ({
+            tenantId,
+            accountId,
+            mailbox: options.expectedMailbox,
+            profileMailbox: options.expectedMailbox,
           }),
-          fetcher: async (url, init) => {
-            providerReads++;
-            if (
-              init.redirect !== "error" ||
-              init.headers.Authorization !== "Bearer synthetic-provider-token"
-            )
-              throw Error("Provider request unsafe");
-            if (url === "https://gmail.googleapis.com/gmail/v1/users/me/profile")
-              return Response.json({ emailAddress: options.expectedMailbox });
-            if (
-              url !==
-              "https://gmail.googleapis.com/gmail/v1/users/me/messages/abcdef1234?format=raw"
-            )
-              throw Error("Unexpected URL");
-            return Response.json({
-              id: "abcdef1234",
-              internalDate: options.internalDate,
-              raw: Buffer.from(fixture.raw).toString("base64url"),
-            });
+          accessToken: async () => {
+            tokenReads++;
+            return "synthetic-provider-token";
           },
         }),
+        fetcher: async (url, init) => {
+          providerReads++;
+          if (
+            init.redirect !== "error" ||
+            init.headers.Authorization !== "Bearer synthetic-provider-token"
+          )
+            throw Error("Provider request unsafe");
+          if (url === "https://gmail.googleapis.com/gmail/v1/users/me/profile")
+            return Response.json({ emailAddress: options.expectedMailbox });
+          if (
+            url !== "https://gmail.googleapis.com/gmail/v1/users/me/messages/abcdef1234?format=raw"
+          )
+            throw Error("Unexpected URL");
+          return Response.json({
+            id: "abcdef1234",
+            internalDate: options.internalDate,
+            raw: Buffer.from(fixture.raw).toString("base64url"),
+          });
+        },
+      });
+    const queueContext = {
+      supabaseAdmin: client,
+      tenantId,
+      jobId: queueJobId,
+      jobType: "phone.voicemail_import",
+      payload: {},
+      claim: { claimedBy: "synthetic-edge-worker", attemptCount: 1 },
+    };
+    const endpoint = createVoicemailImportHttpHandler({
+      serviceKey: "synthetic-server-secret",
+      run: async (input) => {
+        if (!fixture.queue) return importRequest(client, input);
+        const result = await runVoicemailQueueJob(queueContext, importRequest);
+        if (result.state !== "succeeded" || !result.historicalReceipt)
+          throw Error("Lost queue receipt not recovered");
+        queueRecovered = true;
+        return { state: "published", messageId: intakeId, storedBytesReadBack: true };
+      },
     });
     const rejected = await endpoint(
       new Request("http://localhost/import", { method: "POST", body: "{}" }),
@@ -181,8 +248,17 @@ Deno.serve(async () => {
       tokenReads !== 1
     )
       throw Error("Import orchestration incomplete: " + JSON.stringify(imported));
+    if (fixture.queue) {
+      const result = await runVoicemailQueueJob(queueContext, () => {
+        throw Error("Completed queue job must not read the provider");
+      });
+      if (result.state !== "succeeded" || !result.historicalReceipt || providerReads !== 2)
+        throw Error("Completed queue replay failed");
+    }
     return Response.json({
       state: "passed",
+      queueLostAcknowledgementRecovered: queueRecovered,
+      queueReplayWithoutProvider: fixture.queue === true,
       signedExtraction: true,
       tamperRejected,
       invalidAudioRejected,
