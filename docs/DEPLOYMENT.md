@@ -52,14 +52,24 @@ hostnames, and no custom domain or automatic Git linkage was added.
 The stable staging entry is
 [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).
 It points to immutable preview
-[serviceos-learn-test-lz3vdjsah-allkin.vercel.app](https://serviceos-learn-test-lz3vdjsah-allkin.vercel.app),
-built remotely from GitHub commit `59077dafbe1419853d971baa92aa73ec0078e549`
-and observed READY at **20:57 UTC on 11 October**. It includes password recovery,
+[serviceos-learn-test-1gpnkfw2y-allkin.vercel.app](https://serviceos-learn-test-1gpnkfw2y-allkin.vercel.app),
+built remotely from GitHub commit `89c44585824c2effc06a485be608f7cc13db7fbd`
+and observed READY at **23:36 UTC on 11 October**. It includes password recovery,
 snapshot freshness, projection/identity review, queued processing messages, draft
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **072**, worker **v17**, card refresh **v2**, and Workspace discovery **v3**.
+The backend now has release **076**, worker **v19**, voicemail importer **v2**,
+card refresh **v2**, and Workspace discovery **v3**. The new frontend exposes the
+operator-only voicemail aggregate status. Release 073 added private voicemail
+storage/intake; 074 added durable queue settlement; 075 added retained-email
+discovery; 076 added bounded dispatch and operator status. These releases did not
+activate real voicemail routes or a TEST schedule. Hosted positive scheduled import
+and signed-in operator/owner acceptance remain outstanding. The current frontend
+passed full-project TypeScript; its stable alias and immutable hostname were both
+verified protected at **23:39 UTC**. See the
+[frontend deployment evidence](operations/evidence/learn-voicemail-frontend-test-2026-10-12.json)
+and [dispatcher evidence](operations/evidence/learn-voicemail-dispatch-2026-10-12.json).
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
 Gmail capture with a mandatory reconciliation when upgrading old label-limited
 cursors. Release 069 preserves drafts while excluding them from communication

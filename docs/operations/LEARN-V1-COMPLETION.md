@@ -7,6 +7,15 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**11 October, 23:39 UTC (12 October, 00:39 BST) — matching voicemail controller frontend deployed to protected TEST.**
+Vercel deployment `dpl_HguNFttZTsfCoj6ZzHtpCqf9knNM` is READY from Git commit
+`89c44585824c2effc06a485be608f7cc13db7fbd`. The stable TEST alias points to this
+deployment. Homepage, login and LEARN paths on both hostnames redirect to Vercel
+authentication. Full-project TypeScript exits successfully. This closes the
+frontend-deployment gap in the earlier entry below; it does **not** prove signed-in
+acceptance or real scheduled voicemail capture. No production change was made.
+[Frontend deployment evidence](evidence/learn-voicemail-frontend-test-2026-10-12.json).
+
 **11 October, 23:29 UTC (12 October, 00:29 BST) — bounded voicemail dispatch and operator status backend verified in TEST.**
 Release 076 installed after full-schema rollback rehearsal, preserving all 139 prior
 datasets. Worker v19 and importer v2 then deployed with all 140 datasets and other

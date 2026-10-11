@@ -1,0 +1,74 @@
+{
+  "observedAt": "2026-10-11T23:39:38.839Z",
+  "scope": "Protected hosted TEST frontend deployment; no authenticated acceptance",
+  "deployment": {
+    "observedAt": "2026-10-11T23:36:11.659Z",
+    "id": "dpl_HguNFttZTsfCoj6ZzHtpCqf9knNM",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "readyState": "READY",
+    "url": "serviceos-learn-test-1gpnkfw2y-allkin.vercel.app",
+    "gitSha": "89c44585824c2effc06a485be608f7cc13db7fbd",
+    "aliases": [
+      "serviceos-learn-test-allkin.vercel.app",
+      "serviceos-learn-test-git-codex-learn-v1-test-allkin.vercel.app"
+    ],
+    "errorCode": null
+  },
+  "immutableProtection": {
+    "observedAt": "2026-10-11T23:39:35.474Z",
+    "base": "https://serviceos-learn-test-1gpnkfw2y-allkin.vercel.app",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "stableAlias": {
+    "observedAt": "2026-10-11T23:39:38.839Z",
+    "alias": "serviceos-learn-test-allkin.vercel.app",
+    "deploymentId": "dpl_HguNFttZTsfCoj6ZzHtpCqf9knNM",
+    "projectId": "prj_KOScR3ShQmvxjrwLAJ68yTh93Pcs",
+    "checks": [
+      {
+        "path": "/",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/login?redirect=%2Fclient",
+        "status": 302,
+        "protectedByVercel": true
+      },
+      {
+        "path": "/client?section=learn",
+        "status": 302,
+        "protectedByVercel": true
+      }
+    ]
+  },
+  "verification": {
+    "fullProjectTypes": {
+      "command": "node_modules/.bin/tsc --noEmit --pretty false",
+      "exitCode": 0
+    },
+    "frontendBuild": "Vercel READY from pinned Git source"
+  },
+  "productionChanged": false,
+  "limitations": [
+    "No signed-in operator or mailbox owner acceptance.",
+    "No real voicemail route, provider request or TEST schedule activated.",
+    "Browser access and existing TEST owner login reactivation remain pending."
+  ]
+}
