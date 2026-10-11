@@ -54,6 +54,21 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
+
+A broader audit found 77 retained Birchills-domain “New message” notification
+candidates with voicemail body and attachment hints. The previous voicemail-only
+subject search missed that format. Three direct Gmail metadata reads verified
+consistent mailbox/transcription/system-reference structure and MP3 attachment
+references. One 57,285-byte attachment fully decoded locally to 28.512 seconds of
+mono audio; temporary files were removed. No production data or access changed.
+
+This provides an observed email route for implementation. Sender authentication,
+mailbox/owner binding, idempotent private import, coverage, scheduling and signed-in
+acceptance remain required. The production audit still found zero imported
+voicemails; neither these samples nor their authentication-header hints prove a
+live connector. [Evidence and next implementation step](LEARN-VOICEMAIL-DISCOVERY.md).
+
 ### Operator email availability — TEST 072, 11 October, 20:55 UTC
 
 The operator health reader now returns company-wide retained-email counts:
@@ -140,7 +155,7 @@ access request and browser acceptance remain pending. No production change occur
 | Requirement | Evidence now | What still closes the gate |
 |---|---|---|
 | Google and Commusoft input coverage | TEST runtime and retained-source pipelines verified; existing real capture/import history retained | Approve the prepared Google credential destination and bounded Commusoft continuation; finish real historical/incremental coverage and reconciliation |
-| Phone, voicemail and Slack | Phone source pipeline/playback tested; real recording inventory backed up; Slack adapter exists | Recover authorised provider credentials, verify real Phone processing, establish voicemail contract, connect authorised Slack workspace/channels |
+| Phone, voicemail and Slack | Phone source pipeline/playback tested; real recording inventory backed up; Slack adapter exists | Recover authorised provider credentials, verify real Phone processing, implement the observed voicemail email route with verified sender/owner binding, connect authorised Slack workspace/channels |
 | Customer cards and scoring | Hosted synthetic source-to-card refresh and isolation pass; configurable scoring and review are implemented | Signed-in Drummonds review, reliable staff/job evidence, calendar/criteria approval and legacy derived-data reconciliation |
 | OpenFolk controller | Scoped controls, diagnostics and recovery tested locally/TEST | Approve ongoing TEST owner access; verify real signed-in operation and customer branding |
 | Recovery and recurring operation | Recorded audio inventory and independent restore verified | Real database restore with record links, confirmed scheduled runs and durable operational ownership |

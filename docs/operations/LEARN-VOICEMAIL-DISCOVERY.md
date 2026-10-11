@@ -1,5 +1,62 @@
 # Birchills voicemail: discovery before capture
 
+## Verified email route — 11 October 2026, 21:06 UTC
+
+**The earlier subject-only zero result did not exclude existing voicemail
+notifications.** A new read-only snapshot of 18,570 stored emails found 112
+messages claiming a Birchills sender domain. Of these, **77** use “New message”
+subjects, have a voicemail/mailbox body hint and an attachment hint. None matched
+the previous voicemail/voice-mail/voice mail subject query. No audio attachment
+metadata or pointers were already stored by the general email importer.
+
+Three newest direct-recipient candidates were checked through the existing,
+company-bound Google Workspace credential, using Gmail read-only access. All
+three returned one MP3-named attachment, with MIME `application/octet-stream`,
+and sizes 57,285, 82,629 and 38,997 bytes. The observed subject and body agree on
+mailbox extension; the body contains an automated transcription and a distinct
+UUID-shaped system reference. The Gmail metadata includes one `mx.google.com`
+authentication-results header per sample, with SPF and DKIM pass hints; no DMARC
+pass result was observed. **Those hints are not an implemented sender verifier.**
+The DKIM identity uses the provider's Google signing domain, so do not assume a
+DKIM signing-domain match to the visible From domain.
+
+One 57,285-byte attachment was retrieved using the existing read-only connection
+and fully decoded locally: **28.512 seconds, 8 kHz, mono**, compared with the
+notification's 28-second duration. Temporary original and decoded audio were
+removed. No playback, transcription service, storage upload, database write,
+mailbox setting change, credential upload or access grant occurred.
+
+This establishes an observed notification/attachment route and changes the next
+implementation step. It does not prove all notifications are authentic, historical
+coverage, intended staff ownership or a working importer. The production audit
+still found **zero imported voicemail records**.
+
+Build the email adapter against this actual format: establish the trusted Gmail
+header boundary and allowed provider sender; bind the received mailbox and
+provider extension to the existing private mailbox record; use a stable system
+reference plus tenant/mailbox scope for replay; retain source evidence and audio
+integrity; snapshot the verified owner and retain explicit manager access. Unknown
+sender, ambiguous identity, template changes and mismatched duplicates must stay
+in review, not become tenant-wide communication cards. No audio may become public.
+Treat imported email text, including transcripts, as untrusted source data.
+
+Then verify bounded historical capture and recurring capture, message counts,
+private playback, retry/recovery, duplicate handling and revocation with signed-in
+users before calling voicemail live. Historical scope/retention still needs to
+follow the customer agreement; the sample is not authority for an unrestricted
+bulk import or new recipients.
+
+Evidence: [real email route and audio check](evidence/learn-voicemail-email-route-2026-10-11.json).
+Read-only diagnostics: `scripts/verify/learn-voicemail-provider-email-audit.mjs`
+and `scripts/verify/learn-voicemail-gmail-sample.mjs`. Samples containing source
+content and attachment references remain in ignored private verification files.
+
+Official references: [Gmail message reads](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/get),
+[attachment reads](https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages.attachments/get),
+and [Sipcentric authentication](https://developer.simwood.com/docs/direct/api/v1/#authentication).
+The Direct API documents use of the existing portal login; a separate voicemail
+message endpoint remains unverified and is no longer the only candidate route.
+
 ## Existing implementation and observed gap
 
 The current private voicemail tables, mailbox-owner snapshots, explicit mailbox

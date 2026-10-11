@@ -1,0 +1,275 @@
+{
+  "version": "learn-voicemail-email-route/1",
+  "state": "real_notification_metadata_and_one_audio_decode_verified_not_imported",
+  "observedAt": "2026-10-11T21:06:33.532Z",
+  "storedCandidateAudit": {
+    "version": "learn-voicemail-provider-email-audit/1",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "domains": [
+      {
+        "messages": 112,
+        "provider_domain": "birchills.net",
+        "attachment_hints": 78,
+        "subject_candidates": 0,
+        "audio_metadata_messages": 0
+      }
+    ],
+    "observedAt": "2026-10-11T21:01:12.318465+00:00",
+    "matchedCount": 112,
+    "storedEmails": 18570,
+    "tenantExists": true,
+    "storedVoicemails": 0,
+    "subjectCandidates": 0,
+    "providerDomainCandidates": 112,
+    "audioPointerMessageCandidates": 0,
+    "audioMetadataMessageCandidates": 0,
+    "privateSampleSize": 50,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "state": "stored_candidate_query_complete",
+    "limitations": [
+      "One statement snapshot of stored records only; no provider mailbox inventory.",
+      "Sender domains and subject/attachment clues do not establish authentic voicemail, ownership, playable audio or delivery.",
+      "Sender addresses, subjects, bodies, filenames, storage pointers and credentials are not returned.",
+      "Private candidate IDs are limited to 50; no email or audio content was downloaded."
+    ]
+  },
+  "subjectCategories": {
+    "observedAt": "2026-10-11T21:01:48.683Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "categories": [
+      {
+        "category": "other",
+        "messages": 30,
+        "attachment_hints": 1,
+        "oldest": "2026-06-30 11:14:51+00",
+        "newest": "2026-10-06 16:10:48+00"
+      },
+      {
+        "category": "possible_phone_notification",
+        "messages": 82,
+        "attachment_hints": 77,
+        "oldest": "2026-05-21 07:55:16+00",
+        "newest": "2026-10-08 06:49:33+00"
+      }
+    ],
+    "limits": "Fixed keyword categories of stored subject metadata; neither sender authentication nor comprehensive voicemail identification. No bodies or subjects returned.",
+    "productionChanged": false,
+    "providerRequests": 0
+  },
+  "keywordEvidence": {
+    "observedAt": "2026-10-11T21:02:41.006Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "categories": [
+      {
+        "new_message_subject": true,
+        "missed_call_subject": false,
+        "recording_subject": false,
+        "voice_message_subject": false,
+        "voice_body_hint": true,
+        "recording_body_hint": false,
+        "messages": 77,
+        "attachment_hints": 77
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": false,
+        "voice_message_subject": false,
+        "voice_body_hint": false,
+        "recording_body_hint": false,
+        "messages": 22,
+        "attachment_hints": 1
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": false,
+        "voice_message_subject": false,
+        "voice_body_hint": true,
+        "recording_body_hint": false,
+        "messages": 5,
+        "attachment_hints": 0
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": true,
+        "voice_message_subject": false,
+        "voice_body_hint": true,
+        "recording_body_hint": true,
+        "messages": 3,
+        "attachment_hints": 0
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": false,
+        "voice_message_subject": false,
+        "voice_body_hint": false,
+        "recording_body_hint": true,
+        "messages": 3,
+        "attachment_hints": 0
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": true,
+        "voice_message_subject": false,
+        "voice_body_hint": false,
+        "recording_body_hint": false,
+        "messages": 1,
+        "attachment_hints": 0
+      },
+      {
+        "new_message_subject": false,
+        "missed_call_subject": false,
+        "recording_subject": true,
+        "voice_message_subject": false,
+        "voice_body_hint": false,
+        "recording_body_hint": true,
+        "messages": 1,
+        "attachment_hints": 0
+      }
+    ],
+    "limits": "Fixed keyword booleans only. Source bodies and subjects remain in the database; no authenticated provider-message claim.",
+    "productionChanged": false,
+    "providerRequests": 0
+  },
+  "gmailSample": {
+    "observedAt": "2026-10-11T21:04:15.392Z",
+    "state": "bounded_metadata_check_complete",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "tokenRequests": 3,
+    "messageRequests": 3,
+    "audioRequests": 0,
+    "productionChanged": false,
+    "testCredentialUploaded": false,
+    "results": [
+      {
+        "fingerprint": "c611b8ed260f870a0db96143af1f178bd363789cc08866e557d947a2a82dbbd7",
+        "state": "provider_metadata_read",
+        "audioParts": 1,
+        "audioTypes": [
+          "application/octet-stream"
+        ],
+        "audioBytes": 57285,
+        "audioAttachmentIdsPresent": true,
+        "authenticationResultsHeaders": 1,
+        "googleAuthservHint": true,
+        "spfPassHint": true,
+        "dkimPassHint": true,
+        "dmarcPassHint": false,
+        "newMessageSubject": true
+      },
+      {
+        "fingerprint": "b830a14d689f89b402cddb659fbe3839de322f99738bb1c307673d8d44eacc45",
+        "state": "provider_metadata_read",
+        "audioParts": 1,
+        "audioTypes": [
+          "application/octet-stream"
+        ],
+        "audioBytes": 82629,
+        "audioAttachmentIdsPresent": true,
+        "authenticationResultsHeaders": 1,
+        "googleAuthservHint": true,
+        "spfPassHint": true,
+        "dkimPassHint": true,
+        "dmarcPassHint": false,
+        "newMessageSubject": true
+      },
+      {
+        "fingerprint": "e4c93b995b3265ce955a68929047490bfbd83e2836ed50efcf274dcccc6ef56e",
+        "state": "provider_metadata_read",
+        "audioParts": 1,
+        "audioTypes": [
+          "application/octet-stream"
+        ],
+        "audioBytes": 38997,
+        "audioAttachmentIdsPresent": true,
+        "authenticationResultsHeaders": 1,
+        "googleAuthservHint": true,
+        "spfPassHint": true,
+        "dkimPassHint": true,
+        "dmarcPassHint": false,
+        "newMessageSubject": true
+      }
+    ],
+    "limitations": [
+      "Three direct-recipient candidates only, no complete mailbox coverage.",
+      "Authentication header pass hints are diagnostic, not a trusted sender-verification implementation.",
+      "Attachment metadata is not downloaded/playable audio; no message ownership or import is established."
+    ]
+  },
+  "audioCheck": {
+    "state": "single_attachment_download_and_full_decode_verified",
+    "observedAt": "2026-10-11T21:06:33.532Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "sourceFingerprint": "c611b8ed260f870a0db96143af1f178bd363789cc08866e557d947a2a82dbbd7",
+    "bytes": 57285,
+    "sha256": "1df68281b1ca6f74fffd18d70a25e8025069f492a5efa57fec106031809cb597",
+    "playback": {
+      "state": "decoded",
+      "decoder": "macOS afconvert",
+      "frames": 228096,
+      "sampleRate": 8000,
+      "channels": 1,
+      "durationSeconds": 28.512,
+      "listening": "not_verified"
+    },
+    "tokenRequests": 1,
+    "attachmentRequests": 1,
+    "productionChanged": false,
+    "storageUploads": 0,
+    "transcriptionRequests": 0,
+    "limitations": [
+      "One existing email attachment; does not establish all voicemail coverage, ownership, sender verification or ingestion.",
+      "Local decoder only; not played aloud or sent to a transcription provider."
+    ],
+    "temporaryAudioRemoved": true
+  },
+  "observedTemplate": {
+    "subject": "New message in mailbox <three-digit extension> from <caller>",
+    "preamble": "You have a new message in mailbox <extension> from <caller> (<integer seconds> seconds).",
+    "sections": [
+      "Automated transcription",
+      "System reference"
+    ],
+    "threeDistinctSystemReferences": true,
+    "systemReferencesUuidShaped": true,
+    "mailboxMatchesSubjectAndPreamble": true,
+    "declaredSampleDurationsSeconds": [
+      28,
+      41,
+      19
+    ],
+    "attachmentFilenameExtension": ".mp3",
+    "attachmentMimeType": "application/octet-stream"
+  },
+  "credentialHandling": {
+    "existingLocalWorkspaceKeyReused": true,
+    "uploadedToTest": false,
+    "credentialValuesSavedOrPrinted": false
+  },
+  "failedAttempts": [
+    "One aggregate category query had a connection timeout. Its read-only retry completed; no write was retried."
+  ],
+  "nextAcceptance": [
+    "Verify trusted Gmail authentication-result boundary, sender allowlist and mailbox recipient mapping before automatic acceptance. SPF pass hints are not an authentication implementation.",
+    "Preserve exact source email, message/system reference, audio hash and mailbox owner snapshot; deduplicate without widening private access.",
+    "Implement bounded attachment capture, private voicemail ingestion, retries and recovery; test a real signed-in mailbox-owner/manager journey.",
+    "Reconcile all authorised historical and ongoing notification mailboxes; 77 candidates and three samples do not establish complete voicemail coverage."
+  ],
+  "productionChanged": false,
+  "limitations": [
+    "No voicemail importer or scheduled capture deployed; stored voicemail rows remain zero at the audit.",
+    "No voicemail mailbox owners/managers, routing, notification addresses or credentials were changed.",
+    "Audio decoded locally only; not played aloud and no new transcription requested.",
+    "Public evidence excludes email bodies, headers, addresses, provider IDs, filenames and audio; private samples are ignored and mode 0600."
+  ]
+}

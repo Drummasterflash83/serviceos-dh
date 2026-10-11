@@ -2,6 +2,14 @@
 
 Status: UI and private storage/access foundation implemented. **Not a live Birchills voicemail connector.**
 
+**11 October update:** an observed voicemail-to-email route is now verified at
+sample level: three Gmail notification metadata reads and one fully decoded MP3
+attachment. The earlier subject-only search missed “New message in mailbox”
+notifications. No voicemail records were imported. Sender validation, mailbox
+ownership, private ingestion and coverage remain open. See the latest
+[discovery and implementation evidence](operations/LEARN-VOICEMAIL-DISCOVERY.md).
+
+
 2 October launch check: the schema, private bucket and protected playback function
 are deployed. A read-only database check confirmed 12 DH mailbox bindings, zero
 imported messages and `awaiting_connection` on every mailbox. Explicit manager
