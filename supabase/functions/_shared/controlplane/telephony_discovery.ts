@@ -1,3 +1,8 @@
+import {
+  loadIdentityInventory,
+  buildPhoneIdentityResolution,
+  type IdentityInventory,
+} from "./identity_inventory.ts";
 // ServiceOS — OpenFolk Control Plane: telephony endpoint DISCOVERY from call activity.
 //
 // Bridges the provider adapter (caller-ID label parsing) to the canonical, provider-neutral
@@ -15,7 +20,6 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.4
 import { parseCallerIdLabel } from "../telephony/caller_id_labels.ts";
 import {
   aggregateExtensionEvidence,
-  suggestTelephonyIdentity,
   type CallLegEvidence,
   type TelephonyIdentitySuggestion,
 } from "./telephony_identity.ts";
@@ -153,69 +157,7 @@ export interface TelephonyEndpointCandidate extends TelephonyIdentitySuggestion 
 export async function computeTelephonyIdentityResolution(
   admin: SupabaseClient,
   tenantId: string,
+  inventory?: IdentityInventory,
 ): Promise<{ candidates: TelephonyEndpointCandidate[] }> {
-  const [{ data: endpoints }, { data: members }, { data: identities }] = await Promise.all([
-    admin
-      .from("communication_endpoints")
-      .select("id, normalized_value, display_value, metadata")
-      .eq("tenant_id", tenantId)
-      .eq("channel", "phone")
-      .eq("endpoint_kind", "extension")
-      .eq("status", "active"),
-    admin
-      .from("team_members")
-      .select("id, display_name")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    admin
-      .from("member_integration_identities")
-      .select("team_member_id, primary_login, external_ref, verification_state, provider")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-  ]);
-
-  const memberList = (members ?? []).map((m) => ({
-    id: m.id as string,
-    display_name: m.display_name as string,
-  }));
-  // A confirmed telephony link is stored by cp_review_identity with the endpoint's provider
-  // (e.g. 'sipcentric') and external_ref = the extension digits — NOT a fixed 'voip' label. So
-  // match on an extension-shaped external_ref, provider-neutrally.
-  const confirmed = (identities ?? [])
-    .filter((i) => i.verification_state === "verified")
-    .filter((i) => /^\d{2,6}$/.test(String(i.external_ref ?? "")))
-    .map((i) => ({
-      team_member_id: i.team_member_id as string,
-      primary_login: (i.primary_login as string | null) ?? null,
-      external_ref: (i.external_ref as string | null) ?? null,
-    }));
-
-  const candidates: TelephonyEndpointCandidate[] = [];
-  for (const e of endpoints ?? []) {
-    const meta = (e.metadata ?? {}) as {
-      observed_labels?: string[];
-      call_count?: number;
-      last_activity?: string | null;
-    };
-    const observed_labels = Array.isArray(meta.observed_labels) ? meta.observed_labels : [];
-    const suggestion = suggestTelephonyIdentity(
-      {
-        extension: String(e.normalized_value),
-        observed_labels,
-        call_count: meta.call_count ?? 0,
-        last_activity: meta.last_activity ?? null,
-      },
-      memberList,
-      confirmed,
-    );
-    candidates.push({
-      ...suggestion,
-      endpoint_id: e.id as string,
-      display_value: (e.display_value as string | null) ?? null,
-      observed_labels,
-      call_count: meta.call_count ?? 0,
-      last_activity: meta.last_activity ?? null,
-    });
-  }
-  return { candidates };
+  return buildPhoneIdentityResolution(inventory ?? (await loadIdentityInventory(admin, tenantId)));
 }

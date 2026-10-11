@@ -206,20 +206,8 @@ export function suggestTelephonyIdentity(
     unknown_label_names: [],
   };
 
-  // Already confirmed for this exact extension → surface as high (known), not a new claim.
-  const known = confirmed.find(
-    (c) => String(c.external_ref ?? c.primary_login ?? "").replace(/\D/g, "") === ext && ext !== "",
-  );
-  if (known)
-    return {
-      ...base,
-      suggested_member_id: known.team_member_id,
-      suggested_kind: "person",
-      confidence: "high",
-      evidence: "existing confirmed identity link on this exact extension",
-      provenance: "member_integration_identities",
-    };
-
+  if (!/^\d{2,6}$/.test(String(endpoint.extension ?? "").trim()))
+    return { ...base, evidence: "invalid extension — review before linking" };
   const labels = (endpoint.observed_labels ?? []).map((l) => labelNamePart(l)).filter(Boolean);
 
   // Shared infrastructure (IVR / queue / ...) is never attributed to a person.
@@ -230,6 +218,32 @@ export function suggestTelephonyIdentity(
       confidence: "unresolved",
       evidence:
         "IVR / queue / ring-group label — shared infrastructure, configure a team owner not an individual",
+    };
+
+  const known = [
+    ...new Set(
+      confirmed
+        .filter((c) =>
+          [c.external_ref, c.primary_login].some((v) => String(v ?? "").trim() === ext),
+        )
+        .map((c) => c.team_member_id),
+    ),
+  ];
+  if (known.length > 1)
+    return {
+      ...base,
+      ambiguity: known,
+      evidence: "conflicting confirmed identity links on this extension — operator review required",
+      provenance: "member_integration_identities",
+    };
+  if (known.length === 1)
+    return {
+      ...base,
+      suggested_member_id: known[0],
+      suggested_kind: "person",
+      confidence: "high",
+      evidence: "existing confirmed identity link on this exact extension",
+      provenance: "member_integration_identities",
     };
 
   // Build member first-name lookup (first token of display name).

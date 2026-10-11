@@ -24,7 +24,14 @@ export type OperationalClass = "personal" | "shared" | "team" | "service" | "ina
 
 /** The operator's identity-review decisions (also drive operational classification). */
 export type ReviewDecision =
-  "confirmed_person" | "shared" | "team" | "system" | "rejected" | "unresolved";
+  | "confirmed_person"
+  | "shared"
+  | "team"
+  | "system"
+  | "rejected"
+  | "unresolved"
+  | "deferred"
+  | "unassigned";
 
 export interface MailboxMeta {
   email: string;
@@ -82,6 +89,8 @@ export function classifyOperational(
         return { class: "service", evidence: "operator marked service/system", reviewed: true };
       case "rejected":
       case "unresolved":
+      case "deferred":
+      case "unassigned":
         return {
           class: "unknown",
           evidence: "operator left operational role unresolved",
@@ -175,23 +184,15 @@ export function suggestIdentity(
     ambiguity: [],
   };
 
-  // Already confirmed for this address → surface as high (known), not a new claim.
-  const known = confirmed.find(
-    (c) => (c.primary_login ?? c.external_ref ?? "").toLowerCase() === email,
-  );
-  if (known)
+  // Suspended provider status → never link before an operator reviews it.
+  if (
+    provType === "suspended" ||
+    ["suspended", "inactive", "disabled"].includes((mailbox.status ?? "").toLowerCase())
+  )
     return {
       ...base,
-      suggested_member_id: known.team_member_id,
-      suggested_kind: "person",
-      confidence: "high",
-      evidence: "existing confirmed identity link on this exact address",
-      provenance: "member_integration_identities",
+      evidence: `${mailbox.status ?? "suspended"} mailbox — review before linking`,
     };
-
-  // Suspended provider status → never link before an operator reviews it.
-  if ((mailbox.status ?? "").toLowerCase() === "suspended")
-    return { ...base, evidence: "suspended mailbox — review before linking" };
 
   // Provider shared / group mailboxes are never auto-attributed to an individual.
   if (provType === "shared" || provType === "group")
@@ -200,6 +201,33 @@ export function suggestIdentity(
       suggested_kind: "shared",
       confidence: "unresolved",
       evidence: `provider ${provType} mailbox — configure a team/shared owner, not an individual`,
+    };
+
+  // Several links to different members are a conflict, never a first-row winner.
+  const known = [
+    ...new Set(
+      confirmed
+        .filter((c) =>
+          [c.primary_login, c.external_ref].some((v) => (v ?? "").trim().toLowerCase() === email),
+        )
+        .map((c) => c.team_member_id),
+    ),
+  ];
+  if (known.length > 1)
+    return {
+      ...base,
+      ambiguity: known,
+      evidence: "conflicting confirmed identity links on this address — operator review required",
+      provenance: "member_integration_identities",
+    };
+  if (known.length === 1)
+    return {
+      ...base,
+      suggested_member_id: known[0],
+      suggested_kind: "person",
+      confidence: "high",
+      evidence: "existing confirmed identity link on this exact address",
+      provenance: "member_integration_identities",
     };
 
   // ── STRONG: a verified Workspace display name that exactly matches one member → high. ──

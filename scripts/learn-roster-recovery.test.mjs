@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
+import * as identityInventory from "../supabase/functions/_shared/controlplane/identity_inventory.ts";
 import * as health from "../supabase/functions/_shared/controlplane/health.ts";
 import { loadRoster } from "../supabase/functions/_shared/controlplane/roster.ts";
 
@@ -422,17 +423,19 @@ test("actual workspace store wires the complete roster into the operator respons
     createContext({
       exports,
       require: (path) =>
-        path.endsWith("health.ts")
-          ? health
-          : path.endsWith("roster.ts")
-            ? { loadRoster }
-            : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
-              ? { loadApprovedEmailDomains: async () => [] }
-              : path.endsWith("telephony_discovery.ts")
-                ? { computeTelephonyIdentityResolution: async () => ({}) }
-                : path.endsWith("capabilities.ts")
-                  ? { providerCapabilities: () => ({}) }
-                  : {},
+        path.endsWith("identity_inventory.ts")
+          ? identityInventory
+          : path.endsWith("health.ts")
+            ? health
+            : path.endsWith("roster.ts")
+              ? { loadRoster }
+              : path.endsWith("discovery.ts") && !path.endsWith("telephony_discovery.ts")
+                ? { loadApprovedEmailDomains: async () => [] }
+                : path.endsWith("telephony_discovery.ts")
+                  ? { computeTelephonyIdentityResolution: async () => ({}) }
+                  : path.endsWith("capabilities.ts")
+                    ? { providerCapabilities: () => ({}) }
+                    : {},
     }),
   );
   const result = await exports.loadTenantWorkspace(db, tenant);

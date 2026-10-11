@@ -1,4 +1,9 @@
 import {
+  loadIdentityInventory,
+  buildEmailIdentityResolution,
+  type IdentityInventory,
+} from "./identity_inventory.ts";
+import {
   loadOperatorHealth,
   operatorHealthCounts,
   operatorHealthIssues,
@@ -25,13 +30,9 @@ import {
 import { providerCapabilities } from "../telephony/capabilities.ts";
 import { emailDomain, loadApprovedEmailDomains } from "./discovery.ts";
 import {
-  classifyOperational,
-  providerMailboxType,
-  suggestIdentity,
   type IdentitySuggestion,
   type OperationalClass,
   type ProviderMailboxType,
-  type ReviewDecision,
 } from "./identity_resolution.ts";
 import { computeTelephonyIdentityResolution } from "./telephony_discovery.ts";
 
@@ -140,108 +141,9 @@ export interface IdentityResolution {
 export async function computeIdentityResolution(
   admin: SupabaseClient,
   tenantId: string,
+  inventory?: IdentityInventory,
 ): Promise<IdentityResolution> {
-  const [
-    { data: endpoints },
-    { data: members },
-    { data: identities },
-    { data: mailboxes },
-    { data: reviews },
-  ] = await Promise.all([
-    admin
-      .from("communication_endpoints")
-      .select("id, endpoint_kind, normalized_value, provider")
-      .eq("tenant_id", tenantId)
-      .eq("channel", "email")
-      .eq("status", "active"),
-    admin
-      .from("team_members")
-      .select("id, display_name")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    admin
-      .from("member_integration_identities")
-      .select("team_member_id, primary_login, external_ref, verification_state")
-      .eq("tenant_id", tenantId)
-      .is("effective_to", null),
-    admin
-      .from("google_workspace_mailboxes")
-      .select("email_address, mailbox_type, status, display_name")
-      .eq("tenant_id", tenantId),
-    admin
-      .from("endpoint_identity_reviews")
-      .select("endpoint_id, decision, team_member_id, created_at")
-      .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false }),
-  ]);
-
-  const mbByEmail = new Map(
-    (mailboxes ?? []).map((m) => [String(m.email_address).toLowerCase(), m]),
-  );
-  // Latest review decision per endpoint (rows are ordered newest-first).
-  const latestReview = new Map<string, ReviewDecision>();
-  for (const r of reviews ?? [])
-    if (!latestReview.has(r.endpoint_id as string))
-      latestReview.set(r.endpoint_id as string, r.decision as ReviewDecision);
-  const confirmed = (identities ?? [])
-    .filter((i) => i.verification_state === "verified")
-    .map((i) => ({
-      team_member_id: i.team_member_id as string,
-      primary_login: i.primary_login as string | null,
-      external_ref: i.external_ref as string | null,
-    }));
-  const memberList = (members ?? []).map((m) => ({
-    id: m.id as string,
-    display_name: m.display_name as string,
-  }));
-
-  const classifications: EmailClassification[] = [];
-  const suggestions: (IdentitySuggestion & { endpoint_id: string })[] = [];
-  for (const e of endpoints ?? []) {
-    const email = String(e.normalized_value).toLowerCase();
-    const mb = mbByEmail.get(email);
-    const meta = {
-      email,
-      // PROVIDER type, from provider metadata (falling back to the endpoint kind the discovery
-      // adapter recorded); NEVER inferred from the address text.
-      mailbox_type:
-        (mb?.mailbox_type as string | null) ??
-        (e.endpoint_kind === "shared_mailbox"
-          ? "shared"
-          : e.endpoint_kind === "group_address"
-            ? "group"
-            : "user"),
-      status: (mb?.status as string | null) ?? null,
-      display_name: (mb?.display_name as string | null) ?? null,
-    };
-    // Operational classification is set ONLY from the operator's latest review (or an
-    // unambiguous provider signal); a plain user box stays UNKNOWN until reviewed.
-    const op = classifyOperational(meta, latestReview.get(e.id as string) ?? null);
-    classifications.push({
-      endpoint_id: e.id as string,
-      email,
-      provider_mailbox_type: providerMailboxType(meta),
-      operational_class: op.class,
-      operational_reviewed: op.reviewed,
-      provider_display_name: meta.display_name,
-      evidence: op.evidence,
-      status: meta.status,
-    });
-    suggestions.push({
-      ...suggestIdentity(meta, memberList, confirmed),
-      endpoint_id: e.id as string,
-    });
-  }
-  return {
-    classifications,
-    suggestions,
-    reviews: (reviews ?? []).map((r) => ({
-      endpoint_id: r.endpoint_id as string,
-      decision: r.decision as string,
-      team_member_id: (r.team_member_id as string | null) ?? null,
-      created_at: r.created_at as string,
-    })),
-  };
+  return buildEmailIdentityResolution(inventory ?? (await loadIdentityInventory(admin, tenantId)));
 }
 
 /** The data-quality queue: unmapped endpoints, unresolved identities, stale/inactive owners. */
@@ -621,10 +523,11 @@ export async function loadTenantWorkspace(admin: SupabaseClient, tenantId: strin
     .not("effective_to", "is", null)
     .order("effective_to", { ascending: false })
     .limit(200);
+  const identityInventory = await loadIdentityInventory(admin, tenantId);
   const [conn, identityResolution, telephonyIdentityResolution] = await Promise.all([
     loadConnectionsAndEvidence(admin, tenantId),
-    computeIdentityResolution(admin, tenantId),
-    computeTelephonyIdentityResolution(admin, tenantId),
+    computeIdentityResolution(admin, tenantId, identityInventory),
+    computeTelephonyIdentityResolution(admin, tenantId, identityInventory),
   ]);
   return {
     summary,
