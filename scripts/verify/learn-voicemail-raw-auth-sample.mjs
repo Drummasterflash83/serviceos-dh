@@ -5,11 +5,15 @@ import { execFileSync } from "node:child_process";
 import { savedCliToken } from "./learn-test-readiness.mjs";
 import { getDelegatedToken } from "../../supabase/functions/_shared/google_workspace.ts";
 const retry = process.argv.includes("--retry-after-local-fix");
+const extract = process.argv.includes("--extract-signed-content");
 if (
   process.argv.slice(2).join(" ") !==
-  "--read-only-production-and-google" + (retry ? " --retry-after-local-fix" : "")
+  "--read-only-production-and-google" +
+    (retry ? " --retry-after-local-fix" : "") +
+    (extract ? " --extract-signed-content" : "")
 )
   throw Error("Explicit read-only scope required");
+if (retry && extract) throw Error("Independent extraction journal required");
 const project = "tgbnakbxwcqjeimygroz",
   tenant = "00000000-0000-0000-0000-000000000001";
 const samples = JSON.parse(
@@ -17,6 +21,16 @@ const samples = JSON.parse(
 );
 if (samples.length !== 3) throw Error("Verified three-message sample required");
 const sample = samples[0];
+const previousAudio = extract
+  ? JSON.parse(readFileSync(".verification-results/voicemail-audio-sample-result.json"))
+  : null;
+if (
+  extract &&
+  (previousAudio.sourceFingerprint !==
+    createHash("sha256").update(`${tenant}:${sample.sourceId}`).digest("hex") ||
+    previousAudio.playback?.state !== "decoded")
+)
+  throw Error("Prior decoded sample differs");
 if (!/^[a-f0-9]{1,64}$/i.test(sample.gmailId)) throw Error("Unexpected provider ID");
 const key = JSON.parse(
   readFileSync("/Users/chrisdrummond/Downloads/ServiceOS Workspace Connector.json", "utf8"),
@@ -52,7 +66,9 @@ const matches = scope.filter(
 );
 if (matches.length !== 1) throw Error("Scope no longer matches");
 
-const stem = ".verification-results/voicemail-raw-auth-sample" + (retry ? "-v2" : "");
+const stem = extract
+  ? ".verification-results/voicemail-signed-extraction-sample"
+  : ".verification-results/voicemail-raw-auth-sample" + (retry ? "-v2" : "");
 writeFileSync(
   stem + "-journal.json",
   JSON.stringify({
@@ -101,14 +117,30 @@ try {
   let verified;
   try {
     verified = JSON.parse(
-      execFileSync(process.execPath, ["scripts/verify/learn-voicemail-dkim-probe.mjs"], {
-        input: bytes,
-        encoding: "utf8",
-        env: {},
-        timeout: 30000,
-        maxBuffer: 65536,
-        stdio: ["pipe", "pipe", "pipe"],
-      }),
+      execFileSync(
+        process.execPath,
+        [
+          extract
+            ? "scripts/verify/learn-voicemail-extraction-probe.mjs"
+            : "scripts/verify/learn-voicemail-dkim-probe.mjs",
+        ],
+        {
+          input: extract
+            ? JSON.stringify({
+                rawBase64: data.raw,
+                internalDate: data.internalDate,
+                expectedMailbox: sample.mailbox,
+                expectedAudioSha256: previousAudio.sha256,
+                expectedAudioBytes: previousAudio.bytes,
+              })
+            : bytes,
+          encoding: "utf8",
+          env: {},
+          timeout: 30000,
+          maxBuffer: 65536,
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      ),
     );
   } catch (e) {
     writeFileSync(stem + "-failure-private.txt", String(e.stderr ?? "Child failure"), {
@@ -118,7 +150,9 @@ try {
     throw Error("Isolated signature verifier failed; private child output withheld");
   }
   report = {
-    state: "single_original_message_signature_checked",
+    state: extract
+      ? "single_signed_notification_content_extracted"
+      : "single_original_message_signature_checked",
     observedAt: new Date().toISOString(),
     projectRef: project,
     tenantId: tenant,

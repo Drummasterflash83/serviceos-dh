@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "mailauth": "7.3.0"
+    "mailauth": "7.3.0",
+    "postal-mime": "4.0.5"
   }
 }

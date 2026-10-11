@@ -56,6 +56,13 @@ as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
 ### Voicemail route discovered — real read-only checks, 11 October, 21:06 UTC
 
+**Signed extraction update, 21:29 UTC:** the locally verified original message
+now supplies the parser's text and audio directly. Its signed recipient matches
+the Gmail account, and the extracted audio hash matches the earlier complete
+decode. Six local verification/extraction tests pass. Private-mailbox binding,
+historical ownership, durable ingestion and deployed acceptance remain required;
+no production records changed. [Signed extraction evidence](evidence/learn-voicemail-signed-extraction-2026-10-11.json).
+
 **Signature update, 21:23 UTC:** one original Gmail notification's complete-body
 signature verified locally against the observed provider signing domain. Changed
 subject/body and duplicate From checks were rejected. Two reads of the same

@@ -1,5 +1,28 @@
 # Birchills voicemail: discovery before capture
 
+## Signed content extracted — 11 October 2026, 21:29 UTC
+
+The same original raw notification is now verified and MIME-parsed in one local
+path. Its signed To list matches the account used for the Gmail read. The parser
+extracts the notification fields, transcript and one MP3 attachment directly
+from those verified bytes, rather than from a separately retained text copy.
+The 57,285-byte attachment's SHA256 exactly matches the earlier fully decoded
+28.512-second recording. No new audio decode or transcription was required.
+
+The extractor caps raw bytes, MIME nesting/parts/headers, rejects wrong recipient
+mailboxes, unsigned/altered or partial-body-signed messages, and requires one
+supported attachment. Six local tests (two verifier regressions and four signed
+extraction journeys) pass; the isolated pinned dependencies have zero npm audit
+findings at this observation. The real check made one raw-message read, one
+public DNS-key lookup and no writes/uploads. Message and audio stayed in memory.
+
+This establishes **verified original content → parsed candidate/audio**, locally.
+It does not establish the provider-account / private-mailbox association,
+historical staff ownership, durable storage, deployed runtime compatibility,
+recurring capture, coverage or signed-in acceptance. The signed recipient is
+not a staff-access grant. Those remain the next steps; no voicemail importer is
+live. [Extraction evidence](evidence/learn-voicemail-signed-extraction-2026-10-11.json).
+
 ## Original-message signature verified — 11 October 2026, 21:23 UTC
 
 One original Gmail notification was read in memory and verified locally with the
