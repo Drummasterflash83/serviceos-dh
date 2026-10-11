@@ -279,6 +279,11 @@ left join lateral (
   limit 1
 ) ins on true;
 
-grant select (id,tenant_id,recording_id,status,transcript_text,source_storage_path,processing_run_id) on public.phone_transcripts to service_role;
-grant select (tenant_id,recording_id,transcript_id,source_transcript_sha256) on public.phone_ai_insights to service_role;
+-- The server reads current results and their provenance, including insight ID
+-- and created_at for the attribution loader. Result writes still use the atomic
+-- definer RPC; this grants no INSERT/UPDATE/DELETE or browser access.
+grant select on public.phone_transcripts,public.phone_ai_insights to service_role;
+-- These configuration tables may be newly created under hardened default ACLs.
+-- Without explicit read access a permission error can look like empty context.
+grant select on public.telephony_directory,public.tenant_vocabulary to service_role;
 commit;

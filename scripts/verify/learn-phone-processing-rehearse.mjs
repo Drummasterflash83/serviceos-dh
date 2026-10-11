@@ -4,56 +4,31 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { savedCliToken, TEST_PROJECT } from "./learn-test-readiness.mjs";
 import { communicationQuery } from "./learn-card-communication-catalog.mjs";
-import { EMAIL_DIAGNOSTIC_PRESERVED } from "./learn-email-diagnostic-catalog.mjs";
-const files = [
-  "supabase/migrations/20260805120000_phone_intelligence_v1.sql",
-  "supabase/migrations/20260807120000_telephony_directory_endpoints.sql",
-  "supabase/migrations/20261101200000_learn_phone_download_attempts.sql",
-  "supabase/migrations/20261101210000_learn_phone_derived_versions.sql",
-];
-const names = [
-  "phone_recordings",
-  "phone_transcripts",
-  "phone_ai_insights",
-  "call_directions",
-  "call_participants",
-  "call_transcript_normalisations",
-  "telephony_directory",
-  "tenant_vocabulary",
-  "learn_phone_processing_attempts",
-  "learn_phone_result_versions",
-];
-const quoted = names.map((n) => `'${n}'`).join(",");
-const metadata = `select jsonb_build_object(
- 'tables',(select jsonb_agg(jsonb_build_object('name',c.relname,'owner',c.relowner,'acl',c.relacl::text,'rls',c.relrowsecurity,'columns',(select jsonb_agg(jsonb_build_object('name',a.attname,'type',format_type(a.atttypid,a.atttypmod),'default',pg_get_expr(d.adbin,d.adrelid),'acl',a.attacl::text) order by a.attnum) from pg_attribute a left join pg_attrdef d on d.adrelid=a.attrelid and d.adnum=a.attnum where a.attrelid=c.oid and a.attnum>0 and not a.attisdropped)) order by c.relname) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in (${quoted})),
- 'functions',(select jsonb_agg(jsonb_build_object('name',p.proname,'definition',pg_get_functiondef(p.oid),'owner',p.proowner,'acl',p.proacl::text) order by p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('learn_phone_download_attempt','learn_phone_derived_attempt','learn_phone_apply_intelligence','phone_pending_readiness')),
- 'view',pg_get_viewdef('public.phone_recording_pipeline_state'::regclass),
- 'indexes',(select jsonb_agg(to_jsonb(x) order by x.indexname) from pg_indexes x where x.schemaname='public' and x.tablename in (${quoted})),
- 'policies',(select jsonb_agg(to_jsonb(x) order by x.tablename,x.policyname) from pg_policies x where x.schemaname='public' and x.tablename in (${quoted}))
- ) as catalog`;
-const additions = [
-  "identity_summary",
-  "source_storage_path",
-  "source_sha256",
-  "source_transcript_sha256",
-  "processing_run_id",
-];
-const sourceQuery = (catalog) =>
-  EMAIL_DIAGNOSTIC_PRESERVED.map((n) => {
-    const existing =
-      catalog.tables.find((t) => "public." + t.name === n)?.columns.map((c) => c.name) ?? [];
-    const absentAdditions = additions.filter((c) => !existing.includes(c));
-    const row = ["public.phone_transcripts", "public.phone_ai_insights"].includes(n)
-      ? `(to_jsonb(s)-array[${absentAdditions.map((x) => `'${x}'`).join(",")}])`
-      : "to_jsonb(s)";
-    return `select '${n}' as name,count(*)::int as count,md5(coalesce(string_agg(md5(${row}::text),'' order by md5(${row}::text)),'')) as fingerprint from ${n} s`;
-  }).join(" union all ");
+import { phoneProcessingHostedProbe } from "./learn-phone-processing-hosted-probe.mjs";
+import { PHONE_PROCESSING_FILES as files, PHONE_PROCESSING_TABLES as names,
+ PHONE_PROCESSING_METADATA as metadata, phoneProcessingSourceQuery as sourceQuery } from './learn-phone-processing-catalog.mjs';
+const quoted = names.map((n) => `'${n}'`).join(',');
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 if (process.argv[2] !== "--rehearse" || process.env.LEARN_TEST_ALLOW_PROJECT_REF !== TEST_PROJECT)
   throw Error("Explicit TEST-only rehearsal required");
 const token = savedCliToken(),
-  query = (sql, readOnly = true) => communicationQuery(token, sql, { readOnly });
+  query = (sql, readOnly = true) => communicationQuery(token, sql, {
+    readOnly,
+    fetcher: async (...args) => {
+      const response = await fetch(...args);
+      if (!response.ok && response.body) {
+        const parts = []; let bytes = 0;
+        for await (const chunk of response.clone().body) {
+          bytes += chunk.length;
+          if (bytes > 65536) break;
+          parts.push(chunk);
+        }
+        writeFileSync(dir + "/private-error.txt", Buffer.concat(parts), { mode: 0o600 });
+      }
+      return response;
+    },
+  });
 const dir = ".verification-results/phone-processing-rehearsal";
 mkdirSync(dir, { recursive: true, mode: 0o700 });
 const journalPath = dir + "/journal.json";
@@ -69,6 +44,7 @@ try {
   const sources = sourceQuery(before.catalog);
   const preserved = await query(sources);
   const inputs = files.map((path) => ({ path, source: readFileSync(path, "utf8") }));
+  const assertion = phoneProcessingHostedProbe();
   const body = inputs
     .map((f) => f.source.replace(/^begin;\s*$/gm, "").replace(/^commit;\s*$/gm, ""))
     .join("\n");
@@ -80,6 +56,7 @@ try {
     priorMetadataSha256: snapshot,
     sources: inputs.map((f) => ({ path: f.path, sha256: hash(f.source) })),
     preservedDataSets: preserved.length,
+    assertionSha256: hash(assertion),
   };
   writeFileSync(journalPath, JSON.stringify(journal, null, 2) + "\n", { mode: 0o600 });
   const sql = `begin;set local search_path=public,pg_catalog;set local lock_timeout='3s';set local statement_timeout='30s';
@@ -87,13 +64,17 @@ try {
  if exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('learn_phone_processing_attempts','call_directions')) then raise exception 'Candidate already installed';end if;
  end$$;
  ${body}
+ savepoint phone_processing_probe;
+ ${assertion}
+ rollback to savepoint phone_processing_probe;
+ release savepoint phone_processing_probe;
  do $$begin
  if has_table_privilege('authenticated','learn_phone_result_versions','select') or has_function_privilege('authenticated','learn_phone_derived_attempt(uuid,uuid,uuid,text,text,jsonb)','execute') then raise exception 'Private processing access leaked';end if;
  end$$;
  set local role service_role;
  select count(*) from public.phone_pending_readiness('00000000-0000-4000-8000-000000000000');
  reset role;
- select 'phone-processing-rehearsed/1' as marker,(select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in (${quoted}))::int as tables;
+ select 'phone-processing-rehearsed/2' as marker,(select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in (${quoted}))::int as tables;
  rollback;`;
   let result = null;
   try {
@@ -105,7 +86,7 @@ try {
     afterSources = await query(sources);
   if (!equal(before, after) || !equal(preserved, afterSources))
     throw Error("Post-rehearsal state differs; inspect before any action");
-  const receipt = result?.find((x) => x.marker === "phone-processing-rehearsed/1");
+  const receipt = result?.find((x) => x.marker === "phone-processing-rehearsed/2");
   journal.state =
     receipt?.tables === names.length ? "rehearsed_rolled_back" : "rehearsal_failed_or_unconfirmed";
   journal.schemaUnchanged = true;

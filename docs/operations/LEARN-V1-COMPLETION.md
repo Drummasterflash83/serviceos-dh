@@ -200,8 +200,8 @@ succeeded after that failure; no worker was invoked and no source record changed
   transcription, playable audio, retry/recovery and recurring capture with the
   real Birchill account. Preserve existing IDs and distinguish capture from shadow
   processing configuration. [Phone work](LEARN-PHONE-ACCOUNT-BINDING.md).
-  Fresh TEST inventory confirms the pipeline/transcription/analysis endpoints are
-  absent, so sync worker deployment alone cannot prove the full Phone journey.
+  Hosted TEST now has pipeline, transcription and analysis v1, download v4,
+  pending processor v2 and platform worker v7, coordinated with schema release 055.
   The local candidate now confirms pipeline completion and gives downloads,
   transcription and analysis exclusive per-recording ownership. Forced processing
   retains prior audio, transcript, summary and attribution versions. New results
@@ -209,14 +209,19 @@ succeeded after that failure; no worker was invoked and no source record changed
   Prepared outputs can be reconciled without repeating provider requests. Unknown
   paid-request outcomes stay held for review, while confirmed rejections can retry.
   All 101 focused checks, isolated PostgreSQL assertions and strict TypeScript pass.
-  The complete schema candidate (including missing Phone Intelligence tables) was
-  rehearsed against hosted TEST and rolled back: all 101 preserved data sets and
-  the prior schema remained unchanged. This is not a deployed runtime acceptance.
-  Coordinated TEST deployment, operator history/recovery UI, customer-facing stale
-  result indicators, live-provider and recurring-capture acceptance remain open.
-  Production has an OpenAI secret name; TEST has none. The existing credential's
-  secure location is requested, without asking for its value in chat.
-  [Latest evidence](evidence/learn-phone-derived-versions-2026-10-11.json).
+  The complete schema passed positive processing assertions in hosted TEST and was
+  installed at 10:05 UTC, preserving 101 data sets. Runtime deployment preserved
+  108 data sets including the new journals/configuration. At 10:10 UTC, the deployed
+  HTTP chain completed all three stages using retained synthetic results in an
+  archived company. Both cached receipts reconciled without provider dispatch;
+  forced work remained paused. Authentication, tenant mismatch and method checks
+  passed. No users or access grants were created. This proves retained-result reuse,
+  not new audio capture, model processing or customer-card delivery.
+  Operator history/recovery UI, customer-facing stale-result indicators, signed-in
+  journeys, live-provider and recurring-capture acceptance remain open.
+  Chris authorised a dedicated TEST OpenAI key; the secure Platform picker is open
+  and awaiting its selection. No TEST OpenAI secret has been provisioned yet.
+  [Latest evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).
 - [ ] **Slack:** verify authorised workspace/channel scope, history plus replies,
   files/unsupported-content limits, incremental schedule, revocation/recovery and
   source-to-card visibility. Local synthetic history and deployed worker status
@@ -283,7 +288,7 @@ succeeded after that failure; no worker was invoked and no source record changed
   disk checkpoints, separate attempt status, exclusive locking and exact Writer
   credential/principal selection. Thirty-nine local tests passed before activation;
   the first live recording copy verified 108,870 bytes. Bounded full-inventory
-  copying is now in progress. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+  copy pass has now verified all 2,888 files; whole-inventory finalization is running. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
   The separate Restore-only command now validates the immutable manifest and restores
   an exact object version without Supabase access, preserving record links and checking
   local audio decoding. Forty-three tests pass, including actual macOS decoding of
@@ -294,7 +299,7 @@ succeeded after that failure; no worker was invoked and no source record changed
   database relationship recovery remain unverified.
   [First real restore](evidence/learn-recording-initial-restore-live-2026-10-11.json).
   Restricted Writer/Restore IAM access was explicitly approved and its stack
-  completed at 08:35:18 UTC. Complete-inventory transfer verification, scheduling,
+  completed at 08:35:18 UTC. Whole-inventory manifest verification, scheduling,
   monitoring and database/audio restore acceptance remain open.
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).

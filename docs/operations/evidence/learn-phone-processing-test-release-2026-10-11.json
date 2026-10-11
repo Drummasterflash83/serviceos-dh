@@ -1,0 +1,244 @@
+{
+  "date": "2026-10-11",
+  "state": "test_schema_and_runtime_installed_retained_pipeline_verified",
+  "productionChanged": false,
+  "schemaRehearsal": {
+    "version": "learn-phone-processing/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "2a5b63da46ede92ec2e5c73dd3928e060e1955ae996765696e4dce540310b35c",
+    "mode": "rehearse",
+    "state": "rehearsed_rolled_back",
+    "observedAt": "2026-10-11T10:04:38.952Z",
+    "priorFingerprint": "f2810cccae666cc898f82ac40687657d",
+    "expectedFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "afterFingerprint": "f2810cccae666cc898f82ac40687657d",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+      "functions": 4
+    }
+  },
+  "schemaInstallation": {
+    "version": "learn-phone-processing/1",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceSha256": "2a5b63da46ede92ec2e5c73dd3928e060e1955ae996765696e4dce540310b35c",
+    "mode": "apply",
+    "state": "installed_needs_hosted_acceptance",
+    "observedAt": "2026-10-11T10:05:14.922Z",
+    "priorFingerprint": "f2810cccae666cc898f82ac40687657d",
+    "expectedFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "afterFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "preservedDataSets": 101,
+    "submissionFailure": null,
+    "receipt": {
+      "fingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+      "functions": 4
+    }
+  },
+  "runtime": {
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "sourceBundleSha256": "6de94e2033c6a816ee68e01faf75f1b2ef6470cae22487c3a03aad56c12d14e0",
+    "observedAt": "2026-10-11T10:06:49.103Z",
+    "state": "deployed_needs_http_acceptance",
+    "priorSchemaAndEndpointsPreserved": true,
+    "fullPreservedDataSets": 108,
+    "dependencyFiles": 115,
+    "phoneProcessingSchema": "7d31c2f3169a9a3da7298a131a7058eb",
+    "endpoints": [
+      {
+        "slug": "phone-analyse-transcript",
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      {
+        "slug": "phone-process-pending",
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      {
+        "slug": "phone-process-pipeline",
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      {
+        "slug": "phone-transcribe-recording",
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      {
+        "slug": "platform-worker",
+        "version": 7,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      },
+      {
+        "slug": "simwood-download-recording",
+        "version": 4,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    ]
+  },
+  "httpAcceptance": {
+    "state": "synthetic_retained_pipeline_verified",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "checks": [
+      {
+        "endpoint": "simwood-download-recording",
+        "name": "missing authority",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-download-recording",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-download-recording",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "simwood-download-recording",
+        "name": "tenant mismatch",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-transcribe-recording",
+        "name": "missing authority",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-transcribe-recording",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-transcribe-recording",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-transcribe-recording",
+        "name": "tenant mismatch",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-analyse-transcript",
+        "name": "missing authority",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-analyse-transcript",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-analyse-transcript",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-analyse-transcript",
+        "name": "tenant mismatch",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pipeline",
+        "name": "missing authority",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pipeline",
+        "name": "anonymous denied",
+        "status": 401,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pipeline",
+        "name": "wrong method",
+        "status": 405,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pipeline",
+        "name": "tenant mismatch",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-analyse-transcript",
+        "name": "exact cached receipt reconciliation",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-transcribe-recording",
+        "name": "exact cached receipt reconciliation",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "endpoint": "phone-process-pipeline",
+        "name": "archived tenant refuses forced work",
+        "status": 409,
+        "passed": true
+      }
+    ],
+    "providerAcceptance": false,
+    "pipeline": {
+      "status": 200,
+      "success": true,
+      "downloaded": true,
+      "transcribed": true,
+      "analysed": true,
+      "errorCode": null,
+      "interactionReady": false
+    },
+    "observedAt": "2026-10-11T10:10:13.965Z",
+    "schemaFingerprint": "7d31c2f3169a9a3da7298a131a7058eb",
+    "preservedDataSets": 108,
+    "cachedAttempts": 2,
+    "terminalRuns": 4,
+    "newProviderDispatches": 0,
+    "fixtureArchived": true,
+    "newUsers": 0,
+    "newAccessGrants": 0
+  },
+  "local": {
+    "releaseSafetyChecks": 5,
+    "isolatedPostgreSQL": "passed with full Phone Intelligence foundation; includes real concurrent claims"
+  },
+  "scope": [
+    "Server read permissions corrected for transcript/insight projections and tenant attribution configuration",
+    "Synthetic archived company only; no auth users, security grants, capture activation, source files or provider calls",
+    "First HTTP fixture omitted a required provider recording ID; both rejected runs were confirmed terminal before the corrected fixture",
+    "108 existing data sets unchanged outside the deliberately retained synthetic fixture"
+  ],
+  "remaining": [
+    "Dedicated TEST OpenAI key selection and secure provisioning",
+    "Real recording download/transcription/analysis acceptance",
+    "Call-to-card and signed-in operator/customer journeys",
+    "Operator attempt/history/reconciliation UI and customer stale-result indicators",
+    "Recurring capture acceptance",
+    "Production promotion approval"
+  ]
+}

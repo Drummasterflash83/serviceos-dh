@@ -52,8 +52,9 @@ try:
  sql(hardening[hardening.index('alter table phone_ai_insights add column'):hardening.index('-- Tenant-scoped SELECT')].rsplit('-- ---------------------------------------------------------------------------',1)[0])
  sql('create table graph_nodes(id uuid primary key,tenant_id uuid);')
  pi=source('supabase/migrations/20260805120000_phone_intelligence_v1.sql')
- sql(pi[pi.index('create table if not exists call_directions'):pi.index('-- ── 4)')])
- sql(pi[pi.index('create table if not exists call_transcript_normalisations'):pi.index('-- ── set_updated_at')])
+ sql('create function public.current_tenant_id() returns uuid language sql as $$select null::uuid$$;')
+ sql(pi)
+ sql(source('supabase/migrations/20260807120000_telephony_directory_endpoints.sql'))
  derived=source('supabase/migrations/20261101210000_learn_phone_derived_versions.sql')
  sql(derived.replace('\ncommit;','\nrollback;'))
  assert sql("select to_regclass('learn_phone_result_versions') is null")=='t'

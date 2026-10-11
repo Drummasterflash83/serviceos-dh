@@ -619,3 +619,72 @@ controller; mark stale historical results honestly in customer readers; verify r
 provider processing and recurring capture after secure credential reuse. A held
 unknown paid request must never be silently restarted to make a queue appear healthy.
 [Evidence](evidence/learn-phone-derived-versions-2026-10-11.json).
+
+
+## Coordinated TEST processing release — 11 October, 10:10 UTC
+
+Release **055** is installed in TEST only. Its exact package hash is
+`2a5b63da46ede92ec2e5c73dd3928e060e1955ae996765696e4dce540310b35c`;
+installed catalog fingerprint is `7d31c2f3169a9a3da7298a131a7058eb`.
+The TEST ledger contains 56 rows including its initial entry. Production is unchanged.
+
+Positive behavioral assertions now run against the complete hosted schema inside
+an always-rolled-back probe. This caught missing server read permissions under
+TEST's hardened default ACLs. The candidate now explicitly permits server reads
+of current transcript/insight projections and the tenant directory/vocabulary.
+It adds no browser result access or direct result mutation rights. The exact
+attribution-loader projections are checked under the service role. Private history
+and attempt RPCs remain unavailable to ordinary authenticated clients.
+
+The release runner pins source hashes, the prior complete catalog, the SQL package
+and generated assertion. It requires a recent exact rehearsal before apply,
+journals before submission, and compares all 101 pre-existing data sets before and
+after the transaction. It never repeats an uncertain submission; exact catalog and
+ledger readback establish the result. The release's synthetic probe is rolled back
+before commit. Five local release-safety checks and isolated PostgreSQL assertions
+pass, including genuinely concurrent claims. The hosted rehearsal and installed
+catalog matched their expected fingerprints.
+
+The matching 115-file runtime closure deployed at 10:06 UTC:
+
+| Endpoint | TEST version |
+| --- | --- |
+| simwood-download-recording | 4 |
+| phone-transcribe-recording | 1 |
+| phone-analyse-transcript | 1 |
+| phone-process-pipeline | 1 |
+| phone-process-pending | 2 |
+| platform-worker | 7 |
+
+Its source bundle is
+`6de94e2033c6a816ee68e01faf75f1b2ef6470cae22487c3a03aad56c12d14e0`.
+The deployer checked the exact preceding versions, unchanged unrelated endpoints,
+unchanged schema and 108 retained data sets, including the new tables. It neither
+configured provider credentials nor enabled capture/schedules.
+
+At 10:10 UTC, a deployed HTTP check verified the full retained-result chain in a
+marked, archived synthetic tenant. Download/transcription/analysis returned their
+existing results, four parent/child runs settled successfully, two saved receipts
+reconciled without new runs or paid requests, and forced processing was refused.
+Sixteen negative authority/method/tenant checks passed. All 108 non-fixture data
+sets remained unchanged. No auth users, access grants or storage files were created.
+The first fixture lacked a required provider recording ID; both rejected runs were
+confirmed terminal, retained in their archived synthetic tenant, and a corrected
+fixture passed. Neither fixture made a provider request.
+
+This is **retained-result reuse acceptance**, not real transcription, playable-audio
+or call-to-card acceptance. The fixture has no source call and no interaction is
+claimed. Chris approved creation of a dedicated TEST OpenAI key; the secure picker
+is awaiting selection. Operator history/review/reconciliation UI, customer stale
+indicators, real provider processing, signed-in journeys and recurring capture
+remain open. Do not promote production on the basis of this synthetic check.
+
+Operational recovery: if TEST processing is unhealthy, pause Phone capture and
+inspect held attempts before retrying; preserve the journals, versions and current
+source rows. Do not drop these tables or edit receipts to make a queue appear clear.
+A replacement runtime must be packaged against the installed schema and current
+endpoint versions. Existing one-shot release/deploy journals prevent accidental
+resubmission; inspect current state after any uncertain response. Production still
+requires its separate migration/rollback review and promotion approval.
+
+[Release and HTTP evidence](evidence/learn-phone-processing-test-release-2026-10-11.json).

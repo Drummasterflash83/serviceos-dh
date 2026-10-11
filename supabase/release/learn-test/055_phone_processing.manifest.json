@@ -1,0 +1,26 @@
+{
+  "version": "learn-phone-processing-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "2a5b63da46ede92ec2e5c73dd3928e060e1955ae996765696e4dce540310b35c",
+  "priorFingerprint": "f2810cccae666cc898f82ac40687657d",
+  "sources": [
+    {
+      "path": "supabase/migrations/20260805120000_phone_intelligence_v1.sql",
+      "sha256": "7fcbc8ad96e7dcecb3c8362d04385852733decd2f4220ec0161526c7a3af9f00"
+    },
+    {
+      "path": "supabase/migrations/20260807120000_telephony_directory_endpoints.sql",
+      "sha256": "8c016808896d05b0701f3a23945f4bd87f20795dfaf4400a69f3ef27b20a2e24"
+    },
+    {
+      "path": "supabase/migrations/20261101200000_learn_phone_download_attempts.sql",
+      "sha256": "f18cd524860ce9f9df987d61415f108f2c11805970ea930a06272043499fafd3"
+    },
+    {
+      "path": "supabase/migrations/20261101210000_learn_phone_derived_versions.sql",
+      "sha256": "3330679e3f4028af98026ffe886dae576c38256476c546145110aa085b8ac459"
+    }
+  ],
+  "assertionSha256": "e8142ec8c0a2441fe9dec4c9659b0094fd92a43d73a1df6d2ecbd15fde22543e",
+  "preservedDataSets": 101
+}
