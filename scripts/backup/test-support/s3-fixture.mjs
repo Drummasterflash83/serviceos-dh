@@ -16,7 +16,7 @@ export const time = Date.parse("2026-10-11T12:00:00Z");
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const xml = (root, body) =>
   `<${root} xmlns="http://s3.amazonaws.com/doc/2006-03-01/">${body}</${root}>`;
-export function fixture() {
+export function fixture({ expectedPrincipalArn } = {}) {
   const calls = [],
     objects = new Map();
   let serial = 0,
@@ -175,6 +175,7 @@ export function fixture() {
   const transport = createRecordingS3(context, {
     credentials: async () => ({ accessKeyId: "SYNTHETIC", secretAccessKey: "SYNTHETIC" }),
     requestHandler: handler,
+    expectedPrincipalArn,
     now: () => clock,
   });
   const bytes = Buffer.from("RIFF-synthetic-SDK-wire-recording");

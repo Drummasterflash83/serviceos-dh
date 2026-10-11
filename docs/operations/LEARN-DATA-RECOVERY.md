@@ -86,7 +86,11 @@ probe against database and Storage API, with no audio download.
 The complete real metadata inventory subsequently verified all 2,888 objects and
 all 2,882 recording-row file links, with six unlinked objects retained. Private
 inventory/reconciliation files and bounded copy checkpoints are implemented;
-32 local tests pass. AWS transfer acceptance, daily scheduling, operator monitoring,
+The durable local command now saves atomic disk checkpoints and attempt status,
+resumes from verified receipts, loads only the proposed Writer Keychain credential
+and pins its exact AWS principal. Thirty-nine local tests pass; the command has
+not been activated. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
+AWS transfer acceptance, daily scheduling, operator monitoring,
 real copies, playback and database restore remain unfinished.
 [Inventory and batch evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).
 [Source evidence](evidence/learn-recording-backup-source-local-2026-10-11.json). [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). Initial source reads can reuse existing authorised credentials in memory inside

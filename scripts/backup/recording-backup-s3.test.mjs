@@ -173,3 +173,24 @@ test("durable journal refuses corrupted response instead of returning JSON as ve
     f.close();
   }
 });
+
+test("a different principal in the same AWS account cannot reach the backup bucket", async () => {
+  const f = fixture({
+    expectedPrincipalArn: `arn:aws:iam::${context.accountId}:user/approved-writer`,
+  });
+  try {
+    await assert.rejects(f.destination.inspect(), { code: "s3_principal_mismatch" });
+    assert.equal(f.calls.length, 1);
+    assert.equal(f.calls[0].hostname, "sts.eu-west-2.amazonaws.com");
+  } finally {
+    f.close();
+  }
+  const matched = fixture({
+    expectedPrincipalArn: `arn:aws:iam::${context.accountId}:role/synthetic`,
+  });
+  try {
+    assert.equal((await matched.destination.inspect()).accountId, context.accountId);
+  } finally {
+    matched.close();
+  }
+});

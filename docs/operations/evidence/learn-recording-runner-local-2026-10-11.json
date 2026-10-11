@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-11",
+  "scope": "local synthetic verification only",
+  "change": "Durable recording backup runner and explicit Drummonds CLI",
+  "checks": {
+    "node --test scripts/backup/*.test.mjs": {
+      "passed": 39,
+      "failed": 0
+    },
+    "node --test scripts/backup/recording-backup-runner.test.mjs after attempt-status addition": {
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "verified": [
+    "Private disk checkpoint persists across separate runner calls",
+    "Finalization requires completed matching progress and rechecks every exact S3 version",
+    "Lost checkpoint recovers existing receipts without duplicate audio PUT",
+    "Inventory file hash, file ownership, private modes, symlinks and lock conflicts checked before credential loading",
+    "Corrupt destination fails finalization and records failed attempt despite prior successful copy pass",
+    "Writer Keychain service/account exact; root, Restore and foreign principals rejected",
+    "STS identity must match expected principal before any bucket request",
+    "Safe summaries do not expose private source paths or credentials"
+  ],
+  "activation": {
+    "liveCommandExecuted": false,
+    "realKeychainRead": false,
+    "realAWSRequests": 0,
+    "sourceRequests": 0,
+    "recordingsCopied": 0,
+    "backupComplete": false
+  },
+  "limits": [
+    "Live IAM and credential acceptance pending",
+    "Local runner has no daily scheduler yet",
+    "Real copy/manifest/playback/database restore not verified",
+    "Abrupt crashes retain exclusive lock for operator recovery after process-liveness confirmation",
+    "Provider timeouts stop without claiming complete coverage"
+  ]
+}

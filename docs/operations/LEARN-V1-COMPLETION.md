@@ -254,7 +254,10 @@ succeeded after that failure; no worker was invoked and no source record changed
   restore test path (28 tests combined), and one real object passed metadata-only
   verification. The complete real metadata inventory now verifies all 2,888 objects
   and every recording-row file link; six unlinked objects remain included. Private
-  manifests are saved locally. The bounded copy runner has 32 passing tests overall.
+  manifests are saved locally. The bounded local copy command now uses private atomic
+  disk checkpoints, separate attempt status, exclusive locking and exact Writer
+  credential/principal selection. Thirty-nine local tests pass; the command remains
+  unactivated pending access approval. [Runner evidence](evidence/learn-recording-runner-local-2026-10-11.json).
   Restricted Writer/Restore IAM access is prepared as an unexecuted change set;
   action-time approval is needed for the new identities/keys. AWS transfers,
   scheduling, monitoring and database/audio restore acceptance remain open.

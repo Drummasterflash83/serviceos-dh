@@ -57,9 +57,14 @@ function policyVerified(policy, bucket) {
   );
 }
 /** requestHandler is only a test seam; production defaults to bounded HTTPS. */
-export function createRecordingS3(binding, { credentials, requestHandler, now = Date.now } = {}) {
+export function createRecordingS3(
+  binding,
+  { credentials, requestHandler, now = Date.now, expectedPrincipalArn, signal } = {},
+) {
   const context = recordingContext(binding);
   requireValue(typeof credentials === "function", "s3_credentials_provider_required");
+  const abortAfter = (ms) =>
+    signal ? AbortSignal.any([signal, AbortSignal.timeout(ms)]) : AbortSignal.timeout(ms);
   const options = {
     region: "eu-west-2",
     credentials,
@@ -96,15 +101,19 @@ export function createRecordingS3(binding, { credentials, requestHandler, now = 
       "s3_version_required",
     );
   const send = async (Command, input) =>
-    s3.send(new Command({ ...bucket, ...input }), { abortSignal: AbortSignal.timeout(120000) });
+    s3.send(new Command({ ...bucket, ...input }), { abortSignal: abortAfter(120000) });
   const inspect = () =>
     safe(async () => {
       // Refresh per minute at most. Each request is still bound by ExpectedBucketOwner.
       if (inspectedAt === null || now() < inspectedAt || now() - inspectedAt >= 60000) {
         const identity = await sts.send(new GetCallerIdentityCommand({}), {
-          abortSignal: AbortSignal.timeout(30000),
+          abortSignal: abortAfter(30000),
         });
         requireValue(identity.Account === context.accountId, "s3_account_mismatch");
+        requireValue(
+          expectedPrincipalArn === undefined || identity.Arn === expectedPrincipalArn,
+          "s3_principal_mismatch",
+        );
         // Deliberately serial: a failed gate prevents all subsequent work.
         const location = await send(S3.GetBucketLocationCommand, {});
         requireValue(location.LocationConstraint === context.region, "s3_region_mismatch");

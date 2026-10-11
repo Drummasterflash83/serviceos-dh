@@ -211,7 +211,8 @@ and byte requests at 120 seconds. Error output never includes paths or credentia
 The private reconciliation result preserves missing object references and counts
 null pointers and unreferenced objects. Missing audio remains missing; zero-byte
 objects remain zero bytes. Persist this report with the private inventory in the
-runner before transfer; this persistence and runner are still to be completed.
+runner before transfer. Private inventory persistence and the bounded local runner
+are now implemented; real activation and hosted scheduling remain unverified.
 Matching listings are a non-atomic observation, not a database recovery point.
 
 Nine source tests include the entire source adapter → official AWS SDK → encrypted
@@ -298,3 +299,72 @@ can disable either key to stop access without deleting retained recordings.
 Creating these new identities and keys grants new security-sensitive access, so
 browser action-time confirmation is required before execution/provisioning.
 The existing approved recording-copy destination and scope are unchanged.
+
+
+## Durable local runner — 11 October, prepared but not activated
+
+`run-drummonds-recording-backup.mjs` is the explicit command for the approved
+OpenFolk bucket and Drummonds source tenant. It is **not running**, no Writer key
+has been provisioned, and these checks do not prove a real backup exists.
+
+It reads a JSON credential (`accessKeyId`, `secretAccessKey`, `principalArn`) from
+only the proposed Writer Keychain service/account above. Provisioning must record
+the actual generated Writer IAM ARN in that private Keychain item. The command
+rejects root, Restore, other accounts and unrelated IAM users; STS must match the
+stored Writer ARN before any S3 bucket operation. There is no environment/profile
+credential fallback. Source credentials are reused from the existing Supabase CLI
+login, kept in process memory and never sent to AWS. The entire invocation has a
+30-minute abort deadline; source calls have an additional 20,000-request budget.
+Actual IAM permission acceptance remains an activation gate.
+
+The private inventory directory must be its canonical absolute path, owned by the
+current user with mode 0700. Inventory/checkpoint files must be regular, single-link
+0600 files owned by that user; symlinks and broad permissions are rejected. Supply
+the previously verified **file SHA-256** from the private inventory summary, not
+the normalized inventory hash printed by a copy batch.
+
+After access approval/provisioning, first verify one bounded object:
+
+```sh
+node scripts/backup/run-drummonds-recording-backup.mjs --copy-drummonds '<PRIVATE_INVENTORY_DIRECTORY>' '<INVENTORY_FILE_SHA256>' 1 33554432
+```
+
+Repeat against the same directory/hash to resume. Default bounds are 25 objects
+and 32 MiB per invocation; optional final arguments permit up to 100 objects and
+256 MiB. A single file larger than the selected byte budget fails clearly. Do not
+change or replace the inventory while copying. A changed source revision stops
+that run; retain the old evidence and make a fresh reconciled inventory rather
+than editing source identities to force completion.
+
+The runner takes an exclusive `runner.lock`, fsyncs each checkpoint before atomic
+rename and syncs its directory. It releases the lock after ordinary success or
+failure. After a machine/process crash, an operator must verify the recorded PID
+is no longer running before removing only that stale lock; never auto-expire a
+lock based on age. A lost checkpoint can replay an already verified receipt
+without another audio upload. S3 receipts/manifests remain the recovery authority.
+
+Once `copy_pass_finished` is returned, deliberately verify the whole inventory:
+
+```sh
+node scripts/backup/run-drummonds-recording-backup.mjs --finalize-drummonds '<PRIVATE_INVENTORY_DIRECTORY>' '<INVENTORY_FILE_SHA256>'
+```
+
+Finalization requires a complete matching checkpoint, then independently verifies
+all pinned S3 versions and source relationships through the existing manifest
+protocol. It cannot trust the checkpoint as proof. `inventory_verified` still
+reports playback and database restore as unverified and `backupComplete: false`.
+The existing isolated restore protocol, playable real audio and database linkage
+rehearsal must follow before claiming recoverability.
+
+`last-attempt.json` distinguishes in-progress, succeeded and failed attempts with
+safe codes/timestamps. `last-result.json` holds the last successful result, not
+current health; always read the attempt alongside it. A crash can leave an
+in-progress attempt and lock. Neither file should be exposed publicly or used to
+claim current coverage without the original inventory observation time.
+
+Thirty-nine local tests pass. The new checks cover separate disk-backed runs,
+checkpoint loss/recovery, lock exclusion, private-file rejection, corrupt-object
+finalization failure, exact credential selection and wrong-principal rejection.
+They use synthetic AWS transports; live Keychain access, effective IAM permissions,
+real recording transfer, daily scheduling and restore acceptance remain pending.
+[Evidence](../../docs/operations/evidence/learn-recording-runner-local-2026-10-11.json).
