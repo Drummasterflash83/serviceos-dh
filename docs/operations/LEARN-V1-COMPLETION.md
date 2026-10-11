@@ -7,6 +7,19 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:01 UTC — voicemail runtime integration, local evidence only.** Shared server
+code now handles signed source verification, MIME extraction, MP3 decoding and
+private import coordination in both Node and Supabase Edge Runtime. An actual
+offline Edge user worker passed a generated 28-second recording through the full
+coordinator with controlled storage transport, including real WebAssembly decode,
+tamper rejection and hash readbacks under a 2-second hard CPU limit. Explicit
+Buffer imports fix the deployment incompatibility the check found. Seven Node
+regressions and actual PostgreSQL intake/failure tests still pass. No hosted or
+production change was made. Authenticated worker/provider wiring, hosted Storage,
+route ownership, coverage, backup and signed-in acceptance remain required.
+[Evidence](evidence/learn-voicemail-edge-runtime-2026-10-11.json) and
+[scope/next step](LEARN-VOICEMAIL-DISCOVERY.md).
+
 Latest scoped production observation: **11 October 2026, 14:33 UTC**.
 [Read-only capture inventory](evidence/learn-current-capture-2026-10-11.json)
 shows **18,548 emails, 4,328 calls, 2,882 recording rows, 3,165 cards and zero

@@ -1,5 +1,42 @@
 # Birchills voicemail: discovery before capture
 
+## Shared voicemail code verified in Edge Runtime — local only, 22:01 UTC
+
+The signature/MIME verifier, audio decoder and private import coordinator now live
+in `supabase/functions/_shared/voicemail/`. Node diagnostics use thin adapters to
+these same implementations. `edge.js` pins mailauth 7.3.0, postal-mime 4.0.5 and
+mpg123-decoder 1.0.3 through `npm:` imports. Explicit `node:buffer` imports fix the
+real `Buffer is not defined` failure found in the Supabase worker.
+
+An actual offline **Supabase Edge Runtime 1.74.3 user worker**, with 256 MiB memory
+and a 2,000 ms hard CPU limit, passed signed extraction, body-tamper rejection,
+invalid-audio rejection and positive MP3 decoding. A generated 28-second tone
+produced 56,304 MP3 bytes and decoded to **225,216 frames at 8 kHz (28.152 seconds)**,
+identically in Node and Edge. The extra duration is encoding padding, not a real
+customer recording. The full coordinator completed two immutable uploads and two
+hash readbacks through a controlled SDK-shaped transport. No customer files,
+credentials, outbound network, hosted writes or capture activation were involved.
+
+The refactored code also passed seven Node regressions and the existing actual
+PostgreSQL intake suite, including twelve coordinator failure/retry scenarios.
+The separate voicemail dependency audit reports zero known vulnerabilities.
+The synthetic encoder is development-only and is not imported by the Edge adapter.
+The test container and staged files were removed after verification.
+
+**Still unproven:** hosted deployment/bundling, actual Supabase Storage transport,
+restricted live DNS resolution, provider credential/loader wiring, verified
+mailbox routes and historical ownership, scheduling/coverage, source/audio backup
+coverage and signed-in acceptance. Neither the private intake migration nor a
+voicemail capture endpoint has been installed or enabled by this checkpoint.
+The next step is an authenticated, bounded worker integration and hosted TEST
+acceptance with capture disabled until its route and credential approvals exist.
+
+[Runtime evidence](evidence/learn-voicemail-edge-runtime-2026-10-11.json).
+Reproduce with `python3 scripts/verify/learn-voicemail-edge-runtime.py` after
+installing the pinned diagnostic dependencies. The harness mounts only selected
+code, installed packages and generated synthetic fixtures; it never mounts the
+repository or exports the host environment to the user worker.
+
 ## Import coordinator and portable decode — local verification, 21:47 UTC
 
 `scripts/verify/voicemail-auth/private-import.mjs` now connects route admission,

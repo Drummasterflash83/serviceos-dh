@@ -1,0 +1,61 @@
+{
+  "observedAt": "2026-10-11T22:01:15.016351+00:00",
+  "scope": "local_offline_actual_supabase_user_worker",
+  "image": "public.ecr.aws/supabase/edge-runtime:v1.74.3",
+  "imageId": "sha256:c52405002a890ca9fcf77978671c57f3a988e03174afb277f84ac65bc917013c",
+  "network": "none",
+  "customerData": false,
+  "credentials": false,
+  "workerLimits": {
+    "memoryMiB": 256,
+    "cpuHardMs": 2000,
+    "wallMs": 30000
+  },
+  "result": {
+    "state": "passed",
+    "signedExtraction": true,
+    "tamperRejected": true,
+    "invalidAudioRejected": true,
+    "positiveAudioDecode": {
+      "state": "decoded",
+      "decoder": "mpg123-decoder@1.0.3",
+      "frames": 225216,
+      "sampleRate": 8000,
+      "decodedChannels": 2,
+      "durationSeconds": 28.152,
+      "listening": "not_verified"
+    },
+    "coordinatorWithControlledTransport": true,
+    "uploads": 2,
+    "readbacks": 2,
+    "audioBytes": 56304,
+    "version": {
+      "deno": "supabase-edge-runtime-1.74.3 (compatible with Deno v2.1.4)",
+      "v8": "11.6.189.12",
+      "typescript": "5.1.6"
+    }
+  },
+  "sourceSha256": {
+    "supabase/functions/_shared/birchills_voicemail_email.ts": "16563facd8fd43ca87d3b57b91bf4a076b6bb218efa9af6fa71d6e6ffd0a5474",
+    "supabase/functions/_shared/voicemail/decode-audio.js": "7a85b89bf1f803573f86c7702e2fda6c0de9b6df097eb4a6a20484cada1fc7a3",
+    "supabase/functions/_shared/voicemail/edge.js": "6f0740c6b4d71b0f92d089a2784f15171fc172170cab7cec9ac1f16bf22403cc",
+    "supabase/functions/_shared/voicemail/private-import.js": "23c8283f7467848e49dde08d12717624b1e6843724672b392294068796b20831",
+    "supabase/functions/_shared/voicemail/signed-source.js": "a357d261fe8536d156edd8f9de0e5c64e014bee464d66c510a5d188d900d29a5",
+    "scripts/verify/voicemail-auth/edge-fixture.mjs": "701f856c305103a4b6749b89d1659ce9b0bb1afc2e24af60496475ce16f5d401",
+    "scripts/verify/voicemail-auth/edge-runtime-probe.ts": "0e5324ce50fab54c27b22bee5acce6def6dff1ccf68c94d689c45ba05be5eb20",
+    "scripts/verify/voicemail-auth/package-lock.json": "6f4e42f155a819d72c38ee87b6f87462fc0dcdfb4b96b12d5d12f250eadb77d7",
+    "scripts/verify/learn-voicemail-edge-runtime.py": "e5285c0de698bf05efe42134a0326c983cd786b0fc4e52d99ac6aaae03f7a428"
+  },
+  "limitations": [
+    "controlled SDK transport; not hosted Storage or SQL",
+    "synthetic audio only",
+    "DNS supplied by synthetic resolver",
+    "no hosted deployment or provider activation"
+  ],
+  "regression": {
+    "nodeTestsPassed": 7,
+    "actualPostgresIntakeChecks": "passed",
+    "actualSqlCoordinatorCasesPassed": 12,
+    "dependencyAuditKnownVulnerabilities": 0
+  }
+}

@@ -1,7 +1,10 @@
 # Local voicemail signature diagnostic
 
-This is a separate, pinned **Node diagnostic dependency**, not a frontend or
-deployed Edge Function dependency. Edge compatibility has not been established.
+This is a separate, pinned **Node diagnostic dependency** package, not a frontend
+dependency. The shared implementation now lives in
+`supabase/functions/_shared/voicemail/`; Node files here are thin adapters.
+The server-only `edge.js` adapter uses pinned npm imports and passed an actual
+offline Supabase Edge Runtime 1.74.3 user-worker check. It is not yet deployed.
 Install without lifecycle scripts from the repository root:
 
 ```sh
@@ -111,3 +114,33 @@ audio and PCM are not saved. No credentials are passed to the decoder child.
 Still required: deployed runtime support and actual SDK/provider wiring, verified
 routes/ownership, TEST installation and hosted storage acceptance, scheduling and
 coverage, larger-message handling, recovery coverage and signed-in acceptance.
+
+## Actual Edge user-worker check
+
+```sh
+python3 scripts/verify/learn-voicemail-edge-runtime.py
+```
+
+Requires the already-installed Docker image
+`public.ecr.aws/supabase/edge-runtime:v1.74.3`; the harness never pulls it. Only
+selected code/dependencies and synthetic fixtures are staged and mounted read-only.
+The container has no external network and the user worker receives no host env.
+A fresh synthetic RSA key signs generated notification mail; the private key
+never leaves the generator process. A pinned development-only encoder,
+`@breezystack/lamejs@1.2.7`, generates 28 seconds of tone. It is not a production
+runtime dependency. The Edge worker imports the actual server adapter, verifies
+and extracts the signed source, rejects body tampering and invalid MPEG bytes,
+compares real decode output to Node, and runs the coordinator using controlled
+SDK-shaped RPC/storage adapters. The worker is limited to 256 MiB, 2 seconds CPU
+and 30 seconds wall time. The initial runtime failure (`Buffer is not defined`)
+was fixed with explicit `node:buffer` imports in shared code.
+
+Passing this check proves local runtime compatibility for this synthetic sample,
+not hosted packaging, network DNS, provider access, real Storage, user playback or
+full duration/format coverage. The existing actual PostgreSQL suite separately
+checks SQL authority, preservation, concurrency and retry behaviour. No routes,
+accounts, secrets or hosted capture are created by either test.
+
+Primary references for this harness:
+- [Supabase user-worker example](https://github.com/supabase/edge-runtime/blob/main/examples/main/index.ts)
+- [Synthetic encoder](https://github.com/shijinyu/lamejs)
