@@ -13,6 +13,7 @@ type Outcome =
       entity_kind: WorkKind;
       link_id: string;
       already: boolean;
+      timing_limitations?: ("created" | "completed")[];
       attempt_id?: string;
     };
 export type WorkSource = {
@@ -70,7 +71,12 @@ function outcome(v: unknown): Outcome {
     uuid(v.entity_id) &&
     uuid(v.link_id) &&
     ["site", "job", "contact"].includes(v.entity_kind) &&
-    typeof v.already === "boolean"
+    typeof v.already === "boolean" &&
+    (v.timing_limitations === undefined ||
+      (Array.isArray(v.timing_limitations) &&
+        v.timing_limitations.length <= 2 &&
+        new Set(v.timing_limitations).size === v.timing_limitations.length &&
+        v.timing_limitations.every((k: unknown) => k === "created" || k === "completed")))
   )
     return {
       state: "linked",
@@ -78,6 +84,7 @@ function outcome(v: unknown): Outcome {
       entity_kind: v.entity_kind,
       link_id: v.link_id,
       already: v.already,
+      ...(v.timing_limitations ? { timing_limitations: v.timing_limitations } : {}),
       ...(v.attempt_id ? { attempt_id: v.attempt_id } : {}),
     };
   throw failure();
@@ -389,4 +396,15 @@ export function workHoldMessage(reason: string | null | undefined): string {
   return reason
     ? (messages[reason] ?? "This record needs review before linking.")
     : "Relationship will be checked again when processed.";
+}
+
+export function workTimingMessage(result: WorkSource["last_result"]): string | null {
+  if (result?.state !== "linked" || !result.timing_limitations?.length) return null;
+  return (
+    "Linked with an unconfirmed " +
+    result.timing_limitations
+      .map((k) => (k === "created" ? "creation" : "completion"))
+      .join(" and ") +
+    " timezone. These times cannot support duration or performance calculations."
+  );
 }

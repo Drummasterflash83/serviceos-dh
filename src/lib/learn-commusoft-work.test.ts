@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   loadWorkPage,
+  workTimingMessage,
   readWorkDraft,
   resolveWorkDraft,
   workOutboxKey,
@@ -312,4 +313,20 @@ test("contact recovery binds the chosen existing person and preserves a request 
   );
   assert.equal(result?.kind, "contact");
   assert.equal(readWorkDraft(store, scope), null);
+});
+
+test("saved batch receipts preserve timing limitations, while malformed claims keep recovery pending", async () => {
+  const d = draft();
+  const reply = receipt() as any;
+  reply.items[0].outcome.timing_limitations = ["completed"];
+  const db: ReviewClient = { rpc: async () => ({ data: reply, error: null }) };
+  const result = await resolveWorkDraft(db, storage(), lock, scope, d, "apply", () => true);
+  assert.ok(result);
+  assert.match(workTimingMessage(result.items[0].outcome)!, /unconfirmed completion timezone/);
+  for (const invalid of [["created", "created"], ["source_payload"], "completed"]) {
+    reply.items[0].outcome.timing_limitations = invalid;
+    const s = storage();
+    await assert.rejects(resolveWorkDraft(db, s, lock, scope, d, "apply", () => true));
+    assert.ok(readWorkDraft(s, scope));
+  }
 });

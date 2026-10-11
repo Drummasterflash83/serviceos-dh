@@ -1,3 +1,4 @@
+import { jobTimingGaps } from "./learn-job-timing.ts";
 import {
   readCardCommunications,
   type LearnCommunicationClient,
@@ -31,7 +32,7 @@ const tables = {
 const columns = {
   team: "id,tenant_id,name,kind,updated_at",
   customer: "id,tenant_id,title,summary,person_id,company_id,owner_id,updated_at",
-  job: "id,tenant_id,title,job_number,status,source_system,verified,updated_at",
+  job: "id,tenant_id,title,job_number,status,source_system,verified,updated_at,created_date,completed_date,time_evidence:metadata->learn_business_input->timestamps",
   member:
     "id,tenant_id,display_name,formal_role,org_unit_id,profile_id,confirmed_at,effective_to,updated_at",
 } as const;
@@ -286,7 +287,7 @@ export function projectLearnDetail(input: {
       excerpt: text(r.body_preview),
     }))
     .sort((a, b) => (Date.parse(b.occurredAt ?? "") || 0) - (Date.parse(a.occurredAt ?? "") || 0));
-  const gaps = [...(input.gaps ?? [])];
+  const gaps = [...(input.gaps ?? []), ...(kind === "job" ? jobTimingGaps(record) : [])];
   const teams =
     kind === "team"
       ? [record, ...(input.teams ?? []).filter((r) => r.id !== record.id)]

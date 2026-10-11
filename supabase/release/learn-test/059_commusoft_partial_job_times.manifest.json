@@ -1,0 +1,18 @@
+{
+  "version": "commusoft-partial-job-times/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "c5e3fbf27b6c5f07a7a96dc2693855e285c3679c8763c8c3eddc29f0959bfdac",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101250000_learn_commusoft_partial_job_times.sql",
+      "sha256": "95ca7fd3ef48c2d76ed73998019018d6f429978077f48c00aa03a161a44ea60f"
+    },
+    {
+      "path": "scripts/verify/learn-commusoft-partial-times-hosted.assert.sql",
+      "sha256": "99d13a5151f95613fa4308c22f1befa1f9b5ad5b489f2dade2e9a73c9cdc274e"
+    }
+  ],
+  "priorFingerprint": "6632f3df219ea27a9ccc3f668f198f00",
+  "preservedDataSets": 113,
+  "positiveProjectionProbe": "rolled back; banned passwordless synthetic owner only; no session or platform grant"
+}

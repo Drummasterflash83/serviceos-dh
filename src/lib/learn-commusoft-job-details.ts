@@ -105,30 +105,7 @@ export function parseCommusoftJobDetails(
     )
       throw unavailable();
   }
-  for (const date of Object.values(d.dates)) {
-    if (
-      !keys(date, ["state", "source", "instant"]) ||
-      !["absent", "invalid", "timezone_required", "zoned"].includes(date.state) ||
-      !(date.source === null || (typeof date.source === "string" && codepoints(date.source) <= 100))
-    )
-      throw unavailable();
-    if (date.state === "zoned") {
-      if (
-        !zoned(date.source) ||
-        !zoned(date.instant) ||
-        instantMicros(date.source) !== instantMicros(date.instant)
-      )
-        throw unavailable();
-    } else if (
-      date.instant !== null ||
-      (date.state === "absent" && date.source !== null) ||
-      (date.state === "timezone_required" &&
-        (typeof date.source !== "string" ||
-          !/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(date.source) ||
-          !zoned(date.source.replace(" ", "T") + "Z")))
-    )
-      throw unavailable();
-  }
+  for (const date of Object.values(d.dates)) parseJobDate(date);
   return d;
 }
 export async function loadCommusoftJobDetails(
@@ -155,4 +132,38 @@ export async function loadCommusoftJobDetails(
   } catch {
     throw unavailable();
   }
+}
+
+/** Shared source-date validator. An unzoned value never becomes an instant. */
+export function parseJobDate(value: unknown): JobDate {
+  const date = value as JobDate;
+  if (
+    !keys(date, ["state", "source", "instant"]) ||
+    !["absent", "invalid", "timezone_required", "zoned"].includes(date.state) ||
+    !(date.source === null || (typeof date.source === "string" && codepoints(date.source) <= 100))
+  )
+    throw unavailable();
+  if (date.state === "zoned") {
+    if (
+      !zoned(date.source) ||
+      !zoned(date.instant) ||
+      instantMicros(date.source) !== instantMicros(date.instant)
+    )
+      throw unavailable();
+  } else if (
+    date.instant !== null ||
+    (date.state === "absent" && date.source !== null) ||
+    (date.state === "timezone_required" &&
+      (typeof date.source !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(date.source) ||
+        !zoned(date.source.replace(" ", "T") + "Z")))
+  )
+    throw unavailable();
+
+  return date;
+}
+export function sameJobInstant(left: unknown, right: unknown): boolean {
+  const a = instantMicros(left),
+    b = instantMicros(right);
+  return a !== null && b !== null && a === b;
 }

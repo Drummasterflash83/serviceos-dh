@@ -1,3 +1,4 @@
+import { jobTimingFields } from "./learn-job-timing.ts";
 import {
   readCardCommunications,
   type LearnCommunicationClient,
@@ -24,7 +25,16 @@ const fields: Record<string, string[]> = {
   ...Object.fromEntries(
     Object.entries(CARD_SOURCE_FIELDS).map(([key, value]) => [key, [...value]]),
   ),
-  jobs: ["title", "job_number", "status", "source_system", "completed_date", "verified"],
+  jobs: [
+    "title",
+    "job_number",
+    "status",
+    "source_system",
+    "created_date",
+    "completed_date",
+    "time_evidence:metadata->learn_business_input->timestamps",
+    "verified",
+  ],
   team_members: ["display_name", "formal_role", "confirmed_at", "effective_from", "effective_to"],
 };
 const uuid = (v: unknown): v is string =>
@@ -70,7 +80,13 @@ export async function loadPerformanceEvidence(
       throw Error("Evidence is unavailable with your current access");
     record = data[0];
   }
-  return names
+  const shown =
+    ref.table === "jobs"
+      ? names.filter(
+          (k) => !["created_date", "completed_date"].includes(k) && !k.startsWith("time_evidence:"),
+        )
+      : names;
+  const output = shown
     .filter((k) => record[k] !== null && record[k] !== undefined)
     .map((k) => {
       let value = record[k];
@@ -97,4 +113,5 @@ export async function loadPerformanceEvidence(
             : text,
       };
     });
+  return ref.table === "jobs" ? [...output, ...jobTimingFields(record)] : output;
 }

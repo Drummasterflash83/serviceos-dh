@@ -404,6 +404,47 @@ succeeded after that failure; no worker was invoked and no source record changed
   recording inventory and one manifest-selected restore are verified; later
   arrivals, scheduled coverage and database recovery still require acceptance.
 
+## Commusoft jobs with unresolved times — 11 October, 13:15 UTC
+
+The captured-data audit found 9,940 of the first 10,000 jobs had completion strings
+without a timezone. Previously a valid unzoned timestamp held the entire job at
+review. The new projection separates usable job identity/status from timing
+eligibility: after customer/site ownership is reviewed, it can link that job while
+leaving the uncertain canonical timestamp null. Original source text and the
+`timezone_required` classification remain in provenance metadata. Invalid dates,
+unknown statuses, stale/conflicting sources and unresolved ownership remain held.
+Nothing assigns a timezone, marks the job verified, attributes staff or awards pay.
+
+- Additive migration `20261101250000_learn_commusoft_partial_job_times.sql` changes
+  only the existing review function; execution grants/owner are retained. Existing
+  canonical rows and immutable source versions are not backfilled or overwritten.
+  Exact replays keep the same job and timing limitations. Closure does not imply
+  a completion timestamp. A later timezone resolution still needs explicit review.
+- The job card shows timing limitations. The performance evidence reader requests
+  only the timing part of metadata, checks it against stored dates, and shows
+  unknown or conflicting provenance instead of a guessed instant. Missing time
+  is not a poor-performance score. Saved review batch receipts retain the same
+  warning; linking a job does not attest timing quality.
+- **40 focused client tests pass**, along with TypeScript and production build.
+  Isolated PostgreSQL checks cover actual source-page publication, customer/site/
+  job/card linkage, DST ambiguity, explicit offsets, absent dates, malformed dates,
+  orphan holds, retry and preserved old source/canonical rows. Actual SQL job
+  output passes the application's card and performance-evidence presentation.
+- Full hosted TEST schema rehearsal passed at 13:14 UTC, including positive owner
+  projection, normal signed-in job SELECT access, foreign-tenant RLS, replay and
+  same-session demotion. All temporary synthetic records and banned passwordless
+  fixture identities rolled back; no login/session or platform grant was issued.
+  All **113 existing datasets** and original function definitions/grants were
+  restored. The first attempt exposed a missing permission on the probe's temporary
+  helper; correction did not alter application permissions. No real records were
+  published and no provider requests or production changes occurred.
+- Actual LEARN card browser verification with a simulated backend shows the
+  completion-time warning, with zero console errors. Protected frontend release
+  and persistent TEST function installation are recorded in the release evidence.
+  Real Drummonds publication and signed-in hosted browser acceptance remain open.
+
+[Evidence](evidence/learn-commusoft-partial-times-test-2026-10-11.json).
+
 ## Retained call detail — 11 October, 12:55 UTC
 
 The older `/app#communications` call detail could pair the newest recording

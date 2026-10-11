@@ -13,6 +13,7 @@ import {
   readWorkDraft,
   resolveWorkDraft,
   workHoldMessage,
+  workTimingMessage,
   workOutboxKey,
   type WorkDraft,
   type WorkKind,
@@ -276,6 +277,7 @@ export function LearnCommusoftWork({
                         ? "Already linked"
                         : "Linked"
                       : workHoldMessage(item.outcome.reason)}
+                    {workTimingMessage(item.outcome) && <p>{workTimingMessage(item.outcome)}</p>}
                   </li>
                 ))}
               </ul>
@@ -509,6 +511,7 @@ export function LearnCommusoftWork({
                           ? "Updated source needs review"
                           : workHoldMessage(null)}
                   </p>
+                  {workTimingMessage(r.last_result) && <p>{workTimingMessage(r.last_result)}</p>}
                   {r.last_result?.state === "held" && (
                     <p>Last check: {workHoldMessage(r.last_result.reason)}</p>
                   )}
