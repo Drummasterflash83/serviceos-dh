@@ -1,5 +1,22 @@
 # Existing TEST environment: verified release gaps
 
+## Operator health — TEST controller v3 installed
+
+The queue now retains member IDs for verified email links and requires actual
+confirmed phone assignments for phone coverage. Proposed/future/expired links do
+not count as confirmed coverage; former staff do not receive current setup alarms.
+Six checked paginated inventories support the summary and quality queue, failing
+explicitly on incomplete reads. Actual isolated HTTP checks cover 2,503 records
+per inventory under a 137-row server cap, with unchanged synthetic fingerprints.
+
+Controller v3 is ACTIVE from Git `9dd72d4994f82e2365e90f797321507e654c25cf`
+at 03:04 UTC on 11 October. All 101 monitored datasets, schema and other endpoints
+were preserved. Fourteen hosted access-boundary checks passed at 03:05 UTC. The
+protected frontend is unchanged and uses the same request contract. Positive
+signed-in operator acceptance and remaining suggestion/history/provider coverage
+remain open. No new grants, provider requests or production changes occurred.
+See [operator health behaviour and evidence](LEARN-OPERATOR-HEALTH.md).
+
 ## Operator roster pagination — paired TEST runtime and frontend installed
 
 The roster reads checked keyset pages beyond the former 2,000-row ceiling and

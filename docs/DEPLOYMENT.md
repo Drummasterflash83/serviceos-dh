@@ -58,6 +58,13 @@ datasets, schema and other endpoints were preserved; eight HTTP boundary checks
 pass. Protection and browser same-origin operator login redirect pass, with zero
 console errors. Signed-in hosted roster acceptance remains outstanding.
 [Roster deployment evidence](operations/evidence/learn-roster-pagination-test-2026-10-11.json).
+The backend controller was subsequently updated to v3 at 03:04 UTC, from Git
+`9dd72d4994f82e2365e90f797321507e654c25cf`, to correct identity/phone health
+coverage and use checked paginated inventories. All 101 datasets, schema and
+other endpoints were preserved; 14 hosted boundary checks pass. Frontend source
+and request contracts are unchanged, so the staging frontend above is retained.
+Positive signed-in health acceptance remains outstanding.
+[Operator health evidence](operations/evidence/learn-operator-health-test-2026-10-11.json).
 The earlier 11 October 02:36 UTC candidate added the searchable/paginated team-group
 chooser, retaining backend release 051. Local browser checks cover 256 groups,
 retry, selection and scoring scope; hosted signed-in acceptance remains pending.

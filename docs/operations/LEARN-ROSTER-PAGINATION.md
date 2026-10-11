@@ -59,9 +59,10 @@ The inventory remains bounded: 20,000 rows, 8 MiB serialized row data and 100
 requests per table. Exceeding a limit or any incomplete read fails explicitly;
 it never returns a partial directory as complete. Concurrent same-count changes
 can still occur across these reads: this is not a transactional snapshot or a
-historical membership proof. Other operator workspace inventories and derived
-identity/endpoint quality metrics have separate limits; this increment does not
-claim whole-workspace scalability or repair their coverage.
+historical membership proof. The subsequent [operator health increment](LEARN-OPERATOR-HEALTH.md) extends checked
+paging to identity/endpoint/ownership inventories and corrects their quality
+metrics. Suggestion readers, connection evidence, ownership resolution and history
+still have separate limits; neither increment claims whole-workspace scalability.
 
 Reproduce with `node --test scripts/learn-roster-recovery.test.mjs`,
 `python3 scripts/verify/learn-roster-pagination-http.py`, and the local

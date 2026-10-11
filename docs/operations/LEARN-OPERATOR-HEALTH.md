@@ -56,7 +56,14 @@ The reviewed 19-file runtime source hash is
 `16b5a46ae6e2277ef2b28bea10fd25fad722bb7f8cd360838f898e0533bdedac`.
 The new TEST replacement runner requires operator v2, the existing runtime
 catalog and release-051 schema, and journals all 101 preservation fingerprints
-before submitting once. Installation and hosted acceptance are recorded separately.
+before submitting once. The operator endpoint is ACTIVE at v3, installed at
+03:04 UTC on 11 October from Git `9dd72d4994f82e2365e90f797321507e654c25cf`.
+All 101 monitored datasets, schema and other endpoints were preserved. Fourteen
+hosted checks of workspace/data-quality access boundaries passed at 03:05 UTC.
+The existing protected frontend remains at Git `27113d0`; no frontend source or
+request contract changed. Positive signed-in hosted acceptance is still pending.
+See [local evidence](evidence/learn-operator-health-local-2026-10-11.json) and
+[TEST evidence](evidence/learn-operator-health-test-2026-10-11.json).
 
 These are current reads, not a transactionally frozen or historical snapshot;
 same-count concurrent edits remain possible. Email/phone identity suggestion
