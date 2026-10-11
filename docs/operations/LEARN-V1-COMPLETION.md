@@ -7,6 +7,17 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**22:45 UTC — voicemail queue installed in hosted TEST; boundaries verified.**
+Release 074 passed rollback rehearsal and installed with all 134 prior datasets
+preserved. Platform worker v18 deployed with 136 datasets and other endpoints
+preserved; downloaded source matches 101 emitted modules/159 imports. Six HTTP/RPC
+checks pass through the existing exact internal-header path: unauthorized callers
+are denied, the empty voicemail worker claims zero jobs, empty recovery changes
+nothing and a missing claim is rejected. A bearer-only request returned 403 and is
+recorded separately; auth rules were not changed. No jobs, routes, users, credentials
+or provider capture were added. **Positive hosted voicemail import remains unproven**;
+next is a synthetic SQL/Storage queue journey before real-route activation. [Evidence](evidence/learn-voicemail-queue-hosted-2026-10-11.json).
+
 **22:35 UTC — durable voicemail queue prepared and verified locally.** The existing
 platform worker now has a one-message voicemail path with frozen source binding,
 lease checks and atomic voicemail publication/job settlement. Thirteen actual

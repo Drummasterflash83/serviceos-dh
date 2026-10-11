@@ -1,6 +1,52 @@
 # Birchills voicemail: discovery before capture
 
 
+
+## Queue schema and worker installed in TEST — boundaries verified, 22:45 UTC
+
+Release 074 is installed in TEST `saatxzwxvdvqevbnskxy`, after a rollback rehearsal
+against the installed schema. Both checks preserve all 134 existing datasets,
+including private source/audio storage metadata, Auth records, roles and memberships.
+The two added queue tables remain empty. The runtime deployment preserves 136
+datasets and all other endpoints. Platform worker advanced once, from v17 to v18;
+no route, job, user, access grant to a person, credential or schedule was added.
+Production is unchanged.
+
+- Release package SHA-256: `ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15`.
+- Installed queue-inclusive schema: `ae32949d7a76097a899e92d36654293e`.
+- Queue metadata fingerprint: `01e9b2e9a3d765960c22d956a7403fdf`.
+- Worker source bundle: `0c100e374d41c38d82000bacfa66281734455c441a033debf00f1e58c75d23c0`.
+- Worker deployed artifact: `f8357c2c3f9219ecddb50399164712fa4dcbda82d29cd8a501e0c1fa8929dbae`.
+
+The worker source readback matches 101 emitted modules and 159 relative imports.
+Three omitted modules contain only erased types. Comparison normalizes syntax
+presentation and is a review aid, not formal proof. Six hosted boundary checks
+pass: missing/anonymous worker auth are denied; the exact existing internal-header
+request runs an empty voicemail-only claim with all counts zero; service-role
+recovery returns zero; missing-claim binding returns PT409; anonymous queue recovery
+returns 42501/401. All 136 dataset fingerprints match before/after.
+
+The first bearer-only worker request returned 403. Its complete report was retained,
+including unchanged data, before a separately journaled check added the already
+supported `x-serviceos-internal-key` header using the same authorized TEST server
+credential. That path succeeded. Authentication was not loosened and no secret was
+stored or printed. These checks do not establish why bearer-only authentication was
+rejected. Use the verified internal-header path for this TEST worker acceptance.
+
+[Sanitized release/deployment/readback/HTTP evidence](evidence/learn-voicemail-queue-hosted-2026-10-11.json).
+The pinned release scripts use exclusive private journals and inspect uncertain
+outcomes rather than resubmitting them. Completed runs must not be repeated blindly.
+The existing source fingerprint readers that include the release ledger now see
+074; older pinned release tools should reject this newer state.
+
+**Not yet verified:** a successful hosted queue import or live provider journey.
+Next, exercise the real hosted queue RPCs and private Storage with a generated
+recording in an isolated fixture without creating login access. Real route/owner
+verification, credential authorization, enumeration/coverage, backup and signed-in
+playback remain required. Keep real routes and scheduling inactive. Rollback keeps
+all records/buckets; disable/defer voicemail jobs before reverting to a worker that
+lacks the dedicated queue path. Do not drop queue evidence or reset source data.
+
 ## Durable voicemail queue — local only, 22:35 UTC
 
 Migration `20261101430000_learn_voicemail_queue.sql` and the platform-worker path

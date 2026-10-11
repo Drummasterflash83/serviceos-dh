@@ -1,0 +1,236 @@
+{
+  "observedAt": "2026-10-11T22:46:07.435808+00:00",
+  "state": "installed_queue_schema_and_worker_boundaries_verified",
+  "environment": "hosted TEST only",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "results": {
+    "voicemail-queue-release-rehearse": {
+      "state": "rehearsed_rolled_back",
+      "observedAt": "2026-10-11T22:39:46.378Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "packageSha256": "ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15",
+      "expected": {
+        "marker": "voicemail-queue-installed/1",
+        "fingerprint": "ae32949d7a76097a899e92d36654293e",
+        "queue_fingerprint": "01e9b2e9a3d765960c22d956a7403fdf"
+      },
+      "afterFingerprint": "a0d8f45ac003479bffd032a93b725f4b",
+      "preservedDatasets": 134,
+      "usersCreated": 0,
+      "jobsCreated": 0,
+      "routesCreated": 0,
+      "providerRequests": 0,
+      "productionChanged": false,
+      "limitations": [
+        "DDL and denied/missing-claim checks against installed TEST schema; no positive hosted queue import, worker deployment, schedule or signed-in acceptance."
+      ]
+    },
+    "voicemail-queue-release-apply": {
+      "state": "installed_empty_queue_schema_verified",
+      "observedAt": "2026-10-11T22:40:48.630Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "packageSha256": "ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15",
+      "expected": {
+        "marker": "voicemail-queue-installed/1",
+        "fingerprint": "ae32949d7a76097a899e92d36654293e",
+        "queue_fingerprint": "01e9b2e9a3d765960c22d956a7403fdf"
+      },
+      "afterFingerprint": "ae32949d7a76097a899e92d36654293e",
+      "preservedDatasets": 134,
+      "usersCreated": 0,
+      "jobsCreated": 0,
+      "routesCreated": 0,
+      "providerRequests": 0,
+      "productionChanged": false,
+      "limitations": [
+        "DDL and denied/missing-claim checks against installed TEST schema; no positive hosted queue import, worker deployment, schedule or signed-in acceptance."
+      ]
+    },
+    "voicemail-queue-runtime-deploy": {
+      "version": "learn-voicemail-queue-runtime/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceBundleSha256": "0c100e374d41c38d82000bacfa66281734455c441a033debf00f1e58c75d23c0",
+      "observedAt": "2026-10-11T22:42:58.378Z",
+      "state": "deployed_needs_http_acceptance",
+      "attempts": [
+        {
+          "name": "platform-worker",
+          "cliExitStatus": 0
+        }
+      ],
+      "writeAttempted": true,
+      "priorSchemaAndEndpointsPreserved": true,
+      "preservedDataSets": 52,
+      "endpoints": [
+        {
+          "id": "e7abc6aa-7341-4cbc-9a54-ea1c9c907503",
+          "slug": "platform-worker",
+          "name": "platform-worker",
+          "status": "ACTIVE",
+          "version": 18,
+          "created_at": 1791646885331,
+          "updated_at": 1791758576555,
+          "verify_jwt": false,
+          "import_map": false,
+          "entrypoint_path": "file:///tmp/user_fn_saatxzwxvdvqevbnskxy_e7abc6aa-7341-4cbc-9a54-ea1c9c907503_18/source/supabase/functions/platform-worker/index.ts",
+          "ezbr_sha256": "f8357c2c3f9219ecddb50399164712fa4dcbda82d29cd8a501e0c1fa8929dbae"
+        }
+      ],
+      "dependencyFiles": 104,
+      "fullPreservedDatasets": 136,
+      "fullSchemaUnchanged": true,
+      "routesCreated": 0,
+      "credentialsUploaded": 0,
+      "schedulesActivated": 0,
+      "providerRequests": 0,
+      "productionChanged": false
+    },
+    "voicemail-queue-runtime-readback": {
+      "observedAt": "2026-10-11T22:43:30.450Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "state": "downloaded_runtime_source_verified",
+      "sourceBundleSha256": "0c100e374d41c38d82000bacfa66281734455c441a033debf00f1e58c75d23c0",
+      "reports": [
+        {
+          "endpoint": "platform-worker",
+          "version": 18,
+          "matchingRuntimeModules": 101,
+          "omittedModules": [
+            "_shared/intelligence/reason_codes.ts",
+            "_shared/intelligence/types.ts",
+            "_shared/worker_contract.ts"
+          ],
+          "emittedImportsChecked": 159,
+          "omittedModulesHaveNoEmittedImporters": true,
+          "differentRuntimeModules": []
+        }
+      ],
+      "method": "Transpiled syntax-tree comparison normalizes comments, redundant parentheses, associative logical operators and a sole for-of block; emitted imports are checked separately. Review aid, not formal proof.",
+      "limitations": [
+        "Syntax/import comparison; does not verify real provider or Storage transport."
+      ],
+      "providerRequests": 0,
+      "productionChanged": false
+    },
+    "voicemail-queue-runtime-http": {
+      "state": "requires_inspection",
+      "observedAt": "2026-10-11T22:43:37.886Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "endpointVersion": 18,
+      "checks": [
+        {
+          "name": "missing_worker_auth",
+          "status": 403,
+          "code": "forbidden",
+          "passed": true
+        },
+        {
+          "name": "anon_worker_auth",
+          "status": 403,
+          "code": "forbidden",
+          "passed": true
+        },
+        {
+          "name": "empty_voicemail_worker",
+          "status": 403,
+          "code": "forbidden",
+          "passed": false,
+          "claimed": null
+        }
+      ],
+      "failure": "Unexpected empty_voicemail_worker response",
+      "preservedDatasets": 136,
+      "providerRequests": 0,
+      "usersCreated": 0,
+      "jobsCreated": 0,
+      "routesCreated": 0,
+      "productionChanged": false,
+      "limitations": [
+        "Empty worker/auth/RPC checks only. No positive hosted queue import, live provider/credentials, scheduling, coverage or signed-in acceptance."
+      ]
+    },
+    "voicemail-queue-runtime-http-internal-header": {
+      "state": "hosted_queue_boundaries_verified",
+      "observedAt": "2026-10-11T22:45:08.277Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "endpointVersion": 18,
+      "exactInternalHeader": true,
+      "checks": [
+        {
+          "name": "missing_worker_auth",
+          "status": 403,
+          "code": "forbidden",
+          "passed": true
+        },
+        {
+          "name": "anon_worker_auth",
+          "status": 403,
+          "code": "forbidden",
+          "passed": true
+        },
+        {
+          "name": "empty_voicemail_worker",
+          "status": 200,
+          "code": null,
+          "passed": true,
+          "claimed": 0
+        },
+        {
+          "name": "service_empty_recovery",
+          "status": 200,
+          "code": null,
+          "passed": true,
+          "reclaimed": 0
+        },
+        {
+          "name": "service_missing_claim",
+          "status": 409,
+          "code": "PT409",
+          "passed": true
+        },
+        {
+          "name": "anon_queue_denied",
+          "status": 401,
+          "code": "42501",
+          "passed": true
+        }
+      ],
+      "failure": null,
+      "preservedDatasets": 136,
+      "providerRequests": 0,
+      "usersCreated": 0,
+      "jobsCreated": 0,
+      "routesCreated": 0,
+      "productionChanged": false,
+      "limitations": [
+        "Empty worker/auth/RPC checks only. No positive hosted queue import, live provider/credentials, scheduling, coverage or signed-in acceptance."
+      ]
+    }
+  },
+  "releaseMechanicsTests": {
+    "passed": 12,
+    "command": "node --test scripts/verify/learn-test-email-runtime-deploy.test.mjs scripts/verify/learn-voicemail-queue-recovery.test.mjs",
+    "note": "Updated stale bundle inventory expectation from 100 to 108 files for the intended queue/audio additions; deployment mechanics tests then passed."
+  },
+  "sourceSha256": {
+    "scripts/verify/learn-voicemail-queue-catalog.mjs": "60ff27aa19fe26a9c85ef1bf6b875bc877f76ab46f8f5e7919ea23b21aace073",
+    "scripts/verify/learn-voicemail-queue-release.mjs": "13d62ec92332e8274e8b6ba9a3fcd8268ccbf7790914ac65e2a7bb74a2ddf292",
+    "scripts/verify/learn-voicemail-queue-runtime-deploy.mjs": "4ceefa71bf6c9f5bd9bb825d124edc8fdcfcca2e525c4a92c4c6d977acfdba28",
+    "scripts/verify/learn-voicemail-queue-runtime-readback.mjs": "2b47a82bccc46a7b705927543813b2beac3ad25272d2640c6ddd80dc64edade7",
+    "scripts/verify/learn-voicemail-queue-runtime-http.mjs": "408a9087ec1044f001269dd9b519e42f940a5d42573afaf0d558e9d49e1cde98",
+    "scripts/verify/learn-test-email-runtime-deploy.test.mjs": "ad49ddf10338068696cf60d8025136112fd7ac6f1c6603f0ac93e6b39ceaa27d",
+    "supabase/release/learn-test/074_voicemail_queue.sql": "ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15",
+    "supabase/release/learn-test/074_voicemail_queue.manifest.json": "3e3c63dc3add5aea01d2dfe2ecb20cb1df7ae366155d76f9e2c20cfe9e45a1ef",
+    "supabase/release/learn-test/074_voicemail_queue_runtime.manifest.json": "f0870af7d91b9c677e4499b646db38b8ac5015c4e80fbd15f3ab8e3be6040552"
+  },
+  "limitations": [
+    "No positive hosted queue import, verified real mailbox route, credential upload, provider requests, queue/discovery scheduling, coverage reconciliation, backup or signed-in acceptance.",
+    "Bearer-only worker request returned 403. Exact existing internal-header authentication succeeded; no authentication checks were weakened. Cause of bearer-only rejection is not established by this check.",
+    "Source readback is a normalized syntax/import comparison, not formal equivalence or a real-provider test."
+  ],
+  "usersCreated": 0,
+  "jobsCreated": 0,
+  "routesCreated": 0,
+  "providerRequests": 0,
+  "productionChanged": false
+}

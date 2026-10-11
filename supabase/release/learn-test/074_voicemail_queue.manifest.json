@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "ca067f8fa8d11ef266713ec105a9064461a99258e14b0321d79e6ee542d08c15",
+  "priorFingerprint": "f22d6c92600ca36b82360239594d4286",
+  "priorQueueFingerprint": "a0d8f45ac003479bffd032a93b725f4b",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101430000_learn_voicemail_queue.sql",
+      "sha256": "770292cbdcdb063871d3d532393b0cbac16c0ecf6b01047dc250af659f9ab965"
+    }
+  ],
+  "preservedDatasets": 134
+}

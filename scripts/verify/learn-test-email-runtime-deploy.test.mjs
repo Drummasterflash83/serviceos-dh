@@ -110,13 +110,20 @@ test('historical email release refuses newer shared Slack source before network 
 test("current closure includes email engine, credentials and all generic-worker dependencies", () => {
   const b = emailRuntimeBundle();
   assert.notEqual(b.sha256, EMAIL_RUNTIME_EDGE_SHA);
-  assert.equal(b.files.length, 100);
-  assert.deepEqual(b.external, ["https://esm.sh/@supabase/supabase-js@2.45.4"]);
+  assert.equal(b.files.length, 108);
+  assert.deepEqual(b.external, [
+    "https://esm.sh/@supabase/supabase-js@2.45.4",
+    "node:buffer", "node:crypto", "node:dns/promises",
+    "npm:mailauth@7.3.0/lib/dkim/verify.js", "npm:mpg123-decoder@1.0.3", "npm:postal-mime@4.0.5",
+  ]);
   for (const path of [
     "_shared/email_capture_engine.ts",
     "_shared/email_capture_ports.ts",
     "_shared/email_enqueue.ts",
     "_shared/worker_handlers/index.ts",
+    "_shared/voicemail/queue.ts",
+    "_shared/voicemail/edge.js",
+    "_shared/voicemail/private-import.js",
   ])
     assert.ok(b.files.some((f) => f.path === path));
 });
