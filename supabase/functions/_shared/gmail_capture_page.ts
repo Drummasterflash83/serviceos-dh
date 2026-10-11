@@ -6,13 +6,20 @@
 import { parseGmailMessages } from "./gmail_message.ts";
 export type GmailPageRequest = {
   mode: "history" | "reconcile" | "historical";
+  /** Version 4 owns mutable mailbox observations; legacy page tokens keep their query. */
+  trackChanges?: boolean;
   /** ALL is our continuation scope, never a Gmail label ID. */
   label: "INBOX" | "SENT" | "ALL" | null;
   pageSize: number;
   pageToken: string | null;
   originHistoryId: string | null;
 };
-export type GmailCapturePage = { ids: string[]; nextPageToken: string | null; exhausted: boolean };
+export type GmailCapturePage = {
+  ids: string[];
+  nextPageToken: string | null;
+  exhausted: boolean;
+  trackChanges?: boolean;
+};
 export type GmailPageEvidence = {
   persistence: "confirmed";
   message_upsert_count: number;
@@ -23,6 +30,8 @@ export type GmailPageEvidence = {
 };
 export interface GmailPageStore {
   existingMessageIds(ids: string[]): Promise<string[]>;
+  /** Retain source content and record a confirmed provider 404/410. */
+  markUnavailable?(ids: string[]): Promise<void>;
   /** Atomically save both sets, preserving newer summaries and participants. */
   savePage(
     threads: Record<string, unknown>[],
@@ -73,6 +82,8 @@ function validateRequest(r: GmailPageRequest) {
   if (
     !r ||
     !["history", "reconcile", "historical"].includes(r.mode) ||
+    (r.trackChanges !== undefined && typeof r.trackChanges !== "boolean") ||
+    (r.trackChanges === true && (r.label !== "ALL" || r.mode === "historical")) ||
     !Number.isInteger(r.pageSize) ||
     r.pageSize < 1 ||
     r.pageSize > 500 ||
@@ -171,7 +182,7 @@ export async function readGmailCapturePage(
   if (r.pageToken !== null) params.set("pageToken", r.pageToken);
   if (r.mode === "history") {
     params.set("startHistoryId", r.originHistoryId!);
-    params.set("historyTypes", "messageAdded");
+    if (!r.trackChanges) params.set("historyTypes", "messageAdded");
     if (r.label !== "ALL") params.set("labelId", r.label!);
   } else if (r.label === "ALL") params.set("includeSpamTrash", "true");
   else if (r.label !== null) params.set("labelIds", r.label);
@@ -191,15 +202,22 @@ export async function readGmailCapturePage(
     if ("history" in data && !Array.isArray(data.history)) fail();
     if ((data.history ?? []).length > r.pageSize) fail();
     for (const record of data.history ?? []) {
-      if (
-        !obj(record) ||
-        !gmailHistoryId(record.id) ||
-        ("messagesAdded" in record && !Array.isArray(record.messagesAdded))
-      )
-        fail();
-      for (const added of record.messagesAdded ?? []) {
-        if (!obj(added) || !obj(added.message) || !id(added.message.id)) fail();
-        ids.add(added.message.id);
+      if (!obj(record) || !gmailHistoryId(record.id)) fail();
+      const kinds = r.trackChanges
+        ? ["messagesAdded", "messagesDeleted", "labelsAdded", "labelsRemoved"]
+        : ["messagesAdded"];
+      for (const kind of kinds) {
+        if (kind in record && !Array.isArray(record[kind])) fail();
+        for (const change of record[kind] ?? []) {
+          if (!obj(change) || !obj(change.message) || !id(change.message.id)) fail();
+          if (
+            kind.startsWith("labels") &&
+            (!Array.isArray(change.labelIds) ||
+              change.labelIds.some((v: unknown) => typeof v !== "string" || !v))
+          )
+            fail();
+          ids.add(change.message.id);
+        }
       }
       if (ids.size > 2000) fail();
     }
@@ -211,7 +229,12 @@ export async function readGmailCapturePage(
       ids.add(message.id);
     }
   }
-  return { ids: [...ids], nextPageToken: next, exhausted: next === null };
+  return {
+    ids: [...ids],
+    nextPageToken: next,
+    exhausted: next === null,
+    ...(r.trackChanges ? { trackChanges: true } : {}),
+  };
 }
 function validateMessage(message: Record<string, any>, expectedId: string) {
   if (
@@ -284,6 +307,8 @@ export async function persistGmailCapturePage(options: {
     !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(tenantId) ||
     !mailbox ||
     !page ||
+    (page.trackChanges !== undefined && typeof page.trackChanges !== "boolean") ||
+    (page.trackChanges === true && typeof store.markUnavailable !== "function") ||
     !Array.isArray(page.ids) ||
     page.ids.length > 2000 ||
     page.ids.some((x) => !id(x)) ||
@@ -308,6 +333,7 @@ export async function persistGmailCapturePage(options: {
     }
   }
   const messages: Record<string, unknown>[] = [];
+  const unavailable: string[] = [];
   let index = 0,
     gone = 0,
     pageBytes = 0,
@@ -334,9 +360,11 @@ export async function persistGmailCapturePage(options: {
           );
           if (message === null) {
             gone++;
+            unavailable.push(expected);
             continue;
           }
           validateMessage(message, expected);
+          if (page.trackChanges && !gmailHistoryId(message.historyId)) fail();
           messages.push(message);
         } catch (e) {
           failed = e instanceof GmailCaptureError ? e : new GmailCaptureError("fetch_failed");
@@ -353,6 +381,15 @@ export async function persistGmailCapturePage(options: {
       mailbox: mailbox.toLowerCase(),
     });
     if (parsed.messageRows.length !== messages.length) fail();
+    if (page.trackChanges)
+      for (const row of parsed.messageRows) {
+        const raw = row.raw_payload as Record<string, unknown>;
+        row.raw_payload = {
+          ...raw,
+          provider_availability: "available",
+          provider_observed_history_id: raw.history_id,
+        };
+      }
   } catch {
     throw new GmailCaptureError("parse_failed");
   }
@@ -370,6 +407,7 @@ export async function persistGmailCapturePage(options: {
       counts.message_upsert_count > parsed.messageRows.length
     )
       throw Error();
+    if (page.trackChanges && unavailable.length) await store.markUnavailable!(unavailable);
   } catch {
     throw new GmailCaptureError("persistence_failed", true);
   }

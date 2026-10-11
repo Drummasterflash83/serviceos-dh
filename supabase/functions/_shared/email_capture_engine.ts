@@ -90,16 +90,16 @@ export function recentEmailPage(c: EmailCheckpoint):
   const v: Record<string, any> | null = c.continuation;
   if (
     !object(v) ||
-    ![2, 3].includes(v.version) ||
+    ![2, 3, 4].includes(v.version) ||
     !["missing_only", "refetch_all"].includes(v.fetch_policy)
   )
     return badContinuation();
-  const labels = v.version === 3 ? ["ALL"] : ["INBOX", "SENT"];
+  const labels = v.version >= 3 ? ["ALL"] : ["INBOX", "SENT"];
   if (v.phase === "uninitialized") {
     if (
       !keys(v, ["version", "phase", "intent", "fetch_policy"]) ||
       !["normal", "reconcile"].includes(v.intent) ||
-      (v.fetch_policy === "refetch_all" && v.intent !== "reconcile")
+      (v.fetch_policy === "refetch_all" && v.intent !== "reconcile" && v.version !== 4)
     )
       return badContinuation();
     return { uninitialized: true, fetchPolicy: v.fetch_policy };
@@ -124,7 +124,7 @@ export function recentEmailPage(c: EmailCheckpoint):
     !gmailHistoryId(v.captured_history_id) ||
     (v.origin_history_id !== null && BigInt(v.captured_history_id) < BigInt(v.origin_history_id)) ||
     (v.mode === "history" && v.origin_history_id === null) ||
-    (v.fetch_policy === "refetch_all" && v.mode !== "reconcile") ||
+    (v.fetch_policy === "refetch_all" && v.mode !== "reconcile" && v.version !== 4) ||
     typeof v.captured_at !== "string" ||
     !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(v.captured_at) ||
     !Number.isFinite(Date.parse(v.captured_at)) ||
@@ -149,13 +149,14 @@ export function recentEmailPage(c: EmailCheckpoint):
     )
       return badContinuation();
   }
-  const label = v.version === 3 ? "ALL" : v.labels_state.INBOX.complete ? "SENT" : "INBOX";
+  const label = v.version >= 3 ? "ALL" : v.labels_state.INBOX.complete ? "SENT" : "INBOX";
   if (v.labels_state[label].complete) return badContinuation();
   return {
     uninitialized: false,
     fetchPolicy: v.fetch_policy,
     request: {
       mode: v.mode,
+      ...(v.version === 4 ? { trackChanges: true } : {}),
       label,
       pageSize: v.page_size,
       pageToken: v.labels_state[label].next_page_token,

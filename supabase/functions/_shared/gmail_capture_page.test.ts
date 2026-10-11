@@ -435,3 +435,100 @@ test("a retained Gmail draft has no sent timestamp or outbound direction; its la
   assert.equal(d.body_text, "Synthetic body");
   assert.deepEqual((d.raw_payload as Record<string, unknown>).label_ids, ["DRAFT"]);
 });
+
+test("v4 history includes label changes and deletions once, keeping legacy query tokens separate", async () => {
+  const p = provider({
+    historyId: "200",
+    nextPageToken: "next-change",
+    history: [
+      {
+        id: "101",
+        messagesAdded: [{ message: { id: "new" } }],
+        labelsAdded: [{ message: { id: "changed" }, labelIds: ["TRASH"] }],
+        labelsRemoved: [{ message: { id: "changed" }, labelIds: ["INBOX"] }],
+        messagesDeleted: [{ message: { id: "gone" } }],
+      },
+    ],
+  });
+  const result = await readGmailCapturePage(
+    "synthetic",
+    { ...request, mode: "history", label: "ALL", originHistoryId: "100", trackChanges: true },
+    p.fetcher,
+  );
+  assert.deepEqual(result, {
+    ids: ["new", "gone", "changed"],
+    nextPageToken: "next-change",
+    exhausted: false,
+    trackChanges: true,
+  });
+  assert.equal(p.calls[0].url.searchParams.has("historyTypes"), false);
+  assert.equal(p.calls[0].url.searchParams.has("labelId"), false);
+  await assert.rejects(
+    readGmailCapturePage("synthetic", { ...request, trackChanges: true }, p.fetcher),
+    isError("parse_failed"),
+  );
+});
+
+test("malformed change collections cannot produce a checkpoint", async () => {
+  for (const change of [
+    { labelsAdded: {} },
+    { labelsRemoved: [{ message: { id: "one" } }] },
+    { messagesDeleted: [{ message: { id: "../other" } }] },
+  ]) {
+    await assert.rejects(
+      readGmailCapturePage(
+        "synthetic",
+        { ...request, mode: "history", label: "ALL", originHistoryId: "100", trackChanges: true },
+        provider({ historyId: "200", history: [{ id: "101", ...change }] }).fetcher,
+      ),
+      isError("parse_failed"),
+    );
+  }
+});
+
+test("v4 waits for absence persistence; lost acknowledgements cannot advance progress", async () => {
+  const observations: string[][] = [];
+  const page = { ids: ["gone"], nextPageToken: null, exhausted: true, trackChanges: true };
+  const options = {
+    accessToken: "synthetic",
+    tenantId,
+    mailbox,
+    page,
+    fetchPolicy: "refetch_all" as const,
+    fetcher: provider({}, 404).fetcher,
+    store: {
+      ...store().port,
+      markUnavailable: async (ids: string[]) => {
+        observations.push(ids);
+        throw Error("PRIVATE");
+      },
+    },
+  };
+  await assert.rejects(persistGmailCapturePage(options), isError("persistence_failed", true));
+  assert.deepEqual(observations, [["gone"]]);
+  const result = await persistGmailCapturePage({
+    ...options,
+    store: { ...options.store, markUnavailable: async () => {} },
+  });
+  assert.equal(result.gone_count, 1);
+  assert.equal(result.message_upsert_count, 0);
+});
+
+test("v4 requires a message history ID before mutable source storage", async () => {
+  const body: Record<string, unknown> = raw("one");
+  delete body.historyId;
+  const s = store();
+  await assert.rejects(
+    persistGmailCapturePage({
+      accessToken: "synthetic",
+      tenantId,
+      mailbox,
+      page: { ids: ["one"], nextPageToken: null, exhausted: true, trackChanges: true },
+      fetchPolicy: "refetch_all",
+      fetcher: provider(body).fetcher,
+      store: { ...s.port, markUnavailable: async () => {} },
+    }),
+    isError("parse_failed"),
+  );
+  assert.equal(s.writes.length, 0);
+});

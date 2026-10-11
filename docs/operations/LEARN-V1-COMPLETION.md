@@ -54,6 +54,39 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Gmail ongoing state changes — local candidate, 11 October
+
+The next capture candidate handles Gmail label additions/removals and provider
+absence, as well as new messages. New continuation v4 generations reconcile the
+current mailbox and then refetch touched messages; in-flight v2/v3 tokens retain
+their original query. Prior source versions are archived privately before updates.
+Confirmed 404/410 observations retain the captured content and source identity;
+newer history wins, unknown storage acknowledgement leaves the old cursor, and
+cross-mailbox source collisions stop for review.
+
+**Verified:** 21 reader/store checks; 73 actual-engine/SQL checks; strict local
+worker types; full hosted TEST-schema rollback rehearsal including a draft-to-sent
+change through source publication to a customer card. All 121 preservation datasets,
+schema and existing authority were restored. No actual provider calls occurred.
+**Not deployed:** hosted TEST remains release 070/worker v16. Roll out the compatible
+worker before enabling v4 in the schema. Include the new private source-version
+archive in release preservation/recovery inventories. Operator availability copy,
+real capture acceptance and unavailable legacy-message reconciliation remain open.
+[Candidate evidence](evidence/learn-email-mailbox-changes-2026-10-11.json).
+
+### Credential discovery and phone portal — 11 October
+
+After Chris unlocked 1Password, the existing Birchills portal login and Supabase
+dashboard login were located in the Allkin account. No database credential was
+identified in the inspected Supabase item; a `postgres` search returned no matches.
+This is a focused search, not proof that no database password exists anywhere.
+
+The Birchills portal's existing signed-in Drummonds session exposes three shared
+mailbox definitions and the call-recording report. No credentials were copied,
+provider settings changed or audio downloaded. Portal access does not establish
+API authentication, mailbox ownership for staff access, voicemail message/audio
+API support or complete capture coverage. Those checks remain required.
+
 ### Current protected TEST frontend — 11 October, 20:19 UTC
 
 The stable entry is [serviceos-learn-test-allkin.vercel.app](https://serviceos-learn-test-allkin.vercel.app).

@@ -222,3 +222,18 @@ A search result titled “Read Voicemail” on `pbx.readme.io` names a different
 `dashmanager.com/ns-api` service; it is not evidence for Drummonds' Sipcentric
 account and must not be used as this adapter's contract. Existing email discovery
 remains a bounded diagnostic rather than proof of complete voicemail capture.
+
+
+## Authenticated portal observation — 11 October 2026
+
+Following Chris's 1Password unlock, an existing Birchills login was located. The
+portal opened with an existing signed-in Drummonds session. Three shared mailbox
+definitions and the call-recording report were visible. A mailbox detail view
+exposed notification-email and greeting configuration, but this inspection did
+not establish a voicemail-message listing or audio API contract. No settings were
+changed, credentials copied, messages played or audio downloaded. The observations
+are retained privately; customer identifiers and credential values are not in Git.
+
+A Supabase dashboard login was also located, but the database password needed for
+the real database restore was not identified. Portal login, API authentication and
+database authentication remain separate verification gates.

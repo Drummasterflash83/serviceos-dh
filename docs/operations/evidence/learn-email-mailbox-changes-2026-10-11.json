@@ -1,0 +1,63 @@
+{
+  "version": "learn-email-mailbox-changes/1",
+  "state": "local_engine_verified_full_schema_rollback_passed_not_deployed",
+  "observedAt": "2026-10-11T20:38:38.472263+00:00",
+  "files": {
+    "supabase/migrations/20261101400000_learn_email_mailbox_changes.sql": "d8f6d39dd10a88acb3f46024ffd9c71bbba706fef0566b9f6e118f1232e4814e",
+    "supabase/functions/_shared/email_capture_engine.ts": "0c8ffe0506f7db1d1ef73cc0150d08ae5d43a66810aa084582489dd097144380",
+    "supabase/functions/_shared/gmail_capture_page.ts": "30a38959180866516e5ee044557bc092cdf045998171d0e3ebf07bd8d23f83c1",
+    "supabase/functions/_shared/gmail_page_store.ts": "3b180eb9db038039790d59378693c0b36808b69017208261317b27450153ea50",
+    "scripts/verify/learn-email-mailbox-changes-cases.mjs": "4ea3ed62493a0157345817123b2bc9822ddbfaa1ca016be4a4adf44e6d9aa573",
+    "scripts/verify/learn-email-mailbox-changes-probe.sql": "0797dc8a39408459c38d4e93faec25a6ace9c5857fb874f90b6aad9ccebf99a4"
+  },
+  "fullSchemaRehearsal": {
+    "version": "learn-email-mailbox-changes-rehearsal/1",
+    "state": "full_schema_rehearsed_and_rolled_back",
+    "observedAt": "2026-10-11T20:33:18.215Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "migrationSha256": "d8f6d39dd10a88acb3f46024ffd9c71bbba706fef0566b9f6e118f1232e4814e",
+    "probeSha256": "0797dc8a39408459c38d4e93faec25a6ace9c5857fb874f90b6aad9ccebf99a4",
+    "preservedDatasets": 121,
+    "schemaRestored": true,
+    "authorityRestored": true,
+    "fixturesRemoved": true,
+    "usersCreated": 0,
+    "persistentRoleGrantsCreated": 0,
+    "temporaryMembershipsRevoked": 1,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Synthetic SQL assertions; no persistent migration or positive hosted capture.",
+      "No real provider capture or signed-in acceptance; candidate remains undeployed."
+    ]
+  },
+  "verification": {
+    "readerAndStoreChecks": 21,
+    "actualEngineAndSqlChecks": 73,
+    "strictWorkerTypecheck": "passed with installed SDK declarations and Deno shim",
+    "syntheticDraftToSentToCard": "passed in full TEST schema rollback transaction",
+    "crossMailboxCollision": "rejected without source/cursor changes",
+    "uncertainAvailabilityAcknowledgement": "cursor retained; committed source history preserved",
+    "projectTypecheck": "npx tsc --noEmit passed",
+    "productionBuild": "npm run build passed, including prebuild brand/navigation checks"
+  },
+  "preservation": {
+    "existingDataChangedAtInstall": false,
+    "providerAbsenceDeletesLocalContent": false,
+    "priorSourceVersions": "private database archive on source update",
+    "newClientArchivePermissions": false
+  },
+  "failedDevelopmentRuns": [
+    "Initial offline fixture duplicated an existing tenants table; fixture corrected.",
+    "SQL collision guard used an ambiguous variable alias; corrected before passing.",
+    "PostgreSQL bounded repetition cannot use 256; replaced with an unbounded character check plus an explicit length limit."
+  ],
+  "limitations": [
+    "No persistent TEST migration or worker deployment; current hosted release remains 070/worker v16.",
+    "No real provider request or signed-in acceptance in this candidate verification.",
+    "Initial reconciliation refreshes messages currently listed by Gmail. It does not prove absence of legacy records no longer listed or recover purged content.",
+    "Provider absence means unavailable to the authenticated mailbox at observation time; no provider deletion time is invented.",
+    "Mailbox-ID collisions stop the affected page for review. A general per-mailbox source model remains required if collisions occur.",
+    "Expose provider availability clearly in the operator UI and add the archive to preservation/recovery inventory before promotion."
+  ]
+}

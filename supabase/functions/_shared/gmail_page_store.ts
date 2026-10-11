@@ -82,6 +82,15 @@ export function createGmailPageStore(
         throw Error("Email existing-message lookup could not be confirmed.");
       return [...d.existing_ids];
     },
+    async markUnavailable(ids) {
+      const d = await invoke("learn_email_store_unavailable", { p_ids: [...ids] });
+      if (
+        !Number.isInteger(d.observed_count) ||
+        d.observed_count < 0 ||
+        d.observed_count > ids.length
+      )
+        throw Error("Email availability could not be confirmed.");
+    },
     async savePage(threads, messages) {
       const d = await invoke("learn_email_store_page", {
         p_threads: structuredClone(threads),
