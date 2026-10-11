@@ -130,7 +130,8 @@ export function parseGmailMessages(
 
     const isOutbound =
       labelIds.includes("SENT") || (Boolean(mailbox) && fromParsed.email === mailbox);
-    const direction = isOutbound ? "outbound" : "inbound";
+    const draft = labelIds.includes("DRAFT");
+    const direction = draft ? "unknown" : isOutbound ? "outbound" : "inbound";
 
     messageRows.push({
       tenant_id: tenantId,
@@ -145,7 +146,7 @@ export function parseGmailMessages(
       snippet: (msg.snippet as string | null) ?? null,
       body_text: bodies.text,
       body_html: bodies.html,
-      sent_at: sentAt,
+      sent_at: draft ? null : sentAt,
       received_at: receivedAt,
       direction,
       // Safe metadata only — NO body, NO attachment bytes, NO tokens.

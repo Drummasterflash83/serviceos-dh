@@ -195,6 +195,8 @@ export async function readIdentityReviewDetail(
 }
 export function identityReviewAdvice(reason: string | null) {
   switch (reason) {
+    case "email_draft":
+      return "This unsent draft is retained in the source history. It is excluded from customer communications and cannot be attributed as a sent reply.";
     case null:
       return "Review the communication against this existing contact and their company before confirming attribution.";
     case "person_ambiguous":

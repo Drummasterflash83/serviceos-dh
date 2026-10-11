@@ -54,6 +54,34 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
+### Drafts retained without being treated as replies — candidate rehearsed, 11 October
+
+A read-only production metadata check found **55 Gmail draft messages, all with
+canonical interactions**. This is not evidence of 55 incorrect staff scores; it
+identifies source records that must not be treated as sent replies. Production
+remains unchanged. Google's documented send flow replaces a draft with a new sent
+message ID, so both source records may legitimately be retained.
+
+The candidate preserves draft bodies/labels, gives new drafts no sent timestamp or
+outbound direction, and excludes drafts from customer communication publication,
+identity/card delivery, restricted card excerpts and new activity counts. Existing
+source/canonical records and receipts are retained. Direct publication and operator
+attribution cannot bypass the source classification; known retained drafts do not
+count as actionable processing failures. Source revisions include the classification
+so a later correction is reassessed instead of remaining behind a stale hold.
+
+The actual parser/handler/durable-queue/card journey passes locally, including
+reply-loss recovery, legacy draft rejection, restricted reader access, unchanged
+source bodies and correction recovery. Fourteen Gmail-reader and fifteen review-client
+regressions pass, alongside 65 actual email-engine/durable SQL checks. The page
+store accepts unknown direction only for a labelled draft with no sent timestamp.
+The full TEST schema rehearsal rolled back with all 121 datasets
+and original permissions restored. Persistent TEST release and matching worker
+verification are next. Frontend explanatory copy is local only. Production card
+summary/aggregate reconciliation remains a required release gate; current label
+changes, Spam eligibility and real-provider acceptance are still unfinished.
+[Evidence](evidence/learn-email-draft-eligibility-2026-10-11.json).
+
 ### Mailbox-wide Gmail capture — installed in TEST, 11 October, 19:24 UTC
 
 The recent Gmail reader previously filtered both reconciliation and incremental

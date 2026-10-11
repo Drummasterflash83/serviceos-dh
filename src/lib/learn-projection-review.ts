@@ -153,6 +153,8 @@ export async function readProjectionReviewDetail(
 }
 export function projectionReviewAdvice(reason: string) {
   switch (reason) {
+    case "email_draft":
+      return "This unsent draft is retained in the source history. It is excluded from customer communications and cannot be attributed as a sent reply.";
     case "legacy_projection_review":
       return "This canonical record predates verified projection ownership. Compare it with the retained source before applying source values.";
     case "canonical_fields_changed":

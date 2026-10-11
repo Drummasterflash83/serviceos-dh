@@ -88,5 +88,18 @@ try:
  sql('begin;'+source('scripts/verify/learn-processing-queue.assert.sql')+'rollback;')
  subprocess.run(['node','scripts/verify/learn-processing-queue-client-probe.mjs',name],cwd=root,check=True,timeout=90)
  print('PASS: publication lease fences, source-to-card flow, atomic continuation and settlement, exact replay, rollback, retries and role isolation',flush=True)
+ if '--draft-eligibility' in __import__('sys').argv:
+  sql("""create schema auth;create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+  grant usage on schema auth to authenticated,anon,service_role;
+  create table profiles(id uuid primary key,tenant_id uuid,role text);alter table profiles enable row level security;""")
+  reader=source('supabase/migrations/20261031010000_learn_card_communications.sql').replace(' with inherit false, set true','')
+  sql(reader)
+  candidate=source('supabase/migrations/20261101380000_learn_email_draft_eligibility.sql')
+  sql(candidate.replace('\ncommit;','\nrollback;'))
+  assert sql("select to_regprocedure('learn_email_is_draft(email_messages)') is null")=='t'
+  sql(candidate)
+  sql('begin;'+source('scripts/verify/learn-processing-queue.assert.sql')+'rollback;')
+  subprocess.run(['node','scripts/verify/learn-email-draft-client-probe.mjs',name],cwd=root,check=True,timeout=90)
+
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

@@ -328,4 +328,51 @@ export async function verifyEmailMailboxCoverage({ t, sql, db, queueJob, q }) {
       assert.equal(cursor(j), "NULL");
     },
   );
+  await t.test(
+    "actual Gmail engine stores an unsent draft without outbound direction or a sent timestamp",
+    async () => {
+      const candidate = readFileSync(
+        new URL(
+          "../../supabase/migrations/20261101380000_learn_email_draft_eligibility.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      );
+      const start = candidate.indexOf("create or replace function public.learn_email_store_page(");
+      assert.ok(start > 0);
+      sql(candidate.slice(start, candidate.indexOf("\nend $$;", start) + 8));
+      const j = job(),
+        draftId = "draft-" + j.accountId,
+        sentId = "sent-" + j.accountId;
+      const p = ports(j, () => Response.json({ messages: [{ id: draftId }, { id: sentId }] })),
+        fetcher = p.fetcher;
+      p.fetcher = async (url) => {
+        const response = await fetcher(url);
+        const u = new URL(url);
+        if (u.pathname.endsWith("/" + draftId) || u.pathname.endsWith("/" + sentId)) {
+          const data = await response.json();
+          data.labelIds = [u.pathname.endsWith("/" + draftId) ? "DRAFT" : "SENT"];
+          return Response.json(data);
+        }
+        return response;
+      };
+      const result = await runEmailCaptureJob(db, j, p);
+      assert.equal(result.state, "completed");
+      assert.equal(result.coverageComplete, true);
+      assert.equal(result.recordsProcessed, 2);
+      const rows = JSON.parse(
+        sql(
+          `select jsonb_agg(jsonb_build_object('id',provider_message_id,'direction',direction,'sent_at',sent_at,'labels',raw_payload->'label_ids') order by provider_message_id) from email_messages where provider_message_id in (${q(draftId)},${q(sentId)})`,
+        ),
+      );
+      assert.equal(rows[0].id, draftId);
+      assert.equal(rows[0].direction, "unknown");
+      assert.equal(rows[0].sent_at, null);
+      assert.deepEqual(rows[0].labels, ["DRAFT"]);
+      assert.equal(rows[1].id, sentId);
+      assert.equal(rows[1].direction, "outbound");
+      assert.equal(typeof rows[1].sent_at, "string");
+      assert.deepEqual(rows[1].labels, ["SENT"]);
+    },
+  );
 }

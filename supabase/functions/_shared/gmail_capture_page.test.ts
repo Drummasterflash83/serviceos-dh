@@ -408,3 +408,30 @@ test("whole-mailbox incremental capture does not send the internal ALL scope as 
   for (const key of ["labelIds", "labelId", "includeSpamTrash"])
     assert.equal(params.has(key), false);
 });
+
+test("a retained Gmail draft has no sent timestamp or outbound direction; its later SENT message is separate", async () => {
+  const draft = { ...raw("draft-id"), labelIds: ["DRAFT"] };
+  const sent = { ...raw("sent-id"), labelIds: ["SENT"] };
+  for (const h of draft.payload.headers) if (h.name === "From") h.value = mailbox;
+  for (const h of sent.payload.headers) if (h.name === "From") h.value = mailbox;
+  const s = store();
+  await persistGmailCapturePage({
+    accessToken: "synthetic",
+    tenantId,
+    mailbox,
+    page: { ids: ["draft-id", "sent-id"], nextPageToken: null, exhausted: true },
+    fetchPolicy: "missing_only",
+    store: s.port,
+    fetcher: (async (url) =>
+      Response.json(String(url).includes("/draft-id?") ? draft : sent)) as typeof fetch,
+  });
+  const messages = s.writes.find((w) => w.kind === "messages")!.rows;
+  const d = messages.find((m) => m.provider_message_id === "draft-id")!;
+  const r = messages.find((m) => m.provider_message_id === "sent-id")!;
+  assert.equal(d.direction, "unknown");
+  assert.equal(d.sent_at, null);
+  assert.equal(r.direction, "outbound");
+  assert.equal(typeof r.sent_at, "string");
+  assert.equal(d.body_text, "Synthetic body");
+  assert.deepEqual((d.raw_payload as Record<string, unknown>).label_ids, ["DRAFT"]);
+});

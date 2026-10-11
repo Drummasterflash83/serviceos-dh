@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "b8866b5fbe8206246a7499399f5ab57a0dec24a6860b0e6c713f02d309d1b98d",
+  "migrations": [
+    {
+      "file": "20261101380000_learn_email_draft_eligibility.sql",
+      "sha256": "44008ef0375ba74ebb72c6803e8354bfd96d9f3932799ed3240a0c4a3267b136"
+    }
+  ],
+  "probeSha256": "46b2a11ee864eaaf63c0dea7f5a5f2bf8681e708058d719b19e8e14eac27425f",
+  "priorFingerprint": "a857c9a1556d4c5db53f063f30c19d33",
+  "preservedDatasets": 121
+}

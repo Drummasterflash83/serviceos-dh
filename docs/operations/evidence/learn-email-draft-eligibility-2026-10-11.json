@@ -1,0 +1,56 @@
+{
+  "version": "learn-email-draft-eligibility/1",
+  "state": "candidate_rehearsed_not_installed",
+  "recordedAt": "2026-10-11T19:44:56.274Z",
+  "productionReadOnlyObservation": {
+    "gmailDraftMessages": 55,
+    "draftsWithCanonicalInteractions": 55,
+    "scope": "Aggregate labels and interaction associations only; no bodies or record IDs returned",
+    "productionChanged": false
+  },
+  "reference": "https://developers.google.com/workspace/gmail/api/guides/drafts",
+  "behavior": [
+    "Retain Gmail draft body/labels, with unknown direction and no sent timestamp.",
+    "Exclude drafts from ordinary projection and identity selection, including legacy canonical interactions.",
+    "Refuse direct and reviewed-person attribution as customer communications.",
+    "Exclude legacy drafts from restricted customer-card communication excerpts and new activity counts.",
+    "Keep draft exclusions out of actionable processing failure counts.",
+    "Include draft classification in source revisions so later source corrections invalidate old holds without rewriting receipts."
+  ],
+  "verification": {
+    "gmailReaderTestsPassed": 14,
+    "reviewClientRegressionTestsPassed": 15,
+    "strictTypes": "Installed SDK declarations with Deno env/serve shim; not native Deno",
+    "actualQueueJourney": "Gmail parser -> retained sources -> real projection/identity handlers -> durable queue jobs -> customer cards; lost publication and settlement replies recover; drafts remain source-only. Legacy draft, direct/operator rejection, reader RLS, private helper ACLs, source preservation and correction recovery passed.",
+    "fullSchemaRollback": {
+      "version": "learn-email-draft-rehearsal/1",
+      "state": "full_schema_rehearsed_and_rolled_back",
+      "observedAt": "2026-10-11T19:44:56.274Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "migrationSha256": "44008ef0375ba74ebb72c6803e8354bfd96d9f3932799ed3240a0c4a3267b136",
+      "probeSha256": "46b2a11ee864eaaf63c0dea7f5a5f2bf8681e708058d719b19e8e14eac27425f",
+      "preservedDatasets": 121,
+      "schemaRestored": true,
+      "authorityRestored": true,
+      "fixturesRemoved": true,
+      "usersCreated": 0,
+      "persistentRoleGrantsCreated": 0,
+      "temporaryMembershipsRevoked": 1,
+      "providerRequests": 0,
+      "productionChanged": false,
+      "limitations": [
+        "Synthetic SQL assertions; no persistent migration or positive hosted capture.",
+        "Production legacy draft interactions are retained; production cleanup and card summary reconciliation require a reviewed release."
+      ]
+    },
+    "actualEmailEngineTestsPassed": 65,
+    "pageStorage": "Actual Gmail capture engine persists a labelled draft with unknown direction and null sent_at; SQL rejects unknown-direction non-drafts and drafts with a sent timestamp."
+  },
+  "limitations": [
+    "Persistent TEST deployment and matching runtime verification are pending.",
+    "No real Gmail capture or signed-in acceptance.",
+    "Production draft-derived card summaries/aggregates need reviewed reconciliation before promotion; no production source or derived record has been changed.",
+    "Gmail label-change/deletion mirroring and Spam eligibility remain unfinished.",
+    "New plain-language draft advice is local until the next protected frontend release."
+  ]
+}
