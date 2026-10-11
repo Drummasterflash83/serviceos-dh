@@ -343,12 +343,13 @@ succeeded after that failure; no worker was invoked and no source record changed
   [First real restore](evidence/learn-recording-initial-restore-live-2026-10-11.json).
   Restricted Writer/Restore IAM access was explicitly approved and its stack
   completed at 08:35:18 UTC. Whole-inventory verification and one manifest-selected decoded audio restore
-  now pass; scheduling, monitoring and isolated database recovery remain open.
+  now pass; scheduled execution, operator monitoring and isolated database recovery remain open.
   A repeat-run command, local health report and monthly cleanup mode now pass 56
   backup checks. A real check at 11:42 UTC restored and decoded an 81-second
   recording through the separate Restore key, retained its record link and
   automatically removed temporary audio; separate inspection confirmed removal.
-  Monthly recurrence is not yet active; the next check is due by 11 November.
+  The active daily follow-up includes the next monthly check due by 11 November;
+  no scheduled execution has yet occurred.
   [Monthly check evidence](evidence/learn-recording-monthly-check-2026-10-11.json). Existing
   audio is reused; every retained version is byte-verified again before a new
   immutable inventory manifest. The first real repeat run started at 11:22 UTC
@@ -356,10 +357,14 @@ succeeded after that failure; no worker was invoked and no source record changed
   destination bytes passed, but no fresh manifest was claimed. The daily allowance
   now accounts for the inventory and both complete reference/metadata passes, with
   a fixed 100,000-request ceiling and the same object, byte and time limits. A new
-  live repeat started at 11:38:53 UTC; terminal verification is pending. Recurrence
-  is not enabled: the daily follow-up and monthly due check are created but PAUSED
-  pending that result. No scheduled execution has occurred. This local runner is
-  not yet an always-on production backup service.
+  live repeat started at 11:38:53 UTC and succeeded at 11:53:07 UTC: all 2,888 files,
+  601,004,261 bytes and 2,882 references passed, with zero missing file references
+  and no audio recopied. A fresh immutable manifest was verified after 20,288 source
+  requests. Local health reports observed inventory verified; the lock was removed.
+  The daily 09:00 local follow-up and monthly due check are now ACTIVE and read back.
+  No scheduled execution has occurred. This local runner still requires this Mac
+  and Codex to be running; it is not an always-on production backup service.
+  [Fresh daily verification](evidence/learn-recording-daily-verified-2026-10-11.json).
   [Daily operation runbook](LEARN-RECORDING-DAILY.md).
   [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
   [Inventory and runner evidence](evidence/learn-recording-inventory-and-batch-2026-10-11.json).

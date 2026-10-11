@@ -1,5 +1,25 @@
 # LEARN data recovery coverage
 
+## Latest recovery state — 11 October 2026, 11:53 UTC
+
+The revised daily runner completed a fresh observed inventory: all **2,888 files /
+601,004,261 bytes**, 2,882 recording references, no missing pointers, and six
+unlinked objects retained. All exact AWS versions and both source comparisons
+passed. No audio was recopied; 20,288 source requests were used. The immutable
+manifest covers the non-atomic inventory observed at 11:38:55 UTC.
+
+The **09:00 local daily follow-up is ACTIVE**, includes the monthly restore-due
+check and was read back after activation. Manual execution is verified; no
+scheduled execution has yet occurred. This arrangement needs the Mac and Codex
+running. Dependable host operation, operator-facing monitoring, isolated database
+restore and combined database/audio relationship recovery are still open.
+The separate real 81-second restore/check passed at 11:42 UTC with automatic
+audio removal; the next monthly check is due by 11 November.
+
+[Daily verification and schedule evidence](evidence/learn-recording-daily-verified-2026-10-11.json)
+and [operating procedure](LEARN-RECORDING-DAILY.md). Earlier milestones below retain
+their historical scope; this section records the latest recurrence state.
+
 ## Approved scope and account ownership — 11 October 2026
 
 Chris approved the backup setup and initial recording copy, then clarified that
@@ -105,7 +125,8 @@ decoded 81 seconds. Its temporary audio was automatically removed and separately
 confirmed absent; private evidence retained the original record reference. This
 used only the existing Restore identity and made no Supabase requests or AWS
 writes. All 56 local backup checks pass. The next monthly check is due by
-11 November; recurrence is not yet enabled. See the
+11 November; the daily follow-up now includes this due check, with scheduled
+execution still unverified. See the
 [monthly procedure](LEARN-RECORDING-DAILY.md#monthly-restore-check) and
 [sanitized evidence](evidence/learn-recording-monthly-check-2026-10-11.json).
 

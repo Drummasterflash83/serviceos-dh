@@ -1,13 +1,22 @@
 # Drummonds daily recording backup operations
 
-Status on 11 October 2026: implemented; 56 local backup checks pass. First real
-repeat run started at 11:22 UTC and failed during the final source comparison
-when its 20,000-request ceiling was reached. All 2,888 destination byte checks
-passed, but no fresh successful manifest was claimed. The earlier complete
-inventory and manifest-selected restore remain verified. Recurrence is **not yet
-enabled**. A revised live repeat started at 11:38:53 UTC; its terminal result is
-pending. Database restore remains separate
-and incomplete. [Failure and fix](evidence/learn-recording-daily-first-attempt-2026-10-11.json).
+Status on 11 October 2026: the corrected real daily run **succeeded at 11:53:07
+UTC**, verifying 2,888 files / 601,004,261 bytes and all 2,882 recording references.
+Six unlinked objects were retained; there were no missing file references or null
+recording pointers. No audio was uploaded again. The new immutable manifest
+covers the non-atomic inventory observed at 11:38:55 UTC, not later arrivals.
+The run used 20,288 of its 100,000 source requests, released its lock and reports
+`observed_inventory_verified`. All 56 local backup checks pass.
+[Verified run](evidence/learn-recording-daily-verified-2026-10-11.json).
+
+The daily follow-up is now **ACTIVE** at 09:00 local time on this Mac, with monthly
+restore-due checks. No scheduled execution has yet occurred; this is a verified
+manual run and an enabled schedule. Database restore, dependable operational host
+availability and operator-facing monitoring remain incomplete.
+
+The first repeat failed at 11:36 UTC after reaching its 20,000-request ceiling in
+the final source comparison. It did not publish a successful manifest or replace
+earlier verified coverage. [Failure and fix](evidence/learn-recording-daily-first-attempt-2026-10-11.json).
 
 ## Scope and execution
 
@@ -48,8 +57,7 @@ mode 0600, checked for ownership and symlinks. It contains no saved credentials.
 Inventories and reconciliation files contain private source paths and record
 references: never print or commit them. Only aggregate reports may enter Git.
 The failed first repeat loaded an earlier wrapper without the source-reconciliation
-summary. The revised run includes that summary and records source-request usage;
-its live outcome remains to be verified.
+summary. The successful revised run includes that summary and source-request usage.
 
 `last-success.json` changes only after manifest verification. A later failure
 updates `last-attempt.json` while preserving the earlier success. `--health`
@@ -100,8 +108,8 @@ directory was absent and evidence remained private (0600). The 56-test suite
 covers removal after both successful and failed decoding and rejects out-of-limit
 selections before retrieval. [Real check](evidence/learn-recording-monthly-check-2026-10-11.json).
 
-The next monthly rehearsal is due by **11 November 2026**. After recurrence is
-enabled, its daily follow-up must also inspect the latest successful private
+The next monthly rehearsal is due by **11 November 2026**. The active daily
+follow-up must also inspect the latest successful private
 restore evidence and perform this check when due. Successful means decoded,
 hash-verified, record reference retained and temporary audio confirmed removed;
 use the recorded `checkedAt`, never a file modification time. A future date or
@@ -111,12 +119,13 @@ a full database restore or proof that every recording is intelligible.
 
 ## Recurrence and launch limit
 
-A daily follow-up was created through Codex's automation tool and read back on
-11 October at 11:46 UTC: `drummonds-recording-backup-and-recovery-checks`, attached
-to this chat, **PAUSED**, scheduled for 09:00 local time (Europe/London on this Mac).
-It includes the monthly restore-due check. No scheduled execution has occurred.
-Activate this existing follow-up only after the corrected real repeat succeeds;
-do not create a duplicate. Test the scheduled instruction manually:
+A daily follow-up was created through Codex's automation tool at 11:46 UTC and
+activated after successful verification at 11:53 UTC:
+`drummonds-recording-backup-and-recovery-checks`, attached to this chat, **ACTIVE**,
+scheduled for 09:00 local time (Europe/London on this Mac). The saved status was
+read back. It includes the monthly restore-due check. No scheduled execution has
+occurred. Update this existing follow-up instead of creating a duplicate. The
+scheduled procedure has been exercised manually:
 read health, inspect any active process before starting, run only the fixed
 command above, wait for terminal evidence, then report aggregates. Stay quiet
 when no meaningful condition changes; report new failures, overdue coverage,

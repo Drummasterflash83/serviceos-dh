@@ -452,11 +452,15 @@ only GET/HEAD requests after setup. This is not a real Drummonds restore.
 
 ## Repeat runs and local monitoring
 
-The daily runner is implemented with 54 passing local checks. Its first real
+The daily runner is implemented with 56 passing local checks. Its first real
 repeat failed at 11:36 UTC after exhausting the original source-request allowance
 during the final comparison. All destination bytes passed; no new complete
 manifest was claimed. The bounded daily allowance now includes the complete
-inventory and both per-file metadata/reference passes. A revised run started at
-11:38:53 UTC; its terminal result is pending.
-No recurring task has been enabled yet. See
+inventory and both per-file metadata/reference passes. The revised run completed
+at 11:53:07 UTC: all 2,888 files and 601,004,261 bytes passed, no audio was recopied,
+and a fresh immutable inventory manifest was verified. Source use was 20,288
+requests. The daily 09:00 local follow-up is ACTIVE and includes monthly restore
+checks; no scheduled execution has yet occurred. This still requires this Mac
+and Codex to be running. Database restore and always-on operational acceptance
+remain open. See
 [the runbook](../../docs/operations/LEARN-RECORDING-DAILY.md).

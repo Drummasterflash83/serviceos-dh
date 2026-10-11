@@ -1,0 +1,72 @@
+{
+  "version": "learn-recording-daily-evidence/1",
+  "date": "2026-10-11",
+  "startedAt": "2026-10-11T11:38:53.368Z",
+  "finishedAt": "2026-10-11T11:53:08.419Z",
+  "run": {
+    "state": "inventory_verified",
+    "runId": "2bec8c68-0ef0-4610-ad6c-8d5156f392ed",
+    "inventoryObservedAt": "2026-10-11T11:38:55.727Z",
+    "verifiedAt": "2026-10-11T11:53:07.173Z",
+    "inventorySha256": "d8c1c8cd3f9776f47d6f0f499c4b22a66c11e60b495b464d28997927d5f0aa1c",
+    "objects": 2888,
+    "totalBytes": 601004261,
+    "recordingReferences": 2882,
+    "newObjectsCopied": 0,
+    "newBytesConsidered": 0,
+    "recoveredObjects": 0,
+    "existingReceipts": 2888,
+    "recoveredManifest": false,
+    "coverage": "verified_inventory_only",
+    "sourceSnapshot": "non_atomic",
+    "playback": "not_verified",
+    "databaseRestore": "not_verified",
+    "backupComplete": false,
+    "sourceReconciliation": {
+      "recordingRows": 2882,
+      "rowsWithoutStoragePointer": 0,
+      "unreferencedObjects": 6,
+      "missingObjectReferences": 0
+    },
+    "sourceUsage": {
+      "requests": 20288,
+      "requestBudget": 100000
+    }
+  },
+  "health": {
+    "sourceReconciliation": {
+      "recordingRows": 2882,
+      "rowsWithoutStoragePointer": 0,
+      "unreferencedObjects": 6,
+      "missingObjectReferences": 0
+    },
+    "status": "observed_inventory_verified",
+    "reason": "within_daily_window",
+    "lastVerifiedAt": "2026-10-11T11:53:07.173Z",
+    "inventoryObservedAt": "2026-10-11T11:38:55.727Z",
+    "objects": 2888,
+    "totalBytes": 601004261,
+    "backupComplete": false,
+    "checkedAt": "2026-10-11T11:54:04.457Z",
+    "latestAttemptState": "succeeded",
+    "latestFailureCode": null,
+    "requiresAwakeComputer": true
+  },
+  "lockRemoved": true,
+  "localBackupTests": 56,
+  "automation": {
+    "id": "drummonds-recording-backup-and-recovery-checks",
+    "status": "ACTIVE",
+    "schedule": "09:00 local time daily; current host timezone Europe/London",
+    "target": "current ServiceOS chat",
+    "scheduledExecutionVerified": false,
+    "monthlyRestoreDue": "2026-11-11",
+    "requiresAwakeComputerAndRunningApp": true
+  },
+  "limits": [
+    "explicit non-atomic observed inventory only",
+    "database restore not verified",
+    "not an always-on cloud worker",
+    "operator-facing monitoring and operational host acceptance remain open"
+  ]
+}
