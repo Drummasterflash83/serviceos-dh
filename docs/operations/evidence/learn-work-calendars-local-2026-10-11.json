@@ -1,10 +1,10 @@
 {
   "version": "learn-work-calendars-local/1",
-  "observedAt": "2026-10-11T00:04:06.285869+00:00",
+  "observedAt": "2026-10-11T00:21:15.421084+00:00",
   "source": "supabase/migrations/20261101100000_learn_work_calendars.sql",
-  "sha256": "a90713b70f09e4c6de45edca14c357d539c1221d1668c38dd1d3a5537a7c8093",
+  "sha256": "01ecf776740369ff14f30a207678b65049b065b49596c87022e59038fe04ef81",
   "deployed": false,
-  "settingsUi": false,
+  "settingsUi": true,
   "collectionAdapter": false,
   "approvedDelayWorkflow": false,
   "verification": {
@@ -23,12 +23,36 @@
     "tenantRoleViewAsAndRpcBoundaries": "passed",
     "sourceAndMeasurementPreservation": "passed",
     "actualSqlClientAndDeskTimeParsing": "passed",
-    "clientTests": 7,
+    "clientTests": 21,
     "appTypecheck": "passed",
-    "calendarAndScorerTests": 21,
-    "definitionAndIntervalLimits": "passed"
+    "calendarAndScorerTests": 35,
+    "definitionAndIntervalLimits": "passed",
+    "previewTypecheck": "passed",
+    "applicationBuild": "passed with existing chunk and dependency warnings",
+    "previewBuild": "passed with existing chunk warnings",
+    "prebuildChecks": 47,
+    "concurrentSaveCancel": "one stable recorded or cancelled outcome",
+    "concurrentPublishCancel": "one stable recorded or cancelled outcome",
+    "actualSqlRecoveryParsing": "passed",
+    "cancellationAuthorityImmutabilityAndLateWrites": "passed",
+    "syntheticBrowser": [
+      "Explicit weekly hours and closed-date override persist through rerender and save",
+      "Saved draft remains unpublished",
+      "Closed date yields expected 480 minutes for 5\u201313 October synthetic preview",
+      "Later draft revision 2 preserves published revision 1",
+      "Overlapping hours refuse save and publication",
+      "Invalid preview preserves labelled prior revision and dates",
+      "Lost save reply reload/retry confirms revision 1 without duplicate",
+      "Lost publication reply reload/cancel confirms existing publication without retracting",
+      "Unrecorded save reload/check/cancel leaves no saved revision",
+      "Viewer has no calendar management entry",
+      "No console errors observed"
+    ],
+    "screenshot": ".verification-results/learn-calendar-settings-2026-10-11.png"
   },
   "hostedReleaseUnchanged": "049",
   "productionChanges": false,
-  "providerRequests": 0
+  "providerRequests": 0,
+  "durableRequestRecovery": true,
+  "hostedOwnerAcceptance": false
 }

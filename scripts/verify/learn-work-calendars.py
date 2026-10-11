@@ -106,10 +106,13 @@ try:
     apply(calendar_sql, 'Versioned calendar migration')
     apply((ROOT/'scripts/verify/learn-work-calendars.assert.sql').read_bytes(), 'Calendar revision, authority, DST and history assertions')
 
+    apply((ROOT/'scripts/verify/learn-work-calendar-recovery.assert.sql').read_bytes(), 'Calendar exact recovery, cancellation and access assertions')
+
     sql="""set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';
     select jsonb_build_object('read',learn_work_calendar_read('aaa40000-0000-0000-0000-000000000004'),
       'preview',learn_work_calendar_preview('aaa40000-0000-0000-0000-000000000004','ca140000-0000-4000-8000-000000000001','2026-10-05T00:00:00Z','2026-10-12T00:00:00Z'),
-      'snapshot',(select snapshot from calendar_frozen));"""
+      'snapshot',(select snapshot from calendar_frozen),
+      'resolution',learn_work_calendar_resolve('aaa40000-0000-0000-0000-000000000004','save','ca140000-0000-4000-8000-000000000001',jsonb_build_object('expectedRevision',0,'definition',(select definition from calendar_fixture),'reason','Initial company hours'),false));"""
     data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc',sql).stdout
     parsed=subprocess.run(['node',str(ROOT/'scripts/verify/learn-work-calendars-readback.mjs')],input=data,capture_output=True)
     if parsed.returncode:
@@ -127,6 +130,47 @@ try:
     assert sum(r.returncode==0 for r in results)==1, 'Exactly one calendar revision must win'
     assert any(b'Calendar revision changed' in r.stderr for r in results), 'Concurrent stale save must conflict'
     print('Concurrent calendar saves retain one next revision: PASS')
+
+    # Actual simultaneous clients, using the same request lock. Either a recorded
+    # operation or a retained cancellation may win, never both or neither.
+    import json
+    def calendar_query(sql):
+        return docker('exec', TARGET, 'psql', '-U', 'supabase_admin', '-d',
+                      'roster_verify', '-qAtc', sql).stdout.decode().strip()
+    for kind in ['save', 'publish']:
+        for attempt in range(2):
+            request_id = str(uuid.uuid4())
+            head = json.loads(calendar_query("select jsonb_build_object('revision',revision,'id',id,'publication',(select id from learn_work_calendar_publications order by effective_from desc limit 1)) from learn_work_calendar_versions order by revision desc limit 1"))
+            if kind == 'publish':
+                # Ensure a fresh unpublished revision even if the prior publish won.
+                fresh = str(uuid.uuid4())
+                calendar_query(f"set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';select learn_work_calendar_save('aaa40000-0000-0000-0000-000000000004',{head['revision']},(select definition from calendar_fixture),'{fresh}','Prepare publication race')")
+                head['id'] = fresh
+            reason = 'Concurrent exact request recovery'
+            if kind == 'save':
+                payload = f"jsonb_build_object('expectedRevision',{head['revision']},'definition',(select definition from calendar_fixture),'reason','{reason}')"
+                write = f"learn_work_calendar_save('aaa40000-0000-0000-0000-000000000004',{head['revision']},(select definition from calendar_fixture),'{request_id}','{reason}')"
+            else:
+                payload = f"jsonb_build_object('versionId','{head['id']}','expectedPublication','{head['publication']}','reason','{reason}')"
+                write = f"learn_work_calendar_publish('aaa40000-0000-0000-0000-000000000004','{head['id']}','{head['publication']}','{request_id}','{reason}')"
+            cancel = f"learn_work_calendar_resolve('aaa40000-0000-0000-0000-000000000004','{kind}','{request_id}',{payload},true)"
+            def competing_call(call):
+                sql = f"set request.jwt.claim.sub='bbb40000-0000-0000-0000-000000000004';set role authenticated;select {call};"
+                return subprocess.run([DOCKER,'exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAt','-v','ON_ERROR_STOP=1','-c',sql],capture_output=True)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                write_result, cancel_result = list(pool.map(competing_call, [write, cancel]))
+            assert cancel_result.returncode == 0, 'Exact cancellation/resolution must settle'
+            outcome = json.loads(next(line for line in cancel_result.stdout.decode().splitlines() if line.startswith('{')))
+            if outcome['state'] == 'cancelled':
+                assert write_result.returncode != 0 and b'Calendar request cancelled' in write_result.stderr
+            else:
+                assert outcome['state'] == 'recorded' and write_result.returncode == 0
+            count = calendar_query(f"select (select count(*) from learn_work_calendar_versions where id='{request_id}')+(select count(*) from learn_work_calendar_publications where id='{request_id}')+(select count(*) from learn_work_calendar_cancellations where id='{request_id}')")
+            assert count == '1', 'Request must have exactly one terminal outcome'
+            settled = competing_call(cancel)
+            assert settled.returncode == 0
+            assert json.loads(next(line for line in settled.stdout.decode().splitlines() if line.startswith('{'))) == outcome
+        print(f'Concurrent calendar {kind}/cancel has one stable terminal outcome: PASS')
 
 finally:
     subprocess.run([DOCKER, 'rm', '-f', TARGET], capture_output=True)

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { LearnPerformanceCard } from "./LearnPerformanceCard";
 import { LearnWorkHistory } from "./LearnWorkHistory";
+import { LearnWorkCalendarSettings } from "./LearnWorkCalendarSettings";
 import { LearnScorecardSettings } from "./LearnScorecardSettings";
 import {
   readLearnCards,
@@ -56,6 +57,7 @@ function CardWorkspace({
   canEdit: boolean;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [kind, setKind] = useState<LearnCardKind>("customer");
   const [group, setGroup] = useState("");
   const [groups, setGroups] = useState<LearnTeamGroup[] | null>(null);
@@ -262,6 +264,36 @@ function CardWorkspace({
           Review scoring rules
         </button>
       </div>
+      {canEdit && (
+        <div className="ls-entry">
+          <h3>Company working calendar</h3>
+          <p>
+            Set company opening hours, timezone and closed dates for future working-time measures.
+            Published hours are separate from draft changes.
+          </p>
+          <button type="button" className="cp-secondary" onClick={() => setCalendarOpen(true)}>
+            Manage company calendar
+          </button>
+        </div>
+      )}
+      <Dialog open={calendarOpen && canEdit} onOpenChange={setCalendarOpen}>
+        <DialogContent className="lc-dialog" overlayClassName="lc-overlay">
+          <DialogHeader>
+            <DialogTitle>Company working calendar</DialogTitle>
+            <DialogDescription>
+              Review, preview and publish versioned company hours.
+            </DialogDescription>
+          </DialogHeader>
+          {calendarOpen && canEdit && (
+            <LearnWorkCalendarSettings
+              key={`${tenantId}:${actorId}`}
+              tenantId={tenantId}
+              actorId={actorId}
+              canEdit={canEdit}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="lc-dialog" overlayClassName="lc-overlay">
           <DialogHeader>

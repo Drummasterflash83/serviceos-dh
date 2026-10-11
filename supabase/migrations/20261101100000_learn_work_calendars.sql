@@ -14,6 +14,18 @@ create table public.learn_work_calendar_publications (
  effective_from timestamptz not null,unique(tenant_id,effective_from),unique(tenant_id,version_id),
  foreign key(tenant_id,version_id) references public.learn_work_calendar_versions(tenant_id,id)
 );
+-- A cancellation is retained under the same request lock as save/publication.
+-- It prevents an already in-flight request from appearing after UI recovery.
+create table public.learn_work_calendar_cancellations (
+ id uuid primary key,tenant_id uuid not null references public.tenants(id),
+ actor_id uuid not null references public.profiles(id),kind text not null check(kind in ('save','publish')),
+ request jsonb not null,recorded_at timestamptz not null default clock_timestamp()
+);
+alter table public.learn_work_calendar_cancellations enable row level security;
+revoke all on public.learn_work_calendar_cancellations from public,anon,authenticated,service_role;
+grant select on public.learn_work_calendar_cancellations to authenticated;
+create policy learn_work_calendar_cancellations_read on public.learn_work_calendar_cancellations for select to authenticated
+ using(tenant_id=public.current_tenant_id() and coalesce(public.current_user_role(),'') in ('owner','admin'));
 alter table public.learn_work_calendar_versions enable row level security;
 alter table public.learn_work_calendar_publications enable row level security;
 revoke all on public.learn_work_calendar_versions,public.learn_work_calendar_publications from public,anon,authenticated,service_role;
@@ -29,6 +41,9 @@ create trigger learn_work_calendar_versions_immutable before update or delete on
 create trigger learn_work_calendar_versions_no_truncate before truncate on public.learn_work_calendar_versions for each statement execute function public.learn_work_calendar_immutable();
 create trigger learn_work_calendar_publications_immutable before update or delete on public.learn_work_calendar_publications for each row execute function public.learn_work_calendar_immutable();
 create trigger learn_work_calendar_publications_no_truncate before truncate on public.learn_work_calendar_publications for each statement execute function public.learn_work_calendar_immutable();
+
+create trigger learn_work_calendar_cancellations_immutable before update or delete on public.learn_work_calendar_cancellations for each row execute function public.learn_work_calendar_immutable();
+create trigger learn_work_calendar_cancellations_no_truncate before truncate on public.learn_work_calendar_cancellations for each statement execute function public.learn_work_calendar_immutable();
 
 -- Local clock intervals use minute precision, [start,end), 0..1440. Overnight
 -- shifts are explicitly split between dates. An empty override is a closed day.
@@ -113,12 +128,72 @@ create function public.learn_work_calendar_version_result(v public.learn_work_ca
 language sql stable set search_path=public,pg_temp as $$select jsonb_build_object('id',v.id,'tenantId',v.tenant_id,'revision',v.revision,'definition',v.definition,'recordedAt',v.recorded_at,'recordedBy',v.actor_id,'reason',v.reason)$$;
 revoke all on function public.learn_work_calendar_version_result(public.learn_work_calendar_versions) from public,anon,authenticated,service_role;
 
+-- Canonical identity is shared by writes and resolution; missing/extra fields
+-- cannot silently change the meaning of a retained browser request.
+create function public.learn_work_calendar_request(p_tenant uuid,p_actor uuid,p_kind text,p_payload jsonb) returns jsonb
+language plpgsql stable set search_path=public,pg_temp as $$
+declare payload jsonb;n numeric;v uuid;previous uuid;begin
+ if p_kind is null or p_kind not in ('save','publish') or jsonb_typeof(p_payload) is distinct from 'object'
+  or octet_length(p_payload::text)>270336 then raise exception 'Invalid calendar recovery request' using errcode='22023';end if;
+ if jsonb_typeof(p_payload->'reason') is distinct from 'string' or length(btrim(p_payload->>'reason')) not between 1 and 1000 then
+  raise exception 'Calendar reason required' using errcode='22023';end if;
+ if p_kind='save' then
+  if (select count(*) from jsonb_object_keys(p_payload))<>3
+   or exists(select 1 from jsonb_object_keys(p_payload) k where k not in ('expectedRevision','definition','reason'))
+   or jsonb_typeof(p_payload->'expectedRevision') is distinct from 'number' then
+   raise exception 'Calendar save descriptor required' using errcode='22023';end if;
+  n:=(p_payload->>'expectedRevision')::numeric;
+  if n<0 or n>=2147483647 or mod(n,1)<>0 then raise exception 'Invalid calendar revision' using errcode='22023';end if;
+  payload:=jsonb_build_object('expectedRevision',n::integer,'definition',learn_work_calendar_validate(p_payload->'definition'),'reason',btrim(p_payload->>'reason'));
+ else
+  if (select count(*) from jsonb_object_keys(p_payload))<>3
+   or exists(select 1 from jsonb_object_keys(p_payload) k where k not in ('versionId','expectedPublication','reason'))
+   or jsonb_typeof(p_payload->'versionId') is distinct from 'string'
+   or jsonb_typeof(p_payload->'expectedPublication') not in ('string','null') then
+   raise exception 'Calendar publication descriptor required' using errcode='22023';end if;
+  v:=(p_payload->>'versionId')::uuid;previous:=(p_payload->>'expectedPublication')::uuid;
+  payload:=jsonb_build_object('versionId',v,'expectedPublication',previous,'reason',btrim(p_payload->>'reason'));
+ end if;
+ return jsonb_build_object('tenantId',p_tenant,'actorId',p_actor)||payload;
+end $$;
+revoke all on function public.learn_work_calendar_request(uuid,uuid,text,jsonb) from public,anon,authenticated,service_role;
+
+create function public.learn_work_calendar_resolve(p_tenant uuid,p_kind text,p_request uuid,p_payload jsonb,p_cancel boolean) returns jsonb
+language plpgsql security definer set search_path=public,pg_temp as $$
+declare actor uuid:=learn_work_collection_access(p_tenant);descriptor jsonb;retained jsonb;retained_kind text;
+ at_time timestamptz;outcome text:='pending';begin
+ if p_request is null or p_cancel is null then raise exception 'Calendar request and resolution action required' using errcode='22023';end if;
+ descriptor:=learn_work_calendar_request(p_tenant,actor,p_kind,p_payload);
+ perform pg_advisory_xact_lock(hashtextextended('learn-calendar-request:'||p_request::text,0));
+ select request,'save',recorded_at into retained,retained_kind,at_time from learn_work_calendar_versions where id=p_request;
+ if not found then
+  select request,'publish',effective_from into retained,retained_kind,at_time from learn_work_calendar_publications where id=p_request;
+ end if;
+ if found then outcome:='recorded';else
+  select request,kind,recorded_at into retained,retained_kind,at_time from learn_work_calendar_cancellations where id=p_request;
+  if found then outcome:='cancelled';end if;
+ end if;
+ if outcome<>'pending' then
+  if retained_kind is distinct from p_kind or retained is distinct from descriptor then raise exception 'Calendar request changed' using errcode='PT409';end if;
+ elsif p_cancel then
+  insert into learn_work_calendar_cancellations(id,tenant_id,actor_id,kind,request)
+   values(p_request,p_tenant,actor,p_kind,descriptor) returning recorded_at into at_time;
+  outcome:='cancelled';
+ end if;
+ perform learn_work_collection_access(p_tenant);
+ return jsonb_build_object('contract','work-calendar-resolution@1','tenantId',p_tenant,'actorId',actor,
+  'requestId',p_request,'kind',p_kind,'payload',descriptor-'tenantId'-'actorId','state',outcome,'recordedAt',at_time);
+end $$;
+revoke all on function public.learn_work_calendar_resolve(uuid,text,uuid,jsonb,boolean) from public,anon,authenticated,service_role;
+grant execute on function public.learn_work_calendar_resolve(uuid,text,uuid,jsonb,boolean) to authenticated;
+
 create function public.learn_work_calendar_save(p_tenant uuid,p_expected_revision integer,p_definition jsonb,p_request uuid,p_reason text) returns jsonb
 language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=learn_work_collection_access(p_tenant);def jsonb:=learn_work_calendar_validate(p_definition);r learn_work_calendar_versions%rowtype;descriptor jsonb;n integer;begin
  if p_request is null or p_expected_revision is null or p_expected_revision<0 or p_expected_revision>=2147483647 or p_reason is null or length(btrim(p_reason)) not between 1 and 1000 then raise exception 'Calendar revision, request and reason required' using errcode='22023';end if;
- descriptor:=jsonb_build_object('tenantId',p_tenant,'actorId',actor,'expectedRevision',p_expected_revision,'definition',def,'reason',btrim(p_reason));
+ descriptor:=learn_work_calendar_request(p_tenant,actor,'save',jsonb_build_object('expectedRevision',p_expected_revision,'definition',def,'reason',p_reason));
  perform pg_advisory_xact_lock(hashtextextended('learn-calendar-request:'||p_request::text,0));
+ if exists(select 1 from learn_work_calendar_cancellations where id=p_request) then raise exception 'Calendar request cancelled' using errcode='PT409';end if;
  perform pg_advisory_xact_lock(hashtextextended('learn-calendar-tenant:'||p_tenant::text,0));
  select * into r from learn_work_calendar_versions where id=p_request;
  if found then
@@ -140,8 +215,9 @@ create function public.learn_work_calendar_publish(p_tenant uuid,p_version uuid,
 language plpgsql security definer set search_path=public,pg_temp as $$
 declare actor uuid:=learn_work_collection_access(p_tenant);v learn_work_calendar_versions%rowtype;r learn_work_calendar_publications%rowtype;previous learn_work_calendar_publications%rowtype;descriptor jsonb;at_time timestamptz;begin
  if p_version is null or p_request is null or p_reason is null or length(btrim(p_reason)) not between 1 and 1000 then raise exception 'Calendar version, request and reason required' using errcode='22023';end if;
- descriptor:=jsonb_build_object('tenantId',p_tenant,'actorId',actor,'versionId',p_version,'expectedPublication',p_expected_publication,'reason',btrim(p_reason));
+ descriptor:=learn_work_calendar_request(p_tenant,actor,'publish',jsonb_build_object('versionId',p_version,'expectedPublication',p_expected_publication,'reason',p_reason));
  perform pg_advisory_xact_lock(hashtextextended('learn-calendar-request:'||p_request::text,0));
+ if exists(select 1 from learn_work_calendar_cancellations where id=p_request) then raise exception 'Calendar request cancelled' using errcode='PT409';end if;
  perform pg_advisory_xact_lock(hashtextextended('learn-calendar-tenant:'||p_tenant::text,0));
  select * into r from learn_work_calendar_publications where id=p_request;
  if found then

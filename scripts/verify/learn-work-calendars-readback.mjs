@@ -4,6 +4,10 @@ import {
   parseWorkCalendarRead,
   parseWorkCalendarPreview,
 } from "../../src/lib/learn-work-calendars.ts";
+import {
+  prepareCalendarDraft,
+  parseCalendarResolution,
+} from "../../src/lib/learn-work-calendar-outbox.ts";
 import { measureDeskTime } from "../../src/lib/learn-scorecards.ts";
 const line = readFileSync(0, "utf8")
   .split("\n")
@@ -36,3 +40,20 @@ assert.equal(d.snapshot.versions[0].revision, 1);
 console.log(
   "Actual SQL calendar read/preview parsing, historical snapshot and desk-time interval integration: PASS",
 );
+
+const scope = {
+  backend: "https://synthetic.invalid",
+  tenantId: tenant,
+  actorId: "bbb40000-0000-0000-0000-000000000004",
+};
+const draft = prepareCalendarDraft(scope, {
+  kind: "save",
+  requestId: "ca140000-0000-4000-8000-000000000001",
+  payload: {
+    expectedRevision: 0,
+    definition: preview.version.definition,
+    reason: "Initial company hours",
+  },
+});
+assert.equal(parseCalendarResolution(d.resolution, scope, draft, false).state, "recorded");
+console.log("Actual SQL calendar resolution passes exact client recovery parsing: PASS");

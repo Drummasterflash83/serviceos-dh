@@ -1,7 +1,7 @@
 # Company calendars for evidenced working time
 
-Local backend/API candidate, 11 October 2026. **Not deployed and not yet connected
-to card collection or a settings screen.** TEST remains on release 049. No company
+Local backend/API and owner settings candidate, 11 October 2026. **Not deployed
+and not yet connected to working-time card collection.** TEST remains on release 049. No company
 calendar has been chosen or published for Drummonds, and no score or source record
 has changed.
 
@@ -30,12 +30,43 @@ and the expected current publication. Its effective time is assigned by the serv
 after the company lock, never supplied or backdated by the browser. Later drafts
 leave the published calendar unchanged, and later publications preserve the past.
 
-Calendar versions and publications are append-only, tenant owner/admin readable
+Calendar versions, publications and cancellation receipts are append-only, tenant owner/admin readable
 with RLS and no direct client/service writes, deletes or truncation. The existing
 collection access gate checks actual profile role/tenant and rejects View-As,
 holding the profile lock against concurrent revocation. Save/publication use shared
 request and company locks. Cross-use of a request ID between those operations is
 refused. No new operator authority, profile, provider connection or capture is created.
+
+## Owner settings and interrupted-request recovery
+
+Company cards now offer **Manage company calendar** to the actual company owner
+or admin. The editor starts without assumed hours or timezone. It supports split
+weekly windows, end-of-day boundaries, closed dates and custom date windows.
+Published hours, effective timestamp and reason are shown separately from the
+latest saved revision and unsaved edits. Save and publish each require a reason;
+publishing requires the editor to match the saved revision. Saved-version preview
+shows its exact revision, UTC period, named timezone, every expanded window and
+eligible-minute total, explicitly as a simulation. Invalid/failed previews retain
+any earlier result with its original dates and revision clearly displayed.
+
+One durable browser request per backend/actor/company covers both save and
+publication. It is retained and read back before the first RPC, coordinated with
+Web Locks, and cannot be overwritten by a different request. Recovery displays the
+original reason and definition or version/publication references and offers check,
+retry-original, and cancel-pending actions. Scope, access and stored details are
+checked across asynchronous boundaries; closing settings or changing role stops
+subsequent calls. Invalid or unavailable browser storage prevents a new write.
+
+The fifth owner RPC, `learn_work_calendar_resolve`, shares the original write's
+request lock. Exact recorded requests resolve to their retained timestamp, even
+if the current draft/publication has advanced. Cancelling an unrecorded request
+appends an immutable cancellation receipt; any delayed save/publication with that
+ID is refused. Cancelling a completed operation reports it as recorded and does
+not undo it. Canonical payload construction is shared with save/publication and
+binds tenant, actor, operation, exact definition/version, expected head and reason.
+Changed identities conflict. A terminal server receipt is required before clearing
+browser recovery details. A failed refresh after that receipt is reported separately
+from the confirmed outcome and disables new changes until a successful reload.
 
 ## Time conversion and retained history
 
@@ -80,30 +111,45 @@ including when previewing a saved draft or future dates.
 - Existing measurements, resumable collection receipts and work-history fingerprints
   remain unchanged through the calendar operations. The earlier 14,500-item work
   collection assertions run in the same disposable database.
-- Seven client tests and application TypeScript pass. Actual SQL read and preview
+- Twenty-one calendar/client recovery tests and fourteen scorer tests pass; application
+  and preview TypeScript and builds pass (including 47 application prebuild checks). Actual SQL read and preview
   responses pass the production parsers; their windows feed the existing desk-time
   interval function with the independently expected 1,920 minutes.
 - Development runs exposed a reserved SQL alias, ambiguous variable/fixture names
   and integer-looking JSON decimals. These were corrected; the final full suite
-  passes. These results do not establish hosted or browser acceptance.
+  passes. Browser verification also caught native time/date edits disappearing on
+  subsequent renders; input handling was corrected and the actual save flow rechecked.
+- Offline recovery assertions cover exact recorded/cancelled/pending outcomes,
+  cancel-before-write, late request refusal, stale-head cancellation, malformed or
+  changed payloads, cross-kind/actor/tenant identities, immutable cancellation rows,
+  revoked access, View-As, no-identity RPC denials and source/measurement preservation.
+  Actual SQL resolution passes the production client parser. Concurrent real database
+  sessions racing save/cancel and publish/cancel each retain one stable outcome.
+- The actual local browser verifies explicit hours and a closed-date override,
+  a saved draft remaining unpublished, the expected 480-minute preview, a later
+  draft leaving publication revision 1 intact, overlap rejection, invalid preview
+  retaining its labelled earlier result, and management hidden for a viewer.
+  Lost save and publication replies survive reload with the original request;
+  recovery does not create another revision. Cancelling an already committed
+  publication reports success without retracting it; cancelling an unrecorded
+  request leaves no saved revision. No browser console errors were observed.
+- Synthetic browser fixtures use session storage only and never call a provider.
+  These checks do not establish hosted owner acceptance or real company hours.
 
 ```sh
 python3 scripts/verify/learn-work-calendars.py
-node --test src/lib/learn-work-calendars.test.ts
+node --test src/lib/learn-work-calendars.test.ts src/lib/learn-work-calendar-outbox.test.ts src/lib/learn-scorecards.test.ts
 npx --no-install tsc --noEmit
 ```
 
 ## Required integration
 
-1. Build the owner calendar settings and preview screen, with durable exact-request
-   recovery for save and publish. Display current published hours separately from
-   unsaved/saved drafts, and require an explicit reason for publication.
-2. Add retained, scoped approval/reversal evidence for delay exclusions. A waiting
+1. Add retained, scoped approval/reversal evidence for delay exclusions. A waiting
    or blocked work state must not automatically become an approved exclusion.
-3. Connect calendar snapshots, selected work states and approved exclusions to the
+2. Connect calendar snapshots, selected work states and approved exclusions to the
    resumable collector using a distinct working-time contract. Preserve existing
    elapsed ownership/handoff meanings, freeze all inputs, retain full proof and
    withhold unknown history. Keep collection separate from human score review.
-4. Verify the actual browser flows and scoring adapter, prepare an additive pinned
+3. Verify the finished scoring adapter and its browser flows, prepare an additive pinned
    TEST release against 049, preserve existing datasets/access, and perform hosted
    owner acceptance before any production promotion.

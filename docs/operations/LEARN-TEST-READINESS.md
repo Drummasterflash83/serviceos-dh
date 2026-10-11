@@ -1,15 +1,17 @@
 # Existing TEST environment: verified release gaps
 
-## Company working calendars — local backend/API candidate, not deployed
+## Company working calendars — local owner UI/recovery candidate, not deployed
 
-Versioned company calendar definitions now support named timezones, weekly hours,
-closed dates and custom date hours. Saving and publication are separate; publication
-is prospective and retains earlier rules. The snapshot reader explicitly marks
-periods without a published calendar as missing. Offline SQL, concurrency, DST/date
-override, authority/preservation checks, seven client tests and actual SQL-to-client/
-desk-time parsing pass. Owner settings UI, durable request recovery, approved-delay
-workflow and the working-time collection adapter remain to build. TEST remains on
-049; no Drummonds hours or scores have been changed.
+Owners can now edit weekly hours, timezone and date overrides, preview exact saved
+windows, and publish prospectively with a reason. Published hours remain separate
+from draft edits. Durable exact-request recovery supports checking, retrying and
+cancelling interrupted saves/publications; retained server cancellations prevent
+late writes. Offline SQL/DST/authority/preservation checks, concurrent save/cancel
+and publish/cancel races, actual SQL-to-client parsing, 35 focused client/scorer
+tests, app/preview typechecks/builds and synthetic browser recovery/preview checks
+pass. Approved-delay evidence and the working-time measurement adapter remain to
+build. TEST remains on 049; hosted owner acceptance is outstanding. No Drummonds
+hours, scores, source records or production settings have been changed.
 [Contract, verification and integration work](LEARN-WORK-CALENDARS.md).
 
 ## Resumable work collection — TEST release 049 and paired frontend installed

@@ -59,10 +59,11 @@ do $$declare d jsonb;w jsonb;n numeric;bad jsonb;role_name text;f record;begin
  begin perform learn_work_calendar_expand(d,'2026-01-01','2027-01-03');raise exception 'Excessive period admitted';exception when invalid_parameter_value then null;end;
  foreach role_name in array array['anon','authenticated','service_role'] loop
   for f in select p.oid,p.proname from pg_proc p join pg_namespace ns on ns.oid=p.pronamespace where ns.nspname='public' and p.proname like 'learn_work_calendar_%' loop
-   assert has_function_privilege(role_name,f.oid,'EXECUTE')=(role_name='authenticated' and f.proname in ('learn_work_calendar_save','learn_work_calendar_publish','learn_work_calendar_read','learn_work_calendar_preview'));
+   assert has_function_privilege(role_name,f.oid,'EXECUTE')=(role_name='authenticated' and f.proname in ('learn_work_calendar_save','learn_work_calendar_publish','learn_work_calendar_read','learn_work_calendar_preview','learn_work_calendar_resolve'));
   end loop;
   assert not has_table_privilege(role_name,'learn_work_calendar_versions','INSERT,UPDATE,DELETE,TRUNCATE');
   assert not has_table_privilege(role_name,'learn_work_calendar_publications','INSERT,UPDATE,DELETE,TRUNCATE');
+  assert not has_table_privilege(role_name,'learn_work_calendar_cancellations','INSERT,UPDATE,DELETE,TRUNCATE');
  end loop;
 end $$;
 

@@ -36,7 +36,7 @@ export type WorkCalendarPreview = {
   windows: TimeWindow[];
   minutes: number;
 };
-type Client = {
+export type WorkCalendarClient = {
   rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: any; error: any }>;
 };
 const uuid = (v: unknown): v is string =>
@@ -255,14 +255,14 @@ function failure(error: any) {
         : "Calendar outcome could not be confirmed. Keep the original request and check before changing it.",
   );
 }
-export async function readWorkCalendar(db: Client, tenantId: string) {
+export async function readWorkCalendar(db: WorkCalendarClient, tenantId: string) {
   if (!uuid(tenantId)) throw Error("Company required");
   const { data, error } = await db.rpc("learn_work_calendar_read", { p_tenant: tenantId });
   if (error) throw failure(error);
   return parseWorkCalendarRead(data, tenantId);
 }
 export async function saveWorkCalendar(
-  db: Client,
+  db: WorkCalendarClient,
   input: {
     tenantId: string;
     actorId: string;
@@ -302,7 +302,7 @@ export async function saveWorkCalendar(
   return version;
 }
 export async function publishWorkCalendar(
-  db: Client,
+  db: WorkCalendarClient,
   input: {
     tenantId: string;
     actorId: string;
@@ -348,7 +348,7 @@ export async function publishWorkCalendar(
   };
 }
 export async function previewWorkCalendar(
-  db: Client,
+  db: WorkCalendarClient,
   tenantId: string,
   versionId: string,
   period: ScorePeriod,

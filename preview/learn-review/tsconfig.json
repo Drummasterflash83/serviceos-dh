@@ -118,6 +118,12 @@
       ],
       "@/lib/learn-work-collection-outbox": [
         "../../src/lib/learn-work-collection-outbox.ts"
+      ],
+      "@/lib/learn-work-calendars": [
+        "../../src/lib/learn-work-calendars.ts"
+      ],
+      "@/lib/learn-work-calendar-outbox": [
+        "../../src/lib/learn-work-calendar-outbox.ts"
       ]
     },
     "allowImportingTsExtensions": true,
