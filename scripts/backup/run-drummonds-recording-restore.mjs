@@ -14,9 +14,18 @@ const fail = (code) => {
   throw new RecordingBackupError(code);
 };
 export function parseRestoreArgs(args) {
-  if (args.length !== 3 || args[0] !== "--restore-drummonds" || !uuid(args[1]) || !uuid(args[2]))
+  if (
+    args.length !== 3 ||
+    !["--restore-drummonds", "--check-drummonds"].includes(args[0]) ||
+    !uuid(args[1]) ||
+    !uuid(args[2])
+  )
     fail("restore_arguments_invalid");
-  return { runId: args[1], objectId: args[2] };
+  return {
+    runId: args[1],
+    objectId: args[2],
+    removeAudioAfterCheck: args[0] === "--check-drummonds",
+  };
 }
 export async function runRecordingRestore({
   runId,
@@ -25,6 +34,7 @@ export async function runRecordingRestore({
   ports,
   evidenceRoot,
   decode = checkRecordingPlayback,
+  removeAudioAfterCheck = false,
 }) {
   let restored, directory;
   const started = Date.now();
@@ -41,6 +51,15 @@ export async function runRecordingRestore({
     )
       fail("restore_evidence_directory_unverified");
     const manifest = await ports.journal.loadManifest(runId);
+    if (removeAudioAfterCheck) {
+      const candidate = manifest?.objects?.find((r) => r?.source?.objectId === objectId);
+      if (
+        !Number.isSafeInteger(candidate?.source?.size) ||
+        candidate.source.size <= 0 ||
+        candidate.source.size > 8 * 1024 * 1024
+      )
+        fail("restore_check_selection_outside_limit");
+    }
     restored = await restoreRecordingFromManifest(manifest, runId, objectId, context, ports);
     let playback;
     try {
@@ -53,9 +72,13 @@ export async function runRecordingRestore({
       };
     }
     const rehearsalId = randomUUID();
+    if (removeAudioAfterCheck) await rm(restored.directory, { recursive: true, force: true });
     const summary = {
       state: "restored_and_verified",
       rehearsalId,
+      sourceInventoryRunId: runId,
+      checkedAt: new Date().toISOString(),
+      temporaryAudioRemoved: removeAudioAfterCheck,
       bytes: restored.bytes,
       recordingReferenceCount: restored.recordingIds.length,
       playback,

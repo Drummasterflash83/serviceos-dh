@@ -1,0 +1,33 @@
+{
+  "version": "learn-recording-monthly-check-evidence/1",
+  "selection": "median size among non-empty referenced files under 8 MiB in the previously verified inventory",
+  "eligibleObjects": 2882,
+  "summary": {
+    "state": "restored_and_verified",
+    "rehearsalId": "be3b55f5-ab23-4037-8f58-c39f278b89e2",
+    "sourceInventoryRunId": "a03f8be7-f092-4c0a-802e-029440d4be37",
+    "checkedAt": "2026-10-11T11:42:41.729Z",
+    "temporaryAudioRemoved": true,
+    "bytes": 131685,
+    "recordingReferenceCount": 1,
+    "playback": {
+      "state": "decoded",
+      "decoder": "macOS afconvert",
+      "frames": 648000,
+      "sampleRate": 8000,
+      "channels": 1,
+      "durationSeconds": 81,
+      "listening": "not_verified"
+    },
+    "databaseRestore": "not_verified",
+    "backupComplete": false,
+    "elapsedMs": 977,
+    "privateEvidenceSaved": true
+  },
+  "localBackupTests": 56,
+  "sourceProviderRequests": 0,
+  "sourceWrites": 0,
+  "awsWrites": 0,
+  "humanListening": "not_verified",
+  "recurrence": "not_enabled"
+}

@@ -99,6 +99,16 @@ above; daily scheduling, operator monitoring and isolated database recovery rema
 [First restore evidence](evidence/learn-recording-initial-restore-live-2026-10-11.json).
 [Live access evidence](evidence/learn-recording-access-live-2026-10-11.json).
 
+The monthly check mode subsequently passed at **11:42:41 UTC**: a median-size
+referenced recording from that verified manifest restored 131,685 bytes and
+decoded 81 seconds. Its temporary audio was automatically removed and separately
+confirmed absent; private evidence retained the original record reference. This
+used only the existing Restore identity and made no Supabase requests or AWS
+writes. All 56 local backup checks pass. The next monthly check is due by
+11 November; recurrence is not yet enabled. See the
+[monthly procedure](LEARN-RECORDING-DAILY.md#monthly-restore-check) and
+[sanitized evidence](evidence/learn-recording-monthly-check-2026-10-11.json).
+
 ## Local backup implementation — 11 October 2026
 
 The [backup foundation](../../infrastructure/recording-backup/README.md) now includes

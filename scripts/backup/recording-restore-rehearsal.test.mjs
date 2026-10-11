@@ -154,6 +154,11 @@ test("restore command accepts only explicit bounded selection and loads only Res
     "00000000-0000-4000-8000-000000000002",
   ];
   assert.equal(parseRestoreArgs(args).runId, args[1]);
+  assert.equal(parseRestoreArgs(args).removeAudioAfterCheck, false);
+  assert.equal(
+    parseRestoreArgs(["--check-drummonds", ...args.slice(1)]).removeAudioAfterCheck,
+    true,
+  );
   const key = {
     accessKeyId: "AKIA" + "A".repeat(16),
     secretAccessKey: "A".repeat(40),
@@ -174,4 +179,63 @@ test("restore command accepts only explicit bounded selection and loads only Res
     })),
     { code: "runner_restore_credential_unverified" },
   );
+});
+test("scheduled restore checks remove audio on decode success or refusal and retain private evidence", async () => {
+  for (const failDecode of [false, true]) {
+    const { f, runId } = await prepared();
+    const root = await mkdtemp(join(await realpath(tmpdir()), "restore-check-test-"));
+    try {
+      const before = f.calls.length;
+      const summary = await runRecordingRestore({
+        runId,
+        objectId: f.entry.objectId,
+        binding: context,
+        ports: { destination: f.destination, journal: f.journal, now: () => time },
+        evidenceRoot: root,
+        removeAudioAfterCheck: true,
+        decode: async (restored) => {
+          assert.deepEqual(await readFile(restored.path), wav());
+          if (failDecode) throw Error("PRIVATE decoder error");
+          return { state: "decoded", listening: "not_verified" };
+        },
+      });
+      assert.equal(summary.temporaryAudioRemoved, true);
+      assert.equal(summary.sourceInventoryRunId, runId);
+      assert.equal(summary.playback.state, failDecode ? "unconfirmed" : "decoded");
+      assert.doesNotMatch(JSON.stringify(summary), /PRIVATE/);
+      const evidence = JSON.parse(
+        await readFile(join(root, (await readdir(root))[0], "evidence.json"), "utf8"),
+      );
+      await assert.rejects(stat(evidence.restored.directory), { code: "ENOENT" });
+      assert.equal(evidence.restored.recordingIds.length, 1);
+      assert.ok(f.calls.slice(before).every((c) => ["GET", "HEAD"].includes(c.method)));
+    } finally {
+      f.close();
+      await removeEvidence(root);
+    }
+  }
+});
+test("scheduled restore rejects oversized or empty selection before audio retrieval", async () => {
+  for (const size of [0, 8 * 1024 * 1024 + 1]) {
+    const root = await mkdtemp(join(await realpath(tmpdir()), "restore-limit-test-"));
+    const objectId = "00000000-0000-4000-8000-000000000002";
+    try {
+      await assert.rejects(
+        runRecordingRestore({
+          runId: "00000000-0000-4000-8000-000000000010",
+          objectId,
+          binding: context,
+          evidenceRoot: root,
+          removeAudioAfterCheck: true,
+          ports: {
+            journal: { loadManifest: async () => ({ objects: [{ source: { objectId, size } }] }) },
+          },
+        }),
+        { code: "restore_check_selection_outside_limit" },
+      );
+      assert.deepEqual(await readdir(root), []);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  }
 });

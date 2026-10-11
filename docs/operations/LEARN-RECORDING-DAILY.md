@@ -1,6 +1,6 @@
 # Drummonds daily recording backup operations
 
-Status on 11 October 2026: implemented; 54 local backup checks pass. First real
+Status on 11 October 2026: implemented; 56 local backup checks pass. First real
 repeat run started at 11:22 UTC and failed during the final source comparison
 when its 20,000-request ceiling was reached. All 2,888 destination byte checks
 passed, but no fresh successful manifest was claimed. The earlier complete
@@ -70,6 +70,44 @@ create replacement permissions, rotate unrelated keys or export source keys.
 The Writer and Restore keys remain separate. Use the existing Restore runner for
 monthly isolated checks and keep temporary restored audio private and removed
 once verified.
+
+## Monthly restore check
+
+The approved monthly check uses the separate Restore identity and **AWS only**.
+Choose one non-empty, referenced object at most 8 MiB from the private inventory
+matching the latest verified daily manifest. A median-size eligible object is a
+repeatable sample. Do not use an in-progress or failed inventory as proof of a
+saved manifest. The restore command independently validates the remote manifest
+and exact selected object/version before accepting bytes.
+
+```sh
+node scripts/backup/run-drummonds-recording-restore.mjs --check-drummonds RUN_UUID OBJECT_UUID
+```
+
+Substitute the matching inventory run and selected object IDs locally; never put
+private inventory paths or recording references into reports. The check command
+rejects empty and oversized selections, restores one file, verifies its hash,
+decodes it and removes temporary audio automatically. Only private evidence and
+an aggregate report remain. Failed decoding still removes the temporary file but
+returns an unsuccessful command result; a failed decode must not refresh the
+last successful restore date. The existing `--restore-drummonds` mode deliberately
+retains its restored file for a separately requested recovery.
+
+At **11:42:41 UTC on 11 October**, this check recovered 131,685 bytes from the
+previously verified manifest, decoded 81 seconds, retained one recording link,
+and removed temporary audio. Separate filesystem inspection confirmed the audio
+directory was absent and evidence remained private (0600). The 56-test suite
+covers removal after both successful and failed decoding and rejects out-of-limit
+selections before retrieval. [Real check](evidence/learn-recording-monthly-check-2026-10-11.json).
+
+The next monthly rehearsal is due by **11 November 2026**. After recurrence is
+enabled, its daily follow-up must also inspect the latest successful private
+restore evidence and perform this check when due. Successful means decoded,
+hash-verified, record reference retained and temporary audio confirmed removed;
+use the recorded `checkedAt`, never a file modification time. A future date or
+missing/unreadable evidence needs review. Retain an aggregate dated result.
+This is one sampled file's decodability and record reference, not human listening,
+a full database restore or proof that every recording is intelligible.
 
 ## Recurrence and launch limit
 

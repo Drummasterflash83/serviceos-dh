@@ -344,7 +344,12 @@ succeeded after that failure; no worker was invoked and no source record changed
   Restricted Writer/Restore IAM access was explicitly approved and its stack
   completed at 08:35:18 UTC. Whole-inventory verification and one manifest-selected decoded audio restore
   now pass; scheduling, monitoring and isolated database recovery remain open.
-  A repeat-run command and local health report now pass 54 backup checks. Existing
+  A repeat-run command, local health report and monthly cleanup mode now pass 56
+  backup checks. A real check at 11:42 UTC restored and decoded an 81-second
+  recording through the separate Restore key, retained its record link and
+  automatically removed temporary audio; separate inspection confirmed removal.
+  Monthly recurrence is not yet active; the next check is due by 11 November.
+  [Monthly check evidence](evidence/learn-recording-monthly-check-2026-10-11.json). Existing
   audio is reused; every retained version is byte-verified again before a new
   immutable inventory manifest. The first real repeat run started at 11:22 UTC
   and reached its 20,000-request ceiling during the final source comparison. All
