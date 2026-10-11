@@ -54,9 +54,9 @@ access approval; prove a signed-in customer/card journey; then close Phone,
 voicemail, Slack, scoring and operational acceptance. Microsoft stays in scope
 as a reusable connector; no Microsoft mailbox has been identified for Drummonds.
 
-### Gmail ongoing state changes — local candidate, 11 October
+### Gmail ongoing state changes — TEST 071, 11 October, 20:50 UTC
 
-The next capture candidate handles Gmail label additions/removals and provider
+The TEST capture worker handles Gmail label additions/removals and provider
 absence, as well as new messages. New continuation v4 generations reconcile the
 current mailbox and then refetch touched messages; in-flight v2/v3 tokens retain
 their original query. Prior source versions are archived privately before updates.
@@ -68,11 +68,25 @@ cross-mailbox source collisions stop for review.
 worker types; full hosted TEST-schema rollback rehearsal including a draft-to-sent
 change through source publication to a customer card. All 121 preservation datasets,
 schema and existing authority were restored. No actual provider calls occurred.
-**Not deployed:** hosted TEST remains release 070/worker v16. Roll out the compatible
-worker before enabling v4 in the schema. Include the new private source-version
-archive in release preservation/recovery inventories. Operator availability copy,
-real capture acceptance and unavailable legacy-message reconciliation remain open.
-[Candidate evidence](evidence/learn-email-mailbox-changes-2026-10-11.json).
+**Now installed in TEST:** release **071**, worker **v17**, card refresh v2 and
+Workspace discovery v3. The compatible worker was installed before schema v4
+activation. All 92 emitted runtime modules matched reviewed source and all 21
+reader/store tests passed against the downloaded runtime. Installation preserved
+all 123 pre-existing datasets; the new private source archive brings the inventory
+to 124. No existing provider connection was activated.
+
+A bounded hosted HTTP check passed all 12 storage/protocol calls: unsigned and
+foreign-context denial, retained draft source history, repeated absence
+idempotency, restoration by newer sent content, stale-absence rejection, durable
+cursor and atomic job completion. All 124 pre-existing datasets and the schema
+were preserved. Its synthetic tenant is archived, account disabled and jobs
+retired; no Auth users, grants or provider calls were created.
+
+**Still open:** real Gmail/Edge capture acceptance, signed-in customer review,
+operator availability presentation and unavailable legacy-message reconciliation.
+The archive is included in release preservation and database recovery procedures;
+actual database restore remains blocked on recovery credentials.
+[Deployment and acceptance evidence](evidence/learn-email-mailbox-changes-2026-10-11.json).
 
 ### Credential discovery and phone portal — 11 October
 
@@ -94,7 +108,7 @@ It resolves to READY deployment `dpl_7xoN7dcukRyTgTnN6tttsjFD1pyw`, built from
 Git SHA `c03a230b48e70a06d59ddbd456f6be8e50b5d596`. The immutable preview is
 `serviceos-learn-test-1ax7l1586-allkin.vercel.app`. Both are Vercel protected; their
 home, login and LEARN routes redirect to Vercel authentication. The preview-only
-backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 070/worker v16/card
+backend remains TEST `saatxzwxvdvqevbnskxy`, paired with release 071/worker v17/card
 refresh v2. The frontend includes the draft advice and bounded-evidence explanation.
 
 TEST Auth uses the stable exact `/login?reset=1` recovery target, preserving the

@@ -59,7 +59,7 @@ snapshot freshness, projection/identity review, queued processing messages, draf
 advice and bounded card-evidence explanation. Compatible dependency-lock updates
 passed TypeScript/build; production-dependency audit is clear, with nine development
 tool findings retained for review.
-The backend now has release **070**, worker **v16**, card refresh **v2**, and Workspace discovery **v3**.
+The backend now has release **071**, worker **v17**, card refresh **v2**, and Workspace discovery **v3**.
 Release 067 added directory-verified alias identities; 068 adds mailbox-wide recent
 Gmail capture with a mandatory reconciliation when upgrading old label-limited
 cursors. Release 069 preserves drafts while excluding them from communication
@@ -76,6 +76,18 @@ real alias bindings or activate capture. See the
 [draft eligibility evidence](operations/evidence/learn-email-draft-eligibility-2026-10-11.json), the
 [mailbox coverage evidence](operations/evidence/learn-email-mailbox-coverage-test-2026-10-11.json)
 and [identity evidence](operations/evidence/learn-workspace-profile-identity-test-2026-10-11.json).
+Release 071 adds Gmail label/deletion observations and private source history.
+Worker v17 was deployed first, then the pinned schema package. Downloaded runtime
+comparison verified 92 emitted modules and 21 reader/store tests. The hosted
+synthetic storage API check passed, preserving all 124 pre-existing datasets;
+no users, grants or actual provider requests were created. The archived fixture
+retains verification evidence. This does not establish real Gmail capture or
+signed-in acceptance. See [mailbox change evidence](operations/evidence/learn-email-mailbox-changes-2026-10-11.json).
+Keep `learn_email_source_versions` and its rows when rolling back application
+code; do not drop source history as a rollback shortcut. Older workers must not
+process v4 checkpoints: pause affected capture and use a forward compatibility
+repair before resuming. Production remains unchanged.
+
 The exact TEST project, Git SHA, preview-only backend binding and Vercel protection
 were verified. Homepage, login and LEARN routes remain protected. Browser approval
 for this new origin and positive signed-in acceptance are pending.

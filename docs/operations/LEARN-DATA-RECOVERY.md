@@ -20,6 +20,29 @@ audio removal; the next monthly check is due by 11 November.
 and [operating procedure](LEARN-RECORDING-DAILY.md). Earlier milestones below retain
 their historical scope; this section records the latest recurrence state.
 
+## Email source history — TEST release 071, 11 October, 20:50 UTC
+
+`public.learn_email_source_versions` retains the complete previous email row
+before source changes. It is private communication content: include it with the
+database backup and isolated restore, never with public evidence or in GitHub.
+This table is separate from recording audio and is not protected by the S3 audio
+copy. The TEST release inventory now covers 124 datasets, including this archive;
+installation preserved all 123 pre-existing datasets and hosted HTTP acceptance
+preserved all 124. Production does not yet have this migration.
+
+Database recovery acceptance must restore source versions alongside tenants,
+email accounts, messages and their relationships, then compare source IDs, counts
+and content fingerprints within the isolated environment. Confirm archive RLS,
+ACLs and the source-update trigger survive restoration. Do not expose restored
+message bodies in verification output. Preserve the archive on application
+rollback; never remove retained source versions to downgrade the worker.
+
+This is a recovery requirement and verified preservation inventory, **not an
+actual database restore claim**. The real database restore remains open pending
+secure recovery credentials. The hosted synthetic check proves two retained
+versions through draft, unavailable and sent states only.
+[Source-history evidence](evidence/learn-email-mailbox-changes-2026-10-11.json).
+
 ## Approved scope and account ownership — 11 October 2026
 
 Chris approved the backup setup and initial recording copy, then clarified that
