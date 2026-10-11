@@ -24,7 +24,8 @@ def denied(expression,code,role='service_role'):
 def opened(kind='folders',folder='',initial=None,job=10):
  init=initial or fixtures['folders'][0]['before']
  return value(f'learn_microsoft_journal_open({q(uid(1))},{q(uid(2))},{q(uid(3))},{q(uid(4))},{q(kind)},{q(folder)},{j(init)},{q(uid(job))},\'worker\',1)')
-def commit(stream,fixture,request=20,revision=0,job=10,worker='worker',claim=1,tenant=1):
+def commit(stream,fixture,request=20,revision=0,job=None,worker='worker',claim=1,tenant=1):
+ if job is None: job=10 if revision==0 else 12
  return f'learn_microsoft_journal_commit({q(uid(tenant))},{q(stream)},{q(uid(request))},{revision},{j(fixture["before"])},{j(fixture["page"])},{j(fixture["after"])},{q(uid(job))},{q(worker)},{claim})'
 try:
  fixtures=json.loads(subprocess.run(['node','scripts/verify/learn-microsoft-journal-fixtures.mjs'],cwd=ROOT,text=True,capture_output=True,check=True).stdout)
@@ -46,8 +47,12 @@ try:
  assert sql("select to_regclass('learn_microsoft_source_pages') is null and to_regclass('learn_microsoft_capture_streams') is null and to_regclass('learn_microsoft_mailbox_bindings') is null and to_regprocedure('learn_microsoft_journal_immutable()') is null;").stdout.strip()=='t' 
  checks.append('Migration rollback removes all new journal tables')
  sql(migration)
+ job_migration=(ROOT/'supabase/migrations/20261101181000_learn_microsoft_job_receipts.sql').read_text()
+ sql(job_migration.removesuffix('commit;\n')+'rollback;\n')
+ assert sql("select to_regclass('learn_microsoft_source_page_job_unique') is null and to_regprocedure('learn_microsoft_journal_job(uuid,uuid,text,integer)') is null;").stdout.strip()=='t'
+ sql(job_migration)
  sql(f"insert into tenants values({q(uid(1))},'active');insert into email_accounts values({q(uid(2))},{q(uid(1))},'microsoft_365','active','ok');insert into learn_microsoft_mailbox_bindings(id,tenant_id,email_account_id,microsoft_tenant_id,mailbox_id,enabled) values({q(uid(4))},{q(uid(1))},{q(uid(2))},{q(uid(5))},{q(uid(3))},true);")
- for number,kind,folder in [(10,'folders',''),(11,'messages','Folder1'),(12,'folders','')]:
+ for number,kind,folder in [(10,'folders',''),(11,'messages','Folder1'),(12,'folders',''),(13,'folders','')]:
   payload={'email_account_id':uid(2),'mailbox_id':uid(3),'binding_id':uid(4),'kind':kind,'folder_id':folder}
   job_type='email.microsoft_discovery' if kind=='folders' else 'email.microsoft_sync'
   sql(f"insert into platform_jobs values({q(uid(number))},{q(uid(1))},'running','worker',1,clock_timestamp()+interval '10 minutes','microsoft-365','communications.email',{q(job_type)},{j(payload)});")
@@ -66,6 +71,15 @@ try:
  assert opened()['checkpoint']==fixtures['folders'][0]['after']
  assert opened()['revision']=='1'
  checks.append('Actual reader page and checkpoint commit together; reopen and lost-response retry retain exact receipt')
+ job_receipt=f"learn_microsoft_journal_job({q(uid(1))},{q(uid(10))},'worker',1)"
+ recovered=value(job_receipt)
+ assert recovered['receipt']['requestId']==uid(20) and recovered['receipt']['observationsStored']==1
+ for role in ['anon','authenticated']: denied(job_receipt,'permission denied',role)
+ denied(job_receipt.replace("'worker'","'stale'"),'learn_microsoft_lease_invalid')
+ duplicate_job=commit(sid,fixtures['folders'][1],request=25,revision=1,job=10)
+ denied(duplicate_job,'learn_microsoft_source_page_job_unique')
+ assert opened()['revision']=='1'
+ checks.append('Per-job receipt recovers saved checkpoint; unique job fence prevents a second page on retry')
  changed=json.loads(json.dumps(fixtures['folders'][0]));changed['page']['folders'][0]['raw']['displayName']='Changed identity'
  denied(commit(sid,changed),'learn_microsoft_request_conflict')
  denied(commit(sid,fixtures['folders'][0],request=21),'learn_microsoft_checkpoint_changed')
@@ -98,19 +112,19 @@ try:
  sql('drop trigger synthetic_failure on learn_microsoft_capture_streams;drop function fail_checkpoint();')
  checks.append('Invalid scope/continuation rejected; checkpoint failure rolls back source-page insertion')
  # Let a valid lease expire while the checkpoint update holds its transaction.
- sql(f"update platform_jobs set lease_expires_at=clock_timestamp()+interval '1 second' where id={q(uid(10))};create function slow_checkpoint() returns trigger language plpgsql as $$begin perform pg_sleep(1.2);return new;end $$;create trigger synthetic_slow before update on learn_microsoft_capture_streams for each row execute function slow_checkpoint();")
+ sql(f"update platform_jobs set lease_expires_at=clock_timestamp()+interval '1 second' where id={q(uid(12))};create function slow_checkpoint() returns trigger language plpgsql as $$begin perform pg_sleep(1.2);return new;end $$;create trigger synthetic_slow before update on learn_microsoft_capture_streams for each row execute function slow_checkpoint();")
  denied(commit(sid,fixtures['folders'][1],request=21,revision=1),'learn_microsoft_lease_invalid')
  assert sql(f"select count(*) from learn_microsoft_source_pages where id={q(uid(21))};").stdout.strip()=='0'
  sql("drop trigger synthetic_slow on learn_microsoft_capture_streams;drop function slow_checkpoint();update platform_jobs set lease_expires_at=clock_timestamp()+interval '10 minutes';")
  checks.append('Lease expiry during transaction rolls back both page and checkpoint')
  # Competing queue jobs request different commits from the same prior revision.
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-  first_race=pool.submit(sql,"begin;set application_name='microsoft-journal-first';set role service_role;select "+commit(sid,fixtures['folders'][1],request=21,revision=1,job=10)+";select pg_sleep(2);commit;",False)
+  first_race=pool.submit(sql,"begin;set application_name='microsoft-journal-first';set role service_role;select "+commit(sid,fixtures['folders'][1],request=21,revision=1,job=12)+";select pg_sleep(2);commit;",False)
   for _ in range(100):
    if sql("select count(*) from pg_stat_activity where application_name='microsoft-journal-first' and wait_event='PgSleep';").stdout.strip()=='1':break
    time.sleep(.01)
   else:raise RuntimeError('First writer did not hold its checkpoint lock')
-  second_race=pool.submit(sql,"set application_name='microsoft-journal-second';set role service_role;select "+commit(sid,fixtures['folders'][1],request=22,revision=1,job=12)+";",False)
+  second_race=pool.submit(sql,"set application_name='microsoft-journal-second';set role service_role;select "+commit(sid,fixtures['folders'][1],request=22,revision=1,job=13)+";",False)
   for _ in range(100):
    if sql("select count(*) from pg_stat_activity where application_name='microsoft-journal-second' and wait_event_type='Lock';").stdout.strip()=='1':break
    time.sleep(.01)
@@ -131,6 +145,7 @@ try:
  for statement in ["update learn_microsoft_source_pages set source_page='{}'",'delete from learn_microsoft_source_pages','truncate learn_microsoft_source_pages',"update learn_microsoft_mailbox_bindings set mailbox_id=gen_random_uuid()"]:
   assert sql(statement+';',False).returncode!=0
  checks.append('Concurrent exact message submission shares receipt; sparse/removal/raw events and binding identity remain immutable')
- print(json.dumps({'state':'passed','checks':checks,'limitations':['Network-isolated PostgreSQL 15 with synthetic account/job dependencies; actual migration and actual reader-generated pages.','No hosted/full-schema/Auth/provider acceptance; no worker, credential provisioning, projection or schedule activation.']},indent=2))
+ subprocess.run(['node','scripts/verify/learn-microsoft-capture-engine-cases.mjs',NAME],cwd=ROOT,check=True)
+ print(json.dumps({'state':'passed','checks':checks,'limitations':['Network-isolated PostgreSQL 15 with synthetic account/job dependencies; actual migration and actual reader-generated pages.','No hosted/full-schema/Auth/provider acceptance; live worker registration, credential provisioning, projection and schedule activation remain pending.']},indent=2))
 finally:
  subprocess.run([DOCKER,'rm','-f',NAME],capture_output=True)

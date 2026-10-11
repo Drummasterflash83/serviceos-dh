@@ -1,16 +1,19 @@
 # Existing TEST environment: verified release gaps
 
-## Microsoft 365 mail — local readers, discovery and source journal
+## Microsoft 365 mail — local page engine and recovery verified
 
-Graph reading and resumable folder traversal pass 38 synthetic tests and strict
-TypeScript checks. The new private source journal also passes isolated PostgreSQL
-checks using actual reader-generated pages: atomic page/checkpoint storage, exact
-retry, role/scope denial, pause/revocation, mid-transaction lease expiry, rollback,
-immutable raw evidence and observed two-session lock contention. No real provider
-requests or hosted changes occurred. The migration has not been installed in TEST.
-Microsoft 365 remains an unimplemented connector in the controller: credential and
-binding management, worker/RPC integration, shared evidence materialization,
-scheduling, full-schema/hosted validation and real mailbox acceptance remain open.
+The new page engine joins Graph readers to the source journal. Forty-eight unit
+checks and strict TypeScript pass. Actual engine-to-PostgreSQL integration verifies
+lost-reply recovery by a replacement worker without provider/token access, disabled
+binding denial, folder resumption, message rounds, raw evidence retention and
+cross-job cursor-cycle rejection. Database checks retain atomicity, lease/role/scope
+boundaries, rollback and observed lock contention. A new unique job receipt prevents
+one queue job recording a second page after an uncertain reply.
+Neither Microsoft migration is installed in TEST, and no real provider requests or
+production changes occurred. Credentials, atomic queue completion/continuations,
+worker registration, shared evidence projection, full-schema/hosted validation and
+real mailbox acceptance remain open. The controller still marks the adapter as
+unimplemented.
 See [Microsoft mail implementation and remaining work](LEARN-MICROSOFT-MAIL.md).
 
 ## Numerical correction recovery — TEST database release 053 installed

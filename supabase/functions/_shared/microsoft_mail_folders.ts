@@ -211,7 +211,10 @@ export function beginMicrosoftFolderDiscovery(
     folders: [],
   };
 }
-function validateDiscovery(s: MicrosoftMailboxScope, state: MicrosoftFolderDiscovery): void {
+export function validateMicrosoftFolderDiscovery(
+  s: MicrosoftMailboxScope,
+  state: MicrosoftFolderDiscovery,
+): void {
   scope(s);
   if (
     !object(state) ||
@@ -306,7 +309,7 @@ export async function stepMicrosoftFolderDiscovery(
   traversalExhausted: boolean;
   persistence: "not_attempted";
 }> {
-  validateDiscovery(s, checkpoint);
+  validateMicrosoftFolderDiscovery(s, checkpoint);
   const state = structuredClone(checkpoint);
   if (!state.pending.length)
     return {
