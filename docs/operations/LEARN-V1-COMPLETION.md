@@ -233,13 +233,17 @@ succeeded after that failure; no worker was invoked and no source record changed
   rates, an illustrative US$1.89/month operating estimate and a US$5 budget alert
   (not a cap), plus scoped access, daily copies, 30-day governance protection and
   isolated restore acceptance. Chris approved setup/copy and changed account ownership to OpenFolk. The OpenFolk AWS account is now verified in Arc, with London selected. Owner
-  MFA is not yet assigned, and the free-plan expiry requires the requested
-  paid-plan transition. Scoped runtime access remains to be configured.
+  MFA is now verified enabled in the in-app browser. Chris intends to move to the paid plan later; this
+  is not an immediate setup blocker unless AWS reports a service restriction,
+  but must happen before free access ends. Scoped runtime access remains open. The CloudFormation template upload is
+  currently blocked by browser/file-chooser timeouts; no stack was submitted.
   Local CloudFormation foundation and streamed copy/restore/inventory core now
   pass schema lint and eleven synthetic tests. The official AWS SDK destination
   and encrypted journal add eight signed-wire synthetic tests (19 combined).
-  Actual AWS acceptance, the source adapter, scheduling, monitoring, byte copies
-  and database/audio restore acceptance remain open.
+  The recursive Supabase source adapter now joins the synthetic copy/manifest/
+  restore test path (28 tests combined), and one real object passed metadata-only
+  verification. Actual full inventory, AWS acceptance, scheduling, monitoring,
+  byte copies and database/audio restore acceptance remain open.
   No paid resource or recording transfer occurred.
 
 ## Release and completion gates

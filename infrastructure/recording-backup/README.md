@@ -1,8 +1,8 @@
 # OpenFolk recording backup foundation
 
 Local implementation for the approved Drummonds recording backup. Nothing in
-this directory creates resources automatically. The OpenFolk AWS account has been observed in the console; owner MFA and
-the paid-plan transition remain pending. No real recording has been copied or restored.
+this directory creates resources automatically. The OpenFolk AWS account has been observed in the console; owner MFA is now
+verified enabled. Chris plans the paid-plan transition later, before free access ends. No real recording has been copied or restored.
 
 ## Infrastructure
 
@@ -56,7 +56,7 @@ AWS references:
 
 `scripts/backup/recording-backup-core.mjs` implements the byte-copy protocol through
 injected source, S3 and durable-journal ports. The S3 destination and durable journal now have an official AWS SDK implementation
-(`recording-backup-s3.mjs`); the source port remains unimplemented. Live service
+(`recording-backup-s3.mjs`); the source port is implemented in `recording-backup-source.mjs`. Live service
 acceptance has not occurred. All ports must enforce the approved account/tenant/project,
 TLS, bounded requests/timeouts and private create-only storage; they cannot be
 populated with browser-supplied URLs, tokens or arbitrary source paths.
@@ -103,13 +103,13 @@ never audio, signed URLs, paths, credentials or customer identities.
 
 ## Acceptance still required
 
-1. OpenFolk AWS signup is observed complete. Owner completes MFA and the paid-plan
-   transition: the console currently reports free access ending 11 April 2027 or
+1. OpenFolk AWS signup is observed complete. Owner MFA is verified enabled; plan the paid-plan
+   transition before free access ends: the console currently reports free access ending 11 April 2027 or
    when credits run out. Neither step was performed by the agent.
 2. Verify account/region, create the reviewed foundation and inspect actual state;
    attach narrowly scoped writer/restore identities through the authorised flow.
-3. Verify the implemented S3/durable-journal adapter against real AWS, then complete
-   the reviewed Drummonds-only source inventory/read mechanism. Do not export a production-wide service key
+3. Verify the implemented S3/durable-journal adapter against real AWS, then verify
+   the complete Drummonds-only source inventory and actual byte reads. Do not export a production-wide service key
    into AWS. Keep source permission changes within the production release gate.
 4. Implement daily resumable scheduling, bounded batches, monitoring, budget
    delivery and monthly restore checks. Source growth and initial metadata listings
@@ -175,3 +175,49 @@ References: [HEAD permissions](https://docs.aws.amazon.com/AmazonS3/latest/API/A
 [bounded listing](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html),
 [versioned reads](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html),
 [official SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-s3/Class/S3Client).
+
+## Supabase source and reconciliation
+
+`recording-backup-source.mjs` uses the fixed project HTTPS origin, the private
+`phone-recordings` bucket and the exact tenant prefix. It accepts an existing
+authorised credentials provider only; it does not create access. Run it inside
+the trusted ServiceOS/server or approved local environment. Never put a broad
+source service credential into the AWS account, backup objects or journals.
+Any new access grant or scheduled production deployment requires its applicable
+approval; a bounded metadata-only probe reuses existing access without changing it.
+
+Inventory begins at the tenant root and recursively lists every folder, including
+folders with no recording-row references. It continues short pages until an empty
+page, rejects duplicate IDs/keys/pages, and compares two full listings and two
+keyset recording-reference passes. Each object must also agree with the Storage
+Info API's ID, key, size, ETag and update time. The source revision includes the
+provider version. Object limits are 10,000 entries and 256 MiB per file; reference
+and folder limits are 10,000 each and depth 32. Exceeding a bound fails explicitly.
+
+Each read rechecks revision and row links, requests the source with If-Match, and
+validates response ETag, full content length and streamed byte count. Redirects,
+partial content, encoded bodies, changed data, unsupported metadata, errors and
+exhausted request budgets cannot count as complete capture. Identity/private-bucket
+checks cache for at most a minute. Metadata responses are bounded at 8 MiB/30 seconds,
+and byte requests at 120 seconds. Error output never includes paths or credentials.
+
+The private reconciliation result preserves missing object references and counts
+null pointers and unreferenced objects. Missing audio remains missing; zero-byte
+objects remain zero bytes. Persist this report with the private inventory in the
+runner before transfer; this persistence and runner are still to be completed.
+Matching listings are a non-atomic observation, not a database recovery point.
+
+Nine source tests include the entire source adapter → official AWS SDK → encrypted
+receipts → complete manifest → isolated restore path, using synthetic transports.
+The combined suite passes 28 tests. The read-only probe command below additionally
+verified one real object's metadata against database and Storage API: three
+management reads and eight source requests, no audio download or AWS request.
+That proves this metadata contract for one sample, not complete live coverage.
+
+```sh
+node scripts/backup/verify-recording-source.mjs --drummonds-metadata-only
+```
+
+Source references: [folder listing semantics](https://supabase.com/docs/reference/javascript/file-buckets-list),
+[authenticated downloads](https://supabase.com/docs/guides/storage/serving/downloads),
+[Info response contract](https://github.com/supabase/storage/blob/master/src/storage/renderer/info.ts).

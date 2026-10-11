@@ -1,0 +1,60 @@
+{
+  "version": "learn-recording-backup-source-local/1",
+  "observedAt": "2026-10-11T07:45:14.635343+00:00",
+  "sourceSha256": {
+    "scripts/backup/recording-backup-source.mjs": "575d9159944386dab044190c36ad544581d5dd28ec10e94d9adbef55b66e808a",
+    "scripts/backup/recording-backup-source.test.mjs": "46c75ae1c064f80d2f75de5226dbe9e4d3b0ee9a9bdfa3cf68bfe3a522dd1688",
+    "scripts/backup/verify-recording-source.mjs": "03d7e2087ed4106419f4e7fdb59ba885d6f236eae36970dd0f576136b57c642a",
+    "scripts/backup/recording-backup-s3.test.mjs": "107004141afac6e7e9e6c802672b7a09113f5f99a828b5c703819a0b556c1c30",
+    "scripts/backup/test-support/s3-fixture.mjs": "a3bc3f052703056780ce874a9bbb9377805ea3b4cd31b8b269300d0006e6d566"
+  },
+  "validation": {
+    "command": "npm test --prefix scripts/backup",
+    "passed": 28,
+    "failed": 0,
+    "sourceTests": 9,
+    "endToEnd": "Actual Supabase source adapter and official AWS SDK with synthetic HTTP transports: full recursive inventory, recording copy, receipt, manifest and isolated byte-exact restore"
+  },
+  "realMetadataProbe": {
+    "version": "recording-source-metadata-probe/1",
+    "observedAt": "2026-10-11T07:43:16.611Z",
+    "projectRef": "tgbnakbxwcqjeimygroz",
+    "tenantId": "00000000-0000-0000-0000-000000000001",
+    "outcome": "one_real_object_metadata_verified",
+    "managementRequests": 3,
+    "sourceRequests": 8,
+    "storagePrivate": true,
+    "objectIdAndPathMatch": true,
+    "versionPresent": true,
+    "etagMatches": true,
+    "updatedAtMatches": true,
+    "sizeMatches": true,
+    "recordingReferences": 1,
+    "repeatedMetadataMatches": true,
+    "adapterSha256": "575d9159944386dab044190c36ad544581d5dd28ec10e94d9adbef55b66e808a",
+    "audioBytesDownloaded": 0,
+    "sourceWrites": 0,
+    "awsRequests": 0,
+    "limitations": [
+      "One-object metadata probe; not complete source coverage or a backup.",
+      "No audio playback, real S3 transfer, restored database or scheduled operation verified."
+    ]
+  },
+  "verifiedLocally": [
+    "Unreferenced folders, root files and zero-byte files retained; all row links preserved",
+    "Short pages continued until empty; duplicate or changed listings rejected",
+    "Two complete recursive listings/reference passes plus per-file Info metadata agreement",
+    "Conditional source read with ETag, full length and streamed byte count checks",
+    "Foreign tenant/key, public source bucket, source mutation, truncation and request-budget exhaustion rejected"
+  ],
+  "productionChanged": false,
+  "realAudioBytesDownloaded": 0,
+  "cloudResourcesCreated": false,
+  "remaining": [
+    "Complete real inventory and reconciliation",
+    "Private inventory/report persistence and bounded resumable runner",
+    "AWS resources, scoped access and actual policy verification",
+    "Real backup copies and isolated playable audio/database restore",
+    "Daily scheduling, monthly checks and operator monitoring"
+  ]
+}

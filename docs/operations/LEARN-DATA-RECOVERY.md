@@ -32,12 +32,16 @@ OpenFolk, so its R2 alternative was checked against current official documentati
 
 No additional approval of the same AWS recording-copy scope is needed. Chris has now completed OpenFolk AWS account signup. The account name and ID
 were verified in Arc and the console was switched from Stockholm to London.
-The security-credentials page reports **MFA (0)** and no root access keys. The
+The security-credentials page now confirms **MFA (1)** and no root access keys. The
 console reports a **Free plan ending 11 April 2027 or when credits run out**.
-Owner MFA and the paid-plan transition are requested; neither has been performed
-by the agent. Scoped backup/restore access and the reviewed source-read mechanism
+Chris completed owner MFA and signed in through the in-app browser. Chris will move to the paid plan later; the Free
+plan is not an immediate setup blocker unless an actual service restriction is
+encountered. The transition must happen before free access ends for dependable
+ongoing backups. The agent did not change owner authentication or billing. Scoped backup/restore access and the reviewed source-read mechanism
 remain to be set up. No backup bucket, identity, recording copy or verified
-restore has been created. Account details remain in private runtime evidence.
+restore has been created. The London CloudFormation wizard is open, but template
+file-chooser attempts timed out before any template could be selected or stack
+creation submitted; browser control then timed out. No access was granted. Account details remain in private runtime evidence.
 Cloudflare infrastructure and OpenFolk hosting have not been changed.
 
 ## Local backup implementation — 11 October 2026
@@ -56,10 +60,18 @@ recovery retains its original scope/time; it does not claim current source cover
 The official AWS SDK destination and encrypted S3 journal are now implemented;
 eight additional synthetic HTTP tests exercise real SDK signing, serialization
 and response parsing across copy, receipt, manifest and isolated restore (19
-combined tests pass). Actual AWS acceptance, the scoped source adapter, daily
-scheduling, operator monitoring, real copies, playback and database restore
-remain unfinished. [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). The scoped
-source-read mechanism remains behind its applicable production approval boundary.
+combined tests pass). The scoped Supabase source adapter now recursively inventories the tenant
+root (including unreferenced folders), compares two complete listings and recording
+reference passes, and checks object revision, ETag, size and links around reads.
+The full source → AWS SDK → manifest → isolated restore path passes synthetic
+tests (28 combined). One real Drummonds object passed a bounded metadata-only
+probe against database and Storage API, with no audio download.
+Actual full inventory, AWS acceptance, daily scheduling, operator monitoring,
+real copies, playback and database restore remain unfinished.
+[Source evidence](evidence/learn-recording-backup-source-local-2026-10-11.json). [SDK evidence](evidence/learn-recording-backup-s3-local-2026-10-11.json). Initial source reads can reuse existing authorised credentials in memory inside
+the trusted local/ServiceOS environment; they must never be exported to AWS. Any
+new source access or production runtime deployment remains behind its applicable
+approval boundary.
 [Local evidence](evidence/learn-recording-backup-local-2026-10-11.json).
 
 ## Verified observation — 11 October 2026
