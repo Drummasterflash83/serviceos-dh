@@ -1,6 +1,58 @@
 # Birchills voicemail: discovery before capture
 
 
+## Retained-email discovery installed in TEST — 12 October, 00:08 BST
+
+Release 075 adds service-only scan state, candidate tracking, immutable per-request
+page receipts and aggregate status. Installation and rollback rehearsal each preserve
+all 136 prior datasets, including the retired synthetic source/audio/message from
+release 074. The three new tables are empty; the next full preservation baseline
+must include **139 datasets**. No runtime endpoint, route, schedule, human access,
+credential or production state changed.
+
+`voicemail_discover_page(tenant, route, request)` requires an enabled, verified
+Birchills route, its active Workspace primary account, and both Email/Phone capture
+gates. It scans at most 100 retained Gmail rows per call. Known sender/subject hints
+select potential notifications only; the existing raw-provider, DKIM, recipient,
+mailbox, audio and private publication checks still decide admission. Missing legacy
+account bindings, unknown receipt times, unavailable originals and ambiguous routes
+remain review cases. Drafts are excluded. A source already assigned to a different
+route cannot be silently reassigned. Terminal jobs are retained rather than repeatedly
+recreated by discovery.
+
+Each page atomically saves candidates, queue jobs, progress and a replayable receipt.
+Completed passes become eligible to restart after 15 minutes, so subsequent calls
+can find late inserts and corrected labels/account bindings. **This interval is a
+scan-state rule, not an installed schedule.** Multi-page passes are not snapshots
+of Gmail; `coverage_complete` is always false. Discovery currently recognizes the
+observed “New message in mailbox NNN from …” Birchills template. Other templates and
+provider history coverage remain unproven. `voicemail_discovery_status` is an internal
+aggregate for the controller; the controller UI is not wired to it yet. Candidate
+counts represent retained observations, with pass timestamps and separate job states.
+
+Local acceptance runs actual PostgreSQL migrations and the complete discovered-source
+journey through the queue, Workspace bridge, real signature verification and MP3 decode,
+then private publication. Gmail/DNS/Storage transports are controlled fixtures, not real
+provider or hosted Storage acceptance. Lost publication replies recover through the
+queue receipt without another provider read. The raw bridge now rejects Gmail drafts
+and malformed label responses; this runtime change has not been redeployed.
+
+- Release SHA-256: `cfd833f9f962322a73d3d0ec516bc5e58d7d4e75d649b9c505a59f8d7c8ed868`.
+- Installed discovery-inclusive catalog: `911f61a99c28149bd78305496009a69c`.
+- Discovery metadata fingerprint: `ddaa5f4f12a0cc0794d9c3bd79a9ea18`.
+- Verification: `python3 scripts/verify/learn-voicemail-intake-local.py --discovery`;
+  27 Node regressions and strict worker types also pass.
+- [Sanitized evidence](evidence/learn-voicemail-discovery-2026-10-12.json).
+
+Next: bounded recurring dispatch with recoverable request identities, OpenFolk status
+and recovery wiring, positive hosted discovery, real mailbox authority/provider
+acceptance, private signed-in playback and independent source/audio recovery. The
+schema can remain unused on rollback; preserve candidate/receipt history once it has
+been populated. Do not drop discovery tables or replay old release tools against the
+new baseline. The previous runtime remains deployed and production remains unchanged.
+
+
+
 
 
 ## Hosted synthetic import completed — 11 October, 22:52 UTC

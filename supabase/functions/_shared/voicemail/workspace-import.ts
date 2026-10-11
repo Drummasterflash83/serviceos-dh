@@ -145,6 +145,16 @@ export async function importWorkspaceVoicemail(
           )
             throw new VoicemailProviderError("voicemail_route_unverified", false);
           const result = await get(`messages/${id}?format=raw`, token, 1500000);
+          // A retained signed notification can also be saved as an unsent draft.
+          // Provider labels determine eligibility; a valid signature alone does not.
+          if (
+            result?.labelIds !== undefined &&
+            (!Array.isArray(result.labelIds) ||
+              result.labelIds.some((label: unknown) => typeof label !== "string"))
+          )
+            throw new VoicemailProviderError("voicemail_provider_response_invalid", false);
+          if (result?.labelIds?.includes("DRAFT"))
+            throw new VoicemailProviderError("voicemail_source_ineligible", false);
           if (
             result?.id !== id ||
             result.internalDate !== request.internalDate ||

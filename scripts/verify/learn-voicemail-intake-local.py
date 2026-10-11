@@ -39,7 +39,7 @@ try:
  sql(migration.replace('\ncommit;','\nrollback;'))
  assert sql("select to_regclass('receptionist_voicemail_intakes') is null")=='t'
  sql(migration)
- if '--queue' in sys.argv:
+ if '--queue' in sys.argv or '--discovery' in sys.argv:
   sql("create function public.set_updated_at() returns trigger language plpgsql as $$begin new.updated_at=clock_timestamp();return new;end$$;")
   sql(file('supabase/migrations/20260708130000_platform_jobs.sql'))
   queue=file('supabase/migrations/20260710120000_platform_job_queue.sql')
@@ -121,6 +121,10 @@ try:
  assert sql('select count(*) from receptionist_voicemails')=='1'
  print('PASS: actual private intake DDL, rollback rehearsal, disabled routes, sender/time binding, permission denials, concurrent retry, distinct email evidence, conflicting replay, incomplete uploads, capture pause, atomic publication, historical owner snapshot, manager revocation, private storage, tenant isolation and retained history')
  subprocess.run(['node','scripts/verify/learn-voicemail-import-client-probe.mjs',name],cwd=root,check=True,timeout=60)
- if '--queue' in sys.argv:subprocess.run(['node','scripts/verify/learn-voicemail-queue-client-probe.mjs',name],cwd=root,check=True,timeout=90)
+ if '--queue' in sys.argv or '--discovery' in sys.argv:subprocess.run(['node','scripts/verify/learn-voicemail-queue-client-probe.mjs',name],cwd=root,check=True,timeout=90)
+ if '--discovery' in sys.argv:
+  from voicemail_discovery_probe import verify_discovery
+  verify_discovery(sql,denied,file)
+  subprocess.run(['node','scripts/verify/learn-voicemail-discovery-journey.mjs',name],cwd=root,check=True,timeout=60)
 finally:
  if created:subprocess.run([docker,'rm','-f',name],capture_output=True,timeout=30)

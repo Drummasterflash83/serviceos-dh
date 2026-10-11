@@ -1,0 +1,66 @@
+{
+  "observedAt": "2026-10-11T23:10:30.509557+00:00",
+  "scope": "local synthetic discovery-to-publication journey and hosted TEST empty discovery schema",
+  "hosted": {
+    "state": "installed_empty_discovery_schema_verified",
+    "observedAt": "2026-10-11T23:08:29.967Z",
+    "projectRef": "saatxzwxvdvqevbnskxy",
+    "packageSha256": "cfd833f9f962322a73d3d0ec516bc5e58d7d4e75d649b9c505a59f8d7c8ed868",
+    "expected": {
+      "marker": "voicemail-discovery-installed/1",
+      "fingerprint": "911f61a99c28149bd78305496009a69c",
+      "discovery_fingerprint": "ddaa5f4f12a0cc0794d9c3bd79a9ea18"
+    },
+    "afterFingerprint": "911f61a99c28149bd78305496009a69c",
+    "preservedDatasets": 136,
+    "usersCreated": 0,
+    "jobsCreated": 0,
+    "routesCreated": 0,
+    "providerRequests": 0,
+    "productionChanged": false,
+    "limitations": [
+      "Discovery DDL and denied/missing-route checks against full TEST schema; no positive hosted discovery, worker deployment, schedule or signed-in acceptance."
+    ]
+  },
+  "local": {
+    "state": "passed",
+    "nodeTests": 27,
+    "strictWorkerTypes": "passed",
+    "database": "offline PostgreSQL 15; actual intake, queue and discovery migrations",
+    "cases": [
+      "100-row bounded pages",
+      "concurrent same-request receipt replay",
+      "legacy mailbox binding requires review",
+      "drafts excluded and raw Gmail draft rejected",
+      "malformed labels rejected",
+      "unknown time, malformed source id and unavailable original require review",
+      "tenant/account/extension/time-window selection",
+      "capture and route pause before progress",
+      "corrected labels/bindings and late inserts recovered on later pass",
+      "settled/dead-letter jobs not automatically replaced",
+      "overlapping routes and previously routed source require review",
+      "atomic rollback of jobs, scan progress and receipt",
+      "unentitled aggregate/table access denied",
+      "discovered source through actual queue claim, Workspace bridge, signature and MP3 decode to private SQL publication",
+      "lost publication reply recovered and replay makes no provider request"
+    ],
+    "transports": "controlled Gmail, DNS and Storage; no real provider requests"
+  },
+  "sourceSha256": {
+    "supabase/migrations/20261101440000_learn_voicemail_discovery.sql": "422e0b85672320314d6ee6540a7022786ff5f593e9673126f53b097890676e8b",
+    "supabase/functions/_shared/voicemail/workspace-import.ts": "dd6e3b398c7e63592f49fc5bb21b04004ebbffacdf98579d36eb2386500a5ea4",
+    "scripts/verify/learn-voicemail-intake-local.py": "ffe9b41ac481dff44be90f1d66fef425ed6de4dc12238c16025a9df938f5fd92",
+    "scripts/verify/voicemail_discovery_probe.py": "148769b3fa77a73fd648ca42980a94acf65f32d510e6967c9d0427482e32c031",
+    "scripts/verify/learn-voicemail-discovery-journey.mjs": "6dc044ecc5b6b8953a1aed21a7a370bc3521718905bf3ec24beb44fbefea9b83",
+    "scripts/verify/voicemail-auth/workspace-import.test.mjs": "c99e4f8245a67d1de5b53a04d518c9324619d4554e30cb3cd2f86dec83ad94e4"
+  },
+  "limitations": [
+    "No positive hosted discovery dispatch or recurring schedule.",
+    "OpenFolk controller display/recovery wiring is unfinished.",
+    "Draft rejection is local runtime code only; hosted worker stays v18 and import endpoint v1.",
+    "No real routes, credentials, provider traffic, user grants or production changes.",
+    "A retained-email pass is not Gmail or voicemail history coverage; coverage_complete remains false.",
+    "Only the observed Birchills New message in mailbox template is selected; unknown templates are not proven covered.",
+    "Real historical mailbox authority, signed-in playback and independent voicemail source/audio backup acceptance remain outstanding."
+  ]
+}

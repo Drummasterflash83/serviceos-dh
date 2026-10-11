@@ -1,0 +1,13 @@
+{
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "cfd833f9f962322a73d3d0ec516bc5e58d7d4e75d649b9c505a59f8d7c8ed868",
+  "priorFingerprint": "ae32949d7a76097a899e92d36654293e",
+  "priorDiscoveryFingerprint": "6878766e1c8786d43127c5aaadeebdab",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101440000_learn_voicemail_discovery.sql",
+      "sha256": "422e0b85672320314d6ee6540a7022786ff5f593e9673126f53b097890676e8b"
+    }
+  ],
+  "preservedDatasets": 136
+}

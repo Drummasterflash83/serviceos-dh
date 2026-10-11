@@ -7,6 +7,21 @@ override a later release observation. No requirement is silently deferred.
 
 ## Current evidence and priority
 
+**11 October, 23:08 UTC (12 October, 00:08 BST) — retained voicemail discovery installed in TEST.**
+Release 075 passed a full-schema rollback rehearsal, then installed empty private
+scan/candidate/receipt tables and internal RPCs with all 136 prior datasets preserved.
+Local PostgreSQL checks cover bounded enumeration, lost replies, legacy-binding
+review, draft exclusion, late inserts, corrected metadata, route ambiguity and
+atomic enqueue/progress. A discovered synthetic email also completes the existing
+queue → Workspace bridge → actual signature/MP3 decode → private publication journey,
+including lost publication acknowledgement and provider-free replay. Twenty-seven
+Node regressions and strict worker types pass. **No hosted discovery dispatch,
+schedule or real capture was activated.** The new draft rejection is local runtime
+code; hosted worker remains v18. Next: scheduling/controller integration, positive
+hosted discovery, verified real routes, signed-in acceptance and recovery. Retained
+scan completion never claims provider coverage. [Evidence](evidence/learn-voicemail-discovery-2026-10-12.json).
+
+
 **22:52 UTC — synthetic voicemail queue import verified against hosted TEST.**
 The production queue adapter/coordinator and real signature/MP3 decoder ran locally
 against hosted TEST SQL and private Storage. One generated voicemail published with

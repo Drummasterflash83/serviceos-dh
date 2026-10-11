@@ -150,6 +150,28 @@ test("paused route prevents credentials; changed profile/route prevents raw down
     if (overrides.pauseAt === 1) assert.deepEqual(f.calls, ["voicemail_intake_route"]);
   }
 });
+test("drafts and malformed labels cannot publish; archived or unlabelled sources remain eligible", async () => {
+  for (const [labelIds, code] of [
+    [["DRAFT"], "voicemail_source_ineligible"],
+    [["INBOX", "DRAFT"], "voicemail_source_ineligible"],
+    [null, "voicemail_provider_response_invalid"],
+    ["DRAFT", "voicemail_provider_response_invalid"],
+    [[{}], "voicemail_provider_response_invalid"],
+  ]) {
+    const f = setup({ raw: { labelIds } });
+    await assert.rejects(
+      importWorkspaceVoicemail(f.db, input, f.deps),
+      (e) => e.code === code && e.retryable === false,
+    );
+    assert.equal(f.calls.includes("voicemail_intake_prepare"), false);
+    assert.equal(f.objects.size, 0);
+  }
+  for (const labelIds of [[], ["IMPORTANT"], ["TRASH"]]) {
+    const f = setup({ raw: { labelIds } });
+    assert.equal((await importWorkspaceVoicemail(f.db, input, f.deps)).state, "published");
+    assert.equal(f.objects.size, 2);
+  }
+});
 test("provider expiry, rate limiting, missing source and changed identity are explicit", async () => {
   for (const [status, code, retryable] of [
     [401, "voicemail_provider_access_denied", false],
