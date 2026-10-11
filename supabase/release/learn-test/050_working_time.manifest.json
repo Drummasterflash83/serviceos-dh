@@ -1,0 +1,33 @@
+{
+  "version": "learn-working-release-package/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sha256": "7c739f7100e93669b029974e8fff94bea7e3f1fbe3c730e1ab3032b9c5bd7d83",
+  "priorFingerprint": "6553cd24dc17cb3a61f808f7bb620b9b",
+  "sources": [
+    {
+      "path": "supabase/migrations/20261101100000_learn_work_calendars.sql",
+      "sha256": "01ecf776740369ff14f30a207678b65049b065b49596c87022e59038fe04ef81"
+    },
+    {
+      "path": "supabase/migrations/20261101110000_learn_work_delays.sql",
+      "sha256": "2317137b438c2b6d1f3003d9b235e4f29b150b7a8f98da59c4c427d91973bd91"
+    },
+    {
+      "path": "supabase/migrations/20261101120000_learn_working_time_calculation.sql",
+      "sha256": "bf89b1cfcc9a7b2c909212a1420b423d73ee6b1d544ce668f0f44a507044fd0f"
+    },
+    {
+      "path": "supabase/migrations/20261101130000_learn_working_time_collection.sql",
+      "sha256": "3ff14495fab91b5b7826b4e7a8bf4fc3113a03c368f002a76c445f7e72dcb984"
+    },
+    {
+      "path": "supabase/migrations/20261101140000_learn_working_collection_input_bounds.sql",
+      "sha256": "eef4047164686fa4a97d5f20e25abf1bd3cf4e68b8d6d0ae781fd759d90a31af"
+    }
+  ],
+  "assertion": {
+    "path": "scripts/verify/learn-working-release-hosted.assert.sql",
+    "sha256": "9b49fdc2f239f8ef19f1835a7d736485bc857311e30f49065917d4110144f69c"
+  },
+  "preservedDataSets": 94
+}

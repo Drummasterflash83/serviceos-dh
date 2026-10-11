@@ -1,8 +1,8 @@
-# Working-time collection — local candidate
+# Working-time collection — TEST backend 050
 
 11 October 2026. Connected locally to scorecard settings, resumable collection and
-retained-evidence review. **Not deployed. Hosted TEST remains release 049; production
-and real provider data are unchanged.** This is an additive continuation of the
+retained-evidence review. **Hosted TEST backend release 050 is installed; the paired
+frontend and signed-in hosted acceptance remain pending. Production is unchanged.** This is an additive continuation of the
 [working-time calculator](LEARN-WORKING-TIME.md), company calendar and delay reviews.
 
 ## Rules and meaning
@@ -127,3 +127,18 @@ acceptance. Real Drummonds company hours and scoring states require deliberate
 configuration. Employee shifts/leave remain outside the company-calendar calculation.
 This checkpoint does not finish provider imports, voicemail, Slack activation,
 operational rollout or production readiness for LEARN V1.
+
+## Hosted TEST release 050
+
+At 01:57 UTC on 11 October, the five-migration package was installed after an exact
+rollback rehearsal. Existing function authority and 94 retained datasets were
+verified unchanged. All seven new tables remain empty. Forty actual HTTP probes
+confirm anonymous/service-role denials for calendars, delay review, working-time
+collection and evidence tables. This is access-boundary verification, not signed-in
+owner or maximum-sized gateway acceptance. No identities, operator grants, provider
+requests or capture activation were created.
+
+The initial rehearsal timed out without changing retained state. Materializing the
+metadata catalog once resolved repeated evaluation in the release guard; the revised
+package has its own checksum and successful rehearsal/install/readback.
+[Release evidence](evidence/learn-working-time-test-2026-10-11.json).

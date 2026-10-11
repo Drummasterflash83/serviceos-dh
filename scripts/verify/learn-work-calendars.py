@@ -258,6 +258,7 @@ try:
         bounds_sql=(ROOT/'supabase/migrations/20261101140000_learn_working_collection_input_bounds.sql').read_bytes()
         apply(b'begin;'+bounds_sql+b'rollback;', 'Working-time input bounds rollback rehearsal')
         apply(bounds_sql, 'Explicit working-time retained-input bounds')
+        apply(b'begin;'+(ROOT/'scripts/verify/learn-working-release-hosted.assert.sql').read_bytes()+b'rollback;', 'Exact hosted working-time owner and private-helper access probe')
         apply((ROOT/'scripts/verify/learn-working-collection.assert.sql').read_bytes(), 'Frozen working-time collection, exact recovery and preserved source evidence')
         collection_data=docker('exec',TARGET,'psql','-U','supabase_admin','-d','roster_verify','-qAtc', """set request.jwt.claim.sub='bbb50000-0000-4000-8000-000000000001';set role authenticated;
           select jsonb_agg(jsonb_build_object('overview',learn_work_collection_evidence(tenant_id,id,'overview',0),

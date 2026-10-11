@@ -1,5 +1,23 @@
 # Existing TEST environment: verified release gaps
 
+## Working-time package — TEST release 050 installed; paired frontend pending
+
+Hosted rollback rehearsal and installation passed on 11 October at 01:56/01:57 UTC.
+Company calendars, approved-delay history and frozen person/team working-time
+collection are installed together. All 94 monitored datasets and existing authority
+were preserved; all seven new tables remain empty. Forty actual HTTP checks deny
+anonymous/service access. Seven release-guard tests and the exact isolated SQL
+access probe pass. A metadata-query timeout during the initial rehearsal was fixed
+by evaluating the catalog once; unchanged schema/data and no active transaction
+were verified before the revised rehearsal.
+
+The paired protected frontend, signed-in hosted owner acceptance and hosted large
+evidence transport remain outstanding. No provider requests, capture activation,
+new operator grants or production changes occurred. The separate Commusoft
+continuation remains subject to its existing approval. Earlier local candidate
+sections below describe their verification checkpoints; 050 supersedes their
+backend deployment status. [Release evidence](evidence/learn-working-time-test-2026-10-11.json).
+
 ## Working-time collection — local connected candidate, not deployed
 
 Saved person/team rules now require explicit work states and connect to resumable

@@ -1,0 +1,366 @@
+{
+  "version": "learn-working-time-test/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "release": "050_working_time",
+  "backend": {
+    "rehearsal": {
+      "version": "learn-working-release/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "7c739f7100e93669b029974e8fff94bea7e3f1fbe3c730e1ab3032b9c5bd7d83",
+      "mode": "rehearse",
+      "state": "rehearsed_rolled_back",
+      "observedAt": "2026-10-11T01:56:34.078Z",
+      "priorFingerprint": "6553cd24dc17cb3a61f808f7bb620b9b",
+      "expectedFingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+      "afterFingerprint": "6553cd24dc17cb3a61f808f7bb620b9b",
+      "preservedDataSets": 94,
+      "submissionFailure": null,
+      "receipt": {
+        "fingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+        "functions": 27
+      }
+    },
+    "installation": {
+      "version": "learn-working-release/1",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "sourceSha256": "7c739f7100e93669b029974e8fff94bea7e3f1fbe3c730e1ab3032b9c5bd7d83",
+      "mode": "apply",
+      "state": "installed_needs_hosted_acceptance",
+      "observedAt": "2026-10-11T01:57:16.099Z",
+      "priorFingerprint": "6553cd24dc17cb3a61f808f7bb620b9b",
+      "expectedFingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+      "afterFingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+      "preservedDataSets": 94,
+      "submissionFailure": null,
+      "receipt": {
+        "fingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+        "functions": 27
+      }
+    },
+    "http": {
+      "observedAt": "2026-10-11T01:57:32.806Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "checks": [
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_calendar_save",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_calendar_publish",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_calendar_read",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_calendar_preview",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_calendar_resolve",
+          "kind": "save",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_delay_record",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_delay_resolve",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_delay_read",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_delay_evidence",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_begin",
+          "kind": "workingTime",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_begin",
+          "kind": "teamWorkingTime",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_evidence",
+          "part": "calendar",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "rpc/learn_work_collection_evidence",
+          "part": "workingItem",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_calendar_versions?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_calendar_publications?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_calendar_cancellations?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_delay_events?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_work_delay_cancellations?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_working_collection_runs?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "anon",
+          "path": "learn_working_collection_items?select=*&limit=1",
+          "status": 401,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_calendar_save",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_calendar_publish",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_calendar_read",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_calendar_preview",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_calendar_resolve",
+          "kind": "save",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_delay_record",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_delay_resolve",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_delay_read",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_delay_evidence",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_begin",
+          "kind": "workingTime",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_begin",
+          "kind": "teamWorkingTime",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_evidence",
+          "part": "calendar",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "rpc/learn_work_collection_evidence",
+          "part": "workingItem",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_calendar_versions?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_calendar_publications?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_calendar_cancellations?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_delay_events?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_work_delay_cancellations?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_working_collection_runs?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        },
+        {
+          "role": "service_role",
+          "path": "learn_working_collection_items?select=*&limit=1",
+          "status": 403,
+          "code": "42501"
+        }
+      ],
+      "signedInOwnerAcceptance": false
+    },
+    "afterHttp": {
+      "observedAt": "2026-10-11T01:57:51.448Z",
+      "projectRef": "saatxzwxvdvqevbnskxy",
+      "fingerprint": "9e24f2129bf9782ff09f167a97289ee5",
+      "ledger": 51,
+      "preservedDataSets": 94,
+      "newTableRows": [
+        {
+          "name": "learn_work_calendar_versions",
+          "count": 0
+        },
+        {
+          "name": "learn_work_calendar_publications",
+          "count": 0
+        },
+        {
+          "name": "learn_work_calendar_cancellations",
+          "count": 0
+        },
+        {
+          "name": "learn_work_delay_events",
+          "count": 0
+        },
+        {
+          "name": "learn_work_delay_cancellations",
+          "count": 0
+        },
+        {
+          "name": "learn_working_collection_runs",
+          "count": 0
+        },
+        {
+          "name": "learn_working_collection_items",
+          "count": 0
+        }
+      ],
+      "continuationSchemaFingerprint": "bd1a8b1f4203a84a0b84da7db5723d71"
+    }
+  },
+  "localEvidence": "learn-working-acceptance-local-2026-10-11.json",
+  "releaseGuardTests": 7,
+  "frontend": {
+    "state": "pending_paired_deployment"
+  },
+  "signedInHostedOwnerAcceptance": false,
+  "hostedLargeEvidenceTransportAcceptance": false,
+  "productionChanges": false,
+  "providerRequests": 0,
+  "captureActivation": false,
+  "newOperatorGrants": 0,
+  "rehearsalDiagnostic": {
+    "originalSourceSha256": "e5d92a0b13583ce8f486d97a2cb87f950262bd5bac85335ab0c1a80b76e8ce57",
+    "outcome": "request_timeout_no_committed_changes",
+    "monitoredDataSetsPreserved": 94,
+    "activeReleaseTransactionsAfter": 0,
+    "resolution": "Materialize the catalog once before projecting preserved metadata; revised package rehearsed and installed successfully."
+  },
+  "continuationGuardTests": 12,
+  "applicationBuild": "passed",
+  "applicationTypecheck": "passed",
+  "continuation": {
+    "state": "prepared",
+    "preserved": true,
+    "workerInvocations": 0,
+    "newProviderRequests": 0,
+    "activeGrants": 0,
+    "schemaFingerprint": "bd1a8b1f4203a84a0b84da7db5723d71",
+    "approvalStillRequired": true
+  }
+}
