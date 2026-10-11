@@ -151,6 +151,36 @@ Stored mailbox rows still say `user`, `active`, `sync_enabled=true`. This suppor
 stale/unresolved directory identity; it does not establish deletion, renaming or
 the exact cause. No settings were changed and no message content was read.
 
+### Real Workspace directory and aliases — 11 October, 18:49–18:54 UTC
+
+The existing local credential completed a bounded, read-only scan of its matched
+Drummonds domain using the actual directory reader. Google returned 29 current
+primary users, none suspended. The 35 stored mailbox rows comprise 29 present
+primaries, two returned aliases and four absent addresses. All four recently
+failing `invalid_grant` accounts fall in that absent group. This establishes
+current directory absence, not deletion or a reason to erase historical data.
+The domain's DWD account rows comprise 23 present primaries, two aliases and four
+absent addresses. Two follow-up Gmail profile reads verified the aliases resolve
+to their directory owners; neither owner has a separate DWD account. No email
+content, settings, keys or permissions changed. Configuration hashes matched.
+[Directory evidence](evidence/learn-workspace-directory-audit-2026-10-11.json),
+[alias profile evidence](evidence/learn-workspace-alias-profiles-2026-10-11.json).
+
+This exposed an actual discovery bug: ignoring aliases would mark those two
+working inputs removed on refresh. TEST `google-workspace-discover-mailboxes` v2
+now validates returned alias ownership, retains already-registered aliases,
+preserves operator enable/disable decisions, and propagates suspension. It does
+not register every alias as a new mailbox, merge source identities or alter email
+accounts. Conflicting alias ownership or malformed pages fail before reconciliation.
+
+Ten local checks and eight checks against downloaded deployed code pass; all four
+runtime modules match. Strict endpoint/worker types and unsigned HTTP 401 pass.
+All 121 TEST datasets, the schema and other endpoints are preserved. No positive
+hosted scan or real mailbox capture was run; TEST credential/access approvals and
+production reconciliation/promotion remain pending. Before enabling primary rows,
+review their alias history so one mailbox is not captured or scored twice.
+[TEST release evidence](evidence/learn-workspace-directory-alias-test-2026-10-11.json).
+
 ### Directory reconciliation safeguards — 11 October, 15:38 UTC
 
 Source inspection found that the directory reader returned partial results at its
@@ -834,7 +864,7 @@ inputs and an explicit UTC daily window, not staff performance/pay scoring.
   [Discovery evidence](LEARN-VOICEMAIL-DISCOVERY.md).
 - [ ] **Microsoft:** authorised tenant/mailbox setup and token lifecycle;
   persistent hosted release; real canonical/card acceptance; worker/controller registration,
-  recurring folder discovery, expiry recovery and real-mailbox acceptance.
+  recurring folder discovery activation, expiry recovery and real-mailbox acceptance.
   At 13:31 UTC, all five source-journal/dispatch/recurring-queue migrations passed
   a full-schema hosted TEST rollback rehearsal, preserving all 113 datasets and
   the original catalog. Local actual-engine/queue tests prove later delta rounds,

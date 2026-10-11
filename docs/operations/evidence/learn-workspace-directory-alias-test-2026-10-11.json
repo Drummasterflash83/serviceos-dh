@@ -1,0 +1,33 @@
+{
+  "version": "learn-workspace-directory-alias-test/1",
+  "observedAt": "2026-10-11T18:54:08.626Z",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "state": "deployed_code_and_negative_http_verified",
+  "endpoint": "google-workspace-discover-mailboxes",
+  "endpointVersion": 2,
+  "verifyJwt": true,
+  "sourceBundleSha256": "02929e6777dae638fea0740a48342cc9e0785d4d1ec8e87b391e8ac8c35d8023",
+  "fullPreservedDatasets": 121,
+  "schemaUnchanged": true,
+  "otherEndpointsUnchanged": true,
+  "localTests": 10,
+  "downloadedActualHandlerTests": 8,
+  "matchedRuntimeModules": 4,
+  "strictEndpointAndWorkerTypes": "passed_with_local_SDK_and_Deno_shim",
+  "httpChecks": [
+    {
+      "endpoint": "google-workspace-discover-mailboxes",
+      "method": "POST",
+      "status": 401
+    }
+  ],
+  "providerRequestsDuringDeployment": 0,
+  "secretsCreated": 0,
+  "schedulesActivated": 0,
+  "productionChanged": false,
+  "limitations": [
+    "The separate production/Google audits were read-only; their profile/directory requests are recorded separately.",
+    "No positive hosted directory call, real inventory reconciliation, mailbox capture or signed-in owner acceptance.",
+    "Alias ownership consolidation and primary-account activation require an explicit reviewed migration; history and existing IDs were not merged."
+  ]
+}

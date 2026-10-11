@@ -86,3 +86,23 @@ and backup schedules, alert recipient, escalation route, credential locations
 and rotation dates, recovery steps, expected provider coverage and known limits.
 No credentials belong in this document. Keep customer messages calm and factual;
 record operator detail without claiming failed or stale processing is healthy.
+
+## Workspace alias compatibility before promotion
+
+The 11 October read-only directory audit found two active configured addresses
+that Google reports as aliases; their Gmail profiles resolve to current primary
+users without separate DWD account rows. The earlier directory handler would
+mark these valid alias inputs removed. Use the reviewed v2 alias-preserving
+candidate when packaging production; do not run the earlier primary-only refresh.
+TEST code/readback checks pass, but production is unchanged and still needs the
+explicit release approval. Do not enable parallel primary accounts or merge old
+sources implicitly. Review alias ownership and retained account IDs during real
+capture acceptance. Four other failing addresses are absent from the current
+domain directory; their history stays retained while the operator resolves them.
+See [current delivery evidence](LEARN-V1-COMPLETION.md#real-workspace-directory-and-aliases--11-october-18491854-utc).
+
+The provider distinguishes primary email from editable/non-editable aliases:
+[Google Directory User reference](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users).
+The bounded scan covers the configured domain, not every domain, group or deleted
+user in the Workspace customer:
+[Google users.list reference](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list).

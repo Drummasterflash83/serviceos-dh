@@ -279,6 +279,8 @@ const DIRECTORY_USERS_ENDPOINT = "https://admin.googleapis.com/admin/directory/v
 
 export interface DirectoryUser {
   email: string;
+  /** Returned provider aliases, not additional independent mailboxes. */
+  aliases: string[];
   displayName: string | null;
   suspended: boolean;
   isAdmin: boolean;
@@ -304,6 +306,7 @@ export async function listDirectoryUsers(
   let pageToken: string | undefined;
   const seenTokens = new Set<string>();
   const seenEmails = new Set<string>();
+  const addressOwners = new Map<string, string>();
   for (let page = 0; page < maxPages; page++) {
     const params = new URLSearchParams({ domain, maxResults: "500", orderBy: "email" });
     if (pageToken) params.set("pageToken", pageToken);
@@ -314,27 +317,62 @@ export async function listDirectoryUsers(
         redirect: "error",
         signal: AbortSignal.timeout(15000),
       });
-    } catch { throw new Error("directory_request_unconfirmed"); }
+    } catch {
+      throw new Error("directory_request_unconfirmed");
+    }
     if (!resp.ok) throw new Error(`directory_users_${resp.status}`);
     let data: any;
-    try { data = await resp.json(); }
-    catch { throw new Error("directory_page_invalid"); }
-    if (!data || typeof data !== "object" || Array.isArray(data) ||
-      (data.users !== undefined && (!Array.isArray(data.users) || data.users.length > 500)))
+    try {
+      data = await resp.json();
+    } catch {
+      throw new Error("directory_page_invalid");
+    }
+    if (
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data) ||
+      (data.users !== undefined && (!Array.isArray(data.users) || data.users.length > 500))
+    )
       throw new Error("directory_page_invalid");
     for (const u of data.users ?? []) {
-      if (!u || typeof u.primaryEmail !== "string" ||
-        !/^[^\s@]+@[^\s@]+$/.test(u.primaryEmail) || u.primaryEmail.length > 320 ||
+      if (
+        !u ||
+        typeof u.primaryEmail !== "string" ||
+        !/^[^\s@]+@[^\s@]+$/.test(u.primaryEmail) ||
+        u.primaryEmail.length > 320 ||
         (u.suspended !== undefined && typeof u.suspended !== "boolean") ||
         (u.isAdmin !== undefined && typeof u.isAdmin !== "boolean") ||
-        (u.name !== undefined && (!u.name || typeof u.name !== "object" || Array.isArray(u.name))) ||
-        (u.name?.fullName !== undefined && typeof u.name.fullName !== "string"))
+        (u.name !== undefined &&
+          (!u.name || typeof u.name !== "object" || Array.isArray(u.name))) ||
+        (u.name?.fullName !== undefined && typeof u.name.fullName !== "string")
+      )
         throw new Error("directory_user_invalid");
       const email = u.primaryEmail.toLowerCase();
       if (seenEmails.has(email)) throw new Error("directory_duplicate_user");
       seenEmails.add(email);
-      users.push({ email, displayName: u.name?.fullName ?? null,
-        suspended: u.suspended === true, isAdmin: u.isAdmin === true });
+      const aliases = new Set<string>();
+      for (const values of [u.aliases, u.nonEditableAliases]) {
+        if (values === undefined) continue;
+        if (!Array.isArray(values) || values.length > 1000)
+          throw new Error("directory_alias_invalid");
+        for (const value of values) {
+          if (typeof value !== "string" || !/^[^\s@]+@[^\s@]+$/.test(value) || value.length > 320)
+            throw new Error("directory_alias_invalid");
+          if (value.toLowerCase() !== email) aliases.add(value.toLowerCase());
+        }
+      }
+      for (const address of [email, ...aliases]) {
+        if (addressOwners.has(address) && addressOwners.get(address) !== email)
+          throw new Error("directory_identity_conflict");
+        addressOwners.set(address, email);
+      }
+      users.push({
+        email,
+        aliases: [...aliases],
+        displayName: u.name?.fullName ?? null,
+        suspended: u.suspended === true,
+        isAdmin: u.isAdmin === true,
+      });
     }
     const next = data.nextPageToken;
     if (next === undefined || next === "") return users;

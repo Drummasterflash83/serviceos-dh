@@ -155,7 +155,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     users = await listDirectoryUsers(token.accessToken, domain);
   } catch (cause) {
     const raw = cause instanceof Error ? cause.message : "";
-    const reason = /^directory_(?:users_[0-9]{3}|request_unconfirmed|page_invalid|user_invalid|duplicate_user|cursor_invalid|cursor_repeated|scan_incomplete|page_limit_invalid|domain_invalid)$/.test(raw) ? raw : "directory_failed";
+    const reason =
+      /^directory_(?:alias_invalid|identity_conflict|users_[0-9]{3}|request_unconfirmed|page_invalid|user_invalid|duplicate_user|cursor_invalid|cursor_repeated|scan_incomplete|page_limit_invalid|domain_invalid)$/.test(
+        raw,
+      )
+        ? raw
+        : "directory_failed";
     await logOutcome("failed", reason, { domain, phase: "directory" });
     return fail(
       "directory_failed",
@@ -169,7 +174,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   //    the admin's choices). sync_enabled/status stay OMITTED on upsert so
   //    re-discovery never re-enables a mailbox an admin disabled.
   const seenAt = new Date().toISOString();
-  const presentEmails = new Set(users.map((u) => u.email));
+  const presentEmails = new Set(users.flatMap((u) => [u.email, ...u.aliases]));
 
   // Which addresses already existed (to count genuinely-new mailboxes)?
   const { data: existingRows, error: existingError } = await supabase
@@ -187,14 +192,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const added = users.filter((u) => !existingEmails.has(u.email.toLowerCase())).length;
 
   if (users.length > 0) {
-    const rows = users.map((u) => ({
-      tenant_id: tenantId,
-      connection_id: connectionId,
-      email_address: u.email,
-      display_name: u.displayName,
-      mailbox_type: u.suspended ? "suspended" : "user",
-      last_seen_at: seenAt,
-    }));
+    // Keep already-registered aliases when Google still binds them to a user.
+    // Never create all aliases as additional capture accounts or rewrite source IDs.
+    const rows = users.flatMap((u) =>
+      [u.email, ...u.aliases.filter((a) => existingEmails.has(a))].map((email) => ({
+        tenant_id: tenantId,
+        connection_id: connectionId,
+        email_address: email,
+        display_name: u.displayName,
+        mailbox_type: u.suspended ? "suspended" : email === u.email ? "user" : "alias",
+        last_seen_at: seenAt,
+      })),
+    );
     const { error: mbErr } = await supabase
       .from("google_workspace_mailboxes")
       .upsert(rows, { onConflict: "connection_id,email_address" });

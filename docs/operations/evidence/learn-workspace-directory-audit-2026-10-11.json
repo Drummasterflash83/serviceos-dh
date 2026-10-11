@@ -1,0 +1,40 @@
+{
+  "version": "learn-workspace-directory-audit/1",
+  "observedAt": "2026-10-11T18:49:50.666Z",
+  "state": "complete_current_directory_compared",
+  "directoryRequests": 1,
+  "tokenRequests": 1,
+  "messageRequests": 0,
+  "productionWrites": 0,
+  "testCredentialUploaded": false,
+  "credentialMatchesExistingConnection": true,
+  "storedMailboxes": 35,
+  "currentDirectoryUsers": 29,
+  "currentSuspendedUsers": 0,
+  "newPrimaryUsers": 0,
+  "storedMailboxComparison": {
+    "present_active": 29,
+    "absent_from_current_domain_directory": 4,
+    "alias_only": 2
+  },
+  "enabledStoredMailboxComparison": {
+    "present_active": 29,
+    "absent_from_current_domain_directory": 4,
+    "alias_only": 2
+  },
+  "dwdAccountComparison": {
+    "present_active": 23,
+    "absent_from_current_domain_directory": 4,
+    "alias_only": 2
+  },
+  "recentInvalidGrantAccountComparison": {
+    "absent_from_current_domain_directory": 4
+  },
+  "configurationPreserved": true,
+  "configurationSha256": "30ad30e3a847e9c2abc5d0f8a3ea6c918f86b64df86cbe613462496ad2253407",
+  "limitations": [
+    "One configured domain; this is current primary-user/returned-alias inventory, not all Workspace domains, groups or deleted history.",
+    "Absence does not establish whether an account was deleted, renamed, moved or historically valid.",
+    "No Gmail content, mailbox licences, historical coverage or capture-to-card journey verified; no mailbox or permission changed."
+  ]
+}
