@@ -1,3 +1,12 @@
+import {
+  fail,
+  object,
+  uuid,
+  id,
+  graphUrl,
+  readMicrosoftGraphJson,
+} from "./microsoft_graph_transport.ts";
+export { MicrosoftMailError, type MicrosoftMailErrorCode } from "./microsoft_graph_transport.ts";
 /** Microsoft Graph v1.0 mail delta transport. No database writes or cursor advances.
  * Track each real folder separately; continuations are opaque, mailbox-bound URLs.
  * https://learn.microsoft.com/en-us/graph/delta-query-messages
@@ -30,40 +39,6 @@ export type MicrosoftMailPage = {
   persistence: "not_attempted";
   attachmentsCaptured: false;
 };
-export type MicrosoftMailErrorCode =
-  | "invalid_scope"
-  | "invalid_continuation"
-  | "fetch_failed"
-  | "invalid_response"
-  | "response_too_large"
-  | "auth_required"
-  | "access_denied"
-  | "folder_unavailable"
-  | "delta_expired"
-  | "throttled"
-  | "provider_unavailable"
-  | "pagination_no_progress";
-export class MicrosoftMailError extends Error {
-  readonly code: MicrosoftMailErrorCode;
-  readonly retryAfterSeconds: number | null;
-  constructor(code: MicrosoftMailErrorCode, retryAfterSeconds: number | null = null) {
-    super(`Microsoft mail capture: ${code}`);
-    this.name = "MicrosoftMailError";
-    this.code = code;
-    this.retryAfterSeconds = retryAfterSeconds;
-  }
-}
-function fail(code: MicrosoftMailErrorCode = "invalid_response"): never {
-  throw new MicrosoftMailError(code);
-}
-const object = (v: unknown): v is Record<string, any> =>
-  !!v && typeof v === "object" && !Array.isArray(v);
-const uuid = (v: unknown): v is string =>
-  typeof v === "string" && /^[a-f\d]{8}(?:-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(v);
-// Graph identifiers are case-sensitive. Encode each ID as one path component.
-const id = (v: unknown): v is string =>
-  typeof v === "string" && v.length > 0 && v.length <= 2048 && /^[A-Za-z0-9+/_=-]+$/.test(v);
-const MAX_BYTES = 16 * 1024 * 1024;
 export const MICROSOFT_MAIL_FIELDS = [
   "id",
   "changeKey",
@@ -115,14 +90,7 @@ export function validateMicrosoftMailContinuation(
     /[\s\\\u0000-\u001f]/.test(continuation.url)
   )
     fail("invalid_continuation");
-  let u: URL;
-  try {
-    u = new URL(continuation.url);
-  } catch {
-    return fail("invalid_continuation");
-  }
-  if (u.origin !== "https://graph.microsoft.com" || u.username || u.password || u.hash)
-    fail("invalid_continuation");
+  const u = graphUrl(continuation.url);
   // Resource names are case insensitive; IDs are not. Match resource syntax
   // before decoding IDs so an encoded slash remains part of one identifier.
   const match = u.pathname.match(
@@ -202,7 +170,7 @@ function parseEvent(raw: unknown): MicrosoftMailEvent {
         value === null ||
         (object(value) &&
           ["text", "html"].includes(value.contentType) &&
-          text(value.content, MAX_BYTES, false));
+          text(value.content, 16 * 1024 * 1024, false));
     else if (key === "internetMessageHeaders")
       valid =
         Array.isArray(value) &&
@@ -222,58 +190,6 @@ function parseEvent(raw: unknown): MicrosoftMailEvent {
   }
   return { kind: "observed", id: raw.id, fields, raw };
 }
-async function jsonBody(response: Response): Promise<unknown> {
-  const length = response.headers.get("content-length");
-  if (length !== null && (!/^\d+$/.test(length) || Number(length) > MAX_BYTES)) {
-    await discardBody(response);
-    fail("response_too_large");
-  }
-  const reader = response.body?.getReader();
-  if (!reader) return fail();
-  const chunks: Uint8Array[] = [];
-  let bytes = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      bytes += value.byteLength;
-      if (bytes > MAX_BYTES) {
-        await reader.cancel().catch(() => {});
-        return fail("response_too_large");
-      }
-      chunks.push(value);
-    }
-    const data = new Uint8Array(bytes);
-    let offset = 0;
-    for (const chunk of chunks) {
-      data.set(chunk, offset);
-      offset += chunk.byteLength;
-    }
-    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(data));
-  } catch (e) {
-    if (e instanceof MicrosoftMailError) throw e;
-    return fail();
-  } finally {
-    reader.releaseLock();
-  }
-}
-async function discardBody(response: Response): Promise<void> {
-  try {
-    await response.body?.cancel();
-  } catch {
-    // A transport cleanup failure must not expose provider content or hide status.
-  }
-}
-function retryAfter(response: Response, now: number): number | null {
-  const v = response.headers.get("retry-after");
-  if (v === null) return null;
-  if (/^\d+$/.test(v)) {
-    const n = Number(v);
-    return Number.isSafeInteger(n) ? n : null;
-  }
-  const time = Date.parse(v);
-  return Number.isFinite(time) ? Math.max(0, Math.ceil((time - now) / 1000)) : null;
-}
 export async function readMicrosoftMailPage(
   accessToken: string,
   request: MicrosoftMailRequest,
@@ -282,63 +198,13 @@ export async function readMicrosoftMailPage(
 ): Promise<MicrosoftMailPage> {
   const url = microsoftMailRequestUrl(request),
     bound = scope(request);
-  const startedAt = now();
-  if (!Number.isFinite(startedAt) || !Number.isFinite(new Date(startedAt).getTime()))
-    fail("invalid_scope");
-  if (
-    typeof accessToken !== "string" ||
-    !accessToken ||
-    accessToken.length > 32768 ||
-    /[\s\u0000-\u001f]/.test(accessToken)
-  )
-    fail("auth_required");
-  let response: Response;
-  try {
-    response = await fetcher(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Prefer: `IdType="ImmutableId", odata.maxpagesize=${request.pageSize}`,
-      },
-      redirect: "error",
-      signal: AbortSignal.timeout(30000),
-    });
-  } catch {
-    return fail("fetch_failed");
-  }
-  const statusCode: MicrosoftMailErrorCode | null =
-    response.status === 401
-      ? "auth_required"
-      : response.status === 403
-        ? "access_denied"
-        : response.status === 404
-          ? "folder_unavailable"
-          : response.status === 410
-            ? "delta_expired"
-            : response.status === 429
-              ? "throttled"
-              : response.status >= 500
-                ? "provider_unavailable"
-                : null;
-  if (statusCode) {
-    await discardBody(response);
-    throw new MicrosoftMailError(
-      statusCode,
-      response.status === 429 || response.status >= 500 ? retryAfter(response, startedAt) : null,
-    );
-  }
-  const body = await jsonBody(response);
-  if (response.status !== 200) {
-    if (
-      object(body) &&
-      object(body.error) &&
-      ["syncStateNotFound", "ErrorSyncStateNotFound", "resyncRequired"].includes(body.error.code)
-    )
-      fail("delta_expired");
-    return fail("fetch_failed");
-  }
+  const { body, fetchedAt } = await readMicrosoftGraphJson(
+    accessToken,
+    url,
+    request.pageSize,
+    fetcher,
+    now,
+  );
   if (!object(body) || !Array.isArray(body.value) || body.value.length > 1000) fail();
   const next = Object.hasOwn(body, "@odata.nextLink"),
     delta = Object.hasOwn(body, "@odata.deltaLink");
@@ -351,9 +217,6 @@ export async function readMicrosoftMailPage(
   // A stable delta URL on an empty new round is valid. An unchanged next URL is not progress.
   if (next && continuation.url === url) fail("pagination_no_progress");
   const events = body.value.map(parseEvent);
-  const finishedAt = now();
-  if (!Number.isFinite(finishedAt) || !Number.isFinite(new Date(finishedAt).getTime()))
-    fail("invalid_response");
   return {
     contract: "microsoft-mail-page/1",
     scope: bound,
@@ -361,7 +224,7 @@ export async function readMicrosoftMailPage(
     events,
     continuation,
     folderRoundComplete: delta,
-    fetchedAt: new Date(finishedAt).toISOString(),
+    fetchedAt,
     persistence: "not_attempted",
     attachmentsCaptured: false,
   };

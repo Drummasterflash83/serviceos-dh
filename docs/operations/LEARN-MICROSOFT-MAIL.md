@@ -1,10 +1,12 @@
 # Microsoft 365 mail input
 
-## Current status — local transport, not an enabled connector
+## Current status — local mail reader and folder discovery, not an enabled connector
 
 On 11 October 2026, the first Microsoft Graph mail delta reader was implemented in
-`supabase/functions/_shared/microsoft_mail_page.ts`. Its 19 synthetic transport tests
-and strict TypeScript checks pass. No Microsoft credentials, accounts, customer
+`supabase/functions/_shared/microsoft_mail_page.ts`. Folder discovery and resumable traversal are now implemented in
+`microsoft_mail_folders.ts`, using the extracted shared
+`microsoft_graph_transport.ts`. The combined 38 synthetic tests and strict
+TypeScript checks pass. No Microsoft credentials, accounts, customer
 records, provider requests, hosted installation or production changes were involved.
 The controller's `microsoft_365` entry remains `adapterImplemented: false`.
 This is groundwork for the full reusable input adapter; it does not yet import mail.
@@ -46,19 +48,54 @@ truncate content. Error messages exclude provider bodies, tokens and URLs.
 Returned raw bodies and continuation URLs are private runtime data, not log data.
 HTML bodies must not be rendered as trusted application HTML.
 
+## Folder discovery behavior
+
+`beginMicrosoftFolderDiscovery` starts at the mailbox root.
+`stepMicrosoftFolderDiscovery` reads exactly one page and returns that original
+page together with a new private server checkpoint. It never mutates the input
+checkpoint. The caller can serialize the checkpoint after each successful step;
+the tests resume this way through root pagination and nested hidden folders.
+Database persistence, leasing and atomic page/checkpoint commits are still pending.
+These checkpoints must come from trusted server storage, not a client request;
+their shape checks do not authenticate their provenance.
+
+The reader asks for hidden folders on every initial collection request. It visits
+all discovered folders, even when `childFolderCount` is zero. Search folders are
+identified as virtual views rather than independent capture targets; their
+children are still traversed. Each folder's ID is scheduled once. Overlapping
+observations remain in the returned raw page; the checkpoint retains the first
+metadata observation rather than inventing an ordering between conflicting names
+or counts. A changed parent/type or hierarchy cycle fails the pass. No existing
+stored folder or mail is deleted on disappearance or failure.
+
+List continuations stay on the same mailbox and parent collection. Numeric
+pagination must retain `includeHiddenFolders=true`; opaque skip tokens are passed
+unchanged and may carry original options. An explicit false hidden flag, a newly
+introduced filter/search, a foreign resource, or an ambiguous cursor is rejected.
+Repeated exact request URLs across multiple pages are detected. The pass stops
+with an explicit error at 10,000 folders or 10,000 pages, without advancing the
+caller's checkpoint or presenting a truncated inventory as complete.
+
+`traversalExhausted` means the queue from this traversal has been visited, including
+its pagination. It is not a consistent point-in-time mailbox snapshot, persistence
+proof, imported-message coverage or connector readiness. Mailboxes can change while
+being scanned; future schedules must repeat discovery and reconcile changes.
+Folder counts are provider observations and are not summed into mail import totals.
+All returned pages, names and cursor URLs remain private runtime data.
+
 ## Remaining work to deliver the connector
 
 1. Resolve each authorized company/account to its Microsoft tenant and mailbox;
    integrate consent, token storage/refresh/revocation and read-only mail content
    permissions. Transport UUID validation is not authorization. Revalidate the
    company/module/account permission and capture switch at execution time.
-2. Discover actual folder IDs and the complete folder hierarchy, including explicit
-   handling of hidden and search folders. The root listing alone is insufficient:
-   Microsoft requires traversal of child folders. See
+2. Integrate the implemented folder discovery with durable storage, repeat scans,
+   operator progress and message-capture eligibility. Prove nested/hidden/search
+   behavior on an authorized real mailbox. Discovery and explicit exclusions must
+   be visible to OpenFolk. The local traversal does not prove real mailbox coverage.
+   Its traversal follows Microsoft's
    [root folder listing](https://learn.microsoft.com/en-us/graph/api/user-list-mailfolders?view=graph-rest-1.0)
    and [child folder listing](https://learn.microsoft.com/en-us/graph/api/mailfolder-list-childfolders?view=graph-rest-1.0).
-   Discovery progress and exclusions must be visible to OpenFolk. Neither the
-   reader nor its tests proves mailbox-wide coverage.
 3. Add tenant/account/folder-scoped capture state and append-only source page/event
    receipts. Persist a complete page and its cursor in one transaction under a
    lease with compare-and-set checks. Handle duplicate delivery, lost commit replies,
@@ -80,16 +117,22 @@ HTML bodies must not be rendered as trusted application HTML.
 ## Reproduce local checks
 
 ```sh
-node --test supabase/functions/_shared/microsoft_mail_page.test.ts
+node --test supabase/functions/_shared/microsoft_mail_page.test.ts \
+  supabase/functions/_shared/microsoft_mail_folders.test.ts
 ./node_modules/.bin/tsc --noEmit --strict --allowImportingTsExtensions \
   --target ES2022 --module ESNext --moduleResolution bundler \
   --lib ES2022,DOM --skipLibCheck \
   supabase/functions/_shared/microsoft_mail_page.ts \
-  supabase/functions/_shared/microsoft_mail_page.test.ts
+  supabase/functions/_shared/microsoft_mail_page.test.ts \
+  supabase/functions/_shared/microsoft_mail_folders.ts \
+  supabase/functions/_shared/microsoft_mail_folders.test.ts
 ```
 
 Tests exercise the exported reader with synthetic provider responses, including
 exact outgoing requests, continuation traversal, source preservation, invalid
 scopes and foreign destinations, malformed pages, byte limits, error classification,
-retry timing, in-flight scope mutation and completion timestamps. They are not
+retry timing, in-flight scope mutation and completion timestamps. Folder tests also
+cover serialized resumption, nested and hidden discovery, virtual folders, overlapping
+pages, hierarchy conflicts, longer cursor loops, explicit limits and handing a
+discovered folder to the mail reader. They are not
 real-provider acceptance, database preservation or authenticated controller tests.
