@@ -1,0 +1,35 @@
+{
+  "version": "learn-login-recovery/1",
+  "state": "local_verified_not_deployed",
+  "observedAt": "2026-10-11T15:45:58.253877+00:00",
+  "actualComponent": "src/routes/login.tsx",
+  "focusedRecoveryTests": 6,
+  "existingErrorTests": 4,
+  "applicationTypescript": true,
+  "productionBuild": true,
+  "repositoryPrebuildTests": 47,
+  "browser": {
+    "actualComponent": true,
+    "syntheticAuthAndNavigation": true,
+    "checks": [
+      "Failed reset request shows unconfirmed feedback and no delivery claim",
+      "Retry accepted with account-neutral inbox guidance",
+      "Failed password update stays on form without raw provider details",
+      "Confirmed update clears fields and requests existing-session navigation to /openfolk"
+    ],
+    "consoleWarnings": 0,
+    "consoleErrors": 0,
+    "screenshot": ".verification-results/login-recovery-ui/verified.png"
+  },
+  "accountsCreated": 0,
+  "grantsChanged": 0,
+  "passwordsChanged": 0,
+  "emailsSent": 0,
+  "productionChanged": false,
+  "hostedPreviewChanged": false,
+  "limitations": [
+    "Email delivery, real recovery token exchange and signed-in hosted navigation are unverified.",
+    "Existing approved hosted TEST preview is unchanged; this frontend correction is local/Git only.",
+    "TEST owner access still awaits explicit approval."
+  ]
+}

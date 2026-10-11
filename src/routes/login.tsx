@@ -44,7 +44,6 @@ function LoginPage() {
     signUpWithPassword,
     requestPasswordReset,
     updatePassword,
-    signOut,
   } = useAuth();
 
   const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "reset">(
@@ -67,63 +66,71 @@ function LoginPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (pending || loading || !configured) return;
     setError(null);
     setNotice(null);
     setPending(true);
 
-    if (mode === "forgot") {
-      await requestPasswordReset(email.trim(), `${window.location.origin}/login?reset=1`);
-      setPending(false);
-      // Keep the response identical whether or not the address exists.
-      setNotice("If that address has access, a secure reset link is on its way.");
-      return;
-    }
+    try {
+      if (mode === "forgot") {
+        const { error: resetError } = await requestPasswordReset(
+          email.trim(),
+          `${window.location.origin}/login?reset=1`,
+        );
+        if (resetError) {
+          setError("We couldn’t confirm the reset request. Please try again shortly.");
+          return;
+        }
+        // Keep the response identical whether or not the address exists.
+        setNotice("If that address has access, check your inbox for a secure reset link.");
+        return;
+      }
 
-    if (mode === "reset") {
-      if (!session) {
-        setPending(false);
-        setError("This reset link is invalid or has expired. Request a new one.");
+      if (mode === "reset") {
+        if (!session) {
+          setError("This reset link is invalid or has expired. Request a new one.");
+          return;
+        }
+        if (password.length < 12) {
+          setError("Use at least 12 characters for your new password.");
+          return;
+        }
+        if (password !== passwordConfirm) {
+          setError("The passwords do not match.");
+          return;
+        }
+        const { error: updateError } = await updatePassword(password);
+        if (updateError) {
+          setError("We couldn’t update your password. Try a different password or request a new reset link.");
+          return;
+        }
+        setPassword("");
+        setPasswordConfirm("");
+        setNotice("Password updated. Opening your workspace…");
+        // The recovery link established this user's authenticated session.
+        // Continue with that session after the confirmed update; a best-effort
+        // sign-out must not race the login redirect or imply a failed update.
+        await navigate({ to: dest, replace: true });
         return;
       }
-      if (password.length < 12) {
-        setPending(false);
-        setError("Use at least 12 characters for your new password.");
-        return;
-      }
-      if (password !== passwordConfirm) {
-        setPending(false);
-        setError("The passwords do not match.");
-        return;
-      }
-      const { error: updateError } = await updatePassword(password);
-      if (updateError) {
-        setPending(false);
-        setError(updateError);
-        return;
-      }
-      await signOut();
-      setPending(false);
-      setPassword("");
-      setPasswordConfirm("");
-      setMode("signin");
-      setNotice("Password updated. Sign in with your new password.");
-      await navigate({ to: "/login", search: {}, replace: true });
-      return;
-    }
 
-    const run = mode === "signup" ? signUpWithPassword : signInWithPassword;
-    const { error: authError } = await run(email.trim(), password);
-    setPending(false);
-    if (authError) {
-      setError(mode === "signin" ? friendlySignInError(authError) : authError);
-      return;
+      const run = mode === "signup" ? signUpWithPassword : signInWithPassword;
+      const { error: authError } = await run(email.trim(), password);
+      if (authError) {
+        setError(mode === "signin" ? friendlySignInError(authError) : "We couldn’t create the account. Please try again or contact OpenFolk support.");
+        return;
+      }
+      if (mode === "signup") {
+        setNotice("Account created. Check your email to confirm, then sign in.");
+        setMode("signin");
+      }
+      // On sign-in success the auth listener updates the session and the effect
+      // above redirects to `dest`.
+    } catch {
+      setError("We couldn’t confirm that request. Please check your connection and try again.");
+    } finally {
+      setPending(false);
     }
-    if (mode === "signup") {
-      setNotice("Account created. Check your email to confirm, then sign in.");
-      setMode("signin");
-    }
-    // On sign-in success the auth listener updates the session and the effect
-    // above redirects to `dest`.
   }
 
   return (
@@ -168,7 +175,7 @@ function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
-                  disabled={pending || !configured}
+                  disabled={pending || loading || !configured}
                 />
               </div>
             )}
@@ -184,7 +191,7 @@ function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  disabled={pending || !configured}
+                  disabled={pending || loading || !configured}
                 />
               </div>
             )}
@@ -200,7 +207,7 @@ function LoginPage() {
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   placeholder="••••••••••••"
-                  disabled={pending || !configured}
+                  disabled={pending || loading || !configured}
                 />
               </div>
             )}
@@ -216,7 +223,7 @@ function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={pending || !configured}>
+            <Button type="submit" className="w-full" disabled={pending || loading || !configured}>
               {pending
                 ? "Please wait…"
                 : mode === "signup"

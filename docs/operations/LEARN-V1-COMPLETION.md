@@ -142,6 +142,29 @@ password-change completion. Chris completes password entry and stores it in
 1Password. Supabase documents the fallback/allowlist behaviour in its
 [redirect guidance](https://supabase.com/docs/guides/auth/redirect-urls).
 
+### Recovery form correction — 11 October, local verification
+
+The login form previously ignored `requestPasswordReset` errors and always
+claimed a link was on its way. It now reports an unconfirmed request, permits
+retry, keeps successful responses independent of whether an account exists, and
+recovers from thrown transport failures without exposing provider details. Form
+submission waits for initial authentication to finish. A confirmed password
+update clears both password fields and continues to the requested workspace
+using the recovery session, rather than racing a best-effort sign-out with the
+automatic login redirect. No permissions or account grants are changed by this flow.
+
+Six actual-component regression cases and four existing error-copy cases pass.
+Application TypeScript and the production build pass, including 47 prebuild checks.
+The actual component was exercised locally in the browser for reset rejection,
+retry, update rejection and confirmed-update navigation, with synthetic auth and
+navigation and no observed console errors. This does **not** prove real email
+transport, token exchange, password change or hosted access. The accepted TEST
+preview is unchanged pending the account setup; this fix is local/Git only.
+No real password was entered, email sent or account enabled. Supabase's
+[recovery contract](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail)
+remains the provider reference. [Verification evidence](evidence/learn-login-recovery-local-2026-10-11.json).
+
+
 ### Email diagnosis — 11 October, 06:17 UTC
 
 [Read-only failure diagnosis](evidence/learn-email-failure-diagnosis-2026-10-11.json)
