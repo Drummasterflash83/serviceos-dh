@@ -57,7 +57,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (!admission.allowed) return fail(admission.code, admission.message, admission.httpStatus);
   const startedAt = new Date().toISOString();
 
-  // Best-effort logging (email_sync_runs + audit_logs). NEVER logs key/token.
+  // A confirmed run receipt is required for success; audit logging is best effort.
+  // NEVER logs a key or token.
   async function logOutcome(
     status: "success" | "failed",
     errorMessage: string | null,
@@ -65,7 +66,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   ): Promise<string | null> {
     let runId: string | null = null;
     try {
-      const { data } = await supabase!
+      const { data, error } = await supabase!
         .from("email_sync_runs")
         .insert({
           tenant_id: tenantId,
@@ -80,7 +81,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         })
         .select("id")
         .maybeSingle();
-      runId = (data?.id as string | null) ?? null;
+      runId = !error && typeof data?.id === "string" ? data.id : null;
       await supabase!.from("audit_logs").insert({
         tenant_id: tenantId,
         actor: "edge:google-workspace-discover-mailboxes",
@@ -90,7 +91,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         detail: metadata,
       });
     } catch (_logErr) {
-      // swallow — logging must never mask the result.
+      // Preserve a confirmed run receipt even if the secondary audit write fails.
     }
     return runId;
   }
@@ -153,7 +154,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     users = await listDirectoryUsers(token.accessToken, domain);
   } catch (cause) {
-    const reason = cause instanceof Error ? cause.message : "directory_failed";
+    const raw = cause instanceof Error ? cause.message : "";
+    const reason = /^directory_(?:users_[0-9]{3}|request_unconfirmed|page_invalid|user_invalid|duplicate_user|cursor_invalid|cursor_repeated|scan_incomplete|page_limit_invalid|domain_invalid)$/.test(raw) ? raw : "directory_failed";
     await logOutcome("failed", reason, { domain, phase: "directory" });
     return fail(
       "directory_failed",
@@ -162,32 +164,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  // 3) Mark the connection verified (it already exists from save-connection).
-  await supabase
-    .from("google_workspace_connections")
-    .update({
-      status: "active",
-      service_account_email: platform.config.clientEmail,
-      delegated_scopes: WORKSPACE_SCOPES,
-      last_verified_at: new Date().toISOString(),
-      error_message: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", connectionId);
-
-  // 4) Upsert mailboxes + prune the ones no longer in the directory (§5). We stamp
-  //    last_seen_at on present rows this run; any row NOT stamped this run is now
-  //    absent from the directory → mark it 'removed' (preserving sync_enabled and
+  // 3) Upsert mailboxes + reconcile only after a complete directory traversal.
+  //    Rows absent from that traversal become 'removed' (preserving sync_enabled and
   //    the admin's choices). sync_enabled/status stay OMITTED on upsert so
   //    re-discovery never re-enables a mailbox an admin disabled.
   const seenAt = new Date().toISOString();
   const presentEmails = new Set(users.map((u) => u.email));
 
   // Which addresses already existed (to count genuinely-new mailboxes)?
-  const { data: existingRows } = await supabase
+  const { data: existingRows, error: existingError } = await supabase
     .from("google_workspace_mailboxes")
     .select("email_address, status")
+    .eq("tenant_id", tenantId)
     .eq("connection_id", connectionId);
+  if (existingError || !Array.isArray(existingRows)) {
+    await logOutcome("failed", "mailbox_inventory_unconfirmed", { domain });
+    return fail("db_error", "Existing mailbox inventory could not be confirmed", 500);
+  }
   const existingEmails = new Set(
     (existingRows ?? []).map((r) => (r.email_address as string).toLowerCase()),
   );
@@ -206,8 +199,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .from("google_workspace_mailboxes")
       .upsert(rows, { onConflict: "connection_id,email_address" });
     if (mbErr) {
-      await logOutcome("failed", `mailbox_upsert_failed: ${mbErr.message}`, { domain });
-      return fail("db_error", `Could not upsert mailboxes: ${mbErr.message}`, 500);
+      await logOutcome("failed", "mailbox_upsert_failed", { domain });
+      return fail("db_error", "Could not confirm saved mailbox inventory", 500);
     }
   }
 
@@ -217,9 +210,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     (r) => !presentEmails.has((r.email_address as string).toLowerCase()) && r.status !== "removed",
   );
   if (stale.length > 0) {
-    const { data: pruned } = await supabase
+    const { data: pruned, error: pruneError } = await supabase
       .from("google_workspace_mailboxes")
       .update({ status: "removed", updated_at: new Date().toISOString() })
+      .eq("tenant_id", tenantId)
       .eq("connection_id", connectionId)
       .in(
         "email_address",
@@ -227,7 +221,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
       )
       .neq("status", "removed")
       .select("id");
-    removed = (pruned ?? []).length;
+    if (pruneError || !Array.isArray(pruned) || pruned.length !== stale.length) {
+      await logOutcome("failed", "mailbox_reconciliation_unconfirmed", { domain });
+      return fail("db_error", "Mailbox reconciliation could not be confirmed", 500);
+    }
+    removed = pruned.length;
+  }
+
+  // Mark verified only after all directory pages and mailbox writes are confirmed.
+  const { data: verified, error: verificationError } = await supabase
+    .from("google_workspace_connections")
+    .update({
+      status: "active",
+      service_account_email: platform.config.clientEmail,
+      delegated_scopes: WORKSPACE_SCOPES,
+      last_verified_at: new Date().toISOString(),
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("tenant_id", tenantId)
+    .eq("id", connectionId)
+    .select("id")
+    .maybeSingle();
+  if (verificationError || verified?.id !== connectionId) {
+    await logOutcome("failed", "connection_verification_unconfirmed", { domain });
+    return fail("db_error", "Connection verification could not be saved", 500);
   }
 
   const syncRunId = await logOutcome("success", null, {
@@ -237,6 +255,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     removed,
     connection_id: connectionId,
   });
+
+  if (!syncRunId) return fail("outcome_unconfirmed", "Directory result could not be recorded", 503);
 
   return json({
     success: true,

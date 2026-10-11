@@ -1,0 +1,71 @@
+{
+  "version": "learn-workspace-directory-runtime/1",
+  "projectRef": "saatxzwxvdvqevbnskxy",
+  "sourceBundleSha256": "20cecfff46bdfc280b74a9b3366f13b8c6bc3049368bd000e29da2cb4b295d98",
+  "observedAt": "2026-10-11T15:37:55.504Z",
+  "state": "installed_http_denial_and_downloaded_regressions_verified",
+  "attempts": [
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "cliExitStatus": 0
+    }
+  ],
+  "writeAttempted": true,
+  "priorSchemaAndEndpointsPreserved": true,
+  "preservedDataSets": 52,
+  "endpoints": [
+    {
+      "name": "google-workspace-discover-mailboxes",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "dependencyFiles": 4,
+  "fullPreservedDatasets": 113,
+  "fullSchemaUnchanged": true,
+  "secretsCreated": 0,
+  "schedulesActivated": 0,
+  "providerRequests": 0,
+  "productionChanged": false,
+  "httpAcceptance": {
+    "observedAt": "2026-10-11T15:38:19.203Z",
+    "state": "unauthenticated_http_boundary_verified",
+    "checks": [
+      {
+        "endpoint": "google-workspace-discover-mailboxes",
+        "method": "POST",
+        "status": 401
+      }
+    ],
+    "fullPreservedDatasets": 113,
+    "schemaUnchanged": true,
+    "providerRequests": 0,
+    "secretsCreated": 0,
+    "schedulesActivated": 0,
+    "productionChanged": false,
+    "limitations": [
+      "No positive hosted directory scan; credential and signed-in acceptance remain pending.",
+      "No jobs invoked or source records changed."
+    ]
+  },
+  "localDirectoryChecks": 6,
+  "existingTokenChecks": 2,
+  "deploymentMechanismChecks": 7,
+  "downloadedDirectoryChecks": 6,
+  "readbackComparison": {
+    "changed": [],
+    "added": [],
+    "sameCount": 4,
+    "method": "Compare transpiled syntax trees excluding comments, source positions, punctuation and redundant parenthesis nodes. Runtime-relevant identifier/literal text, operators, declaration kind and child structure are retained. This is a review aid, not formal equivalence proof."
+  },
+  "strictTypescript": true,
+  "limitations": [
+    "Positive authenticated hosted directory traversal and real Google reconciliation remain unverified.",
+    "The six directory test groups use synthetic Google responses and database outcomes around the actual helper and handler.",
+    "Sequential mailbox writes are not atomic: earlier confirmed upserts can remain after a later database failure; the request reports failure.",
+    "Discovery covers only the saved domain, not every domain in the Google customer account.",
+    "No existing mailbox, email account or communications history was changed in hosted TEST or production. Existing removed/disabled choices are not automatically re-enabled.",
+    "TEST credential copy and owner access approvals remain pending; no new keys, grants or schedules were created."
+  ]
+}

@@ -288,6 +288,8 @@ export interface DirectoryUser {
  * List the domain's users via the Admin Directory API (users.list), paging
  * through results. Requires a delegated token with admin.directory.user.readonly
  * impersonating an admin. `maxPages` bounds a runaway (500 users/page).
+ * Only a terminal, validated traversal can be used for reconciliation.
+ * A limit or malformed page throws: callers must never prune from partial data.
  */
 export async function listDirectoryUsers(
   accessToken: string,
@@ -295,37 +297,52 @@ export async function listDirectoryUsers(
   opts: { maxPages?: number } = {},
 ): Promise<DirectoryUser[]> {
   const users: DirectoryUser[] = [];
-  const maxPages = opts.maxPages ?? 20; // up to ~10k users
+  const maxPages = opts.maxPages ?? 20;
+  if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 20)
+    throw new Error("directory_page_limit_invalid");
+  if (!domain || !/^[a-z0-9.-]+$/i.test(domain)) throw new Error("directory_domain_invalid");
   let pageToken: string | undefined;
-
+  const seenTokens = new Set<string>();
+  const seenEmails = new Set<string>();
   for (let page = 0; page < maxPages; page++) {
     const params = new URLSearchParams({ domain, maxResults: "500", orderBy: "email" });
     if (pageToken) params.set("pageToken", pageToken);
-    const resp = await fetch(`${DIRECTORY_USERS_ENDPOINT}?${params.toString()}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!resp.ok) throw new Error(`directory_users_${resp.status}`);
-    const data = (await resp.json()) as {
-      users?: Array<{
-        primaryEmail?: string;
-        name?: { fullName?: string };
-        suspended?: boolean;
-        isAdmin?: boolean;
-      }>;
-      nextPageToken?: string;
-    };
-    for (const u of data.users ?? []) {
-      const email = typeof u.primaryEmail === "string" ? u.primaryEmail.toLowerCase() : null;
-      if (!email) continue;
-      users.push({
-        email,
-        displayName: u.name?.fullName ?? null,
-        suspended: Boolean(u.suspended),
-        isAdmin: Boolean(u.isAdmin),
+    let resp: Response;
+    try {
+      resp = await fetch(`${DIRECTORY_USERS_ENDPOINT}?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        redirect: "error",
+        signal: AbortSignal.timeout(15000),
       });
+    } catch { throw new Error("directory_request_unconfirmed"); }
+    if (!resp.ok) throw new Error(`directory_users_${resp.status}`);
+    let data: any;
+    try { data = await resp.json(); }
+    catch { throw new Error("directory_page_invalid"); }
+    if (!data || typeof data !== "object" || Array.isArray(data) ||
+      (data.users !== undefined && (!Array.isArray(data.users) || data.users.length > 500)))
+      throw new Error("directory_page_invalid");
+    for (const u of data.users ?? []) {
+      if (!u || typeof u.primaryEmail !== "string" ||
+        !/^[^\s@]+@[^\s@]+$/.test(u.primaryEmail) || u.primaryEmail.length > 320 ||
+        (u.suspended !== undefined && typeof u.suspended !== "boolean") ||
+        (u.isAdmin !== undefined && typeof u.isAdmin !== "boolean") ||
+        (u.name !== undefined && (!u.name || typeof u.name !== "object" || Array.isArray(u.name))) ||
+        (u.name?.fullName !== undefined && typeof u.name.fullName !== "string"))
+        throw new Error("directory_user_invalid");
+      const email = u.primaryEmail.toLowerCase();
+      if (seenEmails.has(email)) throw new Error("directory_duplicate_user");
+      seenEmails.add(email);
+      users.push({ email, displayName: u.name?.fullName ?? null,
+        suspended: u.suspended === true, isAdmin: u.isAdmin === true });
     }
-    pageToken = data.nextPageToken;
-    if (!pageToken) break;
+    const next = data.nextPageToken;
+    if (next === undefined || next === "") return users;
+    if (typeof next !== "string" || next.length > 4096 || /[\r\n]/.test(next))
+      throw new Error("directory_cursor_invalid");
+    if (seenTokens.has(next)) throw new Error("directory_cursor_repeated");
+    seenTokens.add(next);
+    pageToken = next;
   }
-  return users;
+  throw new Error("directory_scan_incomplete");
 }

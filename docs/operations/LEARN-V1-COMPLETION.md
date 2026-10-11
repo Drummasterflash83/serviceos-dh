@@ -85,16 +85,39 @@ Stored mailbox rows still say `user`, `active`, `sync_enabled=true`. This suppor
 stale/unresolved directory identity; it does not establish deletion, renaming or
 the exact cause. No settings were changed and no message content was read.
 
-Source inspection found two reconciliation gaps to close before a live refresh:
-`listDirectoryUsers` returns partial results if its page limit is reached while
-continuation remains, and the discovery endpoint ignores existing-row read and
-removal-update errors. An incomplete or failed directory scan must never be
-reported as complete reconciliation or used to infer removals. Existing mail and
-account history must remain intact. Prepare a bounded, reviewed reconciliation
-after correcting these safeguards; do not silently disable the four accounts from
-this diagnostic alone. Google's [user resource contract](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users)
-documents the directory fields; [current diagnostic evidence](evidence/learn-workspace-current-failure-check-2026-10-11.json)
-retains only account IDs, statuses and safe result codes.
+### Directory reconciliation safeguards — 11 October, 15:38 UTC
+
+Source inspection found that the directory reader returned partial results at its
+page limit, while discovery ignored inventory-read and removal-update errors.
+The correction is installed as TEST `google-workspace-discover-mailboxes` v1,
+ACTIVE with JWT verification. An unfinished, malformed or repeated-page traversal
+now fails before mailbox reconciliation. Existing-inventory, upsert, removal,
+connection-verification and success-receipt failures cannot return clean success.
+Tenant/connection scope and operator mailbox choices are retained. Existing
+mailboxes are marked absent only after terminal traversal; no history is deleted.
+
+- Six local directory test groups passed, including the actual endpoint against
+  incomplete scans and database failures; the same six passed against downloaded
+  deployed code. Two existing token checks and seven deployment checks also passed.
+  Strict backend TypeScript passed; all four downloaded runtime modules matched
+  the reviewed emitted syntax trees.
+- TEST rejected the unsigned HTTP request with 401. All **113 retained datasets**
+  and the full schema matched before/after deployment and the HTTP check. Other
+  endpoints were unchanged. No provider request, key, grant, schedule or production
+  write occurred. The accepted frontend preview remains unchanged.
+- **Still unverified:** a positive authenticated hosted scan, real directory
+  reconciliation and mailbox-to-card acceptance. The credential-copy and TEST
+  owner-access approvals remain pending. No failing production account was disabled.
+- Writes are sequential, not one database transaction: confirmed upserts may
+  remain if a later reconciliation write fails, with failure reported. Discovery
+  is scoped to the saved domain; it does not prove all-domain Google coverage.
+  Previously removed/disabled choices are not automatically re-enabled.
+
+Google's [directory list contract](https://developers.google.com/workspace/admin/directory/reference/rest/v1/users/list)
+defines pagination and domain scope. [TEST evidence](evidence/learn-workspace-directory-test-2026-10-11.json)
+distinguishes local fixtures, deployed readback and HTTP denial from real acceptance.
+The four-account [diagnostic evidence](evidence/learn-workspace-current-failure-check-2026-10-11.json)
+remains read-only; it is not authority to infer deletion or alter capture settings.
 
 
 ### Hosted TEST sign-in — 11 October, 15:02 UTC
